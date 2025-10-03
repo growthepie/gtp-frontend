@@ -4,166 +4,470 @@ import Image from 'next/image';
 import * as d3 from 'd3-hierarchy';
 import useSWR from 'swr';
 import { ChainOverview } from '@/lib/chains';
-import { BlockspaceURLs } from '@/lib/urls';
 import { MasterResponse } from '@/types/api/MasterResponse';
 import { useMaster } from '@/contexts/MasterContext';
 import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/ProjectsMetadataContext';
-import { ApplicationTooltip, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
+import { ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import Link from 'next/link';
 import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
-const data: { id: string; label: string; txcount: number; pct: number; apps: number; color: string; darkColor: string }[] = [
-  {
-    id: "token_transfers",
-    label: "Token Transfers",
-    txcount: 4847103,
-    pct: 37.31,
-    apps: 36,
-    color: '#EF4444',
-    darkColor: '#DC2626'
-  },
-  {
-    id: "defi",
-    label: "DeFi",
-    txcount: 3546666,
-    pct: 27.30,
-    apps: 48,
-    color: '#10B981',
-    darkColor: '#059669'
-  },
-  {
-    id: "cefi",
-    label: "CeFi",
-    txcount: 3213443,
-    pct: 24.74,
-    apps: 4,
-    color: '#8B5CF6',
-    darkColor: '#7C3AED'
-  },
-  {
-    id: "utility",
-    label: "Utility",
-    txcount: 806121,
-    pct: 6.21,
-    apps: 18,
-    color: '#F59E0B',
-    darkColor: '#D97706'
-  },
-  {
-    id: "cross_chain",
-    label: "Cross Chain",
-    txcount: 524603,
-    pct: 4.04,
-    apps: 28,
-    color: '#06B6D4',
-    darkColor: '#0891B2'
-  },
-  {
-    id: "nft",
-    label: "NFT",
-    txcount: 29186,
-    pct: 0.22,
-    apps: 5,
-    color: '#EC4899',
-    darkColor: '#DB2777'
-  },
-  {
-    id: "social",
-    label: "Social",
-    txcount: 23109,
-    pct: 0.18,
-    apps: 10,
-    color: '#3B82F6',
-    darkColor: '#2563EB'
-  },
-];
+// ============================================================================
+// Types & Interfaces
+// ============================================================================
 
-// chainKey={chainKey} chainData={chainData} master={master}
+interface AppDataRaw {
+  owner_project: string;
+  origin_key: string;
+  txcount: number;
+  main_category?: string;
+  sub_category?: string;
+}
+
+interface ProjectMetadata {
+  owner_project: string;
+  display_name: string;
+  logo_path?: string;
+  main_category: string;
+  sub_category: string;
+}
+
+interface EnrichedApp {
+  ownerProject: string;
+  displayName: string;
+  logoPath?: string;
+  txcount: number;
+  mainCategory: string;
+  subCategory: string;
+}
+
+interface CategoryNode {
+  id: string;
+  label: string;
+  txcount: number;
+  pctShare: number;
+  apps: EnrichedApp[];
+}
+
+interface LayoutNode extends CategoryNode {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+type ViewMode = 'main' | 'sub';
+
+// ============================================================================
+// Data Transformation Utilities
+// ============================================================================
+
+/**
+ * Converts array-based API response to a properly typed object
+ */
+function arrayToObject<T>(data: any[], types: string[]): T {
+  return types.reduce((obj, type, index) => {
+    obj[type] = data[index];
+    return obj;
+  }, {} as any) as T;
+}
+
+/**
+ * Transforms raw app data into enriched app objects
+ */
+function enrichAppData(
+  rawApps: any[],
+  appTypes: string[],
+  projectsData: any,
+  ownerProjectMap: Record<string, ProjectMetadata>
+): EnrichedApp[] {
+  return rawApps
+    .map(rawApp => {
+      const appObj = arrayToObject<AppDataRaw>(rawApp, appTypes);
+      const projectMeta = ownerProjectMap[appObj.owner_project];
+      
+      if (!projectMeta) return null;
+
+      return {
+        ownerProject: appObj.owner_project,
+        displayName: projectMeta.display_name || appObj.owner_project,
+        logoPath: projectMeta.logo_path,
+        txcount: appObj.txcount,
+        mainCategory: projectMeta.main_category,
+        subCategory: projectMeta.sub_category,
+      };
+    })
+    .filter((app): app is EnrichedApp => app !== null)
+    .sort((a, b) => b.txcount - a.txcount);
+}
+
+/**
+ * Groups apps by category (main or sub)
+ */
+function groupAppsByCategory(
+  apps: EnrichedApp[],
+  groupBy: 'main' | 'sub',
+  selectedMainCategory?: string
+): Map<string, EnrichedApp[]> {
+  const grouped = new Map<string, EnrichedApp[]>();
+  
+  apps.forEach(app => {
+    // If viewing subcategories, filter by selected main category first
+    if (groupBy === 'sub' && selectedMainCategory && app.mainCategory !== selectedMainCategory) {
+      return;
+    }
+    
+    const categoryKey = groupBy === 'main' ? app.mainCategory : app.subCategory;
+    if (!categoryKey) return;
+    
+    if (!grouped.has(categoryKey)) {
+      grouped.set(categoryKey, []);
+    }
+    grouped.get(categoryKey)!.push(app);
+  });
+  
+  return grouped;
+}
+
+/**
+ * Builds category nodes for treemap visualization
+ */
+function buildCategoryNodes(
+  blockspaceData: any[] | undefined,
+  blockspaceTypes: string[] | undefined,
+  apps: EnrichedApp[],
+  masterData: any,
+  viewMode: ViewMode,
+  selectedMainCategory?: string
+): CategoryNode[] {
+  if (!masterData) return [];
+
+  const mainCategoryLabel = selectedMainCategory ? masterData.blockspace_categories.main_categories[selectedMainCategory] : null;
+  const groupBy = viewMode === 'main' ? 'main' : 'sub';
+  const groupedApps = groupAppsByCategory(apps, groupBy, mainCategoryLabel);
+  
+  // For subcategory view, build nodes from app data since blockspace data doesn't have subcategory breakdown
+  if (viewMode === 'sub') {
+    const nodes: CategoryNode[] = [];
+    const totalTxcount = apps
+      .filter(app => app.mainCategory === mainCategoryLabel)
+      .reduce((sum, app) => sum + app.txcount, 0);
+    
+    groupedApps.forEach((categoryApps, subCategoryLabel) => {
+      const txcount = categoryApps.reduce((sum, app) => sum + app.txcount, 0);
+      const pctShare = totalTxcount > 0 ? (txcount / totalTxcount) * 100 : 0;
+      
+      // Find the subcategory ID from the master data
+      const subCategoryId = Object.entries(masterData.blockspace_categories.sub_categories)
+        .find(([_, label]) => label === subCategoryLabel)?.[0] || subCategoryLabel;
+      
+      nodes.push({
+        id: subCategoryId,
+        label: subCategoryLabel,
+        txcount,
+        pctShare,
+        apps: categoryApps,
+      });
+    });
+    
+    return nodes.sort((a, b) => b.txcount - a.txcount);
+  }
+  
+  // For main category view, use blockspace data
+  if (!blockspaceData || !blockspaceTypes) return [];
+  
+  const categoryMap = masterData.blockspace_categories.main_categories;
+
+  return blockspaceData
+    .filter(item => {
+      const mainCategoryId = item[blockspaceTypes.indexOf('main_category_id')];
+      return mainCategoryId !== 'unlabeled';
+    })
+    .map(item => {
+      const categoryId = item[blockspaceTypes.indexOf('main_category_id')];
+      const categoryLabel = categoryMap[categoryId];
+      const categoryApps = groupedApps.get(categoryLabel) || [];
+
+      return {
+        id: categoryId,
+        label: categoryLabel,
+        txcount: item[blockspaceTypes.indexOf('txcount')],
+        pctShare: item[blockspaceTypes.indexOf('pct_share')],
+        apps: categoryApps,
+      };
+    });
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
 interface DensePackedTreeMapProps {
   chainKey: string;
   chainData: any;
 }
 
-const DensePackedTreeMap = ({
-  chainKey,
-  chainData,
-}: DensePackedTreeMapProps) => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
-  const { data: masterData } = useMaster();
-
-  const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(`https://api.growthepie.xyz/v1/apps/app_overview_7d.json`);
-  const appTypes = applicationsData?.data.types;
-  const appData = applicationsData?.data.data;
-
-  const appDataFilteredByChain = appData && appTypes && appData.filter((item: any) => item[appTypes.indexOf('origin_key')] === chainKey);
-  console.log("appTypes", appTypes);
-  console.log("appDataFilteredByChain", appDataFilteredByChain);
-
-  const { filteredProjectsData, ownerProjectToProjectData } = useProjectsMetadata();
-
-  // join filteredProjectsData with appDataFilteredByChain on owner_project
-  const appDataFilteredByChainWithProjectData = appDataFilteredByChain && appDataFilteredByChain.map((item: any) => ([
-    ...item,
-    filteredProjectsData?.data.find((project: any) => project[filteredProjectsData.types.indexOf('owner_project')] === item[appTypes.indexOf('owner_project')])[filteredProjectsData.types.indexOf('main_category')]
-  ]));
-  console.log("appDataFilteredByChainWithProjectData", appDataFilteredByChainWithProjectData);
-
-  const t = chainDataOverview?.data.blockspace.blockspace.types;
-  const data = t && chainDataOverview?.data.blockspace.blockspace.data.filter((item: any) => item[t.indexOf('main_category_id')] !== 'unlabeled').map((item: any) => ({
-    id: item[t.indexOf('main_category_id')],
-    label: masterData?.blockspace_categories.main_categories[item[t.indexOf('main_category_id')]],
-    txcount: item[t.indexOf('txcount')],
-    pct_share: item[t.indexOf('pct_share')],
-    apps: masterData && filteredProjectsData && appDataFilteredByChainWithProjectData && appDataFilteredByChainWithProjectData.filter((app: any) => app[app.length - 1] === masterData.blockspace_categories.main_categories[item[t.indexOf('main_category_id')]]).sort((a: any, b: any) => b[appTypes.indexOf('txcount')] - a[appTypes.indexOf('txcount')]) || [],
-  }));
-  console.log("data", data);
-  console.log("filteredProjectsData", filteredProjectsData);
-
-
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [dimensions, setDimensions] = useState({ width: 743, height: 802 });
+const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) => {
+  // ============================================================================
+  // State
+  // ============================================================================
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(743);
+  const [showHint, setShowHint] = useState(false);
+  
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    let resizeTimeout: NodeJS.Timeout;
+  // ============================================================================
+  // Data Fetching
+  // ============================================================================
+  const { data: chainDataOverview } = useSWR<ChainOverview>(
+    `https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`
+  );
+  
+  const { data: masterData } = useMaster();
+  
+  const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(
+    `https://api.growthepie.xyz/v1/apps/app_overview_7d.json`
+  );
+  
+  const { filteredProjectsData, ownerProjectToProjectData } = useProjectsMetadata();
 
-    const handleResize = () => {
-      // Immediately set resizing state
-      setIsResizing(true);
+  // ============================================================================
+  // Data Transformation
+  // ============================================================================
+  
+  // Build owner project map for quick lookups
+  const ownerProjectMap = useMemo(() => {
+    if (!filteredProjectsData) return {};
+    
+    return filteredProjectsData.data.reduce((map, project) => {
+      const projectObj = arrayToObject<ProjectMetadata>(
+        project,
+        filteredProjectsData.types
+      );
+      map[projectObj.owner_project] = projectObj;
+      return map;
+    }, {} as Record<string, ProjectMetadata>);
+  }, [filteredProjectsData]);
 
-      // Clear any existing timeout
-      clearTimeout(resizeTimeout);
+  // Get enriched app data filtered by chain
+  const enrichedApps = useMemo(() => {
+    if (!applicationsData?.data.data || !applicationsData?.data.types || !ownerProjectMap) {
+      return [];
+    }
 
-      // Set a new timeout to delay the dimension update
-      resizeTimeout = setTimeout(() => {
-        if (containerRef.current) {
-          const { width, height } = containerRef.current.getBoundingClientRect();
-          setDimensions({
-            width: Math.floor(width),
-            height: Math.floor(height)
-          });
-          setIsResizing(false);
-        }
-      }, 100); // Wait 100ms after resize stops before recalculating
+    const appsForChain = applicationsData.data.data.filter(
+      app => app[applicationsData.data.types.indexOf('origin_key')] === chainKey
+    );
+
+    return enrichAppData(
+      appsForChain,
+      applicationsData.data.types,
+      filteredProjectsData,
+      ownerProjectMap
+    );
+  }, [applicationsData, chainKey, filteredProjectsData, ownerProjectMap]);
+
+  // Build category nodes for visualization
+  const categoryNodes = useMemo(() => {
+    const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
+    const blockspaceTypes = chainDataOverview?.data.blockspace.blockspace.types;
+
+    const allNodes = buildCategoryNodes(
+      blockspaceData,
+      blockspaceTypes,
+      enrichedApps,
+      masterData,
+      selectedMainCategory === null ? 'main' : 'sub',
+      selectedMainCategory || undefined
+    );
+
+    // Filter out categories with no apps
+    return allNodes.filter(node => node.apps.length > 0);
+  }, [chainDataOverview, enrichedApps, masterData, selectedMainCategory]);
+
+  // Calculate height based on content density
+  const dimensions = useMemo(() => {
+    const MIN_HEIGHT = 100;
+    const MAX_HEIGHT = 900;
+    
+    if (categoryNodes.length === 0) {
+      return { width: containerWidth, height: MIN_HEIGHT };
+    }
+    
+    const totalApps = categoryNodes.reduce((sum, node) => sum + node.apps.length, 0);
+    
+    // Estimate how much space the content actually needs
+    const TILE_SIZE = 62;
+    const GAP = 10;
+    const CATEGORY_HEADER = 25;
+    const CATEGORY_GAP = 10;
+    
+    // Estimate average apps per category
+    const avgAppsPerCategory = totalApps / categoryNodes.length;
+    
+    // Estimate grid dimensions
+    const estimatedCols = Math.max(3, Math.floor(containerWidth / (TILE_SIZE + GAP + 20)));
+    const avgRowsPerCategory = Math.max(1, Math.ceil(avgAppsPerCategory / estimatedCols));
+    
+    // Estimate how categories will be laid out in the treemap
+    // With few categories, they tend to stack vertically
+    // With many categories, they pack more efficiently
+    let estimatedCategoryRows: number;
+    if (categoryNodes.length <= 2) {
+      estimatedCategoryRows = categoryNodes.length;
+    } else if (categoryNodes.length <= 4) {
+      estimatedCategoryRows = Math.ceil(categoryNodes.length / 2);
+    } else {
+      estimatedCategoryRows = Math.ceil(Math.sqrt(categoryNodes.length) * 1.2);
+    }
+    
+    // Calculate needed height
+    const neededHeight = 
+      (estimatedCategoryRows * avgRowsPerCategory * (TILE_SIZE + GAP)) +
+      (estimatedCategoryRows * CATEGORY_HEADER) +
+      ((estimatedCategoryRows - 1) * CATEGORY_GAP) +
+      60; // padding buffer
+    
+    // Add some breathing room but cap it
+    const comfortableHeight = Math.floor(neededHeight * 1.2);
+    const height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, comfortableHeight));
+    
+    return { width: containerWidth, height };
+  }, [containerWidth, categoryNodes]);
+
+  // ============================================================================
+  // Layout Calculation
+  // ============================================================================
+  
+  const layout = useMemo(() => {
+    if (categoryNodes.length === 0) return [];
+    
+    const { width, height } = dimensions;
+
+    // Create hierarchy data with proportional values
+    const hierarchyData = {
+      name: 'root',
+      children: categoryNodes.map(node => ({
+        ...node,
+        name: node.id,
+        // Value based on app count + transaction volume
+        value: node.apps.length * 1000 + Math.sqrt(node.txcount)
+      }))
     };
 
-    // Initial measurement
-    if (containerRef.current) {
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      setDimensions({
-        width: Math.floor(width),
-        height: Math.floor(height)
-      });
+    // Create treemap layout
+    const root = d3.hierarchy(hierarchyData)
+      .sum(d => d.value)
+      .sort((a, b) => b.value - a.value);
+
+    const treemap = d3.treemap()
+      .size([width, height])
+      .paddingInner(10)
+      .paddingOuter(0)
+      .tile(d3.treemapSquarify.ratio(1/2));
+
+    treemap(root);
+
+    // Extract leaf nodes with positions
+    return root.leaves().map(leaf => {
+      const originalData = categoryNodes.find(n => n.id === leaf.data.name)!;
+      
+      return {
+        ...originalData,
+        x: Math.floor(leaf.x0),
+        y: Math.floor(leaf.y0),
+        width: Math.floor(leaf.x1 - leaf.x0),
+        height: Math.floor(leaf.y1 - leaf.y0),
+      } as LayoutNode;
+    });
+  }, [categoryNodes, dimensions]);
+
+  // ============================================================================
+  // Event Handlers
+  // ============================================================================
+  
+  const handleCategoryClick = (categoryId: string, categoryLabel: string) => {
+    if (selectedMainCategory === null) {
+      setSelectedMainCategory(categoryId);
+      setShowHint(true);
+      // Hide hint after a delay
+      setTimeout(() => setShowHint(false), 3000);
+    }
+  };
+
+  const handleBackToOverview = () => {
+    setSelectedMainCategory(null);
+    setShowHint(false);
+  };
+
+  // Handle ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedMainCategory !== null) {
+        handleBackToOverview();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedMainCategory]);
+
+  // Handle click outside (optional)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectedMainCategory !== null && containerRef.current) {
+        const target = e.target as HTMLElement;
+        // Check if click is on background (not on a category section)
+        if (target === containerRef.current) {
+          handleBackToOverview();
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('click', handleClickOutside);
     }
 
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
+    return () => {
+      if (container) {
+        container.removeEventListener('click', handleClickOutside);
+      }
+    };
+  }, [selectedMainCategory]);
+
+  // Handle container resize
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let resizeTimeout: NodeJS.Timeout;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        
+        // Set resizing state
+        setIsResizing(true);
+        
+        // Clear previous timeout
+        clearTimeout(resizeTimeout);
+        
+        // Update width
+        setContainerWidth(width);
+        
+        // Reset resizing state after animation settles
+        resizeTimeout = setTimeout(() => {
+          setIsResizing(false);
+        }, 300);
+      }
+    });
+
+    resizeObserver.observe(container);
 
     return () => {
       clearTimeout(resizeTimeout);
@@ -171,294 +475,300 @@ const DensePackedTreeMap = ({
     };
   }, []);
 
-  // Calculate squarified treemap layout using D3
-  const layout = useMemo(() => {
-    if (!data) return [];
-    const { width, height } = dimensions;
+  const layoutKey = selectedMainCategory === null ? 'main' : `sub-${selectedMainCategory}`;
+  const selectedCategoryLabel = selectedMainCategory 
+    ? masterData?.blockspace_categories.main_categories[selectedMainCategory]
+    : null;
 
-    const TILE_SIZE = 62;
-    const TILE_GAP = 10;
-    const PADDING_TOP = 30;
-    const PADDING_BOTTOM = 15;
-    const PADDING_LEFT = 15;
-    const PADDING_RIGHT = 15;
-    const MIN_TILES = 3;
-
-    // Calculate minimum space needed for tiles
-    const calculateMinimumDimensions = (appCount: number) => {
-      const tilesNeeded = Math.max(appCount, MIN_TILES);
-
-      let cols: number;
-      let rows: number;
-
-      if (tilesNeeded <= 3) {
-        cols = tilesNeeded;
-        rows = 1;
-      } else if (tilesNeeded === 4) {
-        cols = 2;
-        rows = 2;
-      } else {
-        cols = Math.ceil(Math.sqrt(tilesNeeded));
-        rows = Math.ceil(tilesNeeded / cols);
-      }
-
-      const widthNeeded = (cols * TILE_SIZE) + ((cols - 1) * TILE_GAP) + (PADDING_LEFT + PADDING_RIGHT);
-      const heightNeeded = (rows * TILE_SIZE) + ((rows - 1) * TILE_GAP) + (PADDING_TOP + PADDING_BOTTOM);
-
-      return {
-        minWidth: widthNeeded,
-        minHeight: heightNeeded,
-        cols,
-        rows,
-        tilesNeeded
-      };
-    };
-
-    if (!data) return [];
-
-    // Create data with proportional values based on app count
-    const hierarchyData = {
-      name: 'root',
-      children: data.map(d => {
-        const minDims = calculateMinimumDimensions(d.apps.length);
-        return {
-          ...d,
-          ...minDims,
-          name: d.id,
-          // Value based primarily on number of apps (tiles needed)
-          // with small influence from transaction volume
-          value: d.apps.length * 1000 + Math.sqrt(d.txcount)
-        };
-      })
-    };
-
-    // Create the treemap layout
-    const root = d3.hierarchy(hierarchyData)
-      .sum(d => d.value)
-      .sort((a, b) => b.value - a.value);
-
-    // Configure treemap
-    const treemap = d3.treemap()
-      .size([width, height])
-      .paddingInner(10) // Space between sections
-      .paddingOuter(0) // Space from edges
-      .tile(d3.treemapSquarify.ratio(1)); // Prefer more square-like sections
-
-    // Generate the layout
-    treemap(root);
-
-    // Extract and process the leaf nodes
-    const leaves = root.leaves().map(leaf => {
-      const originalData = data.find(d => d.id === leaf.data.name);
-
-      // Use D3's calculated dimensions
-      const x = Math.floor(leaf.x0);
-      const y = Math.floor(leaf.y0);
-      const width = Math.floor(leaf.x1 - leaf.x0);
-      const height = Math.floor(leaf.y1 - leaf.y0);
-
-      return {
-        ...originalData,
-        x,
-        y,
-        width,
-        height
-      };
-    });
-
-    return leaves;
-  }, [dimensions, data]);
-
-  // Generate tiles that fit within the section based on 62px constraint
-  const generateConstrainedTiles = (width: number, height: number, appCount: number) => {
-    const TILE = 62;
-    const GAP = 10;
-    const PADDING_TOP = 15;
-    const PADDING_BOTTOM = 5;
-    const PADDING_LEFT = 3;
-    const PADDING_RIGHT = 3;
-
-    const availableW = width - (PADDING_LEFT + PADDING_RIGHT);
-    const availableH = height - (PADDING_TOP + PADDING_BOTTOM);
-
-    if (availableW <= 0 || availableH <= 0) return [];
-
-    // Calculate how many tiles we can fit
-    const maxCols = Math.floor((availableW) / (TILE + GAP));
-    const maxRows = Math.floor((availableH) / (TILE + GAP));
-
-    const tiles: { x: number; y: number; highlighted: boolean }[] = [];
-
-    // Ensure minimum of 3 tiles shown for small sections
-    const tilesToShow = Math.max(Math.min(appCount, 3), appCount);
-
-    // Calculate optimal arrangement
-    let actualCols: number;
-    let actualRows: number;
-
-    if (tilesToShow <= 3) {
-      // For very small counts, show in a single row
-      actualCols = tilesToShow;
-      actualRows = 1;
-    } else {
-      // For larger counts, try to create a roughly square arrangement
-      // But limit to the actual number of apps
-      actualCols = Math.min(maxCols, Math.ceil(Math.sqrt(tilesToShow)));
-      actualRows = Math.ceil(tilesToShow / actualCols);
-
-      // If we have very few apps compared to space, optimize the layout
-      if (tilesToShow <= 12 && maxCols >= 6) {
-        // Prefer wider layouts for small numbers
-        actualCols = Math.min(maxCols, Math.max(3, Math.ceil(tilesToShow / 2)));
-        actualRows = Math.ceil(tilesToShow / actualCols);
-      }
-    }
-
-    // Make sure we don't exceed the available space
-    actualCols = Math.min(actualCols, maxCols);
-    actualRows = Math.min(actualRows, maxRows);
-
-    // Center the tile group within the section
-    const totalTileWidth = actualCols * TILE + (actualCols - 1) * GAP;
-    const totalTileHeight = actualRows * TILE + (actualRows - 1) * GAP;
-    const offsetX = PADDING_LEFT + Math.max(0, (availableW - totalTileWidth) / 2);
-    const offsetY = PADDING_TOP + Math.max(0, (availableH - totalTileHeight) / 2);
-    // const offsetY = PADDING_TOP + 10;
-
-    // Only create the actual number of tiles (max of appCount)
-    const actualTileCount = Math.min(appCount, actualCols * actualRows);
-
-    for (let i = 0; i < actualTileCount; i++) {
-      const col = i % actualCols;
-      const row = Math.floor(i / actualCols);
-      tiles.push({
-        x: offsetX + col * (TILE + GAP),
-        y: offsetY + row * (TILE + GAP),
-        highlighted: true
-      });
-    }
-
-
-
-    // If we need to show minimum 3 but have fewer apps, add placeholder tiles
-    // if (appCount < 3) {
-    //   for (let i = appCount; i < 3; i++) {
-    //     const col = i % actualCols;
-    //     const row = Math.floor(i / actualCols);
-
-    //     tiles.push({
-    //       x: offsetX + col * (TILE + GAP),
-    //       y: offsetY + row * (TILE + GAP),
-    //       highlighted: false // These are placeholder tiles
-    //     });
-    //   }
-    // }
-
-    return tiles;
-  };
-
+  // ============================================================================
+  // Render
+  // ============================================================================
+  
+  
   return (
     <div className="flex flex-col w-full gap-y-[30px] h-full">
-      <div className="flex justify-between items-center gap-x-[10px]">
-        <div className="heading-large-md">Applications</div>
-        <div className='flex w-full'>
-          <button className={`flex w-full p-[5px] rounded-l-full border-r-[1px] border-forest-50 border-dotted text-xs min-w-[60px] justify-center items-center ${selectedCategory === 'all' ? 'bg-[#344240] ' : 'bg-[#151A19] hover:bg-[#5A6462]'}`}
-            onClick={() => setSelectedCategory('all')}
+      {/* Header with category filters */}
+      <div className="@container flex justify-between items-center gap-x-[15px]">
+        <div className="heading-large-md">
+          Applications
+        </div>
+        
+        <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
+          <button
+            className={`flex h-[24px] px-[10px] text-xs min-w-fit justify-center items-center
+              border-r-[0.5px] border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30 border-dotted
+              rounded-tl-[15px] @[650px]:rounded-l-full
+              ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+            onClick={() => setSelectedMainCategory(null)}
           >
             All
           </button>
-          {Object.keys(masterData?.blockspace_categories.main_categories || {}).map((category: string, index: number) => (
-            <button className={`flex w-full  whitespace-nowrap p-[5px]   border-forest-50 border-dotted text-xs min-w-fit justify-center items-center 
-                ${selectedCategory === category ? 'bg-[#344240] ' : 'bg-[#151A19] hover:bg-[#5A6462]'}
-                ${index === Object.keys(masterData?.blockspace_categories.main_categories || {}).length - 1 ? 'rounded-r-full' : 'border-r-[1px] border-forest-50'}`}
-              onClick={() => setSelectedCategory(category)}
-              key={masterData?.blockspace_categories.main_categories[category] + "appsbar"}
-            >
-              {masterData?.blockspace_categories.main_categories[category]}
-            </button>
-          ))}
+          {Object.keys(masterData?.blockspace_categories.main_categories || {})
+            .filter((categoryId) => categoryId !== 'unlabeled')
+            .map((categoryId, index) => (
+              <button
+                key={categoryId}
+                className={`flex whitespace-nowrap h-[24px] px-[10px] text-xxs @[650px]:text-xs min-w-fit justify-center items-center
+                  border-dotted
+                  ${index < 3 ? 'border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30' : ''}
+                  ${categoryId === 'social' ? 'rounded-bl-[15px] @[650px]:rounded-none' : ''}
+                  ${categoryId === 'nft' ? 'rounded-tr-[15px] @[650px]:rounded-none' : ''}
+                  ${categoryId === 'cross_chain' ? 'rounded-br-[15px] @[650px]:rounded-r-full' : ''}
+                  ${index < 2 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
+                  ${index > 2 && index < 6 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
+                  ${selectedMainCategory === categoryId ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                onClick={() => setSelectedMainCategory(categoryId)}
+              >
+                {masterData?.blockspace_categories.main_categories[categoryId]}
+              </button>
+            ))}
         </div>
       </div>
-      {/* stretch to fill the remaining space */}
-      <div className="flex-1 w-full h-full ">
-        <div
+
+      {/* Animated Treemap visualization */}
+      <div className="flex-1 w-full h-full">
+        <motion.div
           ref={containerRef}
           className='relative h-full bg-color-bg-default'
           style={{
             minHeight: dimensions.height,
-            maxHeight: "1000px",
+            maxHeight: "900px",
           }}
+          // Animate height changes
+          animate={{ height: dimensions.height }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
         >
-          {filteredProjectsData && data && layout.map((item) => {
-            const tiles = generateConstrainedTiles(item.width, item.height, item.apps.length);
-            console.log("item.apps", item.apps);
-
-            return (
-              <div
-                key={item.id}
-                className='absolute rounded-[15px] border border-color-bg-medium transition-all duration-300 overflow-visible'
-                style={{
-                  left: item.x,
-                  top: item.y,
-                  width: item.width,
-                  height: item.height,
-                  opacity: isResizing ? 0.6 : 1,
-                }}
-              >
-                <div className="absolute -top-[9px] left-[10px] h-[17px] heading-large-xs bg-color-bg-default px-[10px]">
-                  {item.label}
-                </div>
-
-                {/* Dense tile pattern */}
-                {tiles.map((tile, i) => (
-                  <GTPTooltipNew
-                    key={i}
-                    size="md"
-                    allowInteract={true}
-                    placement="bottom-start"
-                    trigger={
-                      <Link href={`/applications/${item.apps[i][filteredProjectsData.types.indexOf('owner_project')] || ''}`} className='absolute w-[62px] h-[62px] flex flex-col items-center justify-center'
-                        style={{
-                          left: tile.x,
-                          top: tile.y,
-                          opacity: tile.highlighted ? 1 : 0.3 // Dim placeholder tiles
-                        }}>
-
-                        <div className="w-[41.57px] h-[41.57px] bg-color-bg-medium rounded-[10px] flex items-center justify-center">
-                          <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
-                            {(ownerProjectToProjectData[item.apps[i][filteredProjectsData.types.indexOf('owner_project')]] && ownerProjectToProjectData[item.apps[i][filteredProjectsData.types.indexOf('owner_project')]].logo_path) ? (
-                              <Image
-                                alt="1 inch"
-                                src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[item.apps[i][filteredProjectsData.types.indexOf('owner_project')]].logo_path}`}
-                                width={21}
-                                height={21}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
-                                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[21px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-[10px] w-full h-[19.12px] truncate text-center pt-[4px]">
-                          {ownerProjectToProjectData[item.apps[i][filteredProjectsData.types.indexOf('owner_project')]].display_name || item.apps[i][filteredProjectsData.types.indexOf('owner_project')]}
-                        </div>
-                      </Link>
-                    }
-                    containerClass="flex flex-col gap-y-[10px]"
-                    positionOffset={{ mainAxis: -25, crossAxis: 50 }}
-                  >
-                    <ApplicationTooltipAlt owner_project={item.apps[i][filteredProjectsData.types.indexOf('owner_project')]} key={i} />
-                  </GTPTooltipNew>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+          <LayoutGroup id={layoutKey}>
+            <AnimatePresence mode="popLayout">
+              {layout.map((node) => (
+                <CategorySection
+                  key={`${layoutKey}-${node.id}`} // Unique key per view
+                  node={node}
+                  isResizing={isResizing}
+                  ownerProjectToProjectData={ownerProjectToProjectData}
+                  onCategoryClick={() => handleCategoryClick(node.id, node.label)}
+                  viewMode={selectedMainCategory === null ? 'main' : 'sub'}
+                  layoutId={node.id} // For morphing effect
+                />
+              ))}
+            </AnimatePresence>
+          </LayoutGroup>
+        </motion.div>
       </div>
     </div>
   );
+};
+
+// ============================================================================
+// Category Section Component
+// ============================================================================
+
+interface CategorySectionProps {
+  node: LayoutNode;
+  isResizing: boolean;
+  ownerProjectToProjectData: Record<string, any>;
+  onCategoryClick: () => void;
+  viewMode: ViewMode;
+  layoutId: string;
+}
+
+const CategorySection = ({
+  node,
+  isResizing,
+  ownerProjectToProjectData,
+  onCategoryClick,
+  viewMode,
+  layoutId
+}: CategorySectionProps) => {
+  const tiles = generateConstrainedTiles(node.width, node.height, node.apps.length);
+
+  return (
+    <motion.div
+      layoutId={layoutId}
+      className='absolute rounded-[15px] border border-color-bg-medium overflow-visible cursor-pointer hover:border-forest-400 bg-ui'
+      initial={{ opacity: 0, scale: 0.8, borderColor: "rgb(var(--border))" }}
+      animate={{
+        left: node.x,
+        top: node.y,
+        width: node.width,
+        height: node.height,
+        opacity: isResizing ? 0.6 : 1,
+        scale: 1,
+      }}
+      exit={{ 
+        opacity: 0, 
+        scale: 0.8,
+        transition: { duration: 0.2 }
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 200,
+        damping: 25,
+        mass: 1,
+      }}
+      whileHover={{ 
+        borderColor: "rgb(var(--ui-hover))",
+        transition: { duration: 0.2 }
+      }}
+      onClick={viewMode === 'main' ? onCategoryClick : undefined}
+    >
+      {/* Animated category label */}
+      <motion.div 
+        className="absolute -top-[9px] left-[10px] h-[17px] heading-large-xs bg-color-bg-default px-[10px]"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        {node.label}
+      </motion.div>
+
+      {/* Animated app tiles */}
+      <AnimatePresence>
+        {tiles.map((tile, i) => {
+          const app = node.apps[i];
+          if (!app) return null;
+
+          return (
+            <motion.div
+              key={`${app.ownerProject}-${i}`}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: tile.highlighted ? 1 : 0.3,
+                scale: 1,
+                left: tile.x,
+                top: tile.y,
+              }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{
+                delay: i * 0.02, // Stagger effect
+                duration: 0.3,
+                // type: "spring",
+                stiffness: 300,
+                damping: 20,
+              }}
+              className='absolute w-[62px] h-[62px]'
+            >
+              <GTPTooltipNew
+                size="md"
+                allowInteract={true}
+                placement="bottom-start"
+                trigger={
+                  <Link
+                    href={`/applications/${app.ownerProject}`}
+                    className='flex flex-col items-center justify-center w-full h-full'
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <motion.div 
+                      className="w-[41.57px] h-[41.57px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    >
+                      <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
+                        {app.logoPath ? (
+                          <Image
+                            alt={app.displayName}
+                            src={`https://api.growthepie.com/v1/apps/logos/${app.logoPath}`}
+                            width={21}
+                            height={21}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <GTPIcon
+                            icon="gtp-project-monochrome"
+                            size="sm"
+                            className="!size-[21px] text-[#5A6462]"
+                            containerClassName="flex items-center justify-center"
+                          />
+                        )}
+                      </div>
+                    </motion.div>
+                    <motion.div 
+                      className="text-[10px] w-full h-[19.12px] truncate text-center pt-[4px]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      {app.displayName}
+                    </motion.div>
+                  </Link>
+                }
+                containerClass="flex flex-col gap-y-[10px]"
+                positionOffset={{ mainAxis: -25, crossAxis: 50 }}
+              >
+                <ApplicationTooltipAlt owner_project={app.ownerProject} key={i} />
+              </GTPTooltipNew>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+// ============================================================================
+// Tile Generation Utility
+// ============================================================================
+
+function generateConstrainedTiles(
+  width: number,
+  height: number,
+  appCount: number
+): { x: number; y: number; highlighted: boolean }[] {
+  const TILE = 62;
+  const GAP = 10;
+  const PADDING_TOP = 15;
+  const PADDING_BOTTOM = 5;
+  const PADDING_LEFT = 3;
+  const PADDING_RIGHT = 3;
+
+  const availableW = width - (PADDING_LEFT + PADDING_RIGHT);
+  const availableH = height - (PADDING_TOP + PADDING_BOTTOM);
+
+  if (availableW <= 0 || availableH <= 0) return [];
+
+  const maxCols = Math.floor(availableW / (TILE + GAP));
+  const maxRows = Math.floor(availableH / (TILE + GAP));
+
+  const tilesToShow = Math.max(Math.min(appCount, 3), appCount);
+
+  let actualCols: number;
+  let actualRows: number;
+
+  if (tilesToShow <= 3) {
+    actualCols = tilesToShow;
+    actualRows = 1;
+  } else {
+    actualCols = Math.min(maxCols, Math.ceil(Math.sqrt(tilesToShow)));
+    actualRows = Math.ceil(tilesToShow / actualCols);
+
+    if (tilesToShow <= 12 && maxCols >= 6) {
+      actualCols = Math.min(maxCols, Math.max(3, Math.ceil(tilesToShow / 2)));
+      actualRows = Math.ceil(tilesToShow / actualCols);
+    }
+  }
+
+  actualCols = Math.min(actualCols, maxCols);
+  actualRows = Math.min(actualRows, maxRows);
+
+  const totalTileWidth = actualCols * TILE + (actualCols - 1) * GAP;
+  const totalTileHeight = actualRows * TILE + (actualRows - 1) * GAP;
+  const offsetX = PADDING_LEFT + Math.max(0, (availableW - totalTileWidth) / 2);
+  const offsetY = PADDING_TOP + Math.max(0, (availableH - totalTileHeight) / 2);
+
+  const actualTileCount = Math.min(appCount, actualCols * actualRows);
+  const tiles: { x: number; y: number; highlighted: boolean }[] = [];
+
+  for (let i = 0; i < actualTileCount; i++) {
+    const col = i % actualCols;
+    const row = Math.floor(i / actualCols);
+    tiles.push({
+      x: offsetX + col * (TILE + GAP),
+      y: offsetY + row * (TILE + GAP),
+      highlighted: true
+    });
+  }
+
+  return tiles;
 }
 
 export default DensePackedTreeMap;
