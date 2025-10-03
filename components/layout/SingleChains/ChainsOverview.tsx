@@ -15,6 +15,7 @@ import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ChainOverview } from "@/lib/chains";
+import { LifetimeAchievments } from "./OverviewCards/Achievments";
 
 
 
@@ -109,7 +110,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
     const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
 
 
-
+    console.log(oldMaster)
    
 
    
@@ -195,6 +196,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                 <div className="flex flex-col w-full gap-y-[15px]">
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                         <div className="heading-large-md">Achievements</div>
+                        <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
                     </div>
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[826px]`}>
                         <div className="heading-large-md">

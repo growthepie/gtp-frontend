@@ -21,7 +21,7 @@ export default function RowContainer() {
     unhoverCategory,
   } = useRowContext() as RowContainerInterface;
 
-  console.log(data);
+ 
 
   return (
     <HorizontalScrollContainer className="!px-0 "  includeMargin={false}>

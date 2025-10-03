@@ -25,11 +25,26 @@ export type ChainOverview = {
     ranking: ChainRanking;
     kpi_cards: ChainKpiCard;
     ecosystem: Ecosystem;
+    achievements: AchievmentsData;
     blockspace: {
       blockspace: BlockspaceCO;
     };
   }
 };
+
+
+export type AchievmentsData = {
+  streaks: Object;
+  lifetime: {
+    [key: string]: {
+      [key: string]: {
+        level: number;
+        total_value: number;
+        percent_to_next_level: number;
+      }
+    }
+  }
+}
 
 export type BlockspaceCO = {
   types: string[];

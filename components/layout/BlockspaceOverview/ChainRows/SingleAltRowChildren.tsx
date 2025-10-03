@@ -60,7 +60,7 @@ export default function SingleAltRowChildren({
   }, [data, selectedMode]);
 
 
- console.log(sumChainValue);
+  
 
   const isPrevCategoryHovered = useMemo(() => {
     if (categoryIndex === 0) return false;
