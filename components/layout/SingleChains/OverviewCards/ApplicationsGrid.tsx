@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { GTPIconName } from '@/icons/gtp-icon-names';
+import ChartWatermark from '../../ChartWatermark';
 
 // ============================================================================
 // Types & Interfaces
@@ -217,6 +219,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   const [isResizing, setIsResizing] = useState(false);
   const [containerWidth, setContainerWidth] = useState(743);
   const [showHint, setShowHint] = useState(false);
+  const { AllChainsByKeys } = useMaster();
   
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -303,7 +306,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     // Estimate how much space the content actually needs
     const TILE_SIZE = 62;
     const GAP = 10;
-    const CATEGORY_HEADER = 25;
+    const CATEGORY_HEADER = 10;
     const CATEGORY_GAP = 10;
     
     // Estimate average apps per category
@@ -526,14 +529,14 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   
   
   return (
-    <div className="flex flex-col w-full gap-y-[30px] h-full">
+    <div className="flex flex-col w-full gap-y-[15px] h-full" onClick={() => handleBackToOverview()}>
       {/* Header with category filters */}
       <div className="@container flex justify-between items-center gap-x-[15px]">
         <div className="heading-large-md">
           Applications
         </div>
         
-        <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
+        {/* <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
           <button
             className={`flex h-[24px] px-[10px] text-xs min-w-fit justify-center items-center
               border-r-[0.5px] border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30 border-dotted
@@ -562,14 +565,21 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
                 {masterData?.blockspace_categories.main_categories[categoryId]}
               </button>
             ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Animated Treemap visualization */}
-      <div className="flex-1 w-full h-full">
+      <div className="relative flex-1 w-full h-full">
+        <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
+          <GTPIcon icon={`${chainKey}-logo-monochrome` as GTPIconName} size="md" className='!size-[200px] opacity-5' containerClassName='!size-[200px]' style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} />
+        </div>
+        <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
+          <ChartWatermark className='w-[128.67px] md:w-[192.87px] text-color-text-primary/5 z-[2]' />
+        </div>
+        
         <motion.div
           ref={containerRef}
-          className='relative h-full bg-color-bg-default'
+          className='relative h-full'
           style={{
             minHeight: dimensions.height,
             maxHeight: "900px",
@@ -578,6 +588,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
           animate={{ height: dimensions.height }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
+          
           <LayoutGroup id={layoutKey}>
             <AnimatePresence mode="popLayout">
               {layout.map((node) => (
@@ -586,7 +597,22 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
                   node={node}
                   isResizing={isResizing}
                   ownerProjectToProjectData={ownerProjectToProjectData}
-                  onCategoryClick={() => handleCategoryClick(node.id, node.label)}
+                  onCategoryClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleCategoryClick(node.id, node.label);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setHoveredId(node.id);
+                  }}
+                  onMouseLeave={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setHoveredId(null);
+                  }}
+                  hoveredId={hoveredId}
                   viewMode={selectedMainCategory === null ? 'main' : 'sub'}
                   layoutId={node.id} // For morphing effect
                 />
@@ -622,7 +648,10 @@ interface CategorySectionProps {
   node: LayoutNode;
   isResizing: boolean;
   ownerProjectToProjectData: Record<string, any>;
-  onCategoryClick: () => void;
+  onCategoryClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => void;
+  hoveredId: string | null;
   viewMode: ViewMode;
   layoutId: string;
 }
@@ -632,6 +661,9 @@ const CategorySection = ({
   isResizing,
   ownerProjectToProjectData,
   onCategoryClick,
+  onMouseEnter,
+  onMouseLeave,
+  hoveredId,
   viewMode,
   layoutId
 }: CategorySectionProps) => {
@@ -640,14 +672,14 @@ const CategorySection = ({
   return (
     <motion.div
       layoutId={layoutId}
-      className='absolute rounded-[15px] border border-color-bg-medium overflow-visible cursor-pointer hover:border-forest-400 bg-ui'
+      className={`group absolute rounded-[15px] border border-color-bg-medium overflow-visible cursor-pointer hover:border-forest-400 z-[1]`}
       initial={{ opacity: 0, scale: 0.8, borderColor: "rgb(var(--border))" }}
       animate={{
         left: node.x,
         top: node.y,
         width: node.width,
         height: node.height,
-        opacity: isResizing ? 0.6 : 1,
+        opacity: isResizing ? 0.4 : hoveredId === null ? 1 : 0.5,
         scale: 1,
       }}
       exit={{ 
@@ -663,18 +695,21 @@ const CategorySection = ({
       }}
       whileHover={{ 
         borderColor: "rgb(var(--ui-hover))",
-        transition: { duration: 0.2 }
+        transition: { duration: 0.2 },
+        opacity: 1
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       onClick={viewMode === 'main' ? onCategoryClick : undefined}
     >
       {/* Animated category label */}
       <motion.div 
-        className="absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] min-w-[30px] max-w-[calc(100%-20px)]"
+        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover:underline' : ''}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="max-w-full">{viewMode === 'main' ? ShortMainCategoryNames[node.label] ? ShortMainCategoryNames[node.label] : node.label : ShortSubCategoryNames[node.label] ? ShortSubCategoryNames[node.label] : node.label}</div>
+        {viewMode === 'main' ? ShortMainCategoryNames[node.label] ? ShortMainCategoryNames[node.label] : node.label : ShortSubCategoryNames[node.label] ? ShortSubCategoryNames[node.label] : node.label}
       </motion.div>
 
       {/* Animated app tiles */}
