@@ -650,7 +650,7 @@ const CategorySection = ({
             >
               <GTPTooltipNew
                 size="md"
-                allowInteract={true}
+                allowInteract={false}
                 placement="bottom-start"
                 trigger={
                   <Link
