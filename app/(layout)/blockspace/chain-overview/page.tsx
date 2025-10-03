@@ -141,8 +141,7 @@ const ChainOverview = () => {
             </div>
             <div className="flex items-center w-[99%] mx-auto pb-[15px]">
               <div className="text-[14px]">
-                An overview of chains high-level blockspace usage. All expressed
-                in share of chain usage. You can toggle between share of chain
+                An overview of chains high-level blockspace usage. You can toggle between share of chain
                 usage or absolute numbers.
               </div>
             </div>

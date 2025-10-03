@@ -353,7 +353,7 @@ export default function OverviewMetrics({
             </RowProvider>
           </div>
           {/*Chart Head*/}
-          <Container>
+          {/* <Container>
             <div className=" ">
               <h2 className="text-[20px] font-bold">
                 {!forceSelectedChain ? (
@@ -370,9 +370,9 @@ export default function OverviewMetrics({
                 )}
               </h2>
             </div>
-          </Container>
+          </Container> */}
           {/*Chart*/}
-          {selectedTimespan === "1d" ? (
+          {/* {selectedTimespan === "1d" ? (
             <></>
           ) : (
             <Container className="mb-1">
@@ -395,9 +395,9 @@ export default function OverviewMetrics({
                 forceHoveredChartSeriesId={forceHoveredChartSeriesId}
               />
             </Container>
-          )}
+          )} */}
           {/*Chart Footer*/}
-          <Container className="w-[100%] ml-[22px]">
+          {/* <Container className="w-[100%] ml-[22px]">
             <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
               <h1 className="font-bold text-sm pr-2 pl-2">
                 {!allCats
@@ -426,7 +426,7 @@ export default function OverviewMetrics({
                 </p>
               )}
             </div>
-          </Container>
+          </Container> */}
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}
@@ -513,11 +513,19 @@ export default function OverviewMetrics({
                   />
                 </div>
               </div>
-              <p className="text-sm mt-[15px]">
-                See the most active contracts within the selected timeframe (
-                {timespans[selectedTimespan].label}) and for your selected
-                category.{" "}
-              </p>
+                <p className="text-sm mt-[15px]">
+                  See the most active contracts within the selected timeframe (
+                  {timespans[selectedTimespan].label}), for your selected category (
+                  {categories[selectedCategory]}), and for{" "}
+                  {selectedChain
+                    ? AllChainsByKeys[selectedChain]?.label
+                    : chainEcosystemFilter === "all-chains"
+                    ? "All Chains"
+                    : chainEcosystemFilter === "op-stack"
+                    ? "OP Stack Chains"
+                    : "OP Superchain"}
+                  .
+                </p>
             </div>
           </Container>
           {/*Contracts Label and Rows */}
