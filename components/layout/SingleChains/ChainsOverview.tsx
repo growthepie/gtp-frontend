@@ -191,7 +191,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                         <div className="heading-large-md">Achievements</div>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] max-h-[1000px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px]`}>
                         <ProjectsMetadataProvider>
                             <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} />
                         </ProjectsMetadataProvider>

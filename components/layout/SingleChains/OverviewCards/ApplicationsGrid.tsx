@@ -11,7 +11,7 @@ import { ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/C
 import Link from 'next/link';
 import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../../ChartWatermark';
 
@@ -62,12 +62,60 @@ interface LayoutNode extends CategoryNode {
 type ViewMode = 'main' | 'sub';
 
 // ============================================================================
-// Data Transformation Utilities
+// Animation Variants (NEW)
 // ============================================================================
 
-/**
- * Converts array-based API response to a properly typed object
- */
+const categoryVariants = {
+  initial: { 
+    opacity: 0, 
+    scale: 0.8, 
+    borderColor: "rgb(var(--bg-medium))" 
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    borderColor: "rgb(var(--bg-medium))",
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 25,
+      mass: 1,
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.8,
+    transition: { duration: 0.2 }
+  },
+  hoverMain: {
+    borderColor: "rgb(var(--ui-hover))",
+    transition: { duration: 0.2 }
+  }
+};
+
+const appTileVariants = {
+  initial: { opacity: 0, scale: 0 },
+  animate: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delay: i * 0.02,
+      duration: 0.3,
+      stiffness: 300,
+      damping: 20,
+    }
+  }),
+  exit: { opacity: 0, scale: 0 },
+  hover: {
+    scale: 1.1,
+    transition: { type: "spring", stiffness: 400, damping: 17 }
+  }
+};
+
+// ============================================================================
+// Data Transformation Utilities (unchanged)
+// ============================================================================
+
 function arrayToObject<T>(data: any[], types: string[]): T {
   return types.reduce((obj, type, index) => {
     obj[type] = data[index];
@@ -75,9 +123,6 @@ function arrayToObject<T>(data: any[], types: string[]): T {
   }, {} as any) as T;
 }
 
-/**
- * Transforms raw app data into enriched app objects
- */
 function enrichAppData(
   rawApps: any[],
   appTypes: string[],
@@ -85,10 +130,10 @@ function enrichAppData(
   ownerProjectMap: Record<string, ProjectMetadata>
 ): EnrichedApp[] {
   return rawApps
-    .map(rawApp => {
+    .map((rawApp): EnrichedApp | null => {
       const appObj = arrayToObject<AppDataRaw>(rawApp, appTypes);
       const projectMeta = ownerProjectMap[appObj.owner_project];
-      
+
       if (!projectMeta) return null;
 
       return {
@@ -104,37 +149,30 @@ function enrichAppData(
     .sort((a, b) => b.txcount - a.txcount);
 }
 
-/**
- * Groups apps by category (main or sub)
- */
 function groupAppsByCategory(
   apps: EnrichedApp[],
   groupBy: 'main' | 'sub',
   selectedMainCategory?: string
 ): Map<string, EnrichedApp[]> {
   const grouped = new Map<string, EnrichedApp[]>();
-  
+
   apps.forEach(app => {
-    // If viewing subcategories, filter by selected main category first
     if (groupBy === 'sub' && selectedMainCategory && app.mainCategory !== selectedMainCategory) {
       return;
     }
-    
+
     const categoryKey = groupBy === 'main' ? app.mainCategory : app.subCategory;
     if (!categoryKey) return;
-    
+
     if (!grouped.has(categoryKey)) {
       grouped.set(categoryKey, []);
     }
     grouped.get(categoryKey)!.push(app);
   });
-  
+
   return grouped;
 }
 
-/**
- * Builds category nodes for treemap visualization
- */
 function buildCategoryNodes(
   blockspaceData: any[] | undefined,
   blockspaceTypes: string[] | undefined,
@@ -148,22 +186,20 @@ function buildCategoryNodes(
   const mainCategoryLabel = selectedMainCategory ? masterData.blockspace_categories.main_categories[selectedMainCategory] : null;
   const groupBy = viewMode === 'main' ? 'main' : 'sub';
   const groupedApps = groupAppsByCategory(apps, groupBy, mainCategoryLabel);
-  
-  // For subcategory view, build nodes from app data since blockspace data doesn't have subcategory breakdown
+
   if (viewMode === 'sub') {
     const nodes: CategoryNode[] = [];
     const totalTxcount = apps
       .filter(app => app.mainCategory === mainCategoryLabel)
       .reduce((sum, app) => sum + app.txcount, 0);
-    
+
     groupedApps.forEach((categoryApps, subCategoryLabel) => {
       const txcount = categoryApps.reduce((sum, app) => sum + app.txcount, 0);
       const pctShare = totalTxcount > 0 ? (txcount / totalTxcount) * 100 : 0;
-      
-      // Find the subcategory ID from the master data
+
       const subCategoryId = Object.entries(masterData.blockspace_categories.sub_categories)
         .find(([_, label]) => label === subCategoryLabel)?.[0] || subCategoryLabel;
-      
+
       nodes.push({
         id: subCategoryId,
         label: subCategoryLabel,
@@ -172,13 +208,12 @@ function buildCategoryNodes(
         apps: categoryApps,
       });
     });
-    
+
     return nodes.sort((a, b) => b.txcount - a.txcount);
   }
-  
-  // For main category view, use blockspace data
+
   if (!blockspaceData || !blockspaceTypes) return [];
-  
+
   const categoryMap = masterData.blockspace_categories.main_categories;
 
   return blockspaceData
@@ -220,8 +255,9 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   const [containerWidth, setContainerWidth] = useState(743);
   const [showHint, setShowHint] = useState(false);
   const { AllChainsByKeys } = useMaster();
-  
+
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout>(); // IMPROVED: Use ref for timeout
 
   // ============================================================================
   // Data Fetching
@@ -229,23 +265,22 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   const { data: chainDataOverview } = useSWR<ChainOverview>(
     `https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`
   );
-  
+
   const { data: masterData } = useMaster();
-  
+
   const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(
     `https://api.growthepie.xyz/v1/apps/app_overview_7d.json`
   );
-  
+
   const { filteredProjectsData, ownerProjectToProjectData } = useProjectsMetadata();
 
   // ============================================================================
   // Data Transformation
   // ============================================================================
-  
-  // Build owner project map for quick lookups
+
   const ownerProjectMap = useMemo(() => {
     if (!filteredProjectsData) return {};
-    
+
     return filteredProjectsData.data.reduce((map, project) => {
       const projectObj = arrayToObject<ProjectMetadata>(
         project,
@@ -256,7 +291,6 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     }, {} as Record<string, ProjectMetadata>);
   }, [filteredProjectsData]);
 
-  // Get enriched app data filtered by chain
   const enrichedApps = useMemo(() => {
     if (!applicationsData?.data.data || !applicationsData?.data.types || !ownerProjectMap) {
       return [];
@@ -274,7 +308,6 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     );
   }, [applicationsData, chainKey, filteredProjectsData, ownerProjectMap]);
 
-  // Build category nodes for visualization
   const categoryNodes = useMemo(() => {
     const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
     const blockspaceTypes = chainDataOverview?.data.blockspace.blockspace.types;
@@ -288,81 +321,97 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
       selectedMainCategory || undefined
     );
 
-    // Filter out categories with no apps
     return allNodes.filter(node => node.apps.length > 0);
   }, [chainDataOverview, enrichedApps, masterData, selectedMainCategory]);
 
-  // Calculate height based on content density
   const dimensions = useMemo(() => {
     const MIN_HEIGHT = 350;
     const MAX_HEIGHT = window.innerHeight - 300;
-    
+    const MAX_APPS = 20;
+
     if (categoryNodes.length === 0) {
       return { width: containerWidth, height: MIN_HEIGHT };
     }
-    
-    const totalApps = categoryNodes.reduce((sum, node) => sum + node.apps.length, 0);
-    
-    // Estimate how much space the content actually needs
+
+    const totalApps = categoryNodes.reduce((sum, node) => sum + Math.min(MAX_APPS, node.apps.length), 0);
+
     const TILE_SIZE = 62;
     const GAP = 10;
-    const CATEGORY_HEADER = 10;
     const CATEGORY_GAP = 10;
-    
-    // Estimate average apps per category
-    const avgAppsPerCategory = totalApps / categoryNodes.length;
-    
-    // Estimate grid dimensions
-    const estimatedCols = Math.max(3, Math.floor(containerWidth / (TILE_SIZE + GAP + 20)));
-    const avgRowsPerCategory = Math.max(1, Math.ceil(avgAppsPerCategory / estimatedCols));
-    
-    // Estimate how categories will be laid out in the treemap
-    // With few categories, they tend to stack vertically
-    // With many categories, they pack more efficiently
-    let estimatedCategoryRows: number;
-    if (categoryNodes.length <= 2) {
-      estimatedCategoryRows = categoryNodes.length;
-    } else if (categoryNodes.length <= 4) {
-      estimatedCategoryRows = Math.ceil(categoryNodes.length / 2);
-    } else {
-      estimatedCategoryRows = Math.ceil(Math.sqrt(categoryNodes.length) * 1.2);
-    }
-    
-    // Calculate needed height
-    const neededHeight = 
-      (estimatedCategoryRows * avgRowsPerCategory * (TILE_SIZE + GAP)) +
-      (estimatedCategoryRows * CATEGORY_HEADER) +
-      ((estimatedCategoryRows - 1) * CATEGORY_GAP) +
-      60; // padding buffer
-    
-    // Add some breathing room but cap it
-    const comfortableHeight = Math.floor(neededHeight * 1.2);
+
+    const estimatedCols = Math.max(3, Math.floor(containerWidth / (TILE_SIZE + GAP)));
+    const estimatedRows = Math.max(1, Math.ceil(totalApps / estimatedCols));
+
+    const numCategories = categoryNodes.length;
+    const totalHeight = estimatedRows * (TILE_SIZE + GAP);
+    const neededHeight = totalHeight + CATEGORY_GAP * (numCategories - 1) + 60;
+
+    const comfortableHeight = Math.floor(neededHeight * 1.5);
     const height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, comfortableHeight));
-    
+
     return { width: containerWidth, height };
-  }, [containerWidth, categoryNodes]);
+  }, [containerWidth, categoryNodes, window.innerHeight]);
 
   // ============================================================================
-  // Layout Calculation
+  // Layout Calculation (mostly unchanged, just type improvements)
   // ============================================================================
 
-  /**
-   * Iteratively calculates a treemap layout, adjusting node values to ensure
-   * all leaf nodes have a minimum width.
-   *
-   * @param {Array} nodes The initial array of category nodes.
-   * @param {Object} dimensions The dimensions of the treemap (width and height).
-   * @param {number} minWidth The minimum width for each leaf node.
-   * @returns {Array} The final layout where all leaf nodes meet the minWidth.
-   */
-  const enforceMinWidth = (nodes, dimensions, minWidth, minHeight) => {
-    let layout = [];
-    let currentNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy to avoid mutating original data
-    let allNodesAreWideEnough = false;
+  const redistributeTxCountByPercentage = (
+    layout: LayoutNode[],
+    offendingNodes: LayoutNode[],
+    nonOffendingNodes: LayoutNode[],
+    percentage: number
+  ): LayoutNode[] => {
+    const totalTxCount = layout.reduce((sum, node) => sum + node.txcount, 0);
+    if (totalTxCount === 0) return layout;
+    
+    const valueToRedistribute = totalTxCount * percentage;
+    const totalNonOffendingTxCount = nonOffendingNodes.reduce((sum, node) => sum + node.txcount, 0);
+
+    if (totalNonOffendingTxCount > 0) {
+      nonOffendingNodes.forEach(node => {
+        const proportion = node.txcount / totalNonOffendingTxCount;
+        const valueToRemove = valueToRedistribute * proportion;
+        node.txcount = Math.max(0, node.txcount - valueToRemove);
+      });
+    }
+
+    const totalOffendingTxCount = offendingNodes.reduce((sum, node) => sum + node.txcount, 0);
+    let totalNeedFactor = offendingNodes.reduce(
+      (sum, node) => sum + (totalOffendingTxCount - node.txcount),
+      0
+    );
+
+    if (totalNeedFactor > 0) {
+      offendingNodes.forEach(node => {
+        const needFactor = totalOffendingTxCount - node.txcount;
+        const proportionOfNeed = needFactor / totalNeedFactor;
+        const valueToAdd = valueToRedistribute * proportionOfNeed;
+        node.txcount += valueToAdd;
+      });
+    } else if (offendingNodes.length > 0) {
+      const valuePerNode = valueToRedistribute / offendingNodes.length;
+      offendingNodes.forEach(node => {
+        node.txcount += valuePerNode;
+      });
+    }
+
+    return layout;
+  };
+
+  const enforceMinWidth = (
+    nodes: CategoryNode[], 
+    dimensions: { width: number, height: number }, 
+    minWidth: number, 
+    minHeight: number
+  ): LayoutNode[] => {
+    let layout: LayoutNode[] = [];
+    let currentNodes = JSON.parse(JSON.stringify(nodes));
+    let allNodesAreBigEnough = false;
     let iterations = 0;
-    const maxIterations = 20; // A safeguard against infinite loops
+    const maxIterations = 20;
 
-    while (!allNodesAreWideEnough && iterations < maxIterations) {
+    while (!allNodesAreBigEnough && iterations < maxIterations) {
       const { width, height } = dimensions;
 
       const hierarchyData = {
@@ -370,13 +419,13 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
         children: currentNodes.map(node => ({
           ...node,
           name: node.id,
-          value: node.apps.length * 1000 + Math.sqrt(node.txcount),
+          value: Math.sqrt(node.txcount) + node.apps.length * 1000,
         })),
       };
 
       const root = d3.hierarchy(hierarchyData)
-        .sum(d => d.value)
-        .sort((a, b) => b.value - a.value);
+        .sum(d => (d as any).value)
+        .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
       const treemap = d3.treemap()
         .size([width, height])
@@ -387,57 +436,69 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
       treemap(root);
 
       layout = root.leaves().map(leaf => {
-        const originalData = nodes.find(n => n.id === leaf.data.name);
+        const layoutLeaf = leaf as d3.HierarchyRectangularNode<typeof leaf.data>;
+        const originalData = nodes.find(n => n.id === layoutLeaf.data.name);
         return {
-          ...originalData,
-          x: Math.floor(leaf.x0),
-          y: Math.floor(leaf.y0),
-          width: Math.floor(leaf.x1 - leaf.x0),
-          height: Math.floor(leaf.y1 - leaf.y0),
+          ...originalData!,
+          x: Math.floor(layoutLeaf.x0),
+          y: Math.floor(layoutLeaf.y0),
+          width: Math.floor(layoutLeaf.x1 - layoutLeaf.x0),
+          height: Math.floor(layoutLeaf.y1 - layoutLeaf.y0),
         };
       });
 
       const offendingNodes = layout.filter(leaf => leaf.width < minWidth || leaf.height < minHeight);
 
       if (offendingNodes.length === 0) {
-        allNodesAreWideEnough = true;
+        allNodesAreBigEnough = true;
       } else {
-        offendingNodes.forEach(offendingNode => {
-          const nodeToUpdate = currentNodes.find(n => n.id === offendingNode.id);
-          if (nodeToUpdate) {
-            // Bump up the value of the offending node.
-            // The bump factor (1.1 here) can be adjusted.
-            const currentValue = nodeToUpdate.apps.length * 1000 + Math.sqrt(nodeToUpdate.txcount);
-            const newTxCount = Math.pow(Math.sqrt(nodeToUpdate.txcount) * 2, 2);
-            nodeToUpdate.txcount = newTxCount;
-          }
+        const nonOffendingNodes = layout.filter(leaf => leaf.width >= minWidth && leaf.height >= minHeight);
+
+        if (nonOffendingNodes.length === 0) {
+          console.warn('LAYOUT: No non-offending nodes to redistribute value from. Halting iterations.');
+          break;
+        }
+
+        const percentageToRedistribute = 0.01 + (0.05 * Math.pow(iterations, 2));
+
+        const updatedLayout = redistributeTxCountByPercentage(
+          layout,
+          offendingNodes,
+          nonOffendingNodes,
+          percentageToRedistribute
+        );
+
+        currentNodes = currentNodes.map(node => {
+          const updatedNode = updatedLayout.find(layoutNode => layoutNode.id === node.id);
+          return {
+            ...node,
+            txcount: updatedNode ? updatedNode.txcount : node.txcount,
+          };
         });
       }
       iterations++;
     }
 
     if (iterations === maxIterations) {
-      console.warn('LAYOUT: Reached max iterations while trying to enforce minimum width.');
+      console.warn('LAYOUT: Reached max iterations while trying to enforce minimum area.');
     }
 
     return layout;
   };
-  
-  const layout = useMemo(() => {
+
+  const layout: LayoutNode[] = useMemo(() => {
     if (categoryNodes.length === 0) return [];
-  
-    return enforceMinWidth(categoryNodes, dimensions, 85, 120);
+    return enforceMinWidth(categoryNodes, dimensions, 85, 110);
   }, [categoryNodes, dimensions]);
 
   // ============================================================================
   // Event Handlers
   // ============================================================================
-  
-  const handleCategoryClick = (categoryId: string, categoryLabel: string) => {
+
+  const handleCategoryClick = (categoryId: string) => {
     if (selectedMainCategory === null) {
       setSelectedMainCategory(categoryId);
       setShowHint(true);
-      // Hide hint after a delay
       setTimeout(() => setShowHint(false), 3000);
     }
   };
@@ -459,12 +520,11 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedMainCategory]);
 
-  // Handle click outside (optional)
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (selectedMainCategory !== null && containerRef.current) {
         const target = e.target as HTMLElement;
-        // Check if click is on background (not on a category section)
         if (target === containerRef.current) {
           handleBackToOverview();
         }
@@ -483,28 +543,23 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     };
   }, [selectedMainCategory]);
 
-  // Handle container resize
+  // Handle container resize (IMPROVED: Using ref for timeout)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    let resizeTimeout: NodeJS.Timeout;
-
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
-        
-        // Set resizing state
         setIsResizing(true);
-        
-        // Clear previous timeout
-        clearTimeout(resizeTimeout);
-        
-        // Update width
+
+        if (resizeTimeoutRef.current) {
+          clearTimeout(resizeTimeoutRef.current);
+        }
+
         setContainerWidth(width);
-        
-        // Reset resizing state after animation settles
-        resizeTimeout = setTimeout(() => {
+
+        resizeTimeoutRef.current = setTimeout(() => {
           setIsResizing(false);
         }, 300);
       }
@@ -513,120 +568,108 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     resizeObserver.observe(container);
 
     return () => {
-      clearTimeout(resizeTimeout);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
       resizeObserver.disconnect();
     };
   }, []);
 
   const layoutKey = selectedMainCategory === null ? 'main' : `sub-${selectedMainCategory}`;
-  const selectedCategoryLabel = selectedMainCategory 
+  const selectedCategoryLabel = selectedMainCategory
     ? masterData?.blockspace_categories.main_categories[selectedMainCategory]
     : null;
 
   // ============================================================================
   // Render
   // ============================================================================
-  
-  
-  return (
-    <div className="flex flex-col w-full gap-y-[15px] h-full" onClick={() => handleBackToOverview()}>
-      {/* Header with category filters */}
-      <div className="@container flex justify-between items-center gap-x-[15px]">
-        <div className="heading-large-md">
-          Applications
-        </div>
-        
-        {/* <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
-          <button
-            className={`flex h-[24px] px-[10px] text-xs min-w-fit justify-center items-center
-              border-r-[0.5px] border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30 border-dotted
-              rounded-tl-[15px] @[650px]:rounded-l-full
-              ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
-            onClick={() => setSelectedMainCategory(null)}
-          >
-            All
-          </button>
-          {Object.keys(masterData?.blockspace_categories.main_categories || {})
-            .filter((categoryId) => categoryId !== 'unlabeled')
-            .map((categoryId, index) => (
-              <button
-                key={categoryId}
-                className={`flex whitespace-nowrap h-[24px] px-[10px] text-xxs @[650px]:text-xs min-w-fit justify-center items-center
-                  border-dotted
-                  ${index < 3 ? 'border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30' : ''}
-                  ${categoryId === 'social' ? 'rounded-bl-[15px] @[650px]:rounded-none' : ''}
-                  ${categoryId === 'nft' ? 'rounded-tr-[15px] @[650px]:rounded-none' : ''}
-                  ${categoryId === 'cross_chain' ? 'rounded-br-[15px] @[650px]:rounded-r-full' : ''}
-                  ${index < 2 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
-                  ${index > 2 && index < 6 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
-                  ${selectedMainCategory === categoryId ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
-                onClick={() => setSelectedMainCategory(categoryId)}
-              >
-                {masterData?.blockspace_categories.main_categories[categoryId]}
-              </button>
-            ))}
-        </div> */}
-      </div>
 
-      {/* Animated Treemap visualization */}
-      <div className="relative flex-1 w-full h-full">
-        <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
-          <GTPIcon icon={`${chainKey}-logo-monochrome` as GTPIconName} size="md" className='!size-[200px] opacity-5' containerClassName='!size-[200px]' style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} />
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="group flex flex-col w-full gap-y-[15px] h-full">
+        {/* Header with category filters */}
+        <div className="@container flex items-center gap-x-[5px]">
+          <div 
+            className={`heading-large-md ${selectedMainCategory !== null ? 'group-hover:underline cursor-pointer' : ''}`} 
+            onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}
+          >
+            Applications
+          </div>
+          <AnimatePresence initial={false}>
+            {selectedMainCategory && (
+              <motion.div
+                className="text-lg whitespace-nowrap h-[24px]"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                exit={{ opacity: 0, width: 0 }}
+              >
+                / {masterData?.blockspace_categories.main_categories[selectedMainCategory]}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
-          <ChartWatermark className='w-[128.67px] md:w-[192.87px] text-color-text-primary/5 z-[2]' />
+
+        {/* Animated Treemap visualization */}
+        <div className="relative flex-1 w-full h-full" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+          <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
+            <GTPIcon 
+              icon={`${chainKey}-logo-monochrome` as GTPIconName} 
+              size="md" 
+              className='!size-[200px] opacity-5' 
+              containerClassName='!size-[200px]' 
+              style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} 
+            />
+          </div>
+          <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
+            <ChartWatermark className='w-[128.67px] md:w-[192.87px] text-color-text-primary/5 z-[2]' />
+          </div>
+
+          <motion.div
+            ref={containerRef}
+            className='relative h-full'
+            animate={{ height: dimensions.height }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <LayoutGroup id={layoutKey}>
+              <AnimatePresence mode="popLayout" initial={false}>
+                {layout.map((node) => (
+                  <CategorySection
+                    key={`${layoutKey}-${node.id}`}
+                    node={node}
+                    isResizing={isResizing}
+                    ownerProjectToProjectData={ownerProjectToProjectData}
+                    onCategoryClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleCategoryClick(node.id);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setHoveredId(node.id);
+                    }}
+                    onMouseLeave={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setHoveredId(null);
+                    }}
+                    hoveredId={hoveredId}
+                    viewMode={selectedMainCategory === null ? 'main' : 'sub'}
+                    layoutId={node.id}
+                    selectedMainCategory={selectedMainCategory}
+                  />
+                ))}
+              </AnimatePresence>
+            </LayoutGroup>
+          </motion.div>
         </div>
-        
-        <motion.div
-          ref={containerRef}
-          className='relative h-full'
-          style={{
-            minHeight: dimensions.height,
-            maxHeight: "900px",
-          }}
-          // Animate height changes
-          animate={{ height: dimensions.height }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
-          
-          <LayoutGroup id={layoutKey}>
-            <AnimatePresence mode="popLayout">
-              {layout.map((node) => (
-                <CategorySection
-                  key={`${layoutKey}-${node.id}`} // Unique key per view
-                  node={node}
-                  isResizing={isResizing}
-                  ownerProjectToProjectData={ownerProjectToProjectData}
-                  onCategoryClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    handleCategoryClick(node.id, node.label);
-                  }}
-                  onMouseEnter={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setHoveredId(node.id);
-                  }}
-                  onMouseLeave={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setHoveredId(null);
-                  }}
-                  hoveredId={hoveredId}
-                  viewMode={selectedMainCategory === null ? 'main' : 'sub'}
-                  layoutId={node.id} // For morphing effect
-                />
-              ))}
-            </AnimatePresence>
-          </LayoutGroup>
-        </motion.div>
       </div>
-    </div>
+    </MotionConfig>
   );
 };
 
-const ShortMainCategoryNames = {
-}
+const ShortMainCategoryNames = {}
 
 const ShortSubCategoryNames = {
   'Cross-Chain Communication': 'Cross Chain Comms',
@@ -639,9 +682,8 @@ const ShortSubCategoryNames = {
   'Contract Deployments By EOAs': 'EOA Contracts'
 }
 
-
 // ============================================================================
-// Category Section Component
+// Category Section Component (IMPROVED)
 // ============================================================================
 
 interface CategorySectionProps {
@@ -654,6 +696,7 @@ interface CategorySectionProps {
   hoveredId: string | null;
   viewMode: ViewMode;
   layoutId: string;
+  selectedMainCategory: string | null;
 }
 
 const CategorySection = ({
@@ -665,129 +708,55 @@ const CategorySection = ({
   onMouseLeave,
   hoveredId,
   viewMode,
-  layoutId
+  layoutId,
+  selectedMainCategory
 }: CategorySectionProps) => {
   const tiles = generateConstrainedTiles(node.width, node.height, node.apps.length);
 
   return (
     <motion.div
       layoutId={layoutId}
-      className={`group absolute rounded-[15px] border border-color-bg-medium overflow-visible cursor-pointer hover:border-forest-400 z-[1]`}
-      initial={{ opacity: 0, scale: 0.8, borderColor: "rgb(var(--border))" }}
+      className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[1]`}
+      variants={categoryVariants}
+      initial="initial"
       animate={{
+        ...categoryVariants.animate,
         left: node.x,
         top: node.y,
         width: node.width,
         height: node.height,
-        opacity: isResizing ? 0.4 : hoveredId === null ? 1 : 0.5,
-        scale: 1,
       }}
-      exit={{ 
-        opacity: 0, 
-        scale: 0.8,
-        transition: { duration: 0.2 }
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 25,
-        mass: 1,
-      }}
-      whileHover={{ 
-        borderColor: "rgb(var(--ui-hover))",
-        transition: { duration: 0.2 },
-        opacity: 1
-      }}
+      exit="exit"
+      whileHover={viewMode === 'main' ? "hoverMain" : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={viewMode === 'main' ? onCategoryClick : undefined}
     >
       {/* Animated category label */}
-      <motion.div 
-        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover:underline' : ''}`}
+      <motion.div
+        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        {viewMode === 'main' ? ShortMainCategoryNames[node.label] ? ShortMainCategoryNames[node.label] : node.label : ShortSubCategoryNames[node.label] ? ShortSubCategoryNames[node.label] : node.label}
+        {viewMode === 'main' 
+          ? (ShortMainCategoryNames[node.label] || node.label) 
+          : (ShortSubCategoryNames[node.label] || node.label)}
       </motion.div>
 
       {/* Animated app tiles */}
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout" initial={false}>
         {tiles.map((tile, i) => {
           const app = node.apps[i];
           if (!app) return null;
 
           return (
-            <motion.div
+            <AppTile
               key={`${app.ownerProject}-${i}`}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
-                opacity: tile.highlighted ? 1 : 0.3,
-                scale: 1,
-                left: tile.x,
-                top: tile.y,
-              }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{
-                delay: i * 0.02, // Stagger effect
-                duration: 0.3,
-                // type: "spring",
-                stiffness: 300,
-                damping: 20,
-              }}
-              className='absolute w-[62px] h-[62px]'
-            >
-              <GTPTooltipNew
-                size="md"
-                allowInteract={false}
-                placement="bottom-start"
-                trigger={
-                  <Link
-                    href={`/applications/${app.ownerProject}`}
-                    className='flex flex-col items-center justify-center w-full h-full'
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <motion.div 
-                      className="w-[41.57px] h-[41.57px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    >
-                      <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
-                        {app.logoPath ? (
-                          <Image
-                            alt={app.displayName}
-                            src={`https://api.growthepie.com/v1/apps/logos/${app.logoPath}`}
-                            width={21}
-                            height={21}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <GTPIcon
-                            icon="gtp-project-monochrome"
-                            size="sm"
-                            className="!size-[21px] text-[#5A6462]"
-                            containerClassName="flex items-center justify-center"
-                          />
-                        )}
-                      </div>
-                    </motion.div>
-                    <motion.div 
-                      className="text-[10px] w-full h-[19.12px] truncate text-center pt-[4px]"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      {app.displayName}
-                    </motion.div>
-                  </Link>
-                }
-                containerClass="flex flex-col gap-y-[10px]"
-                positionOffset={{ mainAxis: -25, crossAxis: 50 }}
-              >
-                <ApplicationTooltipAlt owner_project={app.ownerProject} key={i} />
-              </GTPTooltipNew>
-            </motion.div>
+              app={app}
+              tile={tile}
+              index={i}
+            />
           );
         })}
       </AnimatePresence>
@@ -796,7 +765,95 @@ const CategorySection = ({
 };
 
 // ============================================================================
-// Tile Generation Utility
+// App Tile Component (NEW: Extracted for better organization)
+// ============================================================================
+
+interface AppTileProps {
+  app: EnrichedApp;
+  tile: { x: number; y: number; highlighted: boolean };
+  index: number;
+}
+
+const AppTile = ({ app, tile, index }: AppTileProps) => {
+  return (
+    <motion.div
+      variants={appTileVariants}
+      initial="initial"
+      animate={{
+        opacity: tile.highlighted ? 1 : 0.3,
+        scale: 1,
+        left: tile.x,
+        top: tile.y,
+        transition: {
+          delay: index * 0.02,
+          duration: 0.3,
+          stiffness: 300,
+          damping: 20,
+        }
+      }}
+      exit="exit"
+      custom={index}
+      className='absolute w-[62px] h-[62px]'
+    >
+      <GTPTooltipNew
+        size="md"
+        allowInteract={false}
+        placement="bottom-start"
+        trigger={
+          <Link
+            href={`/applications/${app.ownerProject}`}
+            className='flex flex-col items-center justify-center w-full h-full'
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <motion.div
+              className="w-[41.57px] h-[41.57px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
+              whileHover="hover"
+              variants={appTileVariants}
+            >
+              <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
+                {app.logoPath ? (
+                  <Image
+                    alt={app.displayName}
+                    src={`https://api.growthepie.com/v1/apps/logos/${app.logoPath}`}
+                    width={21}
+                    height={21}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <GTPIcon
+                    icon="gtp-project-monochrome"
+                    size="sm"
+                    className="!size-[21px] text-[#5A6462]"
+                    containerClassName="flex items-center justify-center"
+                  />
+                )}
+              </div>
+            </motion.div>
+            <motion.div
+              className="text-[10px] w-full h-[19.12px] truncate text-center pt-[4px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              {app.displayName}
+            </motion.div>
+          </Link>
+        }
+        containerClass="flex flex-col gap-y-[10px]"
+        positionOffset={{ mainAxis: -25, crossAxis: 50 }}
+      >
+        <ApplicationTooltipAlt owner_project={app.ownerProject} key={index} />
+      </GTPTooltipNew>
+    </motion.div>
+  );
+};
+
+// ============================================================================
+// Tile Generation Utility (unchanged)
 // ============================================================================
 
 function generateConstrainedTiles(
