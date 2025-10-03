@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { delay } from "lodash";
+ 
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useLocalStorage } from "usehooks-ts";
-import { debounce } from "lodash";
+ 
 import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { OLIContractTooltip, TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
@@ -260,9 +260,57 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const debouncedSetIsOpen = debounce((value: boolean) => {
-    setIsOpen(value);
-  }, 100);
+  // Hover behavior with 300ms delay (and touch guard)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTouchRef = useRef(false);
+  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleTouchStart = () => {
+      isTouchRef.current = true;
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+      touchTimeoutRef.current = setTimeout(() => {
+        isTouchRef.current = false;
+      }, 500);
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+      if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+    };
+  }, []);
+
+  const openWithDelay = () => {
+    if (isTouchRef.current) return;
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    hoverTimeoutRef.current = setTimeout(() => setIsOpen(true), 300);
+  };
+
+  const cancelHover = () => {
+    if (isTouchRef.current) return;
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    // Delay close slightly to allow moving into the panel
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 200);
+  };
 
   return (
     <>
@@ -275,13 +323,8 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           style={{
             backgroundColor: "#344240",
           }}
-          onMouseEnter={() => {
-            if (debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
-          }}
-          onMouseLeave={() => {
-            if (!isOpen) return;
-            debouncedSetIsOpen(false);
-          }}
+          onMouseEnter={openWithDelay}
+          onMouseLeave={cancelHover}
         >
           <div
             className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
@@ -317,13 +360,8 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
-          onMouseEnter={() => {
-            if (debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
-          }}
-          onMouseLeave={() => {
-            if (!isOpen) return;
-            debouncedSetIsOpen(false);
-          }}
+          onMouseEnter={openWithDelay}
+          onMouseLeave={cancelHover}
         >
           <div className="pb-[20px] lg:pb-[16px]">
             <div className="h-[10px] lg:h-[37px]"></div>
