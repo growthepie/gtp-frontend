@@ -295,9 +295,15 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
         </div>
         <div className="flex items-center mb-[30px]">
           <div className="text-[16px]">
-            An overview of {master.chains[chainKey].name} high-level
-            blockspace usage. All expressed in share of chain usage. You can
-            toggle between share of chain usage or absolute numbers.
+            We label smart contracts based on their usage type and aggregate usage per category. 
+            You can toggle between share of chain
+            usage or absolute numbers. The category definitions can 
+            be found <a
+              href="https://github.com/openlabelsinitiative/OLI/blob/main/1_label_schema/tags/valuesets/usage_category.yml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >here</a>.
           </div>
         </div>
 
@@ -309,6 +315,7 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
             data={overviewData}
             master={master.data}
             forceSelectedChain={chainKey}
+            isSingleChainView={true}
           />
         </div>
       </div>

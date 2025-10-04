@@ -1098,6 +1098,7 @@ const Chain = ({ params }: { params: any }) => {
             data={overviewData}
             master={master}
             forceSelectedChain={chainKey}
+            isSingleChainView={true}
           />
         </>
       )}

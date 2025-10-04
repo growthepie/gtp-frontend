@@ -36,6 +36,7 @@ export default function OverviewMetrics({
   setSelectedTimespan,
   forceSelectedChain,
   forceCategory,
+  isSingleChainView,
 }: {
   data: Chains;
   master: MasterResponse;
@@ -43,6 +44,7 @@ export default function OverviewMetrics({
   setSelectedTimespan: (timespan: string) => void;
   forceSelectedChain?: string;
   forceCategory?: string;
+  isSingleChainView?: boolean;
 }) {
   const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
@@ -371,62 +373,66 @@ export default function OverviewMetrics({
               </h2>
             </div>
           </Container> */}
-          {/*Chart*/}
-          {/* {selectedTimespan === "1d" ? (
-            <></>
-          ) : (
-            <Container className="mb-1">
-              <OverviewChart
-                data={data}
-                master={master}
-                selectedTimespan={selectedTimespan}
-                timespans={timespans}
-                setSelectedTimespan={setSelectedTimespan}
-                selectedMode={selectedMode}
-                selectedValue={selectedValue}
-                selectedCategory={selectedCategory}
-                selectedChain={selectedChain}
-                forceSelectedChain={forceSelectedChain}
-                categories={categories}
-                hoveredCategories={hoveredCategories}
-                allCats={allCats}
-                setHoveredChartSeriesId={setHoveredChartSeriesId}
-                hoveredChartSeriesId={hoveredChartSeriesId}
-                forceHoveredChartSeriesId={forceHoveredChartSeriesId}
-              />
-            </Container>
-          )} */}
-          {/*Chart Footer*/}
-          {/* <Container className="w-[100%] ml-[22px]">
-            <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
-              <h1 className="font-bold text-sm pr-2 pl-2">
-                {!allCats
-                  ? master &&
-                    master.blockspace_categories.main_categories[
-                      selectedCategory
-                    ]
-                  : "All"}
-              </h1>
-              {!allCats ? (
-                master &&
-                Object.keys(
-                  master.blockspace_categories["mapping"][selectedCategory],
-                ).map((key) => (
-                  <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
-                    {formatSubcategories(
-                      master.blockspace_categories["mapping"][selectedCategory][
-                        key
-                      ],
-                    )}
+          {/*Chart */}
+          {isSingleChainView && (
+            selectedTimespan === "1d" ? (
+              <></>
+            ) : (
+              <Container className="mb-1">
+                <OverviewChart
+                  data={data}
+                  master={master}
+                  selectedTimespan={selectedTimespan}
+                  timespans={timespans}
+                  setSelectedTimespan={setSelectedTimespan}
+                  selectedMode={selectedMode}
+                  selectedValue={selectedValue}
+                  selectedCategory={selectedCategory}
+                  selectedChain={selectedChain}
+                  forceSelectedChain={forceSelectedChain}
+                  categories={categories}
+                  hoveredCategories={hoveredCategories}
+                  allCats={allCats}
+                  setHoveredChartSeriesId={setHoveredChartSeriesId}
+                  hoveredChartSeriesId={hoveredChartSeriesId}
+                  forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+                />
+              </Container>
+            )
+          )}
+          {/*Selected ubcategories*/}
+          {isSingleChainView && (
+            <Container className="w-[100%] ml-[22px]">
+              <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
+                <h1 className="font-bold text-sm pr-2 pl-2">
+                  {!allCats
+                    ? master &&
+                      master.blockspace_categories.main_categories[
+                        selectedCategory
+                      ]
+                    : "All"}
+                </h1>
+                {!allCats ? (
+                  master &&
+                  Object.keys(
+                    master.blockspace_categories["mapping"][selectedCategory],
+                  ).map((key) => (
+                    <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                      {formatSubcategories(
+                        master.blockspace_categories["mapping"][selectedCategory][
+                          key
+                        ],
+                      )}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-xs px-[4px] py-[5px] mx-[5px]">
+                    All Categories Selected
                   </p>
-                ))
-              ) : (
-                <p className="text-xs px-[4px] py-[5px] mx-[5px]">
-                  All Categories Selected
-                </p>
-              )}
-            </div>
-          </Container> */}
+                )}
+              </div>
+            </Container>
+          )}
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}

@@ -140,10 +140,17 @@ const ChainOverview = () => {
               <EcosystemDropdown />
             </div>
             <div className="flex items-center w-[99%] mx-auto pb-[15px]">
-              <div className="text-[14px]">
-                An overview of chains high-level blockspace usage. You can toggle between share of chain
-                usage or absolute numbers.
-              </div>
+                <div className="text-[14px]">
+                We label smart contracts based on their usage type and aggregate usage per category. 
+                You can toggle between share of chain
+                usage or absolute numbers. The category definitions can 
+                be found <a
+                  href="https://github.com/openlabelsinitiative/OLI/blob/main/1_label_schema/tags/valuesets/usage_category.yml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >here</a>.
+                </div>
             </div>
           </Container>
 
