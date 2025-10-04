@@ -15,7 +15,7 @@ export default function HighlightCards({ metric, icon, value, percentage, chainK
 
         <div className="rounded-[15px] bg-color-bg-medium p-[10px] h-2xl w-full flex justify-between">
             <div className="flex items-center gap-x-[10px]">
-                <GTPIcon icon={"gtp-megaphone"} size="sm" />
+                <GTPIcon icon={icon as GTPIconName} size="sm" />
           
                 <div className="flex flex-col gap-y-[2px] items-start">
                     <div className="heading-small-xs">{metric}</div>

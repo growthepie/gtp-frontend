@@ -2,7 +2,7 @@
 
 import { GTPIcon } from "../../GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
-import { ChainOverview } from "@/lib/chains";
+import { ChainOverview, GetRankingColor } from "@/lib/chains";
 import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse";
 import ReactECharts from "echarts-for-react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
@@ -109,12 +109,15 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     // const decimals = metricData.units.value[showUsd ? "usd" : "eth"].decimals;
 
 
+    // Get ranking color based on the metric's ranking
+    const rankingColor = GetRankingColor(overviewData.data.ranking[metricKey].color_scale * 100);
+
     return (
         <div className="rounded-[15px] bg-color-bg-default p-[10px] w-full flex justify-between h-2xl">
             <div className="flex items-center gap-x-[10px] min-w-[175px]">
                 <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={master.chains[chainKey].colors.dark[0]} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                    <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: master.chains[chainKey].colors.dark[0]}}>
+                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                    <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
                         {overviewData.data.ranking[metricKey].rank}
                     </div>
                 </div>

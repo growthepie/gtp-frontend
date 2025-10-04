@@ -140,12 +140,12 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
     return (
         <div  className="flex flex-col w-full gap-y-[10px]">
             <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <HighlightCards metric="Active Addresses" icon="gtp-metrics-activeaddresses" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <HighlightCards metric="Revenue" icon="gtp-metrics-feespaidbyusers" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <HighlightCards metric="Transaction Count" icon="gtp-metrics-transactioncount" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
             <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
             <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} />
+            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />
             <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />
             <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
             {Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv", "throughput"].includes(metric)).map((metric) => (

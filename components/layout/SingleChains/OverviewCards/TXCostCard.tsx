@@ -7,9 +7,10 @@ import moment from "moment";
 import { useLocalStorage } from "usehooks-ts";
 import { HistoryDots } from "../../EthAgg/HistoryDots";
 import { getGradientColor } from "../../EthAgg/helpers";
+import { GetRankingColor } from "@/lib/chains";
 import { chain } from "lodash";
 
-export default function TXCostCard({ chainKey, chainData, master }: { chainKey: string, chainData: any, master: any }) {
+export default function TXCostCard({ chainKey, chainData, master, overviewData }: { chainKey: string, chainData: any, master: any, overviewData?: any }) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const [txCostHistory, setTxCostHistory] = useState<number[]>([]);
@@ -24,15 +25,18 @@ export default function TXCostCard({ chainKey, chainData, master }: { chainKey: 
         
     }, [chainData]);
 
+    // Get ranking color for transaction costs if overview data is available
+    const rankingColor = overviewData?.data?.ranking?.txcosts 
+        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100)
+        : master.chains[chainKey].colors.dark[0];
     
-  
     return (
         <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-3xl">
             <div className="flex justify-between items-center">
                 <div className="flex gap-x-[10px] h-[28px] items-center ">
                     <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                        <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={master.chains[chainKey].colors.dark[0]} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                        <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{color: master.chains[chainKey].colors.dark[0]}}>12</div>
+                        <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                        <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{color: rankingColor}}>12</div>
                     </div>
                     
                     <div className="heading-large-xs ">Transaction Cost</div>
