@@ -66,10 +66,10 @@ type ViewMode = 'main' | 'sub';
 // ============================================================================
 
 const categoryVariants = {
-  initial: { 
-    opacity: 0, 
-    scale: 0.8, 
-    borderColor: "rgb(var(--bg-medium))" 
+  initial: {
+    opacity: 0,
+    scale: 0.8,
+    borderColor: "rgb(var(--bg-medium))"
   },
   animate: {
     opacity: 1,
@@ -85,10 +85,6 @@ const categoryVariants = {
   exit: {
     opacity: 0,
     scale: 0.8,
-    transition: { duration: 0.2 }
-  },
-  hoverMain: {
-    borderColor: "rgb(var(--ui-hover))",
     transition: { duration: 0.2 }
   }
 };
@@ -495,13 +491,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   // Event Handlers
   // ============================================================================
 
-  const handleCategoryClick = (categoryId: string) => {
-    if (selectedMainCategory === null) {
-      setSelectedMainCategory(categoryId);
-      setShowHint(true);
-      setTimeout(() => setShowHint(false), 3000);
-    }
-  };
+  // Removed: Category click navigation is disabled
 
   const handleBackToOverview = () => {
     setSelectedMainCategory(null);
@@ -520,28 +510,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedMainCategory]);
 
-  // Handle click outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (selectedMainCategory !== null && containerRef.current) {
-        const target = e.target as HTMLElement;
-        if (target === containerRef.current) {
-          handleBackToOverview();
-        }
-      }
-    };
-
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('click', handleClickOutside);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('click', handleClickOutside);
-      }
-    };
-  }, [selectedMainCategory]);
+  // Removed: Click outside handler (navigation now via buttons only)
 
   // Handle container resize (IMPROVED: Using ref for timeout)
   useEffect(() => {
@@ -584,34 +553,70 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   // Render
   // ============================================================================
 
+  // Get main categories for buttons
+  const mainCategories = useMemo(() => {
+    if (!masterData?.blockspace_categories?.main_categories) return [];
+
+    const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
+    if (!blockspaceData) return [];
+
+    return Object.entries(masterData.blockspace_categories.main_categories)
+      .filter(([id]) => {
+        const hasData = blockspaceData.some(
+          item => item[chainDataOverview.data.blockspace.blockspace.types.indexOf('main_category_id')] === id
+        );
+        const hasApps = enrichedApps.some(app =>
+          masterData.blockspace_categories.main_categories[id] === app.mainCategory
+        );
+        return hasData && hasApps && id !== 'unlabeled';
+      })
+      .map(([id, label]) => ({ id, label }));
+  }, [masterData, chainDataOverview, enrichedApps]);
+
   return (
     <MotionConfig reducedMotion="user">
       <div className="group flex flex-col w-full gap-y-[15px] h-full">
         {/* Header with category filters */}
-        <div className="@container flex items-center gap-x-[5px]">
-          <div 
-            className={`heading-large-md ${selectedMainCategory !== null ? 'group-hover:underline cursor-pointer' : ''}`} 
-            onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}
-          >
+        <div className="@container flex gap-x-[10px]">
+          <div className="heading-large-md">
             Applications
           </div>
-          <AnimatePresence initial={false}>
-            {selectedMainCategory && (
-              <motion.div
-                className="text-lg whitespace-nowrap h-[24px]"
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                exit={{ opacity: 0, width: 0 }}
-              >
-                / {masterData?.blockspace_categories.main_categories[selectedMainCategory]}
-              </motion.div>
-            )}
-          </AnimatePresence>
+
+          {/* Category buttons */}
+          <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
+            <button
+              className={`flex h-[24px] px-[10px] text-xs min-w-fit justify-center items-center
+                border-r-[0.5px] border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30 border-dotted
+                rounded-tl-[15px] @[650px]:rounded-l-full
+                ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+              onClick={() => setSelectedMainCategory(null)}
+            >
+              All
+            </button>
+            {Object.keys(masterData?.blockspace_categories.main_categories || {})
+              .filter((categoryId) => categoryId !== 'unlabeled')
+              .map((categoryId, index) => (
+                <button
+                  key={categoryId}
+                  className={`flex whitespace-nowrap h-[24px] px-[10px] text-xxs @[650px]:text-xs min-w-fit justify-center items-center
+                    border-dotted
+                    ${index < 3 ? 'border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30' : ''}
+                    ${categoryId === 'social' ? 'rounded-bl-[15px] @[650px]:rounded-none' : ''}
+                    ${categoryId === 'nft' ? 'rounded-tr-[15px] @[650px]:rounded-none' : ''}
+                    ${categoryId === 'cross_chain' ? 'rounded-br-[15px] @[650px]:rounded-r-full' : ''}
+                    ${index < 2 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
+                    ${index > 2 && index < 6 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
+                    ${selectedMainCategory === categoryId ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                  onClick={() => setSelectedMainCategory(categoryId)}
+                >
+                  {masterData?.blockspace_categories.main_categories[categoryId]}
+                </button>
+              ))}
+          </div>
         </div>
 
         {/* Animated Treemap visualization */}
-        <div className="relative flex-1 w-full h-full" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+        <div className="relative flex-1 w-full h-full">
           <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -639,11 +644,6 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
                     node={node}
                     isResizing={isResizing}
                     ownerProjectToProjectData={ownerProjectToProjectData}
-                    onCategoryClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleCategoryClick(node.id);
-                    }}
                     onMouseEnter={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -690,7 +690,6 @@ interface CategorySectionProps {
   node: LayoutNode;
   isResizing: boolean;
   ownerProjectToProjectData: Record<string, any>;
-  onCategoryClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => void;
   hoveredId: string | null;
@@ -703,7 +702,6 @@ const CategorySection = ({
   node,
   isResizing,
   ownerProjectToProjectData,
-  onCategoryClick,
   onMouseEnter,
   onMouseLeave,
   hoveredId,
@@ -716,7 +714,7 @@ const CategorySection = ({
   return (
     <motion.div
       layoutId={layoutId}
-      className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[1]`}
+      className={`group/category-section absolute rounded-[15px] border overflow-visible z-[1]`}
       variants={categoryVariants}
       initial="initial"
       animate={{
@@ -727,20 +725,18 @@ const CategorySection = ({
         height: node.height,
       }}
       exit="exit"
-      whileHover={viewMode === 'main' ? "hoverMain" : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={viewMode === 'main' ? onCategoryClick : undefined}
     >
       {/* Animated category label */}
       <motion.div
-        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
+        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px]`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        {viewMode === 'main' 
-          ? (ShortMainCategoryNames[node.label] || node.label) 
+        {viewMode === 'main'
+          ? (ShortMainCategoryNames[node.label] || node.label)
           : (ShortSubCategoryNames[node.label] || node.label)}
       </motion.div>
 
