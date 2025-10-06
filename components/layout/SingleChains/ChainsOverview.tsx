@@ -100,17 +100,11 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
         isValidating: masterValidating,
       } = useSWR<MasterResponse>(MasterURL);
 
-    const {
-        data: usageData,
-        error: usageError,
-        isLoading: usageLoading,
-        isValidating: usageValidating,
-    } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
     const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
 
 
-    console.log(oldMaster)
+    
    
 
    
@@ -188,7 +182,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
  
     return (
         <>
-        {usageData && oldMaster && chainDataOverview && (
+        { oldMaster && chainDataOverview && (
         <div className="@container flex flex-col w-full gap-[15px]">
             <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
             <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
