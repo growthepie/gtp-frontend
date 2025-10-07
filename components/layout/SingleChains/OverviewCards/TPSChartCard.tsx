@@ -45,7 +45,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
   return (
     <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-4xl">
       <div className="flex gap-x-[10px] h-[28px] items-center ">
-        <GTPIcon icon={"gtp-metrics-transactioncount"} size="sm" />
+        <GTPIcon icon="gtp-metrics-transactionspersecond" size="sm" />
         <div className="heading-large-xs ">Transactions Per Second</div>
       </div>
       <div className={`relative transition-height duration-500 w-full h-[54px] overflow-visible`}>
@@ -82,7 +82,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)}</div>
                   <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">Current TPS</div>
                 </div>
-                <GTPIcon icon={"gtp-realtime"} size="sm" className="mb-0.5" />
+                <GTPIcon icon={"gtp-realtime"} size="sm" className="mb-0.5 animate-pulse" />
            </div>
 
         </div>

@@ -70,7 +70,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData }
                 <div className="flex flex-col gap-y-[2px] items-end group">
                     <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
                         <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{showUsd ? "$" + chainData["tx_cost_median_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_median"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>}</div>
-                        <GTPIcon icon={"gtp-realtime"} size="sm" />
+                        <GTPIcon icon={"gtp-realtime"} size="sm" className="animate-pulse" />
                     </div>
                     <div className="relative min-w-[80px] flex justify-end text-right">
                         <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Median Fee</div>

@@ -4,20 +4,19 @@
 
 @layer base {
   :root {
-    --bg-default: 245 250 248; /* #f5faf8 | rgb(245, 250, 248) */
-    --bg-medium: 230 234 232; /* #e6eae8 | rgb(230, 234, 232) */
-    --ui-hover: 165 168 167; /* #a5a8a7 | rgb(165, 168, 167) */
-    --ui-active: 233 239 236; /* #e9efec | rgb(233, 239, 236) */
-    --ui-shadow: 209 209 209; /* #d1d1d1 | rgb(209, 209, 209) */
+    --bg-default: 252 253 253; /* #fcfdfd | rgb(252, 253, 253) */
+    --bg-medium: 236 243 243; /* #ecf3f3 | rgb(236, 243, 243) */
+    --ui-hover: 200 218 218; /* #c8dada | rgb(200, 218, 218) */
+    --ui-active: 229 240 240; /* #e5f0f0 | rgb(229, 240, 240) */
+    --ui-shadow: 215 218 218; /* #d7dada | rgb(215, 218, 218) */
     --text-primary: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
-    --text-black: 17 17 17; /* #111111 | rgb(17, 17, 17) */
+    --text-secondary: 121 139 137; /* #798b89 | rgb(121, 139, 137) */
     --accent-red: 232 60 82; /* #e83c52 | rgb(232, 60, 82) */
     --accent-yellow: 229 179 0; /* #e5b300 | rgb(229, 179, 0) */
     --accent-petrol: 14 111 122; /* #0e6f7a | rgb(14, 111, 122) */
     --accent-turquoise: 0 207 197; /* #00cfc5 | rgb(0, 207, 197) */
     --positive: 24 169 87; /* #18a957 | rgb(24, 169, 87) */
     --negative: 217 44 44; /* #d92c2c | rgb(217, 44, 44) */
-    --border: 199 210 205; /* #c7d2cd | rgb(199, 210, 205) */
     --chains-arbitrum-nova: 171 58 7; /* #ab3a07 | rgb(171, 58, 7) */
     --chains-arbitrum-one: 8 110 201; /* #086ec9 | rgb(8, 110, 201) */
     --chains-b3: 51 104 239; /* #3368ef | rgb(51, 104, 239) */
@@ -55,7 +54,7 @@
     --chains-soneium: 56 55 53; /* #383735 | rgb(56, 55, 53) */
     --chains-starknet: 184 36 18; /* #b82412 | rgb(184, 36, 18) */
     --chains-swell: 0 90 244; /* #005af4 | rgb(0, 90, 244) */
-    --chains-taiko: 154 15 102; /* #9a0f66 | rgb(154, 15, 102) */
+    --chains-taiko: 186 18 122; /* #ba127a | rgb(186, 18, 122) */
     --chains-unichain: 195 0 124; /* #c3007c | rgb(195, 0, 124) */
     --chains-world: 120 115 103; /* #787367 | rgb(120, 115, 103) */
     --chains-zircuit: 1 111 84; /* #016f54 | rgb(1, 111, 84) */
@@ -88,14 +87,13 @@
     --ui-active: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
     --ui-shadow: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
     --text-primary: 205 216 211; /* #cdd8d3 | rgb(205, 216, 211) */
-    --text-black: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
+    --text-secondary: 75 83 79; /* #4b534f | rgb(75, 83, 79) */
     --accent-red: 254 84 104; /* #fe5468 | rgb(254, 84, 104) */
     --accent-yellow: 255 223 39; /* #ffdf27 | rgb(255, 223, 39) */
     --accent-petrol: 16 128 140; /* #10808c | rgb(16, 128, 140) */
     --accent-turquoise: 29 247 239; /* #1df7ef | rgb(29, 247, 239) */
     --positive: 76 255 126; /* #4cff7e | rgb(76, 255, 126) */
     --negative: 255 56 56; /* #ff3838 | rgb(255, 56, 56) */
-    --border: 52 66 64; /* #344240 | rgb(52, 66, 64) */
     --chains-arbitrum-nova: 244 152 110; /* #f4986e | rgb(244, 152, 110) */
     --chains-arbitrum-one: 106 217 255; /* #6ad9ff | rgb(106, 217, 255) */
     --chains-b3: 161 185 248; /* #a1b9f8 | rgb(161, 185, 248) */

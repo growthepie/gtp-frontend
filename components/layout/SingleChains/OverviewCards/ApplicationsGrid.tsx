@@ -105,6 +105,10 @@ const appTileVariants = {
   hover: {
     scale: 1.1,
     transition: { type: "spring", stiffness: 400, damping: 17 }
+  },
+  hoverMain: {
+    borderColor: "rgb(var(--ui-hover))",
+    transition: { duration: 0.2 }
   }
 };
 
@@ -491,7 +495,13 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   // Event Handlers
   // ============================================================================
 
-  // Removed: Category click navigation is disabled
+  const handleCategoryClick = (categoryId: string) => {
+    if (selectedMainCategory === null) {
+      setSelectedMainCategory(categoryId);
+      setShowHint(true);
+      setTimeout(() => setShowHint(false), 3000);
+    }
+  };
 
   const handleBackToOverview = () => {
     setSelectedMainCategory(null);
@@ -510,7 +520,28 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedMainCategory]);
 
-  // Removed: Click outside handler (navigation now via buttons only)
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectedMainCategory !== null && containerRef.current) {
+        const target = e.target as HTMLElement;
+        if (target === containerRef.current) {
+          handleBackToOverview();
+        }
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('click', handleClickOutside);
+      }
+    };
+  }, [selectedMainCategory]);
 
   // Handle container resize (IMPROVED: Using ref for timeout)
   useEffect(() => {
@@ -616,7 +647,7 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
         </div>
 
         {/* Animated Treemap visualization */}
-        <div className="relative flex-1 w-full h-full">
+        <div className="relative flex-1 w-full h-full" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -644,6 +675,11 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
                     node={node}
                     isResizing={isResizing}
                     ownerProjectToProjectData={ownerProjectToProjectData}
+                    onCategoryClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleCategoryClick(node.id);
+                    }}
                     onMouseEnter={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -690,6 +726,7 @@ interface CategorySectionProps {
   node: LayoutNode;
   isResizing: boolean;
   ownerProjectToProjectData: Record<string, any>;
+  onCategoryClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => void;
   hoveredId: string | null;
@@ -702,6 +739,7 @@ const CategorySection = ({
   node,
   isResizing,
   ownerProjectToProjectData,
+  onCategoryClick,
   onMouseEnter,
   onMouseLeave,
   hoveredId,
@@ -714,7 +752,7 @@ const CategorySection = ({
   return (
     <motion.div
       layoutId={layoutId}
-      className={`group/category-section absolute rounded-[15px] border overflow-visible z-[1]`}
+      className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[1]`}
       variants={categoryVariants}
       initial="initial"
       animate={{
@@ -725,12 +763,14 @@ const CategorySection = ({
         height: node.height,
       }}
       exit="exit"
+      whileHover={viewMode === 'main' ? "hoverMain" : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={viewMode === 'main' ? onCategoryClick : undefined}
     >
       {/* Animated category label */}
       <motion.div
-        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px]`}
+        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
