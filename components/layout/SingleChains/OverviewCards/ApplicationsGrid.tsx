@@ -9,11 +9,13 @@ import { useMaster } from '@/contexts/MasterContext';
 import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/ProjectsMetadataContext';
 import { ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import Link from 'next/link';
-import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../../ChartWatermark';
+import { isMobile } from 'react-device-detect';
+import { useTheme } from 'next-themes';
 
 // ============================================================================
 // Types & Interfaces
@@ -243,9 +245,10 @@ function buildCategoryNodes(
 interface DensePackedTreeMapProps {
   chainKey: string;
   chainData: any;
+  master: MasterResponse;
 }
 
-const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
@@ -603,13 +606,17 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
       })
       .map(([id, label]) => ({ id, label }));
   }, [masterData, chainDataOverview, enrichedApps]);
+  const { theme } = useTheme(); 
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="group flex flex-col w-full gap-y-[15px] h-full">
         {/* Header with category filters */}
-        <div className="@container flex gap-x-[10px]">
-          <div className="heading-large-md">
+        <div className="@container flex gap-x-[5px]">
+          <GTPIcon icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName} size="sm" className=" w-[15px] h-[15px]" containerClassName="flex items-center justify-center w-[24px] h-[24px]" 
+          style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
+          />
+          <div className="heading-large-md mr-[5px]">
             Applications
           </div>
 
@@ -694,12 +701,39 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
                     viewMode={selectedMainCategory === null ? 'main' : 'sub'}
                     layoutId={node.id}
                     selectedMainCategory={selectedMainCategory}
+            
                   />
                 ))}
               </AnimatePresence>
             </LayoutGroup>
           </motion.div>
         </div>
+      </div>
+      <div className="flex items-center justify-end pt-[10px] pr-[0px] w-full">
+          <div className='w-[15px] h-fit z-30'>
+              <GTPTooltipNew
+                  placement="top-end"
+                  size="md"
+                  allowInteract={true}
+                  trigger={
+                  <div
+                      className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                      data-tooltip-trigger
+                  >
+                      <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                  </div>
+                  }
+                  containerClass="flex flex-col gap-y-[10px]"
+                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+              >
+                  <div>
+                  <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                      {"Tooltip content"}
+                  </TooltipBody>
+                  </div>
+              </GTPTooltipNew>
+          </div>
       </div>
     </MotionConfig>
   );
@@ -733,6 +767,7 @@ interface CategorySectionProps {
   viewMode: ViewMode;
   layoutId: string;
   selectedMainCategory: string | null;
+
 }
 
 const CategorySection = ({
@@ -745,10 +780,22 @@ const CategorySection = ({
   hoveredId,
   viewMode,
   layoutId,
-  selectedMainCategory
+  selectedMainCategory,
+
 }: CategorySectionProps) => {
   const tiles = generateConstrainedTiles(node.width, node.height, node.apps.length);
+  const categoryIcon = {
+    'social': 'gtp-socials',
+    'nft': 'gtp-nft',
+    'cross_chain': 'gtp-crosschain',
+    'defi': 'gtp-defi',
+    'cefi': 'gtp-cefi',
+    'utility': 'gtp-utilities',
+    'token_transfers': 'gtp-tokentransfers',
 
+  }
+
+  
   return (
     <motion.div
       layoutId={layoutId}
@@ -776,8 +823,16 @@ const CategorySection = ({
         transition={{ delay: 0.1 }}
       >
         {viewMode === 'main'
-          ? (ShortMainCategoryNames[node.label] || node.label)
+        
+          ? <div className='flex items-center gap-x-[5px]'>
+              {ShortMainCategoryNames[node.label] || node.label} 
+              <GTPIcon icon={`${categoryIcon[node.id]}` as GTPIconName} size="sm"
+                className="w-[15px] h-[15px]"
+                containerClassName="flex items-center justify-center w-[24px] h-[24px]"
+              />
+            </div>
           : (ShortSubCategoryNames[node.label] || node.label)}
+          
       </motion.div>
 
       {/* Animated app tiles */}

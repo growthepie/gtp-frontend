@@ -16,7 +16,8 @@ import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ChainOverview } from "@/lib/chains";
 import { LifetimeAchievments } from "./OverviewCards/Achievments";
-
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
+import { useMediaQuery } from "usehooks-ts";
 
 
 const socials = {
@@ -43,6 +44,7 @@ const socials = {
 } as const;
 
 function dataAvailToArray(x: string) {
+ 
     let retObject: { icon: string; label: string }[] = [];
     if (typeof x === "string") {
       // Ensure x is a string
@@ -102,7 +104,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
 
 
     const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
-
+    const isMobile = useMediaQuery("(max-width: 767px)");
 
     
    
@@ -194,10 +196,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     </div>
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px]`}>
                         <ProjectsMetadataProvider>
-                            <ApplicationsGrid chainKey={chainKey} chainData={chainData} />
+                            <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={oldMaster} />
                         </ProjectsMetadataProvider>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default  py-[15px] h-[218px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px]  py-[15px] h-[218px]`}>
                         <div className="px-[30px] heading-large-md">Usage Breakdown</div>
                         <RowProvider
                             value={{
@@ -222,6 +224,32 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                             >
                             <SingleRowContainer />
                         </RowProvider>
+                        <div className="flex items-center justify-end pr-[15px]  w-full">
+                            <div className='w-[15px] h-fit z-30'>
+                                <GTPTooltipNew
+                                    placement="top-end"
+                                    size="md"
+                                    allowInteract={true}
+                                    trigger={
+                                    <div
+                                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                                        data-tooltip-trigger
+                                    >
+                                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                                    </div>
+                                    }
+                                    containerClass="flex flex-col gap-y-[10px]"
+                                    positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                                >
+                                    <div>
+                                    <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                                        {"Tooltip content"}
+                                    </TooltipBody>
+                                    </div>
+                                </GTPTooltipNew>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
