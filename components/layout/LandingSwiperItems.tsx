@@ -74,7 +74,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
 
 const quickBiteIds = ["anniversary-report"];
 
-const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: string }) => {
+const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
   return (
     <Link 
@@ -84,7 +84,7 @@ const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: st
         background: `url(${quickBite.image}) no-repeat center center / cover`,
       }}
     >
-        <div className="heading-large-md z-10">{quickBite.title}</div>
+        <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
         <div className="flex justify-end">
           <TitleButtonLink label="Read our Ecosystem Report" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
         </div>
@@ -141,7 +141,7 @@ export default function LandingSwiperItems() {
         {quickBiteItems.map(({slug, quickBite}) => (
           <SplideSlide key={slug}>
             <div className="group w-full">
-              <QuickBiteCard quickBite={quickBite} slug={slug} />
+              <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
             </div>
           </SplideSlide>
         ))}
