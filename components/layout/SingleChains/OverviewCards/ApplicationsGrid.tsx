@@ -13,7 +13,7 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
 import { GTPIconName } from '@/icons/gtp-icon-names';
-import ChartWatermark from '../../ChartWatermark';
+import ChartWatermark, { ChartWatermarkWithMetricName } from '../../ChartWatermark';
 import { isMobile } from 'react-device-detect';
 import { useTheme } from 'next-themes';
 
@@ -655,7 +655,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
         {/* Animated Treemap visualization */}
         <div className="relative flex-1 w-full h-full" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
-          <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
+          {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
               size="md" 
@@ -663,9 +663,9 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               containerClassName='!size-[200px]' 
               style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} 
             />
-          </div>
+          </div> */}
           <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
-            <ChartWatermark className='w-[128.67px] md:w-[192.87px] text-color-text-primary/5 z-[2]' />
+            <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2]' metricName={`${masterData?.chains[chainKey].name} Applications`} />
           </div>
 
           <motion.div
