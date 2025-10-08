@@ -23,7 +23,7 @@ interface AchievmentsData {
 
 export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, master: MasterResponse}) => {
 
-    const showUsd = useLocalStorage("showUsd", true);
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     // Custom format function for achievement numbers
     const formatNumber = (value: number): string => {
@@ -109,6 +109,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
         };
     };
 
+
     
     return(
         <div className="flex flex-col w-full gap-y-[15px]">
@@ -116,24 +117,28 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
             <div className="flex items-start gap-x-[10px]">
                 {Object.keys(data.lifetime).map((key) => {
                     
-                    const isCurrency = Object.keys(master.metrics[key].units).includes("usd" );
+                    const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
 
 
+
+                    
+
+                
                     return (
                     <div className="flex flex-col w-full gap-y-[10px]" key={key + "lifetime"}>
                         <div className="flex w-full h-[100px] items-center justify-center overflow-hidden relative -ml-[25px]">
                             <div className="pt-[20px]">
                                 <ReactECharts 
-                                    option={getChartOptions(data.lifetime[key][isCurrency ? showUsd ? "usd" : "eth" : "value"].percent_to_next_level)} 
+                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level)} 
                                     style={{ width: '80px', height: '100%' }}
                                 />
                             </div>
                             <div className="absolute top-[15px] left-[25px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full">
-                                <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][isCurrency ? showUsd ? "usd" : "eth" : "value"].level}</div>
+                                <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
                                 <div className="text-xxxs text-color-ui-hover">Level</div>
                             </div>
                             <div className="absolute flex flex-col justify-center items-center right-0 left-0 top-[50%]">
-                                <div className="numbers-sm">{formatNumber(data.lifetime[key][isCurrency ? showUsd ? "usd" : "eth" : "value"].total_value)}</div>
+                                <div className="numbers-sm">{formatNumber(data.lifetime[key][valueType].total_value)}</div>
                                 <GTPIcon icon={"gtp-metrics-onchainprofit-monochrome"} size="sm" />
                             </div>
                         </div>
