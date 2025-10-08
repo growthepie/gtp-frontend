@@ -19,6 +19,7 @@ export default function RowContainer() {
     setAllCats,
     hoverCategory,
     unhoverCategory,
+    includeMarginBottom = true,
   } = useRowContext() as RowContainerInterface;
 
  
@@ -125,7 +126,7 @@ export default function RowContainer() {
       {/* <colorful rows> */}
       {/* {selectedScale === "gasfees" ? ( */}
 
-      <div className="flex flex-col space-y-[5px]  mb-8 pb-2.5">
+      <div className={`flex flex-col space-y-[5px] pb-2.5 ${includeMarginBottom ? "mb-8" : ""}`}>
         
        
           

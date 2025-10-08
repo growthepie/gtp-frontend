@@ -17,6 +17,7 @@ export interface RowContainerInterface {
   setAllCats: (cats: boolean) => void;
   hoverCategory: (category: string) => void; // Function to hover category
   unhoverCategory: (category: string) => void; // Function to unhover category
+  includeMarginBottom: boolean;
 }
 
 export interface RowChildrenInterface {

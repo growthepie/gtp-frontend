@@ -18,6 +18,7 @@ import { ChainOverview } from "@/lib/chains";
 import { LifetimeAchievments } from "./OverviewCards/Achievments";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
 import { useMediaQuery } from "usehooks-ts";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 
 const socials = {
@@ -199,31 +200,35 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                             <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={oldMaster} />
                         </ProjectsMetadataProvider>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px]  py-[15px] h-[218px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
                         <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                        <RowProvider
-                            value={{
-                                master: oldMaster,
-                                data: chainDataOverview.data.blockspace.blockspace,
-                                selectedMode: "txcount_share",
-                                forceSelectedChain: "",
-                                isCategoryHovered: isCategoryHovered, 
-                                selectedCategory: selectedCategory,
-                                selectedChain: chainKey,
-                                selectedTimespan: "max",
-                                selectedValue: "share",
-                                categories: categories,
-                                allCats: false              ,
-                                setSelectedChain: () => {},
-                                setSelectedCategory: setSelectedCategory,
-                                setAllCats: () => {},
-                                hoverCategory: hoverCategory,
-                                unhoverCategory: unhoverCategory,
-                                
-                            }}
-                            >
-                            <SingleRowContainer />
-                        </RowProvider>
+                        <HorizontalScrollContainer paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                            <div className="w-[954px]">
+                                <RowProvider
+                                    value={{
+                                        master: oldMaster,
+                                        data: chainDataOverview.data.blockspace.blockspace,
+                                        selectedMode: "txcount_share",
+                                        forceSelectedChain: "",
+                                        isCategoryHovered: isCategoryHovered, 
+                                        selectedCategory: selectedCategory,
+                                        selectedChain: chainKey,
+                                        selectedTimespan: "max",
+                                        selectedValue: "share",
+                                        categories: categories,
+                                        allCats: false              ,
+                                        setSelectedChain: () => {},
+                                        setSelectedCategory: setSelectedCategory,
+                                        setAllCats: () => {},
+                                        hoverCategory: hoverCategory,
+                                        unhoverCategory: unhoverCategory,
+                                        includeMarginBottom: false,
+                                    }}
+                                    >
+                                    <SingleRowContainer />
+                                </RowProvider>
+                            </div>
+                        </HorizontalScrollContainer>
                         <div className="flex items-center justify-end pr-[15px]  w-full">
                             <div className='w-[15px] h-fit z-30'>
                                 <GTPTooltipNew
