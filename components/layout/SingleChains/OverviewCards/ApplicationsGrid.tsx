@@ -825,11 +825,12 @@ const CategorySection = ({
         {viewMode === 'main'
         
           ? <div className='flex items-center gap-x-[5px]'>
-              {ShortMainCategoryNames[node.label] || node.label} 
               <GTPIcon icon={`${categoryIcon[node.id]}` as GTPIconName} size="sm"
                 className="w-[15px] h-[15px]"
                 containerClassName="flex items-center justify-center w-[24px] h-[24px]"
               />
+              <div className=''>{ShortMainCategoryNames[node.label] || node.label}</div>
+
             </div>
           : (ShortSubCategoryNames[node.label] || node.label)}
           
