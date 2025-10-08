@@ -46,9 +46,12 @@ interface HistoryArrayItem {
 }
 
 
-const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: string }) => {
+const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoContent?: string, leftIcon?: string }) => {
     return (
-        <div className={`flex items-center gap-x-[5px] w-full px-[10px] text-[#5A6462] ${title ? "h-fit" : "h-[0px] overflow-y-visible"}`}>
+        <div className={`flex items-center gap-x-[10px] w-full px-[10px] text-[#5A6462] ${title ? "h-fit" : "h-[0px] overflow-y-visible"}`}>
+            {leftIcon && (
+                <GTPIcon icon={leftIcon as GTPIconName} size="md" containerClassName="!size-[28px] flex items-center justify-center" />
+            )}
             <div 
                 className="w-full h-[1px]" 
                 style={{
@@ -57,25 +60,26 @@ const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: s
                     backgroundRepeat: 'repeat-x'
                 }}
             />
+            <div className="flex-1 flex items-center gap-x-[5px]">
             {title && (
                 <div className="heading-large-xxs h-[17px] flex items-center whitespace-nowrap pr-[5px]">{title}</div>
             )}
             {infoContent && (
             <div className='w-[15px] h-fit z-30'>
                 <GTPTooltipNew
-                    placement="top-start"
+                    placement="bottom-start"
                     size="md"
                     allowInteract={true}
                     trigger={
                         <div
-                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                         data-tooltip-trigger
                         >
                         <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                         </div>
                     }
                     containerClass="flex flex-col gap-y-[10px]"
-                    positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                    positionOffset={{ mainAxis: -20, crossAxis: 20 }}
 
                 >
                     <div>
@@ -86,6 +90,7 @@ const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: s
                 </GTPTooltipNew>
             </div>
             )}
+            </div>
         </div>
     )
 }
@@ -139,10 +144,11 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
   if(!chainDataTPS || !chainDataOverview) return null;
     return (
         <div  className="flex flex-col w-full gap-y-[10px]">
-            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." />
-            <HighlightCards metric="Active Addresses" icon="gtp-metrics-activeaddresses" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Revenue" icon="gtp-metrics-feespaidbyusers" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Transaction Count" icon="gtp-metrics-transactioncount" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." leftIcon={"gtp-megaphone"} />
+            {Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
+                <HighlightCards key={metric} metric={metric} icon="gtp-metrics-activeaddresses" chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={metric} />
+            ))}
+            
             <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
             <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
             <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />

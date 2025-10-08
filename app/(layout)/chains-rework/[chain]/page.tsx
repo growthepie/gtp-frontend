@@ -401,7 +401,7 @@ const Chain = ({ params }: { params: any }) => {
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className="-mt-[25px]">
+            <div className="">
               {TabContent}
             </div>
             <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />

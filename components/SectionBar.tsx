@@ -8,7 +8,7 @@ export function SectionBar({ children }: { children: React.ReactNode }) {
     
     return(
         <div className={`${isMobile ? "flex gap-[5px] justify-start overflow-clip" : "grid grid-flow-col auto-cols-fr gap-[5px]"} w-full h-[44px] relative items-center`}>
-            <div className="absolute w-full h-full px-[7px]">
+            <div className="absolute -bottom-[22px] left-0 w-full h-full px-[7px]">
                 <div className="bg-color-bg-default rounded-full h-[24px] absolute w-[99%] overflow-clip"
                 style={{
                     height: isMobile ? "0px" : "24px",
@@ -26,21 +26,22 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
     const mobileWidth = 10 * header.length;
 
     return(
-        <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full 
+        <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full
+             ${!isLocked &&  "cursor-pointer"}
              ${isSelected ? "bg-color-ui-active outline outline-2 outline-[#344240] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] outline-0 outline-[#1F2726] w-full hover:bg-color-ui-hover bg-color-bg-medium hover:outline-2 hover:h-[42px] hover:heading-large-md"} 
              ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
              ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
              ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
-             ${isMobile ? "flex-shrink flex-grow-0 basis-auto bottom-[0px]" : "flex-1 bottom-[22px] shadow-xl shadow-[#1F2726]"}`}
+             ${isMobile ? "flex-shrink flex-grow-0 basis-auto bottom-[0px]" : "flex-1 sbottom-[22px] shadow-xl shadow-[#1F2726]"}`}
              
             style={{
                 zIndex: !isSelected && !isHovered ? 10 * index : isHovered ? 110 : 100,
                 fontSize: !isSelected ? 'clamp(14px, 2vw, 16px)' : undefined
             }}
         >
-            <div className={`flex items-center justify-center h-full ${isLocked ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
+            <div className={`flex items-center justify-center h-full ${isLocked || comingSoon ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
                 <GTPIcon 
-                    icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} 
+                    icon={`${icon}${isLocked || comingSoon ? "-monochrome" : ""}` as GTPIconName} 
                     style={{ color: iconColor }} 
                     className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "!size-[0px] opacity-0" : ""}`}
                     containerClassName={`flex items-center justify-center w-fit h-fit   `}

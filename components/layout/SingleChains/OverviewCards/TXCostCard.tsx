@@ -18,63 +18,71 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData }
     const [txCostHoverIndex, setTxCostHoverIndex] = useState<number | null>(null);
 
     useEffect(() => {
- 
+
         let history = [...txCostHistory, chainData["tx_cost_median"]];
         history = history.slice(-24);
         setTxCostHistory(history);
-        
+
     }, [chainData]);
 
+
     // Get ranking color for transaction costs if overview data is available
-    const rankingColor = overviewData?.data?.ranking?.txcosts 
+    const rankingColor = overviewData?.data?.ranking?.txcosts
         ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100)
         : master.chains[chainKey].colors.dark[0];
-    
+
     return (
-        <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-3xl">
+        <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[86px]">
             <div className="flex justify-between items-center">
-                <div className="flex gap-x-[10px] h-[28px] items-center ">
-                    <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                        <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                        <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{color: rankingColor}}>12</div>
+                <div className="flex gap-x-[10px] h-[28px] items-center">
+                    <div className="!size-[28px] relative flex items-center justify-center">
+                        <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
+                            <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                            <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{ color: rankingColor }}>12</div>
+                        </div>
                     </div>
-                    
+
                     <div className="heading-large-xs ">Transaction Cost</div>
                 </div>
                 <div className="w-[150px] flex items-center justify-center gap-x-[2px]">
                     <HistoryDots data={txCostHistory} selectedIndex={txCostSelectedIndex} hoverIndex={txCostHoverIndex} onSelect={setTxCostSelectedIndex} onHover={setTxCostHoverIndex} getGradientColor={getGradientColor} />
                 </div>
             </div>
-            <div className="flex justify-between items-center pl-[40px]">
-                <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_erc20_transfer_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_erc20_transfer"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
-                    <div className="relative min-w-[80px]">
-                        <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">ERC-20 Transfer</div>
-                        <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["erc20_transfer"]).format("D/M/Y HH:mm UTC")}</div>
+            <div className="flex justify-end flex-wrap ">
+                <div className="w-[50px]"></div>
+                <div className="flex flex-col md:flex-row flex-1 gap-y-[10px]">
+                    <div className="flex flex-col gap-y-[2px] group flex-1">
+                        <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_erc20_transfer_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_erc20_transfer"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
+                        <div className="relative min-w-[80px]">
+                            <div className="heading-small-xxxs text-[#5A6462]">ERC-20 Transfer</div>
+                            {/* <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["erc20_transfer"]).format("D/M/Y HH:mm UTC")}</div> */}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-y-[2px] group flex-1 ">
+                        <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_swap_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_swap"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
+                        <div className="relative min-w-[80px]">
+                            <div className="heading-small-xxxs text-[#5A6462]">Swap Fee</div>
+                            {/* <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div> */}
+                        </div>
                     </div>
                 </div>
-                <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_swap_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_swap"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
-                    <div className="relative min-w-[80px]">
-                        <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Swap Fee</div>
-                        <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div>
+                <div className="flex flex-col-reverse md:flex-row flex-1 gap-y-[10px]">
+                    <div className="flex flex-col gap-y-[2px] group flex-1 min-w-[110px] items-end md:items-start">
+                        <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_avg_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_avg"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
+                        <div className="relative md:min-w-[80px]">
+                            <div className="heading-small-xxxs text-[#5A6462]">Average Fee</div>
+                            {/* <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div> */}
+                        </div>
                     </div>
-                </div>
-                <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_avg_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_avg"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
-                    <div className="relative min-w-[80px]">
-                        <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Average Fee</div>
-                        <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-y-[2px] items-end group">
-                    <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
-                        <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{showUsd ? "$" + chainData["tx_cost_median_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_median"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>}</div>
-                        <GTPIcon icon={"gtp-realtime"} size="sm" className="animate-pulse" />
-                    </div>
-                    <div className="relative min-w-[80px] flex justify-end text-right">
-                        <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Median Fee</div>
-                        <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div>
+                    <div className="flex flex-col gap-y-[2px] items-end group min-w-[110px]">
+                        <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
+                            <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{showUsd ? "$" + chainData["tx_cost_median_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_median"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>}</div>
+                            <GTPIcon icon={"gtp-realtime"} size="sm" className="animate-pulse" />
+                        </div>
+                        <div className="relative min-w-[80px] flex justify-end text-right">
+                            <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Median Fee</div>
+                            <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">updated {Math.abs(moment.utc(chainData["last_updated"]).diff(moment.utc(), "seconds"))} seconds ago</div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -665,7 +665,7 @@ const Chain = ({ params }: { params: any }) => {
                                               "-",
                                             ) as GTPIconName}`}
                                             size="sm"
-                                            className={chainData.ranking[key] ? "text-color-text-primary" : "text-[#5A6462]"}
+                                            className={chainData.ranking[key] ? "text-[#1F2726]" : "text-[#5A6462]"}
                                           />
                                         </RankIcon>
                                       </TooltipTrigger>
@@ -945,7 +945,7 @@ const Chain = ({ params }: { params: any }) => {
                             </div>
                             <div className="flex flex-col gap-y-[2px]">
                               <div
-                                className="flex items-center justify-center font-bold text-white dark:text-color-text-black rounded-[2px] text-[10px] leading-[120%]"
+                                className="flex items-center justify-center font-bold text-[#151a19] rounded-[2px] text-[10px] leading-[120%]"
                                 style={{
                                   background: master.chains[chainKey]
                                     .l2beat_stage

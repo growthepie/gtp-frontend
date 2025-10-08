@@ -114,28 +114,32 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
     return (
         <div className="rounded-[15px] bg-color-bg-default p-[10px] w-full flex justify-between h-2xl">
-            <div className="flex items-center gap-x-[10px] min-w-[175px]">
-                <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                    <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
-                        {overviewData.data.ranking[metricKey].rank}
+            <div className="flex items-center gap-x-[10px] w-[110px] md:min-w-[175px]">
+                <div className="!size-[28px] relative flex items-center justify-center">
+                    <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
+                        <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                        <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
+                            {overviewData.data.ranking[metricKey].rank}
+                        </div>
                     </div>
                 </div>
                 <div className="heading-large-xs ">{metricData.name}</div>
             </div>
-            <div className=" flex justify-center items-center"><MetricChart 
-                metricKey={metricKey} 
-                metricData={metricData} 
-                overviewData={overviewData} 
-                chainColor={chainData.colors.dark[0]}
-                customTooltip={customTooltip}
-                setCustomTooltip={setCustomTooltip}
-                isInteracting={isInteracting}
-                setIsInteracting={setIsInteracting}
-                CustomTooltip={CustomTooltip}
-                seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data}
-            /></div>
-            <div className="flex flex-col gap-y-[2px] justify-center  items-end min-w-[120px]">
+            <div className="flex-1 flex justify-center items-center max-w-[140px]">
+                <MetricChart 
+                    metricKey={metricKey} 
+                    metricData={metricData} 
+                    overviewData={overviewData} 
+                    chainColor={chainData.colors.dark[0]}
+                    customTooltip={customTooltip}
+                    setCustomTooltip={setCustomTooltip}
+                    isInteracting={isInteracting}
+                    setIsInteracting={setIsInteracting}
+                    CustomTooltip={CustomTooltip}
+                    seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data}
+                />
+            </div>
+            <div className="flex flex-col gap-y-[2px] justify-center items-end md:min-w-[120px]">
                 <div className="numbers-md" style={{ color: chainData.colors.dark[0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[valueIndex], 2)} {suffix}
                 </div>
@@ -267,7 +271,7 @@ const MetricChart = ({
     }
     return (
         <div 
-            className="h-[28px] w-[140px] relative"
+            className="h-[28px] relative w-full"
             onMouseMove={(e) => {
                 const chartInstance = chartRef.current?.getEchartsInstance();
                 if (chartInstance) {
