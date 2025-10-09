@@ -122,8 +122,8 @@ const BreakdownButton = ({
 
     // 1. Determine the classes for selected and not-selected states
     const selectedBreakdownClass = isComingSoon
-        ? "bg-color-ui-active border-[3px] border-[#1F2726] h-[48px] text-[#344240]"
-        : "bg-color-ui-active border-[3px] border-color-border h-[48px] hover:h-[48px] hover:pr-[15px]";
+        ? "bg-color-ui-active border-[3px] border-color-bg-medium h-[48px] text-[#344240]"
+        : "bg-color-ui-active border-[3px] border-color-bg-medium h-[48px] hover:h-[48px] hover:pr-[15px]";
 
     // NOTE: The original `ComingSoonButton` had a redundant ternary based on `IS_PRODUCTION`. 
     // This simplified version uses the more inclusive class.

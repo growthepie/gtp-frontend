@@ -1537,10 +1537,10 @@ const ChartLegend = (
           color="#b5c4c3";
         }
 
-        let bgBorderClass = "border-[1px] border-color-border bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
+        let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
 
         if(selectedChain !== "all" && selectedChain !== key)
-            bgBorderClass = "border-[1px] border-color-border bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
+            bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
         
 
         return (
