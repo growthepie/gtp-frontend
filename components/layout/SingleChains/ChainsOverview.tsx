@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
+import { ChainData, ChainOverviewResponse, StreaksData } from "@/types/api/ChainOverviewResponse";
 import { Icon } from "@iconify/react";
 import { GTPIcon, GTPMaturityIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -15,7 +15,7 @@ import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ChainOverview } from "@/lib/chains";
-import { LifetimeAchievments } from "./OverviewCards/Achievments";
+import { LifetimeAchievments, StreaksAchievments } from "./OverviewCards/Achievments";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
 import { useMediaQuery } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -105,8 +105,12 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
   } = useSWR<MasterResponse>(MasterURL);
 
 
+  const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.xyz/v1/chains/all/streaks_today.json`);
+
+
   const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
   const isMobile = useMediaQuery("(max-width: 767px)");
+
 
 
 
@@ -192,9 +196,13 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
           <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
             <div className="flex flex-col w-full gap-y-[15px]">
+            
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                 <div className="heading-large-md">Achievements</div>
-                <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                <div className="flex  gap-x-[10px] pt-[5px]">
+                  {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
+                  <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                </div>
               </div>
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px]`}>
                 <ProjectsMetadataProvider>

@@ -79,7 +79,7 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
   return (
     <Link 
       href={`/quick-bites/${slug}`}
-      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-border"  
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"  
       style={{
         background: `url(${quickBite.image}) no-repeat center center / cover`,
       }}

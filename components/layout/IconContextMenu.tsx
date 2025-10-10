@@ -164,10 +164,18 @@ export const IconContextMenu = ({
     setIsOpen(false);
   };
 
+  // Add new handler for Brand Guide
+  const handleBrandGuide = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    window.open("http://api.growthepie.com/brand/growthepie_brand_guide.zip", "_blank");
+    setIsOpen(false);
+  };
+
   const options = [
     ...(isLogo || contextMenuOptions.isLink ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
      { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
      { icon: "gtp-download", label: "Download", onClick: handleDownload },
+     ...(isLogo ? [{ icon: "gtp-growthepie-logo", label: "Brand Guide", onClick: handleBrandGuide }] : []),
      { icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage },
   ];
 
@@ -189,7 +197,13 @@ export const IconContextMenu = ({
           >
             <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
               {/* Ensure GTPIcon is imported correctly */}
-              <GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />
+              <div className={`flex items-center justify-center w-[16px] h-[16px] ${option.label === "Brand Guide" ? "pt-[3px]" : ""}`}>
+                <GTPIcon 
+                  icon={option.icon as GTPIconName} 
+                  size={option.label === "Brand Guide" ? "md" : "sm"} 
+                  className={option.label === "Brand Guide" ? "!size-[16px]" : "!size-[12px]"} 
+                />
+              </div>
               <span>{option.label}</span>
             </div>
             {/* Optional: Shortcut placeholder */}

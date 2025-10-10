@@ -34,7 +34,22 @@ export type ChainOverview = {
 
 
 export type AchievmentsData = {
-  streaks: Object;
+  streaks: {
+    txcount: {
+      streak_length: number;
+      yesterday_value: number;
+    };
+    fees: {
+      usd: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+      eth: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+    };
+  };
   lifetime: {
     [key: string]: {
       [key: string]: {
