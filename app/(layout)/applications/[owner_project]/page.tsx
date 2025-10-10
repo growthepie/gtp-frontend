@@ -21,7 +21,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
-import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
+import { MetricChainBreakdownBar, TooltipProvider } from "../_components/MetricChainBreakdownBar";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
 import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
@@ -70,30 +70,32 @@ export default function Page({ params: { owner_project } }: Props) {
 
   return (
     <>
-      <ChartScaleProvider
-        scaleDefs={{
-          absolute: {
-            label: 'Absolute',
-            value: 'absolute',
-          },
-          stacked: {
-            label: 'Stacked',
-            value: 'stacked',
-          },
-          percentage: {
-            label: 'Percentage',
-            value: 'percentage',
-          },
+      <TooltipProvider>
+        <ChartScaleProvider
+          scaleDefs={{
+            absolute: {
+              label: 'Absolute',
+              value: 'absolute',
+            },
+            stacked: {
+              label: 'Stacked',
+              value: 'stacked',
+            },
+            percentage: {
+              label: 'Percentage',
+              value: 'percentage',
+            },
 
-        }}
-      >
-        {selectedMetrics.map((metric, index) => (
-          <MetricSection metric={metric} owner_project={owner_project} key={index} />
-        ))}
-        <Container className="pt-[30px]">
-          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
-        </Container>
-      </ChartScaleProvider>
+          }}
+        >
+          {selectedMetrics.map((metric, index) => (
+            <MetricSection metric={metric} owner_project={owner_project} key={index} />
+          ))}
+          <Container className="pt-[30px]">
+            <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
+          </Container>
+        </ChartScaleProvider>
+      </TooltipProvider>
 
       <Container>
         <div className="pt-[30px] pb-[15px]">

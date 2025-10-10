@@ -84,7 +84,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
         />
       ) : (
         <div className={`flex items-center justify-center ${sizeClassMap[size]} bg-color-ui-active !bg-transparent rounded-full`}>
-          <GTPIcon icon="gtp-project-monochrome" size={size} className="text-[#5A6462]" />
+          <GTPIcon icon="gtp-project-monochrome" size={size} className="text-color-ui-hover" />
         </div>
       )}
     </div>
@@ -321,7 +321,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
         <div
           className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
-            backgroundColor: "#344240",
+            backgroundColor: "rgb(var(--bg-medium))",
           }}
           onMouseEnter={openWithDelay}
           onMouseLeave={cancelHover}
@@ -388,7 +388,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
                 {opt.icon && (
                   <GTPIcon
                     icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
-                    className="size-[24px] text-[#5A6462]"
+                    className="size-[24px] text-color-ui-hover"
                   />
                 )}
                 <div>{opt.name}</div>
@@ -543,14 +543,14 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
 
   if (!application) {
     return (
-      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
+      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
       </div>
     )
   }
 
   return (
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}
-      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
       style={{ width: width || undefined }}
     >
       <div>
@@ -558,10 +558,10 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
           <div className="w-full flex justify-between items-end h-[20px]">
             <div className="h-[20px] flex items-center gap-x-[3px]">
               <div className="numbers-xs text-color-text-primary">{application.num_contracts.toLocaleString("en-GB")}</div>
-              <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
+              <div className="text-xs text-color-ui-hover">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
             </div>
             <div className="h-[20px] flex items-center gap-x-[3px]">
-              <div className="numbers-xs text-[#5A6462]">Rank</div>
+              <div className="numbers-xs text-color-ui-hover">Rank</div>
               <div className="numbers-xs text-color-text-primary">{rank}</div>
               {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
                 <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-color-negative' : 'text-color-positive'}`}>
@@ -662,7 +662,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
               />
             ) : (
               <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>
-                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
               </div>
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
@@ -725,7 +725,7 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
               />
             ) : (
               <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>
-                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
               </div>
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
@@ -862,7 +862,7 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
             )
           })}
         </div>
-        <div className="text-xxs text-[#5A6462]">
+        <div className="text-xxs text-color-ui-hover">
           {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)] + ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
         </div>
       </div>
@@ -964,7 +964,7 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
         {visibleChains.map((chain, index) => (
           <div
             key={index}
-            className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`}
+            className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-color-ui-hover'}`}
             style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
             onClick={(e) => {
               e.stopPropagation();
@@ -1071,13 +1071,13 @@ export const ChainsTooltip = ({
       onOpenChange={(open) => setIsOpen(open)} // Track when tooltip opens
       trigger={
         <div
-          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer select-none"
+          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-color-bg-medium flex justify-center items-center cursor-pointer select-none"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
           }}
         >
-          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px] whitespace-nowrap">
+          <div className="text-color-ui-hover text-[10px] font-medium leading-[15px] whitespace-nowrap">
             +{hiddenCount} more
           </div>
         </div>
@@ -1090,8 +1090,8 @@ export const ChainsTooltip = ({
         <VerticalScrollContainer 
           height={isContentReady ? Math.min(Math.max(containerHeight, 50), 110) : estimatedHeight}
           className="w-full !h-fit !max-h-[110px]" 
-          scrollThumbColor="#1F2726" 
-          scrollTrackColor="#151A19"
+          scrollThumbColor="rgb(var(--bg-default))" 
+          scrollTrackColor="rgb(var(--ui-active))"
         >
           <div 
             ref={containerRef} 
@@ -1101,7 +1101,7 @@ export const ChainsTooltip = ({
               const baseBgClass = "bg-color-bg-medium";
               const baseBorderClass = "border border-color-border";
               const hoverBgClass = "hover:bg-color-ui-hover";
-              const hoverBorderClass = "hover:border hover:border-[#5A6462]";
+              const hoverBorderClass = "hover:border hover:border-color-ui-hover";
 
               const baseClass = `${baseBgClass} ${baseBorderClass}`;
               const hoverClass = `${hoverBgClass} ${hoverBorderClass}`;
@@ -1110,7 +1110,7 @@ export const ChainsTooltip = ({
               const isChainSelected = selectedChains.includes(chain);
 
               const rightIcon = isChainSelected ? "heroicons-solid:x-circle" : undefined;
-              const rightIconColor = isChainSelected ? "#FE5468" : undefined;
+              const rightIconColor = isChainSelected ? "rgb(var(--accent-red))" : undefined;
               const altColoring = areChainsSelected && !isChainSelected;
 
               const leftIcon = `gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`;
@@ -1213,9 +1213,9 @@ export const Category = ({ category }: { category: string }) => {
         </div>
       ) : (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
-          {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-[#5A6462]/50" /> */}
+          {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-color-ui-hover/50" /> */}
           <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
-          <div className="text-xs text-[#5A6462]">Unknown</div>
+          <div className="text-xs text-color-ui-hover">Unknown</div>
         </div>
       )}
     </>
