@@ -15,7 +15,7 @@ export default function Head() {
         as="fetch"
         crossOrigin="anonymous"
         // @ts-ignore
-        fetchpriority="high"
+        fetchPriority="high"
       />
       {/* Preload icon JSON files with high priority */}
       <link
@@ -24,7 +24,7 @@ export default function Head() {
         as="fetch"
         crossOrigin="anonymous"
         // @ts-ignore
-        fetchpriority="high"
+        fetchPriority="high"
       />
       <link
         rel="preload"
@@ -32,7 +32,7 @@ export default function Head() {
         as="fetch"
         crossOrigin="anonymous"
         // @ts-ignore
-        fetchpriority="high"
+        fetchPriority="high"
       />
       {/* Preload favicon files */}
       <link
