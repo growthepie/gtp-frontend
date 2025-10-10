@@ -59,3 +59,19 @@ export interface Categories {
   nft_fi: number[];
   cefi: number[];
 }
+
+
+export interface StreaksData {
+  data: {
+    [key: string]: {
+      txcount: {
+        value: number;
+      };
+      fees: {
+        usd: number;
+        eth: number;
+      };
+      
+    }
+  }
+}
