@@ -736,9 +736,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             <div className="flex justify-between gap-x-[10px]">
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
                 {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
-                  let bgBorderClass = "border-[1px] border-color-border bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-color-border bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
                   
                   return (
@@ -764,9 +764,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               </div>
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
                 {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
-                  let bgBorderClass = "border-[1px] border-color-border bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-color-border bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
                   
                   return (
