@@ -79,7 +79,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       allowInteract={true}
                       trigger={
                         <div
-                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                           data-tooltip-trigger
                         >
                           <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
@@ -222,7 +222,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                       allowInteract={true}
                       trigger={
                         <div
-                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                           data-tooltip-trigger
                         >
                           <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />

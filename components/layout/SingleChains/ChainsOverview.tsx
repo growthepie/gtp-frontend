@@ -246,7 +246,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                       allowInteract={true}
                       trigger={
                         <div
-                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                           data-tooltip-trigger
                         >
                           <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
@@ -388,7 +388,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
 const LinkButton = ({ icon, label, href }: { icon: string, label: string, href: string }) => {
   return (
-    <Link href={href} className="flex items-center gap-x-[8px] bg-color-bg-medium pl-[6px] pr-[15px] rounded-[20px] h-[28px]">
+    <Link href={href} className="flex items-center gap-x-[8px] bg-color-bg-medium pl-[6px] pr-[15px] rounded-[20px] h-[28px] cursor-pointer">
       <GTPIcon icon={icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center" />
       <div className=" heading-small-xs">{label}</div>
     </Link>
@@ -414,7 +414,7 @@ const LinkDropdown = ({ icon, label, links }: { icon: string, label: string, lin
 
   return (
     <div
-      className="relative group transition-all duration-300 isolate z-0 hover:z-50 focus-within:z-50"
+      className="relative group transition-all duration-300 isolate z-0 hover:z-50 focus-within:z-50 cursor-pointer"
       onMouseEnter={() => {
         setLinkHeight(links.length * 38 + 32);
         const base = chipBaseWidth ?? chipRef.current?.offsetWidth ?? 0;
@@ -449,7 +449,7 @@ const LinkDropdown = ({ icon, label, links }: { icon: string, label: string, lin
       >
         <div className="flex flex-col gap-y-[10px] w-full pt-[24px] items-stretch ">
           {links.map((link) => (
-            <Link href={link.href} key={link.label} className="block w-full group/row ">
+            <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer">
               <div className="flex items-center gap-x-[8px] w-full grow-row relative h-[28px]">
                 <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] pl-[5px] z-20 !h-[26px] flex justify-center items-center" />
                 <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{link.label}</div>
