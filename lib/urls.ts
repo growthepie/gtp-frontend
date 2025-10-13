@@ -1,3 +1,4 @@
+// Legacy URLs - kept for backwards compatibility during migration
 export const MetricsURLs = {
   "daily-active-addresses": "https://api.growthepie.com/v1/metrics/daa.json",
   "fees-paid-by-users": "https://api.growthepie.com/v1/metrics/fees.json",
@@ -13,6 +14,32 @@ export const MetricsURLs = {
   "market-cap": "https://api.growthepie.com/v1/metrics/market_cap.json",
   throughput: "https://api.growthepie.com/v1/metrics/throughput.json",
   "app-revenue": "https://api.growthepie.com/v1/metrics/app_revenue.json",
+};
+
+// Map URL keys to API metric IDs
+export const MetricURLKeyToAPIKey: { [key: string]: string } = {
+  "daily-active-addresses": "daa",
+  "fees-paid-by-users": "fees",
+  "stablecoin-market-cap": "stables_mcap",
+  "total-value-locked": "tvl",
+  "total-value-secured": "tvl",
+  "transaction-count": "txcount",
+  "transaction-costs": "txcosts",
+  "rent-paid": "rent_paid",
+  "profit": "profit",
+  "fully-diluted-valuation": "fdv",
+  "market-cap": "market_cap",
+  "throughput": "throughput",
+  "app-revenue": "app_revenue",
+};
+
+// New per-chain metric URL builder
+export const getChainMetricURL = (chain: string, metricURLKey: string): string => {
+  const metricApiKey = MetricURLKeyToAPIKey[metricURLKey];
+  if (!metricApiKey) {
+    throw new Error(`Unknown metric URL key: ${metricURLKey}`);
+  }
+  return `https://api.growthepie.com/v1/metrics/chains/${chain}/${metricApiKey}.json`;
 };
 
 export const DAMetricsURLs = {

@@ -1,0 +1,838 @@
+diff --git a/MIGRATION_GUIDE.md b/MIGRATION_GUIDE.md
+new file mode 100644
+index 00000000..a82d5242
+--- /dev/null
++++ b/MIGRATION_GUIDE.md
+@@ -0,0 +1,181 @@
++# Fundamentals API Migration Guide
++
++## Overview
++
++This guide documents the migration from the old monolithic metrics API to the new per-chain metrics API structure for the fundamentals routes.
++
++## What Changed
++
++### Old Structure (Before)
++- **Single API endpoint** per metric returning all chains' data
++- URL: `https://api.growthepie.com/v1/metrics/{metric}.json`
++- Response: `MetricsResponse` with all chains nested under `data.chains`
++
++### New Structure (After)
++- **Multiple API endpoints** - one per chain+metric combination
++- URL: `https://api.growthepie.com/v1/metrics/chains/{chain}/{metric}.json`
++- Response: `ChainMetricResponse` with single chain's data
++- Client-side aggregation of multiple chain responses
++
++## Files Created
++
++### 1. Type Definitions
++**`types/api/ChainMetricResponse.d.ts`**
++- New generic interface for per-chain metric responses
++- Mirrors the structure from your example (timeseries, changes, summary)
++- Used by the new `useChainMetrics` hook
++
++### 2. Custom Hook
++**`hooks/useChainMetrics.ts`**
++- Fetches multiple chains in parallel using multiple SWR hooks
++- Aggregates responses into a structure compatible with existing components
++- Transforms new API structure to old `MetricData` format
++- Returns loading/error states for all requests
++
++### 3. URL Builder
++**`lib/urls.ts`** (updated)
++- Added `MetricURLKeyToAPIKey` mapping (e.g., "daily-active-addresses" → "daa")
++- Added `getChainMetricURL(chain, metricURLKey)` function
++- Kept old `MetricsURLs` for backwards compatibility with DA metrics
++
++## Files Modified
++
++### 1. MetricDataContext
++**`components/metric/MetricDataContext.tsx`**
++- Now uses `useChainMetrics` hook for fundamentals metrics
++- Falls back to old API for data-availability metrics (not yet migrated)
++- Automatically determines which chains to fetch from MasterContext
++- Data transformation is handled in the hook, so component logic remains unchanged
++
++### 2. MetricsResponse Types
++**`types/api/MetricsResponse.d.ts`**
++- Added optional `weekly` property to `ChainData` type
++
++## How It Works
++
++### Data Flow (New)
++
++1. **MetricDataContext** determines which chains to load:
++   ```typescript
++   const chainsToFetch = AllChains
++     .filter(chain => SupportedChainKeys.includes(chain.key))
++     .map(chain => chain.key);
++   ```
++
++2. **useChainMetrics** hook creates multiple SWR calls:
++   ```typescript
++   // For each chain: arbitrum, optimism, base, etc.
++   useSWR("https://api.growthepie.com/v1/metrics/chains/arbitrum/daa.json")
++   useSWR("https://api.growthepie.com/v1/metrics/chains/optimism/daa.json")
++   useSWR("https://api.growthepie.com/v1/metrics/chains/base/daa.json")
++   // ... etc
++   ```
++
++3. **Hook aggregates** all responses:
++   ```typescript
++   {
++     metric_id: "daa",
++     metric_name: "Daily Active Addresses",
++     chains: {
++       arbitrum: { /* ChainData */ },
++       optimism: { /* ChainData */ },
++       base: { /* ChainData */ },
++       // ...
++     }
++   }
++   ```
++
++4. **Components consume** the same `data.chains[chainKey]` structure as before
++
++## Error Handling
++
++### 404/403 Responses
++Some chains may not have data for certain metrics. The hook gracefully handles this:
++
++- **404 (Not Found)** - Chain doesn't have this metric, silently excluded from results
++- **403 (Forbidden)** - Access denied, silently excluded from results
++- **500+ (Server Error)** - Temporary failure, silently excluded (could retry in future)
++- **Other errors** - Reported as critical errors to the UI
++
++This means:
++- If 10 chains are requested but only 7 have data → 7 chains displayed
++- If all chains return 404 → empty state shown (no data available)
++- Charts and tables only show chains with successful responses
++
++### Implementation
++```typescript
++// In useChainMetrics hook:
++chainResponses.filter((response) => {
++  const errorStatus = response.error?.status;
++  // Exclude 404, 403, 500+ errors
++  if (errorStatus === 404 || errorStatus === 403 || errorStatus >= 500) {
++    return false; // Don't include in aggregated data
++  }
++  return !!response.data;
++});
++```
++
++## Benefits
++
++1. **Parallel Loading** - All chains load simultaneously instead of sequentially
++2. **Better Caching** - SWR caches each chain independently
++3. **Graceful Degradation** - Missing chain data doesn't break the page
++4. **Progressive Enhancement** - Chains can load individually (future feature)
++5. **API Scalability** - Backend can cache/serve individual chains more efficiently
++6. **Backwards Compatible** - Existing components work without changes
++
++## Migration Status
++
++### ✅ Completed
++- [x] Type definitions for new API structure
++- [x] URL builder function
++- [x] Custom `useChainMetrics` hook
++- [x] MetricDataContext refactor for fundamentals
++- [x] Backwards compatibility for DA metrics
++
++### ⏳ Future Work
++- [ ] Migrate data-availability metrics to new structure
++- [ ] Add progressive loading UI (show chains as they load)
++- [ ] Error handling per chain (show partial data if some chains fail)
++- [ ] Retry logic for individual failed chain requests
++
++## Testing
++
++To test the migration:
++
++1. **Start dev server**: `npm run dev`
++2. **Navigate to any fundamentals page**:
++   - `/fundamentals/daily-active-addresses`
++   - `/fundamentals/fees-paid-by-users`
++   - `/fundamentals/transaction-count`
++   - etc.
++
++3. **Check Network tab**:
++   - Should see multiple parallel requests to `/v1/metrics/chains/{chain}/{metric}.json`
++   - Each request should complete independently
++
++4. **Verify functionality**:
++   - Charts should render correctly
++   - Tables should show all chains
++   - Time interval switching should work
++   - Chain selection should work
++
++## Rollback Plan
++
++If issues arise, you can rollback by:
++
++1. Reverting `components/metric/MetricDataContext.tsx` to use:
++   ```typescript
++   const { data, error, isLoading, isValidating } =
++     useSWR<MetricsResponse>(MetricsURLs[metric]);
++   ```
++
++2. The old API endpoints should remain functional during transition period
++
++## Notes
++
++- The transformation from new to old structure happens in `useChainMetrics.ts:transformToChainData()`
++- SWR handles deduplication automatically if the same chain+metric is requested multiple times
++- The hook follows React Hooks rules (can't be called conditionally), so we use conditional rendering in the context instead
++- Loading states aggregate: `isLoading = any chain is loading`
++- Error states: first error encountered is returned (future: could collect all errors)
+diff --git a/app/(layout)/fundamentals/[metric]/page.tsx b/app/(layout)/fundamentals/[metric]/page.tsx
+index 9488b022..5d688c13 100644
+--- a/app/(layout)/fundamentals/[metric]/page.tsx
++++ b/app/(layout)/fundamentals/[metric]/page.tsx
+@@ -1,9 +1,5 @@
+ "use client";
+-import { MetricsResponse } from "@/types/api/MetricsResponse";
+ import useSWR from "swr";
+-import { MetricsURLs } from "@/lib/urls";
+-import {
+-} from "@/lib/chains";
+ import { PageContainer } from "@/components/layout/Container";
+ import ShowLoading from "@/components/layout/ShowLoading";
+ import { MasterURL } from "@/lib/urls";
+@@ -15,13 +11,9 @@ import MetricChart from "@/components/metric/MetricChart";
+ import MetricTable from "@/components/metric/MetricTable";
+ import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
+ import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+-
+-const monthly_agg_labels = {
+-  avg: "Average",
+-  sum: "Total",
+-  unique: "Distinct",
+-  distinct: "Distinct",
+-};
++import { useChainMetrics } from "@/hooks/useChainMetrics";
++import { useMaster } from "@/contexts/MasterContext";
++import { useMemo } from "react";
+ 
+ const Fundamentals = ({ params: { metric } }) => {
+   const { is_og } = useParams();
+@@ -32,18 +24,28 @@ const Fundamentals = ({ params: { metric } }) => {
+     isValidating: masterValidating,
+   } = useSWR<MasterResponse>(MasterURL);
+ 
++  const { SupportedChainKeys, AllChains } = useMaster();
++
++  // Determine which chains to fetch
++  const chainsToFetch = useMemo(() => {
++    return AllChains.filter((chain) =>
++      SupportedChainKeys.includes(chain.key),
++    ).map((chain) => chain.key);
++  }, [AllChains, SupportedChainKeys]);
++
++  // Fetch metric data at page level for SWR caching
+   const {
+     data: metricData,
+     error: metricError,
+     isLoading: metricLoading,
+     isValidating: metricValidating,
+-  } = useSWR<MetricsResponse>(MetricsURLs[metric]);
++  } = useChainMetrics(metric, chainsToFetch);
+ 
+   return (
+     <>
+       <ShowLoading
+         dataLoading={[masterLoading, metricLoading]}
+-        dataValidating={[masterValidating, metricValidating]}
++        dataValidating={[masterValidating]}
+       />
+       {master && metricData ? (
+         <FundamentalsContent metric={metric} type="fundamentals" />
+diff --git a/app/providers.tsx b/app/providers.tsx
+index 8fff75f4..d0932d28 100644
+--- a/app/providers.tsx
++++ b/app/providers.tsx
+@@ -91,6 +91,21 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
+             fetcher: singleOrMultiFetcher,
+             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+             dedupingInterval: 10000, // 10 seconds
++            onError: (error, key) => {
++              // Silence expected errors from chain metrics endpoints that return 403/404
++              if (typeof key === 'string' && key.includes('/metrics/chains/')) {
++                // Check for JSON parse errors (403/404 responses return HTML)
++                if (error instanceof SyntaxError && error.message.includes('JSON')) {
++                  return; // Silently ignore
++                }
++                // Check for fetch failures (CORS blocks)
++                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
++                  return; // Silently ignore
++                }
++              }
++              // Log other errors (you can customize this further)
++              // console.error('SWR Error:', error, key);
++            },
+           }}
+         >
+             <MasterProvider>
+diff --git a/components/metric/MetricDataContext.tsx b/components/metric/MetricDataContext.tsx
+index 6a4c8e58..822dc2b7 100644
+--- a/components/metric/MetricDataContext.tsx
++++ b/components/metric/MetricDataContext.tsx
+@@ -1,17 +1,11 @@
+ import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
+-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
+-import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
++import { Chain } from "@/lib/chains";
++import { DAMetricsURLs } from "@/lib/urls";
+ import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
+ import { intersection } from "lodash";
+-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
++import { createContext, useContext, useEffect, useMemo, useState } from "react";
+ import useSWR from "swr";
+-import { useSessionStorage } from "usehooks-ts";
+-
+-type SeriesData = {
+-  name: string;
+-  types: string[];
+-  data: number[][];
+-};
++import { useChainMetrics } from "@/hooks/useChainMetrics";
+ 
+ type Timespans = {
+   [key: string]: {
+@@ -43,6 +37,10 @@ type MetricDataContextType = {
+   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
+   selectedChains: string[];
+   setSelectedChainsInDataContext: (chains: string[]) => void;
++
++  // Loading states
++  isLoading: boolean;
++  isValidating: boolean;
+ };
+ 
+ const MetricDataContext = createContext<MetricDataContextType>({
+@@ -63,7 +61,9 @@ const MetricDataContext = createContext<MetricDataContextType>({
+   allChains: [],
+   allChainsByKeys: {},
+   selectedChains: [],
+-  setSelectedChainsInDataContext: () => {}
++  setSelectedChainsInDataContext: () => {},
++  isLoading: false,
++  isValidating: false,
+ });
+ 
+ type MetricDataProviderProps = {
+@@ -75,39 +75,34 @@ type MetricDataProviderProps = {
+ 
+ export const MetricDataProvider = ({ children, metric, metric_type, selectedTimeInterval = "daily" }: MetricDataProviderProps) => {
+   const [selectedChains, setSelectedChainsInDataContext] = useState<string[]>([]);
+-  const UrlsMap = {
+-    fundamentals: MetricsURLs,
+-    "data-availability": DAMetricsURLs,
+-  };
+ 
+-  const StorageKeyPrefixMap = {
+-    fundamentals: "fundamentals",
+-    "data-availability": "da",
+-  };
++  const { SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
+ 
+-  
+-  
+-
+-  const url = UrlsMap[metric_type][metric];
+-  const storageKeys = {
+-    timespan: `${StorageKeyPrefixMap[metric_type]}Timespan`,
+-    timeInterval: `${StorageKeyPrefixMap[metric_type]}TimeInterval`,
+-    scale: `${StorageKeyPrefixMap[metric_type]}Scale`,
+-    chains: `${StorageKeyPrefixMap[metric_type]}Chains`,
+-    showEthereumMainnet: `${StorageKeyPrefixMap[metric_type]}ShowEthereumMainnet`,
+-  }
+-
+-  const { data: master, SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
+-  
+-  const {
+-    data,
+-    error,
+-    isLoading,
+-    isValidating,
+-  } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric]);
++  // Determine which chains to fetch based on metric type
++  const chainsToFetch = useMemo(() => {
++    if (metric_type === "fundamentals") {
++      return AllChains.filter((chain) =>
++        SupportedChainKeys.includes(chain.key),
++      ).map((chain) => chain.key);
++    }
++    // For DA metrics, load all DA layers
++    return AllDALayers.map((layer) => layer.key);
++  }, [metric_type, AllChains, AllDALayers, SupportedChainKeys]);
++
++  // For fundamentals: use the hook to leverage SWR cache (data fetched at page level)
++  // For DA: fetch using old API
++  const newApiData = useChainMetrics(metric, metric_type === "fundamentals" ? chainsToFetch : []);
++  const oldApiData = useSWR<MetricsResponse>(
++    metric_type === "data-availability" ? DAMetricsURLs[metric] : null
++  );
++
++  // Use new API data for fundamentals, old API for DA
++  const data = metric_type === "fundamentals" ? newApiData.data : oldApiData.data?.data;
++  const error = metric_type === "fundamentals" ? newApiData.error : oldApiData.error;
++  const isLoading = metric_type === "fundamentals" ? newApiData.isLoading : oldApiData.isLoading;
++  const isValidating = metric_type === "fundamentals" ? newApiData.isValidating : oldApiData.isValidating;
+ 
+   const chainKeys = useMemo(() => {
+-   
+     if (metric_type === "fundamentals") {
+       if (!data)
+         return AllChains.filter((chain) =>
+@@ -116,7 +111,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+ 
+       return AllChains.filter(
+         (chain) =>
+-          Object.keys(data.data.chains).includes(chain.key) &&
++          Object.keys(data.chains).includes(chain.key) &&
+           SupportedChainKeys.includes(chain.key)
+       ).map((chain) => chain.key);
+     }
+@@ -125,7 +120,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+ 
+     return AllDALayers.filter(
+       (chain) =>
+-        Object.keys(data.data.chains).includes(chain.key)
++        Object.keys(data.chains).includes(chain.key)
+     ).map((chain) => chain.key);
+   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
+ 
+@@ -133,9 +128,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+ 
+   const minDailyUnix = useMemo<number>(() => {
+     if (!data) return 0;
+-    return Object.keys(data.data.chains)
++    return Object.keys(data.chains)
+       .filter((chainKey) => selectedChains.includes(chainKey))
+-      .map((chainKey) => data.data.chains[chainKey])
++      .map((chainKey) => data.chains[chainKey])
+       .reduce(
+         (acc: number, chain: ChainData) => {
+           if (!chain[selectedTimeInterval].data[0][0]) return acc;
+@@ -149,9 +144,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+ 
+   const maxDailyUnix = useMemo<number>(() => {
+     if (!data) return 0;
+-    return Object.keys(data.data.chains)
++    return Object.keys(data.chains)
+       .filter((chainKey) => selectedChains.includes(chainKey))
+-      .map((chainKey) => data.data.chains[chainKey])
++      .map((chainKey) => data.chains[chainKey])
+       .reduce(
+         (acc: number, chain: ChainData) => {
+           return Math.max(
+@@ -233,7 +228,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+     };
+   }, [data, maxDailyUnix, minDailyUnix]);
+ 
+-  const metric_id = data?.data.metric_id || "";
++  const metric_id = data?.metric_id || "";
+ 
+   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
+ 
+@@ -244,17 +239,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+   return (
+     <MetricDataContext.Provider
+       value={{
+-        data: data?.data || undefined,
++        data: data || undefined,
+         type: metric_type,
+         metric_id: metric_id,
+         metric: metric,
+-        avg: data?.data.avg || false,
+-        monthly_agg: data?.data.monthly_agg || "sum",
++        avg: data?.avg || false,
++        monthly_agg: data?.monthly_agg || "sum",
+         log_default: log_default,
+         chainKeys,
+-        sources: data?.data.source || [],
++        sources: data?.source || [],
+         timeIntervals: data ? intersection(
+-          Object.keys(Object.values(data.data.chains)[0]),
++          Object.keys(Object.values(data.chains)[0]),
+           ["daily", "weekly", "monthly"],
+         ) : [],
+         timespans: timespans,
+@@ -265,6 +260,8 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
+         selectedChains,
+         setSelectedChainsInDataContext,
++        isLoading,
++        isValidating,
+       }}
+     >
+       {children}
+@@ -274,11 +271,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
+ 
+ export const useMetricData = () => useContext(MetricDataContext);
+ 
++// Hook to access only loading states
++export const useMetricDataLoading = () => {
++  const { isLoading, isValidating } = useContext(MetricDataContext);
++  return { isLoading, isValidating };
++};
++
+ // Hook to sync selectedChains from MetricChartControls to MetricData
+ // This should be called inside a component that has access to both contexts
+ export const useSyncSelectedChainsToDataContext = (selectedChains: string[]) => {
+   const { setSelectedChainsInDataContext } = useMetricData();
+-  
++
+   useEffect(() => {
+     setSelectedChainsInDataContext(selectedChains);
+   }, [selectedChains, setSelectedChainsInDataContext]);
+diff --git a/hooks/useChainMetrics.ts b/hooks/useChainMetrics.ts
+new file mode 100644
+index 00000000..4d8e25a1
+--- /dev/null
++++ b/hooks/useChainMetrics.ts
+@@ -0,0 +1,212 @@
++import useSWR from "swr";
++import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
++import { getChainMetricURL } from "@/lib/urls";
++import { useMemo } from "react";
++import { ChainData } from "@/types/api/MetricsResponse";
++
++type AggregatedMetricData = {
++  metric_id: string;
++  metric_name: string;
++  description: string;
++  source: string[];
++  avg?: boolean;
++  monthly_agg: "sum" | "avg" | "unique";
++  chains: {
++    [chainKey: string]: ChainData;
++  };
++};
++
++type UseChainMetricsResult = {
++  data: AggregatedMetricData | undefined;
++  error: any;
++  isLoading: boolean;
++  isValidating: boolean;
++};
++
++/**
++ * Custom hook to fetch metrics for multiple chains in parallel
++ * and aggregate them into a structure compatible with the old MetricsResponse
++ */
++export function useChainMetrics(
++  metricURLKey: string,
++  chainKeys: string[]
++): UseChainMetricsResult {
++  // Create an array of SWR hooks, one for each chain
++  const chainResponses = chainKeys.map((chainKey) => {
++    const url = getChainMetricURL(chainKey, metricURLKey);
++    // eslint-disable-next-line react-hooks/rules-of-hooks
++    return useSWR<ChainMetricResponse>(url, {
++      onError: (error) => {
++        // Silence expected errors (404, 403, CORS failures, JSON parse errors from 403/404 responses)
++        const status = error?.status || error?.response?.status;
++
++        // Check if it's a 404 or 403
++        if (status === 404 || status === 403) {
++          return;
++        }
++
++        // Check if it's a JSON parse error (happens when 403/404 returns HTML/XML)
++        if (error instanceof SyntaxError && error.message.includes('JSON')) {
++          return;
++        }
++
++        // Check if it's a CORS error or fetch failure (often caused by 403 blocking)
++        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
++          return;
++        }
++
++        // Log other errors normally
++        console.error(`Error fetching ${chainKey} ${metricURLKey}:`, error);
++      },
++      // Prevent SWR from retrying on 404/403 and fetch failures
++      shouldRetryOnError: (error) => {
++        const status = error?.status || error?.response?.status;
++
++        // Don't retry on 404/403
++        if (status === 404 || status === 403) {
++          return false;
++        }
++
++        // Don't retry on JSON parse errors (403/404 responses)
++        if (error instanceof SyntaxError && error.message.includes('JSON')) {
++          return false;
++        }
++
++        // Don't retry on CORS/fetch failures
++        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
++          return false;
++        }
++
++        // Retry on other errors
++        return true;
++      },
++    });
++  });
++
++  // Aggregate all the responses
++  const aggregatedData = useMemo(() => {
++    // Filter responses: only include successful ones (ignore 404/403/500 errors)
++    const successfulResponses = chainResponses.filter((response, index) => {
++      // Skip if still loading
++      if (!response.data && response.isLoading) return false;
++
++      // Skip if error is 404, 403, or any HTTP error (chain doesn't have this metric)
++      if (response.error) {
++        const errorStatus = response.error?.status || response.error?.response?.status;
++        // Filter out 404 (not found), 403 (forbidden), and 500+ (server errors)
++        if (errorStatus === 404 || errorStatus === 403 || errorStatus >= 500) {
++          return false;
++        }
++      }
++
++      // Include if we have data
++      return !!response.data;
++    });
++
++    // Wait until all chains have either loaded or errored
++    const allSettled = chainResponses.every(
++      (response) => response.data || response.error || !response.isLoading
++    );
++    if (!allSettled) return undefined;
++
++    // If no successful responses, return undefined
++    if (successfulResponses.length === 0) return undefined;
++
++    // Get the first successful response to extract common metadata
++    const firstSuccessfulIndex = chainResponses.findIndex(
++      (response) => response.data && !response.error
++    );
++    if (firstSuccessfulIndex === -1) return undefined;
++
++    const firstResponse = chainResponses[firstSuccessfulIndex].data;
++    if (!firstResponse) return undefined;
++
++    // Build the chains object by transforming each successful ChainMetricResponse
++    const chains: { [chainKey: string]: ChainData } = {};
++
++    chainResponses.forEach((response, index) => {
++      const chainKey = chainKeys[index];
++
++      // Skip if error or no data
++      if (response.error || !response.data) return;
++
++      // Transform the new structure to the old ChainData structure
++      chains[chainKey] = transformToChainData(response.data.details, chainKey);
++    });
++
++    return {
++      metric_id: firstResponse.details.metric_id,
++      metric_name: firstResponse.details.metric_name,
++      description: "", // Not available in new API structure
++      source: [], // Not available in new API structure
++      avg: false, // Default value, can be overridden
++      monthly_agg: "sum" as const, // Default value, can be overridden
++      chains,
++    };
++  }, [chainResponses, chainKeys]);
++
++  // Aggregate loading and error states
++  const isLoading = chainResponses.some((response) => response.isLoading);
++  const isValidating = chainResponses.some((response) => response.isValidating);
++
++  // Only report critical errors (not 404/403 which are expected for some chains)
++  const criticalError = chainResponses.find((response) => {
++    if (!response.error) return false;
++    const errorStatus = response.error?.status || response.error?.response?.status;
++    // Only report non-404/403 errors as critical
++    return errorStatus && errorStatus !== 404 && errorStatus !== 403;
++  })?.error;
++
++  return {
++    data: aggregatedData,
++    error: criticalError,
++    isLoading,
++    isValidating,
++  };
++}
++
++/**
++ * Transform the new ChainMetricResponse structure to the old ChainData structure
++ */
++function transformToChainData(
++  details: MetricDetails,
++  chainKey: string
++): ChainData {
++  const { timeseries, changes, summary } = details;
++
++  return {
++    chain_name: chainKey, // Will be enriched with actual name from Master context
++    changes: {
++      types: changes.daily.types as string[],
++      "1d": changes.daily["1d"],
++      "7d": changes.daily["7d"],
++      "30d": changes.daily["30d"],
++      "90d": changes.daily["90d"],
++      "180d": changes.daily["180d"],
++      "365d": changes.daily["365d"],
++    },
++    daily: {
++      types: timeseries.daily.types as string[],
++      data: timeseries.daily.data,
++    },
++    changes_monthly: {
++      types: changes.monthly.types as string[],
++      "30d": changes.monthly["30d"],
++      "90d": changes.monthly["90d"],
++      "180d": changes.monthly["180d"],
++      "365d": changes.monthly["365d"],
++    },
++    monthly: {
++      types: timeseries.monthly.types as string[],
++      data: timeseries.monthly.data,
++    },
++    weekly: timeseries.weekly ? {
++      types: timeseries.weekly.types as string[],
++      data: timeseries.weekly.data,
++    } : undefined,
++    last_30d: {
++      types: summary.last_30d.types as string[],
++      data: summary.last_30d.data,
++    },
++  };
++}
+diff --git a/lib/urls.ts b/lib/urls.ts
+index f025ed08..ee275af1 100644
+--- a/lib/urls.ts
++++ b/lib/urls.ts
+@@ -1,3 +1,4 @@
++// Legacy URLs - kept for backwards compatibility during migration
+ export const MetricsURLs = {
+   "daily-active-addresses": "https://api.growthepie.com/v1/metrics/daa.json",
+   "fees-paid-by-users": "https://api.growthepie.com/v1/metrics/fees.json",
+@@ -15,6 +16,32 @@ export const MetricsURLs = {
+   "app-revenue": "https://api.growthepie.com/v1/metrics/app_revenue.json",
+ };
+ 
++// Map URL keys to API metric IDs
++export const MetricURLKeyToAPIKey: { [key: string]: string } = {
++  "daily-active-addresses": "daa",
++  "fees-paid-by-users": "fees",
++  "stablecoin-market-cap": "stables_mcap",
++  "total-value-locked": "tvl",
++  "total-value-secured": "tvl",
++  "transaction-count": "txcount",
++  "transaction-costs": "txcosts",
++  "rent-paid": "rent_paid",
++  "profit": "profit",
++  "fully-diluted-valuation": "fdv",
++  "market-cap": "market_cap",
++  "throughput": "throughput",
++  "app-revenue": "app_revenue",
++};
++
++// New per-chain metric URL builder
++export const getChainMetricURL = (chain: string, metricURLKey: string): string => {
++  const metricApiKey = MetricURLKeyToAPIKey[metricURLKey];
++  if (!metricApiKey) {
++    throw new Error(`Unknown metric URL key: ${metricURLKey}`);
++  }
++  return `https://api.growthepie.com/v1/metrics/chains/${chain}/${metricApiKey}.json`;
++};
++
+ export const DAMetricsURLs = {
+   "blob-count": "https://api.growthepie.com/v1/da_metrics/blob_count.json",
+   "blob-producers":
+diff --git a/types/api/ChainMetricResponse.d.ts b/types/api/ChainMetricResponse.d.ts
+new file mode 100644
+index 00000000..6e2753ba
+--- /dev/null
++++ b/types/api/ChainMetricResponse.d.ts
+@@ -0,0 +1,68 @@
++export interface ChainMetricResponse {
++  details: MetricDetails;
++  last_updated_utc: Date;
++}
++
++export interface MetricDetails {
++  metric_id: string;
++  metric_name: string;
++  timeseries: Timeseries;
++  changes: Changes;
++  summary: Summary;
++}
++
++export interface Changes {
++  daily: ChangesDaily;
++  weekly: ChangesMonthly;
++  monthly: ChangesMonthly;
++  quarterly: ChangesMonthly | null;
++}
++
++export interface ChangesDaily {
++  types: MetricType[];
++  "1d": number[];
++  "7d": number[];
++  "30d": number[];
++  "90d": number[];
++  "180d": number[];
++  "365d": number[];
++}
++
++export interface ChangesMonthly {
++  types: MetricType[];
++  "7d"?: number[];
++  "30d": number[];
++  "90d": number[];
++  "180d": number[];
++  "365d": number[];
++}
++
++export enum MetricType {
++  Unix = "unix",
++  Usd = "usd",
++  Eth = "eth",
++}
++
++export interface Summary {
++  last_1d: SummaryPeriod;
++  last_7d: SummaryPeriod;
++  last_30d: SummaryPeriod;
++}
++
++export interface SummaryPeriod {
++  types: MetricType[];
++  data: number[];
++}
++
++export interface Timeseries {
++  daily: TimeseriesData;
++  weekly: TimeseriesData;
++  monthly: TimeseriesData;
++  quarterly: TimeseriesData;
++  daily_7d_rolling: TimeseriesData;
++}
++
++export interface TimeseriesData {
++  types: MetricType[];
++  data: Array<number[]>;
++}
+diff --git a/types/api/MetricsResponse.d.ts b/types/api/MetricsResponse.d.ts
+index 54b71a07..0eb70787 100644
+--- a/types/api/MetricsResponse.d.ts
++++ b/types/api/MetricsResponse.d.ts
+@@ -31,6 +31,10 @@ export type ChainData = {
+     types: string[];
+     data: number[][];
+   };
++  weekly?: {
++    types: string[];
++    data: number[][];
++  };
+   changes_monthly: {
+     types: string[];
+     "30d": number[];

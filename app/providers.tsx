@@ -91,6 +91,21 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
             dedupingInterval: 10000, // 10 seconds
+            onError: (error, key) => {
+              // Silence expected errors from chain metrics endpoints that return 403/404
+              if (typeof key === 'string' && key.includes('/metrics/chains/')) {
+                // Check for JSON parse errors (403/404 responses return HTML)
+                if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                  return; // Silently ignore
+                }
+                // Check for fetch failures (CORS blocks)
+                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                  return; // Silently ignore
+                }
+              }
+              // Log other errors (you can customize this further)
+              // console.error('SWR Error:', error, key);
+            },
           }}
         >
             <MasterProvider>

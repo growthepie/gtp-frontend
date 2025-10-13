@@ -1,17 +1,11 @@
 import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
+import { Chain } from "@/lib/chains";
+import { DAMetricsURLs } from "@/lib/urls";
 import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { useSessionStorage } from "usehooks-ts";
-
-type SeriesData = {
-  name: string;
-  types: string[];
-  data: number[][];
-};
+import { useChainMetrics } from "@/hooks/useChainMetrics";
 
 type Timespans = {
   [key: string]: {
@@ -43,6 +37,10 @@ type MetricDataContextType = {
   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
   selectedChains: string[];
   setSelectedChainsInDataContext: (chains: string[]) => void;
+
+  // Loading states
+  isLoading: boolean;
+  isValidating: boolean;
 };
 
 const MetricDataContext = createContext<MetricDataContextType>({
@@ -63,7 +61,9 @@ const MetricDataContext = createContext<MetricDataContextType>({
   allChains: [],
   allChainsByKeys: {},
   selectedChains: [],
-  setSelectedChainsInDataContext: () => {}
+  setSelectedChainsInDataContext: () => {},
+  isLoading: false,
+  isValidating: false,
 });
 
 type MetricDataProviderProps = {
@@ -75,39 +75,34 @@ type MetricDataProviderProps = {
 
 export const MetricDataProvider = ({ children, metric, metric_type, selectedTimeInterval = "daily" }: MetricDataProviderProps) => {
   const [selectedChains, setSelectedChainsInDataContext] = useState<string[]>([]);
-  const UrlsMap = {
-    fundamentals: MetricsURLs,
-    "data-availability": DAMetricsURLs,
-  };
 
-  const StorageKeyPrefixMap = {
-    fundamentals: "fundamentals",
-    "data-availability": "da",
-  };
+  const { SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
 
-  
-  
+  // Determine which chains to fetch based on metric type
+  const chainsToFetch = useMemo(() => {
+    if (metric_type === "fundamentals") {
+      return AllChains.filter((chain) =>
+        SupportedChainKeys.includes(chain.key),
+      ).map((chain) => chain.key);
+    }
+    // For DA metrics, load all DA layers
+    return AllDALayers.map((layer) => layer.key);
+  }, [metric_type, AllChains, AllDALayers, SupportedChainKeys]);
 
-  const url = UrlsMap[metric_type][metric];
-  const storageKeys = {
-    timespan: `${StorageKeyPrefixMap[metric_type]}Timespan`,
-    timeInterval: `${StorageKeyPrefixMap[metric_type]}TimeInterval`,
-    scale: `${StorageKeyPrefixMap[metric_type]}Scale`,
-    chains: `${StorageKeyPrefixMap[metric_type]}Chains`,
-    showEthereumMainnet: `${StorageKeyPrefixMap[metric_type]}ShowEthereumMainnet`,
-  }
+  // For fundamentals: use the hook to leverage SWR cache (data fetched at page level)
+  // For DA: fetch using old API
+  const newApiData = useChainMetrics(metric, metric_type === "fundamentals" ? chainsToFetch : []);
+  const oldApiData = useSWR<MetricsResponse>(
+    metric_type === "data-availability" ? DAMetricsURLs[metric] : null
+  );
 
-  const { data: master, SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
-  
-  const {
-    data,
-    error,
-    isLoading,
-    isValidating,
-  } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric]);
+  // Use new API data for fundamentals, old API for DA
+  const data = metric_type === "fundamentals" ? newApiData.data : oldApiData.data?.data;
+  const error = metric_type === "fundamentals" ? newApiData.error : oldApiData.error;
+  const isLoading = metric_type === "fundamentals" ? newApiData.isLoading : oldApiData.isLoading;
+  const isValidating = metric_type === "fundamentals" ? newApiData.isValidating : oldApiData.isValidating;
 
   const chainKeys = useMemo(() => {
-   
     if (metric_type === "fundamentals") {
       if (!data)
         return AllChains.filter((chain) =>
@@ -116,7 +111,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
       return AllChains.filter(
         (chain) =>
-          Object.keys(data.data.chains).includes(chain.key) &&
+          Object.keys(data.chains).includes(chain.key) &&
           SupportedChainKeys.includes(chain.key)
       ).map((chain) => chain.key);
     }
@@ -125,7 +120,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
     return AllDALayers.filter(
       (chain) =>
-        Object.keys(data.data.chains).includes(chain.key)
+        Object.keys(data.chains).includes(chain.key)
     ).map((chain) => chain.key);
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
@@ -133,9 +128,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
   const minDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.keys(data.data.chains)
+    return Object.keys(data.chains)
       .filter((chainKey) => selectedChains.includes(chainKey))
-      .map((chainKey) => data.data.chains[chainKey])
+      .map((chainKey) => data.chains[chainKey])
       .reduce(
         (acc: number, chain: ChainData) => {
           if (!chain[selectedTimeInterval].data[0][0]) return acc;
@@ -149,9 +144,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.keys(data.data.chains)
+    return Object.keys(data.chains)
       .filter((chainKey) => selectedChains.includes(chainKey))
-      .map((chainKey) => data.data.chains[chainKey])
+      .map((chainKey) => data.chains[chainKey])
       .reduce(
         (acc: number, chain: ChainData) => {
           return Math.max(
@@ -233,7 +228,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     };
   }, [data, maxDailyUnix, minDailyUnix]);
 
-  const metric_id = data?.data.metric_id || "";
+  const metric_id = data?.metric_id || "";
 
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
 
@@ -244,17 +239,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
   return (
     <MetricDataContext.Provider
       value={{
-        data: data?.data || undefined,
+        data: data || undefined,
         type: metric_type,
         metric_id: metric_id,
         metric: metric,
-        avg: data?.data.avg || false,
-        monthly_agg: data?.data.monthly_agg || "sum",
+        avg: data?.avg || false,
+        monthly_agg: data?.monthly_agg || "sum",
         log_default: log_default,
         chainKeys,
-        sources: data?.data.source || [],
+        sources: data?.source || [],
         timeIntervals: data ? intersection(
-          Object.keys(Object.values(data.data.chains)[0]),
+          Object.keys(Object.values(data.chains)[0]),
           ["daily", "weekly", "monthly"],
         ) : [],
         timespans: timespans,
@@ -265,6 +260,8 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
         selectedChains,
         setSelectedChainsInDataContext,
+        isLoading,
+        isValidating,
       }}
     >
       {children}
@@ -274,11 +271,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
 export const useMetricData = () => useContext(MetricDataContext);
 
+// Hook to access only loading states
+export const useMetricDataLoading = () => {
+  const { isLoading, isValidating } = useContext(MetricDataContext);
+  return { isLoading, isValidating };
+};
+
 // Hook to sync selectedChains from MetricChartControls to MetricData
 // This should be called inside a component that has access to both contexts
 export const useSyncSelectedChainsToDataContext = (selectedChains: string[]) => {
   const { setSelectedChainsInDataContext } = useMetricData();
-  
+
   useEffect(() => {
     setSelectedChainsInDataContext(selectedChains);
   }, [selectedChains, setSelectedChainsInDataContext]);
