@@ -120,7 +120,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-growthepie-logo" size="md" />}
               label="Brand Guide"
-              href="http://api.growthepie.com/brand/growthepie_brand_guide.zip"
+              href="https://api.growthepie.com/brand/growthepie_brand_guide.zip"
             />
           </div>
           <div className="md:pt-[35px] flex flex-col gap-y-[15px] justify-between md:max-w-[400px]">

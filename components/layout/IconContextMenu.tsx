@@ -167,7 +167,7 @@ export const IconContextMenu = ({
   // Add new handler for Brand Guide
   const handleBrandGuide = (event: React.MouseEvent) => {
     event.stopPropagation();
-    window.open("http://api.growthepie.com/brand/growthepie_brand_guide.zip", "_blank");
+    window.open("https://api.growthepie.com/brand/growthepie_brand_guide.zip", "_blank");
     setIsOpen(false);
   };
 
