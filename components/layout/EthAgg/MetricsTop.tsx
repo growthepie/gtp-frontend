@@ -410,7 +410,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   const filteredTPSChains = useMemo(() => {
     return Object.entries(chainData)
       .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
-      .filter((data) => data.tps && data.tps > 0 && SupportedChainKeys.includes(data.chainId))
+      .filter((data) => data.tps && data.tps > 0)
       .sort((a, b) => (b.tps || 0) - (a.tps || 0))
       .map((data, index) => ({
         chainId: data.chainId,
@@ -825,7 +825,8 @@ const ChainTransitionItem = React.memo(({
   showUsd = false
 }: ChainTransitionItemProps) => {
   const { AllChainsByKeys } = useMaster();
-  const chain = AllChainsByKeys[chainId];
+  // remove zircuit from the AllChainsByKeys
+  const chain = chainId !== 'zircuit' ? AllChainsByKeys[chainId] : undefined;
 
   const isSupportedChain = chain !== undefined;
 
