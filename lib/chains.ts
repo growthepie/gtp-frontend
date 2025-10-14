@@ -1,5 +1,5 @@
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, AUTH_SUBDOMAIN } from "./helpers";
 
 export type Chain = {
   label: string;
@@ -194,8 +194,10 @@ export const Get_SupportedChainKeys = (
 ) => {
   if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
+    const supportedDeployments = AUTH_SUBDOMAIN ? [AUTH_SUBDOMAIN.toUpperCase(), "PROD"] : ["DEV", "PROD"];
+
     let keys = Object.keys(data.chains)
-      .filter((key) => ["DEV", "PROD"].includes(data.chains[key].deployment))
+      .filter((key) => supportedDeployments.includes(data.chains[key].deployment))
       .map((key) => key);
 
     if (additionalKeys) {
@@ -205,8 +207,9 @@ export const Get_SupportedChainKeys = (
     return keys;
   }
 
+  const supportedDeployments = AUTH_SUBDOMAIN ? [AUTH_SUBDOMAIN.toUpperCase(), "PROD"] : ["DEV", "PROD"];
   let keys = Object.keys(data.chains)
-    .filter((key) => ["PROD"].includes(data.chains[key].deployment))
+    .filter((key) => supportedDeployments.includes(data.chains[key].deployment))
     .map((key) => key);
 
   if (additionalKeys) {

@@ -5,12 +5,14 @@ export const IS_PRODUCTION =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
 // get current http or https
-export const CURRENT_PROTOCOL = typeof window !== "undefined" ? window.location.protocol : "http:";
+export const CURRENT_PROTOCOL = typeof window !== "undefined" ? window.location.protocol : "https:";
+
+export const AUTH_SUBDOMAIN = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
 
 export const BASE_URLS = {
   development: `${CURRENT_PROTOCOL}//${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  preview: "https://dev.growthepie.com",
-  production: `https://www.growthepie.com`,
+  preview: AUTH_SUBDOMAIN ? `https://${AUTH_SUBDOMAIN}.growthepie.com` : "https://dev.growthepie.com",
+  production: AUTH_SUBDOMAIN ? `https://${AUTH_SUBDOMAIN}.growthepie.com` : "https://www.growthepie.com",
 };
 
 export const BASE_URL =
@@ -23,4 +25,3 @@ export const BASE_URL =
       : "production"
   ];
 
-export const SUBDOMAIN_CUSTOMER = process.env.NEXT_PUBLIC_SUBDOMAIN_CUSTOMER;

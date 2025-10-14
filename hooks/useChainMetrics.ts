@@ -36,6 +36,7 @@ export function useChainMetrics(
   master: MasterResponse
 ): UseChainMetricsResult {
   const { fetcher } = useSWRConfig();
+  console.log("fetcher", fetcher);
   const supportedChainKeys = Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
 
   // Filter and prepare URLs

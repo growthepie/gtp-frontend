@@ -27,6 +27,8 @@ export function useNotifications() {
     },
   );
 
+  console.log("url", BASE_URL + "/api/notifications");
+
   // Get the raw data based on the mode
   const rawData = useMemo(() => {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {

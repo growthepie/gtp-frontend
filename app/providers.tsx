@@ -11,6 +11,7 @@ import { ToastProvider } from "@/components/toast/GTPToast";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useEffect } from "react";
 import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
+import { addAuthToUrl } from '@/lib/cloudfront-url-auth';
 
 // load icons
 // addCollection(GTPIcons);
@@ -21,38 +22,53 @@ type ProvidersProps = {
   forcedTheme?: string;
 };
 
-// bypass AWS rate limiting in development
-const headers = new Headers();
-headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-headers.set("Pragma", "no-cache");
-headers.set("Expires", "0");
-
-if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN)
-  headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
-
-const requestOptions = {
-  method: "GET",
-  headers: headers,
-};
+/**
+ * Check if a URL requires authentication (zircuit routes)
+ */
+function requiresAuth(url: string): boolean {
+  // Add patterns that require authentication
+  const protectedPatterns = [
+    '/metrics/chains/zircuit/',
+  ];
+  
+  return protectedPatterns.some(pattern => url.includes(pattern));
+}
 
 const singleOrMultiFetcher = async (urlOrUrls) => {
   const fetchWithErrorHandling = async (url) => {
-    const response = await fetch(url, requestOptions);
+    // Add CloudFront auth params to protected URLs
+    const finalUrl = requiresAuth(url) ? addAuthToUrl(url) : url;
+
+    // Build headers
+    const headers = new Headers();
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
+
+    if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN) {
+      headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
+    }
+
+    const requestOptions: RequestInit = {
+      method: "GET",
+      headers: headers,
+    };
+
+    console.log(finalUrl, requestOptions);
+
+    const response = await fetch(finalUrl, requestOptions);
 
     // For 404/403 errors on chain metrics, return null instead of throwing
-    if (!response.ok && url.includes('/metrics/chains/')) {
+    if (!response.ok && finalUrl.includes('/metrics/chains/')) {
       if (response.status === 404 || response.status === 403) {
-        // Return null for expected missing data
         return null;
       }
     }
 
-    // For successful responses, parse JSON
     if (response.ok) {
       return response.json();
     }
 
-    // For other errors, throw with status information
     const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
     error.status = response.status;
     error.response = response;
@@ -73,7 +89,6 @@ const devMiddleware = (useSWRNext) => {
         if (Array.isArray(urlOrUrls)) {
           return Promise.all(urlOrUrls.map(url => {
             if (url.includes("api.growthepie.com")) {
-              // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
               let newUrl = url.replace("/v1/", "/dev/");
               return fetcher(newUrl);
             }
@@ -81,7 +96,6 @@ const devMiddleware = (useSWRNext) => {
           }));
         } else {
           if (urlOrUrls.includes("api.growthepie.com")) {
-            // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
             let newUrl = urlOrUrls.replace("/v1/", "/dev/");
             return fetcher(newUrl);
           }

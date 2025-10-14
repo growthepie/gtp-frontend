@@ -1,4 +1,4 @@
-import { SUBDOMAIN_CUSTOMER } from "./helpers";
+import { AUTH_SUBDOMAIN } from "./helpers";
 
 // Legacy URLs - kept for backwards compatibility during migration
 export const MetricsURLs = {
@@ -71,8 +71,8 @@ export const DATimeseriesURL =
 export const EconomicsURL = "https://api.growthepie.com/v1/economics.json";
 
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";
-console.log("SUBDOMAIN_CUSTOMER", SUBDOMAIN_CUSTOMER);
-export const MasterURL = SUBDOMAIN_CUSTOMER ? `https://api.growthepie.com/v1/master_${SUBDOMAIN_CUSTOMER}.json` : "https://api.growthepie.com/v1/master.json";
+console.log("AUTH_SUBDOMAIN", AUTH_SUBDOMAIN);
+export const MasterURL = AUTH_SUBDOMAIN ? `https://api.growthepie.com/v1/master_${AUTH_SUBDOMAIN}.json` : "https://api.growthepie.com/v1/master.json";
 
 export const ContractsURL = "https://api.growthepie.com/v1/contracts.json";
 

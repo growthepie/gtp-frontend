@@ -15,6 +15,71 @@ interface FloatingBarButtonProps {
   title?: string;
 }
 
+export const FloatingBarExpanableLabelButton: React.FC<FloatingBarButtonProps> = ({
+  onClick,
+  label,
+  icon,
+  iconPosition = 'left',
+  size = 'md',
+  className = '',
+  showBadge = false,
+  badgeContent,
+  title,
+}) => {
+  const getBaseClasses = () => {
+    const baseClasses = "flex items-center rounded-full bg-color-bg-default";
+    
+    if (!label) {
+      // Icon-only buttons are circular
+      return `${baseClasses} justify-center ${size === 'sm' ? 'w-[30px] h-[30px]' : 'w-[44px] h-[44px]'}`;
+    }
+    
+    // Buttons with text have padding and gap
+    return `${baseClasses} ${size === 'sm' ? 'px-[10px] h-[30px]' : 'pr-[15px] h-[44px]'}`;
+  };
+
+  const iconComponent = useMemo(() => {
+    if (!icon) return null;
+    if(typeof icon === 'string') {
+      if(icon.includes(":")) {
+        return <div><GTPIcon icon={icon as GTPIconName} className={sizeClassMap[size]} containerClassName='!w-[44px] !h-[44px] flex items-center justify-center' /></div>;
+      }
+      return <div><GTPIcon icon={icon as GTPIconName} size={size === 'sm' ? 'sm' : 'md'} containerClassName='!w-[44px] !h-[44px] flex items-center justify-center' /></div>;
+    }
+    return icon;
+  }, [icon, size]);
+
+  return (
+    <button
+      className={`${getBaseClasses()} ${className} overflow-hidden active:scale-[0.98] max-w-[44px] group hover:max-w-[300px] transition-all duration-300`}
+      onClick={onClick}
+      title={title}
+    >
+      {/* Icon on the left if iconPosition is 'left' and icon exists */}
+      {icon && iconPosition === 'left' && (
+          iconComponent
+      )}
+      
+      {/* Label if provided */}
+      {label && (
+        <span className="heading-small-sm group-hover:opacity-100 opacity-0 transition-all duration-300">{label}</span>
+      )}
+      
+      {/* Icon on the right if iconPosition is 'right' and icon exists */}
+      {icon && iconPosition === 'right' && (
+          iconComponent
+      )}
+      
+      {/* Badge if showBadge is true */}
+      {showBadge && (
+        <div className="flex items-center justify-center min-w-[20px] h-[20px] rounded-full bg-[#FE5468] text-white text-xs">
+          {badgeContent}
+        </div>
+      )}
+    </button>
+  );
+};
+
 export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
   onClick,
   label,
