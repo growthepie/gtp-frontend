@@ -141,31 +141,34 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
     
 
    
-  if(!chainDataTPS || !chainDataOverview) return null;
     return (
         <div  className="flex flex-col w-full gap-y-[10px]">
             <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." leftIcon={"gtp-megaphone"} />
-            {Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
+            {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
                 <HighlightCards key={metric} metric={metric} icon="gtp-metrics-activeaddresses" chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={metric} />
             ))}
-            
             <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
-            <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />
-            <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />
+            {chainDataTPS && (
+                <>
+                        <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
+                        <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />
+                </>
+            )}
+            {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}
             <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
-            {Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv", "throughput"].includes(metric)).map((metric) => (
+            {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv"].includes(metric)).map((metric) => (
                 <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
             ))}
             <PartitionLine />
-            <EventsCard totalHeight={500}>
-                {[...chainDataOverview.data.events]
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                    .map((event, index) => (
-                        <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
-                    ))}
-
-            </EventsCard>
+            {chainDataOverview && (
+                <EventsCard totalHeight={500}>
+                    {[...chainDataOverview.data.events]
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((event, index) => (
+                            <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
+                        ))}
+                </EventsCard>
+            )}
         </div>
     )
 }

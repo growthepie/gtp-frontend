@@ -162,6 +162,7 @@ export interface FeeMetrics {
   throughput: FeeSchema;
   txcosts_swap: FeeSchema;
   txcosts_avg: FeeSchema;
+  [key: string]: FeeSchema;
 }
 
 export interface UnitSchema {
