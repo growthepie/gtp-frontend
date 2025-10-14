@@ -9,22 +9,25 @@ import moment from "moment";
 
 
  export interface ChainTPSHistoryItem {
-    "24h_high": number;
-    "24h_high_timestamp": string;
-    ath: number;
-    ath_timestamp: string;
-    chain_name: string; 
-    display_name: string;
-    timestamp: string;
-    tps: number; 
-    tx_cost_avg: number;
-    tx_cost_avg_usd: number;
-    tx_cost_erc20_transfer: number;
-    tx_cost_erc20_transfer_usd: number;
-    tx_cost_median: number;
-    tx_cost_median_usd: number;
-    tx_cost_swap: number;
-    tx_cost_swap_usd: number;
+  chain_name:                 string;
+  display_name:               string;
+  block_time:                 number;
+  tps:                        number;
+  timestamp:                  number;
+  tx_cost_erc20_transfer:     number;
+  tx_cost_erc20_transfer_usd: number;
+  tx_cost_swap:               number;
+  tx_cost_swap_usd:           number;
+  tx_cost_avg:                number;
+  tx_cost_avg_usd:            number;
+  tx_cost_median:             number;
+  tx_cost_median_usd:         number;
+  last_updated:               Date;
+  ath:                        number;
+  ath_timestamp:              Date;
+  "24h_high":                 number;
+  "24h_high_timestamp":       Date;
+  is_active:                  boolean;
 } 
 
 interface HistoryArrayItem {
