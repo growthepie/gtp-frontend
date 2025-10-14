@@ -98,6 +98,7 @@ export interface ChainInfo {
   tab_status: {
     [key: string]: "locked" | "active" | "soon";
   };
+  supported_metrics: string[];
 }
 
 export interface BlockExplorers {
@@ -129,6 +130,7 @@ export interface MetricInfo {
   max_date_fill: boolean;
   monthly_agg: "sum" | "avg" | "maa";
   source: string[];
+  supported_chains: string[];
 }
 
 export interface DataAvailabilityLayers {

@@ -1,6 +1,6 @@
 import useSWR, { useSWRConfig } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
-import { getChainMetricURL } from "@/lib/urls";
+import { getChainMetricURL, MetricURLKeyToAPIKey } from "@/lib/urls";
 import { useMemo, useCallback } from "react";
 import { ChainData } from "@/types/api/MetricsResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -36,7 +36,18 @@ export function useChainMetrics(
   master: MasterResponse
 ): UseChainMetricsResult {
   const { fetcher } = useSWRConfig();
-  const supportedChainKeys = Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
+  console.log("metricURLKey", metricURLKey);
+  const metricKey = MetricURLKeyToAPIKey[metricURLKey];
+  if (!master.metrics[metricKey]) {
+    console.error("Metric not found", metricKey);
+    return {
+      data: undefined,
+      error: "Metric not found",
+      isLoading: false,
+      isValidating: false,
+    };
+  }
+  const supportedChainKeys = master.metrics[metricKey].supported_chains || Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
 
   // Filter and prepare URLs
   const validChainKeys = useMemo(() =>
