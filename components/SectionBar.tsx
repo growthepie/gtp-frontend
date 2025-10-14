@@ -32,7 +32,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
              ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
              ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
              ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
-             ${isMobile ? "flex-shrink flex-grow-0 basis-auto bottom-[0px]" : "flex-1 sbottom-[22px] shadow-xl shadow-[#1F2726]"}`}
+             ${isMobile ? "flex-shrink flex-grow-0 basis-auto bottom-[0px]" : "flex-1"}`}
              
             style={{
                 zIndex: !isSelected && !isHovered ? 10 * index : isHovered ? 110 : 100,

@@ -1055,8 +1055,8 @@ export default function FeesPage() {
             )}
             {!master.fee_metrics[metric].currency && (
               <div className="text-[10px]">
-                {master.fee_metrics[metric].prefix
-                  ? master.fee_metrics[metric].prefix
+                {master.fee_metrics[metric].units[unitKey].prefix
+                  ? master.fee_metrics[metric].units[unitKey].prefix
                   : ""}
               </div>
             )}
@@ -1097,7 +1097,7 @@ export default function FeesPage() {
                   : ""}
               </div>
             )}
-            {master.fee_metrics[metric].suffix && (
+            {master.fee_metrics[metric].units[unitKey].suffix && (
               <div
                 className={`text-[8px] text-forest-900 ${master.fee_metrics[metric].units[unitKey].suffix
                   ? "pr-[5px] pl-0.5"
@@ -1136,8 +1136,8 @@ export default function FeesPage() {
 
           {!master.fee_metrics[metric].currency && (
             <div className="text-[10px]">
-              {master.fee_metrics[metric].prefix
-                ? master.fee_metrics[metric].prefix
+              {master.fee_metrics[metric].units[unitKey].prefix
+                ? master.fee_metrics[metric].units[unitKey].prefix
                 : ""}
             </div>
           )}
@@ -1177,7 +1177,7 @@ export default function FeesPage() {
                 : ""}
             </div>
           )}
-          {master.fee_metrics[metric].suffix && (
+          {master.fee_metrics[metric].units[unitKey].suffix && (
             <div
               className={`text-[8px] text-forest-400 ${master.fee_metrics[metric].units[unitKey].suffix
                 ? "pr-[5px] pl-0.5"

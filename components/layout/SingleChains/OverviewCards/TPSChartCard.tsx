@@ -9,22 +9,25 @@ import moment from "moment";
 
 
  export interface ChainTPSHistoryItem {
-    "24h_high": number;
-    "24h_high_timestamp": string;
-    ath: number;
-    ath_timestamp: string;
-    chain_name: string; 
-    display_name: string;
-    timestamp: string;
-    tps: number; 
-    tx_cost_avg: number;
-    tx_cost_avg_usd: number;
-    tx_cost_erc20_transfer: number;
-    tx_cost_erc20_transfer_usd: number;
-    tx_cost_median: number;
-    tx_cost_median_usd: number;
-    tx_cost_swap: number;
-    tx_cost_swap_usd: number;
+  chain_name:                 string;
+  display_name:               string;
+  block_time:                 number;
+  tps:                        number;
+  timestamp:                  number;
+  tx_cost_erc20_transfer:     number;
+  tx_cost_erc20_transfer_usd: number;
+  tx_cost_swap:               number;
+  tx_cost_swap_usd:           number;
+  tx_cost_avg:                number;
+  tx_cost_avg_usd:            number;
+  tx_cost_median:             number;
+  tx_cost_median_usd:         number;
+  last_updated:               Date;
+  ath:                        number;
+  ath_timestamp:              Date;
+  "24h_high":                 number;
+  "24h_high_timestamp":       Date;
+  is_active:                  boolean;
 } 
 
 interface HistoryArrayItem {
@@ -80,7 +83,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   </div>
             </div>
             <div className="flex items-center gap-x-[8px] heading-small-xs  group">
-                  <div className="flex flex-col gap-y-[2px] items-end md:items-start">
+                  <div className="flex flex-col gap-y-[2px] items-end">
                     <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)}</div>
                     <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">Current TPS</div>
                   </div>

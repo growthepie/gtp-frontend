@@ -13,6 +13,16 @@ interface UseSearchParamStateOptions<T> {
   debounceMs?: number;
 }
 
+// Batch coordinator to prevent race conditions when multiple params update simultaneously
+const pendingUpdates = new Map<string, {
+  value: any;
+  defaultValue: any;
+  serializer?: SerializerFunction<any>;
+  skipUrlUpdate?: boolean | ((value: any) => boolean);
+}>();
+let batchTimer: NodeJS.Timeout | null = null;
+let routerContext: { router: any; pathname: string; searchParams: URLSearchParams; mode: 'push' | 'replace' } | null = null;
+
 // Optimized shallow equality check for primitive types and simple objects
 function shallowEqual<T>(a: T, b: T): boolean {
   if (a === b) return true;
@@ -45,6 +55,58 @@ function safeParser<T>(parser: ParserFunction<T> | undefined, value: string | nu
   } catch (error) {
     console.warn(`Failed to parse search param value "${value}":`, error);
     return defaultValue;
+  }
+}
+
+// Add this after safeParser function
+
+function flushBatchedUpdates() {
+  if (pendingUpdates.size === 0 || !routerContext) {
+    return;
+  }
+
+  const { router, pathname, searchParams, mode } = routerContext;
+  const newParams = new URLSearchParams(searchParams.toString());
+  let hasChanges = false;
+
+  pendingUpdates.forEach((update, paramName) => {
+    const shouldSkip = typeof update.skipUrlUpdate === 'function'
+      ? update.skipUrlUpdate(update.value)
+      : update.skipUrlUpdate;
+
+    if (shouldSkip) return;
+
+    if (shallowEqual(update.value, update.defaultValue) || update.value === null || update.value === undefined) {
+      if (newParams.has(paramName)) {
+        newParams.delete(paramName);
+        hasChanges = true;
+      }
+    } else {
+      try {
+        const serialized = update.serializer ? update.serializer(update.value) : String(update.value);
+        if (newParams.get(paramName) !== serialized) {
+          newParams.set(paramName, serialized);
+          hasChanges = true;
+        }
+      } catch (error) {
+        console.warn(`Failed to serialize search param:`, error);
+      }
+    }
+  });
+
+  pendingUpdates.clear();
+
+  if (hasChanges) {
+    const newUrl = newParams.toString() ? `${pathname}?${newParams}` : pathname;
+    const scrollY = window.scrollY;
+    
+    if (mode === 'replace') {
+      router.replace(newUrl, { scroll: false });
+    } else {
+      router.push(newUrl, { scroll: false });
+    }
+    
+    requestAnimationFrame(() => window.scrollTo(0, scrollY));
   }
 }
 
@@ -87,94 +149,26 @@ export function useSearchParamState<T>(
 
   // Debounced URL update function
   const updateUrl = useCallback((newValue: T) => {
-    // Clear any pending update
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
+    // Update router context
+    routerContext = { router, pathname, searchParams, mode: updateMode };
     
-    // Store the pending value
-    pendingValueRef.current = newValue;
+    // Queue this update
+    pendingUpdates.set(paramName, {
+      value: newValue,
+      defaultValue,
+      serializer,
+      skipUrlUpdate,
+    });
     
-    updateTimeoutRef.current = setTimeout(() => {
-      // Check if this value is still the most recent
-      if (!shallowEqual(pendingValueRef.current, newValue)) {
-        return;
-      }
-      
-      const shouldSkipUrlUpdate = typeof skipUrlUpdate === 'function'
-        ? skipUrlUpdate(newValue)
-        : skipUrlUpdate;
-      
-      if (shouldSkipUrlUpdate) {
-        pendingValueRef.current = null;
-        return;
-      }
-      
-      const newParams = new URLSearchParams(searchParams.toString());
-      
-      // Remove param if value equals default
-      if (shallowEqual(newValue, defaultValue) || 
-          newValue === null || 
-          newValue === undefined) {
-        newParams.delete(paramName);
-      } else {
-        try {
-          const serializedValue = serializer 
-            ? serializer(newValue) 
-            : String(newValue);
-          
-          // Check if the serialized value has actually changed
-          const currentSerialized = searchParams.get(paramName);
-          if (currentSerialized === serializedValue) {
-            pendingValueRef.current = null;
-            return;
-          }
-          
-          newParams.set(paramName, serializedValue);
-          lastSerializedRef.current = serializedValue;
-        } catch (error) {
-          console.warn(`Failed to serialize search param value:`, error);
-          pendingValueRef.current = null;
-          return;
-        }
-      }
-      
-      // Construct the full URL with the pathname
-      const newQueryString = newParams.toString();
-      const newUrl = newQueryString ? `${pathname}?${newQueryString}` : pathname;
-      
-      // Store scroll position
-      const scrollY = window.scrollY;
-      
-      // Update lastUrlValueRef BEFORE navigation
-      lastUrlValueRef.current = newValue;
-      
-      // Perform navigation
-      if (updateMode === 'replace') {
-        router.replace(newUrl, { scroll: false });
-      } else {
-        router.push(newUrl, { scroll: false });
-      }
-      
-      // Clear pending value
-      pendingValueRef.current = null;
-      
-      // Restore scroll position
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
+    // Schedule batch flush
+    if (batchTimer) clearTimeout(batchTimer);
+    batchTimer = setTimeout(() => {
+      flushBatchedUpdates();
+      batchTimer = null;
     }, debounceMs);
-  }, [
-    pathname,
-    searchParams, 
-    paramName, 
-    defaultValue, 
-    serializer, 
-    updateMode, 
-    router, 
-    skipUrlUpdate, 
-    debounceMs
-  ]);
+    
+    lastUrlValueRef.current = newValue;
+  }, [router, pathname, searchParams, updateMode, paramName, defaultValue, serializer, skipUrlUpdate, debounceMs]);
 
   // Sync state with URL changes (only from external navigation)
   useEffect(() => {
@@ -221,8 +215,10 @@ export function useSearchParamState<T>(
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
+      // delete the pending update for this param
+      pendingUpdates.delete(paramName);
     };
-  }, []);
+  }, [paramName]);
 
   return [state, setStateAndUrl];
 }

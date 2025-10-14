@@ -223,7 +223,7 @@ export default function RootLayout({
             </div>
           </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex min-h-screen w-full max-w-[1700px] md:pl-[30px]">
+            <div className="flex min-h-screen w-full max-w-[1920px] md:pl-[30px]">
               <ProjectsMetadataProvider>
                 <GlobalSearchBar />
               </ProjectsMetadataProvider>
@@ -241,7 +241,7 @@ export default function RootLayout({
                   <Footer />
                 </div>
               </div>
-              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1700px] justify-end">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1920px] justify-end">
                 <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
                     {/* <Details /> */}
                     <Share />
