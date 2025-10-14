@@ -873,7 +873,7 @@ function BreakdownCharts({
         </HighchartsProvider>
       </div>
       <div className="w-full h-[2px] px-[45px] flex items-center justify-center relative bottom-[1.5px] ">
-        <div className="w-full h-full  bg-[#344240]"></div>
+        <div className="w-full h-full  bg-color-bg-medium"></div>
       </div>
       <div
         className="h-[175px] w-full flex justify-center items-center relative  overflow-visible"

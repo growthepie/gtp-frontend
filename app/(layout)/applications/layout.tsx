@@ -10,6 +10,7 @@ import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
 import { PageTitleAndDescriptionAndControls } from "./_components/Components";
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -69,13 +70,15 @@ export default async function Layout({
       }}>
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="txcount">
-            <ApplicationsDataProvider>
-              {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-              <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot>
-                <PageTitleAndDescriptionAndControls />
-              </Container>
-                {children}
-            </ApplicationsDataProvider>
+            <ProjectsMetadataProvider>
+              <ApplicationsDataProvider>
+                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
+                <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot>
+                  <PageTitleAndDescriptionAndControls />
+                </Container>
+                  {children}
+              </ApplicationsDataProvider>
+            </ProjectsMetadataProvider>
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>

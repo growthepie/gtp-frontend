@@ -90,9 +90,9 @@ export default function FloatingBar() {
   // --- End Mobile Settings Popover Content ---
 
   return (
-    <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240] shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
+    <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-color-bg-medium shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
       {/* Home Icon */}
-      <Link href="https://www.growthepie.com/" target="_blank" className="flex items-center justify-center !size-[44px] bg-[#1F2726] rounded-full shrink-0">
+      <Link href="https://www.growthepie.com/" target="_blank" className="flex items-center justify-center !size-[44px] bg-color-bg-default rounded-full shrink-0">
         <GTPIcon icon="gtp-house" size="md" />
       </Link>
 
@@ -156,7 +156,7 @@ export default function FloatingBar() {
         {/* Popover container */}
         {/* Customize Button */}
         <button
-          className={`z-10 cursor-pointer flex md:hidden  overflow-hidden items-center justify-start pl-[10px] gap-x-1.5 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-[#1F2726]`}
+          className={`z-10 cursor-pointer flex md:hidden  overflow-hidden items-center justify-start pl-[10px] gap-x-1.5 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-color-bg-default`}
           title="Customize Icon Colors"
           style={{ width: isCustomizeOpen ? customizeButtonWidthMobile : customizeButtonWidthMobile }}
         >
@@ -164,7 +164,7 @@ export default function FloatingBar() {
           <span style={{ opacity: isCustomizeOpen ? 0 : 0 }}>Customize</span>
         </button>
         <button
-          className={`z-10 cursor-pointer hidden md:flex items-center gap-x-1.5 px-3 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-[#1F2726]`}
+          className={`z-10 cursor-pointer hidden md:flex items-center gap-x-1.5 px-3 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-color-bg-default`}
           title="Customize Icon Colors"
             
           style={{ width: isCustomizeOpen ? customizeButtonWidthHover : customizeButtonWidth }}
@@ -175,7 +175,7 @@ export default function FloatingBar() {
 
         {/* Popover Menu */}
         <div
-          className={`z-0 whitespace-nowrap w-0 max-h-[0px] absolute bottom-[calc(100%+15px)] top-auto right-[calc(-50%-10px)] md:bottom-auto md:top-1/2 md:left-auto md:right-0 bg-[#151A19] rounded-[22px] md:rounded-t-[0px] md:rounded-b-[22px] transition-all duration-200 ease-out shadow-[0px_4px_46.2px_0px_#000000] overflow-hidden origin-top-right`}
+          className={`z-0 whitespace-nowrap w-0 max-h-[0px] absolute bottom-[calc(100%+15px)] top-auto right-[calc(-50%-10px)] md:bottom-auto md:top-1/2 md:left-auto md:right-0 bg-color-ui-active rounded-[22px] md:rounded-t-[0px] md:rounded-b-[22px] transition-all duration-200 ease-out shadow-[0px_4px_46.2px_0px_#000000] overflow-hidden origin-top-right`}
           role="dialog"
           aria-modal="true"
           style={{ 
@@ -191,10 +191,10 @@ export default function FloatingBar() {
       </div>
       {/* --- End Customize Button and Popover --- */}
       {/* Download All Button (Visible differently on screen sizes) */}
-      <button className="flex items-center justify-center rounded-full !size-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick} title="Download All">
+      <button className="flex items-center justify-center rounded-full !size-[44px] bg-color-bg-default" onClick={handleDownloadAllClick} title="Download All">
         <GTPIcon icon="gtp-download" size="md" />
       </button>
-      {/* <button className="hidden lg:flex items-center gap-x-[10px] rounded-full px-[15px] h-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick}>
+      {/* <button className="hidden lg:flex items-center gap-x-[10px] rounded-full px-[15px] h-[44px] bg-color-bg-default" onClick={handleDownloadAllClick}>
         <GTPIcon icon="gtp-download" size="md" />
         <div className="heading-small-sm">Download All</div>
       </button> */}
@@ -218,10 +218,10 @@ const SelectOption = ({
 }) => {
   return (
     <div
-      className={`relative flex items-center gap-[8px] w-[57px] h-[34px] px-[2px] py-[2px] rounded-full cursor-pointer bg-[#5A6462] ${className}`}
+      className={`relative flex items-center gap-[8px] w-[57px] h-[34px] px-[2px] py-[2px] rounded-full cursor-pointer bg-color-ui-hover ${className}`}
       onClick={() => setSelectedOption(option)}
     >
-      <div className="absolute inset-[2px] rounded-full bg-[#1F2726] flex items-center justify-center pl-[5px] pr-[1px]">
+      <div className="absolute inset-[2px] rounded-full bg-color-bg-default flex items-center justify-center pl-[5px] pr-[1px]">
         <div className="size-[26px] flex items-center justify-center">
         {icon}
         </div>
@@ -281,7 +281,7 @@ const SizeInput: React.FC<SizeInputProps> = ({
   return (
     // Container: Rounded, background, flex layout, specific height
     <div
-      className={`relative flex items-center bg-[#1F2726] rounded-full h-[34px] px-1 gap-x-0.5 overflow-hidden`}
+      className={`relative flex items-center bg-color-bg-default rounded-full h-[34px] px-1 gap-x-0.5 overflow-hidden`}
     // style={{ width: 'fit-content' }} // Or set a fixed width if preferred
     >
       
@@ -289,7 +289,7 @@ const SizeInput: React.FC<SizeInputProps> = ({
       <button
         onClick={handleDecrement}
         disabled={selectedSize <= minSize}
-        className="flex items-center justify-center p-0.5 rounded-full text-[#CDD8D3] bg-transparent hover:bg-[#344240]/60"
+        className="flex items-center justify-center p-0.5 rounded-full text-color-text-primary bg-transparent hover:bg-color-bg-medium/60"
         aria-label="Decrease icon size"
         title="Decrease size"
       >
@@ -316,14 +316,14 @@ const SizeInput: React.FC<SizeInputProps> = ({
       />
 
       {/* Unit Display */}
-      <span className="text-[10px] text-[#CDD8D3]/80 select-none pointer-events-none -ml-0.5 pr-1">px</span>
+      <span className="text-[10px] text-color-text-primary/80 select-none pointer-events-none -ml-0.5 pr-1">px</span>
 
 
       {/* Increment Button */}
       <button
         onClick={handleIncrement}
         disabled={selectedSize >= maxSize}
-        className="flex items-center justify-center p-0.5 rounded-full text-[#CDD8D3] bg-transparent hover:bg-[#344240]/60  -ml-0.5" // Negative margin to reduce gap slightly
+        className="flex items-center justify-center p-0.5 rounded-full text-color-text-primary bg-transparent hover:bg-color-bg-medium/60  -ml-0.5" // Negative margin to reduce gap slightly
         aria-label="Increase icon size"
         title="Increase size"
       >

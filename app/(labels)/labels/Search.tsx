@@ -311,8 +311,8 @@ export default function Search() {
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
-          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]" />
-          {/* <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]"> */}
+          <div className="absolute flex items-center w-full bg-color-bg-default gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]" />
+          {/* <div className="relative w-full min-h-[44px] z-10 flex items-center bg-color-bg-default gap-x-[10px] rounded-[22px] pr-[10px]"> */}
           <div className="absolute inset-0 z-[2] flex items-center w-full">
             <div className={`relative flex justify-center items-center pl-[10px]`}>
               {isOpen ? (
@@ -347,7 +347,7 @@ export default function Search() {
               {(!isOpen && Filters.length > 0) ? (
                 <>
                   <div className="pl-[10px]">
-                    <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                    <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                   </div>
                   <FilterSelectionContainer className="w-full">
                     {Filters}
@@ -357,7 +357,7 @@ export default function Search() {
               <div className={`${isOpen ? "flex" : "hidden md:flex"} justify-end items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
                 {Filters.length > 0 && (
                   <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
-                    <div className="text-[8px] text-[#CDD8D3] font-medium">
+                    <div className="text-[8px] text-color-text-primary font-medium">
                       {labelsNumberFiltered.toLocaleString("en-GB")} contracts
                     </div>
                   </div>
@@ -420,7 +420,7 @@ export default function Search() {
                 <div className={`flex justify-end items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
                   {Filters.length > 0 && (
                     <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
-                      <div className="text-[8px] text-[#CDD8D3] font-medium">
+                      <div className="text-[8px] text-color-text-primary font-medium">
                         {labelsNumberFiltered.toLocaleString("en-GB")} contracts
                       </div>
                     </div>
@@ -464,10 +464,10 @@ export default function Search() {
           </div> */}
           {/* </div> */}
           <div
-            className={`z-[0] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
+            className={`z-[0] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-color-ui-active left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
-            <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
+            <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-color-bg-medium z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
               <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
@@ -493,19 +493,19 @@ export default function Search() {
                     />
                   </div>
                   <div className="text-white leading-[150%]">Address</div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                 </div>
                 <div
-                  className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer"
+                  className="flex items-center bg-color-bg-medium rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer"
                   onClick={() => handleFilter("address", search)}
                 >
                   <div className="flex items-center justify-center w-[25px] h-[25px]">
                     <Icon
                       icon="feather:search"
-                      className="text-[#CDD8D3] w-[15px] h-[15px]"
+                      className="text-color-text-primary w-[15px] h-[15px]"
                     />
                   </div>
-                  <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+                  <div className="text-color-text-primary leading-[120%] text-[10px] truncate">
                     {search}
                   </div>
                   <div className="flex items-center justify-center w-[15px] h-[15px]">
@@ -526,7 +526,7 @@ export default function Search() {
                     />
                   </div>
                   <div className="text-white leading-[150%]">Chain</div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                 </div>
 
                 {master && (
@@ -573,7 +573,7 @@ export default function Search() {
               {/* <div className="flex gap-x-[10px] items-center">
                 <div className="w-[15px] h-[15px]"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
                 <div className="text-white leading-[150%] whitespace-nowrap">Category</div>
-                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                 <div className="grid grid-flow-col grid-cols-4 grid-rows-2 justify-between items-center flex-1 pl-[18px] gap-x-[5px] gap-y-[5px]">
                   {master && Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, category]) => (
                     <Badge
@@ -591,8 +591,8 @@ export default function Search() {
                     />
                   ))}
                 </div>
-                <div className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
-                  <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-[#CDD8D3] w-[15px] h-[15px]' /></div>
+                <div className="flex items-center bg-color-bg-medium rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
+                  <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-color-text-primary w-[15px] h-[15px]' /></div>
                   <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
                 </div>
               </div> */}
@@ -604,7 +604,7 @@ export default function Search() {
                   <div className="text-white leading-[150%] whitespace-nowrap mt-1">
                     Categories
                   </div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full mt-2.5" />
                 </div>
                 <div className="w-full md:flex-1">
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[5px] gap-y-[5px]">
@@ -746,7 +746,7 @@ export default function Search() {
                   <div className="text-white leading-[150%] whitespace-nowrap mt-1">
                     Owner Project
                   </div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full mt-2.5" />
                 </div>
                 <FilterSelectionContainer className="w-full md:flex-1">
                   {search.length > 0
@@ -938,7 +938,7 @@ export const Badge = ({
 
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[3px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} text-[10px] rounded-full pl-[3px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -954,7 +954,7 @@ export const Badge = ({
         ) : (
           <div className="w-[0px] h-[12px]" />
         )}
-        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+        <div className="text-color-text-primary leading-[120%] text-[10px] truncate">
           {label}
         </div>
         {rightIcon ? (
@@ -976,7 +976,7 @@ export const Badge = ({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
+      className={`flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -985,7 +985,7 @@ export const Badge = ({
         <div className="flex items-center justify-center w-[25px] h-[25px]">
           <Icon
             icon={leftIcon}
-            className="text-[#CDD8D3] w-[15px] h-[15px]"
+            className="text-color-text-primary w-[15px] h-[15px]"
             style={{
               color: leftIconColor,
             }}
@@ -995,7 +995,7 @@ export const Badge = ({
         <div className="w-[3px] h-[25px]" />
       )}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate">
+        <div className="text-color-text-primary leading-[150%] pr-0.5 truncate">
           {label}
         </div>
       )}
@@ -1026,7 +1026,7 @@ export const AddIcon = ({ className, onClick }: IconProps) => (
     <Icon
       icon="heroicons-solid:plus-circle"
       className="w-[15px] h-[15px]"
-      style={{ color: "#5A6462" }}
+      style={{ color: "rgb(var(--ui-hover))" }}
     />
   </div>
 );
@@ -1039,7 +1039,7 @@ export const RemoveIcon = ({ className, onClick }: IconProps) => (
     <Icon
       icon="heroicons-solid:x-circle"
       className="w-[15px] h-[15px]"
-      style={{ color: "#FE5468" }}
+      style={{ color: "rgb(var(--accent-red))" }}
     />
   </div>
 );

@@ -25,7 +25,7 @@ export default function TopSelectArea({
                 <BreakdownButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Ethereum Ecosystem" icon="gtp-ethereumlogo" isComingSoon />
                 <BreakdownButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Builders & Apps" icon="gtp-project" isComingSoon />
             {/* </div> */}
-            <div className="absolute left-[15px] md:left-[50px] w-[calc(100%-30px)] md:w-[calc(100%-100px)] bottom-0 h-[24px] z-[-1] rounded-bl-[54px] rounded-br-[54px] bg-[#1F2726]"></div>
+            <div className="absolute left-[15px] md:left-[50px] w-[calc(100%-30px)] md:w-[calc(100%-100px)] bottom-0 h-[24px] z-[-1] rounded-bl-[54px] rounded-br-[54px] bg-color-bg-default"></div>
         </div>
     </Container>
   );
@@ -44,8 +44,8 @@ export default function TopSelectArea({
 // }) => {
 
 //     const IS_BREAKDOWN_GROUP_SELECTED = selectedBreakdownGroup === breakdownGroup;
-//     const selectedBreakdownClass = "bg-active-black border-[0px] border-[#1F2726] h-[48px]";
-//     const notSelectedBreakdownClass = !IS_PRODUCTION ? "bg-[#5A6462] h-[40px] group-hover:h-[48px]" : "bg-[#5A6462] h-[40px] group-hover:h-[48px] group-hover:pr-[15px]";
+//     const selectedBreakdownClass = "bg-color-ui-active border-[0px] border-[#1F2726] h-[48px]";
+//     const notSelectedBreakdownClass = !IS_PRODUCTION ? "bg-color-ui-hover h-[40px] group-hover:h-[48px]" : "bg-color-ui-hover h-[40px] group-hover:h-[48px] group-hover:pr-[15px]";
 //     const selectedBreakdownGroupClass = IS_BREAKDOWN_GROUP_SELECTED ? selectedBreakdownClass : notSelectedBreakdownClass;
    
 //     return (
@@ -77,8 +77,8 @@ export default function TopSelectArea({
 
 //     // const [isHovered, setIsHovered] = useState(false);
 
-//     const selectedBreakdownClass = "bg-active-black border-[3px] border-[#344240] h-[48px] hover:h-[48px] hover:pr-[15px]";
-//     const notSelectedBreakdownClass = "bg-medium-background hover:bg-[#5A6462] hover:pr-[15px] h-[36px] hover:h-[48px]";
+//     const selectedBreakdownClass = "bg-color-ui-active border-[3px] border-color-border h-[48px] hover:h-[48px] hover:pr-[15px]";
+//     const notSelectedBreakdownClass = "bg-color-bg-medium hover:bg-color-ui-hover hover:pr-[15px] h-[36px] hover:h-[48px]";
 //     const selectedBreakdownGroupClass = selectedBreakdownGroup === breakdownGroup ? selectedBreakdownClass : notSelectedBreakdownClass;
 
 //     const iconClass = selectedBreakdownGroup === breakdownGroup ? "scale-[122%]" : "scale-100 group-hover:scale-[122%] group-hover:pr-[5px]";
@@ -122,14 +122,14 @@ const BreakdownButton = ({
 
     // 1. Determine the classes for selected and not-selected states
     const selectedBreakdownClass = isComingSoon
-        ? "bg-active-black border-[3px] border-[#1F2726] h-[48px] text-[#344240]"
-        : "bg-active-black border-[3px] border-[#344240] h-[48px] hover:h-[48px] hover:pr-[15px]";
+        ? "bg-color-ui-active border-[3px] border-color-bg-medium h-[48px] text-[#344240]"
+        : "bg-color-ui-active border-[3px] border-color-bg-medium h-[48px] hover:h-[48px] hover:pr-[15px]";
 
     // NOTE: The original `ComingSoonButton` had a redundant ternary based on `IS_PRODUCTION`. 
     // This simplified version uses the more inclusive class.
     const notSelectedBreakdownClass = isComingSoon
-        ? "bg-[#5A6462] h-[36px] group-hover:h-[48px] group-hover:pr-[15px] text-[#344240]"
-        : "bg-medium-background hover:bg-[#5A6462] hover:pr-[15px] h-[36px] hover:h-[48px]";
+        ? "bg-color-ui-hover h-[36px] group-hover:h-[48px] group-hover:pr-[15px] text-[#344240]"
+        : "bg-color-bg-medium hover:bg-color-ui-hover hover:pr-[15px] h-[36px] hover:h-[48px]";
 
     const selectedBreakdownGroupClass = IS_BREAKDOWN_GROUP_SELECTED
         ? selectedBreakdownClass

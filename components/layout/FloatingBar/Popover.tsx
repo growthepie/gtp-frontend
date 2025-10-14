@@ -277,7 +277,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
     // when `isVisible` is true, AND a small delay or another rAF.
     const popoverClasses = `
       absolute z-50 
-      bg-[#151A19] 
+      bg-color-ui-active 
       rounded-[22px] 
       shadow-[0px_0px_50px_0px_#000000]
       ${className}

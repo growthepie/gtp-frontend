@@ -421,14 +421,14 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
       });
   };
 
-  if (displaySvgContent === undefined) return <div className="icon-card w-[95px] h-[60px] bg-[#1F2726]/50 rounded-[11px] animate-pulse"></div>;
+  if (displaySvgContent === undefined) return <div className="icon-card w-[95px] h-[60px] bg-color-bg-default/50 rounded-[11px] animate-pulse"></div>;
   if (displaySvgContent === null) return <div className="icon-card w-[95px] h-[60px] bg-red-900/20 rounded-[11px] flex items-center justify-center text-xs text-red-400">{icon.name} (Err)</div>;
 
   return (
     <div className="group relative w-[95px] h-[60px]">
       {/* absolute container, always centered */}
       <div className="absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 delay-100 z-0 group-hover:z-[10] group-hover:delay-0">
-      <div className="flex flex-col bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] bg-[#1F2726] group-hover:bg-[#5A6462] rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
+      <div className="flex flex-col bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] bg-color-bg-default group-hover:bg-color-ui-hover rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
         {/* Icon preview - centered */}
         <div 
           style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}

@@ -243,7 +243,7 @@ export default function AddressSearch() {
         <>
           <div className="flex relative w-[16.5%]">
             <div
-              className="w-full rounded-3xl text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
+              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
               onClick={() => setChainsOpen(!chainsOpen)}
             >
               {selectedChain === "all" ? (
@@ -286,7 +286,7 @@ export default function AddressSearch() {
               />
             </div>
             <div
-              className="z-50 divide-y divide-gray-100 rounded-lg bg-forest-100 dark:bg-forest-900 absolute top-full left-0 w-fit shadow-lg"
+              className="z-50 divide-y divide-gray-100 rounded-lg bg-color-bg-default dark:bg-forest-900 absolute top-full left-0 w-fit shadow-lg"
               hidden={!chainsOpen}
             >
               <ul className="py-2 text-xs text-gray-700 dark:text-gray-200">
@@ -341,7 +341,7 @@ export default function AddressSearch() {
           <div className="w-[30.5%]">
             <div className="relative">
               <input
-                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Address Filter"
                 value={addressString}
                 onChange={(e) => {
@@ -368,7 +368,7 @@ export default function AddressSearch() {
           <div className="w-[17%]">
             <div className="relative">
               <input
-                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Project Name"
                 value={projectNameString}
                 onChange={(e) => {
@@ -398,7 +398,7 @@ export default function AddressSearch() {
           <div className="w-[17%]">
             <div className="relative">
               <input
-                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Contract Name"
                 value={contractNameString}
                 onChange={(e) => {
@@ -427,7 +427,7 @@ export default function AddressSearch() {
           </div>
           <div className="flex w-[19%] relative">
             <div
-              className="w-full rounded-3xl text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
+              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
               onClick={() => setCategoriesOpen(!categoriesOpen)}
             >
               {categoryArray.length ===
@@ -478,7 +478,7 @@ export default function AddressSearch() {
               />
             </div>
             <div
-              className="z-50 rounded-lg bg-forest-100 dark:bg-forest-900 absolute top-full left-0 right-0 shadow-lg h-[400px] overflow-y-scroll "
+              className="z-50 rounded-lg bg-color-bg-default dark:bg-forest-900 absolute top-full left-0 right-0 shadow-lg h-[400px] overflow-y-scroll "
               hidden={!categoriesOpen}
             >
               <div className="flex justify-between px-4 py-1">

@@ -109,7 +109,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
           >
             <div
               role="status"
-              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-color-bg-default"
             >
               <Icon
                 icon="feather:loading"
@@ -127,7 +127,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
           >
             <div
               role="status"
-              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-color-bg-default"
             >
               <Icon
                 icon="feather:loading"

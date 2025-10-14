@@ -14,7 +14,7 @@ import { ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import Container from "./Container";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
@@ -90,7 +90,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   );
 
   return (
-    <>
+    <ProjectsMetadataProvider>  
       {landing ? (
         <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
             {landing.data.top_applications.gainers.data.map((application, index) => (
@@ -109,7 +109,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
             <></>
           </div>
       )}
-    </>
+    </ProjectsMetadataProvider>
   );
 }
 
@@ -180,21 +180,21 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
         <div className="flex flex-col">
         <div className="w-full flex justify-between items-end h-[20px]">
           <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
+            <div className="numbers-xs text-color-text-primary">{application.num_contracts.toLocaleString("en-GB")}</div>
             <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
           </div>
           <div className="h-[20px] flex items-center gap-x-[3px]">
             {/* <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div> */}
+            <div className="numbers-xs text-color-text-primary">{rank}</div> */}
             {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
-              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-color-negative' : 'text-color-positive'}`}>
                 {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
               </div>
             ) : <div className="w-[49px]">&nbsp;</div>}
           </div>
         </div>
         <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
-          <div className="numbers-sm text-[#CDD8D3]">
+          <div className="numbers-sm text-color-text-primary">
             {prefix}
             {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
           </div>
@@ -218,8 +218,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
         >
           <ApplicationTooltip application={application} />
         </GTPTooltipNew>
-        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
-          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+        <div className="cursor-pointer size-[24px] bg-color-bg-medium rounded-full flex justify-center items-center">
+          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-color-text-primary" />
         </div>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">

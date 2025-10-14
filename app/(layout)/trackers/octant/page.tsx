@@ -450,7 +450,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               childrenHeight={isMobile ? 97 : 111}
               className="w-full transition-all duration-300 lg:!w-[275px]"
             >
-              <div className="relative flex h-[97px] select-none gap-x-[10px] overflow-visible rounded-[15px] bg-forest-50 px-[5px] py-[10px] dark:bg-[#1F2726] lg:h-[111px]">
+              <div className="relative flex h-[97px] select-none gap-x-[10px] overflow-visible rounded-[15px] bg-forest-50 px-[5px] py-[10px] dark:bg-color-bg-default lg:h-[111px]">
                 <div className="flex min-w-[120px] flex-col justify-between gap-y-[10px]">
                   <ExpandingButtonMenu
                     className={`left-[5px] right-[calc((100%/2)+5px)] top-[10px] lg:right-[calc((100%/2)+5px)] lg:top-[10px]`}
@@ -516,7 +516,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                     className="absolute left-[calc((100%/2)+5px)] right-[5px] top-[10px] lg:left-[140px] lg:top-[10px]"
                   >
                     <div className="flex h-[36px] w-full items-center gap-x-[8px] rounded-full bg-forest-50 pl-[6px] pr-[10px] dark:bg-[#263130]">
-                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-forest-1000">
+                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-color-ui-active">
                         <svg
                           width="27"
                           height="26"
@@ -548,7 +548,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                     className="absolute left-[calc((100%/2)+5px)] right-[5px] top-[50px] lg:left-[140px] lg:top-[65px]"
                   >
                     <div className="flex h-[36px] w-full items-center gap-x-[8px] rounded-full bg-forest-50 pl-[6px] pr-[10px] dark:bg-[#263130]">
-                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-forest-1000">
+                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-color-ui-active">
                         <svg
                           width="16"
                           height="16"
@@ -675,7 +675,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               }
             >
               <div
-                className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-[#1F2726] lg:max-h-[111px]`}
+                className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-color-bg-default lg:max-h-[111px]`}
               >
                 <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
                 <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)] lg:w-[378px]">
@@ -712,7 +712,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 }
               >
                 <div className="group relative flex flex-col gap-y-[5px] overflow-hidden">
-                  <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-[#1F2726] lg:max-h-[111px]">
+                  <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-color-bg-default lg:max-h-[111px]">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[228px]:opacity-0"></div>
                     <div className="flex flex-col pl-[5px]">
                       <div className="text-xs font-semibold text-[#5A6462]">
@@ -727,7 +727,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                           Epoch.
                         </div>
                         <div className="flex w-full justify-between pt-[5px]">
-                          <div className="flex h-[43px] w-full items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          <div className="flex h-[43px] w-full items-center justify-center gap-x-[6px] rounded-[11px] bg-color-ui-hover px-[13px] py-[5px]">
                             <svg
                               width="24"
                               height="25"
@@ -809,7 +809,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                               <div className="text-xxs">Total Wallets</div>
                             </div>
                           </div>
-                          {/* <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          {/* <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-color-ui-hover px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -905,7 +905,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
                   }
                 >
-                  <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-[#1F2726]">
+                  <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-color-bg-default">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
                     <div className="flex flex-col">
                       <div className="text-xs font-semibold text-[#5A6462]">
@@ -916,7 +916,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                           Funding paid out over all Epochs from donations and matching.
                         </div>
                         <div className="flex w-full justify-between gap-x-[5px] pt-[5px]">
-                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-color-ui-hover px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -954,7 +954,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                               <div className="text-xxs">Total Funded</div>
                             </div>
                           </div>
-                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-color-ui-hover px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -1050,7 +1050,7 @@ VirtualizedList.displayName = 'VirtualizedList';
           Octant. Either donating/allocating or not.
         </div>
         <TopRowContainer
-          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-[#1F2726] md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
+          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-color-bg-default md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
         >
           <TopRowParent>
             <TopRowChild
@@ -1108,7 +1108,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               }}
             >
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
                 onClick={handlePrevCommunityEpoch}
               >
                 <Icon icon="feather:arrow-left" className="h-6 w-6" />
@@ -1123,7 +1123,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 </div>
               </div>
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
                 onClick={handleNextCommunityEpoch}
               >
                 <Icon icon="feather:arrow-right" className="h-6 w-6" />
@@ -1135,7 +1135,7 @@ VirtualizedList.displayName = 'VirtualizedList';
         <div className="-mr-[32px] hidden flex-col @[960px]:mr-0 @[960px]:flex-row @[960px]:flex-wrap md:flex">
           <div className="w-full @[960px]:w-1/2">
             <div className="pr-[32px]">
-              <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
+              <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-color-bg-default pr-[10px]">
                 <div
                   className={`relative flex items-center justify-center pl-[10px]`}
                 >
@@ -1273,7 +1273,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               <div className="relative pt-[10px] w-full select-none">
                 {communityDataSortedAndFiltered.length > communityTablePageSize && (
                   <>
-                    <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
+                    <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-color-text-primary">
                       <div className="flex items-center gap-x-[5px]">
                         <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(0)}>
                           <Icon icon="feather:chevrons-left" className="w-4 h-4" />
@@ -1500,7 +1500,7 @@ VirtualizedList.displayName = 'VirtualizedList';
       {/* <Container className="@container flex flex-col w-full">
       </Container> */}
       <Container className="flex w-full flex-col gap-y-[20px] md:hidden">
-        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
+        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-color-bg-default pr-[10px]">
           <div
             className={`relative flex items-center justify-center pl-[10px]`}
           >
@@ -1665,7 +1665,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                         }}
                       >
                         <div className="flex items-center justify-center">
-                          <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-[#151A19]">
+                          <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-color-ui-active">
                             {/* <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clipPath="url(#clip0_12402_20562)">
                               <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
@@ -1801,7 +1801,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                         </div>
                         <div className="flex items-center justify-end whitespace-nowrap">
                           {communityEpoch != 0 && user.min > 0 ? (
-                            <div className="text-[#CDD8D3]">
+                            <div className="text-color-text-primary">
                               {formatNumberMemo(user.min, 2)}{" "}
                               {/* {user.min.toLocaleString("en-GB", {
                             minimumFractionDigits: 2,
@@ -1812,7 +1812,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                               </span>
                             </div>
                           ) : (
-                            <div className="text-[#CDD8D3]">-</div>
+                            <div className="text-color-text-primary">-</div>
                           )}
                         </div>
                         <div
@@ -1821,7 +1821,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                           }`}
                         >
                           {user.budget_amount > 0 ? (
-                            <div className="text-[#CDD8D3]">
+                            <div className="text-color-text-primary">
                               {user.budget_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits:
                                   user.budget_amount < 0.01 ? 4 : 2,
@@ -1833,7 +1833,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                               </span>
                             </div>
                           ) : (
-                            <div className="text-[#CDD8D3]">-</div>
+                            <div className="text-color-text-primary">-</div>
                           )}
                         </div>
                         <div
@@ -1842,7 +1842,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                           }`}
                         >
                           {user.allocation_amount > 0 ? (
-                            <div className="text-[#CDD8D3]">
+                            <div className="text-color-text-primary">
                               {user.allocation_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits:
                                   user.allocation_amount < 0.01 ? 4 : 2,
@@ -1854,13 +1854,13 @@ VirtualizedList.displayName = 'VirtualizedList';
                               </span>
                             </div>
                           ) : (
-                            <div className="text-[#CDD8D3]">-</div>
+                            <div className="text-color-text-primary">-</div>
                           )}
                         </div>
                       </GridTableRow>
                       <div className="pl-[13px] pr-[15px]">
                         <div
-                          className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-[#1F2726] transition-all duration-300 ${
+                          className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-color-bg-default transition-all duration-300 ${
                             communityRowsOpen.includes(user.user)
                               ? "max-h-[300px] min-h-[80px] opacity-100"
                               : "max-h-0 min-h-0 opacity-0"
@@ -1965,7 +1965,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                                     (project_key, index) => (
                                       <div
                                         key={index}
-                                        className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
+                                        className="flex items-center gap-x-[5px] rounded-[15px] bg-color-bg-medium py-[0px] pl-[0px] pr-[6px] text-[10px]"
                                       >
                                         {communityEpoch === 0 ? (
                                           <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
@@ -2052,7 +2052,7 @@ VirtualizedList.displayName = 'VirtualizedList';
         <div className="relative w-full select-none pt-[10px]">
           {communityDataSortedAndFiltered.length > communityTablePageSize && (
             <>
-              <div className="flex w-full items-center justify-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
+              <div className="flex w-full items-center justify-center gap-x-[5px] text-[12px] text-color-text-primary">
                 <div className="flex items-center gap-x-[5px]">
                   <div
                     className="hover:cursor-pointer"
@@ -2156,7 +2156,7 @@ VirtualizedList.displayName = 'VirtualizedList';
         </div>
 
         <TopRowContainer
-          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-[#1F2726] md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
+          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-color-bg-default md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
         >
           <TopRowParent className="flex !w-full flex-col !items-center px-[15px] py-[5px] leading-[120%] md:!w-fit md:!items-start">
             {/* <div className="text-[9px]">Next Epoch starts in</div>
@@ -2178,7 +2178,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               }}
             >
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
                 onClick={handlePrevFundingEpoch}
               >
                 <Icon icon="feather:arrow-left" className="h-6 w-6" />
@@ -2193,7 +2193,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 </div>
               </div>
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
                 onClick={handleNextFundingEpoch}
               >
                 <Icon icon="feather:arrow-right" className="h-6 w-6" />
@@ -2201,7 +2201,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </div>
           </div>
         </TopRowContainer>
-        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
+        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-color-bg-default pr-[10px]">
           <div
             className={`relative flex items-center justify-center pl-[10px]`}
           >
@@ -2562,7 +2562,7 @@ const ExpandingButtonMenu = ({
       >
         <div
           className={`${
-            button.showIconBackground && "relative bg-white dark:bg-forest-1000"
+            button.showIconBackground && "relative bg-white dark:bg-color-ui-active"
           } h-[25px] w-[25px] rounded-full p-[5px]`}
         >
           <Icon
@@ -2586,7 +2586,7 @@ const ExpandingButtonMenu = ({
           {button.label}
         </div>
       </div>
-      <div className="absolute left-0 right-0 top-[16px] !z-[11] max-h-0 overflow-hidden whitespace-nowrap rounded-b-[22px] bg-white pb-[0px] transition-all delay-0 duration-300 group-hover/jump:!z-[21] group-hover/jump:max-h-[300px] group-hover/jump:pb-[10px] group-hover/jump:pt-[24px] group-hover/jump:shadow-lg group-hover/jump:delay-300 dark:bg-[#151A19] group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+      <div className="absolute left-0 right-0 top-[16px] !z-[11] max-h-0 overflow-hidden whitespace-nowrap rounded-b-[22px] bg-white pb-[0px] transition-all delay-0 duration-300 group-hover/jump:!z-[21] group-hover/jump:max-h-[300px] group-hover/jump:pb-[10px] group-hover/jump:pt-[24px] group-hover/jump:shadow-lg group-hover/jump:delay-300 dark:bg-color-ui-active group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
         {items.map((item: { label: string; icon: string; href: string }) => (
           <Link
             href={item.href}
@@ -2851,7 +2851,7 @@ const Slider: React.FC<SliderProps> = ({
     <div className="w-full">
       <div
         ref={containerRef}
-        className="relative h-2 w-full cursor-pointer rounded-full bg-forest-1000"
+        className="relative h-2 w-full cursor-pointer rounded-full bg-color-ui-active"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         role="slider"
@@ -2866,7 +2866,7 @@ const Slider: React.FC<SliderProps> = ({
           style={{ width: `${percentage}%`, transition: "all 0.1s" }}
         ></div>
         <div
-          className="absolute left-0 top-1/2 h-2 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full border border-forest-800 bg-forest-800 shadow focus:outline-none"
+          className="absolute left-0 top-1/2 h-2 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full border border-forest-800 bg-color-ui-hover shadow focus:outline-none"
           style={{
             left: `${percentage}%`,
             transition: isDragging ? "none" : "left 0.1s",
@@ -2953,7 +2953,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
     return user.allocated_to_project_keys.map((project_key, index) => (
       <div
         key={`${project_key}-${index}`}
-        className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
+        className="flex items-center gap-x-[5px] rounded-[15px] bg-color-bg-medium py-[0px] pl-[0px] pr-[6px] text-[10px]"
       >
         {/* Project image rendering logic here */}
         {project_key}
@@ -2973,7 +2973,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
           }}
         >
           <div className="flex items-center justify-center">
-            <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-[#151A19]">
+            <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-color-ui-active">
               <AddressIcon address={user.user} className="rounded-full" />
               <Icon
                 icon={"gtp:circle-arrow"}
@@ -3089,7 +3089,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
           </div>
           <div className="flex items-center justify-end whitespace-nowrap">
             {communityEpoch != 0 && user.min > 0 ? (
-              <div className="text-[#CDD8D3]">
+              <div className="text-color-text-primary">
                 {formatNumberMemo(user.min, 2)}{" "}
                 {/* {user.min.toLocaleString("en-GB", {
                             minimumFractionDigits: 2,
@@ -3098,7 +3098,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
                 <span className="text-[0.55rem] opacity-60">GLM</span>
               </div>
             ) : (
-              <div className="text-[#CDD8D3]">-</div>
+              <div className="text-color-text-primary">-</div>
             )}
           </div>
           <div
@@ -3107,7 +3107,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
             }`}
           >
             {user.budget_amount > 0 ? (
-              <div className="text-[#CDD8D3]">
+              <div className="text-color-text-primary">
                 {user.budget_amount.toLocaleString("en-GB", {
                   minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
                   maximumFractionDigits: user.budget_amount < 0.01 ? 5 : 2,
@@ -3115,7 +3115,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
                 <span className="text-[0.55rem] opacity-60">ETH</span>
               </div>
             ) : (
-              <div className="text-[#CDD8D3]">-</div>
+              <div className="text-color-text-primary">-</div>
             )}
           </div>
           <div
@@ -3124,7 +3124,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
             }`}
           >
             {user.allocation_amount > 0 ? (
-              <div className="text-[#CDD8D3]">
+              <div className="text-color-text-primary">
                 {user.allocation_amount.toLocaleString("en-GB", {
                   minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
                   maximumFractionDigits: user.allocation_amount < 0.01 ? 5 : 2,
@@ -3132,13 +3132,13 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
                 <span className="text-[0.55rem] opacity-60">ETH</span>
               </div>
             ) : (
-              <div className="text-[#CDD8D3]">-</div>
+              <div className="text-color-text-primary">-</div>
             )}
           </div>
         </GridTableRow>
         <div className="pl-[13px] pr-[15px]">
           <div
-            className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-[#1F2726] transition-all duration-300 ${
+            className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-color-bg-default transition-all duration-300 ${
               isOpen
                 ? "max-h-[300px] min-h-[80px] opacity-100"
                 : "max-h-0 min-h-0 opacity-0"
@@ -3234,7 +3234,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
                       (project_key, index) => (
                         <div
                           key={index + project_key}
-                          className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
+                          className="flex items-center gap-x-[5px] rounded-[15px] bg-color-bg-medium py-[0px] pl-[0px] pr-[6px] text-[10px]"
                         >
                           {communityEpoch === 0 ? (
                             <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
@@ -3544,19 +3544,19 @@ TableRowProps) => {
             {row.donors < 50 && (
               <Icon
                 icon={"fluent:person-20-filled"}
-                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-color-text-primary/30"
               />
             )}
             {row.donors >= 50 && row.donors < 100 && (
               <Icon
                 icon={"fluent:people-20-filled"}
-                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-color-text-primary/30"
               />
             )}
             {row.donors >= 100 && (
               <Icon
                 icon={"fluent:people-community-20-filled"}
-                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-color-text-primary/30"
               />
             )}
           </div>

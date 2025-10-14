@@ -4,6 +4,7 @@
 const nextConfig = {
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    scrollRestoration: true,
   },
   async rewrites() {
     return {

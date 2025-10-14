@@ -68,15 +68,15 @@ const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C", "#667170", "#5A6665", "#4F5
 
 const XAxisLabels = React.memo(({ xMin, xMax, rightMargin, isMobile }: { xMin: number, xMax: number, rightMargin?: string, isMobile: boolean }) => (
   <div className={`absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] ${isMobile ? "pr-[3px]" : "pr-[19px]"} opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>
-    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
-      <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
+    <div className='text-xxs flex gap-x-[2px] items-center bg-color-bg-medium/50 rounded-full px-[5px] py-[2px]'>
+      <div className='w-[6px] rounded-full h-[6px] bg-color-text-primary' />
       {new Date(xMin).getFullYear()}
     </div>
-    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'
+    <div className='text-xxs flex gap-x-[2px] items-center bg-color-bg-medium/50 rounded-full px-[5px] py-[2px]'
       style={{ marginRight: rightMargin }}
     >
       {new Date(xMax).getFullYear()}
-      <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
+      <div className='w-[6px] rounded-full h-[6px] bg-color-text-primary' />
     </div>
   </div>
 ));
@@ -431,7 +431,7 @@ export function AggChart({
 
     return (
       <div
-        className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] p-3 ${widthClassNames} ${heightClassNames} text-xs font-raleway shadow-lg`}
+        className={`absolute pointer-events-none z-[999] bg-color-bg-default rounded-[15px] p-3 ${widthClassNames} ${heightClassNames} text-xs font-raleway shadow-card-dark`}
         style={{
           left: tooltipX,
           top: tooltipY,
@@ -489,7 +489,7 @@ export function AggChart({
               const chainColor = chainInfo?.colors.dark[0] || UNLISTED_CHAIN_COLORS[index % UNLISTED_CHAIN_COLORS.length];
 
               return (
-                <div key={index} className="flex items-center bg-[#344240] text-[10px] rounded-full pl-[3px] pr-[6px] py-[3px] gap-x-[4px] max-w-full">
+                <div key={index} className="flex items-center bg-color-bg-medium text-[10px] rounded-full pl-[3px] pr-[6px] py-[3px] gap-x-[4px] max-w-full">
                   <div className="flex items-center justify-center w-[12px] h-[12px]">
                     <GTPIcon
                       icon={chainIcon as any}
@@ -498,7 +498,7 @@ export function AggChart({
                       className="w-[10px] h-[10px]"
                     />
                   </div>
-                  <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+                  <div className="text-color-text-primary leading-[120%] text-[10px] truncate">
                     {l2Item.l2beat_name}
                   </div>
                 </div>
@@ -521,9 +521,10 @@ export function AggChart({
       const baseConfig: any = {
         name: config.name,
         type: config.type === 'column' ? 'bar' : 'line',
+        silent: true,
+        smooth: false,
         data: seriesData[index] || [],
         stack: config.stacking,
-        smooth: true,
         symbol: 'circle',
         symbolSize: 12,
         lineStyle: { width: 2 },
@@ -636,7 +637,7 @@ export function AggChart({
 
 
   return (
-    <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px]'>
+    <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-color-bg-default pt-[15px]'>
       {/* Header */}
       <div className={`flex h-[56px] pl-[24px] sm:pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
         <div className='flex gap-x-[5px] sm:gap-x-[10px] items-center z-[10] flex-1 sm:pt-0 pt-[5px]'>
@@ -660,7 +661,7 @@ export function AggChart({
         <div className='flex flex-col h-full items-end pt-[5px]'>
 
           <div className={`flex items-center gap-x-[5px] pr-[4px] sm:pr-[4px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
-            <div className='numbers-lg sm:numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
+            <div className='numbers-lg sm:numbers-xl bg-gradient-to-b bg-color-text-primary bg-clip-text text-transparent'>{totalValue}</div>
             <div ref={circleRef} className='w-[9px] h-[9px] sm:w-[9px] sm:h-[9px] rounded-full z-chart bg-transparent' />
           </div>
 
@@ -787,8 +788,9 @@ export function AggChart({
               cx={lastDataPointPixelCoords[0]} // X position
               cy={5} // Y position (center of the circle in the header)
               r={4.5} // Circle radius
-              fill="#CDD8D3" // Circle color (kept from your original implementation)
-              stroke="#CDD8D3" // Circle stroke color (kept from your original implementation)
+              className='text-color-text-primary fill-color-text-primary stroke-color-text-primary'
+              // fill="var(--text-primary)" // Circle color (kept from your original implementation)
+              // stroke="var(--text-primary)" // Circle stroke color (kept from your original implementation)
               strokeWidth="1"
             />
             {/* Vertical dashed line from the circle to the data point */}
@@ -797,7 +799,8 @@ export function AggChart({
               y1={lastDataPointPixelCoords[2]} // Start Y (center of the circle in the header)
               x2={lastDataPointPixelCoords[0]} // X position (same for a vertical line)
               y2={lastDataPointPixelCoords[1] + 46} // End Y (the data point on the chart)
-              stroke="#CDD8D3" // Line color (kept from your original implementation)
+              className='text-color-text-primary stroke-color-text-primary'
+              // stroke="var(--text-primary)" // Line color (kept from your original implementation)
               strokeWidth="1"
               strokeDasharray="2 2" // 2px dash, 2px gap. You can adjust this!
             />

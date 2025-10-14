@@ -74,17 +74,17 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
 
 const quickBiteIds = ["anniversary-report"];
 
-const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: string }) => {
+const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
   return (
     <Link 
       href={`/quick-bites/${slug}`}
-      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726] px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-[#344240]"  
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"  
       style={{
         background: `url(${quickBite.image}) no-repeat center center / cover`,
       }}
     >
-        <div className="heading-large-md z-10">{quickBite.title}</div>
+        <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
         <div className="flex justify-end">
           <TitleButtonLink label="Read our Ecosystem Report" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
         </div>
@@ -123,7 +123,7 @@ export default function LandingSwiperItems() {
     if (landing?.data?.all_l2s?.metrics) {
       const missingMetrics = metricIds.filter((metric_id) => !landing?.data?.all_l2s?.metrics[metric_id]);
       if (missingMetrics.length > 0) {
-        console.warn(`[LandingSwiperItems] Missing metrics: ${missingMetrics.join(", ")}`);  
+        console.log(`[LandingSwiperItems] Missing metrics: ${missingMetrics.join(", ")}`);  
       }
     }
   }, [landing]);
@@ -141,7 +141,7 @@ export default function LandingSwiperItems() {
         {quickBiteItems.map(({slug, quickBite}) => (
           <SplideSlide key={slug}>
             <div className="group w-full">
-              <QuickBiteCard quickBite={quickBite} slug={slug} />
+              <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
             </div>
           </SplideSlide>
         ))}
@@ -159,7 +159,7 @@ export default function LandingSwiperItems() {
                     chartId={index}
                   />
                 ) : (
-                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726]">
+                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default">
                     <div className="flex items-center justify-center h-full w-full">
                       <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
                     </div>

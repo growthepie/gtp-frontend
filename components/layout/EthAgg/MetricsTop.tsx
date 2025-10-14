@@ -107,7 +107,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-          <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
+          <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-color-ui-hover" />
         </div>
 
         {/* Default info icon can be overridden by the infoSlot prop */}
@@ -121,7 +121,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
                 className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
                 data-tooltip-trigger
               >
-                <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+                <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"
@@ -140,9 +140,9 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   );
 
   return (
-    <div className="relative h-full min-h-[306px] w-full">
+    <div className="relative h-full min-h-[306px] w-full z-0">
       <div
-        className={`@container expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
+        className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
             ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
             : 'relative overflow-hidden duration-500'
@@ -274,7 +274,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
           </div>
-          <div className='numbers-sm text-[#5A6462]'>{uptimeData.subheading}</div>
+          <div className='numbers-sm text-color-ui-hover'>{uptimeData.subheading}</div>
         </div>
       </div>
     </>
@@ -283,18 +283,18 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   // Define the expanded content to pass to the container
   const expandedContent = (
     <div 
-      className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-[max-height] duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'}`}
+      className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-[max-height] duration-500 -mx-[15px] bg-color-bg-default rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'}`}
       style={{
         maxHeight: showEvents ? `${EXPANDED_LIST_HEIGHT+10}px` : `${UNEXPANDED_LIST_HEIGHT+10}px`,
       }}
     >
       <div
-        className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-300 overflow-y-hidden ${!showEvents && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+        className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-300 overflow-y-hidden ${!showEvents && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
         style={{
           height: !showEvents ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px`
         }}
       >
-        <div className='heading-large-md text-[#5A6462] mb-2'>Network Upgrades</div>
+        <div className='heading-large-md text-color-ui-hover mb-2'>Network Upgrades</div>
         <div ref={listRef} className="relative">
           {reversedEvents.map((event: any, index: number) => {
             return (
@@ -362,7 +362,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   showChainsTPS,
   handleToggleTPS,
 }: EthereumEcosystemTPSCardProps) => {
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, SupportedChainKeys } = useMaster();
   // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
 
   // --- DATA FETCHING ---
@@ -410,14 +410,14 @@ export const EthereumEcosystemTPSCard = React.memo(({
   const filteredTPSChains = useMemo(() => {
     return Object.entries(chainData)
       .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
-      .filter((data) => data.tps && data.tps > 0 )
+      .filter((data) => data.tps && data.tps > 0 && SupportedChainKeys.includes(data.chainId))
       .sort((a, b) => (b.tps || 0) - (a.tps || 0))
       .map((data, index) => ({
         chainId: data.chainId,
         y: index * 21,
         height: 18,
       }));
-  }, [chainData]);
+  }, [chainData, SupportedChainKeys]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
     key: (item) => item.chainId,
@@ -449,7 +449,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[1fr,1fr,1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
           {/* All-Time High */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
-            <div className='heading-small-xxxs text-[#5A6462]'>
+            <div className='heading-small-xxxs text-color-ui-hover'>
               <div className='group-hover:hidden'>All-Time High</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
@@ -457,7 +457,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
           {/* 24h Peak */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
-            <div className='heading-small-xxxs text-[#5A6462]'>
+            <div className='heading-small-xxxs text-color-ui-hover'>
               <div className='group-hover:hidden'>24h Peak</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
@@ -469,7 +469,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(globalMetrics.total_tps || 0)}</div>
               <div>TPS</div>
             </div>
-            {isCompact && <div className='h-0 overflow-visible heading-small-xs text-[#5A6462] pt-[5px] whitespace-nowrap'>all chains combined</div>}
+            {isCompact && <div className='h-0 overflow-visible heading-small-xs text-color-ui-hover pt-[5px] whitespace-nowrap'>all chains combined</div>}
           </div>
         </div>
 
@@ -480,12 +480,12 @@ export const EthereumEcosystemTPSCard = React.memo(({
       </div>
 
       {/* TPS Chains List */}
-      <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
+      <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-color-bg-default rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
         <div
-          className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showChainsTPS && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+          className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showChainsTPS && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
           style={{ height: !showChainsTPS ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}
         >
-          <div className='heading-large-md text-[#5A6462]'>All Chains</div>
+          <div className='heading-large-md text-color-ui-hover'>All Chains</div>
           <div className="relative">
             {tpsTransitions((style, { chainId }) => (
               <animated.div key={chainId} style={style} className='absolute w-full'>
@@ -543,6 +543,7 @@ export const TokenTransferFeeCard = React.memo(({
   AllChainsByKeys,
   showUsd,
 }: TokenTransferFeeCardProps) => {
+  const { SupportedChainKeys } = useMaster();
   const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
   const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
@@ -568,7 +569,8 @@ export const TokenTransferFeeCard = React.memo(({
       .filter((chain) => {
         const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
-        return cost > 0 && !isEthereum;
+        const isSupported = SupportedChainKeys.includes(chain);
+        return cost > 0 && !isEthereum && isSupported;
       })
       .sort((a, b) =>
         chainsCostHistory[b][chainsCostHistory[b].length - 1] -
@@ -579,7 +581,7 @@ export const TokenTransferFeeCard = React.memo(({
         y: index * 21,
         height: 18,
       }));
-  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
+  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys, SupportedChainKeys]);
 
   const costTransitions = useTransition(filteredCostChains, {
     key: (item) => `cost-${item.chainId}`,
@@ -630,10 +632,10 @@ export const TokenTransferFeeCard = React.memo(({
         />
       </div>
       {/* Cost Chains List */}
-      <div className={`relative flex flex-col gap-y-[5px] mt-[3px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
-        <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+      <div className={`relative flex flex-col gap-y-[5px] mt-[3px] -mx-[15px] bg-color-bg-default rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
+        <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
           style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
-          <div className='heading-large-md text-[#5A6462]'>Layer 2 Chains</div>
+          <div className='heading-large-md text-color-ui-hover'>Layer 2 Chains</div>
           <div className="relative">
             {costTransitions((style, { chainId }) => (
               <animated.div key={`cost-${chainId}`} style={style} className='absolute w-full'>
@@ -673,7 +675,7 @@ interface EventIconProps {
   eventExpanded: string | null;
 }
 
-const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) => {
+export const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) => {
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -702,11 +704,11 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) 
     <div className="relative flex items-end size-[24px]">
       {/* Calendar */}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transition-[opacity,scale] duration-300 ease-in-out ${svgClasses}`}>
-        <g clip-path="url(#clip0_1314_55745)">
-          <path fill-rule="evenodd" clip-rule="evenodd"
+        <g clipPath="url(#clip0_1314_55745)">
+          <path fillRule="evenodd" clip-rule="evenodd"
             d="M0 20V7H1.5V20C1.5 21.3807 2.61929 22.5 4 22.5H16V20C16 17.7909 17.7909 16 20 16H22.5V7H24V16L16 24H4C1.79086 24 0 22.2091 0 20ZM17 20C17 18.3431 18.3431 17 20 17H21.5858L17 21.5858V20Z"
             fill="url(#paint0_linear_1314_55745)" />
-          <path fill-rule="evenodd" clip-rule="evenodd"
+          <path fillRule="evenodd" clip-rule="evenodd"
             d="M20 0C22.2091 0 24 1.79086 24 4V7H0V4C2.57702e-07 1.79086 1.79086 0 4 0H20Z"
             fill="url(#paint1_linear_1314_55745)" />
         </g>
@@ -719,18 +721,18 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) 
         <defs>
           <linearGradient id="paint0_linear_1314_55745" x1="12" y1="7" x2="12" y2="24"
             gradientUnits="userSpaceOnUse">
-            <stop stop-color="#10808C" />
-            <stop offset="1" stop-color="#1DF7EF" />
+            <stop stopColor="#10808C" />
+            <stop offset="1" stopColor="#1DF7EF" />
           </linearGradient>
           <linearGradient id="paint1_linear_1314_55745" x1="12" y1="0" x2="12" y2="7"
             gradientUnits="userSpaceOnUse">
-            <stop stop-color="#FE5468" />
-            <stop offset="1" stop-color="#FFDF27" />
+            <stop stopColor="#FE5468" />
+            <stop offset="1" stopColor="#FFDF27" />
           </linearGradient>
           <linearGradient id="orange-day-gradient"
             gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#FE5468" />
-            <stop offset="1" stop-color="#FFDF27" />
+            <stop offset="0" stopColor="#FE5468" />
+            <stop offset="1" stopColor="#FFDF27" />
           </linearGradient>
           <clipPath id="clip0_1314_55745">
             <rect width="24" height="24" fill="white" />
@@ -769,11 +771,11 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
     >
       <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
-        className={`event-item flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`}
+        className={`event-item flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-color-ui-hover'} w-fit`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <div className={`relative h-full flex items-start pt-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</div>
+        <div className={`relative h-full flex items-start pt-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-color-text-primary' : 'heading-small-xxxs text-color-ui-hover'} `}>{event.title}</div>
       </div>
 
 
@@ -789,10 +791,10 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
       <div className={`absolute left-0 top-[38px] bottom-[-10px] flex flex-col justify-between gap-y-[4px] overflow-y-hidden min-w-[24px] max-w-[24px] items-center ${isExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
         <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
           {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
+            <div key={i + "event-item-description"} className='bg-color-ui-hover w-[2px] h-[2px] rounded-full flex-shrink-0' />
           ))}
         </div>
-        <div className='rounded-full text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
+        <div className='rounded-full text-xxxs text-color-ui-hover'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         
       </div>
     </div>
@@ -1213,7 +1215,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     <>
       {(showChainsCost || showChainsTPS || showEvents) && (
         <div
-          className='fixed inset-0 bg-[#1F2726]/75 z-[1000] pointer-events-none'
+          className='fixed inset-0 bg-color-bg-default/75 isolate pointer-events-none'
         />
       )}
 
@@ -1269,7 +1271,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
 function TopEthAggMetricsComponent({ selectedBreakdownGroup }: TopEthAggMetricsProps) {
   return (
-    <Container className="">
+    <Container className="z-[1]">
       <RealTimeMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
   );

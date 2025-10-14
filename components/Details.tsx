@@ -53,7 +53,7 @@ export default function Details() {
     <>
       <div >
         <button
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-color-bg-default rounded-full px-4 py-2"
           onClick={() => {
             setOpenShare(true);
           }}
@@ -73,7 +73,7 @@ export default function Details() {
               }}
             />
             <div
-              className="absolute -right-[5px] -bottom-[5px] w-96 max-w-lg bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg p-[20px] 
+              className="absolute -right-[5px] -bottom-[5px] w-96 max-w-lg bg-forest-50 dark:bg-color-bg-default z-[110] rounded-[40px] shadow-lg p-[20px] 
           border-[5px] border-forest-500 dark:border-[#5A6462]"
             >
 

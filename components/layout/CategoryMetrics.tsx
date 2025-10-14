@@ -41,7 +41,7 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { GridTableHeader, GridTableHeaderCell } from "./GridTable";
-import { intersection } from 'lodash';
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function CategoryMetrics({
   data,
@@ -944,7 +944,7 @@ export default function CategoryMetrics({
                         : "-translate-y-[calc(40%+3px)]"
                   }`}
                 >
-                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-forest-700 bg-forest-100 py-1 text-center font-medium dark:border-forest-400 dark:bg-forest-1000 lg:rounded-b-none lg:rounded-t-2xl">
+                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-color-border bg-color-bg-default py-1 text-center font-medium dark:border-forest-400 dark:bg-color-ui-active lg:rounded-b-none lg:rounded-t-2xl">
                     7-day rolling average
                   </div>
                 </div>
@@ -1028,8 +1028,8 @@ export default function CategoryMetrics({
                         <div 
                           className={`rounded-full p-1 ${
                             chainSelectToggleState === "none"
-                              ? "bg-forest-50 dark:bg-[#1F2726]"
-                              : "bg-white dark:bg-forest-1000"
+                              ? "bg-forest-50 dark:bg-color-bg-default"
+                              : "bg-white dark:bg-color-ui-active"
                           }`}
                         >
                           <Icon
@@ -1097,8 +1097,8 @@ export default function CategoryMetrics({
                           <div 
                             className={`rounded-full p-1 ${
                               chainSelectToggleState === "none"
-                                ? "bg-forest-50 dark:bg-[#1F2726]"
-                                : "bg-white dark:bg-forest-1000"
+                                ? "bg-forest-50 dark:bg-color-bg-default"
+                                : "bg-white dark:bg-color-ui-active"
                             }`}
                           >
                             <Icon
@@ -1169,7 +1169,7 @@ export default function CategoryMetrics({
                                 }`}
                               >
                                 <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
-                                <span className=" heading-caps-xxs text-[#CDD8D3]">
+                                <span className=" heading-caps-xxs text-color-text-primary">
                                   Not showing in chart
                                 </span>
                                 <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
@@ -1249,14 +1249,14 @@ export default function CategoryMetrics({
           </div>
           <Container>
             {" "}
-            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-[#1F2726] md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
+            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-color-bg-default md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1268,7 +1268,7 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1280,7 +1280,7 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1331,43 +1331,45 @@ export default function CategoryMetrics({
           </Container>
           {/* Contract Table Replacement */}
           <HorizontalScrollContainer paddingBottom={16}>
-                <ContractProvider
-                    // --- Pass props similar to OverviewMetrics, adapted for CategoryMetrics ---
-                    value={{
-                        // Data Source: Pass the main data prop for CategoryMetrics
-                        data: data, // Type: CategoryComparisonResponseData
-                        master: master,
-                        // Mode/Value: Combine base mode, absolute/share, and usd/eth
-                        selectedMode: contractSelectedMode, // e.g., "gas_fees_absolute_usd"
-                        selectedValue: selectedValue, // "absolute" or "share"
-                        showUsd: showUsd, // Pass showUsd state
-                        // Selection Context
-                        selectedCategory: selectedCategory,
-                        selectedSubcategories: selectedSubcategories[selectedCategory] || [], // Pass the array of selected subcats for the current category
-                        selectedChains: Object.keys(selectedChains).filter(k => selectedChains[k]), // Pass array of selected chain keys
-                        selectedChain: null, // No single selected chain in this view
-                        selectedTimespan: selectedTimespan,
-                        timespans: timespans,
-                        categories: categories,
-                        // Flags/Defaults
-                        forceSelectedChain: undefined, // Not applicable
-                        allCats: false, // Not applicable in Category view like this
-                        standardChainKey: null, // Or a reasonable default like "all_l2s" if needed
-                        // Callbacks (Provide stubs or actual setters if interaction is needed *from* contracts)
-                        setSelectedChain: () => {},
-                        setSelectedCategory: () => {}, // Maybe link to main setter? No, usually Contracts don't change main category.
-                        setAllCats: () => {},
-                        // Utilities
-                        formatSubcategories: formatSubcategories,
-                         // Include focusEnabled if ContractContainer needs it
-                        focusEnabled: focusEnabled,
-                        // Include chainEcosystemFilter if ContractContainer needs it
-                        chainEcosystemFilter: chainEcosystemFilter,
-                    }}
-                >
-                    <ContractContainer />
-                </ContractProvider>
-            </HorizontalScrollContainer>
+          <ProjectsMetadataProvider>
+              <ContractProvider
+                  // --- Pass props similar to OverviewMetrics, adapted for CategoryMetrics ---
+                  value={{
+                      // Data Source: Pass the main data prop for CategoryMetrics
+                      data: data, // Type: CategoryComparisonResponseData
+                      master: master,
+                      // Mode/Value: Combine base mode, absolute/share, and usd/eth
+                      selectedMode: contractSelectedMode, // e.g., "gas_fees_absolute_usd"
+                      selectedValue: selectedValue, // "absolute" or "share"
+                      showUsd: showUsd, // Pass showUsd state
+                      // Selection Context
+                      selectedCategory: selectedCategory,
+                      selectedSubcategories: selectedSubcategories[selectedCategory] || [], // Pass the array of selected subcats for the current category
+                      selectedChains: Object.keys(selectedChains).filter(k => selectedChains[k]), // Pass array of selected chain keys
+                      selectedChain: null, // No single selected chain in this view
+                      selectedTimespan: selectedTimespan,
+                      timespans: timespans,
+                      categories: categories,
+                      // Flags/Defaults
+                      forceSelectedChain: undefined, // Not applicable
+                      allCats: false, // Not applicable in Category view like this
+                      standardChainKey: null, // Or a reasonable default like "all_l2s" if needed
+                      // Callbacks (Provide stubs or actual setters if interaction is needed *from* contracts)
+                      setSelectedChain: () => {},
+                      setSelectedCategory: () => {}, // Maybe link to main setter? No, usually Contracts don't change main category.
+                      setAllCats: () => {},
+                      // Utilities
+                      formatSubcategories: formatSubcategories,
+                        // Include focusEnabled if ContractContainer needs it
+                      focusEnabled: focusEnabled,
+                      // Include chainEcosystemFilter if ContractContainer needs it
+                      chainEcosystemFilter: chainEcosystemFilter,
+                  }}
+              >
+                <ContractContainer />
+              </ContractProvider>
+            </ProjectsMetadataProvider>
+          </HorizontalScrollContainer>
         </div>
       )}
     </>

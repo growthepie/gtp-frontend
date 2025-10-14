@@ -70,8 +70,9 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
-  const { hoveredSeriesName, selectedSeriesName } = useChartSync();
-  
+  const { registerChart, unregisterChart, hoveredSeriesName, selectedSeriesName } = useChartSync();
+  const chartRef = useRef<Highcharts.Chart | null>(null);
+
   useHighchartsWrappers();
 
   
@@ -391,21 +392,42 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
 
   // 
 
+  // Register chart with sync provider on load
+  const onChartLoad = useCallback(function(this: Highcharts.Chart) {
+    chartRef.current = this;
+
+    // Manually add the className since react-jsx-highcharts doesn't pass it through
+    if (this.container && !this.container.className.includes('shared-crosshair-app-details')) {
+      this.container.className = `${this.container.className} shared-crosshair-app-details shared-hover-app-details`.trim();
+    }
+
+    registerChart(this);
+  }, [registerChart]);
+
+  // Cleanup on unmount - ONLY run on actual unmount, not when unregisterChart ref changes
+  useEffect(() => {
+    return () => {
+      unregisterChart();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <GTPChart 
+    <GTPChart
       highchartsChartProps={{
         chart: {
           height: 168,
           events: {
-            // load: function () {
-            //   onChartCreated(this);
-            // },
+            load: onChartLoad,
           },
         },
         plotOptions: {
           ...plotOptions,
+        },
+        containerProps: {
+          className: "shared-crosshair-app-details shared-hover-app-details",
         }
-      }} 
+      }}
       chartProps={{
         time: {
           timezone: "UTC",
@@ -414,7 +436,6 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
         marginLeft: 40,
         marginBottom: 30,
         type: "area",
-        className: "shared-crosshair-app-details shared-hover-app-details",
       }} 
     >
       <GTPChartTooltip metric_id={metric} />
@@ -598,8 +619,10 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       return 2 * MONTH_MS;       // 2 months for ranges up to 1 year
     } else if (rangeInDays <= 730) {
       return 3 * MONTH_MS;       // 3 months for ranges up to 2 years
+    } else if (rangeInDays <= 1460) {
+      return 6 * MONTH_MS;       // 3 months for ranges up to 2 years
     } else {
-      return 6 * MONTH_MS;       // 6 months for ranges beyond 2 years
+      return 12 * MONTH_MS;       // 6 months for ranges beyond 2 years
     }
   }
   
@@ -765,7 +788,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   const valuePrefix = Object.keys(metricsDef[metric_id].units).includes("usd") ? showUsd ? metricsDef[metric_id].units.usd.prefix : metricsDef[metric_id].units.eth.prefix : Object.values(metricsDef[metric_id].units)[0].prefix;
   const tooltipPositioner =
   useCallback<Highcharts.TooltipPositionerCallbackFunction>(
-    
+
     function (this, width, height, point) {
       const chart = this.chart;
       const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
@@ -773,12 +796,18 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
       const tooltipHeight = height;
 
       const distance = 20;
-      const pointX = point.plotX + plotLeft;
-      const pointY = point.plotY + plotTop;
+
+      // Use actual mouse position for smooth horizontal movement
+      // Fall back to point position if mouse position not available
+      let mouseX = point.plotX + plotLeft;
+      if (chart.pointer && chart.pointer['lastEvent']) {
+        mouseX = chart.pointer['lastEvent'].chartX;
+      }
+
       let tooltipX =
-        pointX - distance - tooltipWidth < plotLeft
-          ? pointX + distance
-          : pointX - tooltipWidth - distance;
+        mouseX - distance - tooltipWidth < plotLeft
+          ? mouseX + distance
+          : mouseX - tooltipWidth - distance;
 
       const tooltipY = 10;
 
@@ -1002,7 +1031,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
       split={false}
       followPointer={true}
       followTouchMove={true}
-      backgroundColor={"#2A3433EE"}
+      backgroundColor={"rgb(var(--bg-default) / 0.95)"}
       padding={0}
       hideDelay={300}
       stickOnContact={true}
@@ -1011,13 +1040,13 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
       borderWidth={0}
       outside={true}
       shadow={{
-        color: "black",
-        opacity: 0.015,
-        offsetX: 2,
-        offsetY: 2,
+        color: "rgb(var(--ui-shadow))",
+        opacity: 0.3,
+        offsetX: 0,
+        offsetY: 0,
       }}
       style={{
-        color: "rgb(215, 223, 222)",
+        color: "rgb(var(--text-primary))",
       }}
       valuePrefix={"$"}
       valueSuffix={""}
@@ -1056,58 +1085,116 @@ const handleMouseMove = throttle(function(e) {
   const target = e.target as HTMLElement;
   const chartContainer = target.closest(".highcharts-container");
   if (!chartContainer) return;
-  
+
   const thisChartId = chartContainer.id;
-  
+
   // Find the current chart
-  const sourceChart = Highcharts.charts.find(chart => 
+  const sourceChart = Highcharts.charts.find(chart =>
     chart && chart.container.id === thisChartId);
-  
+
   if (!sourceChart) return;
-  
+
   // Get normalized position in the chart
   const event = sourceChart.pointer.normalize(e);
   const sourceX = event.chartX;
+  const sourceY = event.chartY; // Store actual mouse Y position
   const sourceGroupName = getCachedGroupName(sourceChart, SHARE_CROSSHAIR_CLASS);
   const hoveredSourcePoint = sourceChart.pointer.findNearestKDPoint(sourceChart.series, true, event);
   const hoveredSourcePointX = hoveredSourcePoint ? hoveredSourcePoint.x : null;
-  
+
   if (!sourceGroupName) return;
-  
+
+  // Calculate the relative Y position within the source chart's plot area (0 to 1)
+  const sourceRelativeY = (sourceY - sourceChart.plotTop) / sourceChart.plotHeight;
+
   // Update all charts in the same group
   Highcharts.charts.forEach(chart => {
-    if (!chart || chart === sourceChart) return;
-    
+    if (!chart || !chart.xAxis || !chart.xAxis[0]) return;
+
     const targetGroupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
     if (targetGroupName !== sourceGroupName) return;
-    
+
     // Convert to x-axis value in source chart
     const xValue = sourceChart.xAxis[0].toValue(sourceX);
-    
+
     // Find the corresponding x position in target chart
     const targetX = chart.xAxis[0].toPixels(xValue);
-    
+
+    // Calculate the Y position in this chart based on the relative position from source chart
+    const targetY = chart.plotTop + (sourceRelativeY * chart.plotHeight);
+
     // Create a simulated event at this position
     const fakeEvent = {
       chartX: targetX,
-      chartY: event.chartY, // Use the same Y position
+      chartY: targetY,
       target: chart.container
     } as any;
-    
+
+    // Store the mouse event in the chart's pointer so tooltipPositioner can access it
+    if (chart.pointer) {
+      chart.pointer['lastEvent'] = fakeEvent;
+    }
+
+    // First, clear all point states in this chart
+    if (chart.series && Array.isArray(chart.series)) {
+      chart.series.forEach(series => {
+        if (series && series.points && Array.isArray(series.points)) {
+          series.points.forEach(point => {
+            if (point && point['state'] === 'hover') {
+              point.setState('');
+            }
+          });
+        }
+      });
+    }
+
     // Find points near this position in target chart
     const points: Highcharts.Point[] = [];
-    chart.series.forEach(series => {
-      if (series.visible && hoveredSourcePointX) {
-        const point = series.points.find(p =>  p.x === hoveredSourcePointX);
-        if (point !== undefined) points.push(point);
-      }
-    });
+    if (chart.series && Array.isArray(chart.series)) {
+      chart.series.forEach(series => {
+        if (series && series.visible && series.points && hoveredSourcePointX !== null) {
+          const point = series.points.find(p => p && p.x === hoveredSourcePointX);
+          if (point !== undefined) points.push(point);
+        }
+      });
+    }
 
     // Highlight the points if found
     if (points.length > 0) {
-      points.forEach(p => p.onMouseOver());
-      chart.tooltip.refresh(points.length > 1 ? points : points[0]);
-      chart.xAxis[0].drawCrosshair(fakeEvent, points[0]);
+      // Set points to hover state
+      points.forEach(p => {
+        if (p) {
+          p.setState('hover');
+        }
+      });
+
+      // Refresh tooltip and crosshair
+      if (chart.tooltip && chart.tooltip.refresh) {
+        try {
+          // Temporarily disable hideDelay to prevent tooltip from hiding
+          const originalHideDelay = chart.tooltip.options.hideDelay;
+          if (chart.tooltip.options) {
+            chart.tooltip.options.hideDelay = 0;
+          }
+
+          // Refresh the tooltip
+          chart.tooltip.refresh(points.length > 1 ? points : points[0]);
+
+          // Restore original hideDelay
+          if (chart.tooltip.options) {
+            chart.tooltip.options.hideDelay = originalHideDelay;
+          }
+        } catch (e) {
+          // Silently catch tooltip errors
+        }
+      }
+      if (chart.xAxis[0] && chart.xAxis[0].crosshair) {
+        try {
+          chart.xAxis[0].drawCrosshair(fakeEvent, points[0]);
+        } catch (e) {
+          // Silently catch crosshair errors
+        }
+      }
     }
   });
 }, 16); // ~60fps throttle
@@ -1115,15 +1202,38 @@ const handleMouseMove = throttle(function(e) {
 // Handle mouseout events
 const handleMouseOut = function(e) {
   if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
-  
-  Highcharts.charts.forEach(function(chart) {
-    if (!chart) return;
-    const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
-    if (!groupName) return;
-    
-    chart.tooltip.hide();
-    chart.xAxis[0].hideCrosshair();
-  });
+
+  const target = e.target as HTMLElement;
+  const chartContainer = target.closest(".highcharts-container");
+
+  // Only hide tooltips if we're actually leaving the chart group
+  if (!chartContainer) {
+    Highcharts.charts.forEach(function(chart) {
+      if (!chart) return;
+      const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+      if (!groupName) return;
+
+      // Reset point states - check if series exists first
+      if (chart.series && Array.isArray(chart.series)) {
+        chart.series.forEach(series => {
+          if (series && series.points && Array.isArray(series.points)) {
+            series.points.forEach(point => {
+              if (point && point.series.chart.hoverSeries?.name !== point.series.name) {
+                point.setState('');
+              }
+            });
+          }
+        });
+      }
+
+      if (chart.tooltip) {
+        chart.tooltip.hide();
+      }
+      if (chart.xAxis && chart.xAxis[0]) {
+        chart.xAxis[0].hideCrosshair();
+      }
+    });
+  }
 };
 
 // shared crosshair class names are like shared-crosshair-1, shared-crosshair-2, etc. to group charts together for shared interactions
@@ -1145,13 +1255,57 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
   // const { onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
+  const finalClassName = `${highchartsChartProps?.containerProps?.className || ''}`.trim();
+
   useEffect(() => {
     highchartsRoundedCorners(Highcharts);
 
-    // Override the reset function to maintain tooltip and crosshair visibility
-    // Highcharts.Pointer.prototype.reset = function () {
-    //   return undefined;
-    // };
+    // Override the reset function to maintain tooltip and crosshair visibility during synchronization
+    const originalReset = Highcharts.Pointer.prototype.reset;
+    Highcharts.Pointer.prototype.reset = function () {
+      // Don't reset if we're hovering over a chart in the same group
+      const chart = this.chart;
+      const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+      if (groupName) {
+        // Check if mouse is still over any chart in the group
+        const isOverGroupChart = Highcharts.charts.some(c => {
+          if (!c) return false;
+          const cGroupName = getCachedGroupName(c, SHARE_CROSSHAIR_CLASS);
+          if (cGroupName !== groupName) return false;
+          const container = c.container;
+          return container && container.matches(':hover');
+        });
+        if (isOverGroupChart) {
+          return undefined;
+        }
+      }
+      return originalReset.apply(this, arguments as any);
+    };
+
+    // Override tooltip hide to prevent hiding during synchronization
+    const originalTooltipHide = Highcharts.Tooltip.prototype.hide;
+    Highcharts.Tooltip.prototype.hide = function(delay) {
+      const chart = this.chart;
+      const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+
+      if (groupName) {
+        // Check if mouse is still over any chart in the group
+        const isOverGroupChart = Highcharts.charts.some(c => {
+          if (!c) return false;
+          const cGroupName = getCachedGroupName(c, SHARE_CROSSHAIR_CLASS);
+          if (cGroupName !== groupName) return false;
+          const container = c.container;
+          return container && container.matches(':hover');
+        });
+
+        // Don't hide if mouse is still over a chart in the group
+        if (isOverGroupChart) {
+          return;
+        }
+      }
+
+      return originalTooltipHide.call(this, delay);
+    };
 
     // Handle mouse/touch events for synchronized charts
     ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {
@@ -1230,7 +1384,7 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
     });
 
 
-    // Remove the event listeners
+    // Remove the event listeners and restore original functions
     return () => {
       ['mousemove', 'touchmove', 'touchstart'].forEach(eventType => {
         document.removeEventListener(eventType, handleMouseMove);
@@ -1238,8 +1392,11 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
       ['mouseout', 'touchend'].forEach(eventType => {
         document.removeEventListener(eventType, handleMouseOut);
       });
+      // Restore original functions
+      Highcharts.Pointer.prototype.reset = originalReset;
+      Highcharts.Tooltip.prototype.hide = originalTooltipHide;
     }
-    
+
   }, []);
 
   return (
@@ -1249,17 +1406,18 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
       {...providerProps}
     >
       <HighchartsChart
+        {...highchartsChartProps}
         chart={{
-          ...baseOptions.chart, 
+          ...baseOptions.chart,
+          ...highchartsChartProps?.chart,
         }}
-
         containerProps={{
           style: {
             overflow: "visible",
           },
           ...highchartsChartProps?.containerProps,
+          className: finalClassName,
         }}
-        {...highchartsChartProps}
       >
           <Chart
               {...baseOptions.chart}

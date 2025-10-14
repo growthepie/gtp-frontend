@@ -125,6 +125,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         <ChartWrapper
           chartType={block.chartType}
           data={block.data}
+          margins={block.margins || 'normal'}
           options={block.options}
           width={block.width || '100%'}
           height={block.height || 400}

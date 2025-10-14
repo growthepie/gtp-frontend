@@ -82,8 +82,8 @@ const ToastItem = memo(({
       case "error":
         return {
           title: toast.title || "Error",
-          icon: toast.icon || <GTPIcon icon={"feather:alert-triangle" as GTPIconName} size="sm" className="text-[#fe5468]" />,
-          iconClassName: toast.iconClassName || "text-[#fe5468]",
+          icon: toast.icon || <GTPIcon icon={"feather:alert-triangle" as GTPIconName} size="sm" className="text-color-accent-red" />,
+          iconClassName: toast.iconClassName || "text-color-accent-red",
         };
       case "warning":
         return {
@@ -107,7 +107,7 @@ const ToastItem = memo(({
   return (
     <div
       ref={nodeRef}
-      className={`flex flex-col gap-y-[5px] w-[350px] max-w-[90vw] py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] z-50`}
+      className={`flex flex-col gap-y-[5px] w-[350px] max-w-[90vw] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] z-50`}
     >
       <div className={`flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center ${toast.className}`}>
         {icon && icon}
@@ -116,7 +116,7 @@ const ToastItem = memo(({
         <div className="flex-1" />
         <button
           onClick={onDismiss}
-          className="text-[#5A6462] hover:text-[#CDD8D3] transition-colors flex-shrink-0"
+          className="text-[#5A6462] hover:text-color-text-primary transition-colors flex-shrink-0"
         >
           <GTPIcon icon={"feather:x" as GTPIconName} size="sm" />
         </button>

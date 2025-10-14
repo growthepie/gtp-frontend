@@ -67,7 +67,15 @@ const CategoryComparison = () => {
         </div>
         <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
           <div className="text-[14px]">
-            How are certain blockspace categories used on different chains?
+            We label smart contracts based on their usage type and aggregate usage per category. 
+              Here you can compare the usage of the high-level categories or the more detailed subcategories between chains.
+              The category definitions can 
+              be found <a
+                href="https://github.com/openlabelsinitiative/OLI/blob/main/1_label_schema/tags/valuesets/usage_category.yml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >here</a>.
           </div>
         </div>
       </Container>

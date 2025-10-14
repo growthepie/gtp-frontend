@@ -30,28 +30,42 @@ interface NavigationProviderProps {
 }
 
 export function NavigationProvider({ children }: NavigationProviderProps) {
-  const pathname = usePathname();
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
   const [previousPath, setPreviousPath] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const pathname = usePathname();
+
+  // Set mounted state on client side
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    // Don't add the same path consecutively
-    if (navigationHistory[navigationHistory.length - 1] !== pathname) {
-      setNavigationHistory(prev => {
-        const newHistory = [...prev, pathname];
-        // Keep only last 10 entries to prevent memory issues
-        if (newHistory.length > 10) {
-          return newHistory.slice(-10);
-        }
-        return newHistory;
-      });
+    // Only track navigation on client side when pathname is available
+    if (!isMounted || !pathname) return;
 
-      // Set previous path
-      if (navigationHistory.length > 0) {
-        setPreviousPath(navigationHistory[navigationHistory.length - 1]);
+    setNavigationHistory(prev => {
+      // Don't add the same path consecutively
+      if (prev[prev.length - 1] === pathname) {
+        return prev;
       }
-    }
-  }, [pathname, navigationHistory]);
+
+      const newHistory = [...prev, pathname];
+      // Keep only last 10 entries to prevent memory issues
+      if (newHistory.length > 10) {
+        return newHistory.slice(-10);
+      }
+      return newHistory;
+    });
+
+    // Set previous path using functional update to access latest state
+    setNavigationHistory(prev => {
+      if (prev.length > 1) {
+        setPreviousPath(prev[prev.length - 2]);
+      }
+      return prev;
+    });
+  }, [pathname, isMounted]); // Depend on both pathname and mounted state
 
   const getPreviousPath = () => {
     if (navigationHistory.length >= 2) {

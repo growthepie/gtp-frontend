@@ -394,7 +394,7 @@ const ApplicationsTable = memo(() => {
                 extraRight={
                   <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
                     <div
-                      className={`cursor-pointer items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
+                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
                       onClick={() => {
                         setSort({
                           metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
@@ -557,7 +557,7 @@ const Value = memo(({
           <div className="numbers-xs">
             {displayValue}
           </div>
-          <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'
+          <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-color-negative' : 'text-color-positive'
             } ${selectedTimespan === "max" ? "hidden" : ""}`}>
             {changePctDisplayValue}
           </div>
@@ -677,7 +677,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
       >
         <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
           <div
-            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
+            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
           >
             <ApplicationIcon owner_project={application.owner_project} size="sm" />
           </div>
@@ -690,7 +690,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             allowInteract={true}
             size="md"
             trigger={
-              <div className="flex-1 min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
+              <div className="min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
                 <div className="truncate w-full">
                   <ApplicationDisplayName owner_project={application.owner_project} />
                 </div>
@@ -730,17 +730,17 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           const metricKey = selectedMetricKeys[index];
           let bgColor = "bg-transparent";
 
-          // starting from the last metric column, the bg should be bg-[#344240]/30 and every other column should be bg-transparent
+          // starting from the last metric column, the bg should be bg-color-bg-medium/30 and every other column should be bg-transparent
           if (index === selectedMetrics.length - 1) {
-            bgColor = "bg-[#344240]/30";
+            bgColor = "bg-color-bg-medium/30";
           } else if (selectedMetrics.length % 2 === 0) {
-            bgColor = index % 2 === 1 ? "bg-[#344240]/30" : "bg-transparent";
+            bgColor = index % 2 === 1 ? "bg-color-bg-medium/30" : "bg-transparent";
           } else {
-            bgColor = index % 2 === 0 ? "bg-[#344240]/30" : "bg-transparent";
+            bgColor = index % 2 === 0 ? "bg-color-bg-medium/30" : "bg-transparent";
           }
 
           // if(metric === sort.metric){
-          //   bgColor = "bg-[#151A19]";
+          //   bgColor = "bg-color-ui-active";
           // }
 
 
@@ -757,8 +757,8 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           <div key={index} className="w-[0px]" />
         )))}
         <div className="relative flex justify-end items-center pr-[0px]">
-          <div className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
-            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+          <div className="absolute cursor-pointer size-[24px] bg-color-bg-medium rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-color-text-primary" />
           </div>
         </div>
         {/* #344240/30 */}

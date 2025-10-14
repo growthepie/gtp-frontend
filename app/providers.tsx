@@ -2,20 +2,19 @@
 import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 import { addCollection } from "@iconify/react";
-import GTPIcons from "@/icons/gtp.json";
-import GTPIconsFigmaExport from "@/icons/gtp-figma-export.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
-import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
-import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
+// import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { useEffect } from "react";
+import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
 
 // load icons
-addCollection(GTPIcons);
-addCollection(GTPIconsFigmaExport);
+// addCollection(GTPIcons);
+// addCollection(GTPIconsFigmaExport);
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -36,11 +35,34 @@ const requestOptions = {
   headers: headers,
 };
 
-const singleOrMultiFetcher = (urlOrUrls) => {
+const singleOrMultiFetcher = async (urlOrUrls) => {
+  const fetchWithErrorHandling = async (url) => {
+    const response = await fetch(url, requestOptions);
+
+    // For 404/403 errors on chain metrics, return null instead of throwing
+    if (!response.ok && url.includes('/metrics/chains/')) {
+      if (response.status === 404 || response.status === 403) {
+        // Return null for expected missing data
+        return null;
+      }
+    }
+
+    // For successful responses, parse JSON
+    if (response.ok) {
+      return response.json();
+    }
+
+    // For other errors, throw with status information
+    const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
+    error.status = response.status;
+    error.response = response;
+    throw error;
+  };
+
   if (Array.isArray(urlOrUrls)) {
-    return Promise.all(urlOrUrls.map(url => fetch(url, requestOptions).then((r) => r.json())));
+    return Promise.all(urlOrUrls.map(fetchWithErrorHandling));
   }
-  return fetch(urlOrUrls, requestOptions).then((r) => r.json());
+  return fetchWithErrorHandling(urlOrUrls);
 };
 
 const devMiddleware = (useSWRNext) => {
@@ -74,31 +96,50 @@ const devMiddleware = (useSWRNext) => {
 export function Providers({ children, forcedTheme }: ProvidersProps) {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
+  useEffect(() => {
+    // Start loading icons immediately
+    gtpIconsLoader.loadIcons();
+  }, []);
+
   return (
     <NavigationProvider>
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
-        forcedTheme={"dark"}
+        forcedTheme={!IS_PRODUCTION ? undefined : "dark"} // force dark for production
         disableTransitionOnChange
       >
         <SWRConfig
           value={{
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-            // refreshInterval: 1000 * 60 * 60, // 1 hour
+            dedupingInterval: 10000, // 10 seconds
+            onError: (error, key) => {
+              // Silence expected errors from chain metrics endpoints that return 403/404
+              if (typeof key === 'string' && key.includes('/metrics/chains/')) {
+                // Check for JSON parse errors (403/404 responses return HTML)
+                if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                  return; // Silently ignore
+                }
+                // Check for fetch failures (CORS blocks)
+                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                  return; // Silently ignore
+                }
+              }
+
+              // Log other errors
+              console.error('[SWR Error] Key:', key, 'Error:', error);
+            },
           }}
         >
             <MasterProvider>
-              <ProjectsMetadataProvider>
                 <UIContextProvider>
                 <ToastProvider>
-                  <ConfettiProvider>
+                  {/* <ConfettiProvider> */}
                     {children}
-                  </ConfettiProvider>
+                  {/* </ConfettiProvider> */}
                 </ToastProvider>
               </UIContextProvider>
-            </ProjectsMetadataProvider>
             </MasterProvider>
         </SWRConfig>
       </ThemeProvider>

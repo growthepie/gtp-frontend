@@ -4,7 +4,7 @@ import { PageContainer } from "@/components/layout/Container";
 export default function Loading() {
   return (
     <PageContainer className="py-8">
-      <div className="bg-forest-50 dark:bg-[#1F2726] rounded-[15px] overflow-hidden animate-pulse">
+      <div className="bg-forest-50 dark:bg-color-bg-default rounded-[15px] overflow-hidden animate-pulse">
         <div className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Content section loading */}

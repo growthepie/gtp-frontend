@@ -488,8 +488,8 @@ const DAMetricsTable = ({
             </div>
             <div
               className={`p-1 rounded-full ${daLayerSelectToggleState === "none"
-                ? "bg-forest-50 dark:bg-[#1F2726]"
-                : "bg-white dark:bg-forest-1000"
+                ? "bg-forest-50 dark:bg-color-bg-default"
+                : "bg-white dark:bg-color-ui-active"
                 }`}
             >
               <Icon
@@ -590,7 +590,7 @@ const DAMetricsTable = ({
                             ] >=
                             0 ? (
                             <div
-                              className={`text-[#45AA6F] dark:text-[#4CFF7E] font-medium`}
+                              className={`text-[#45AA6F] dark:text-color-positive font-medium`}
                               style={{
                                 color: selectedDALayers.includes(item.daLayer.key)
                                   ? undefined
@@ -627,7 +627,7 @@ const DAMetricsTable = ({
                             </div>
                           ) : (
                             <div
-                              className={`text-[#DD3408] dark:text-[#FF3838] font-medium`}
+                              className={`text-[#DD3408] dark:text-color-negative font-medium`}
                               style={{
                                 color: selectedDALayers.includes(item.daLayer.key)
                                   ? undefined
@@ -693,8 +693,8 @@ const DAMetricsTable = ({
                   </div>
                   <div
                     className={`p-1 rounded-full ${selectedDALayers.includes(item.daLayer.key)
-                      ? "bg-white dark:bg-forest-1000"
-                      : "bg-forest-50 dark:bg-[#1F2726]"
+                      ? "bg-white dark:bg-color-ui-active"
+                      : "bg-forest-50 dark:bg-color-bg-default"
                       }`}
                   >
                     <Icon
@@ -842,7 +842,7 @@ const DAMetricsTable = ({
                               ] >=
                               0 ? (
                               <div
-                                className={`text-[#45AA6F] dark:text-[#4CFF7E] ${Math.abs(
+                                className={`text-[#45AA6F] dark:text-color-positive ${Math.abs(
                                   item.data[changesKey][timespan][
                                   changesValueIndex
                                   ],
@@ -886,7 +886,7 @@ const DAMetricsTable = ({
                               </div>
                             ) : (
                               <div
-                                className={`text-[#DD3408] dark:text-[#FF3838] ${Math.abs(
+                                className={`text-[#DD3408] dark:text-color-negative ${Math.abs(
                                   item.data[changesKey][timespan][
                                   changesValueIndex
                                   ],
@@ -964,8 +964,8 @@ const DAMetricsTable = ({
                     </div>
                     <div
                       className={`p-1 rounded-full ${selectedDALayers.includes(item.daLayer.key)
-                        ? "bg-white dark:bg-forest-1000"
-                        : "bg-forest-50 dark:bg-[#1F2726]"
+                        ? "bg-white dark:bg-color-ui-active"
+                        : "bg-forest-50 dark:bg-color-bg-default"
                         }`}
                     >
                       <Icon

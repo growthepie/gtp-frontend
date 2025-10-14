@@ -28,7 +28,7 @@ export default function RowContainer() {
       >
         <div
           className={
-            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-[#1F2726] mt-6 overflow-hidden"
+            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-color-bg-default mt-6 overflow-hidden"
           }
         >
           <div className="flex w-full h-full text-[12px]">
@@ -42,9 +42,9 @@ export default function RowContainer() {
               ${
                 forceSelectedChain
                   ? allCats
-                    ? "bg-[#151A19] "
-                    : "bg-inherit hover:bg-[#5A6462]"
-                  : "bg-inherit hover:bg-[#5A6462]"
+                    ? "bg-color-ui-active "
+                    : "bg-inherit hover:bg-color-ui-hover"
+                  : "bg-inherit hover:bg-color-ui-hover"
               } `}
                 onClick={() => {
                   if (forceSelectedChain) {
@@ -94,13 +94,13 @@ export default function RowContainer() {
                   ] border-forest-50 dark:border-forest-800
                     ${
                       selectedCategory === category && !allCats
-                        ? "bg-[#151A19]"
+                        ? "bg-color-ui-active"
                         : ""
                     } 
                     ${
                       isCategoryHovered(category) &&
                       (!(selectedCategory === category) || allCats)
-                        ? "bg-[#5A6462]"
+                        ? "bg-color-ui-hover"
                         : ""
                     }`}
                         onClick={() => {
@@ -170,17 +170,17 @@ export default function RowContainer() {
                   <div key={x} className="relative">
                     <div className="h-[15px] border-r border-forest-900 dark:border-forest-500"></div>
                     {x === 0 && (
-                      <div className="text-forest-900 dark:text-forest-500 absolute top-[110%] left-0">
+                      <div className="text-forest-900 dark:text-color-text-primary absolute top-[110%] left-0">
                         {x}%
                       </div>
                     )}
                     {x === 100 && (
-                      <div className="text-forest-900 dark:text-forest-500 absolute top-[110%] right-0">
+                      <div className="text-forest-900 dark:text-color-text-primary absolute top-[110%] right-0">
                         {x}%
                       </div>
                     )}
                     {x !== 0 && x !== 100 && (
-                      <div className="text-forest-900 dark:text-forest-500 absolute w-8 top-[110%] -left-2">
+                      <div className="text-forest-900 dark:text-color-text-primary absolute w-8 top-[110%] -left-2">
                         {x}%
                       </div>
                     )}

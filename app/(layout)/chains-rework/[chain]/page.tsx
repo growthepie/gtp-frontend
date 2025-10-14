@@ -28,6 +28,7 @@ import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 import { Icon } from "@iconify/react";
+import RelatedQuickBites from "@/components/RelatedQuickBites";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -225,11 +226,12 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
       }}>
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="txcount">
-            <ApplicationsDataProvider disableShowLoading={true}>
-              
-          
-              <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
-            </ApplicationsDataProvider>
+            <ProjectsMetadataProvider>
+              <ApplicationsDataProvider disableShowLoading={true}>
+                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
+                <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
+              </ApplicationsDataProvider>
+            </ProjectsMetadataProvider>
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>
@@ -293,9 +295,15 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
         </div>
         <div className="flex items-center mb-[30px]">
           <div className="text-[16px]">
-            An overview of {master.chains[chainKey].name} high-level
-            blockspace usage. All expressed in share of chain usage. You can
-            toggle between share of chain usage or absolute numbers.
+            We label smart contracts based on their usage type and aggregate usage per category. 
+            You can toggle between share of chain
+            usage or absolute numbers. The category definitions can 
+            be found <a
+              href="https://github.com/openlabelsinitiative/OLI/blob/main/1_label_schema/tags/valuesets/usage_category.yml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >here</a>.
           </div>
         </div>
 
@@ -307,6 +315,7 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
             data={overviewData}
             master={master.data}
             forceSelectedChain={chainKey}
+            isSingleChainView={true}
           />
         </div>
       </div>
@@ -383,16 +392,19 @@ const Chain = ({ params }: { params: any }) => {
       }
     }, [selectedTab, chainKey, chain, master, showUsd]);
 
+
+
     return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px]">
+        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
             <ChainTabs 
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className="mt-6">
+            <div className="">
               {TabContent}
             </div>
+            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
     )
 }

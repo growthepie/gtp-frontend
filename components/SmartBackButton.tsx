@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Icon from "@/components/layout/Icon";
 import { useNavigation } from '@/contexts/NavigationContext';
 
@@ -11,45 +11,83 @@ interface SmartBackButtonProps {
   variant?: 'desktop' | 'mobile';
 }
 
-export function SmartBackButton({ 
-  fallbackHref = "/", 
+/**
+ * Get the intelligent fallback URL based on current path
+ * Navigates to parent route if it exists, otherwise uses fallbackHref
+ */
+function getIntelligentFallback(currentPath: string, fallbackHref: string): string {
+  // Remove trailing slash
+  const cleanPath = currentPath.endsWith('/') && currentPath.length > 1
+    ? currentPath.slice(0, -1)
+    : currentPath;
+
+  // Split path into segments
+  const segments = cleanPath.split('/').filter(Boolean);
+
+  // If we're at root or only one segment deep, use fallbackHref
+  if (segments.length <= 1) {
+    return fallbackHref;
+  }
+
+  // Remove last segment to get parent path
+  // e.g., /applications/uniswap -> /applications
+  const parentPath = '/' + segments.slice(0, -1).join('/');
+
+  return parentPath;
+}
+
+export function SmartBackButton({
+  fallbackHref = "/",
   className = "",
   iconClassName = "",
   variant = 'desktop'
 }: SmartBackButtonProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { canGoBack, getPreviousPath } = useNavigation();
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    
+
     if (canGoBack) {
       router.back();
     } else {
-      router.push(fallbackHref);
+      // Use intelligent fallback that navigates to parent route
+      const intelligentFallback = getIntelligentFallback(pathname, fallbackHref);
+      router.push(intelligentFallback);
     }
   };
 
-  const baseClasses = "flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240] hover:bg-[#5A6462] transition-colors cursor-pointer";
+  const baseClasses = "flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium hover:bg-color-ui-hover transition-colors cursor-pointer";
   const desktopClasses = "lg:flex hidden";
   const mobileClasses = "lg:hidden flex";
-  
+
   const buttonClasses = `${baseClasses} ${variant === 'desktop' ? desktopClasses : mobileClasses} ${className}`;
 
   const iconName = variant === 'desktop' ? "feather:arrow-left" : 'fluent:arrow-left-32-filled';
   const iconSize = variant === 'desktop' ? "size-[26px]" : "w-[20px] h-[25px]";
-  const iconColor = "text-[#CDD8D3]";
+  const iconColor = "text-color-text-primary";
+
+  // Generate tooltip based on navigation state
+  const getTooltip = () => {
+    if (canGoBack) {
+      const previousPath = getPreviousPath();
+      return previousPath ? `Go back to ${previousPath}` : 'Go back';
+    }
+    const intelligentFallback = getIntelligentFallback(pathname, fallbackHref);
+    return intelligentFallback === '/' ? 'Go to home page' : `Go to ${intelligentFallback}`;
+  };
 
   return (
-    <button 
+    <button
       onClick={handleBack}
       className={buttonClasses}
-      aria-label={`Go back${canGoBack ? ' to previous page' : ' to home'}`}
-      title={canGoBack ? `Go back to ${getPreviousPath()}` : 'Go to home page'}
+      aria-label="Go back"
+      title={getTooltip()}
     >
-      <Icon 
-        icon={iconName} 
-        className={`${iconSize} ${iconColor} ${iconClassName}`} 
+      <Icon
+        icon={iconName}
+        className={`${iconSize} ${iconColor} ${iconClassName}`}
       />
     </button>
   );

@@ -12,7 +12,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
           style={{
             // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
           }}
-          className="fixed inset-0 !z-[998] mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
+          className="fixed inset-0 !z-[998] mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-color-bg-default"
         ></div>
         <div
           style={{
@@ -63,7 +63,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
           pointerEvents: "none",
           // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
         }}
-        className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block dark:bg-forest-1000"
+        className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block dark:bg-color-ui-active"
       ></div>
       {/* {!isMobile && ( */}
       <div
@@ -118,7 +118,7 @@ type GrayOverlayProps = {
 export const GrayOverlay = ({ onClick, zIndex = 100 }: GrayOverlayProps) => {
   return (
     <div
-        className="fixed inset-0 bg-[#1F2726]/90"
+        className="fixed inset-0 bg-color-bg-default/90"
         style={{ 
           zIndex: zIndex
         }}

@@ -20,6 +20,8 @@ import SharePopoverContent from './FloatingBar/SharePopoverContent';
 import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
 import WorkWithUs from './WorkWithUs';
 import NotificationButtonExpandable from './FloatingBar/NotificationButtonExpandable';
+import { useTheme } from 'next-themes';
+import { IS_PRODUCTION } from '@/lib/helpers';
 
 
 export default function GlobalFloatingBar() {
@@ -30,6 +32,7 @@ export default function GlobalFloatingBar() {
   // State for controlling popover visibility
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+  const [isWorkWithUsMenuOpen, setIsWorkWithUsMenuOpen] = useState(false);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
@@ -40,6 +43,14 @@ export default function GlobalFloatingBar() {
 
   // Track if user has started typing to auto-open mobile menu
   const query = searchParams.get("query") || "";
+  const { allFilteredData } = useSearchBuckets();
+  const totalResults = React.useMemo(() => {
+    try {
+      return allFilteredData?.reduce((total, { filteredData }) => total + filteredData.length, 0) || 0;
+    } catch {
+      return 0;
+    }
+  }, [allFilteredData]);
 
   // Function to clear query following the same pattern as SearchBar
   const clearQuery = useCallback(() => {
@@ -161,6 +172,7 @@ export default function GlobalFloatingBar() {
     setMenuWasManuallyClosed(true);
     setIsSearchActive(false);
     setIsBurgerMenuManuallyOpened(false);
+    setIsWorkWithUsMenuOpen(false);
     clearQuery();
   }, [clearQuery]);
 
@@ -169,6 +181,7 @@ export default function GlobalFloatingBar() {
     setIsMobileMenuPopoverOpen(false);
     setIsSearchActive(false);
     setIsBurgerMenuManuallyOpened(false);
+    setIsWorkWithUsMenuOpen(false);
   }, [pathname]);
 
   // Clean up timeout on unmount
@@ -306,6 +319,21 @@ export default function GlobalFloatingBar() {
     setIsSharePopoverOpen(openState);
   };
 
+  // Handle WorkWithUs menu toggle on mobile
+  const handleWorkWithUsMenuToggle = useCallback(() => {
+    if (isMobile) {
+      if (isWorkWithUsMenuOpen) {
+        // If WorkWithUs menu is open, close it
+        handleMobileMenuClose();
+      } else {
+        // If closed, open it
+        setIsWorkWithUsMenuOpen(true);
+        setIsMobileMenuPopoverOpen(true);
+        setIsBurgerMenuManuallyOpened(true);
+      }
+    }
+  }, [isMobile, isWorkWithUsMenuOpen, handleMobileMenuClose]);
+
 
   // Handle search submission
   const handleSearchSubmit = (query: string) => {
@@ -442,7 +470,7 @@ export default function GlobalFloatingBar() {
     <>
       <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1700px] px-0 md:px-[13px] md:-mx-[5px] transition-[margin] duration-sidebar ease-sidebar flex justify-center`}>
 
-        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
+        <div className="bg-color-ui-active z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
@@ -482,11 +510,25 @@ export default function GlobalFloatingBar() {
               <MobileMenuWithSearch
                 isOpen={isMobileMenuPopoverOpen}
                 onClose={handleMobileMenuClose}
+                isWorkWithUsMenuOpen={isWorkWithUsMenuOpen}
+                setIsWorkWithUsMenuOpen={setIsWorkWithUsMenuOpen}
               />
               <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[5px] z-0 pointer-events-auto`}>
                 {/* Work with Us Button */}
                 <div className="md:hidden">
-                  <WorkWithUs placement="top-start" mobile={true} />
+                  <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
+                    <button
+                      type="button"
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200`}
+                      aria-label="Work with us"
+                    >
+                      <GTPIcon 
+                        icon="gtp-socials" 
+                        size="md"
+                        containerClassName="!size-[44px] min-w-[44px] flex items-center justify-center"
+                      />
+                    </button>
+                  </div>
                 </div>
                 {/* Mobile - Share Button (disabled for now) */}
                 {/* <Popover
@@ -530,7 +572,7 @@ export default function GlobalFloatingBar() {
                 {/* Search Bar */}
                 <div
                   ref={searchContainerRef}
-                  className={`flex-1 min-w-0 relative h-[44px] md:ml-[45px] ${isMobile && isSearchActive ? "-ml-[55px]" : ""
+                  className={`flex-1 min-w-0 relative h-[44px] ${isSidebarOpen ? "md:ml-[25px]" : "md:ml-[15px]"} ${isMobile && isSearchActive ? "-ml-[55px]" : ""
                     } transition-[margin] duration-200 max-h-[calc(100vh-200px)]`}
                   // onMouseEnter={activateSearch}
                   // onMouseLeave={deactivateSearch}
@@ -543,6 +585,18 @@ export default function GlobalFloatingBar() {
                       setShowMore={setShowMore}
                       showSearchContainer={false}
                       hideClearButtonOnMobile={true}
+                      onFocus={() => {
+                        if (!isMobile) return;
+                        const isQueryEmpty = !query || query.trim().length === 0;
+                        const noResultsShowing = totalResults === 0; // treat zero results as not showing
+                        // If no results are showing, allow opening even if it was manually closed before
+                        if (!isMobileMenuPopoverOpen && (isQueryEmpty || !menuWasManuallyClosed || noResultsShowing)) {
+                          setIsMobileMenuPopoverOpen(true);
+                          setIsBurgerMenuManuallyOpened(false);
+                          if (isQueryEmpty || noResultsShowing) setMenuWasManuallyClosed(false);
+                        }
+                        setIsSearchActive(true);
+                      }}
                       onBlur={deactivateSearch}
                     />
 
@@ -630,7 +684,9 @@ export default function GlobalFloatingBar() {
                 >
 
                 </FloatingBarButton>
-                {/* </Popover> */}
+                {!IS_PRODUCTION && (
+                  <DarkModeToggleButton />
+                )}
               </div>
             </div>
           </FloatingBarContainer>
@@ -715,9 +771,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   // Only render the search container if we should show search results
   // if (!showSearchResults) {
   //   return (
-  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-color-bg-medium rounded-[32px] flex flex-col justify-start items-center">
   //       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-  //         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+  //         <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
   //           {children}
   //         </div>
   //       </div>
@@ -726,13 +782,13 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   // }
 
   return (
-    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-color-bg-medium rounded-[32px] flex flex-col justify-start items-center">
       {/* shadow box */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#344240] rounded-b-[32px] z-[-1] pointer-events-none" style={{height: 'calc(100% - 75px)', boxShadow: '0 10px 50px 0 #000'}}></div>
+      <div className="absolute bottom-0 left-0 right-0 bg-color-bg-medium rounded-b-[32px] z-[-1] pointer-events-none shadow-card-dark" style={{height: 'calc(100% - 75px)'}}></div>
       
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-        <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+        <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
           {children}
         </div>
       </div>
@@ -750,8 +806,8 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path
               d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z"
-              fill="#CDD8D3"
-              stroke="#CDD8D3"
+              fill="rgb(var(--text-primary))"
+              stroke="rgb(var(--text-primary))"
             />
 
             {/* Left arrow */}
@@ -764,8 +820,8 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path
               d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z"
-              fill="#CDD8D3"
-              stroke="#CDD8D3"
+              fill="rgb(var(--text-primary))"
+              stroke="rgb(var(--text-primary))"
             />
 
             {/* Right arrow */}
@@ -779,8 +835,8 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path
               d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z"
-              fill="#CDD8D3"
-              stroke="#CDD8D3"
+              fill="rgb(var(--text-primary))"
+              stroke="rgb(var(--text-primary))"
             />
 
             {/* Down arrow */}
@@ -794,11 +850,11 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path
               d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z"
-              fill="#CDD8D3"
-              stroke="#CDD8D3"
+              fill="rgb(var(--text-primary))"
+              stroke="rgb(var(--text-primary))"
             />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -809,19 +865,19 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               rx="2"
               fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"}
             />
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2" />
-            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="rgb(var(--text-primary))" stroke-width="2" />
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="rgb(var(--text-primary))" stroke="rgb(var(--text-primary))" />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
-          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
-            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
+          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
+            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-color-text-primary numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
               ESC
             </div>
           </div>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
         </div>
       </div>
     </div>
@@ -883,7 +939,7 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] min-w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
       <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full" isLogo={true}>
         <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
@@ -899,55 +955,55 @@ const GTPLogoOld = () => {
             <path d="M1.58789 31.0693C2.81408 34.5364 5.81465 38.6089 6.4527 39.2043C8.65639 41.28 15.7567 42.989 21.3485 42.989V37.1449C11.6552 37.1449 4.08746 34.0055 1.58789 31.0693Z" fill="url(#paint8_radial_22480_56536)" />
             <defs>
               <radialGradient id="paint0_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.1537 6.37851) rotate(117.912) scale(11.808 9.11336)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint1_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.1801 8.53338) rotate(115.692) scale(11.4385 8.3377)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint2_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.6976 12.6267) rotate(127.548) scale(7.00774 6.31751)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint3_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.4015 18.5779) rotate(125.634) scale(9.04236 7.98874)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint4_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.3024 20.6119) rotate(112.642) scale(6.59793 4.37388)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint5_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.5429 17.52) rotate(119.008) scale(4.14768 3.28196)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="1" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint6_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(31.793 25.4706) rotate(159.689) scale(30.0014 18.2218)">
-                <stop stop-color="#FFDF27" />
-                <stop offset="0.9999" stop-color="#FE5468" />
+                <stop stopColor="#FFDF27" />
+                <stop offset="0.9999" stopColor="#FE5468" />
               </radialGradient>
               <radialGradient id="paint7_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(35.1458 34.5745) rotate(140.592) scale(14.5034 13.2732)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="0.9999" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="0.9999" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
               <radialGradient id="paint8_radial_22480_56536" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.635 34.7718) rotate(148.427) scale(17.1733 14.2932)">
-                <stop stop-color="#1DF7EF" />
-                <stop offset="0.9999" stop-color="#10808C" />
+                <stop stopColor="rgb(var(--accent-turquoise))" />
+                <stop offset="0.9999" stopColor="rgb(var(--accent-petrol))" />
               </radialGradient>
             </defs>
 
           </svg>
           <svg className={`absolute ${isSidebarOpen ? "opacity-100" : "opacity-0"} transition-all duration-sidebar ease-sidebar`} viewBox="0 0 193 46" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M159.866 26.7579C159.866 23.078 157.303 20.4111 153.621 20.4111C149.892 20.4111 147.276 23.1241 147.276 26.8765C147.276 30.9337 149.933 33.1986 154.64 33.1986C156.18 33.2039 157.699 32.8314 159.067 32.1131L158.461 29.7065C157.227 30.3209 155.858 30.6948 154.662 30.6948C152.222 30.6948 150.748 29.6324 150.585 27.8171H159.789C159.818 27.5601 159.866 27.1352 159.866 26.7579ZM150.522 25.8141C150.684 24.1388 151.872 22.9363 153.597 22.9363C155.321 22.9363 156.511 24.1388 156.673 25.8141H150.522Z" fill="#CDD8D3" />
-            <path d="M145.883 16H142.761V19.138H145.883V16Z" fill="#CDD8D3" />
-            <path d="M145.883 20.624H142.761V32.9865H145.883V20.624Z" fill="#CDD8D3" />
-            <path d="M135.654 20.4121C133.813 20.4121 132.368 21.3099 131.436 22.7479V20.6246H128.71V37.5417H131.833V31.2822C132.646 32.5193 134.101 33.226 135.794 33.226C138.894 33.226 141.364 30.5113 141.364 26.7836C141.364 23.0559 138.964 20.4121 135.654 20.4121ZM135.004 30.5344C133.162 30.5344 131.811 29.0008 131.811 26.9006C131.811 24.7065 133.162 23.102 135.004 23.102C136.845 23.102 138.173 24.7065 138.173 26.9006C138.171 29.0008 136.842 30.5344 135.002 30.5344H135.004Z" fill="#CDD8D3" />
-            <path d="M121.67 20.4111C117.943 20.4111 115.333 23.1241 115.333 26.8765C115.333 30.9337 117.988 33.1986 122.697 33.1986C124.237 33.2037 125.756 32.8312 127.124 32.1131L126.512 29.7065C125.277 30.3209 123.909 30.6948 122.715 30.6948C120.274 30.6948 118.8 29.6324 118.636 27.8171H127.846C127.869 27.5569 127.916 27.1319 127.916 26.7546C127.916 23.083 125.352 20.4111 121.67 20.4111ZM118.571 25.8141C118.733 24.1388 119.923 22.9363 121.647 22.9363C123.372 22.9363 124.56 24.1388 124.722 25.8141H118.571Z" fill="#CDD8D3" />
-            <path d="M110.88 20.4113C109.996 20.3979 109.124 20.6231 108.354 21.0637C107.585 21.5043 107.107 22.1445 106.663 22.9184V16H103.539V32.9863H106.663V27.3659C106.663 24.9346 107.782 23.1885 109.554 23.1885C110.834 23.1885 111.604 24.1324 111.604 26.0432V32.9797H114.726V25.2723C114.725 22.589 113.862 20.4113 110.88 20.4113Z" fill="#CDD8D3" />
-            <path d="M100.928 30.2986C100.277 30.2986 99.7631 29.9444 99.7631 29.0945V23.054H102.326V20.6244H99.7631V17.3184H96.6409V20.6244H92.2138L89.9913 30.3843L88.1366 21.9306H85.5334L83.6786 30.3958L81.4334 20.6326H78.2559L81.4708 32.9951H85.1527L86.8122 25.912L88.5092 32.9951H92.0511L94.6543 23.0623H96.6425V29.6842C96.6425 32.1139 97.853 33.1994 100.045 33.1994C101.171 33.2051 102.279 32.9127 103.259 32.3511L102.628 29.8489C102.256 30.0153 101.58 30.2986 100.928 30.2986Z" fill="#CDD8D3" />
-            <path d="M72.4292 20.4121C68.7002 20.4121 66.0205 23.102 66.0205 26.8363C66.0205 30.5706 68.7002 33.2309 72.4292 33.2309C76.1339 33.2309 78.8135 30.541 78.8135 26.8363C78.8135 23.1317 76.1339 20.4121 72.4292 20.4121ZM72.4292 30.5344C70.5875 30.5344 69.2354 28.9761 69.2354 26.8297C69.2354 24.6834 70.5875 23.102 72.4292 23.102C74.271 23.102 75.6214 24.6587 75.6214 26.8067C75.6214 28.9547 74.2693 30.5344 72.4292 30.5344Z" fill="#CDD8D3" />
-            <path d="M61.9647 23.2659V20.6303H59.0996V32.9928H62.2218V25.5078C62.8726 24.1159 64.4817 23.3664 65.9037 23.3664V20.482L65.741 20.459C64.249 20.459 62.827 21.5676 61.9647 23.2659Z" fill="#CDD8D3" />
-            <path d="M54.9507 22.7957C54.0184 21.356 52.5736 20.4121 50.6945 20.4121C47.377 20.4121 45 23.102 45 26.8067C45 30.2033 47.3998 32.8224 50.7319 32.8224C51.4702 32.8315 52.2004 32.6655 52.8641 32.3377C53.5277 32.0099 54.1063 31.5294 54.5537 30.9347V32.1619C54.5537 34.4976 53.2261 35.7479 50.8962 35.7479C49.1944 35.7479 47.9367 35.3937 46.4448 34.6393L45.5353 36.9751C47.2034 37.8149 49.0414 38.2508 50.9043 38.2484C55.2387 38.2484 57.6856 36.0543 57.6856 32.1619V20.6312H54.9507V22.7957ZM51.3843 30.2988C49.5442 30.2988 48.1922 28.7653 48.1922 26.9006C48.1922 24.7065 49.5442 23.102 51.3843 23.102C53.2244 23.102 54.5537 24.7065 54.5537 26.9006C54.5537 28.7653 53.2261 30.2988 51.3843 30.2988Z" fill="#CDD8D3" />
+            <path d="M159.866 26.7579C159.866 23.078 157.303 20.4111 153.621 20.4111C149.892 20.4111 147.276 23.1241 147.276 26.8765C147.276 30.9337 149.933 33.1986 154.64 33.1986C156.18 33.2039 157.699 32.8314 159.067 32.1131L158.461 29.7065C157.227 30.3209 155.858 30.6948 154.662 30.6948C152.222 30.6948 150.748 29.6324 150.585 27.8171H159.789C159.818 27.5601 159.866 27.1352 159.866 26.7579ZM150.522 25.8141C150.684 24.1388 151.872 22.9363 153.597 22.9363C155.321 22.9363 156.511 24.1388 156.673 25.8141H150.522Z" fill="rgb(var(--text-primary))" />
+            <path d="M145.883 16H142.761V19.138H145.883V16Z" fill="rgb(var(--text-primary))" />
+            <path d="M145.883 20.624H142.761V32.9865H145.883V20.624Z" fill="rgb(var(--text-primary))" />
+            <path d="M135.654 20.4121C133.813 20.4121 132.368 21.3099 131.436 22.7479V20.6246H128.71V37.5417H131.833V31.2822C132.646 32.5193 134.101 33.226 135.794 33.226C138.894 33.226 141.364 30.5113 141.364 26.7836C141.364 23.0559 138.964 20.4121 135.654 20.4121ZM135.004 30.5344C133.162 30.5344 131.811 29.0008 131.811 26.9006C131.811 24.7065 133.162 23.102 135.004 23.102C136.845 23.102 138.173 24.7065 138.173 26.9006C138.171 29.0008 136.842 30.5344 135.002 30.5344H135.004Z" fill="rgb(var(--text-primary))" />
+            <path d="M121.67 20.4111C117.943 20.4111 115.333 23.1241 115.333 26.8765C115.333 30.9337 117.988 33.1986 122.697 33.1986C124.237 33.2037 125.756 32.8312 127.124 32.1131L126.512 29.7065C125.277 30.3209 123.909 30.6948 122.715 30.6948C120.274 30.6948 118.8 29.6324 118.636 27.8171H127.846C127.869 27.5569 127.916 27.1319 127.916 26.7546C127.916 23.083 125.352 20.4111 121.67 20.4111ZM118.571 25.8141C118.733 24.1388 119.923 22.9363 121.647 22.9363C123.372 22.9363 124.56 24.1388 124.722 25.8141H118.571Z" fill="rgb(var(--text-primary))" />
+            <path d="M110.88 20.4113C109.996 20.3979 109.124 20.6231 108.354 21.0637C107.585 21.5043 107.107 22.1445 106.663 22.9184V16H103.539V32.9863H106.663V27.3659C106.663 24.9346 107.782 23.1885 109.554 23.1885C110.834 23.1885 111.604 24.1324 111.604 26.0432V32.9797H114.726V25.2723C114.725 22.589 113.862 20.4113 110.88 20.4113Z" fill="rgb(var(--text-primary))" />
+            <path d="M100.928 30.2986C100.277 30.2986 99.7631 29.9444 99.7631 29.0945V23.054H102.326V20.6244H99.7631V17.3184H96.6409V20.6244H92.2138L89.9913 30.3843L88.1366 21.9306H85.5334L83.6786 30.3958L81.4334 20.6326H78.2559L81.4708 32.9951H85.1527L86.8122 25.912L88.5092 32.9951H92.0511L94.6543 23.0623H96.6425V29.6842C96.6425 32.1139 97.853 33.1994 100.045 33.1994C101.171 33.2051 102.279 32.9127 103.259 32.3511L102.628 29.8489C102.256 30.0153 101.58 30.2986 100.928 30.2986Z" fill="rgb(var(--text-primary))" />
+            <path d="M72.4292 20.4121C68.7002 20.4121 66.0205 23.102 66.0205 26.8363C66.0205 30.5706 68.7002 33.2309 72.4292 33.2309C76.1339 33.2309 78.8135 30.541 78.8135 26.8363C78.8135 23.1317 76.1339 20.4121 72.4292 20.4121ZM72.4292 30.5344C70.5875 30.5344 69.2354 28.9761 69.2354 26.8297C69.2354 24.6834 70.5875 23.102 72.4292 23.102C74.271 23.102 75.6214 24.6587 75.6214 26.8067C75.6214 28.9547 74.2693 30.5344 72.4292 30.5344Z" fill="rgb(var(--text-primary))" />
+            <path d="M61.9647 23.2659V20.6303H59.0996V32.9928H62.2218V25.5078C62.8726 24.1159 64.4817 23.3664 65.9037 23.3664V20.482L65.741 20.459C64.249 20.459 62.827 21.5676 61.9647 23.2659Z" fill="rgb(var(--text-primary))" />
+            <path d="M54.9507 22.7957C54.0184 21.356 52.5736 20.4121 50.6945 20.4121C47.377 20.4121 45 23.102 45 26.8067C45 30.2033 47.3998 32.8224 50.7319 32.8224C51.4702 32.8315 52.2004 32.6655 52.8641 32.3377C53.5277 32.0099 54.1063 31.5294 54.5537 30.9347V32.1619C54.5537 34.4976 53.2261 35.7479 50.8962 35.7479C49.1944 35.7479 47.9367 35.3937 46.4448 34.6393L45.5353 36.9751C47.2034 37.8149 49.0414 38.2508 50.9043 38.2484C55.2387 38.2484 57.6856 36.0543 57.6856 32.1619V20.6312H54.9507V22.7957ZM51.3843 30.2988C49.5442 30.2988 48.1922 28.7653 48.1922 26.9006C48.1922 24.7065 49.5442 23.102 51.3843 23.102C53.2244 23.102 54.5537 24.7065 54.5537 26.9006C54.5537 28.7653 53.2261 30.2988 51.3843 30.2988Z" fill="rgb(var(--text-primary))" />
 
           </svg>
         </div>
@@ -968,52 +1024,52 @@ const GTPLogoNew = () => {
     <path d="M38.9341 28.4409C38.9341 25.1689 32.8494 22.417 24.6264 21.6465C23.8423 22.5269 23.0581 23.6196 22.3084 25.2307L21.1793 27.3753C20.9642 27.7711 20.5676 28.0306 20.1274 28.0651C19.6799 28.0996 19.2488 27.9036 18.982 27.5451L18.2577 26.5721C16.7493 24.6462 15.6456 23.1205 14.7752 21.6928C6.79455 22.5232 0.934082 25.2316 0.934082 28.4409C0.934082 32.31 9.44932 35.4513 19.9386 35.4513C20.4451 35.4513 20.9479 35.444 21.4453 35.4295L22.9846 31.0721L22.9973 31.0412C23.3367 30.1926 24.1536 29.6371 25.0621 29.6244H25.0685L38.6582 29.6607C38.7979 29.3185 38.9341 28.7976 38.9341 28.4409Z" fill="url(#paint6_radial_22425_42194)" />
     <path d="M25.6228 35.5455H36.27L35.8044 36.7263H25.2135L22.8555 43.4527V36.3097L24.5046 31.6437C24.5981 31.4077 24.8268 31.2507 25.0837 31.2471L37.9899 31.2507L37.5125 32.4143H26.7382L26.4079 33.3963H37.144L36.634 34.5635H25.9958L25.6228 35.5455Z" fill="url(#paint7_radial_22425_42194)" />
     <path d="M1.58765 31.5332C2.81383 35.0003 5.81441 39.0728 6.45246 39.6682C8.65615 41.7439 15.7564 43.4529 21.3482 43.4529V37.6088C11.6549 37.6088 4.08722 34.4693 1.58765 31.5332Z" fill="url(#paint8_radial_22425_42194)" />
-    <path d="M160.866 27.2218C160.866 23.5419 158.303 20.875 154.621 20.875C150.892 20.875 148.276 23.588 148.276 27.3404C148.276 31.3976 150.933 33.6625 155.64 33.6625C157.18 33.6677 158.699 33.2953 160.067 32.577L159.461 30.1704C158.227 30.7848 156.858 31.1587 155.662 31.1587C153.222 31.1587 151.748 30.0962 151.585 28.281H160.789C160.818 28.024 160.866 27.599 160.866 27.2218ZM151.522 26.2779C151.684 24.6027 152.872 23.4002 154.597 23.4002C156.321 23.4002 157.511 24.6027 157.673 26.2779H151.522Z" fill="#CDD8D3" />
-    <path d="M146.883 16.4639H143.761V19.6019H146.883V16.4639Z" fill="#CDD8D3" />
-    <path d="M146.883 21.0879H143.761V33.4504H146.883V21.0879Z" fill="#CDD8D3" />
-    <path d="M136.654 20.875C134.813 20.875 133.368 21.7727 132.436 23.2108V21.0875H129.71V38.0046H132.833V31.7451C133.646 32.9822 135.101 33.6889 136.794 33.6889C139.894 33.6889 142.364 30.9742 142.364 27.2465C142.364 23.5188 139.964 20.875 136.654 20.875ZM136.004 30.9973C134.162 30.9973 132.811 29.4637 132.811 27.3635C132.811 25.1694 134.162 23.5649 136.004 23.5649C137.845 23.5649 139.173 25.1694 139.173 27.3635C139.171 29.4637 137.842 30.9973 136.002 30.9973H136.004Z" fill="#CDD8D3" />
-    <path d="M122.67 20.875C118.943 20.875 116.333 23.588 116.333 27.3404C116.333 31.3976 118.988 33.6625 123.697 33.6625C125.237 33.6675 126.756 33.2951 128.124 32.577L127.512 30.1704C126.277 30.7848 124.909 31.1587 123.715 31.1587C121.274 31.1587 119.8 30.0962 119.636 28.281H128.846C128.869 28.0207 128.916 27.5957 128.916 27.2185C128.916 23.5468 126.352 20.875 122.67 20.875ZM119.571 26.2779C119.733 24.6027 120.923 23.4002 122.647 23.4002C124.372 23.4002 125.56 24.6027 125.722 26.2779H119.571Z" fill="#CDD8D3" />
-    <path d="M111.88 20.8752C110.996 20.8618 110.124 21.0869 109.354 21.5276C108.585 21.9682 108.107 22.6083 107.663 23.3823V16.4639H104.539V33.4502H107.663V27.8298C107.663 25.3985 108.782 23.6524 110.554 23.6524C111.834 23.6524 112.604 24.5963 112.604 26.5071V33.4436H115.726V25.7362C115.725 23.0528 114.862 20.8752 111.88 20.8752Z" fill="#CDD8D3" />
-    <path d="M101.928 30.7615C101.277 30.7615 100.763 30.4073 100.763 29.5574V23.5169H103.326V21.0873H100.763V17.7812H97.6409V21.0873H93.2138L90.9913 30.8471L89.1366 22.3935H86.5334L84.6786 30.8587L82.4334 21.0955H79.2559L82.4708 33.458H86.1527L87.8122 26.3749L89.5092 33.458H92.0511L94.6543 23.5252H96.6425V30.1471C96.6425 32.5767 97.853 33.6623 100.045 33.6623C101.171 33.668 102.279 33.3756 103.259 32.8139L102.628 30.3118C102.256 30.4782 101.58 30.7615 100.928 30.7615Z" fill="#CDD8D3" />
-    <path d="M73.4292 20.875C69.7002 20.875 67.0205 23.5649 67.0205 27.2992C67.0205 31.0335 69.7002 33.6938 73.4292 33.6938C77.1339 33.6938 79.8135 31.0039 79.8135 27.2992C79.8135 23.5946 77.1339 20.875 73.4292 20.875ZM73.4292 30.9973C71.5875 30.9973 70.2354 29.439 70.2354 27.2926C70.2354 25.1463 71.5875 23.5649 73.4292 23.5649C75.271 23.5649 76.6214 25.1216 76.6214 27.2696C76.6214 29.4176 75.2693 30.9973 73.4292 30.9973Z" fill="#CDD8D3" />
-    <path d="M62.9647 23.7297V21.0942H60.0996V33.4567H63.2218V25.9716C63.8726 24.5797 65.4817 23.8302 66.9037 23.8302V20.9459L66.741 20.9229C65.249 20.9229 63.827 22.0314 62.9647 23.7297Z" fill="#CDD8D3" />
-    <path d="M55.9507 23.2586C55.0184 21.8189 53.5736 20.875 51.6945 20.875C48.377 20.875 46 23.5649 46 27.2696C46 30.6662 48.3998 33.2853 51.7319 33.2853C52.4702 33.2944 53.2004 33.1284 53.8641 32.8006C54.5277 32.4728 55.1063 31.9923 55.5537 31.3976V32.6248C55.5537 34.9605 54.2261 36.2108 51.8962 36.2108C50.1944 36.2108 48.9367 35.8566 47.4448 35.1022L46.5353 37.438C48.2034 38.2778 50.0414 38.7137 51.9043 38.7113C56.2387 38.7113 58.6856 36.5172 58.6856 32.6248V21.0941H55.9507V23.2586ZM52.3843 30.7617C50.5442 30.7617 49.1922 29.2281 49.1922 27.3635C49.1922 25.1694 50.5442 23.5649 52.3843 23.5649C54.2244 23.5649 55.5537 25.1694 55.5537 27.3635C55.5537 29.2281 54.2261 30.7617 52.3843 30.7617Z" fill="#CDD8D3" />
+    <path d="M160.866 27.2218C160.866 23.5419 158.303 20.875 154.621 20.875C150.892 20.875 148.276 23.588 148.276 27.3404C148.276 31.3976 150.933 33.6625 155.64 33.6625C157.18 33.6677 158.699 33.2953 160.067 32.577L159.461 30.1704C158.227 30.7848 156.858 31.1587 155.662 31.1587C153.222 31.1587 151.748 30.0962 151.585 28.281H160.789C160.818 28.024 160.866 27.599 160.866 27.2218ZM151.522 26.2779C151.684 24.6027 152.872 23.4002 154.597 23.4002C156.321 23.4002 157.511 24.6027 157.673 26.2779H151.522Z" fill="rgb(var(--text-primary))" />
+    <path d="M146.883 16.4639H143.761V19.6019H146.883V16.4639Z" fill="rgb(var(--text-primary))" />
+    <path d="M146.883 21.0879H143.761V33.4504H146.883V21.0879Z" fill="rgb(var(--text-primary))" />
+    <path d="M136.654 20.875C134.813 20.875 133.368 21.7727 132.436 23.2108V21.0875H129.71V38.0046H132.833V31.7451C133.646 32.9822 135.101 33.6889 136.794 33.6889C139.894 33.6889 142.364 30.9742 142.364 27.2465C142.364 23.5188 139.964 20.875 136.654 20.875ZM136.004 30.9973C134.162 30.9973 132.811 29.4637 132.811 27.3635C132.811 25.1694 134.162 23.5649 136.004 23.5649C137.845 23.5649 139.173 25.1694 139.173 27.3635C139.171 29.4637 137.842 30.9973 136.002 30.9973H136.004Z" fill="rgb(var(--text-primary))" />
+    <path d="M122.67 20.875C118.943 20.875 116.333 23.588 116.333 27.3404C116.333 31.3976 118.988 33.6625 123.697 33.6625C125.237 33.6675 126.756 33.2951 128.124 32.577L127.512 30.1704C126.277 30.7848 124.909 31.1587 123.715 31.1587C121.274 31.1587 119.8 30.0962 119.636 28.281H128.846C128.869 28.0207 128.916 27.5957 128.916 27.2185C128.916 23.5468 126.352 20.875 122.67 20.875ZM119.571 26.2779C119.733 24.6027 120.923 23.4002 122.647 23.4002C124.372 23.4002 125.56 24.6027 125.722 26.2779H119.571Z" fill="rgb(var(--text-primary))" />
+    <path d="M111.88 20.8752C110.996 20.8618 110.124 21.0869 109.354 21.5276C108.585 21.9682 108.107 22.6083 107.663 23.3823V16.4639H104.539V33.4502H107.663V27.8298C107.663 25.3985 108.782 23.6524 110.554 23.6524C111.834 23.6524 112.604 24.5963 112.604 26.5071V33.4436H115.726V25.7362C115.725 23.0528 114.862 20.8752 111.88 20.8752Z" fill="rgb(var(--text-primary))" />
+    <path d="M101.928 30.7615C101.277 30.7615 100.763 30.4073 100.763 29.5574V23.5169H103.326V21.0873H100.763V17.7812H97.6409V21.0873H93.2138L90.9913 30.8471L89.1366 22.3935H86.5334L84.6786 30.8587L82.4334 21.0955H79.2559L82.4708 33.458H86.1527L87.8122 26.3749L89.5092 33.458H92.0511L94.6543 23.5252H96.6425V30.1471C96.6425 32.5767 97.853 33.6623 100.045 33.6623C101.171 33.668 102.279 33.3756 103.259 32.8139L102.628 30.3118C102.256 30.4782 101.58 30.7615 100.928 30.7615Z" fill="rgb(var(--text-primary))" />
+    <path d="M73.4292 20.875C69.7002 20.875 67.0205 23.5649 67.0205 27.2992C67.0205 31.0335 69.7002 33.6938 73.4292 33.6938C77.1339 33.6938 79.8135 31.0039 79.8135 27.2992C79.8135 23.5946 77.1339 20.875 73.4292 20.875ZM73.4292 30.9973C71.5875 30.9973 70.2354 29.439 70.2354 27.2926C70.2354 25.1463 71.5875 23.5649 73.4292 23.5649C75.271 23.5649 76.6214 25.1216 76.6214 27.2696C76.6214 29.4176 75.2693 30.9973 73.4292 30.9973Z" fill="rgb(var(--text-primary))" />
+    <path d="M62.9647 23.7297V21.0942H60.0996V33.4567H63.2218V25.9716C63.8726 24.5797 65.4817 23.8302 66.9037 23.8302V20.9459L66.741 20.9229C65.249 20.9229 63.827 22.0314 62.9647 23.7297Z" fill="rgb(var(--text-primary))" />
+    <path d="M55.9507 23.2586C55.0184 21.8189 53.5736 20.875 51.6945 20.875C48.377 20.875 46 23.5649 46 27.2696C46 30.6662 48.3998 33.2853 51.7319 33.2853C52.4702 33.2944 53.2004 33.1284 53.8641 32.8006C54.5277 32.4728 55.1063 31.9923 55.5537 31.3976V32.6248C55.5537 34.9605 54.2261 36.2108 51.8962 36.2108C50.1944 36.2108 48.9367 35.8566 47.4448 35.1022L46.5353 37.438C48.2034 38.2778 50.0414 38.7137 51.9043 38.7113C56.2387 38.7113 58.6856 36.5172 58.6856 32.6248V21.0941H55.9507V23.2586ZM52.3843 30.7617C50.5442 30.7617 49.1922 29.2281 49.1922 27.3635C49.1922 25.1694 50.5442 23.5649 52.3843 23.5649C54.2244 23.5649 55.5537 25.1694 55.5537 27.3635C55.5537 29.2281 54.2261 30.7617 52.3843 30.7617Z" fill="rgb(var(--text-primary))" />
     <defs>
       <radialGradient id="paint0_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.1535 6.84238) rotate(117.912) scale(11.808 9.11336)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint1_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.1799 8.99725) rotate(115.692) scale(11.4385 8.3377)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint2_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.6971 13.0905) rotate(127.548) scale(7.00774 6.31751)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint3_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.4013 19.0418) rotate(125.634) scale(9.04236 7.98874)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint4_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.3022 21.0758) rotate(112.642) scale(6.59793 4.37388)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint5_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.5427 17.9839) rotate(119.008) scale(4.14768 3.28196)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="1" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="1" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint6_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(31.793 25.9345) rotate(159.689) scale(30.0014 18.2218)">
-        <stop stop-color="#FFDF27" />
-        <stop offset="0.9999" stop-color="#FE5468" />
+        <stop stopColor="#FFDF27" />
+        <stop offset="0.9999" stopColor="#FE5468" />
       </radialGradient>
       <radialGradient id="paint7_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(35.1458 35.0383) rotate(140.592) scale(14.5034 13.2732)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="0.9999" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="0.9999" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
       <radialGradient id="paint8_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.6347 35.2357) rotate(148.427) scale(17.1733 14.2932)">
-        <stop stop-color="#1DF7EF" />
-        <stop offset="0.9999" stop-color="#10808C" />
+        <stop stopColor="rgb(var(--accent-turquoise))" />
+        <stop offset="0.9999" stopColor="rgb(var(--accent-petrol))" />
       </radialGradient>
     </defs>
   </svg>
@@ -1038,8 +1094,8 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "", isMobile = false }) 
           <stop offset="1" stopColor="#FFDF27" />
         </linearGradient>
         <linearGradient id="tealCyanGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-          <stop stopColor="#10808C" />
-          <stop offset="1" stopColor="#1DF7EF" />
+          <stop stopColor="rgb(var(--accent-petrol))" />
+          <stop offset="1" stopColor="rgb(var(--accent-turquoise))" />
         </linearGradient>
       </defs>
 
@@ -1098,4 +1154,17 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "", isMobile = false }) 
       </clipPath>
     </svg>
   );
+};
+
+export const DarkModeToggleButton = () => {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <FloatingBarButton
+      icon={theme === "dark" ? "gtp-night" as GTPIconName : "gtp-sun" as GTPIconName}
+      onClick={() => {
+        setTheme(theme === "dark" ? "light" : "dark");
+      }}
+    />
+  )
 };

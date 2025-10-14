@@ -63,7 +63,7 @@ export default function Embed() {
     <>
       <div>
         <button
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-color-bg-default rounded-full px-4 py-2"
           onClick={() => {
             setOpenShare(true);
           }}
@@ -83,7 +83,7 @@ export default function Embed() {
               }}
             />
             <div
-              className="absolute -right-[5px] -bottom-[5px] w-96 max-w-lg bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg p-[20px] 
+              className="absolute -right-[5px] -bottom-[5px] w-96 max-w-lg bg-forest-50 dark:bg-color-bg-default z-[110] rounded-[40px] shadow-lg p-[20px] 
           border-[5px] border-forest-500 dark:border-[#5A6462]"
             >
               <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -95,7 +95,7 @@ export default function Embed() {
                   <div className="font-bold text-[24px]">Embed</div>
                 </div>
                 <div
-                  className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full hover:cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center hover:bg-color-ui-hover bg-transparent rounded-full hover:cursor-pointer"
                   onClick={() => {
                     setOpenShare(false);
                   }}
@@ -123,7 +123,7 @@ export default function Embed() {
               </div>
               <div className="flex mt-[15px]">
                 <button
-                  className="flex gap-x-2 items-center justify-center w-full rounded-full overflow-y-none h-12 resize-none p-3 bg-forest-500 dark:bg-[#5A6462] text-white hover:bg-forest-600 dark:hover:bg-[#6C7674]"
+                  className="flex gap-x-2 items-center justify-center w-full rounded-full overflow-y-none h-12 resize-none p-3 bg-forest-500 dark:bg-color-ui-hover text-white hover:bg-forest-600 dark:hover:bg-[#6C7674]"
                   onClick={() => {
                     copyText(
                       `<iframe width="950" height="950" src="${pathToEmbed(

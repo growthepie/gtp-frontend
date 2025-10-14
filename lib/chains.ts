@@ -24,9 +24,58 @@ export type ChainOverview = {
     events: ChainEvent[];
     ranking: ChainRanking;
     kpi_cards: ChainKpiCard;
+    ecosystem: Ecosystem;
+    achievements: AchievmentsData;
+    blockspace: {
+      blockspace: BlockspaceCO;
+    };
+  }
+};
+
+
+export type AchievmentsData = {
+  streaks: {
+    txcount: {
+      streak_length: number;
+      yesterday_value: number;
+    };
+    fees: {
+      usd: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+      eth: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+    };
+  };
+  lifetime: {
+    [key: string]: {
+      [key: string]: {
+        level: number;
+        total_value: number;
+        percent_to_next_level: number;
+      }
+    }
   }
 }
 
+export type BlockspaceCO = {
+  types: string[];
+  data: [][];
+};
+
+export type Ecosystem = {
+  active_apps: {
+    count: number;
+  }
+  apps: {
+    types: string[];
+    data: [][];
+  }
+ 
+}
 
 export type ChainEvent = {
   date: string;
