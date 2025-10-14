@@ -31,6 +31,10 @@ export type ChainData = {
     types: string[];
     data: number[][];
   };
+  weekly?: {
+    types: string[];
+    data: number[][];
+  };
   changes_monthly: {
     types: string[];
     "30d": number[];
