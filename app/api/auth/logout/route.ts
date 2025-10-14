@@ -1,9 +1,10 @@
+
 import { NextRequest, NextResponse } from 'next/server';
-import { clearAuthCookies } from '@/lib/cloudfront-auth';
+import { clearAuthParams } from '@/lib/cloudfront-url-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    await clearAuthCookies();
+    await clearAuthParams();
 
     return NextResponse.json({
       success: true,

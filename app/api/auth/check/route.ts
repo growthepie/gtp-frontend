@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasValidAuth } from '@/lib/cloudfront-auth';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    const isAuthenticated = await hasValidAuth(request);
+    const isAuthenticated = false;
     const cookieStore = cookies();
     const email = cookieStore.get('auth-email')?.value || null;
 

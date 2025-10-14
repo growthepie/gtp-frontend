@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { GTPIcon } from '../layout/GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 interface EmailAuthProps {
   onSubmit?: (email: string) => void;
@@ -190,7 +191,7 @@ export default function EmailAuth({ onSubmit }: EmailAuthProps) {
           ) : (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <GTPIcon icon="feather:check" size="lg" className="text-green-500" />
+                <GTPIcon icon={"feather:check" as GTPIconName} size="lg" className="text-green-500" />
               </div>
               <h2 className="text-xl font-bold text-color-text-primary mb-2">
                 Check Your Email!
