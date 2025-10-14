@@ -23,10 +23,10 @@ export const ToggleOption: React.FC<ToggleOptionProps> = ({
 
   return (
     <div
-      className={`relative flex items-center gap-[8px] w-[57px] h-[34px] px-[2px] py-[2px] rounded-full cursor-pointer bg-[#5A6462] ${className}`}
+      className={`relative flex items-center gap-[8px] w-[57px] h-[34px] px-[2px] py-[2px] rounded-full cursor-pointer bg-color-ui-hover ${className}`}
       onClick={() => setSelectedOption(option)}
     >
-      <div className="absolute inset-[2px] rounded-full bg-[#1F2726] flex items-center justify-center pl-[5px] pr-[1px]">
+      <div className="absolute inset-[2px] rounded-full bg-color-bg-default flex items-center justify-center pl-[5px] pr-[1px]">
         {icon && (
           <div className="size-[26px] flex items-center justify-center">
             <GTPIcon icon={icon as GTPIconName} size="sm" />

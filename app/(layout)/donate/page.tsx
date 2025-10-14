@@ -198,7 +198,7 @@ export default function Donations() {
 
 
     return (
-      <span className="text-forest-500">
+      <span className="text-color-text-primary">
         <span className="group-hover:underline">{domain}</span>
         <span className="text-forest-800 group-hover:underline">/{rest}</span>
       </span>
@@ -277,7 +277,7 @@ export default function Donations() {
                   });
                 }}
               >
-                <div className="bg-[#1F2726] h-[24px] rounded-full flex items-center justify-center text-[14px] font-bold">
+                <div className="bg-color-bg-default h-[24px] rounded-full flex items-center justify-center text-[14px] font-bold">
                   {getPGFStatus(donation) === "Active" &&
                     <CountdownTimer targetDate={new Date(donation.endDate)} prefixString={getPGFStatus(donation) === "Active" ? "Ends in " : "Starts in "} />
                   }
@@ -328,7 +328,7 @@ export default function Donations() {
                 gridDefinitionColumns="grid-cols-[100%] justify-items-stretch"
                 className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[5px] h-[34px] !pb-0 !pt-0 flex items-center select-none"
               >
-                <div className="bg-[#1F2726] h-[24px] rounded-full flex items-center justify-center text-[16px] font-bold">
+                <div className="bg-color-bg-default h-[24px] rounded-full flex items-center justify-center text-[16px] font-bold">
                   Currently no active rounds, please check back later.
                 </div>
               </GridTableRow>

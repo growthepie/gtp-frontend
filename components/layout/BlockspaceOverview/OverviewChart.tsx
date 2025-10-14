@@ -667,7 +667,7 @@ export default function OverviewChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-        <div class="relative w-4 h-1.5 rounded-r-full bg-white dark:bg-forest-1000">
+        <div class="relative w-4 h-1.5 rounded-r-full bg-white dark:bg-color-ui-active">
 
           <div class="absolute w-4 h-1.5 rounded-r-full" style="
             background-color: ${color};
@@ -688,7 +688,7 @@ export default function OverviewChart({
           </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-color-ui-active" style="
           width: ${(percentage / maxPercentage) * 100}%;
         ">
         </div>

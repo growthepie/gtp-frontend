@@ -69,7 +69,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
   const TooltipContent = () => (
     <div className="md:pl-[5px]">
       <div 
-        className="flex items-center rounded-full transition-colors duration-200 text-forest-500 relative bg-[#5a6462]"
+        className="flex items-center rounded-full transition-colors duration-200 text-color-text-primary relative bg-color-ui-hover"
         style={{ 
           height: '44px', 
         }}
@@ -101,7 +101,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
           className="md:pl-[5px] flex"
         >
           <div
-            className={`flex flex-1 overflow-hidden items-center w-full rounded-full md:rounded-r-none transition-colors duration-100 text-forest-500 cursor-pointer relative ${isOpen ? 'hover:bg-[#5a6462]' : ''}`}
+            className={`flex flex-1 overflow-hidden items-center w-full rounded-full md:rounded-r-none transition-colors duration-100 text-color-text-primary cursor-pointer relative ${isOpen ? 'hover:bg-color-ui-hover' : ''}`}
             style={{ 
               height: '44px', 
               minWidth: '38px', 
@@ -135,7 +135,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
                 if (child.type === 'title') {
                   const section = child as SidebarSectionTitle;
                   return (
-                    <div key={`sec-${idx}`} className="p-[5px] whitespace-nowrap heading-caps-xs text-[#5A6462]">
+                    <div key={`sec-${idx}`} className="p-[5px] whitespace-nowrap heading-caps-xs text-color-ui-hover">
                       {isOpen ? section.label.toUpperCase() : <span>&nbsp;</span>}
                     </div>
                   );
@@ -170,7 +170,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
         className="md:pl-[5px] flex"
       >
         <div 
-          className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-forest-500 ${isOpen ? 'hover:bg-[#5a6462]' : ''} ${isActiveTopLink ? 'bg-[#151A19] text-white' : ''}`}
+          className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''} ${isActiveTopLink ? 'bg-color-ui-active text-white' : ''}`}
         >
         {RowContent}
         </div>
@@ -239,7 +239,7 @@ export const DropdownIcon = memo(({
 
   const iconBg = {
     none: "transparent",
-    dark: "#151A19",
+    dark: "var(--ui-active)",
   };
 
   return (

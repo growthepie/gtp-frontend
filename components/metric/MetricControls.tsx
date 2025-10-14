@@ -119,7 +119,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
               : "translate-y-0 "
               }`}
           >
-            <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0">
+            <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
               {monthly_agg_labels[monthly_agg]}
             </div>
           </div>
@@ -253,7 +253,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
               <span className="block md:hidden">Reset</span>
             </button>
             <button
-              className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
+              className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-color-bg-default dark:bg-color-ui-active`}
             >
               {intervalShown?.label}
             </button>
@@ -266,7 +266,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
           : "translate-y-0 "
           }`}
       >
-        <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0 ">
+        <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
           <span className="hidden md:block">7-day rolling average</span>
           <span className="block md:hidden">7-day average</span>
         </div>
@@ -317,7 +317,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
             rel="noopener noreferrer"
             target="_blank"
             href={Sources[s] ?? ""}
-            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
           >
             {s}
           </Link>
@@ -331,7 +331,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
   return (
     <>
       {chainKeys.includes("ethereum") ? (
-        <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
+        <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -360,7 +360,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                  <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
                     <div className="flex flex-col space-y-1">
                       <div className="font-bold text-sm leading-snug">
                         Data Sources:
@@ -388,7 +388,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
               <div className="flex justify-between md:justify-center items-center  gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                 <button
                   className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:enabled:bg-forest-500/10"
                     }`}
                   onClick={() => {
@@ -402,7 +402,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     <button
                       disabled={metric_id === "txcosts"}
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"stacked" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
+                        ? "bg-forest-500 dark:bg-color-ui-active"
                         : "hover:enabled:bg-forest-500/10"
                         }`}
                       onClick={() => {
@@ -414,7 +414,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
 
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
+                        ? "bg-forest-500 dark:bg-color-ui-active"
                         : "hover:enabled:bg-forest-500/10"
                         }`}
                       onClick={() => {
@@ -434,7 +434,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                    <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
                       <div className="flex flex-col space-y-1">
                         <div className="font-bold text-sm leading-snug">
                           Data Sources:
@@ -451,7 +451,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
           </div>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row w-full justify-end md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
+        <div className="flex flex-col md:flex-row w-full justify-end md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -465,7 +465,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
               <div className="flex justify-between md:justify-center items-center gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                 <button
                   className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                     }`}
                   onClick={() => {
@@ -478,7 +478,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                   <>
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
+                        ? "bg-forest-500 dark:bg-color-ui-active"
                         : "hover:bg-forest-500/10"
                         }`}
                       onClick={() => {
@@ -489,7 +489,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     </button>
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
+                        ? "bg-forest-500 dark:bg-color-ui-active"
                         : "hover:bg-forest-500/10"
                         }`}
                       onClick={() => {
@@ -509,7 +509,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                    <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
                       <div className="flex flex-col space-y-1">
                         <div className="font-bold text-sm leading-snug">
                           Data Sources:

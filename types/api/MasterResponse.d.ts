@@ -61,6 +61,7 @@ export interface ChainInfo {
   name_short: string;
   url_key: string;
   chain_type: string;
+  evm_chain_id: string;
   ecosystem: string[];
   deployment: "PROD" | "DEV";
   name_short: string;

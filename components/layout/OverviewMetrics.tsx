@@ -36,6 +36,7 @@ export default function OverviewMetrics({
   setSelectedTimespan,
   forceSelectedChain,
   forceCategory,
+  isSingleChainView,
 }: {
   data: Chains;
   master: MasterResponse;
@@ -43,6 +44,7 @@ export default function OverviewMetrics({
   setSelectedTimespan: (timespan: string) => void;
   forceSelectedChain?: string;
   forceCategory?: string;
+  isSingleChainView?: boolean;
 }) {
   const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
@@ -353,7 +355,7 @@ export default function OverviewMetrics({
             </RowProvider>
           </div>
           {/*Chart Head*/}
-          <Container>
+          {/* <Container>
             <div className=" ">
               <h2 className="text-[20px] font-bold">
                 {!forceSelectedChain ? (
@@ -370,74 +372,78 @@ export default function OverviewMetrics({
                 )}
               </h2>
             </div>
-          </Container>
-          {/*Chart*/}
-          {selectedTimespan === "1d" ? (
-            <></>
-          ) : (
-            <Container className="mb-1">
-              <OverviewChart
-                data={data}
-                master={master}
-                selectedTimespan={selectedTimespan}
-                timespans={timespans}
-                setSelectedTimespan={setSelectedTimespan}
-                selectedMode={selectedMode}
-                selectedValue={selectedValue}
-                selectedCategory={selectedCategory}
-                selectedChain={selectedChain}
-                forceSelectedChain={forceSelectedChain}
-                categories={categories}
-                hoveredCategories={hoveredCategories}
-                allCats={allCats}
-                setHoveredChartSeriesId={setHoveredChartSeriesId}
-                hoveredChartSeriesId={hoveredChartSeriesId}
-                forceHoveredChartSeriesId={forceHoveredChartSeriesId}
-              />
+          </Container> */}
+          {/*Chart */}
+          {isSingleChainView && (
+            selectedTimespan === "1d" ? (
+              <></>
+            ) : (
+              <Container className="mb-1">
+                <OverviewChart
+                  data={data}
+                  master={master}
+                  selectedTimespan={selectedTimespan}
+                  timespans={timespans}
+                  setSelectedTimespan={setSelectedTimespan}
+                  selectedMode={selectedMode}
+                  selectedValue={selectedValue}
+                  selectedCategory={selectedCategory}
+                  selectedChain={selectedChain}
+                  forceSelectedChain={forceSelectedChain}
+                  categories={categories}
+                  hoveredCategories={hoveredCategories}
+                  allCats={allCats}
+                  setHoveredChartSeriesId={setHoveredChartSeriesId}
+                  hoveredChartSeriesId={hoveredChartSeriesId}
+                  forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+                />
+              </Container>
+            )
+          )}
+          {/*Selected ubcategories*/}
+          {isSingleChainView && (
+            <Container className="w-[100%] ml-[22px]">
+              <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
+                <h1 className="font-bold text-sm pr-2 pl-2">
+                  {!allCats
+                    ? master &&
+                      master.blockspace_categories.main_categories[
+                        selectedCategory
+                      ]
+                    : "All"}
+                </h1>
+                {!allCats ? (
+                  master &&
+                  Object.keys(
+                    master.blockspace_categories["mapping"][selectedCategory],
+                  ).map((key) => (
+                    <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                      {formatSubcategories(
+                        master.blockspace_categories["mapping"][selectedCategory][
+                          key
+                        ],
+                      )}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-xs px-[4px] py-[5px] mx-[5px]">
+                    All Categories Selected
+                  </p>
+                )}
+              </div>
             </Container>
           )}
-          {/*Chart Footer*/}
-          <Container className="w-[100%] ml-[22px]">
-            <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
-              <h1 className="font-bold text-sm pr-2 pl-2">
-                {!allCats
-                  ? master &&
-                    master.blockspace_categories.main_categories[
-                      selectedCategory
-                    ]
-                  : "All"}
-              </h1>
-              {!allCats ? (
-                master &&
-                Object.keys(
-                  master.blockspace_categories["mapping"][selectedCategory],
-                ).map((key) => (
-                  <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
-                    {formatSubcategories(
-                      master.blockspace_categories["mapping"][selectedCategory][
-                        key
-                      ],
-                    )}
-                  </p>
-                ))
-              ) : (
-                <p className="text-xs px-[4px] py-[5px] mx-[5px]">
-                  All Categories Selected
-                </p>
-              )}
-            </div>
-          </Container>
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
+            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -460,7 +466,7 @@ export default function OverviewMetrics({
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "share"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -513,11 +519,19 @@ export default function OverviewMetrics({
                   />
                 </div>
               </div>
-              <p className="text-sm mt-[15px]">
-                See the most active contracts within the selected timeframe (
-                {timespans[selectedTimespan].label}) and for your selected
-                category.{" "}
-              </p>
+                <p className="text-sm mt-[15px]">
+                  See the most active contracts within the selected timeframe (
+                  {timespans[selectedTimespan].label}), for your selected category (
+                  {categories[selectedCategory]}), and for{" "}
+                  {selectedChain
+                    ? AllChainsByKeys[selectedChain]?.label
+                    : chainEcosystemFilter === "all-chains"
+                    ? "All Chains"
+                    : chainEcosystemFilter === "op-stack"
+                    ? "OP Stack Chains"
+                    : "OP Superchain"}
+                  .
+                </p>
             </div>
           </Container>
           {/*Contracts Label and Rows */}

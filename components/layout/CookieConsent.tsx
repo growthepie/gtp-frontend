@@ -55,7 +55,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className={`flex md:flex-col flex-col-reverse items-center justify-between lg:space-y-0 lg:space-x-8 bg-[#1F2726] bg-opacity-[0.95] text-base text-forest-900 dark:text-forest-50  border-[0.5px] border-[#5A6462] bottom-0 mb-[30px] md:mb-[10px] p-[15px] fixed z-loading-screen w-[90%] sm:w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-[34px] left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
+      className={`flex md:flex-col flex-col-reverse items-center justify-between lg:space-y-0 lg:space-x-8 bg-color-bg-default bg-opacity-[0.95] text-base text-forest-900 dark:text-forest-50  border-[0.5px] border-[#5A6462] bottom-0 mb-[30px] md:mb-[10px] p-[15px] fixed z-loading-screen w-[90%] sm:w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-[34px] left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
         consent ? "hidden" : ""
       }`}
     >
@@ -84,13 +84,13 @@ export default function CookieConsent() {
               onClick={() => {
                 acceptCookie();
               }}
-              className="bg-[#151A19] hover:bg-[#5A6462] dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
+              className="bg-color-ui-active hover:bg-color-ui-hover dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
             >
               Allow
             </button>
             <button
               onClick={(e) => denyCookie()}
-              className="hover:bg-[#5A6462] dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
+              className="hover:bg-color-ui-hover dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
             >
               Decline
             </button>

@@ -1475,7 +1475,7 @@ export default function ChainChart({
         `}
       </style>
       <TopRowContainer
-        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
+        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-color-bg-default lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
           } `}
       >
@@ -1490,7 +1490,7 @@ export default function ChainChart({
             }}
           >
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
               onMouseOver={() => {
                 preload(`${ChainsBaseURL}${prevChainKey}.json`, fetcher);
@@ -1510,7 +1510,7 @@ export default function ChainChart({
                     (theme === "light" &&
                       (compChain === "ethereum" || compChain === "imx"))
                     ? "text-forest-50"
-                    : "text-[#1F2726]"
+                    : "text-color-text-primary"
                   : "text-forest-400 dark:text-[#5A6462]"
                   }`}
               >
@@ -1522,7 +1522,7 @@ export default function ChainChart({
                     (theme === "light" &&
                       (compChain === "ethereum" || compChain === "imx"))
                     ? "text-forest-50"
-                    : "text-[#1F2726]"
+                    : "text-color-text-primary"
                   : ""
                   } gap-x-[5px] justify-center items-center w-32`}
               >
@@ -1538,7 +1538,7 @@ export default function ChainChart({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
               onMouseOver={() => {
                 preload(`${ChainsBaseURL}${nextChainKey}.json`, fetcher);
@@ -1548,7 +1548,7 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${compareTo
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${compareTo
               ? `max-h-[${CompChains.length * 30 + 40
               }px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
               : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
@@ -1689,7 +1689,7 @@ export default function ChainChart({
                 <div className="block md:hidden">Reset</div>
               </button>
               <button
-                className={`rounded-full px-[16px] py-[4px] md:px-[15px] md:py-[7px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[12px] w-full lg:w-auto text-xs md:text-base bg-forest-100 dark:bg-forest-1000`}
+                className={`rounded-full px-[16px] py-[4px] md:px-[15px] md:py-[7px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[12px] w-full lg:w-auto text-xs md:text-base bg-color-bg-default dark:bg-color-ui-active`}
               >
                 {intervalShown?.label}
               </button>
@@ -1728,7 +1728,7 @@ export default function ChainChart({
                       <Icon icon="feather:alert-circle" className="w-6 h-6" />
                     </TooltipTrigger>
                     <TooltipContent className="z-50 flex items-center justify-center">
-                      <div className="px-3 py-4 text-xs font-medium bg-forest-100 dark:bg-[#4B5553] rounded-xl shadow-lg z-50 w-auto flex flex-col items-center">
+                      <div className="px-3 py-4 text-xs font-medium bg-color-bg-default dark:bg-[#4B5553] rounded-xl shadow-lg z-50 w-auto flex flex-col items-center">
                         {categoriesMissingData[categoryKey].map((missing) => (
                           <div key={missing.key}>
                             <div className="font-semibold">
@@ -1768,11 +1768,11 @@ export default function ChainChart({
 
                       return (
                         <div key={key}>
-                          <div className="group/chart w-full h-[224px] rounded-2xl bg-[#1F2726] relative">
+                          <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative">
                             {!Object.keys(data[0].metrics).includes(key) ? (
                               <div key={key} className="w-full relative">
                                 <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
-                                  <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
+                                  <div className="absolute w-full h-full bg-forest-50 dark:bg-color-bg-default text-forest-50 rounded-[15px] opacity-30 z-30"></div>
                                   <div className="absolute w-full h-[191px] top-[0px]"></div>
                                   <div className="absolute top-[15px] w-full flex justify-between items-center space-x-4 px-[15px] opacity-30">
                                     <div className="text-[16px] font-bold leading-snug break-inside-avoid">
@@ -1801,7 +1801,7 @@ export default function ChainChart({
                                     ) && (
                                         <Icon
                                           icon={getNavIcon(key)}
-                                          className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
+                                          className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-color-text-primary opacity-20 pointer-events-none"
                                         />
                                       )}
                                   </div>
@@ -1811,7 +1811,7 @@ export default function ChainChart({
                                   ? (key === "market_cap" ||
                                     key === "txcosts") && (
                                     <div
-                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
+                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-color-text-primary/80 ${key === "txcosts"
                                         ? "hidden lg:block"
                                         : ""
                                         }`}
@@ -1820,7 +1820,7 @@ export default function ChainChart({
                                   : (key === "profit" || key === "txcosts") &&
                                   intervalShown && (
                                     <div
-                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
+                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-color-text-primary/80 ${key === "txcosts"
                                         ? "hidden lg:block"
                                         : ""
                                         }`}
@@ -1855,7 +1855,7 @@ export default function ChainChart({
                                   className="relative z-10 -top-[3px] text-[16px] font-bold flex gap-x-2 items-center cursor-pointer"
                                 >
                                   <div>{getFundamentalsByKey[key].label}</div>
-                                  <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
+                                  <div className="rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10">
                                     <Icon
                                       icon="feather:arrow-right"
                                       className="w-[11px] h-[11px]"
@@ -2261,10 +2261,10 @@ export default function ChainChart({
                             <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                               <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                             </div>
-                            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/50 pointer-events-none">
                               <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                               {zoomed && zoomMin !== null && (
-                                <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {new Date(zoomMin).toLocaleDateString(
                                     "en-GB",
                                     {
@@ -2277,7 +2277,7 @@ export default function ChainChart({
                                 </div>
                               )}
                               {!zoomed && (
-                                <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {selectedTimespan &&
                                     new Date(
                                       timespans[selectedTimespan].xMin,
@@ -2290,9 +2290,9 @@ export default function ChainChart({
                                 </div>
                               )}
                             </div>
-                            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/50 pointer-events-none">
                               {zoomed && zoomMax !== null && (
-                                <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {new Date(zoomMax).toLocaleDateString(
                                     "en-GB",
                                     {
@@ -2305,7 +2305,7 @@ export default function ChainChart({
                                 </div>
                               )}
                               {!zoomed && (
-                                <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {new Date(
                                     timespans[selectedTimespan].xMax,
                                   ).toLocaleDateString("en-GB", {

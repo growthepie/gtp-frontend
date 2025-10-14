@@ -674,8 +674,8 @@ const MetricTable = ({
                 </div>
                 <div
                   className={`rounded-full p-1 ${chainSelectToggleState === "none"
-                      ? "bg-forest-50 dark:bg-[#1F2726]"
-                      : "bg-white dark:bg-forest-1000"
+                      ? "bg-forest-50 dark:bg-color-bg-default"
+                      : "bg-white dark:bg-color-ui-active"
                     }`}
                 >
                   <Icon
@@ -772,8 +772,8 @@ const MetricTable = ({
               </div>
               <div
                 className={`rounded-full p-1 ${chainSelectToggleState === "none"
-                    ? "bg-forest-50 dark:bg-[#1F2726]"
-                    : "bg-white dark:bg-forest-1000"
+                    ? "bg-forest-50 dark:bg-color-bg-default"
+                    : "bg-white dark:bg-color-ui-active"
                   }`}
               >
                 <Icon
@@ -808,7 +808,7 @@ const MetricTable = ({
                 <div className="flex items-center justify-center h-[20px] px-[5px] pb-[5px] mr-[-15px] ml-[-5px]">
                   <div className="flex items-center gap-x-[5px] w-full">
                     <div className="flex-grow border-t border-[#5A6462]"></div>
-                    <span className="heading-caps-xxs text-[#CDD8D3]">
+                    <span className="heading-caps-xxs text-color-text-primary">
                       Not showing in chart
                     </span>
                     <div className="flex-grow border-t border-[#5A6462]"></div>
@@ -900,7 +900,7 @@ const MetricTable = ({
                               ] >=
                               0 ? (
                               <div
-                                className={`text-positive numbers-xs`}
+                                className={`text-color-positive numbers-xs`}
                                 style={{
                                   color: selectedChains.includes(item.chain.key)
                                     ? undefined
@@ -937,7 +937,7 @@ const MetricTable = ({
                               </div>
                             ) : (
                               <div
-                                className={`text-negative numbers-xs`}
+                                className={`text-color-negative numbers-xs`}
                                 style={{
                                   color: selectedChains.includes(item.chain.key)
                                     ? undefined
@@ -1001,8 +1001,8 @@ const MetricTable = ({
                     </div>
                     <div
                       className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
-                          ? "bg-white dark:bg-forest-1000"
-                          : "bg-forest-50 dark:bg-[#1F2726]"
+                          ? "bg-white dark:bg-color-ui-active"
+                          : "bg-forest-50 dark:bg-color-bg-default"
                         }`}
                     >
                       <Icon

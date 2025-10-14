@@ -545,8 +545,8 @@ export const Accordion = memo(({
               className={`flex w-full items-center justify-between ${
                 hideLabel ? "rounded-full" : "rounded-full"
               } ${children ? "cursor-pointer" : ""} ${
-                isActive && "!bg-[#151A19]"
-              } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+                isActive && "!bg-color-ui-active"
+              } ${link && !hideLabel && "hover:!bg-color-ui-hover"}`}
               onClick={() => {
                 onToggle && onToggle();
               }}

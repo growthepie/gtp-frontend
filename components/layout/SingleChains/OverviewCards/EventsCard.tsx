@@ -10,6 +10,8 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EventIcon } from "@/components/layout/EthAgg/MetricsTop";
 import moment from "moment";
 import { LinkButton } from '@/components/layout/LinkButton';
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { isMobile } from "react-device-detect";
 
 export default function EventsCard({ children, totalHeight }: { children: React.ReactNode, totalHeight: number }) {
     const [expanded, setExpanded] = useState(false);
@@ -54,17 +56,17 @@ export default function EventsCard({ children, totalHeight }: { children: React.
           onClick={() => {
             setExpanded(false)
           }}
-          className='fixed inset-0 bg-[#1F2726]/75'
+          className='fixed inset-0 bg-color-bg-default/75'
         />
       )}
       <div
-        // className={`rounded-[15px] px-[30px] py-[15px] bg-[#1F2726] w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
+        // className={`rounded-[15px] px-[30px] py-[15px] bg-color-bg-default w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
         className={`w-full relative transition-height duration-300 flex-1`}
        
       >
             {/* <div className="heading-large-md ">Events</div> */}
 
-            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-[#1F2726] rounded-[15px] px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-card-dark" : ""}`}
+            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-card-dark" : ""}`}
                  style={{
                     height: expanded ? (measuredContentHeight + 50 || totalHeight) : measuredContentHeight < 355 ? measuredContentHeight + 50 : 355
                  }}
@@ -73,7 +75,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                 <div ref={contentRef}>
                     {children}
                 </div>
-                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-[#1F2726] flex items-center justify-center pt-[12px] z-40 cursor-pointer"
+                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-color-bg-default flex items-center justify-center pt-[12px] z-40 cursor-pointer"
                     onClick={() => {
                      
                         setExpanded(!expanded)
@@ -83,7 +85,30 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                  
               
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">
-                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+                        <div className='w-[15px] h-fit z-30'>
+                            <GTPTooltipNew
+                                placement="top-end"
+                                size="md"
+                                allowInteract={true}
+                                trigger={
+                                <div
+                                    className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                                    data-tooltip-trigger
+                                >
+                                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                                </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                            >
+                                <div>
+                                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                                    {"Tooltip content"}
+                                </TooltipBody>
+                                </div>
+                            </GTPTooltipNew>
+                        </div>
                     </div>
 
 

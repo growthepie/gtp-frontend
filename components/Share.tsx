@@ -160,7 +160,7 @@ export default function Share() {
 
   return (
     <>
-      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#344240] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
+      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-color-bg-medium dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
         <div>
           <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
             {/* Glint effect */}
@@ -168,7 +168,7 @@ export default function Share() {
             <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-60 transform -skew-x-20 animate-glint blur-sm"></div>
           </div>
           <button
-            className="select-none flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
+            className="select-none flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-color-bg-default rounded-full px-4 py-2"
             onClick={() => {
               setOpenShare(true);
               track("opened Share window", {
@@ -289,7 +289,7 @@ export default function Share() {
                 }} 
               />
               <div
-                className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[101] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
+                className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-color-bg-default z-[101] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
                   border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 select-none ${topSelection === "social"
                     ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
                     : "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[579px]"
@@ -326,7 +326,7 @@ export default function Share() {
                 <div className="flex gap-x-[5px] mt-[15px]">
                   <div
                     className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "social"
-                        ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
+                        ? "bg-forest-200 border-forest-200 dark:bg-color-ui-active dark:border-[#151A19]"
                         : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
                       }`}
                     onClick={() => {
@@ -342,7 +342,7 @@ export default function Share() {
                   {embedEnabled && (
                     <div
                       className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "embed"
-                          ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
+                          ? "bg-forest-200 border-forest-200 dark:bg-color-ui-active dark:border-[#151A19]"
                           : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
                         }`}
                       onClick={() => {
@@ -360,8 +360,8 @@ export default function Share() {
                 {topSelection === "social" && (
                   <div className="flex flex-col-reverse items-center mt-[30px] w-full text-[16px] leading-[150%] h-[234px]">
                     <div className="flex flex-col w-full">
-                      {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
-                    <div className="w-full h-full flex items-center justify-center bg-white dark:bg-forest-1000 rounded-[5px] text-[#5A6462] text-xs">
+                      {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-color-ui-hover rounded-[6px]">
+                    <div className="w-full h-full flex items-center justify-center bg-white dark:bg-color-ui-active rounded-[5px] text-[#5A6462] text-xs">
                       Image Goes Here
                     </div>
                   </div> */}
@@ -375,7 +375,7 @@ export default function Share() {
                         />
                         <div className="toggle__line w-[50px] h-[28px] bg-[#CDD8D3] rounded-full shadow-inner"></div>
                         <div
-                          className={`toggle__dot absolute w-6 h-6 bg-[#1F2726] rounded-full shadow inset-y-.5 mx-0.5 left-0 `}
+                          className={`toggle__dot absolute w-6 h-6 bg-color-bg-default rounded-full shadow inset-y-.5 mx-0.5 left-0 `}
                         ></div>
                       </div>
                       <div className="ml-3 text-[14px] leading-[150%] font-medium">
@@ -384,7 +384,7 @@ export default function Share() {
                     </label>
                       </div> */}
                       <div
-                        className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:bg-forest-500 hover:dark:bg-[#5A6462] hover:cursor-pointer transition-colors"
+                        className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:bg-forest-500 hover:dark:bg-color-ui-hover hover:cursor-pointer transition-colors"
                         onClick={() => {
                           copyText(currentURL ? currentURL : "");
                           triggerCopy();
@@ -407,12 +407,12 @@ export default function Share() {
 
                         <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-0" : "opacity-100"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary  ${copied ? "opacity-0" : "opacity-100"
                               }`}
                             icon="feather:copy"
                           />
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-100" : "opacity-0"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary  ${copied ? "opacity-100" : "opacity-0"
                               }`}
                             icon="feather:check"
                           />
@@ -422,7 +422,7 @@ export default function Share() {
                     </div>
                     <div className="flex flex-col gap-y-[5px] w-full">
                       <div
-                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
                         onClick={() => {
                           handleSendEmail();
                           track("clicked Email in Share Social window", {
@@ -437,7 +437,7 @@ export default function Share() {
                         </div>
                       </div>
                       <div
-                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
                         onClick={() => {
                           shareOnReddit();
                           track("clicked Reddit in Share Social window", {
@@ -456,7 +456,7 @@ export default function Share() {
                       </div>
 
                       <div
-                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+                        className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
                         onClick={() => {
                           shareOnTwitter();
                           track("clicked Twitter in Share Social window", {
@@ -486,7 +486,7 @@ export default function Share() {
                           }&title=${embedData.title}`}
                         target="_blank"
                         rel="noopener"
-                        className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer"
+                        className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-color-ui-hover cursor-pointer"
                       >
                         Click here to test embed
                       </Link>
@@ -495,7 +495,7 @@ export default function Share() {
                       value={`<iframe
 width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" title="${embedData.title}">
 </iframe>`}
-                      className="font-light font-mono p-[15px] rounded-[25px] border-forest-500 dark:border-forest-600 border-[1px] h-full min-h-[231px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-[#1F2726] dark:text-forest-100"
+                      className="font-light font-mono p-[15px] rounded-[25px] border-forest-500 dark:border-forest-600 border-[1px] h-full min-h-[231px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-color-bg-default dark:text-forest-100"
                       onClick={(e) => {
                         e.currentTarget.select();
                         track("clicked Embed Code textarea in Share window", {
@@ -517,7 +517,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             </div>
                           </TooltipTrigger>
                           <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                            <div className="flex flex-col px-3 py-4 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
+                            <div className="flex flex-col px-3 py-4 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
                               <div className="font-semibold">
                                 Snapshot Timeframe
                               </div>
@@ -634,7 +634,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
                             <div
-                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.width <= 450 && "opacity-30"
+                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover ${embedData.width <= 450 && "opacity-30"
                                 }`}
                             >
                               <div
@@ -674,7 +674,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                               </div>
                             </div>
                             <div
-                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800`}
+                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover`}
                             >
                               <div
                                 className="w-[24px] h-[24px] cursor-pointer"
@@ -708,7 +708,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
                             <div
-                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.height <= 500 && "opacity-30"
+                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover ${embedData.height <= 500 && "opacity-30"
                                 }`}
                             >
                               <div
@@ -747,7 +747,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                                 px
                               </div>
                             </div>
-                            <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800">
+                            <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover">
                               <div
                                 className="w-[24px] h-[24px] cursor-pointer"
                                 onClick={() => {
@@ -770,7 +770,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         </div>
 
                         <div
-                          className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors"
+                          className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors"
                           onClick={() => {
                             copyText(embedIframe);
                             triggerCopy();
@@ -789,12 +789,12 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex ml-auto relative w-[24px] h-[24px]">
                             <Icon
-                              className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-0" : "opacity-100"
+                              className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary ${copied ? "opacity-0" : "opacity-100"
                                 }`}
                               icon="feather:copy"
                             />
                             <Icon
-                              className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-100" : "opacity-0"
+                              className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary ${copied ? "opacity-100" : "opacity-0"
                                 }`}
                               icon="feather:check"
                             />
@@ -803,7 +803,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         <div className="absolute -bottom-[22px] right-0 left-1/2 text-center text-xs text-forest-400">
                           or{" "}
                           <span
-                            className="cursor-pointer underline text-forest-900 dark:text-forest-500 hover:text-black dark:hover:text-forest-50"
+                            className="cursor-pointer underline text-forest-900 dark:text-color-text-primary hover:text-black dark:hover:text-forest-50"
                             onClick={() => {
                               copyText(markdownEmbedIframe);
                               triggerCopyMarkdownEmbed();

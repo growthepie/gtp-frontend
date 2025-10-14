@@ -83,14 +83,14 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
-        forcedTheme={"dark"}
+        forcedTheme={!IS_PRODUCTION ? undefined : "dark"} // force dark for production
         disableTransitionOnChange
       >
         <SWRConfig
           value={{
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-            // refreshInterval: 1000 * 60 * 60, // 1 hour
+            dedupingInterval: 10000, // 10 seconds
           }}
         >
             <MasterProvider>

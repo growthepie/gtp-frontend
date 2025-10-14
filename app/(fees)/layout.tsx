@@ -189,7 +189,7 @@ export default function RootLayout({
     >
       <Head />
 
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden min-h-screen relative">
+      <body className="bg-forest-50 dark:bg-color-bg-default text-forest-900 dark:text-color-text-primary font-raleway !overflow-x-hidden min-h-screen relative">
         <div className="background-container !fixed">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -209,7 +209,7 @@ export default function RootLayout({
             <div className="flex flex-col items-center justify-end min-h-screen w-full">
               <FeesContainer className="hidden md:flex max-w-[650px] md:min-w-[650px] md:max-w-[750px] pb-[20px] justify-end">
                 <div className="pointer-events-auto">
-                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-color-bg-medium rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
                     <Share />
                   </div>
                 </div>

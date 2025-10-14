@@ -261,7 +261,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg animate-pulse"
         aria-busy="true"
       >
-        <p className="text-forest-500 dark:text-forest-400">Loading chart...</p>
+        <p className="text-color-text-primary dark:text-forest-400">Loading chart...</p>
       </div>
     );
   }
@@ -287,8 +287,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   
   return (
     <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
-      <div style={{ width, height }} className="relative bg-transparent md:bg-active-black rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
-        <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-[#1F2726] rounded-full">
+      <div style={{ width, height }} className="relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
+        <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
           <div className="flex items-center justify-center md:justify-between">
             <div className="flex items-center gap-x-[5px]">
               <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
@@ -736,13 +736,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             <div className="flex justify-between gap-x-[10px]">
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
                 {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
-                  let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
                   
                   return (
-                    <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
@@ -764,13 +764,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               </div>
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
                 {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
-                  let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
                   
                   return (
-                    <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
@@ -807,7 +807,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               backgroundClip: 'padding-box, border-box'
             }}>
               <div className="heading-small-xs">See metric page</div>
-              <div className="w-[24px] h-[24px] flex items-center justify-center bg-medium-background rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
+              <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
             </a>
             )}
           </div>

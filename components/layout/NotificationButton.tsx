@@ -81,7 +81,7 @@ export default function NotificationButton({
         <FloatingBarButton
           icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
           title="Notifications"
-          className={`${className?.includes('md:hidden') ? '!bg-[#344240]' : ''} ${className} shadow-[0px_0px_50px_0px_#000000] md:shadow-none active:scale-[0.98]`}
+          className={`${className?.includes('md:hidden') ? '!bg-color-bg-medium' : ''} ${className} shadow-[0px_0px_50px_0px_#000000] md:shadow-none active:scale-[0.98]`}
         />
       </div>
 
@@ -103,7 +103,7 @@ export default function NotificationButton({
             max-w-[532px] w-[calc(100vw-80px)] md:min-w-[480px] 
             ml-auto mr-0 max-h-[70vh] 
             scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] 
-            bg-[#1F2726] border-forest-500 
+            bg-color-bg-default border-forest-500 
             rounded-[12px] overflow-hidden shadow-[0px_0px_50px_0px_#000000]
             transition-[opacity,transform] duration-200 ease-out
           `}

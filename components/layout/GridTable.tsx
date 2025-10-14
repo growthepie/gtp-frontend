@@ -342,7 +342,7 @@ export function GridTableContainer(
               {header}
               <div className={`absolute pl-[60px] pr-[60px] top-[0px] md:top-[0px] h-[40px] z-[1]`}>
                 <div
-                  className="bg-[#151a19] z-50 fixed inset-0 pointer-events-none"
+                  className="bg-color-ui-active z-50 fixed inset-0 pointer-events-none"
                   style={{
                     backgroundPosition: "top",
                     maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 30px, transparent 40px` : `linear-gradient(to bottom, white 0, white 30px, transparent 40px`,

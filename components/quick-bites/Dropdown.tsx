@@ -196,7 +196,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             ${isOpen ? "max-h-[400px]" : "max-h-0"} 
             transition-[max-height] duration-300 overflow-hidden
             absolute left-0 right-0 top-[22px] z-[16]
-            bg-[#151A19] rounded-b-[22px] ${isOpen ? "shadow-[0px_0px_50px_0px_#000000]" : ""}
+            bg-color-ui-active rounded-b-[22px] ${isOpen ? "shadow-[0px_0px_50px_0px_#000000]" : ""}
           `}
         >
             <div className='h-[30px]' />
@@ -209,7 +209,7 @@ const Dropdown: React.FC<DropdownProps> = ({
              
             >
               {filteredOptions.length === 0 ? (
-                <div className="px-[15px] py-[5px] text-xs text-[#CDD8D3] opacity-60 text-center">
+                <div className="px-[15px] py-[5px] text-xs text-color-text-primary opacity-60 text-center">
                   No options found
                 </div>
               ) : (
@@ -224,8 +224,8 @@ const Dropdown: React.FC<DropdownProps> = ({
                         flex items-center gap-x-[10px]
                         cursor-pointer
                         ${option.value === value
-                          ? 'bg-[#344240] hover:bg-[#5A6462]'
-                          : 'hover:bg-[#344240]'
+                          ? 'bg-color-bg-medium hover:bg-color-ui-hover'
+                          : 'hover:bg-color-bg-medium'
                         }
                       `}
                       role="option"
@@ -236,7 +236,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                       ) : (
                         <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" />
                       )}
-                      <span className="truncate flex-1 text-[#CDD8D3]">{option.label}</span>
+                      <span className="truncate flex-1 text-color-text-primary">{option.label}</span>
                     </div>
                   ))}
                 </div>
@@ -250,7 +250,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           onClick={handleContainerClick}
           className={`
             relative w-full min-h-[44px] 
-            bg-[#1F2726] hover:bg-[#344240] 
+            bg-color-bg-default hover:bg-color-bg-medium 
             rounded-[22px] 
             transition-all duration-300
             cursor-pointer z-[18]
@@ -279,11 +279,11 @@ const Dropdown: React.FC<DropdownProps> = ({
                   value={searchTerm}
                   onChange={handleInputChange}
                   placeholder={getPlaceholderText()}
-                  className={`w-full bg-transparent text-[#CDD8D3] placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
+                  className={`w-full bg-transparent text-color-text-primary placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
                   disabled={disabled}
                 />
               ) : (
-                <span className="text-[#CDD8D3] text-xs truncate">
+                <span className="text-color-text-primary text-xs truncate">
                   {selectedOption?.label || placeholder}
                 </span>
               )}

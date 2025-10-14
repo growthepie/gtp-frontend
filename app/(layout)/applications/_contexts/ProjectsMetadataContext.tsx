@@ -46,6 +46,10 @@ export type ProjectsMetadataContextType = {
     }
   };
   availableMainCategories: string[];
+  filteredProjectsData: {
+    types: string[];
+    data: any[];
+  } | null;
 }
 
 type ProjectsMetadataProviderProps = {
@@ -152,6 +156,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
       ownerProjectToProjectData,
       projectNameToProjectData,
       availableMainCategories,
+      filteredProjectsData: filteredProjectsData ? filteredProjectsData.data : null,
     }}>
       {projectsData && children}
     </ProjectsMetadataContext.Provider>

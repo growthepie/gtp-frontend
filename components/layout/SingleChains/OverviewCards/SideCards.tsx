@@ -15,6 +15,8 @@ import MetricCards from "./MetricCards";
 import EventsCard from "./EventsCard";
 import { EventItem } from "./EventsCard";
 import { EthereumEvents } from "@/types/api/MasterResponse";
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { isMobile } from "react-device-detect";
 
 
 
@@ -44,9 +46,12 @@ interface HistoryArrayItem {
 }
 
 
-const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: string }) => {
+const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoContent?: string, leftIcon?: string }) => {
     return (
-        <div className={`flex items-center gap-x-[5px] w-full px-[10px] text-[#5A6462] ${title ? "h-fit" : "h-[0px] overflow-y-visible"}`}>
+        <div className={`flex items-center gap-x-[10px] w-full px-[10px] text-[#5A6462] ${title ? "h-fit" : "h-[0px] overflow-y-visible"}`}>
+            {leftIcon && (
+                <GTPIcon icon={leftIcon as GTPIconName} size="md" containerClassName="!size-[28px] flex items-center justify-center" />
+            )}
             <div 
                 className="w-full h-[1px]" 
                 style={{
@@ -55,29 +60,46 @@ const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: s
                     backgroundRepeat: 'repeat-x'
                 }}
             />
+            <div className="flex-1 flex items-center gap-x-[5px]">
             {title && (
                 <div className="heading-large-xxs h-[17px] flex items-center whitespace-nowrap pr-[5px]">{title}</div>
             )}
             {infoContent && (
-                <Tooltip placement="bottom">
-                    <TooltipTrigger>
-                        <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent className="z-[99]">
-                        <div className="px-[15px]">{infoContent}</div>
-                    </TooltipContent>
-                </Tooltip>
+            <div className='w-[15px] h-fit z-30'>
+                <GTPTooltipNew
+                    placement="bottom-start"
+                    size="md"
+                    allowInteract={true}
+                    trigger={
+                        <div
+                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
+                        data-tooltip-trigger
+                        >
+                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                        </div>
+                    }
+                    containerClass="flex flex-col gap-y-[10px]"
+                    positionOffset={{ mainAxis: -20, crossAxis: 20 }}
+
+                >
+                    <div>
+                        <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                        {infoContent}
+                        </TooltipBody>
+                    </div>
+                </GTPTooltipNew>
+            </div>
             )}
+            </div>
         </div>
     )
 }
 
-export default function LiveCards({ chainKey, chainData, master }: { chainKey: string, chainData: any, master: any }) {
+export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: any }) {
 
     const [tpsHistory, setTpsHistory] = useState<any[]>([]);
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
     const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
-    const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
     const [height, setHeight] = useState<number[]>([]);
 
 
@@ -122,13 +144,14 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
   if(!chainDataTPS || !chainDataOverview) return null;
     return (
         <div  className="flex flex-col w-full gap-y-[10px]">
-            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
-            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." leftIcon={"gtp-megaphone"} />
+            {Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
+                <HighlightCards key={metric} metric={metric} icon="gtp-metrics-activeaddresses" chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={metric} />
+            ))}
+            
             <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
             <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} />
+            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />
             <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />
             <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
             {Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv", "throughput"].includes(metric)).map((metric) => (
@@ -136,9 +159,11 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
             ))}
             <PartitionLine />
             <EventsCard totalHeight={500}>
-                {chainDataOverview.data.events.map((event, index) => (
-                    <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
-                ))}
+                {[...chainDataOverview.data.events]
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((event, index) => (
+                        <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
+                    ))}
 
             </EventsCard>
         </div>

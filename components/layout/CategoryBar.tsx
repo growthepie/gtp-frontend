@@ -67,7 +67,7 @@ const CategoryBar = ({
   return (
     // <Container>
     <div
-      className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-forest-1000 ${openSub ? "h-[170px]" : "h-[65px]"
+      className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-color-ui-active ${openSub ? "h-[170px]" : "h-[65px]"
         }`}
     >
       {Object.keys(categories).map((category, i) =>
@@ -75,7 +75,7 @@ const CategoryBar = ({
           <div
             key={category}
             className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-[700ms]  justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${selectedCategory === category
-              ? "bg-[#5A6462]"
+              ? "bg-color-ui-hover"
               : "hover:bg-forest-500 dark:hover:bg-white/5"
               } `}
             onClick={() => {

@@ -142,7 +142,7 @@ const Notification = () => {
                   <GTPIcon
                     icon={item.icon ? item.icon : "gtp-notification"}
                     size="sm"
-                    className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${item.icon ? "visible" : "invisible"
+                    className={`w-[12px] h-[12px] text-color-text-black dark:text-forest-800 dark:group-hover:text-forest-200  ${item.icon ? "visible" : "invisible"
                       }`}
                   />
                 </div>
@@ -253,7 +253,7 @@ const Notification = () => {
             }}
           >
             <div
-              className={`hidden md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
+              className={`hidden md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-color-bg-default hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
               style={{
                 borderColor: currentItemTextColor,
                 backgroundColor: currentItemBackgroundColor,
@@ -307,7 +307,7 @@ const Notification = () => {
                           : "gtp-notification"
                       }
                       size="sm"
-                      className={`w-[16px] h-[16px] light:text-[#1F2726]`}
+                      className={`w-[16px] h-[16px] light:text-color-text-primary`}
                     />
                   </div>
                   <div
@@ -357,7 +357,7 @@ const Notification = () => {
               </div>
             </div>
             <div
-              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[480px] xl:w-[480px] 2xl:w-[740px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-[12px] rounded-tl-none xl:rounded-tr-none z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
+              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[480px] xl:w-[480px] 2xl:w-[740px] dark:bg-color-bg-default bg-white border-forest-1000 dark:border-forest-500 rounded-[12px] rounded-tl-none xl:rounded-tr-none z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
                 }`}
               style={{
                 maxHeight: openNotif ? filteredData.length * 200 + "px" : "0",
@@ -384,7 +384,7 @@ const Notification = () => {
           </div>
           <div className="md:hidden">
             <div
-              className={`relative flex md:hidden hover:pointer cursor-pointer p-[5px] rounded-full ${openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
+              className={`relative flex md:hidden hover:pointer cursor-pointer p-[5px] rounded-full ${openNotif ? "dark:bg-color-bg-default bg-forst-50 z-40" : ""
                 }
                 `}
               onClick={() => {
@@ -398,14 +398,14 @@ const Notification = () => {
                   <GTPIcon
                     icon="gtp-notification"
                     size="md"
-                    className="light:text-[#1F2726]"
+                    className="light:text-color-text-primary"
                   />
                 )}
               </div>
             </div>
 
             <div
-              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-white dark:bg-[#1F2726] rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid ${openNotif
+              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-white dark:bg-color-bg-default rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid ${openNotif
                 ? "bg-blend-darken duration-300 ease-in-out z-40 border-[1px]"
                 : "bg-blend-normal duration-300 ease-in-out border-[0px] "
                 }`}

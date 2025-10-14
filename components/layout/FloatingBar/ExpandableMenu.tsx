@@ -297,7 +297,7 @@ function MenuItems({
   return (
     <>
       {items.map((item) => {
-        const baseClasses = "flex items-center gap-x-[10px] justify-start text-sm font-semibold hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200";
+        const baseClasses = "flex items-center gap-x-[10px] justify-start text-sm font-semibold hover:bg-color-ui-hover px-[22px] py-[4px] -my-[2px] transition-colors duration-200";
         const finalClasses = item.disabled
           ? `${baseClasses} opacity-60 cursor-not-allowed`
           : baseClasses;
@@ -456,7 +456,7 @@ export default function ExpandableMenu({
     >
       {/* Trigger Button */}
       <div 
-        className={`absolute flex items-center justify-left bg-[#1F2726] -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] cursor-pointer ${triggerClassName}`}
+        className={`absolute flex items-center justify-left bg-color-bg-default -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] cursor-pointer ${triggerClassName}`}
         style={{ height: hCollapsed }}
       >
         {renderTrigger({ open, props: triggerProps })}
@@ -473,7 +473,7 @@ export default function ExpandableMenu({
       
       {/* Expandable Panel */}
       <div 
-        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 bg-[#151A19] rounded-b-2xl rounded-t-0 z-20 ${panelClassName}`}
+        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 bg-color-ui-active rounded-b-2xl rounded-t-0 z-20 ${panelClassName}`}
         style={{
           ...placementStyles.position,
           height: open ? hExpanded : panelHeightCollapsed,

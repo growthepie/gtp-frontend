@@ -202,7 +202,7 @@ export default function RootLayout({
       }}
     >
       <Head />
-      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
+      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
         <script
           dangerouslySetInnerHTML={{
             __html: script,
@@ -230,7 +230,7 @@ export default function RootLayout({
               <SidebarContainer />
               <div
                 id="content-panel"
-                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-inherit"
+                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-inherit"
               >
                 <div className="relative min-h-full w-full">
                   <Header />

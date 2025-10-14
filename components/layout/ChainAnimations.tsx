@@ -193,7 +193,7 @@ export default function ChainAnimations({
             }
           }}
         >
-          <div className="flex h-[30px] w-[140px] items-center gap-x-[10px] rounded-full bg-[#1F2726]">
+          <div className="flex h-[30px] w-[140px] items-center gap-x-[10px] rounded-full bg-color-bg-default">
             <div
               className="z-20 flex h-full w-[30px] items-center justify-center"
               style={{
@@ -206,7 +206,7 @@ export default function ChainAnimations({
               />
             </div>
 
-            <div className="flex flex-col text-[#CDD8D3]">
+            <div className="flex flex-col text-color-text-primary">
               <div className="-mb-[4px] mt-[1px] text-[14px] font-bold">
                 {" "}
                 {selectedValue === "share" ? (
@@ -254,7 +254,7 @@ export default function ChainAnimations({
             </div>
           </div>
           <div
-            className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#1F2726]"
+            className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-color-bg-default"
             style={{
               left: percentage > 100 ? parentContainerWidth - 25 : undefined,
             }}

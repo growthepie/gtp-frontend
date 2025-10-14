@@ -676,6 +676,7 @@ function MetricChart({
           if (prefix || suffix) {
             // for small USD amounts, show 2 decimals
             if (absVal === 0) number = "0";
+            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               number = units[unitKey].currency ? val.toFixed(2) :
@@ -688,9 +689,10 @@ function MetricChart({
                 d3Format(`~.2s`)(val).replace(/G/, "B");
           } else {
             if (absVal === 0) number = "0";
+            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
-              d3Format(`.2s`)(val).replace(/G/, "B")
+              number = d3Format(`.2s`)(val).replace(/G/, "B")
             else number = d3Format(`s`)(val).replace(/G/, "B");
           }
           // for negative values, add a minus sign before the prefix
@@ -1101,7 +1103,7 @@ function MetricChart({
               split={false}
               followPointer={true}
               followTouchMove={true}
-              backgroundColor={"#2A3433EE"}
+              backgroundColor={"rgb(var(--bg-default) / 0.95)"}
               padding={0}
               hideDelay={300}
               stickOnContact={true}
@@ -1111,7 +1113,7 @@ function MetricChart({
               outside={true}
 
               style={{
-                color: "rgb(215, 223, 222)",
+                color: "rgb(var(--text-primary))",
               }}
               formatter={tooltipFormatter}
               // ensure tooltip is always above the chart
@@ -1271,7 +1273,7 @@ function MetricChart({
       </div>
       {
         seriesData.length === 0 && (
-          <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+          <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
             No chain(s) selected for comparison. Please select at least one.
           </div>
         )
@@ -1290,16 +1292,16 @@ const YAxisScaleControls = () => {
   if (selectedScale !== "absolute") return null;
 
   return (
-    <div className="relative z-[1] flex items-center w-fit p-[2px] pr-[6px] h-[28px] rounded-full bg-[#344240] select-none">
+    <div className="relative z-[1] flex items-center w-fit p-[2px] pr-[6px] h-[28px] rounded-full bg-color-bg-medium select-none">
       <div
-        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "logarithmic" ? "px-[8px] bg-[#1F2726]" : "px-[8px] "}`}
+        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "logarithmic" ? "px-[8px] bg-color-bg-default" : "px-[8px] "}`}
         onClick={() => handleScaleChange("logarithmic")}
       >
 
         logarithmic
       </div>
       <div
-        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "linear" ? "px-[8px] bg-[#1F2726]" : "px-[8px] "}`}
+        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "linear" ? "px-[8px] bg-color-bg-default" : "px-[8px] "}`}
         onClick={() => handleScaleChange("linear")}
       >
         linear

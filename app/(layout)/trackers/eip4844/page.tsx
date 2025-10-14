@@ -270,12 +270,12 @@ export default function Eiptracker() {
           </Container>
           <Container className="flex justify-end mt-[30px] w-[99%] mx-auto">
             <div
-              className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${isMobile
+              className={`flex items-center justify-between dark:bg-color-bg-default bg-forest-50  ${isMobile
                 ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-between items-center h-full mx-auto rounded-2xl "
                 : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
                 }`}
             >
-              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
+              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-color-bg-default  items-start justify-center w-full">
                 <div
                   className={`flex gap-x-[4px]  ${isMobile
                     ? "w-full justify-between text-sm"
@@ -285,7 +285,7 @@ export default function Eiptracker() {
                   {Object.keys(timescales).map((timescale) => (
                     <div
                       className={`rounded-full grow px-4 font-medium text-center flex items-center justify-center  hover:cursor-pointer ${selectedTimescale === timescale
-                        ? "bg-forest-500 dark:bg-forest-1000"
+                        ? "bg-forest-500 dark:bg-color-ui-active"
                         : "hover:bg-forest-500/10"
                         }
                       ${isMobile
@@ -333,7 +333,7 @@ export default function Eiptracker() {
                     Object.keys(timespans).map((timespan) => (
                       <div
                         className={`rounded-full text-center font-medium hover:cursor-pointer ${selectedTimespan === timespan
-                          ? "bg-forest-500 dark:bg-forest-1000 visible"
+                          ? "bg-forest-500 dark:bg-color-ui-active visible"
                           : "hover:bg-forest-500/10 invisible"
                           }
 
@@ -530,7 +530,7 @@ export default function Eiptracker() {
                         <div
                           className={`absolute left-[96%] xl:left-[97%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${selectedChains[item.chain.key]
                             ? ""
-                            : "hover:bg-forest-800"
+                            : "hover:bg-color-ui-hover"
                             }`}
                           onClick={() => {
                             if (
@@ -549,8 +549,8 @@ export default function Eiptracker() {
                           <Icon
                             icon="feather:check-circle"
                             className={`w-full h-full transition-all rounded-full ${selectedChains[item.chain.key]
-                              ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                              : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                              ? "opacity-100 bg-white dark:bg-color-ui-active dark:hover:forest-800"
+                              : "opacity-0 bg-forest-50 dark:bg-color-bg-default hover:bg-forest-50"
                               }`}
                             style={{
                               color: selectedChains[item.chain.key]

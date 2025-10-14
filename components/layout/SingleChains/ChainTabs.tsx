@@ -14,7 +14,7 @@ const TAB_INFO = {
     },
     "economics": {
         "header": "Economics",
-        "icon": "gtp:economics",
+        "icon": "gtp:gtp-metrics-economics",
     },
     "apps": {       
         "header": "Apps",
@@ -44,14 +44,14 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
                 onMouseLeave={() => setHoveredTab(null)}
             >
                 <SectionBarItem
-                isSelected={selectedTab === tab}
-                isLocked={chainInfo.tab_status[tab] === "locked"}
-                comingSoon={chainInfo.tab_status[tab] === "soon"}
-                icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
-                header={tab === "overview" ? chainInfo.name : TAB_INFO[tab].header}
-                iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
-                index={index + 1}
-                isHovered={hoveredTab === tab}
+                    isSelected={selectedTab === tab}
+                    isLocked={chainInfo.tab_status[tab] === "locked"}
+                    comingSoon={chainInfo.tab_status[tab] === "soon"}
+                    icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
+                    header={tab === "overview" ? chainInfo.name : TAB_INFO[tab].header}
+                    iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
+                    index={index + 1}
+                    isHovered={hoveredTab === tab}
                 />
             </div>
             ))}

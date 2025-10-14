@@ -300,7 +300,7 @@ const Chain = ({ params }: { params: any }) => {
         >
           <div
             className={`${button.showIconBackground &&
-              "bg-white dark:bg-forest-1000 relative "
+              "bg-white dark:bg-color-ui-active relative "
               } rounded-full w-[25px] h-[25px] p-[5px]`}
           >
             <Icon
@@ -322,7 +322,7 @@ const Chain = ({ params }: { params: any }) => {
             {button.label}
           </div>
         </div>
-        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-color-ui-active pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
           {items.map((item: { label: string; icon: string; href: string }) => (
             <Link
               href={item.href}
@@ -476,7 +476,7 @@ const Chain = ({ params }: { params: any }) => {
                   childrenHeight={isMobile ? 97 : 111}
                   className="transition-all duration-300 w-full lg:!w-[253px]"
                 >
-                  <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
+                  <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-color-bg-default overflow-visible select-none">
                     <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
                       <ExpandingButtonMenu
                         className={`left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
@@ -541,7 +541,7 @@ const Chain = ({ params }: { params: any }) => {
                           className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[140px]"
                         >
                           <div className="flex items-center w-full h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
-                            <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
+                            <div className="bg-white dark:bg-color-ui-active rounded-full w-[25px] h-[25px] p-[5px]">
                               <Icon
                                 icon="gtp:gtp-bridge"
                                 className="w-[15px] h-[15px]"
@@ -593,7 +593,7 @@ const Chain = ({ params }: { params: any }) => {
                   }
                 >
                   <div
-                    className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
+                    className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-color-bg-default overflow-hidden`}
                   >
                     <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                     <div className="w-full lg:w-[378px] h-auto lg:h-[calc(111px-20px)] flex flex-col justify-between gap-y-[5px]">
@@ -682,7 +682,7 @@ const Chain = ({ params }: { params: any }) => {
                                             }}
                                           ></div>
 
-                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
                                             <Icon
                                               icon={`gtp:${String(key).replace(
                                                 "_",
@@ -772,7 +772,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         }
                       />
-                      <div className="bg-clip-border h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-[#1F2726] justify-between ">
+                      <div className="bg-clip-border h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-color-bg-default justify-between ">
                         <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         <div className="flex-col flex pl-[48px] truncate">
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
@@ -870,7 +870,7 @@ const Chain = ({ params }: { params: any }) => {
                         <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                       }
                     >
-                      <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
+                      <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-color-bg-default gap-x-[5px] overflow-hidden">
                         <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         <div className="w-full min-w-[212px] flex">
                           <div className="flex flex-col w-full h-full justify-between min-w-[85px]">
@@ -937,7 +937,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         }
                       >
-                        <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
+                        <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-color-bg-default overflow-hidden">
                           <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                           <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[80px]">
                             <div className="text-[10px] font-semibold text-[#5A6462]">
@@ -945,7 +945,7 @@ const Chain = ({ params }: { params: any }) => {
                             </div>
                             <div className="flex flex-col gap-y-[2px]">
                               <div
-                                className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
+                                className="flex items-center justify-center font-bold text-[#151a19] rounded-[2px] text-[10px] leading-[120%]"
                                 style={{
                                   background: master.chains[chainKey]
                                     .l2beat_stage
@@ -975,7 +975,7 @@ const Chain = ({ params }: { params: any }) => {
                               <a
                                 href={master.chains[chainKey].l2beat_link}
                                 target="_blank"
-                                className="rounded-full bg-forest-50 dark:bg-[#344240] w-[15px] h-[15px] p-[2px]"
+                                className="rounded-full bg-forest-50 dark:bg-color-bg-medium w-[15px] h-[15px] p-[2px]"
                               >
                                 <Icon
                                   icon="feather:arrow-right"
@@ -1098,6 +1098,7 @@ const Chain = ({ params }: { params: any }) => {
             data={overviewData}
             master={master}
             forceSelectedChain={chainKey}
+            isSingleChainView={true}
           />
         </>
       )}

@@ -46,7 +46,7 @@ export default function ShowLoading({
   if (fullScreen)
     return (
       <div
-        className={`fixed inset-0 flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-white dark:bg-forest-1000 z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-white dark:bg-color-ui-active z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
           } transition-opacity duration-300`}
         suppressHydrationWarning
       >
@@ -56,7 +56,7 @@ export default function ShowLoading({
 
   return (
     <div
-      className={`absolute inset-0 h-full flex items-center justify-center bg-white dark:bg-forest-1000 z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+      className={`absolute inset-0 h-full flex items-center justify-center bg-white dark:bg-color-ui-active z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
         } transition-opacity duration-300 z-[200]`}
       suppressHydrationWarning
     >
