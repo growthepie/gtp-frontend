@@ -80,7 +80,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   </div>
             </div>
             <div className="flex items-center gap-x-[8px] heading-small-xs  group">
-                  <div className="flex flex-col gap-y-[2px] items-end md:items-start">
+                  <div className="flex flex-col gap-y-[2px] items-end">
                     <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)}</div>
                     <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">Current TPS</div>
                   </div>

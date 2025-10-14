@@ -282,14 +282,14 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
   const twitter = socials.Twitter;
   return (
-    <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default pl-[30px] py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
+    <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-[15px]">
         <div className="flex items-center gap-x-[15px] text-[#5A6462] cursor-pointer" onClick={() => setOpen(!open)}>
           <GTPIcon icon="gtp-chevrondown-monochrome" className={`!w-[24px] !h-[22px] transition-all ${!open ? "-rotate-90" : ""}`} containerClassName="!w-[24px] !h-[24px] pt-[2px]" />
           <div className="heading-large-md whitespace-nowrap">About {chainData.name}</div>
         </div>
         <HorizontalScrollContainer className="flex-1 -mb-[15px] pb-[15px]">
-          <div className={`flex items-center gap-x-[10px] transition-all duration-300 ${!open ? "opacity-100 max-w-[1200px]" : "opacity-0 max-w-0"}`}>
+          <div className={`flex items-center gap-x-[10px] transition-all duration-300 ${!open ? "opacity-100 max-w-[1200px]" : "opacity-100 max-w-[1200px] md:opacity-0 md:max-w-0"}`}>
             {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
             {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
             {master.chains[chainKey].links.github && <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />}

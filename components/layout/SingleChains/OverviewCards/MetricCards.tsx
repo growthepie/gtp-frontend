@@ -22,6 +22,7 @@ const formatLargeNumber = (value: number, decimals: number) => {
     return value.toFixed(decimals);
 };
 
+// make sure data is loading from overview...kpi_cards
 
 
 export default function MetricCards({ chainKey, master, metricKey, metricData, overviewData }: { chainKey: string, master: MasterResponse, metricKey: string, metricData: MetricInfo, overviewData: ChainOverview }) {
