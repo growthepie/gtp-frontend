@@ -468,7 +468,7 @@ export default function GlobalFloatingBar() {
 
   return (
     <>
-      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1700px] px-0 md:px-[13px] md:-mx-[5px] transition-[margin] duration-sidebar ease-sidebar flex justify-center`}>
+      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1920px] px-0 md:px-[13px] md:-mx-[5px] transition-[margin] duration-sidebar ease-sidebar flex justify-center`}>
 
         <div className="bg-color-ui-active z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
@@ -484,7 +484,7 @@ export default function GlobalFloatingBar() {
         />
       )}
       <div className="fixed z-global-search bottom-[60px] md:hidden left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]">
-        <div className="w-full max-w-[1700px] px-[20px] md:px-[13px] pointer-events-auto">
+        <div className="w-full max-w-[1920px] px-[20px] md:px-[13px] pointer-events-auto">
           <div className="px-[5px] md:px-[15px] md:py-[10px]">
             {/* <WorkWithUs />    */}
             {/* <NotificationButton
@@ -504,7 +504,7 @@ export default function GlobalFloatingBar() {
         </div>
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
-        <div className="w-full max-w-[1700px] px-[20px] md:px-[30px]">
+        <div className="w-full max-w-[1920px] px-[20px] md:px-[30px]">
           <FloatingBarContainer className='p-[5px] md:p-[5px] md:pl-[6px] md:py-[5px] !rounded-[27px]'>
             <div className='w-full flex flex-col md:flex-row'>
               <MobileMenuWithSearch
