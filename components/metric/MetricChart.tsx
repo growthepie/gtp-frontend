@@ -676,6 +676,7 @@ function MetricChart({
           if (prefix || suffix) {
             // for small USD amounts, show 2 decimals
             if (absVal === 0) number = "0";
+            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               number = units[unitKey].currency ? val.toFixed(2) :
@@ -688,9 +689,10 @@ function MetricChart({
                 d3Format(`~.2s`)(val).replace(/G/, "B");
           } else {
             if (absVal === 0) number = "0";
+            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
-              d3Format(`.2s`)(val).replace(/G/, "B")
+              number = d3Format(`.2s`)(val).replace(/G/, "B")
             else number = d3Format(`s`)(val).replace(/G/, "B");
           }
           // for negative values, add a minus sign before the prefix
