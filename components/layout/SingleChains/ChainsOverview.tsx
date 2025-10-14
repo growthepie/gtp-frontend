@@ -15,7 +15,7 @@ import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ChainOverview } from "@/lib/chains";
-import { LifetimeAchievments, StreaksAchievments } from "./OverviewCards/Achievments";
+import { LifetimeAchievments, StreaksAchievments } from "./OverviewCards/Achievements";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
 import { useMediaQuery } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -197,11 +197,15 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
             <div className="flex flex-col w-full gap-y-[15px]">
             
-              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
+              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
-                <div className="flex  gap-x-[10px] pt-[5px]">
-                  {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
-                  <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                <div className="flex justify-between gap-x-[10px] pt-[5px]">
+                  <div className="">
+                    {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
+                  </div>
+                  <div className="flex-1">
+                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                  </div>
                 </div>
               </div>
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px]`}>

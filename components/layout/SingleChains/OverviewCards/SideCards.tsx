@@ -10,13 +10,13 @@ import moment from "moment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { Icon } from "@iconify/react";
 import HighlightCards from "./HighlightCards";
-import { ChainOverview } from "@/lib/chains";
 import MetricCards from "./MetricCards";
 import EventsCard from "./EventsCard";
 import { EventItem } from "./EventsCard";
 import { EthereumEvents } from "@/types/api/MasterResponse";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
+import { ChainOverview } from "@/lib/chains";
 
 
 
@@ -95,7 +95,7 @@ const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoC
     )
 }
 
-export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: any }) {
+export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: ChainOverview }) {
 
     const [tpsHistory, setTpsHistory] = useState<any[]>([]);
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
@@ -143,9 +143,9 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
    
     return (
         <div  className="flex flex-col w-full gap-y-[10px]">
-            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." leftIcon={"gtp-megaphone"} />
-            {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
-                <HighlightCards key={metric} metric={metric} icon="gtp-metrics-activeaddresses" chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={metric} />
+            {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).length > 0 && <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." leftIcon={"gtp-megaphone"} />}
+            {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).map((metric, index) => (
+                <HighlightCards key={chainDataOverview.data.highlights[metric].metric_id} metric={chainDataOverview.data.highlights[metric].metric_name} icon={chainDataOverview.data.highlights[metric].icon} chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={chainDataOverview.data.highlights[metric].metric_id} index={index} />
             ))}
             <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
             {chainDataTPS && (
