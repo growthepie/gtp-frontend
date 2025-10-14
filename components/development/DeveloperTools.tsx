@@ -1,6 +1,7 @@
 import ApiTool, { GlobalSearchToggleButton } from "./ApiTool";
 import DarkModeToggleButton from "./DarkModeToggle";
 import NotificationTool from "./NotificationTool";
+import SubdomainCustomerTool from "./SubdomainCustomerTool";
 
 export default function DeveloperTools() {
 
@@ -20,6 +21,7 @@ export default function DeveloperTools() {
         </div>
         <ApiTool />
         <NotificationTool />
+        <SubdomainCustomerTool />
         {/* <GlobalSearchToggleButton /> */}
         <DarkModeToggleButton />
       </div>

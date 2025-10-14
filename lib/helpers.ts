@@ -22,3 +22,5 @@ export const BASE_URL =
       ? "preview"
       : "production"
   ];
+
+export const SUBDOMAIN_CUSTOMER = process.env.NEXT_PUBLIC_SUBDOMAIN_CUSTOMER;
