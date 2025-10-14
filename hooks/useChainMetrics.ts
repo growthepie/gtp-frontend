@@ -1,7 +1,7 @@
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
 import { getChainMetricURL } from "@/lib/urls";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { ChainData } from "@/types/api/MetricsResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -25,8 +25,9 @@ type UseChainMetricsResult = {
   isValidating: boolean;
 };
 
+
 /**
- * Custom hook to fetch metrics for multiple chains in parallel
+ * Hook to fetch metrics for multiple chains in parallel
  * and aggregate them into a structure compatible with the old MetricsResponse
  */
 export function useChainMetrics(
@@ -34,116 +35,104 @@ export function useChainMetrics(
   chainKeys: string[],
   master: MasterResponse
 ): UseChainMetricsResult {
+  const { fetcher } = useSWRConfig();
   const supportedChainKeys = Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
-  // Create an array of SWR hooks, one for each chain
-  const chainResponses = chainKeys.filter((chainKey) => supportedChainKeys.includes(chainKey)).map((chainKey) => {
-    const url = getChainMetricURL(chainKey, metricURLKey);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useSWR<ChainMetricResponse>(url, {
-      onError: (error) => {
-        // Silence expected errors (404, 403, CORS failures, JSON parse errors from 403/404 responses)
-        const status = error?.status || error?.response?.status;
 
-        // Check if it's a 404 or 403
-        if (status === 404 || status === 403) {
-          return;
+  // Filter and prepare URLs
+  const validChainKeys = useMemo(() =>
+    chainKeys.filter((chainKey) => supportedChainKeys.includes(chainKey)),
+    [chainKeys, supportedChainKeys]
+  );
+
+  const urls = useMemo(() =>
+    validChainKeys.map((chainKey) => getChainMetricURL(chainKey, metricURLKey)),
+    [validChainKeys, metricURLKey]
+  );
+
+  // Custom fetcher that fetches all URLs in parallel and returns a map
+  const parallelFetcher = useCallback(async () => {
+    if (urls.length === 0) return {};
+
+    // Use the configured fetcher to fetch all URLs in parallel
+    // The fetcher handles apiRoot replacement and error handling
+    const results = await Promise.allSettled(
+      urls.map(async (url, index) => {
+        try {
+          const data = await fetcher!(url);
+          return { chainKey: validChainKeys[index], data };
+        } catch (error) {
+          // The fetcher in providers.tsx already handles 404/403 errors for chain metrics
+          // by returning null, so we should handle that case
+          return { chainKey: validChainKeys[index], data: null };
         }
+      })
+    );
 
-        // Check if it's a JSON parse error (happens when 403/404 returns HTML/XML)
-        if (error instanceof SyntaxError && error.message.includes('JSON')) {
-          return;
-        }
+    // Convert results to a map
+    const resultMap: { [key: string]: ChainMetricResponse | null } = {};
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        resultMap[result.value.chainKey] = result.value.data as ChainMetricResponse;
+      }
+    });
 
-        // Check if it's a CORS error or fetch failure (often caused by 403 blocking)
-        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-          return;
-        }
+    return resultMap;
+  }, [urls, validChainKeys, fetcher]);
 
-        // Log other errors normally
-        console.error(`Error fetching ${chainKey} ${metricURLKey}:`, error);
-      },
-      // Prevent SWR from retrying on 404/403 and fetch failures
-      shouldRetryOnError: (error) => {
-        const status = error?.status || error?.response?.status;
+  // Create a stable key for SWR
+  const swrKey = useMemo(() =>
+    urls.length > 0 ? `chain-metrics-${metricURLKey}-${validChainKeys.join(',')}` : null,
+    [metricURLKey, validChainKeys]
+  );
 
-        // Don't retry on 404/403
-        if (status === 404 || status === 403) {
-          return false;
-        }
-
-        // Don't retry on JSON parse errors (403/404 responses)
-        if (error instanceof SyntaxError && error.message.includes('JSON')) {
-          return false;
-        }
-
-        // Don't retry on CORS/fetch failures
-        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-          return false;
-        }
-
-        // Retry on other errors
-        return true;
-      },
-      // Disable revalidation on focus
+  // Use a single SWR hook to fetch all chains in parallel
+  const { data: chainDataMap, error, isLoading, isValidating } = useSWR<{ [key: string]: ChainMetricResponse | null }>(
+    swrKey,
+    parallelFetcher,
+    {
       revalidateOnFocus: false,
       dedupingInterval: 10000,
-    });
-  });
+      // Keep previous data while revalidating to prevent UI flicker
+      keepPreviousData: true,
+    }
+  );
 
-  // Aggregate all the responses
+  // Aggregate all the responses with progressive loading
   const aggregatedData = useMemo(() => {
-    // Filter responses: only include successful ones (ignore null responses from 404/403)
-    const successfulResponses = chainResponses.filter((response) => {
-      // Skip if still loading
-      if (!response.data && response.isLoading) return false;
+    // Return early if no data yet
+    if (!chainDataMap) return undefined;
 
-      // Skip null responses (404/403 from our custom fetcher)
-      if (response.data === null) return false;
-
-      // Skip if error is 404, 403, or any HTTP error (chain doesn't have this metric)
-      if (response.error) {
-        const errorStatus = response.error?.status || response.error?.response?.status;
-        // Filter out 404 (not found), 403 (forbidden), and 500+ (server errors)
-        if (errorStatus === 404 || errorStatus === 403 || errorStatus >= 500) {
-          return false;
-        }
-      }
-
-      // Include if we have valid data (not null)
-      return !!response.data && response.data !== null;
-    });
-
-    // Wait until all chains have either loaded or errored
-    // Don't check isLoading here to prevent revalidation from triggering undefined state
-    // Include null data (404/403) as settled
-    const allSettled = chainResponses.every(
-      (response) => response.data !== undefined || response.error
+    // Find successful responses (non-null data)
+    const successfulChains = validChainKeys.filter(
+      (chainKey) => chainDataMap[chainKey] !== null && chainDataMap[chainKey] !== undefined
     );
-    if (!allSettled) return undefined;
 
-    // If no successful responses, return undefined
-    if (successfulResponses.length === 0) return undefined;
+    // Progressive loading: Show data as soon as we have at least one successful response
+    // This prevents UI freezing while waiting for all chains
+    if (successfulChains.length === 0 && isLoading) {
+      // Still loading initial data
+      return undefined;
+    }
+
+    if (successfulChains.length === 0) {
+      // No data available for any chain
+      return undefined;
+    }
 
     // Get the first successful response to extract common metadata
-    const firstSuccessfulIndex = chainResponses.findIndex(
-      (response) => response.data && !response.error
-    );
-    if (firstSuccessfulIndex === -1) return undefined;
-
-    const firstResponse = chainResponses[firstSuccessfulIndex].data;
+    const firstSuccessfulChain = successfulChains[0];
+    const firstResponse = chainDataMap[firstSuccessfulChain];
     if (!firstResponse) return undefined;
 
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
 
-    chainResponses.forEach((response, index) => {
-      const chainKey = chainKeys[index];
-
-      // Skip if error or no data
-      if (response.error || !response.data) return;
-
-      // Transform the new structure to the old ChainData structure
-      chains[chainKey] = transformToChainData(response.data.details, chainKey);
+    successfulChains.forEach((chainKey) => {
+      const responseData = chainDataMap[chainKey];
+      if (responseData) {
+        // Transform the new structure to the old ChainData structure
+        chains[chainKey] = transformToChainData(responseData.details, chainKey);
+      }
     });
 
     return {
@@ -155,23 +144,11 @@ export function useChainMetrics(
       monthly_agg: "sum" as const, // Default value, can be overridden
       chains,
     };
-  }, [chainResponses, chainKeys]);
-
-  // Aggregate loading and error states
-  const isLoading = chainResponses.some((response) => response.isLoading);
-  const isValidating = chainResponses.some((response) => response.isValidating);
-
-  // Only report critical errors (not 404/403 which are expected for some chains)
-  const criticalError = chainResponses.find((response) => {
-    if (!response.error) return false;
-    const errorStatus = response.error?.status || response.error?.response?.status;
-    // Only report non-404/403 errors as critical
-    return errorStatus && errorStatus !== 404 && errorStatus !== 403;
-  })?.error;
+  }, [chainDataMap, validChainKeys, isLoading]);
 
   return {
     data: aggregatedData,
-    error: criticalError,
+    error,
     isLoading,
     isValidating,
   };
