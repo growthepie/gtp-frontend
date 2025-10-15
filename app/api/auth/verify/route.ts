@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyMagicLinkToken, generateSignedUrlParams } from '@/lib/cloudfront-auth';
 import { BASE_URL } from '@/lib/helpers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
