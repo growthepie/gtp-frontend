@@ -24,12 +24,12 @@ export default function ProtectedApp({ children }: ProtectedAppProps) {
 
   // if this is a protected domain, prevent scrolling on the body when the auth UI is shown
   useEffect(() => {
-    if (isProtectedDomain) {
+    if (isProtectedDomain && !isAuthenticated) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [isProtectedDomain]);
+  }, [isProtectedDomain, isAuthenticated]);
 
   // Normal authenticated view
   return (
