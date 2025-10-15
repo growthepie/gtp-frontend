@@ -29,7 +29,7 @@ export default function Header() {
         <div className="flex justify-between items-center w-full">
           <div className="flex gap-x-0 xl:gap-x-6 w-full">
             {/*Banner/Notification Area */}
-            <div className={`hidden md:flex pr-[15px] `}>
+            <div className={`hidden md:flex pr-[15px] mt-[-5px]`}>
               <Notification />
             </div>
             <div className="flex h-[37px] justify-between items-start md:hidden relative w-full self-stretch pl-[5px] pr-[5px]">

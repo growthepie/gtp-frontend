@@ -12,7 +12,7 @@ type AggregatedMetricData = {
   description: string;
   source: string[];
   avg?: boolean;
-  monthly_agg: "sum" | "avg" | "unique";
+  monthly_agg: "sum" | "maa" | "avg" | "unique";
   chains: {
     [chainKey: string]: ChainData;
   };
@@ -151,11 +151,11 @@ export function useChainMetrics(
       metric_name: firstResponse.details.metric_name,
       description: "", // Not available in new API structure
       source: [], // Not available in new API structure
-      avg: false, // Default value, can be overridden
-      monthly_agg: "sum" as const, // Default value, can be overridden
+      avg: master.metrics[metricKey].avg || false, // Default value, can be overridden
+      monthly_agg: master.metrics[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
       chains,
     };
-  }, [chainDataMap, validChainKeys, isLoading]);
+  }, [chainDataMap, validChainKeys, isLoading, metricKey, master]);
 
   return {
     data: aggregatedData,
@@ -189,6 +189,10 @@ function transformToChainData(
       types: timeseries.daily.types as string[],
       data: timeseries.daily.data,
     },
+    daily_7d_rolling: timeseries.daily_7d_rolling ? {
+      types: timeseries.daily_7d_rolling.types as string[],
+      data: timeseries.daily_7d_rolling.data,
+    } : undefined,
     changes_monthly: {
       types: changes.monthly.types as string[],
       "30d": changes.monthly["30d"],

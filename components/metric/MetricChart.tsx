@@ -653,7 +653,7 @@ function MetricChart({
         : "";
 
       if (
-        !showUsd &&
+        !showUsd && seriesData.length > 0 &&
         seriesData[0].types.includes("eth") &&
         selectedScale !== "percentage"
       ) {
