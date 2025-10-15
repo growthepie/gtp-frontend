@@ -28,6 +28,10 @@ export default function Header() {
       <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px] mb-[10px]">
         <div className="flex justify-between items-center w-full">
           <div className="flex gap-x-0 xl:gap-x-6 w-full">
+            {/*Banner/Notification Area */}
+            <div className={`hidden md:flex pr-[15px] `}>
+              <Notification />
+            </div>
             <div className="flex h-[37px] justify-between items-start md:hidden relative w-full self-stretch pl-[5px] pr-[5px]">
               <LogoContextMenu>
                 <Link href="/" className="">
