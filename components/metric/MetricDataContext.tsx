@@ -239,7 +239,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
   return (
     <MetricDataContext.Provider
       value={{
-        data: data || undefined,
+        data: data as MetricData | undefined,
         type: metric_type,
         metric_id: metric_id,
         metric: metric,
