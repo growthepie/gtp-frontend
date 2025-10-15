@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Magic link sent to your email'
+      message: `Magic link sent to your email, ${email}. Link: ${verifyUrl}`
     });
 
   } catch (error) {
