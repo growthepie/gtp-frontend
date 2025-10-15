@@ -96,21 +96,21 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       </div>
                     </GTPTooltipNew>
             </div>
-            <div className="flex items-start gap-x-[10px]">
+            <div className="flex items-start gap-x-[10px] ">
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
                     return (
-                        <div className="flex items-center flex-col w-full gap-y-[10px]" key={key + "streaks"}>
-                            <div className="heading-large-xs">{data.streaks[key][keyValue].streak_length + " / 7 days"}</div>
+                        <div className="flex items-center flex-col w-full " key={key + "streaks"}>
+                            <div className="text-xxs font-bold leading-[15px]"><span className="numbers-xxs">{data.streaks[key][keyValue].streak_length}</span> / 7 days</div>
                            
-                            <div className="flex items-center gap-x-[10px] h-[35px]">
+                            <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px]">
                             {Array.from({ length: 7 }, (_, i) => (
                                 <StreakIcon highlighted={i < data.streaks[key][keyValue].streak_length} key={i + "streaks"} />
                             ))}
                             </div>
-                            {streaksData[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} />}
-                            <div className="flex items-center gap-x-[5px] text-xxxs">
+                            {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} />}
+                            <div className="flex items-center gap-x-[5px] pt-[5px] text-xxxs">
                                 <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
                                 {keyData[key].description}
                             </div>
@@ -127,19 +127,27 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
 const StreakBar = ({yesterdayValue, todayValue, keyValue}: {yesterdayValue: number, todayValue: number, keyValue: string}) => {
     const prefix = keyValue === "usd" ? "$" : keyValue === "eth" ? "Ξ" : "";
     return (
-        <div className="flex  px-[2px] py-[2px] justify-between w-full bg-color-bg-medium rounded-full">
-            <div className="flex items-center gap-x-[5px] px-[2px] py-[2px] bg-color-ui-active rounded-full">
-                <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
+        <div className="flex flex-col w-full min-w-[200px]">
+            <div className="flex  pl-[2px] pr-[5px] py-[2px] justify-between w-full bg-color-bg-medium rounded-full">
+                <div className="flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[2px] justify-start bg-color-ui-active rounded-full"
+                 style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
+                >
+                    <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
 
-                <div className="text-xxxs text-[#4B534F]">(today)</div>
+
+                </div>
+                <div className="flex items-center gap-x-[5px] h-[15px]">
+                    <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
+
+
+                </div>
+            
+
             </div>
-            <div className="flex items-center gap-x-[5px]">
-                <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
-
-                <div className="text-xxxs text-[#4B534F]">(yesterday)</div>
+            <div className="flex items-center justify-between gap-x-[5px] px-[8px] pt-[2px]">
+                <div className="text-xxxs ">today</div>
+                <div className="text-xxxs ">yesterday</div>
             </div>
-        
-
         </div>
     )
 }
@@ -245,28 +253,28 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
 
                 
                     return (
-                    <div className="flex flex-col gap-y-[10px] items-center" key={key + "lifetime"}>
-                        <div className="flex w-full h-[100px] max-w-[100px] items-center justify-center overflow-hidden relative ">
-                            <div className="">
+                    <div className="flex flex-col items-center" key={key + "lifetime"}>
+                        <div className="flex w-full max-w-[100px] h-[84px] items-center justify-center overflow-hidden relative ">
+                            <div className="flex h-full items-center">
                                 <ReactECharts 
                                     option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level)} 
-                                    style={{ width: '80px', height: '100%' }}
+                                    style={{ width: '84px', height: '84px' }}
                                 />
                                 
                             </div>
-                            <div className="absolute top-[7px] left-[2.5px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full">
+                            <div className="absolute top-[2px] left-[4px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full">
                                 <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
                                 <div className="text-xxxs text-color-ui-hover">Level</div>
                             </div>
-                            <div className="absolute flex flex-col justify-center items-center right-0 left-0 top-[39%]">
+                            <div className="absolute flex flex-col  gap-y-[2px] justify-center items-center right-0 left-0 top-[37%]">
                                 <div className="numbers-sm">{formatNumber(data.lifetime[key][valueType].total_value)}</div>
-                                <div className="flex h-fit items-center numbers-xxxs">
+                                <div className="flex gap-x-[1px] h-fit items-center numbers-xxxs">
                                     <div className="pt-[1px]">{Math.round(data.lifetime[key][valueType].percent_to_next_level)}%</div> 
                                     <div className="text-xxxs">to</div> 
                                     <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs">{data.lifetime[key][valueType].level + 1}</div></div>
                             </div>
                         </div>
-                        <div className="flex w-full gap-x-[2px] items-center justify-center -mt-[12.5px]">
+                        <div className="flex w-full gap-x-[2px] items-center justify-center">
                             <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
                              className="w-[15px] h-[15px]"
                              containerClassName="flex items-center justify-center w-[24px] h-[24px]"
