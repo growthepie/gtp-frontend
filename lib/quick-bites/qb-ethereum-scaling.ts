@@ -197,7 +197,7 @@ const ethereumScaling: QuickBiteData = {
 
      "```image",
     JSON.stringify({
-      src: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/scaling-parts.png", // should allow link to our API
+      src: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/scaling-goals2.png", // should allow link to our API
       alt: "How Ethereum is Scaling",
       width: "800",
       height: "400",
@@ -235,7 +235,7 @@ const ethereumScaling: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/hyperliquid.png",
   og_image: "",
-  date: "2025-10-16",
+  date: "2025-10-17",
   related: [],
   author: [{
     name: "Matthias Seidl",
