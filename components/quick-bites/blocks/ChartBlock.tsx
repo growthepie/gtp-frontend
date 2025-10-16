@@ -140,6 +140,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           }
           disableTooltipSort={block.disableTooltipSort}
           seeMetricURL={block.seeMetricURL}
+          yAxisLine={block.yAxisLine}
         />
       )}
       {block.caption && (
