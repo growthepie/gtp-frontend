@@ -120,11 +120,6 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                             ))}
                             </div>
                             {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} />}
-                            <div>
-                                <div className="text-xxxs">{data.streaks[key][keyValue].yesterday_value}</div>
-                                <div className="text-xxxs">{streaksData.data[chainKey][key][keyValue]}</div>
-                                <div className="text-xxxs">{streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value * 100}%</div>
-                            </div>
                             <div className="flex items-center gap-x-[5px] pt-[5px] text-xxxs">
                                 <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
                                 {keyData[key].description}
