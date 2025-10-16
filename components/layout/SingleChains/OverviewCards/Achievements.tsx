@@ -270,7 +270,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
         
         return {
             tooltip: {
-                confine: false,
+                show: false,
             },
             series: [
                 {
