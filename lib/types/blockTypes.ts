@@ -128,7 +128,8 @@ export interface ChartBlock extends BaseBlock {
   seeMetricURL?: string | null;
   yAxisLine?: {
     xValue: number;
-    annotationPosition: number; // Pixel offset
+    annotationPositionX: number; // Pixel offset X
+    annotationPositionY: number; // Pixel offset Y
     annotationText: string;
     lineStyle?: "solid" | "dashed" | "dotted" | "dashdot" | "longdash" | "longdashdot";
     lineColor?: string;
