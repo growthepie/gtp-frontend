@@ -395,6 +395,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null,
+      yAxisLine: chartConfig.yAxisLine || [],
       showInMenu: parseShowInMenu(chartConfig),
       filterOnStateKey: chartConfig.filterOnStateKey || undefined
     };
