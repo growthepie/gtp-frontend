@@ -328,7 +328,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   }, [chainDataOverview, enrichedApps, masterData, selectedMainCategory]);
 
   const dimensions = useMemo(() => {
-    const MIN_HEIGHT = 350;
+    const MIN_HEIGHT = 245;
     const MAX_HEIGHT = window.innerHeight - 300;
     const MAX_APPS = 20;
 
@@ -608,11 +608,13 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   }, [masterData, chainDataOverview, enrichedApps]);
   const { theme } = useTheme(); 
 
+  const hideApplications = layout.length === 0;
+
   return (
     <MotionConfig reducedMotion="user">
-      <div className="group flex flex-col w-full gap-y-[15px] h-full">
+      <div className={`group flex flex-col w-full gap-y-[15px] h-full`}>
         {/* Header with category filters */}
-        <div className="@container flex gap-x-[5px]">
+        <div className={`@container flex gap-x-[5px] ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
           <GTPIcon icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName} size="sm" className=" w-[15px] h-[15px]" containerClassName="flex items-center justify-center w-[24px] h-[24px]" 
           style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
           />
@@ -664,7 +666,22 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} 
             />
           </div> */}
-          <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none">
+          <div className={`absolute w-full flex flex-col gap-y-[10px] items-center justify-start pt-[20px] h-full inset-0 z-[2] ${hideApplications ? 'opacity-100' : 'opacity-0'}`}>
+            <GTPIcon icon="gtp-lock" size="md" className="" />
+            <div className="heading-large-md">
+              Applications Not Available
+            </div>
+            <div className="text-xs text-center max-w-[438px]">
+              <div>
+              Application metrics are a paid add-on for each specific chain. 
+              Unfortunately, this chain has not yet added application metrics to growthepie. 
+              </div>
+              <div className="pt-[20px]">
+                Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+              </div>
+            </div>
+          </div>
+          <div className={`absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
             <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2]' metricName={`${masterData?.chains[chainKey].name} Applications`} />
           </div>
 
@@ -709,7 +726,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
           </motion.div>
         </div>
       </div>
-      <div className="flex items-center justify-end pt-[10px] pr-[0px] w-full">
+      <div className="flex items-center justify-end pt-[10px] pr-[0px] w-full  ">
           <div className='w-[15px] h-fit z-30'>
               <GTPTooltipNew
                   placement="top-end"
@@ -794,7 +811,6 @@ const CategorySection = ({
     'token_transfers': 'gtp-tokentransfers',
 
   }
-
   
   return (
     <motion.div
@@ -1009,5 +1025,6 @@ function generateConstrainedTiles(
 
   return tiles;
 }
+
 
 export default DensePackedTreeMap;

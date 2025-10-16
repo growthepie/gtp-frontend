@@ -167,13 +167,29 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
 
-
-
-
-
-    // Callback function to generate chart options with dynamic progress value
-    const getChartOptions = (progressValue: number): EChartsOption => {
+    const transparentChartOptions = (progressValue: number, chartSize: number = 74): EChartsOption => {
         const remainingValue = 100 - progressValue;
+        
+        // Calculate the angle for the end of the progress arc
+        // ECharts pie starts at top (12 o'clock = 90° in standard math coords) and goes clockwise
+        // Standard math: 0° = right (3 o'clock), angles increase counter-clockwise
+        const progressAngle = (progressValue / 100) * 360; // degrees of progress clockwise from top
+        const angleRad = ((90 - progressAngle) * Math.PI) / 180; // Convert to radians in standard math coordinates
+        
+        // Calculate position of the circle
+        // Radius is 87.5% of half the chart size (middle of the ring)
+        const radiusPixels = (chartSize / 2) * 0.875;
+        const centerX = chartSize / 2;
+        const centerY = chartSize / 2;
+        
+        // Calculate circle position in pixels (center of the circle on the arc)
+        const circleRadius = 4;
+        const circleCenterX = centerX + radiusPixels * Math.cos(angleRad);
+        const circleCenterY = centerY - radiusPixels * Math.sin(angleRad); // Negative because Y increases downward
+        
+        // Adjust for the fact that 'left' and 'top' position the top-left corner, not center
+        const circleX = circleCenterX - circleRadius;
+        const circleY = circleCenterY - circleRadius;
         
         return {
             series: [
@@ -183,6 +199,87 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                         { 
                             name: 'Progress', 
                             value: progressValue,
+                            itemStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0,
+                                    y: 0,
+                                    x2: 1,
+                                    y2: 1,
+                                    colorStops: [
+                                        { offset: 0, color: 'transparent' },
+                                        { offset: 1, color: 'transparent' }
+                                    ]
+                                }
+                            }
+                        },
+                        { 
+                            name: 'Remaining', 
+                            value: remainingValue, 
+                            itemStyle: {
+                                color: 'transparent',
+                            } 
+                        }
+                    ],
+                    name: 'Percent to next level',
+                    label: {
+                        show: false,
+                    },
+                    labelLine: {
+                        show: false,
+                    },
+                    radius: ['85%', '90%'],
+                    center: ['50%', '50%'],
+                    showEmptyCircle: true,
+                    emptyCircleStyle: {
+                        color: '#344240',
+                    },
+                    silent: true,
+                    emphasis: {
+                        disabled: true
+                    },
+                }
+            ],
+            graphic: progressValue > 0 ? [
+                {
+                    type: 'circle',
+                    left: circleX,
+                    top: circleY,
+                    shape: {
+                        r: circleRadius
+                    },
+                    style: {
+                        fill: '#CBD8D3',
+                        stroke: '#CBD8D3',
+                        lineWidth: 0,
+                        opacity: 0.9
+                    },
+
+                    z: 100
+                }
+            ] : []
+        };
+    }
+
+
+
+
+    // Callback function to generate chart options with dynamic progress value
+    const getChartOptions = (progressValue: number, chartSize: number = 84): EChartsOption => {
+        const remainingValue = 100 - progressValue;
+        
+        return {
+            tooltip: {
+                confine: false,
+            },
+            series: [
+                {
+                    type: 'pie',
+                    data: [
+                        { 
+                            name: 'Progress', 
+                            value: progressValue,
+                            
                             itemStyle: {
                                 color: {
                                     type: 'linear',
@@ -202,7 +299,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                             value: remainingValue, 
                             itemStyle: {
                                 color: '#344240',
-                            } 
+                            }
                         }
                     ],
                     name: 'Percent to next level',
@@ -214,19 +311,24 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     },
                     radius: ['85%', '90%'],
                     center: ['50%', '50%'],
+                    emphasis: {
+                        disabled: false,
+                        scale: true,
+                        scaleSize: 2.5,
+                    },
                     showEmptyCircle: true,
                     emptyCircleStyle: {
                         color: 'transparent',
                     },
                 }
-            ]
+            ],
         };
     };
 
 
     
     return(
-        <div className="flex flex-col w-full gap-y-[15px]">
+        <div className="flex flex-col w-full gap-y-[15px] overflow-visible">
             <div className="flex items-center gap-x-[10px]">
                 <div className="heading-large-xs">Lifetime</div>
                 <GTPTooltipNew
@@ -252,27 +354,28 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                       </div>
                 </GTPTooltipNew>
             </div>
-            <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(80px,1fr)] gap-x-[10px] gap-y-[10px]">
+            <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(80px,1fr)] gap-x-[10px] gap-y-[10px] overflow-visible">
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
 
-
-
-                    
-
-                
                     return (
-                    <div className="flex flex-col items-center" key={key + "lifetime"}>
-                        <div className="flex w-full max-w-[100px] h-[84px] items-center justify-center overflow-hidden relative ">
-                            <div className="flex h-full items-center">
+                    <div className="flex flex-col items-center overflow-visible" key={key + "lifetime"}>
+                        <div className="flex w-full max-w-[100px] h-[84px] items-center justify-center relative overflow-visible">
+                            <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                 <ReactECharts 
-                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level)} 
-                                    style={{ width: '84px', height: '84px' }}
-                                />
+                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 84)} 
+                                    style={{ width: '84px', height: '84px', overflow: 'visible' }}
+                                /> 
                                 
                             </div>
-                            <div className="absolute top-[2px] left-[4px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full">
+                            <div className="absolute w-full h-full flex items-center justify-center bottom-[0.5px] right-[0.5px] z-10">
+                                <ReactECharts 
+                                    option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 64)} 
+                                    style={{ width: '64px', height: '64px', }}
+                                />
+                            </div>
+                            <div className="absolute top-[2px] left-[4px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full z-30">
                                 <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
                                 <div className="text-xxxs text-color-ui-hover">Level</div>
                             </div>
@@ -281,7 +384,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                                 <div className="flex gap-x-[1px] h-fit items-center numbers-xxxs">
                                     <div className="pt-[1px]">{Math.round(data.lifetime[key][valueType].percent_to_next_level)}%</div> 
                                     <div className="text-xxxs">to</div> 
-                                    <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs">{data.lifetime[key][valueType].level + 1}</div></div>
+                                    <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs ">{data.lifetime[key][valueType].level + 1}</div></div>
                             </div>
                         </div>
                         <div className="flex w-full gap-x-[2px] items-center justify-center">
