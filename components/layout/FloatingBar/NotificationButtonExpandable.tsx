@@ -69,18 +69,35 @@ export default function NotificationButtonExpandable({
     }
   };
 
+  const updateDimensions = () => {
+    const contentEl = notificationContentRef.current;
+    if (!contentEl) return;
+    setCustomExpandedHeight(Math.min(contentEl.clientHeight + 50, MAX_HEIGHT));
+  };
+
   // observe the height of the notification content and update the custom expanded size
+  useEffect(() => {
+    updateDimensions();
+    const contentEl = notificationContentRef.current;
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (contentEl) {
+      resizeObserver.observe(contentEl);
+    }
+    return () => {
+      if (contentEl) {
+        resizeObserver.unobserve(contentEl);
+      }
+    };
+  }, [filteredData]);
+
   useEffect(() => {
     const contentEl = notificationContentRef.current;
     if (!contentEl) return;
-    const updateDimensions = () => {
-      setCustomExpandedHeight(Math.min(contentEl.clientHeight + 50, MAX_HEIGHT));
-    };
     updateDimensions();
     const resizeObserver = new ResizeObserver(updateDimensions);
     resizeObserver.observe(contentEl);
     return () => resizeObserver.unobserve(contentEl);
-  }, []);
+  }, [filteredData]);
 
   // Hide component if no notifications and hideIfNoNotifications is true
   if (hideIfNoNotifications && (isLoading || (filteredData && filteredData.length === 0))) {
@@ -118,16 +135,16 @@ export default function NotificationButtonExpandable({
           </button>
         )}
         renderContent={({ onClose }) => (
-          <div className="flex flex-col w-full h-full">
+          <div className="flex flex-col w-full h-full z-[1000]">
             {/* Scrollable Content */}
             <ScrollableContainer>
               <div ref={notificationContentRef}>
-              <NotificationContent
-                width={customExpandedWidth}
-                notifications={filteredData}
-                isLoading={isLoading}
-                error={error}
-              />
+                <NotificationContent
+                  width={customExpandedWidth}
+                  notifications={filteredData}
+                  isLoading={isLoading}
+                  error={error}
+                />
               </div>
             </ScrollableContainer>
           </div>
