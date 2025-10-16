@@ -254,7 +254,8 @@ const testBite: QuickBiteData = {
 
       yAxisLine: [{
         xValue: 		1755388800000, //position on x-axis
-        annotationPosition: 50, //pixel offset
+        annotationPositionY: 50, //pixel offset
+        annotationPositionX: 30, //pixel offset
         annotationText: "Target",
         lineStyle: "Dash", //Dash, Dot, Solid, DashDot, LongDash, LongDashDot
         lineColor: "#19D9D6",

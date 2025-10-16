@@ -42,7 +42,8 @@ interface ChartWrapperProps {
   jsonData?: any;
   yAxisLine?: {
     xValue: number;
-    annotationPosition: number;
+    annotationPositionY: number;
+    annotationPositionX: number;
     annotationText: string;
     lineStyle?: "solid" | "dashed" | "dotted" | "dashdot" | "longdash" | "longdashdot";
     lineColor?: string;
@@ -444,8 +445,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   useHTML: true,
                   align: 'center',
                   rotation: 0,
-                  x: 30,
-                  y: line.annotationPosition,
+                  x: line.annotationPositionX,
+                  y: line.annotationPositionY,
                   style: {
                     color: line.textColor || (theme === 'dark' ? '#CDD8D3' : '#293332'),
                     fontSize: line.textFontSize || '9px',
