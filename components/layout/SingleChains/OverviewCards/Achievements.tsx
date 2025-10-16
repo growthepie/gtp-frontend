@@ -96,12 +96,12 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       </div>
                     </GTPTooltipNew>
             </div>
-            <div className="flex items-start gap-x-[10px] ">
+            <div className="flex flex-wrap items-start gap-x-[10px] gap-y-[10px]">
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
                     return (
-                        <div className="flex items-center flex-col w-full " key={key + "streaks"}>
+                        <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
                             <div className="text-xxs font-bold leading-[15px]"><span className="numbers-xxs">{data.streaks[key][keyValue].streak_length}</span> / 7 days</div>
                            
                             <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px]">
@@ -242,7 +242,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                       </div>
                 </GTPTooltipNew>
             </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-x-[10px] gap-y-[10px]">
+            <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(80px,1fr)] gap-x-[10px] gap-y-[10px]">
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
