@@ -185,7 +185,7 @@ const L2Scaling = [
 
 const ethereumScaling: QuickBiteData = {
   title: "Scaling Ethereum Mainnet to 10,000 TPS",
-  subtitle: "The road to ~1 Ggas/s on L1 and ~1 Tgas/s across Layer 2s",
+  subtitle: "The road to ~1 Ggas/s on Layer 1 and ~1 Tgas/s across Layer 2s",
   content: [
     "Ethereum is on a clear path to scale. Over the next six years, Ethereum Mainnet throughput is expected to surge toward 10,000 transactions per second (TPS) - roughly 1 gigagas per second - while Layer 2s collectively push the ecosystem toward million-TPS capacity.",
 
@@ -253,8 +253,8 @@ const ethereumScaling: QuickBiteData = {
     "**Disclaimer**",
     "Projections are illustrative and depend on research, engineering, coordination, and market conditions. Not financial advice.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/ethereum-scaling.png",
-  og_image: "https://api.growthepie.com/v1/quick-bites/banners/ethereum-scaling_og.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/ethereun_scaling_2.png",
+  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/ethereum_scaling_og.png",
   date: "2025-10-17",
   related: [],
   author: [
