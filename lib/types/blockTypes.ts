@@ -126,6 +126,18 @@ export interface ChartBlock extends BaseBlock {
     }[];
   } | null;
   seeMetricURL?: string | null;
+  yAxisLine?: {
+    xValue: number;
+    annotationPositionX: number; // Pixel offset X
+    annotationPositionY: number; // Pixel offset Y
+    annotationText: string;
+    lineStyle?: "solid" | "dashed" | "dotted" | "dashdot" | "longdash" | "longdashdot";
+    lineColor?: string;
+    lineWidth?: number;
+    textColor?: string;
+    textFontSize?: string;
+    backgroundColor?: string;
+  }[];
   filterOnStateKey?: {
     stateKey: string;
     columnKey: string;
