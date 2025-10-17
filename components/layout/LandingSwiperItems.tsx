@@ -72,7 +72,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["anniversary-report"];
+const quickBiteIds = ["ethereum-scaling"];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -86,7 +86,7 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
     >
         <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
         <div className="flex justify-end">
-          <TitleButtonLink label="Read our Ecosystem Report" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
+          <TitleButtonLink label="Full Article" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
         </div>
         <div style={{
           opacity: 0.6,
