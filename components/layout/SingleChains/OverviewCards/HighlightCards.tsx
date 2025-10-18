@@ -28,7 +28,7 @@ export default function HighlightCards({ metric, icon, chainKey, chainOverviewDa
           
                 <div className="flex flex-col gap-y-[2px] items-start">
                     <div className="heading-small-xs">{metricData.name}</div>
-                    <div className="heading-small-xxxs text-[#5A6462]">All-Time High</div>
+                    <div className="heading-small-xxxs ">{chainOverviewData.data.highlights[index].text || "All-Time High"}</div>
                 </div>
             </div>
             <div className="flex items-center gap-x-[5px] p-[5px] pl-[10px]">
