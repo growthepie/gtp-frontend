@@ -1139,7 +1139,7 @@ export default function ComparisonChart({
 
       let fillOpacity = undefined;
 
-      let seriesFill = "transparent";
+      let seriesFill: string | Highcharts.GradientColorObject = "transparent";
 
       let shadow: Highcharts.ShadowOptionsObject | undefined = undefined;
 
