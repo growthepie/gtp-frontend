@@ -287,28 +287,32 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
   const twitter = socials.Twitter;
   return (
     <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-[15px]">
-        <div className="flex items-center gap-x-[15px] text-[#5A6462] cursor-pointer" onClick={() => setOpen(!open)}>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-[15px]">
+        <div className="flex items-center gap-x-[15px] text-[#5A6462] cursor-pointer pl-[30px]" onClick={() => setOpen(!open)}>
           <GTPIcon icon="gtp-chevrondown-monochrome" className={`!w-[24px] !h-[22px] transition-all ${!open ? "-rotate-90" : ""}`} containerClassName="!w-[24px] !h-[24px] pt-[2px]" />
           <div className="heading-large-md whitespace-nowrap">About {chainData.name}</div>
         </div>
-        <HorizontalScrollContainer className="flex-1 -mb-[15px] pb-[15px]">
-          <div className={`flex items-center gap-x-[10px] transition-all duration-300 ${!open ? "opacity-100 max-w-[1200px]" : "opacity-100 max-w-[1200px] md:opacity-0 md:max-w-0"}`}>
-            {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
-            {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
-            {master.chains[chainKey].links.github && <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />}
-            <LinkDropdown icon="gtp-bridge" label="More" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
-            {master.chains[chainKey].links.governance && <LinkButton icon="gtp-bridge" label="Governance" href={master.chains[chainKey].links.governance} />}
-            <LinkDropdown icon="gtp-bridge" label="RPC" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
-            <LinkDropdown icon="gtp-bridge" label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
-            <LinkDropdown icon="gtp-bridge" label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
+        {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
+          <div className={`px-[30px] w-full flex flex-wrap justify-between lg:justify-end items-center gap-[10px] ${!open ? "max-w-[1200px]" : "max-w-[1200px] lg:opacity-0 lg:max-w-0 lg:max-h-0"}`}>
+            <div className="flex flex-row flex-wrap gap-[10px]">
+              {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
+              {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
+              {master.chains[chainKey].links.github && <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />}
+              <LinkDropdown icon="gtp-bridge" label="More" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
+            </div>
+            <div className="flex flex-row flex-wrap gap-[10px]">
+              {master.chains[chainKey].links.governance && <LinkButton icon="gtp-bridge" label="Governance" href={master.chains[chainKey].links.governance} />}
+              <LinkDropdown icon="gtp-bridge" label="RPC" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
+              <LinkDropdown icon="gtp-bridge" label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
+              <LinkDropdown icon="gtp-bridge" label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
+            </div>
           </div>
-        </HorizontalScrollContainer>
+        {/* </HorizontalScrollContainer> */}
       </div>
 
-      <div className="flex justify-between gap-x-[10px] transition-all duration-300 pr-[30px]"
+      <div className="flex justify-between gap-x-[10px] transition-all duration-300 pr-[30px] pl-[30px]"
         style={{
-          maxHeight: open ? 500 : 0,
+          maxHeight: open ? 800 : 0,
           overflow: open ? "visible" : "hidden",
         }}
       >
@@ -319,7 +323,6 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <div className="grid grid-cols-3 @[1145px]:grid-cols-6 gap-x-[10px] flex-1 h-full">
             {/* About Chain Info */}
             <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-6 @[1145px]:grid-rows-3 grid-flow-col auto-cols-fr gap-[10px]">
-              
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
               {chainData.stack.label && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
@@ -370,7 +373,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
             </div>
           </div>
         </div>
-        <div className="h-full hidden md:flex flex-col @[1145px]:flex-row justify-between gap-[10px]">
+        <div className="h-full hidden lg:flex flex-col @[1145px]:flex-row justify-between gap-[10px]">
           <div className="flex flex-col items-start justify-between h-full gap-y-[10px]">
             {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
             {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
