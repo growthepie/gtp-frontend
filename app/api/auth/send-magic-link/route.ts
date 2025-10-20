@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isEmailWhitelisted, generateMagicLinkToken } from '@/lib/cloudfront-auth';
 import { BASE_URL } from '@/lib/helpers';
-// import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+
+// Initialize Resend
+const resend = new Resend(process.env.AUTH_RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,10 +43,10 @@ export async function POST(request: NextRequest) {
     // For development, we'll log the link. In production, send via email.
     if (process.env.NODE_ENV === 'development') {
       console.log('Magic link for', email, ':', verifyUrl);
-      return NextResponse.json({
-        success: true,
-        message: 'Magic link logged to console (dev mode)'
-      });
+      // return NextResponse.json({
+      //   success: true,
+      //   message: 'Magic link logged to console (dev mode)'
+      // });
     }
 
     // Send email in production
@@ -57,75 +60,105 @@ export async function POST(request: NextRequest) {
     //   }
     // });
 
+    const friendlyDomain = BASE_URL.split('//')[1];
+
     const mailOptions = {
-      from: process.env.SMTP_FROM || 'noreply@growthepie.xyz',
+      from: 'growthepie.com <noreply@auth.growthepie.com>',
       to: email,
-      subject: 'Your Growth The Pie Access Link',
+      subject: `Your ${friendlyDomain} Access Link`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
             <style>
               body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                font-family: 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
                 line-height: 1.6;
-                color: #333;
+                color: #B5C4C3;
+                background-color: #1F2726;
+                margin: 0;
+                padding: 0;
+              }
+              .text {
+                color: #B5C4C3 !important;
+              }
+              .wrapper {
                 max-width: 600px;
                 margin: 0 auto;
                 padding: 20px;
               }
               .container {
-                background: #f9f9f9;
+                background: #2A3433;
                 border-radius: 10px;
-                padding: 30px;
+                padding: 40px;
+                border: 1px solid #364240;
               }
               .logo {
                 text-align: center;
                 margin-bottom: 30px;
               }
+              .logo img {
+                max-width: 200px;
+              }
               .button {
                 display: inline-block;
                 padding: 14px 30px;
                 background: linear-gradient(135deg, #FE5468 0%, #FFDF27 100%);
-                color: #000;
+                color: #000 !important;
                 text-decoration: none;
                 border-radius: 25px;
                 font-weight: bold;
                 margin: 20px 0;
+                font-family: 'Raleway', sans-serif;
               }
               .footer {
                 margin-top: 30px;
                 font-size: 12px;
-                color: #666;
+                color: #5F7775; /* forest-600 */
                 text-align: center;
+              }
+              p {
+                font-size: 16px;
+                margin: 1em 0;
+              }
+              a {
+                color: #4CFF7E;
+              }
+              .link-code {
+                background: #1B2524;
+                padding: 8px 12px;
+                border-radius: 5px;
+                word-break: break-all;
+                font-family: 'Source Code Pro', monospace;
+                color: #9FB2B0 !important;
+                font-size: 13px;
+                display: block;
+                margin-top: 5px;
               }
             </style>
           </head>
           <body>
-            <div class="container">
-              <div class="logo">
-                <h1>Growth • The • Pie</h1>
-              </div>
+            <div class="wrapper">
+              <div class="container">
+                <div class="logo">
+                  <img src="https://www.growthepie.com/logo_full.png" alt="${friendlyDomain} logo">
+                </div>
+                <p class="text">Click the button below to sign in:</p>
 
-              <p>Hi there,</p>
+                <div style="text-align: center;">
+                  <a href="${verifyUrl}" class="button">Access ${friendlyDomain}</a>
+                </div>
 
-              <p>You requested access to the protected Growth The Pie preview. Click the button below to sign in:</p>
-
-              <div style="text-align: center;">
-                <a href="${verifyUrl}" class="button">Access Growth The Pie</a>
-              </div>
-
-              <p style="font-size: 14px; color: #666;">
-                Or copy and paste this link into your browser:
-                <br>
-                <code style="background: #f0f0f0; padding: 5px; border-radius: 3px; word-break: break-all;">
-                  ${verifyUrl}
-                </code>
-              </p>
-
-              <div class="footer">
-                <p>This link will expire in 15 minutes for security reasons.</p>
-                <p>If you didn't request this email, you can safely ignore it.</p>
+                <p style="font-size: 14px; color: #88A09D; /* forest-400 */">
+                  Or copy and paste this link into your browser:
+                  <br>
+                  <code class="link-code">
+                    ${verifyUrl}
+                  </code>
+                </p>
               </div>
             </div>
           </body>
@@ -133,8 +166,17 @@ export async function POST(request: NextRequest) {
       `
     };
 
-    // await transporter.sendMail(mailOptions);
+    const { data, error } = await resend.emails.send(mailOptions);
 
+    if (error) {
+      console.error('Resend error:', error);
+      return NextResponse.json(
+        { error: 'Failed to send email' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Resend email sent successfully', data);
 
     // Send Discord notification for magic link generation
     const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
