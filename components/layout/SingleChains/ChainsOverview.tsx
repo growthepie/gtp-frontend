@@ -286,14 +286,18 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
   const twitter = socials.Twitter;
   return (
-    <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
+    <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] text-[#5A6462] cursor-pointer pl-[30px]" onClick={() => setOpen(!open)}>
-          <GTPIcon icon="gtp-chevrondown-monochrome" className={`!w-[24px] !h-[22px] transition-all ${!open ? "-rotate-90" : ""}`} containerClassName="!w-[24px] !h-[24px] pt-[2px]" />
+        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px]" onClick={() => setOpen(!open)}>
+          <GTPIcon 
+            icon="gtp-chevronright-monochrome" size="sm" 
+            className={`!size-[10.67px]`} 
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
+           />
           <div className="heading-large-md whitespace-nowrap">About {chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
-          <div className={`px-[30px] w-full flex flex-wrap justify-between lg:justify-end items-center gap-[10px] ${!open ? "max-w-[1200px]" : "max-w-[1200px] lg:opacity-0 lg:max-w-0 lg:max-h-0"}`}>
+          <div className={`px-[30px] w-full flex flex-wrap justify-between lg:justify-end items-center gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[100px] opacity-100" : "max-w-[1200px] max-h-0 lg:opacity-0 lg:max-w-0 lg:max-h-0"}`}>
             <div className="flex flex-row flex-wrap gap-[10px]">
               {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
               {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
@@ -313,7 +317,10 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
       <div className="flex justify-between gap-x-[10px] transition-all duration-300 pr-[30px] pl-[30px]"
         style={{
           maxHeight: open ? 800 : 0,
+          paddingTop: open ? "15px" : 0,
           overflow: open ? "visible" : "hidden",
+          opacity: open ? 1 : 0,
+          transition: "all 0.3s ease-in-out",
         }}
       >
         <div className="flex flex-col w-full gap-y-[10px]">
