@@ -543,7 +543,7 @@ export default function GlobalFloatingBar() {
       {/* Main floating bar */}
       <div
         className={`fixed z-global-search left-0 right-0 flex justify-center w-full pointer-events-none transition-all duration-[2000ms] ease-out ${!isAuthenticated && isProtectedDomain
-            ? 'translate-y-[calc(-50%+30vh)]' // Centered when not authenticated
+            ? 'translate-y-[calc(-50%-30vh)] md:translate-y-[calc(-50%+30vh)]' // Centered when not authenticated
             : '' // Normal position when authenticated
           } bottom-0 md:bottom-auto md:top-[0px] pb-[30px] md:pb-0 md:pt-[30px]`}
       >
@@ -558,7 +558,7 @@ export default function GlobalFloatingBar() {
                 <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[5px] z-0 pointer-events-auto`}>
 
                   {/* Desktop - Logo (same as normal) */}
-                  <div className={`flex items-center pl-[8px] pb-[2px] gap-x-[15px] w-[40px] h-[44px] md:w-[245px] justify-start transition-all duration-sidebar ease-sidebar overflow-hidden`}>
+                  <div className={`flex items-center pl-[8px] pb-[2px] gap-x-[15px] w-[55px] h-[44px] xl:w-[245px] justify-start transition-all duration-sidebar ease-sidebar overflow-hidden`}>
                     <div className="flex items-center justify-start w-[145px] md:w-[245px]">
                       <GTPLogoOld />
                     </div>
