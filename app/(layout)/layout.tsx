@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
-import { Graph } from "schema-dts";
 import Share from "@/components/Share";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
@@ -16,43 +15,8 @@ import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.growthepie.com/#organization",
-      name: "growthepie",
-      url: "https://www.growthepie.com",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://www.growthepie.com/logo-full.svg",
-      },
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-        "https://www.linkedin.com/company/growthepie"
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.growthepie.com/#website",
-      url: "https://www.growthepie.com",
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics for the Ethereum ecosystem. Ethereum Mainnet, Layer 2s, applications, and data-driven insights all in one place.",
-      publisher: {
-        "@id": "https://www.growthepie.com/#organization"
-      },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: "https://www.growthepie.com/?search=true&query={search_term_string}",
-        query: "required name=search_term_string"
-      }
-    },
-  ],
-};
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
   width: "device-width",
