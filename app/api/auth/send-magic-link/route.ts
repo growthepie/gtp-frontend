@@ -3,9 +3,6 @@ import { isEmailWhitelisted, generateMagicLinkToken } from '@/lib/cloudfront-aut
 import { BASE_URL } from '@/lib/helpers';
 import { Resend } from 'resend';
 
-// Initialize Resend
-const resend = new Resend(process.env.AUTH_RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
@@ -61,6 +58,17 @@ export async function POST(request: NextRequest) {
     // });
 
     const friendlyDomain = BASE_URL.split('//')[1];
+
+    // Initialize Resend
+    const resendApiKey = process.env.AUTH_RESEND_API_KEY;
+    if (!resendApiKey) {
+      return NextResponse.json(
+        { error: 'Resend API key is not set' },
+        { status: 500 }
+      );
+    }
+
+    const resend = new Resend(resendApiKey);
 
     const mailOptions = {
       from: 'growthepie.com <noreply@auth.growthepie.com>',
