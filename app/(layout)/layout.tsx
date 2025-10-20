@@ -15,6 +15,7 @@ import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
+
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -23,11 +24,15 @@ const jsonLd: Graph = {
       "@id": "https://www.growthepie.com/#organization",
       name: "growthepie",
       url: "https://www.growthepie.com",
-      logo: "https://www.growthepie.com/logo_full.png",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.growthepie.com/logo-full.svg",
+      },
       sameAs: [
         "https://twitter.com/growthepie_eth",
         "https://mirror.xyz/blog.growthepie.eth",
         "https://github.com/growthepie",
+        "https://www.linkedin.com/company/growthepie"
       ],
     },
     {
@@ -36,37 +41,19 @@ const jsonLd: Graph = {
       url: "https://www.growthepie.com",
       name: "growthepie",
       description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+        "At growthepie, our mission is to provide comprehensive and accurate analytics for the Ethereum ecosystem. Ethereum Mainnet, Layer 2s, applications, and data-driven insights all in one place.",
       publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.growthepie.com/logo_full.png",
-        },
+        "@id": "https://www.growthepie.com/#organization"
       },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://www.growthepie.com/?search=true&query={search_term_string}",
+        query: "required name=search_term_string"
+      }
     },
   ],
 };
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.com",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.com/logo_full.png",
-//     },
-//   },
-// };
-
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",
