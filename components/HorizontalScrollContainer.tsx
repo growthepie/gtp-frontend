@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import GradientMask from "./GradientMask";
+import ScrollThumb from "./ScrollThumb";
 
 type HorizontalScrollContainerProps = {
   className?: string;
@@ -19,6 +21,10 @@ type HorizontalScrollContainerProps = {
   paddingBottom?: number;
   forcedMinWidth?: number;
   reduceLeftMask?: boolean;
+  enableDragScroll?: boolean; // enable click-and-drag to scroll on content area
+  scrollToId?: string | null; // when provided/changed, attempts to scroll target into view
+  scrollToBehavior?: ScrollBehavior; // defaults to 'smooth'
+  scrollToAlign?: "start" | "center" | "end" | "nearest"; // horizontal alignment policy
 };
 
 export default function HorizontalScrollContainer({
@@ -31,6 +37,10 @@ export default function HorizontalScrollContainer({
   paddingBottom = 0,
   reduceLeftMask = false,
   forcedMinWidth,
+  enableDragScroll = false,
+  scrollToId = null,
+  scrollToBehavior = "smooth",
+  scrollToAlign = "center",
 }: HorizontalScrollContainerProps) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentScrollAreaRef, { width: contentScrollAreaWidth }] =
@@ -210,6 +220,39 @@ export default function HorizontalScrollContainer({
     [contentScrollAreaRef, scrollerRef, updateScrollableAreaScroll, handleDragStart]
   );
 
+  // Keyboard accessibility for the custom scrollbar
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const contentArea = contentScrollAreaRef.current;
+      if (!contentArea) return;
+
+      const scrollAmount = 100; // pixels per key press
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          contentArea.scrollLeft = Math.max(0, contentArea.scrollLeft - scrollAmount);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          contentArea.scrollLeft = Math.min(
+            contentArea.scrollWidth,
+            contentArea.scrollLeft + scrollAmount
+          );
+          break;
+        case "Home":
+          e.preventDefault();
+          contentArea.scrollLeft = 0;
+          break;
+        case "End":
+          e.preventDefault();
+          contentArea.scrollLeft = contentArea.scrollWidth;
+          break;
+      }
+    },
+    [contentScrollAreaRef]
+  );
+
   // Update cursor styles during dragging
   const updateCursor = (node: HTMLDivElement | null) => {
     if (node) {
@@ -225,19 +268,146 @@ export default function HorizontalScrollContainer({
     document.body.style.removeProperty("user-select");
   };
 
-  // Listen to scroll events to update the thumb position
+  // Optional: click-and-drag to scroll the content area itself
+  useEffect(() => {
+    if (!enableDragScroll) return;
+    const area = contentScrollAreaRef.current;
+    if (!area) return;
+
+    let isContentDragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let rafId: number | null = null;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isContentDragging || !contentScrollAreaRef.current) return;
+      const currentX = e.clientX;
+      const dx = currentX - startX;
+      const scrollableWidth =
+        contentScrollAreaRef.current.scrollWidth -
+        contentScrollAreaRef.current.clientWidth;
+      const next = Math.max(
+        0,
+        Math.min(scrollableWidth, startScrollLeft - dx)
+      );
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (!contentScrollAreaRef.current) return;
+        contentScrollAreaRef.current.scrollLeft = next;
+        updateScrollableAreaScroll();
+      });
+    };
+
+    const onMouseUp = () => {
+      isContentDragging = false;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      resetCursor(area);
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      // Prevent text selection and initiate dragging
+      e.preventDefault();
+      if (!contentScrollAreaRef.current) return;
+      isContentDragging = true;
+      startX = e.clientX;
+      startScrollLeft = contentScrollAreaRef.current.scrollLeft;
+      updateCursor(area);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    };
+
+    area.addEventListener("mousedown", onMouseDown);
+    return () => {
+      area.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [enableDragScroll, contentScrollAreaRef, updateScrollableAreaScroll]);
+
+  // Listen to scroll events and rAF-throttle updates to the thumb position
   useEffect(() => {
     const scrollableArea = contentScrollAreaRef.current;
+    if (!scrollableArea) return;
 
-    if (scrollableArea) {
-      scrollableArea.addEventListener("scroll", updateScrollableAreaScroll);
-    }
-    return () => {
-      if (scrollableArea) {
-        scrollableArea.removeEventListener("scroll", updateScrollableAreaScroll);
+    let scrollRAF: number | null = null;
+
+    const handleScroll = () => {
+      if (scrollRAF !== null) {
+        cancelAnimationFrame(scrollRAF);
       }
+      scrollRAF = requestAnimationFrame(() => {
+        updateScrollableAreaScroll();
+        scrollRAF = null;
+      });
+    };
+
+    // Use passive for better performance; do initial sync
+    scrollableArea.addEventListener("scroll", handleScroll, { passive: true });
+    updateScrollableAreaScroll();
+
+    return () => {
+      if (scrollRAF !== null) {
+        cancelAnimationFrame(scrollRAF);
+      }
+      scrollableArea.removeEventListener("scroll", handleScroll as EventListener);
     };
   }, [contentScrollAreaRef, updateScrollableAreaScroll]);
+
+  // Scroll to a child element by id or data-scroll-id whenever scrollToId changes
+  useEffect(() => {
+    if (!scrollToId) return;
+    const container = contentScrollAreaRef.current;
+    if (!container) return;
+
+    // Try to find element within the scrollable container
+    let target: HTMLElement | null = null;
+    try {
+      // Prefer id match inside container
+      target = container.querySelector(`#${scrollToId}`);
+    } catch {
+      // ignore invalid selector strings
+    }
+    if (!target) {
+      target = container.querySelector(`[data-scroll-id="${scrollToId}"]`);
+    }
+    if (!target) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const currentLeft = container.scrollLeft;
+
+    // Compute target's left relative to container scroll coordinates
+    const targetLeftInContainer = targetRect.left - containerRect.left + currentLeft;
+
+    let nextScrollLeft = targetLeftInContainer;
+    if (scrollToAlign === "center") {
+      nextScrollLeft = targetLeftInContainer - (container.clientWidth - target.clientWidth) / 2;
+    } else if (scrollToAlign === "end") {
+      nextScrollLeft = targetLeftInContainer - (container.clientWidth - target.clientWidth);
+    } else if (scrollToAlign === "nearest") {
+      const targetRight = targetLeftInContainer + target.clientWidth;
+      const viewportLeft = currentLeft;
+      const viewportRight = currentLeft + container.clientWidth;
+      if (targetLeftInContainer < viewportLeft) {
+        nextScrollLeft = targetLeftInContainer; // align start
+      } else if (targetRight > viewportRight) {
+        nextScrollLeft = targetRight - container.clientWidth; // align end
+      } else {
+        return; // already fully visible
+      }
+    }
+
+    const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+    nextScrollLeft = Math.max(0, Math.min(maxScrollLeft, nextScrollLeft));
+
+    container.scrollTo({ left: nextScrollLeft, behavior: scrollToBehavior });
+  }, [scrollToId, scrollToBehavior, scrollToAlign, contentScrollAreaRef]);
 
   // Calculate the thumb's horizontal position
   const scrollerX = useMemo(() => {
@@ -285,37 +455,20 @@ export default function HorizontalScrollContainer({
     } else {
       setMaskGradient("");
     }
-  }, [showLeftGradient, showRightGradient]);
+  }, [showLeftGradient, showRightGradient, leftMaskWidth]);
 
   return (
     <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
-      {/* Left Gradient Mask */}
-      <div
-        className={`transition-opacity duration-300 ${showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
-          } z-[2] absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
-        style={{
-          // to avoid the gradient from being cut off
-          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
-        }}
-      ></div>
-
-      {/* Right Gradient Mask */}
-      <div
-        className={`transition-opacity duration-300 ${showScroller && showRightGradient ? "opacity-100" : "opacity-0"
-          } z-[2] absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
-        style={{
-          // to avoid the gradient from being cut off
-          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
-        }}
-      ></div>
+      {/* Gradient Masks */}
+      <GradientMask direction="left" isVisible={showScroller && showLeftGradient} />
+      <GradientMask direction="right" isVisible={showScroller && showRightGradient} />
 
       <div className="overflow-x-visible">
         <div
           className={`z-[2] ${includeMargin ? "pl-[20px] md:pl-[50px]" : ""
             } relative overflow-x-scroll scrollbar-none max-w-full`}
           ref={contentScrollAreaRef}
+          id="horizontal-scroll-content"
           style={{
             maskClip: "padding-box",
             WebkitMaskClip: "padding-box",
@@ -323,6 +476,9 @@ export default function HorizontalScrollContainer({
             maskImage: maskGradient,
             WebkitMaskSize: "100% 100%",
             maskSize: "100% 100%",
+            // expose commonly changed values as CSS vars for potential future CSS usage
+            ["--scroll-position" as any]: scrollerX,
+            ["--mask-gradient" as any]: maskGradient,
             paddingRight: paddingRight ? `${paddingRight}px` : undefined,
             paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
             paddingTop: paddingTop ? `${paddingTop}px` : undefined,
@@ -371,18 +527,16 @@ export default function HorizontalScrollContainer({
             aria-valuemax={100}
             aria-orientation="horizontal"
             tabIndex={0} // Make it focusable for accessibility
+            aria-controls="horizontal-scroll-content"
+            onKeyDown={handleKeyDown}
           >
             <div className="relative w-full h-2" ref={scrollerRef}>
-              <div
-                className="w-5 h-2 bg-forest-400/30 rounded-full absolute top-1/2 transform -translate-y-1/2 cursor-grab"
-                style={{
-                  left: scrollerX,
-                }}
+              <ScrollThumb
+                position={scrollerX}
                 onMouseDown={handleThumbMouseDown}
                 onTouchStart={handleThumbTouchStart}
                 ref={grabberRef}
-                aria-label="Scroll Thumb"
-              ></div>
+              />
             </div>
           </div>
         </div>

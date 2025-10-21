@@ -260,6 +260,8 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   const [showHint, setShowHint] = useState(false);
   const { AllChainsByKeys } = useMaster();
 
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout>(); // IMPROVED: Use ref for timeout
 
@@ -330,7 +332,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
   const dimensions = useMemo(() => {
     const MIN_HEIGHT = 245;
-    const MAX_HEIGHT = window.innerHeight - 300;
+    const MAX_HEIGHT = windowHeight - 300;
     const MAX_APPS = 20;
 
     if (categoryNodes.length === 0) {
@@ -354,7 +356,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     const height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, comfortableHeight));
 
     return { width: containerWidth, height };
-  }, [containerWidth, categoryNodes, window.innerHeight]);
+  }, [containerWidth, categoryNodes, windowHeight]);
 
   // ============================================================================
   // Layout Calculation (mostly unchanged, just type improvements)
@@ -572,11 +574,36 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
     resizeObserver.observe(container);
 
+    
+
     return () => {
       if (resizeTimeoutRef.current) {
         clearTimeout(resizeTimeoutRef.current);
       }
       resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+      const container = containerRef.current;
+      if (container) {  
+        setContainerWidth(container.clientWidth);
+      } else {
+        setContainerWidth(743);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    setTimeout(handleResize, 300);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -622,7 +649,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     <MotionConfig reducedMotion="user">
       <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
         {/* Header with category filters */}
-        <HorizontalScrollContainer includeMargin={false}>
+        <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
           <div  className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon 
@@ -638,6 +665,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
             {/* Category buttons */}
             <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30}}>
               <button
+                id="main-category-button-all"
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                   border-color-text-primary/30 border-dotted border-r-[0.5px]
                   rounded-l-[15px]
@@ -650,6 +678,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               </button>
               {(hideApplications ? allMainCategories : mainCategories).map((category, index) => (
                 <button
+                  id={`main-category-button-${category.id}`}
                   key={category.id}
                   className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                     border-color-text-primary/30 border-dotted
@@ -666,7 +695,6 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
             </div>
           </div>
         </HorizontalScrollContainer>
-
         {/* Animated Treemap visualization */}
         <div className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
@@ -697,7 +725,6 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
                 <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
               </div>
-
               <motion.div
                 ref={containerRef}
                 className='relative h-full'
