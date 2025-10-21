@@ -147,7 +147,7 @@ export function generateSignedUrlParams(email: string): {
   const cloudfrontDomain = process.env.NEXT_PUBLIC_API_DOMAIN || 'api.growthepie.com';
   const policy = createPolicy(`https://${cloudfrontDomain}/*`, 24 * 7); // 7 days
   const signed = signPolicy(policy);
-  const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000);
+  const expiresAt = Date.now() + (2 * 365 * 24 * 60 * 60 * 1000); // 2 years
   return {
     policy: signed.policy,
     signature: signed.signature,

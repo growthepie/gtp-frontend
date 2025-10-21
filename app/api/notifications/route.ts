@@ -1,5 +1,5 @@
 import Notification from "@/components/Notification";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { AUTH_SUBDOMAIN, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import moment from "moment";
 
 const notificationTable = "tblA4NwUahsIldb6x";
@@ -22,7 +22,7 @@ export type NotificationType = {
 };
 
 const BranchesToInclude =
-  IS_PREVIEW || IS_DEVELOPMENT
+  (IS_PREVIEW || IS_DEVELOPMENT) && !AUTH_SUBDOMAIN
     ? ["Preview", "Development", "Production", "All"]
     : ["Production", "All"];
 
