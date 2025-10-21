@@ -641,7 +641,9 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                   border-color-text-primary/30 border-dotted border-r-[0.5px]
                   rounded-l-[15px]
-                  ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                  ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
+                  ${hideApplications && 'pointer-events-none'}
+                  `}
                 onClick={() => setSelectedMainCategory(null)}
               >
                 All
@@ -652,7 +654,10 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
                   className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                     border-color-text-primary/30 border-dotted
                     ${index < (hideApplications ? allMainCategories : mainCategories).length - 1 ? 'border-r-[0.5px] border-dotted' : 'rounded-r-[15px]'}
-                    ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                    ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
+                    ${hideApplications && 'pointer-events-none'}
+                    `}
+                    
                   onClick={() => setSelectedMainCategory(category.id)}
                 >
                   {category.label}
@@ -673,91 +678,96 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} 
             />
           </div> */}
-          <div className={`absolute w-full flex flex-col gap-y-[10px] items-center justify-start pt-[20px] h-full inset-0 z-[2] ${hideApplications ? 'opacity-100' : 'opacity-0'}`}>
-            <GTPIcon icon="gtp-lock" size="md" className="" />
-            <div className="heading-large-md">
-              Applications Not Available
-            </div>
-            <div className="text-xs text-center max-w-[438px]">
-              <div>
-              Application metrics are a paid add-on for each specific chain. 
-              Unfortunately, this chain has not yet added application metrics to growthepie. 
+          {hideApplications ? (
+            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2] min-h-[192px]`}>
+              <GTPIcon icon="gtp-lock" size="md" className="" />
+              <div className="heading-large-md">
+                Applications Not Available
               </div>
-              <div className="pt-[20px]">
-                Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+              <div className="text-xs text-center px-[30px]">
+                  Application metrics are a paid add-on for each specific chain.<br />
+                  Unfortunately, this chain has not yet added application metrics to growthepie.
+                  <br /><br />
+                  Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
               </div>
             </div>
-          </div>
-          <div className={`absolute inset-0 z-[2] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
-            <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2]' metricName={`${masterData?.chains[chainKey].name} Applications`} />
-          </div>
-
-          <motion.div
-            ref={containerRef}
-            className='relative h-full'
-            animate={{ height: dimensions.height }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            <LayoutGroup id={layoutKey}>
-              <AnimatePresence mode="popLayout" initial={false}>
-                {layout.map((node) => (
-                  <CategorySection
-                    key={`${layoutKey}-${node.id}`}
-                    node={node}
-                    isResizing={isResizing}
-                    ownerProjectToProjectData={ownerProjectToProjectData}
-                    onCategoryClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleCategoryClick(node.id);
-                    }}
-                    onMouseEnter={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      setHoveredId(node.id);
-                    }}
-                    onMouseLeave={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      setHoveredId(null);
-                    }}
-                    hoveredId={hoveredId}
-                    viewMode={selectedMainCategory === null ? 'main' : 'sub'}
-                    layoutId={node.id}
-                    selectedMainCategory={selectedMainCategory}
             
-                  />
-                ))}
-              </AnimatePresence>
-            </LayoutGroup>
-          </motion.div>
+            ) : (
+            <>
+              <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
+                <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
+              </div>
+
+              <motion.div
+                ref={containerRef}
+                className='relative h-full'
+                animate={{ height: dimensions.height }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              >
+                <LayoutGroup id={layoutKey}>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    {layout.map((node) => (
+                      <CategorySection
+                        key={`${layoutKey}-${node.id}`}
+                        node={node}
+                        isResizing={isResizing}
+                        ownerProjectToProjectData={ownerProjectToProjectData}
+                        onCategoryClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleCategoryClick(node.id);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setHoveredId(node.id);
+                        }}
+                        onMouseLeave={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setHoveredId(null);
+                        }}
+                        hoveredId={hoveredId}
+                        viewMode={selectedMainCategory === null ? 'main' : 'sub'}
+                        layoutId={node.id}
+                        selectedMainCategory={selectedMainCategory}
+                
+                      />
+                    ))}
+                  </AnimatePresence>
+                </LayoutGroup>
+              </motion.div>
+            </>
+          )}
         </div>
       </div>
-      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full">
+      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full h-[24px]">
+        {!hideApplications && (
           <div className='w-[15px] h-fit z-30'>
-              <GTPTooltipNew
-                  placement="top-end"
-                  size="md"
-                  allowInteract={true}
-                  trigger={
-                  <div
-                    className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
-                    data-tooltip-trigger
-                  >
-                      <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
-                  </div>
-                  }
-                  containerClass="flex flex-col gap-y-[10px]"
-                  positionOffset={{ mainAxis: 10, crossAxis: 0 }}
+            <GTPTooltipNew
+                placement="top-end"
+                size="md"
+                allowInteract={true}
+                trigger={
+                <div
+                  className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
+                  data-tooltip-trigger
+                >
+                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                </div>
+                }
+                containerClass="flex flex-col gap-y-[10px]"
+                positionOffset={{ mainAxis: 10, crossAxis: 0 }}
 
-              >
-                  <div>
-                  <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                      {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
-                  </TooltipBody>
-                  </div>
-              </GTPTooltipNew>
+            >
+                <div>
+                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                    {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
+                </TooltipBody>
+                </div>
+            </GTPTooltipNew>
           </div>
+        )}
       </div>
     </MotionConfig>
   );
@@ -927,18 +937,18 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
             }}
           >
             <motion.div
-              className="w-[41.57px] h-[41.57px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
+              className="w-[42px] h-[42px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
               whileHover="hover"
               variants={appTileVariants}
             >
-              <div className="w-[32px] h-[32px] bg-color-ui-active rounded-full flex items-center justify-center">
+              <div className="w-[34px] h-[34px] bg-color-ui-active rounded-[8px] flex items-center justify-center">
                 {app.logoPath ? (
                   <Image
                     alt={app.displayName}
                     src={`https://api.growthepie.com/v1/apps/logos/${app.logoPath}`}
-                    width={21}
-                    height={21}
-                    className="rounded-full"
+                    width={30}
+                    height={30}
+                    className="rounded-[6px] "
                   />
                 ) : (
                   <GTPIcon

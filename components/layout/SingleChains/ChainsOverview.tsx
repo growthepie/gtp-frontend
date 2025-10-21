@@ -214,62 +214,80 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                   <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={oldMaster} />
                 </ProjectsMetadataProvider>
               </div>
-              {/* <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
-                <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                <HorizontalScrollContainer paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                  <div className="w-[954px]">
-                    <RowProvider
-                      value={{
-                        master: oldMaster,
-                        data: chainDataOverview.data.blockspace.blockspace,
-                        selectedMode: "txcount_share",
-                        forceSelectedChain: "",
-                        isCategoryHovered: isCategoryHovered,
-                        selectedCategory: selectedCategory,
-                        selectedChain: chainKey,
-                        selectedTimespan: "max",
-                        selectedValue: "share",
-                        categories: categories,
-                        allCats: false,
-                        setSelectedChain: () => { },
-                        setSelectedCategory: setSelectedCategory,
-                        setAllCats: () => { },
-                        hoverCategory: hoverCategory,
-                        unhoverCategory: unhoverCategory,
-                        includeMarginBottom: false,
-                      }}
-                    >
-                      <SingleRowContainer />
-                    </RowProvider>
-                  </div>
-                </HorizontalScrollContainer>
-                <div className="flex items-center justify-end pr-[15px]  w-full">
-                  <div className='w-[15px] h-fit z-30'>
-                    <GTPTooltipNew
-                      placement="top-end"
-                      size="md"
-                      allowInteract={true}
-                      trigger={
-                        <div
-                          className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
-                          data-tooltip-trigger
+              {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                    <div className="px-[30px] heading-large-md">Usage Breakdown</div>
+                    <HorizontalScrollContainer paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                      <div className="w-[954px]">
+                        <RowProvider
+                          value={{
+                            master: oldMaster,
+                            data: chainDataOverview.data.blockspace.blockspace,
+                            selectedMode: "txcount_share",
+                            forceSelectedChain: "",
+                            isCategoryHovered: isCategoryHovered,
+                            selectedCategory: selectedCategory,
+                            selectedChain: chainKey,
+                            selectedTimespan: "max",
+                            selectedValue: "share",
+                            categories: categories,
+                            allCats: false,
+                            setSelectedChain: () => { },
+                            setSelectedCategory: setSelectedCategory,
+                            setAllCats: () => { },
+                            hoverCategory: hoverCategory,
+                            unhoverCategory: unhoverCategory,
+                            includeMarginBottom: false,
+                          }}
                         >
-                          <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
-                        </div>
-                      }
-                      containerClass="flex flex-col gap-y-[10px]"
-                      positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-
-                    >
-                      <div>
-                        <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                          {"Tooltip content"}
-                        </TooltipBody>
+                          <SingleRowContainer />
+                        </RowProvider>
                       </div>
-                    </GTPTooltipNew>
+                    </HorizontalScrollContainer>
+                    <div className="flex items-center justify-end pr-[15px]  w-full">
+                      <div className='w-[15px] h-fit z-30'>
+                        <GTPTooltipNew
+                          placement="top-end"
+                          size="md"
+                          allowInteract={true}
+                          trigger={
+                            <div
+                              className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
+                              data-tooltip-trigger
+                            >
+                              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                            </div>
+                          }
+                          containerClass="flex flex-col gap-y-[10px]"
+                          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                        >
+                          <div>
+                            <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                              {"Tooltip content"}
+                            </TooltipBody>
+                          </div>
+                        </GTPTooltipNew>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div> */}
+                ) : (
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                    <div className="px-[30px] heading-large-md">Usage Breakdown</div>
+                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2]`}>
+                      <GTPIcon icon="gtp-lock" size="md" className="" />
+                      <div className="heading-large-md">
+                        Usage Breakdown Not Available
+                      </div>
+                      <div className="text-xs text-center px-[30px]">
+                        Usage breakdown metrics are a paid add-on for each specific chain.<br/>
+                        Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
+                        <br/><br/>
+                        Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         </div>
