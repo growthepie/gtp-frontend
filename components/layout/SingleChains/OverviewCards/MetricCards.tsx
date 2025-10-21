@@ -6,7 +6,7 @@ import { ChainOverview, GetRankingColor } from "@/lib/chains";
 import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse";
 import ReactECharts from "echarts-for-react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import moment from "moment";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useRouter } from "next/navigation";
@@ -151,7 +151,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 </div>
                 <div className="heading-large-xs ">{metricData.name}</div>
             </div>
-            <div className="flex-1 flex justify-center items-center max-w-[140px]">
+            <div className="flex-1 flex justify-center items-center max-w-[160px] overflow-visible">
                 <MetricChart 
                     metricKey={metricKey} 
                     metricData={metricData} 
@@ -218,6 +218,59 @@ const MetricChart = ({
     // Extract timestamps and values from the sparkline data
     const timestamps = seriesData.map((item: any) => item[0]);
     const values = seriesData.map((item: any) => item[1]);
+    
+    // State for hovered data point index
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
+    const [isHovering, setIsHovering] = useState(false);
+    
+    // Get the actual text-primary color from CSS
+    const getTextPrimaryColor = () => {
+        if (typeof window !== 'undefined') {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-text-primary').trim() || '#ffffff';
+        }
+        return '#ffffff';
+    };
+    
+    // Calculate circle position using ECharts coordinate conversion
+    const updateCirclePosition = useCallback((dataIndex: number) => {
+        const chartInstance = chartRef.current?.getEchartsInstance();
+        if (chartInstance && dataIndex >= 0 && dataIndex < values.length) {
+            const pixelPos = chartInstance.convertToPixel('grid', [dataIndex, values[dataIndex]]);
+            if (pixelPos) {
+                setCirclePosition({ x: pixelPos[0], y: pixelPos[1] });
+            }
+        }
+    }, [values]);
+    
+    // Interpolate value between data points
+    const interpolateValue = (dataIndex: number, values: number[]) => {
+        const index = Math.floor(dataIndex);
+        const fraction = dataIndex - index;
+        
+        if (index >= values.length - 1) {
+            return values[values.length - 1];
+        }
+        
+        const value1 = values[index];
+        const value2 = values[index + 1];
+        return value1 + (value2 - value1) * fraction;
+    };
+    
+    // Set initial circle position to final data point
+    useEffect(() => {
+        const setInitialPosition = () => {
+            if (values.length > 0 && !isHovering) {
+                const finalIndex = values.length - 1;
+                updateCirclePosition(finalIndex);
+            }
+        };
+        
+        // Small delay to ensure chart is rendered
+        const timeoutId = setTimeout(setInitialPosition, 100);
+        return () => clearTimeout(timeoutId);
+    }, [values, updateCirclePosition, isHovering]);
 
     // Calculate a better yAxis min: slightly below the minimum value, but not negative if all values are positive
     const minValue = Math.min(...values);
@@ -299,11 +352,12 @@ const MetricChart = ({
                     type: 'solid'
                 }
             }
-        }
+        },
+        graphic: null
     }
     return (
         <div 
-            className="h-[28px] relative w-full"
+            className="h-[40px] relative w-full z-50 overflow-visible"
             onMouseMove={(e) => {
                 const chartInstance = chartRef.current?.getEchartsInstance();
                 if (chartInstance) {
@@ -329,7 +383,13 @@ const MetricChart = ({
                             y: y,
                             data: tooltipData
                         });
+                        
+                        // Update hovered index for circle positioning
+                        setHoveredIndex(categoryIndex);
+                        updateCirclePosition(categoryIndex);
+                        setIsHovering(true);
                     } else {
+                        // Only hide tooltip, keep circle at current position
                         setCustomTooltip(prev => ({ ...prev, visible: false }));
                     }
                 }
@@ -337,6 +397,12 @@ const MetricChart = ({
             onMouseLeave={() => {
                 setCustomTooltip(prev => ({ ...prev, visible: false }));
                 setIsInteracting(false);
+                setIsHovering(false);
+                // Reset hovered index to show circle at final point
+                setHoveredIndex(null);
+                if (values.length > 0) {
+                    updateCirclePosition(values.length - 1);
+                }
             }}
             onTouchStart={() => {
                 setIsInteracting(true);
@@ -367,6 +433,11 @@ const MetricChart = ({
                             y: y,
                             data: tooltipData
                         });
+                        
+                        // Update hovered index for circle positioning
+                        setHoveredIndex(categoryIndex);
+                        updateCirclePosition(categoryIndex);
+                        setIsHovering(true);
                     } else {
                         setCustomTooltip(prev => ({ ...prev, visible: false }));
                     }
@@ -374,6 +445,12 @@ const MetricChart = ({
             }}
             onTouchEnd={() => {
                 setIsInteracting(false);
+                setIsHovering(false);
+                // Reset hovered index to show circle at final point
+                setHoveredIndex(null);
+                if (values.length > 0) {
+                    updateCirclePosition(values.length - 1);
+                }
             }}
         >
             <ReactECharts 
@@ -385,6 +462,19 @@ const MetricChart = ({
                     devicePixelRatio: window.devicePixelRatio || 1,
                  }}
             />
+            
+            {/* Circle indicator overlay */}
+            {circlePosition && (
+                <div
+                    className="absolute w-[10px] h-[10px] rounded-full pointer-events-none z-[60]"
+                    style={{
+                        left: circlePosition.x - 5,
+                        top: circlePosition.y - 5,
+                        backgroundColor: getTextPrimaryColor(),
+                        opacity: 0.6
+                    }}
+                />
+            )}
             
             {/* Custom React Tooltip */}
             {customTooltip.visible && (
