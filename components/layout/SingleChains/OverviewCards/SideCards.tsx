@@ -147,7 +147,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).map((metric, index) => (
                 <HighlightCards key={chainDataOverview.data.highlights[metric].metric_id} metric={chainDataOverview.data.highlights[metric].metric_name} icon={chainDataOverview.data.highlights[metric].icon} chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={chainDataOverview.data.highlights[metric].metric_id} index={index} />
             ))}
-            <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
+            {chainDataTPS && <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />}
             {chainDataTPS && (
                 <>
                         <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
@@ -155,7 +155,8 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
                 </>
             )}
             {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}
-            <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
+            
+            {chainDataOverview && <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />}
             {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv"].includes(metric)).map((metric) => (
                 <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
             ))}

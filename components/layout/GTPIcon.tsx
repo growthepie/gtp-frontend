@@ -234,7 +234,7 @@ const GTPMaturityIconBase = ({ maturityKey, className, containerClassName, showL
   if (maturityKey === "10_foundational" || maturityKey === "0_early_phase" || maturityKey === "NA") {
     return (
       <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
-        <div className="text-xs text-[#5A6462]">N/A</div>
+        <div className="text-xs text-[#5A6462] whitespace-nowrap">N/A</div>
       </div>
     )
   }

@@ -11,6 +11,7 @@ import moment from "moment";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useRouter } from "next/navigation";
 import { getFundamentalsByKey } from "@/lib/metrics";
+import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 
 const formatLargeNumber = (value: number, decimals: number) => {
     const absValue = Math.abs(value);
@@ -130,12 +131,23 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
         >
             <div className="flex items-center gap-x-[10px] w-[110px] md:min-w-[175px]">
                 <div className="!size-[28px] relative flex items-center justify-center">
-                    <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                        <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                        <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
-                            {overviewData.data.ranking[metricKey].rank}
-                        </div>
-                    </div>
+                    <GTPTooltipNew
+                            placement="top-end"
+                            allowInteract={true}
+                            trigger={
+                                <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
+                                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                                    <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
+                                        {overviewData.data.ranking[metricKey].rank}
+                                    </div>
+                                </div>
+                            }
+                            containerClass="w-[24px] h-[24px] mb-[5px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center"
+                            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                          >
+                            <></>
+                    </GTPTooltipNew>
+
                 </div>
                 <div className="heading-large-xs ">{metricData.name}</div>
             </div>

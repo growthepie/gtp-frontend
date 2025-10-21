@@ -27,8 +27,9 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
 
     return(
         <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full
+            ${isLocked || comingSoon ? "" : "hover:bg-color-ui-hover h-[36px] hover:h-[42px]"}
              ${!isLocked &&  "cursor-pointer"}
-             ${isSelected ? "bg-color-ui-active outline outline-2 outline-[#344240] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] outline-0 outline-[#1F2726] w-full hover:bg-color-ui-hover bg-color-bg-medium hover:outline-2 hover:h-[42px] hover:heading-large-md"} 
+             ${isSelected ? "bg-color-ui-active outline outline-2 outline-[#344240] h-[44px] heading-large-sm md:heading-large-md" : "outline-0 bg-color-bg-medium  h-[36px]  outline-[#1F2726] w-full  hover:outline-2  hover:heading-large-md"} 
              ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
              ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
              ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}

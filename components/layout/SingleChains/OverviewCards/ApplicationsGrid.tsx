@@ -499,6 +499,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   // ============================================================================
 
   const handleCategoryClick = (categoryId: string) => {
+    console.log('handleCategoryClick', categoryId);
     if (selectedMainCategory === null) {
       setSelectedMainCategory(categoryId);
       setShowHint(true);
@@ -811,11 +812,14 @@ const CategorySection = ({
     'token_transfers': 'gtp-tokentransfers',
 
   }
+
+
+
   
   return (
     <motion.div
       layoutId={layoutId}
-      className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[1]`}
+      className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[5]`}
       variants={categoryVariants}
       initial="initial"
       animate={{
@@ -829,7 +833,11 @@ const CategorySection = ({
       whileHover={viewMode === 'main' ? "hoverMain" : undefined}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={viewMode === 'main' ? onCategoryClick : undefined}
+      onClick={viewMode === 'main' ? (e) => {
+        console.log('clicked');
+        onCategoryClick(e);
+     
+      } : undefined}
     >
       {/* Animated category label */}
       <motion.div
