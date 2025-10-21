@@ -32,7 +32,6 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     const { AllChainsByKeys } = useMaster();
     const chainData = AllChainsByKeys[chainKey];
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-    const metricUseUSD = Object.keys(metricData.units).includes("usd");
     const isMobile = useMediaQuery("(max-width: 768px)");
     const router = useRouter();
     
@@ -46,6 +45,11 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     
     // Track if user is interacting (touching/moving) on mobile
     const [isInteracting, setIsInteracting] = useState(false);
+
+    // Calculate prefix and suffix early
+    const metricUseUSD = Object.keys(metricData.units).includes("usd");
+    const prefix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].prefix || "";
+    const suffix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].suffix || "";
 
     // Handle card click navigation
     const handleCardClick = useCallback(() => {
@@ -62,7 +66,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     }, [metricKey, chainKey, router]);
 
     // Custom Tooltip Component - defined early to avoid hook order issues
-    const CustomTooltip = useCallback(({ data, x, y }: { data: any[], x: number, y: number }) => {
+    const CustomTooltip = useCallback(({ data, x, y, prefix, suffix }: { data: any[], x: number, y: number, prefix: string, suffix: string }) => {
         if (!data.length) return null;
         const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
 
@@ -105,8 +109,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                             <span className="text-xs whitespace-nowrap text-white">{metricData.name}</span>
                         </div>
                             <span className="numbers-xs text-white font-medium">
-                                {/* Will be filled with prefix/suffix when available */}
-                                {formatLargeNumber(item.value, 2)}
+                                {prefix}{formatLargeNumber(item.value, 2)} {suffix}
                         </span>
                     </div>
                 ))}
@@ -116,8 +119,6 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
     if (!chainData || !overviewData.data.ranking[metricKey] || !metricData || !overviewData.data.kpi_cards[metricKey]) return null;
 
-    const prefix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].prefix;
-    const suffix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].suffix;
     const decimals = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].decimals;
     const valueIndex = metricUseUSD ? showUsd ? 0 : 1 : 0;
 
@@ -162,7 +163,9 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                     isInteracting={isInteracting}
                     setIsInteracting={setIsInteracting}
                     CustomTooltip={CustomTooltip}
-                    seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data}
+                    seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data.map((item: any) => [item[0], item[1 + valueIndex]])}
+                    prefix={prefix}
+                    suffix={suffix}
                 />
             </div>
             <div className="flex flex-col gap-y-[2px] justify-center items-end md:min-w-[120px] group-hover:pr-[20px] transition-all duration-200">
@@ -172,6 +175,17 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 <div className="numbers-xxs " style={{ color: overviewData.data.kpi_cards[metricKey].wow_change.data[0] > 0 ? "#4CFF7E" : "#FF3838" }}>{Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 1 }).format(overviewData.data.kpi_cards[metricKey].wow_change.data[0] * 100)}%</div>
 
             </div>
+            
+            {/* Custom React Tooltip - positioned at card level */}
+            {customTooltip.visible && (
+                <CustomTooltip
+                    data={customTooltip.data}
+                    x={customTooltip.x + 155} // Adjust for card positioning
+                    y={customTooltip.y + 10} // Adjust for card positioning
+                    prefix={prefix}
+                    suffix={suffix}
+                />
+            )}
             
             {/* Chevron that appears on hover */}
             <div className="absolute right-[10px] top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -200,6 +214,8 @@ const MetricChart = ({
     setIsInteracting, 
     CustomTooltip,
     seriesData,
+    prefix,
+    suffix,
 }: { 
     metricKey: string, 
     metricData: MetricInfo, 
@@ -210,7 +226,9 @@ const MetricChart = ({
     isInteracting: boolean,
     setIsInteracting: any,
     CustomTooltip: any,
-    seriesData: any
+    seriesData: any,
+    prefix: string,
+    suffix: string
 }) => {
     const chartRef = useRef<ReactECharts>(null);
     const types = overviewData.data.kpi_cards[metricKey].sparkline.types;
@@ -357,7 +375,7 @@ const MetricChart = ({
     }
     return (
         <div 
-            className="h-[40px] relative w-full z-50 overflow-visible"
+            className="h-[40px] relative w-full z-10 overflow-visible"
             onMouseMove={(e) => {
                 const chartInstance = chartRef.current?.getEchartsInstance();
                 if (chartInstance) {
@@ -476,14 +494,6 @@ const MetricChart = ({
                 />
             )}
             
-            {/* Custom React Tooltip */}
-            {customTooltip.visible && (
-                <CustomTooltip
-                    data={customTooltip.data}
-                    x={customTooltip.x}
-                    y={customTooltip.y}
-                />
-            )}
         </div>
     )
 }
