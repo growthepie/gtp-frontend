@@ -290,6 +290,36 @@ module.exports = {
           '5xl': ["80px", "80px"],
           '6xl': ["92px", "92px"],
         },
+        'heading-small': {
+          'xxxxxs': '7px',
+          'xxxxs': '8px',
+          'xxxs': '10px',
+          'xxs': '12px',
+          'xs': '14px',
+          'sm': '16px',
+          'md': '20px',
+          'lg': '24px',
+          'xl': '30px',
+          '2xl': '36px',
+          '3xl': '48px',
+          '4xl': '60px',
+          '5xl': '72px',
+          '6xl': '80px',
+        },
+        'heading-caps': {
+          'xxxs': '10px',
+          'xxs': '12px',
+          'xs': '14px',
+          'sm': '16px',
+          'md': '20px',
+          'lg': '24px',
+          'xl': '30px',
+          '2xl': '36px',
+          '3xl': '48px',
+          '4xl': '60px',
+          '5xl': '72px',
+          '6xl': '80px',
+        },
         'numbers': {
           'xxxs': ["9px", "9px"],
           'xxs': ["10px", "10px"],
@@ -326,12 +356,21 @@ module.exports = {
       Object.keys(baseStyles).forEach(category => {
         // Size variants (e.g., .heading-large-xxxs)
         if (sizeVariants[category]) {
-          Object.entries(sizeVariants[category]).forEach(([size, [fontSize, lineHeight]]) => {
-            newUtilities[`.${category}-${size}`] = {
-              ...baseStyles[category],
-              fontSize: fontSize,
-              lineHeight: lineHeight,
-            };
+          Object.entries(sizeVariants[category]).forEach(([size, value]) => {
+            if(typeof value === 'string') {
+              newUtilities[`.${category}-${size}`] = {
+                ...baseStyles[category],
+                fontSize: value,
+                lineHeight: parseFloat(value) * 1.2 + 'px',
+              };
+            } else {
+              const [fontSize, lineHeight] = value;
+              newUtilities[`.${category}-${size}`] = {
+                ...baseStyles[category],
+                fontSize: fontSize,
+                lineHeight: lineHeight,
+              };
+            }
           });
         }
       });
