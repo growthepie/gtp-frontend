@@ -97,7 +97,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       </div>
                     </GTPTooltipNew>
             </div>
-            <div className="flex flex-wrap items-start gap-x-[10px] gap-y-[10px]">
+            <div className="flex flex-nowrap justify-between w-full items-start gap-x-[10px] gap-y-[10px]">
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
@@ -358,7 +358,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                       </div>
                 </GTPTooltipNew>
             </div>
-            <div className="grid grid-flow-row grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-x-[10px] gap-y-[10px] overflow-visible">
+            <div className="flex flex-nowrap justify-between gap-x-[10px] gap-y-[10px] overflow-visible">
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";

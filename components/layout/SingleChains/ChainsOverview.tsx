@@ -200,7 +200,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
             
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
-                <div className="flex justify-between gap-x-[10px] pt-[5px]">
+                <div className="flex justify-between  flex-wrap gap-x-[10px] pt-[5px]">
                   <div className="">
                     {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
                   </div>
@@ -305,23 +305,24 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
   const { data: masterData } = useMaster();
   const AllChainsByKeys = useMaster().AllChainsByKeys;
 
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const twitter = socials.Twitter;
 
 
 
   return (
     <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px]" onClick={() => setOpen(!open)}>
+      <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start gap-[15px]">
+        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] " onClick={() => setOpen(!open)}>
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
             containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
            />
-          <div className="heading-large-md whitespace-nowrap">About {chainData.name}</div>
+          <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
-          <div className={`px-[30px] w-full flex flex-wrap justify-between lg:justify-end items-center gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[100px] opacity-100" : "max-w-[1200px] max-h-0 lg:opacity-0 lg:max-w-0 lg:max-h-0"}`}>
+        <div className={`px-[30px] w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[100px] opacity-100" : "max-w-[1200px] max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
 
           {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
           <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
@@ -333,7 +334,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <LinkDropdown label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
           <LinkDropdown label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
 
-          </div>
+        </div>
         {/* </HorizontalScrollContainer> */}
       </div>
 
@@ -350,9 +351,9 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <div className="text-sm">
             {chainData.description}
           </div>
-          <div className="grid grid-cols-3 @[1145px]:grid-cols-6 gap-x-[10px] flex-1 h-full">
+          <div className="grid grid-cols-2 @[1145px]:grid-cols-6 gap-x-[10px] flex-1 h-full">
             {/* About Chain Info */}
-            <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-6 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
+            <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
               {chainData.stack.label && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
@@ -364,11 +365,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
               {chainData["gas_token"] && <MetricTab title="Gas Token"><div>{chainData["gas_token"]}</div></MetricTab>}
               {chainData.evm_chain_id && <MetricTab title="Chain ID"><div>{chainData.evm_chain_id ? chainData.evm_chain_id : "N/A"}</div></MetricTab>}
               {chainData.purpose && <MetricTab title="EVM"><div>{chainData.purpose}</div></MetricTab>}
-            </div>
-            {/* Data Availability */}
-            <div className="h-full col-span-1 @[1145px]:col-span-3 grid grid-rows-2 @[1145px]:grid-rows-1 grid-flow-col auto-cols-auto gap-[10px]">
-              <div className="h-full col-span-1 grid grid-rows-1 grid-flow-col auto-cols-auto gap-[10px]">
-                <MetricTab title="Data Availability">
+              <MetricTab title="Data Availability">
                   <div className="flex gap-x-[5px] text-[10px] leading-[150%] font-medium">
                     {dataAvailToArray(
                       chainData.da_layer,
@@ -387,9 +384,11 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
                   </div>
                 </MetricTab>
-              </div>
+            </div>
+            {/* Data Availability */}
+            <div className="h-full col-span-1 @[1145px]:mt-0 mt-[15px] @[1145px]:col-span-2 grid auto-rows-min  @[1145px]:auto-rows-auto @[1145px]:grid-cols-2  gap-[10px]">
               {/* Maturity Level */}
-              <div className="h-full col-span-1 @[1145px]:col-span-2 grid grid-rows-1 grid-flow-col auto-cols-fr gap-[10px]">
+              <div className="h-full col-span-1 @[1145px]:col-span-1 grid grid-rows-1 grid-flow-col auto-cols-fr gap-[10px]">
                 <MetricTab title="Maturity Level">
                   <div className="flex gap-x-[5px] ">
                     <GTPMaturityIcon
@@ -402,9 +401,9 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
                 </MetricTab>
 
               </div>
-              <div className="hidden lg:flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] max-w-[356px]">
+              <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] max-w-[356px]">
                 <MetricTab title="Links">
-                  <div className="hidden lg:flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] w-[356px]">
+                  <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] w-[356px]">
 
                         {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
                         <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
