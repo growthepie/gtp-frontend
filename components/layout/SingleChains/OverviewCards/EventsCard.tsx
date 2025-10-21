@@ -104,7 +104,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                             >
                                 <div>
                                 <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                    {"Tooltip content"}
+                                    {"This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details."}
                                 </TooltipBody>
                                 </div>
                             </GTPTooltipNew>

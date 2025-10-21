@@ -753,7 +753,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               >
                   <div>
                   <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                      {"Tooltip content"}
+                      {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
                   </TooltipBody>
                   </div>
               </GTPTooltipNew>

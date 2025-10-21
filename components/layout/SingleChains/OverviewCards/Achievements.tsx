@@ -64,7 +64,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
         fees: {
             name: "Fees",
             icon: "gtp-metrics-feespaidbyusers",
-            description: "Decreased Fees",
+            description: "Increased Chain Revenue",
         }
     }
     
@@ -92,7 +92,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                     >
                       <div>
                         <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                          {"Tooltip content"}
+                          {"Streaks are consecutive days of growth in key metrics. The icons represent your progress over the last week, with a special icon indicating today's performance so far."}
                         </TooltipBody>
                       </div>
                     </GTPTooltipNew>
@@ -353,7 +353,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     >
                       <div>
                         <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                          {"Tooltip content"}
+                          {"Lifetime achievements showcase the total accumulated value of the chains key metrics (i.e. liftime revenue, total active addresses, lifetime transactions since inception). Each chart visualizes the chains progress toward the next level based on the total accumulated value."}
                         </TooltipBody>
                       </div>
                 </GTPTooltipNew>
