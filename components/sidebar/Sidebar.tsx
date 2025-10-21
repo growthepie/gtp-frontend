@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef } from 'react';
 import { useMaster } from '@/contexts/MasterContext';
-import { IS_PRODUCTION } from '@/lib/helpers';
+import { AUTH_SUBDOMAIN, IS_PRODUCTION } from '@/lib/helpers';
 
 // Import from the new transform function and navigation data
 import { transformNavigationToSidebar } from '@/lib/transform-navigation';
@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       newNavigationItems.splice(3, 0, ChainsNavigationItems);
 
       // if not production, add the chains rework item
-      if(!IS_PRODUCTION) {
+      if(!IS_PRODUCTION && !AUTH_SUBDOMAIN) {
         const chainsNavigationItemsCopy = structuredClone(ChainsNavigationItems);
         chainsNavigationItemsCopy.options.forEach((option) => {
           option.url = option.url?.replace("/chains/", "/chains-rework/");

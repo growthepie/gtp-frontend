@@ -1,4 +1,4 @@
-// import million from "million/compiler";
+const AUTH_SUBDOMAIN = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -129,6 +129,47 @@ const nextConfig = {
           ],
           destination: "/icons",
         },
+        ...(AUTH_SUBDOMAIN ? [
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + ".growthepie.com",
+            },
+          ],
+          destination: "/chains/" + AUTH_SUBDOMAIN,
+        },
+        {
+          source: "/landing",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + ".growthepie.com",
+            },
+          ],
+          destination: "/",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + "-dev.growthepie.com",
+            },
+          ],
+          destination: "/chains/" + AUTH_SUBDOMAIN,
+        },
+        {
+          source: "/landing",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + "-dev.growthepie.com",
+            },
+          ],
+          destination: "/",
+        }] : []),
       ],
     };
   },

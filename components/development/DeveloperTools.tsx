@@ -1,3 +1,4 @@
+import { AUTH_SUBDOMAIN } from "@/lib/helpers";
 import ApiTool, { GlobalSearchToggleButton } from "./ApiTool";
 import DarkModeToggleButton from "./DarkModeToggle";
 import NotificationTool from "./NotificationTool";
@@ -5,7 +6,7 @@ import SubdomainCustomerTool from "./SubdomainCustomerTool";
 
 export default function DeveloperTools() {
 
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production")
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production" || AUTH_SUBDOMAIN )
     return null;
 
   return (

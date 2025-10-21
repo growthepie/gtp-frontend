@@ -1,3 +1,5 @@
+const AUTH_SUBDOMAIN = process.env.NEXT_PUBLIC_AUTH_SUBDOMAIN;
+
 const baseUrl = "https://www.growthepie.com";
 
 // for www.growthepie.com & dev.growthepie.com
@@ -91,6 +93,22 @@ const gtpLabels = {
   },
 };
 
+// no search indexing for protected domains
+const gtpProtected = {
+  siteUrl: "https://" + AUTH_SUBDOMAIN + ".growthepie.com",
+  generateRobotsTxt: true,
+  robotsTxtOptions: {
+    policies: [
+      {
+        userAgent: "*",
+        disallow: "*",
+      },
+    ],
+  },
+};
+
+
+
 let exportOjb = gtpMain;
 
 if (baseUrl.includes("labels.")) {
@@ -98,6 +116,10 @@ if (baseUrl.includes("labels.")) {
 }
 if (baseUrl.includes("fees.")) {
   exportOjb = gtpFees;
+}
+
+if (AUTH_SUBDOMAIN) {
+  exportOjb = gtpProtected;
 }
 
 /** @type {import('next-sitemap').IConfig} */
