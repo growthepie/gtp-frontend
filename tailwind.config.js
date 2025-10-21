@@ -277,76 +277,46 @@ module.exports = {
       // Define size variants for each category
       const sizeVariants = {
         'heading-large': {
-          'xxxs': '10px',
-          'xxs': '12px',
-          'xs': '14px',
-          'sm': '16px',
-          'md': '20px',
-          'lg': '30px',
-          'xl': '36px',
-          '2xl': '48px',
-          '3xl': '60px',
-          '4xl': '72px',
-          '5xl': '80px',
-          '6xl': '92px',
-        },
-        'heading-small': {
-          'xxxxxs': '7px',
-          'xxxxs': '8px',
-          'xxxs': '10px',
-          'xxs': '12px',
-          'xs': '14px',
-          'sm': '16px',
-          'md': '20px',
-          'lg': '24px',
-          'xl': '30px',
-          '2xl': '36px',
-          '3xl': '48px',
-          '4xl': '60px',
-          '5xl': '72px',
-          '6xl': '80px',
-        },
-        'heading-caps': {
-          'xxxs': '10px',
-          'xxs': '12px',
-          'xs': '14px',
-          'sm': '16px',
-          'md': '20px',
-          'lg': '24px',
-          'xl': '30px',
-          '2xl': '36px',
-          '3xl': '48px',
-          '4xl': '60px',
-          '5xl': '72px',
-          '6xl': '80px',
+          'xxxs': ["10px", "15px"],
+          'xxs': ["12px", "17px"],
+          'xs': ["14px", "17px"],
+          'sm': ["16px", "19px"],
+          'md': ["20px", "24px"],
+          'lg': ["24px", "28px"],
+          'xl': ["36px", "43px"],
+          '2xl': ["48px", "48px"],
+          '3xl': ["60px", "60px"],
+          '4xl': ["72px", "72px"],
+          '5xl': ["80px", "80px"],
+          '6xl': ["92px", "92px"],
         },
         'numbers': {
-          'xxxs': '9px',
-          'xxs': '10px',
-          'xs': '12px',
-          'sm': '14px',
-          'md': '16px',
-          'lg': '18px',
-          'xl': '20px',
-          '2xl': '24px',
-          '3xl': '30px',
-          '4xl': '36px',
-          '5xl': '48px',
-          '6xl': '60px',
+          'xxxs': ["9px", "9px"],
+          'xxs': ["10px", "10px"],
+          'xs': ["12px", "12px"],
+          'sm': ["14px", "14px"],
+          'md': ["16px", "16px"],
+          'lg': ["18px", "18px"],
+          'xl': ["20px", "20px"],
+          '2xl': ["24px", "24px"],
+          '3xl': ["30px", "30px"],
+          '4xl': ["36px", "36px"],
+          '5xl': ["48px", "48px"],
+          '6xl': ["60px", "60px"],
         },
         'text': {
-          'xxxs': '9px',
-          'xxs': '10px',
-          'xs': '12px',
-          'sm': '14px',
-          'md': '16px',
-          'lg': '18px',
-          'xl': '20px',
-          '2xl': '24px',
-          '3xl': '30px',
-          '4xl': '36px',
-          '5xl': '48px',
-          '6xl': '60px',
+          'xxxs': ["9px", "9px"],
+          'xxs': ["10px", "15px"],
+          'xs': ["12px", "18px"],
+          'sm': ["14px", "16px"],
+          'md': ["16px", "24px"],
+          'lg': ["18px", "27px"],
+          'xl': ["20px", "30px"],
+          '2xl': ["22px", "36px"],
+          '3xl': ["30px", "36px"],
+          '4xl': ["36px", "54px"],
+          '5xl': ["48px", "72px"],
+          '6xl': ["60px", "90px"],
         },
       };
 
@@ -354,16 +324,16 @@ module.exports = {
 
       // Iterate over each category to generate utilities
       Object.keys(baseStyles).forEach(category => {
-        // Base class (e.g., .heading-large)
-        newUtilities[`.${category}`] = baseStyles[category];
-
         // Size variants (e.g., .heading-large-xxxs)
-        Object.entries(sizeVariants[category]).forEach(([size, fontSize]) => {
-          newUtilities[`.${category}-${size}`] = {
-            ...baseStyles[category],
-            fontSize: fontSize,
-          };
-        });
+        if (sizeVariants[category]) {
+          Object.entries(sizeVariants[category]).forEach(([size, [fontSize, lineHeight]]) => {
+            newUtilities[`.${category}-${size}`] = {
+              ...baseStyles[category],
+              fontSize: fontSize,
+              lineHeight: lineHeight,
+            };
+          });
+        }
       });
 
       // Add the generated utilities to Tailwind
