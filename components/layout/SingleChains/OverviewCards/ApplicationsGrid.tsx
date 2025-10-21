@@ -16,6 +16,7 @@ import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark, { ChartWatermarkWithMetricName } from '../../ChartWatermark';
 import { isMobile } from 'react-device-detect';
 import { useTheme } from 'next-themes';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 
 // ============================================================================
 // Types & Interfaces
@@ -588,6 +589,11 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   // Render
   // ============================================================================
 
+
+  const allMainCategories = useMemo(() => {
+    return Object.entries(masterData?.blockspace_categories.main_categories || {}).map(([id, label]) => ({ id, label }));
+  }, [masterData?.blockspace_categories.main_categories]);
+
   // Get main categories for buttons
   const mainCategories = useMemo(() => {
     if (!masterData?.blockspace_categories?.main_categories) return [];
@@ -607,57 +613,57 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
       })
       .map(([id, label]) => ({ id, label }));
   }, [masterData, chainDataOverview, enrichedApps]);
+  
   const { theme } = useTheme(); 
 
   const hideApplications = layout.length === 0;
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={`group flex flex-col w-full gap-y-[15px] h-full`}>
+      <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
         {/* Header with category filters */}
-        <div className={`@container flex gap-x-[5px] ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
-          <GTPIcon icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName} size="sm" className=" w-[15px] h-[15px]" containerClassName="flex items-center justify-center w-[24px] h-[24px]" 
-          style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
-          />
-          <div className="heading-large-md mr-[5px]">
-            Applications
-          </div>
+        <HorizontalScrollContainer includeMargin={false}>
+          <div  className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
+            <div className="flex items-center gap-x-[5px]">
+              <GTPIcon 
+                icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName} 
+                size="sm" 
+                style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
+              />
+              <div className="heading-large-md">
+                Applications
+              </div>
+            </div>
 
-          {/* Category buttons */}
-          <div className='grid grid-flow-row grid-cols-4 @[650px]:grid-flow-col w-full'>
-            <button
-              className={`flex h-[24px] px-[10px] text-xs min-w-fit justify-center items-center
-                border-r-[0.5px] border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30 border-dotted
-                rounded-tl-[15px] @[650px]:rounded-l-full
-                ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
-              onClick={() => setSelectedMainCategory(null)}
-            >
-              All
-            </button>
-            {Object.keys(masterData?.blockspace_categories.main_categories || {})
-              .filter((categoryId) => categoryId !== 'unlabeled')
-              .map((categoryId, index) => (
+            {/* Category buttons */}
+            <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30}}>
+              <button
+                className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
+                  border-color-text-primary/30 border-dotted border-r-[0.5px]
+                  rounded-l-[15px]
+                  ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                onClick={() => setSelectedMainCategory(null)}
+              >
+                All
+              </button>
+              {(hideApplications ? allMainCategories : mainCategories).map((category, index) => (
                 <button
-                  key={categoryId}
-                  className={`flex whitespace-nowrap h-[24px] px-[10px] text-xxs @[650px]:text-xs min-w-fit justify-center items-center
-                    border-dotted
-                    ${index < 3 ? 'border-b-[0.5px] @[650px]:border-b-0 border-color-text-primary/30' : ''}
-                    ${categoryId === 'social' ? 'rounded-bl-[15px] @[650px]:rounded-none' : ''}
-                    ${categoryId === 'nft' ? 'rounded-tr-[15px] @[650px]:rounded-none' : ''}
-                    ${categoryId === 'cross_chain' ? 'rounded-br-[15px] @[650px]:rounded-r-full' : ''}
-                    ${index < 2 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
-                    ${index > 2 && index < 6 ? 'border-r-[0.5px] border-color-text-primary/30' : ''}
-                    ${selectedMainCategory === categoryId ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
-                  onClick={() => setSelectedMainCategory(categoryId)}
+                  key={category.id}
+                  className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
+                    border-color-text-primary/30 border-dotted
+                    ${index < (hideApplications ? allMainCategories : mainCategories).length - 1 ? 'border-r-[0.5px] border-dotted' : 'rounded-r-[15px]'}
+                    ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}`}
+                  onClick={() => setSelectedMainCategory(category.id)}
                 >
-                  {masterData?.blockspace_categories.main_categories[categoryId]}
+                  {category.label}
                 </button>
               ))}
+            </div>
           </div>
-        </div>
+        </HorizontalScrollContainer>
 
         {/* Animated Treemap visualization */}
-        <div className="relative flex-1 w-full h-full" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+        <div className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -727,7 +733,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
           </motion.div>
         </div>
       </div>
-      <div className="flex items-center justify-end pt-[10px] pr-[0px] w-full  ">
+      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full">
           <div className='w-[15px] h-fit z-30'>
               <GTPTooltipNew
                   placement="top-end"
@@ -735,14 +741,14 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
                   allowInteract={true}
                   trigger={
                   <div
-                      className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
-                      data-tooltip-trigger
+                    className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
+                    data-tooltip-trigger
                   >
                       <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                   </div>
                   }
                   containerClass="flex flex-col gap-y-[10px]"
-                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                  positionOffset={{ mainAxis: 10, crossAxis: 0 }}
 
               >
                   <div>
@@ -810,11 +816,7 @@ const CategorySection = ({
     'cefi': 'gtp-cefi',
     'utility': 'gtp-utilities',
     'token_transfers': 'gtp-tokentransfers',
-
   }
-
-
-
   
   return (
     <motion.div
@@ -836,7 +838,6 @@ const CategorySection = ({
       onClick={viewMode === 'main' ? (e) => {
         console.log('clicked');
         onCategoryClick(e);
-     
       } : undefined}
     >
       {/* Animated category label */}
