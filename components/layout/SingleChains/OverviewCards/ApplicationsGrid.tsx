@@ -649,7 +649,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     <MotionConfig reducedMotion="user">
       <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
         {/* Header with category filters */}
-        <HorizontalScrollContainer includeMargin={false}>
+        <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
           <div  className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon 
@@ -665,6 +665,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
             {/* Category buttons */}
             <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30}}>
               <button
+                id="main-category-button-all"
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                   border-color-text-primary/30 border-dotted border-r-[0.5px]
                   rounded-l-[15px]
@@ -677,6 +678,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               </button>
               {(hideApplications ? allMainCategories : mainCategories).map((category, index) => (
                 <button
+                  id={`main-category-button-${category.id}`}
                   key={category.id}
                   className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                     border-color-text-primary/30 border-dotted
@@ -723,7 +725,6 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
               <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
                 <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
               </div>
-
               <motion.div
                 ref={containerRef}
                 className='relative h-full'
