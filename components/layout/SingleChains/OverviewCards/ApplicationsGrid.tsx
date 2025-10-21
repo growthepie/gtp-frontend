@@ -260,6 +260,8 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   const [showHint, setShowHint] = useState(false);
   const { AllChainsByKeys } = useMaster();
 
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout>(); // IMPROVED: Use ref for timeout
 
@@ -330,7 +332,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
   const dimensions = useMemo(() => {
     const MIN_HEIGHT = 245;
-    const MAX_HEIGHT = window.innerHeight - 300;
+    const MAX_HEIGHT = windowHeight - 300;
     const MAX_APPS = 20;
 
     if (categoryNodes.length === 0) {
@@ -354,7 +356,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     const height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, comfortableHeight));
 
     return { width: containerWidth, height };
-  }, [containerWidth, categoryNodes, window.innerHeight]);
+  }, [containerWidth, categoryNodes, windowHeight]);
 
   // ============================================================================
   // Layout Calculation (mostly unchanged, just type improvements)
@@ -572,11 +574,36 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
     resizeObserver.observe(container);
 
+    
+
     return () => {
       if (resizeTimeoutRef.current) {
         clearTimeout(resizeTimeoutRef.current);
       }
       resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+      const container = containerRef.current;
+      if (container) {  
+        setContainerWidth(container.clientWidth);
+      } else {
+        setContainerWidth(743);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    setTimeout(handleResize, 300);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -666,7 +693,6 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
             </div>
           </div>
         </HorizontalScrollContainer>
-
         {/* Animated Treemap visualization */}
         <div className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
