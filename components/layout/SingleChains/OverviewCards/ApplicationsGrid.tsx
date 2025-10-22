@@ -170,6 +170,10 @@ function enrichAppData(
       const appObj = arrayToObject<AppDataRaw>(rawApp, appTypes);
       const projectMeta = ownerProjectMap[appObj.owner_project];
 
+      if(appObj.owner_project === 'npc-com') {
+        console.log("npc-com", appObj, projectMeta);
+      }
+
       if (!projectMeta) return null;
 
       return {
@@ -296,7 +300,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const resizeTimeoutRef = useRef<NodeJS.Timeout>(); // IMPROVED: Use ref for timeout
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ============================================================================
   // Data Fetching
@@ -944,6 +948,7 @@ const logoSlot = layoutResult.logoSlot;
               </div> */}
               <motion.div
                 ref={containerRef}
+                // @ts-ignore
                 className='relative h-full'
                 animate={{ height: dimensions.height }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -1160,6 +1165,9 @@ interface AppTileProps {
 }
 
 const AppTile = ({ app, tile, index }: AppTileProps) => {
+
+  console.log(app);
+
   return (
     <motion.div
       variants={appTileVariants}
@@ -1206,7 +1214,8 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
                     src={`https://api.growthepie.com/v1/apps/logos/${app.logoPath}`}
                     width={28}
                     height={28}
-                    className="rounded-[6px] "
+                    className="rounded-[6px] !w-[28px] !h-[28px] !object-cover"
+                    unoptimized={true}
                   />
                 ) : (
                   <GTPIcon
