@@ -29,6 +29,7 @@ import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -121,18 +122,16 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
   return (
     <div className="flex flex-col gap-y-[15px]">
       <div
-        className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8"
+        className="flex gap-x-[8px] items-center scroll-mt-8"
         id="fundamentals"
       >
-          <div className="w-9 h-9  ">
-            <Icon icon={`gtp:fundamentals`} className="w-9 h-9" />
-          </div>
-          <Heading
-            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
-            as="h2"
-          >
-            Fundamental Metrics
-          </Heading>
+        <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
+        <Heading
+          className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
+          as="h2"
+        >
+              Fundamental Metrics
+        </Heading>
         </div>
 
         {chainData && (
@@ -185,7 +184,7 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
   const chainInfo = master?.chains?.[chainKey];
   
   return (
-    <div className="-mt-[15px]">
+    <div className="mt-[-5px]">
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",
@@ -278,13 +277,8 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
             className="flex gap-x-[8px] items-center scroll-mt-8"
             id="blockspace"
           >
-            <Image
-              src="/GTP-Package.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px]"
-              height={36}
-              width={36}
-            />
+
+            <GTPIcon icon="gtp-package" size="lg" className="!w-[36px] !h-[36px]" containerClassName="w-[36px] h-[36px]" />
             <Heading
               className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
               as="h2"

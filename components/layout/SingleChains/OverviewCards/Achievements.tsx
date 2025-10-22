@@ -10,6 +10,7 @@ import * as d3 from "d3";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import {useMediaQuery} from "usehooks-ts";
 import { StreaksData } from "@/types/api/ChainOverviewResponse";
+import { useState } from "react";
 
 interface AchievmentsData {
     streaks: Object;
@@ -54,6 +55,7 @@ const formatNumber = (value: number): string => {
 export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data: AchievmentsData, master: MasterResponse, streaksData: StreaksData, chainKey: string}) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+    const [flameHovered, setFlameHovered] = useState<string | null>(null);
 
     const keyData = {
         txcount: {
@@ -97,24 +99,31 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       </div>
                     </GTPTooltipNew>
             </div>
-            <div className="flex flex-wrap items-start gap-x-[10px] gap-y-[10px]">
+            <div className="flex flex-nowrap justify-between w-full items-start gap-x-[10px] gap-y-[10px]">
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
-                            <div className="text-xxs font-bold leading-[15px]">
-                                <span className="numbers-xxs">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? Math.floor(data.streaks[key][keyValue].streak_length / 7) + " weeks and " : ""}</span>
-                                <span className="numbers-xxs">{data.streaks[key][keyValue].streak_length % 7 + " days in last week" || ""}</span>
+                            <div className="text-xxs">
+                                <span className="numbers-xxs">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? Math.floor(data.streaks[key][keyValue].streak_length / 7) : ""}</span>
+                                <span className="font-bold">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " weeks" : ""}</span>
+
+                                <span className="">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " and " : ""}</span>
+                                <span className="numbers-xxs">{data.streaks[key][keyValue].streak_length % 7  || "0"}</span>
+                                <span className=" "><b>&nbsp;days&nbsp;</b>in last week</span>
                             </div>
                            
-                            <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px]">
+                            <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px] -mb-[2px]">
                             {Array.from({ length: data.streaks[key][keyValue].streak_length }, (_, i) => (
                                 <div key={i + "streaks"}  className="w-[13.69px] h-[24.09px]">
                                     <StreakIcon progress={i < data.streaks[key][keyValue].streak_length ? 100 : 0} />
                                 </div>
                             ))}
-                            <div className="w-[22.16px] h-[39px]">
+                            <div className="w-[22.16px] h-[39px] z-20 cursor-pointer " 
+                             onMouseEnter={() => setFlameHovered(key)}
+                             onMouseLeave={() => setFlameHovered(null)}
+                            >
                                 <StreakIcon progress={streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value * 100} key={"streak-icon-progress"} animated={true} />
                             </div>
                             {Array.from({ length: 7 - (data.streaks[key][keyValue].streak_length + 1)}, (_, i) => (
@@ -123,8 +132,8 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                 </div>
                             ))}
                             </div>
-                            {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} />}
-                            <div className="flex items-center gap-x-[5px] pt-[5px] text-xxxs">
+                            {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} hoverBar={flameHovered === key} />}
+                            <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs">
                                 <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
                                 {keyData[key].description}
                             </div>
@@ -138,12 +147,14 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
 }
 
 
-const StreakBar = ({yesterdayValue, todayValue, keyValue}: {yesterdayValue: number, todayValue: number, keyValue: string}) => {
+const StreakBar = ({yesterdayValue, todayValue, keyValue, hoverBar}: {yesterdayValue: number, todayValue: number, keyValue: string, hoverBar: boolean}) => {
+
+    
     const prefix = keyValue === "usd" ? "$" : keyValue === "eth" ? "Ξ" : "";
     return (
         <div className="flex flex-col w-full min-w-[200px]">
             <div className="flex  pl-[2px] pr-[5px] py-[2px] justify-between w-full bg-color-bg-medium rounded-full">
-                <div className="flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[2px] justify-start bg-color-ui-active rounded-full"
+                <div className={`flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[2px] justify-start transition-all duration-300 ${hoverBar ? "bg-color-ui-hover" : "bg-color-ui-active"} rounded-full`}
                  style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
                 >
                     <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
@@ -358,7 +369,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                       </div>
                 </GTPTooltipNew>
             </div>
-            <div className="grid grid-flow-row grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-x-[10px] gap-y-[10px] overflow-visible">
+            <div className="flex flex-nowrap justify-between gap-x-[10px] gap-y-[10px] overflow-visible">
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
@@ -526,7 +537,7 @@ const StreakIcon = ({ progress = 0, animated = false }) => {
     ];
 
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 25" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 25" fill="none" className="z-20">
         <defs>
         {linearGradientProps.map((props, index) => (
             <linearGradient key={index} {...props} gradientUnits="userSpaceOnUse">

@@ -3,6 +3,8 @@ import { ChainInfo } from "@/types/api/MasterResponse";
 import Search from "@/app/(layout)/applications/_components/Search";
 import { Title, TitleButtonLink } from "../TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIcon } from "../GTPIcon";
+import Heading from "../Heading";
 
 interface ChainSearchProps {
   chainInfo: ChainInfo;
@@ -18,27 +20,13 @@ export default function ChainSearch({ chainInfo, chainKey }: ChainSearchProps) {
         {/* <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
           Applications
         </Heading> */}
-        <Title
-          icon="gtp-project"
-          title={`Apps on ${chainInfo?.name}`}
-          containerClassName="flex md:w-full md:items-center md:justify-between"
-          button={
-            <>
-              <TitleButtonLink
-                label="Don’t see your app? Label here."
-                icon="gtp-oli-logo"
-                iconSize="md"
-                iconBackground="bg-transparent"
-                rightIcon={"feather:arrow-right" as GTPIconName}
-                href="https://www.openlabelsinitiative.org/?gtp.applications"
-                newTab
-                gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
-                className="w-fit hidden md:block"
-              />
-
-            </>
-          }
-        />
+        <GTPIcon icon={"gtp-project"} size="lg" className="!w-[34px] !h-[34px]" containerClassName="w-[36px] h-[36px]" />
+        <Heading
+            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            as="h2"
+          >
+            Applications on {chainInfo?.name}
+          </Heading>
       </div>
       </div>
       <Search hideChainSection />

@@ -166,7 +166,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
                     {[...chainDataOverview.data.events]
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((event, index) => (
-                            <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
+                            <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} finalIndex={Object.keys(chainDataOverview.data.events).length - 1} />
                         ))}
                 </EventsCard>
             )}
