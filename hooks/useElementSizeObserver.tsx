@@ -8,8 +8,8 @@ type Size = {
 
 export const useElementSizeObserver = <
   T extends HTMLElement = HTMLDivElement
->(): [RefObject<T>, Size] => {
-  const ref = useRef<T>(null);
+>(): [RefObject<T | null>, Size] => {
+  const ref = useRef<T| null>(null);
   const [size, setSize] = useState<Size>({
     width: 0,
     height: 0,

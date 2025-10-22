@@ -25,12 +25,8 @@ const monthly_agg_labels = {
   distinct: "Distinct",
 };
 
-const DataAvailability = props => {
-  const params = use(props.params);
-
-  const {
-    metric
-  } = params;
+const DataAvailability = async (props: { params: Promise<{ metric: string }> }) => {
+  const { metric } = await props.params;
 
   const { is_og } = useParams();
   const {

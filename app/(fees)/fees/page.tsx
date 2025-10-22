@@ -1941,11 +1941,12 @@ export default function FeesPage() {
                 }}
               >
                 {transitions((style, item, t, index) => {
+                  const AnimatedDiv = animated.div as any;
                   return (
-                    <animated.div
+                    <AnimatedDiv
                       key={item.chain[0]}
                       className={`w-full absolute pr-[10px] h-[34px]`}
-                      style={{ ...style }}
+                      style={style}
                     >
                       <div
                         className={`w-full border-color-border border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
@@ -2342,7 +2343,7 @@ export default function FeesPage() {
                           </div>
                         </div>
                       </div>
-                    </animated.div>
+                    </AnimatedDiv>
                   );
                 })}
                 {master && (

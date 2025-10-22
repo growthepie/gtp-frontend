@@ -15,6 +15,8 @@ import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 
+const AnimatedDiv = animated.div as any;
+
 const MetricsTable = ({
   data,
   master,
@@ -539,7 +541,7 @@ const MetricsTable = ({
           // style={{ height: height, direction: "ltr" }}
           >
             {transitions((style, item, t, index) => (
-              <animated.div
+              <AnimatedDiv
                 className="absolute w-full select-none"
                 style={{ zIndex: Object.keys(data).length - index, ...style }}
               >
@@ -822,7 +824,7 @@ const MetricsTable = ({
                     </div>
                   </div>
                 </div>
-              </animated.div>
+              </AnimatedDiv>
             ))}
           </div>
         </VerticalScrollContainer>

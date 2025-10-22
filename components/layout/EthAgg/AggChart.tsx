@@ -138,7 +138,7 @@ export function AggChart({
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const prevCoordinatesRef = useRef<{ x: number; y: number; circleY: number } | null>(null);
   const { width: containerWidth, height: containerHeight } = useResizeObserver({
-    ref: mainContainerRef,
+    ref: mainContainerRef as React.RefObject<HTMLElement>,
     box: 'border-box',
   });
 

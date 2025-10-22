@@ -23,6 +23,8 @@ import {
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 
+const AnimatedDiv = animated.div as any;
+
 const MetricTable = ({
   metric_type,
 }: {
@@ -797,7 +799,7 @@ const MetricTable = ({
         </div>
         <div style={{ height: `${rowsWithPlaceholders().reduce((acc, item) => acc + (item.isPlaceholder ? 20 : 37), 0)}px` }}>
           {transitions((styles, item, t, index) => (
-            <animated.div
+            <AnimatedDiv
               className="absolute w-full select-none pr-[16px] lg:pr-[45px]"
               style={{
                 zIndex: chainKeys.length - index,
@@ -1021,7 +1023,7 @@ const MetricTable = ({
                   </div>
                 </div>
               )}
-            </animated.div>
+            </AnimatedDiv>
           ))}
         </div>
         {/* </VerticalScrollContainer> */}

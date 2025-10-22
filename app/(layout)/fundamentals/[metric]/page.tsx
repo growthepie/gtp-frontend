@@ -15,12 +15,8 @@ import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMemo, use } from "react";
 
-const Fundamentals = props => {
-  const params = use(props.params);
-
-  const {
-    metric
-  } = params;
+const Fundamentals = async (props: { params: Promise<{ metric: string }> }) => {
+  const { metric } = await props.params;
 
   const { is_og } = useParams();
   const {

@@ -505,7 +505,7 @@ const QRCodeCard = ({ CardData, index }) => {
   const [copiedAddress, setCopiedAddress] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const copyAddressTimeout = useRef<NodeJS.Timeout>();
+  const copyAddressTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleCopyAddress = (address) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {

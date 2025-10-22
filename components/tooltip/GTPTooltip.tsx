@@ -203,21 +203,21 @@ export const GTPTooltipNew = ({
             handleOpenChange(true);
           }
           // Call original handler if it exists
-          trigger.props.onMouseEnter?.(e);
+          (trigger as React.ReactElement<any>).props.onMouseEnter?.(e);
         },
         onMouseLeave: (e: React.MouseEvent) => {
           if (enableHover && !allowInteract) {
             handleOpenChange(false);
           }
           // Call original handler if it exists
-          trigger.props.onMouseLeave?.(e);
+          (trigger as React.ReactElement<any>).props.onMouseLeave?.(e);
         },
         onClick: (e: React.MouseEvent) => {
           if (controlledIsOpen === undefined) {
             setUncontrolledIsOpen(prev => !prev);
           }
           // Call original handler if it exists
-          trigger.props.onClick?.(e);
+          (trigger as React.ReactElement<any>).props.onClick?.(e);
         },
       } as React.HTMLAttributes<HTMLElement> & { ref: React.Ref<HTMLElement> }
     );

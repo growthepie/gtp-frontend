@@ -30,7 +30,7 @@ export const textToLinkedText = (text: string) => {
   const wordsWithCom: string[] = text.match(/\b\S+\.com\b/g) || [];
 
   // go through each of the wordsWithCom and create a Link component for them
-  const linkedText: JSX.Element[] = wordsWithCom.map((word) => {
+  const linkedText: React.ReactElement[] = wordsWithCom.map((word) => {
     return (
       <Link
         href={`https://${word}`}
@@ -48,7 +48,7 @@ export const textToLinkedText = (text: string) => {
   }
 
   // inject the words back into the text
-  let result: (string | JSX.Element)[] = [];
+  let result: (string | React.ReactElement)[] = [];
   let textParts: string[] = text.split(/(\S+\.com)\b/g);
   for (let i = 0; i < textParts.length; i++) {
     if (!textParts[i]) continue;

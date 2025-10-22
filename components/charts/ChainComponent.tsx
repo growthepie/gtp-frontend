@@ -79,11 +79,11 @@ const ChainComponent = function ChainComponent({
   const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<echarts.ECharts[]>([]);
   const chartRef = useRef<ReactECharts>(null);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
   
   // Use resize observer to handle chart repositioning
   const { width: containerWidth = 0, height: containerHeight = 0 } = useResizeObserver({
-    ref: chartContainerRef,
+    ref: chartContainerRef as React.RefObject<HTMLElement>,
     box: 'border-box',
   });
 

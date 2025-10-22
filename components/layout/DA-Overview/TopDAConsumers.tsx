@@ -8,6 +8,9 @@ import DynamicIcon from "../DynamicIcon";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+
+const AnimatedDiv = animated.div as any;
+
 type DARowData = {
     item: string;
     value: any;
@@ -106,7 +109,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                     const croppedWidth = parentWidth - 122;
                     const relativeWidth = (croppedWidth * (sortedDAConsumers[item.index][4] / sortedDAConsumers[0][4])); // Avoid division by zero
                     return(
-                        <animated.div
+                        <AnimatedDiv
                             className="absolute w-full "
                             key={item.item}
                             style={style}
@@ -158,7 +161,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                                 </div>
                                 <div></div>
                             </div>
-                        </animated.div>
+                        </AnimatedDiv>
                     )
                 })}
             </>

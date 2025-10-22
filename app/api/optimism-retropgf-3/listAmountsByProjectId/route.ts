@@ -7,8 +7,6 @@ import { Pool } from "pg";
 import { Project } from "@/types/api/RetroPGF3";
 import { RecoveredListData } from "@/app/(layout)/trackers/optimism-retropgf-3/recoveredListData";
 
-export const revalidate = 60 * 1; // 2 minutes
-
 const pool = new Pool({
   connectionString: process.env.FUN_DATABASE_URL,
   ssl: {

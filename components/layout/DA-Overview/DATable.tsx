@@ -29,6 +29,8 @@ import { getIcon, listIcons } from "@iconify/react";
 import { TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 
+const AnimatedDiv = animated.div as any;
+
 
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "fixed_parameters"];
@@ -691,7 +693,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 
 
             return (
-              <animated.div
+              <AnimatedDiv
                 className={"absolute w-full flex flex-col pr-0.5 "}
                 key={item.key + " chainGridParent"}
                 style={{ ...style }}
@@ -883,7 +885,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   </div>
                 </div>
 
-              </animated.div>
+              </AnimatedDiv>
             )
           })}
           <div

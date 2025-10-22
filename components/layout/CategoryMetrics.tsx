@@ -43,6 +43,8 @@ import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer"
 import { GridTableHeader, GridTableHeaderCell } from "./GridTable";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
+const AnimatedDiv = animated.div as any;
+
 export default function CategoryMetrics({
   data,
   master,
@@ -1136,7 +1138,7 @@ export default function CategoryMetrics({
                         sortedChainValuesWithPlaceholder &&
                         master &&
                         transitions((style, item) => (
-                          <animated.div
+                          <AnimatedDiv
                             className="absolute w-full"
                             key={item.item}
                             style={style}
@@ -1175,7 +1177,7 @@ export default function CategoryMetrics({
                                 <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
                               </div>
                             )}
-                          </animated.div>
+                          </AnimatedDiv>
                         ))}
                     </div>
                   </VerticalScrollContainer>

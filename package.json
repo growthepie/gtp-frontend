@@ -54,7 +54,7 @@
     "react-dom": "19.2.0",
     "react-json-view": "^1.21.3",
     "react-jsx-highcharts": "^5.0.1",
-    "react-markdown": "^8.0.7",
+    "react-markdown": "^10.1.0",
     "react-merge-refs": "^2.1.1",
     "react-spring": "^9.7.3",
     "react-transition-group": "^4.4.5",

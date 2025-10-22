@@ -29,6 +29,8 @@ import {
 import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
 
+const AnimatedDiv = animated.div as any;
+
 const regularMetrics = ["profit", "revenue", "costs", "size", "profit_margin"];
 interface DAvailability {
   icon: string;
@@ -931,7 +933,7 @@ export default function ChainBreakdown({
                 // maxRevenue) + " " + item.key);
 
                 return (
-                  <animated.div
+                  <AnimatedDiv
                     className={`absolute w-full flex flex-col pr-0.5  ${enableDASort
                       ? allChainsDA[DAIndex] === localDataAvail.label
                         ? "opacity-100"
@@ -1388,7 +1390,7 @@ export default function ChainBreakdown({
                         />
                       </div>
                     </div>
-                  </animated.div>
+                  </AnimatedDiv>
                 );
               })}
               <div

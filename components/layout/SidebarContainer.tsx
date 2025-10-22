@@ -182,7 +182,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useOutsideAlerter(menuRef, () => {
+  useOutsideAlerter(menuRef as React.RefObject<HTMLElement>, () => {
     setIsOpen(false);
   });
 

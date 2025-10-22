@@ -7,7 +7,7 @@ interface HeadingBlockProps {
 }
 
 export const HeadingBlock: React.FC<HeadingBlockProps> = ({ block }) => {
-  const HeadingTag = `h${block.level}` as keyof JSX.IntrinsicElements;
+  const HeadingTag = `h${block.level}` as keyof React.JSX.IntrinsicElements;
   
   const headingClasses = {
     2: 'heading-large-xs md:heading-large-md xl:heading-large-md my-[15px]',

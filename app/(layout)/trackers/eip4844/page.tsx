@@ -10,7 +10,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
-import { useTransition, animated } from "@react-spring/web";
+import { useTransition, animated, AnimatedComponent } from "@react-spring/web";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { useMaster } from "@/contexts/MasterContext";
 
@@ -405,8 +405,9 @@ export default function Eiptracker() {
               </div>
               <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[674px] relative min-h-[400px]">
                 {transitions((style, item, index) => {
+                  const AnimatedDiv = animated.div as any;
                   return (
-                    <animated.div
+                    <AnimatedDiv
                       key={item.chain.key}
                       className={`absolute w-full xl:text-base text-sm`}
                       style={{ ...style }}
@@ -560,7 +561,7 @@ export default function Eiptracker() {
                           />
                         </div>
                       </div>
-                    </animated.div>
+                    </AnimatedDiv>
                   );
                 })}
               </div>

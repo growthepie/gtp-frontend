@@ -27,6 +27,8 @@ import moment from 'moment';
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 
+const AnimatedDiv = animated.div as any;
+
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -209,7 +211,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   });
 
   // 2. Create the throttled function once (1000 ms lock)
-  const throttledWheelHandlerRef = useRef<(e: WheelEvent) => void>();
+  const throttledWheelHandlerRef = useRef<((e: WheelEvent) => void) | undefined>(undefined);
   if (!throttledWheelHandlerRef.current) {
     throttledWheelHandlerRef.current = throttle(
       (e: WheelEvent) => {
@@ -488,10 +490,10 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className='heading-large-md text-color-ui-hover'>All Chains</div>
           <div className="relative">
             {tpsTransitions((style, { chainId }) => (
-              <animated.div key={chainId} style={style} className='absolute w-full'>
+              <AnimatedDiv key={chainId} style={style} className='absolute w-full'>
                 {/* Pass the complete `chainData` object */}
                 <ChainTransitionItem chainId={chainId} chainData={chainData} globalMetrics={globalMetrics} type="tps" />
-              </animated.div>
+              </AnimatedDiv>
             ))}
           </div>
         </div>
@@ -638,9 +640,9 @@ export const TokenTransferFeeCard = React.memo(({
           <div className='heading-large-md text-color-ui-hover'>Layer 2 Chains</div>
           <div className="relative">
             {costTransitions((style, { chainId }) => (
-              <animated.div key={`cost-${chainId}`} style={style} className='absolute w-full'>
+              <AnimatedDiv key={`cost-${chainId}`} style={style} className='absolute w-full'>
                 <ChainTransitionItem chainId={chainId} chainData={activeChainData} globalMetrics={activeGlobalMetrics} type="cost" showUsd={showUsd} />
-              </animated.div>
+              </AnimatedDiv>
             ))}
           </div>
         </div>
