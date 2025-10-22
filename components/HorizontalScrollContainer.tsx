@@ -280,6 +280,9 @@ export default function HorizontalScrollContainer({
     let rafId: number | null = null;
 
     const onMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       if (!isContentDragging || !contentScrollAreaRef.current) return;
       const currentX = e.clientX;
       const dx = currentX - startX;
@@ -298,7 +301,11 @@ export default function HorizontalScrollContainer({
       });
     };
 
-    const onMouseUp = () => {
+    const onMouseUp = (e: MouseEvent) => {
+      // prevent clicking on other elements
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
       isContentDragging = false;
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
@@ -311,6 +318,8 @@ export default function HorizontalScrollContainer({
 
     const onMouseDown = (e: MouseEvent) => {
       // Prevent text selection and initiate dragging
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       e.preventDefault();
       if (!contentScrollAreaRef.current) return;
       isContentDragging = true;

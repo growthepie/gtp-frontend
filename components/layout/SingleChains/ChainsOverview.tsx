@@ -215,10 +215,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px]`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                    <HorizontalScrollContainer paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                      <div className="w-[954px]">
+                    <HorizontalScrollContainer enableDragScroll={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                      <div className="w-[954px] pr-[20px]">
                         <RowProvider
                           value={{
                             master: oldMaster,
