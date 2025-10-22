@@ -5,7 +5,7 @@ import useSWR from "swr";
 // import { remark } from "remark";
 // import remarkParse from "remark-parse";
 // import html from "remark-html";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import moment from "moment";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Container from "@/components/layout/Container";
@@ -97,7 +97,8 @@ const TRANSACTIONS_QUERY = gql`
   }
 `;
 
-export default function BlogEntry({ params }: { params: any }) {
+export default function BlogEntry(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const { data, error, isLoading, isValidating } = useSWR<FetchResponse>(
     TRANSACTIONS_QUERY,
     fetcher,

@@ -15,7 +15,7 @@ import Link from 'next/link';
 import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
 import Icon from "@/components/layout/Icon";
 import { ContentBlock } from '@/lib/types/blockTypes';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, use } from 'react';
 import ShowLoading from '@/components/layout/ShowLoading';
 import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import the new utility
 import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
@@ -25,10 +25,11 @@ import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
 import { SmartBackButton } from '@/components/SmartBackButton';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-export default function QuickBitePage({ params }: Props) {
+export default function QuickBitePage(props: Props) {
+  const params = use(props.params);
   const { AllChainsByKeys } = useMaster();
   const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(null);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
@@ -86,7 +87,7 @@ export default function QuickBitePage({ params }: Props) {
   if (showNotFound) {
     return notFound();
   }
-  
+
   return (
     <>
       <ShowLoading 

@@ -355,7 +355,7 @@ export default function FeesChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
             }</div>
              <div class="flex-1 text-right justify-end flex numbers-xs">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"

@@ -5,7 +5,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
-import { useState, useMemo, memo, useCallback, useEffect } from "react";
+import { useState, useMemo, memo, useCallback, useEffect, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
@@ -325,82 +325,88 @@ AppsContentInner.displayName = 'AppsContentInner';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
-const Chain = ({ params }: { params: any }) => {
-    const { chain } = params;
-    const master = useMaster();
-    const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
-    const { theme } = useTheme();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+const Chain = (props0: { params: Promise<any> }) => {
+  const params = use(props0.params);
+  const { chain } = params;
+  const master = useMaster();
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+  const { theme } = useTheme();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  // Initialize selectedTab based on URL parameter, defaulting to "overview"
+  const [selectedTab, setSelectedTab] = useState<string>(() => {
+    const tabFromUrl = searchParams.get("tab");
+    return tabFromUrl || "overview";
+  });
+
+  const { AllChains, AllChainsByKeys } = useMaster();
+
+  const [chainKey, setChainKey] = useState<string>(
+    AllChains.find((c) => c.urlKey === chain)?.key
+      ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
+      : "",
+  );
+
+  // Update URL when selectedTab changes
+  useEffect(() => {
+    const currentParams = new URLSearchParams(searchParams.toString());
     
-    // Initialize selectedTab based on URL parameter, defaulting to "overview"
-    const [selectedTab, setSelectedTab] = useState<string>(() => {
-      const tabFromUrl = searchParams.get("tab");
-      return tabFromUrl || "overview";
-    });
-  
-    const { AllChains, AllChainsByKeys } = useMaster();
-  
-    const [chainKey, setChainKey] = useState<string>(
-      AllChains.find((c) => c.urlKey === chain)?.key
-        ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
-        : "",
-    );
-
-    // Update URL when selectedTab changes
-    useEffect(() => {
-      const currentParams = new URLSearchParams(searchParams.toString());
-      
-      if (selectedTab === "overview") {
-        // Remove tab parameter for overview (default)
-        currentParams.delete("tab");
-      } else {
-        // Set tab parameter for other tabs
-        currentParams.set("tab", selectedTab);
+    if (selectedTab === "overview") {
+      // Remove tab parameter for overview (default)
+      currentParams.delete("tab");
+    } else {
+      // remove "metrics" and "timespan" parameters if not the apps tab
+      if (selectedTab !== "apps") {
+        currentParams.delete("metric");
+        currentParams.delete("timespan");
       }
-      
-      const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
-      router.replace(newUrl, { scroll: false });
-    }, [selectedTab, router, searchParams]);
+      // Set tab parameter for other tabs
+      currentParams.set("tab", selectedTab);
+    }
+    
+    const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
+    router.replace(newUrl, { scroll: false });
+  }, [selectedTab, router]);
 
 
 
-    // Memoized tab content renderer
-    const TabContent = useMemo(() => {
-      const props = { chainKey, chain, master };
-      
-      switch (selectedTab) {
-        case "overview":
-          return <OverviewContent {...props} />;
-        case "fundamentals":
-          return <FundamentalsContent {...props} />;
-        case "economics":
-          return <EconomicsContent chainKey={chainKey} master={master} />;
-        case "apps":
-          return <AppsContent chainKey={chainKey} master={master} />;
-        case "blockspace":
-          return <BlockspaceContent chainKey={chainKey} master={master} />;
-        default:
-          return <div className="p-8 text-center">Tab not found</div>;
-      }
-    }, [selectedTab, chainKey, chain, master, showUsd]);
+  // Memoized tab content renderer
+  const TabContent = useMemo(() => {
+    const props = { chainKey, chain, master };
+    
+    switch (selectedTab) {
+      case "overview":
+        return <OverviewContent {...props} />;
+      case "fundamentals":
+        return <FundamentalsContent {...props} />;
+      case "economics":
+        return <EconomicsContent chainKey={chainKey} master={master} />;
+      case "apps":
+        return <AppsContent chainKey={chainKey} master={master} />;
+      case "blockspace":
+        return <BlockspaceContent chainKey={chainKey} master={master} />;
+      default:
+        return <div className="p-8 text-center">Tab not found</div>;
+    }
+  }, [selectedTab, chainKey, chain, master, showUsd]);
 
 
 
-    return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
-            <ChainTabs 
-              chainInfo={master.chains[chainKey]} 
-              selectedTab={selectedTab} 
-              setSelectedTab={setSelectedTab} 
-            />
-            <div className="">
-              {TabContent}
-            </div>
-            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
-        </Container>
-    )
+  return(
+      <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
+          <ChainTabs 
+            chainInfo={master.chains[chainKey]} 
+            selectedTab={selectedTab} 
+            setSelectedTab={setSelectedTab} 
+          />
+          <div className="">
+            {TabContent}
+          </div>
+          <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
+      </Container>
+  )
 }
 
 

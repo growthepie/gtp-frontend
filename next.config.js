@@ -147,11 +147,11 @@ const nextConfig = {
         destination: "/fundamentals/total-value-secured",
         permanent: true,
       },
-      {
-        source: "/labels",
-        destination: "https://labels.growthepie.xyz/",
-        permanent: true,
-      },
+      // {
+      //   source: "/labels",
+      //   destination: "https://labels.growthepie.xyz/",
+      //   permanent: true,
+      // },
       // Only include the icons redirect in production, not in development
       ...(isDevelopment ? [] : [{
         source: "/icons",

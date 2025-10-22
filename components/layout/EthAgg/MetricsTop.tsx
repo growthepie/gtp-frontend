@@ -705,17 +705,17 @@ export const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIcon
       {/* Calendar */}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transition-[opacity,scale] duration-300 ease-in-out ${svgClasses}`}>
         <g clipPath="url(#clip0_1314_55745)">
-          <path fillRule="evenodd" clip-rule="evenodd"
+          <path fillRule="evenodd" clipRule="evenodd"
             d="M0 20V7H1.5V20C1.5 21.3807 2.61929 22.5 4 22.5H16V20C16 17.7909 17.7909 16 20 16H22.5V7H24V16L16 24H4C1.79086 24 0 22.2091 0 20ZM17 20C17 18.3431 18.3431 17 20 17H21.5858L17 21.5858V20Z"
             fill="url(#paint0_linear_1314_55745)" />
-          <path fillRule="evenodd" clip-rule="evenodd"
+          <path fillRule="evenodd" clipRule="evenodd"
             d="M20 0C22.2091 0 24 1.79086 24 4V7H0V4C2.57702e-07 1.79086 1.79086 0 4 0H20Z"
             fill="url(#paint1_linear_1314_55745)" />
         </g>
-        <text x="50%" y="4" fill='#1F2726' text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="bold" className='font-raleway'>
+        <text x="50%" y="4" fill='#1F2726' textAnchor="middle" dominantBaseline="middle" fontSize="7" fontWeight="bold" className='font-raleway'>
           {getMonthDisplay(event.date)}
         </text>
-        <text x="50%" y="14" fill='url(#orange-day-gradient)' text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="medium" className='numbers-xxs'>
+        <text x="50%" y="14" fill='url(#orange-day-gradient)' textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="medium" className='numbers-xxs'>
           {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
         </text>
         <defs>

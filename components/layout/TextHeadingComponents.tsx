@@ -47,7 +47,7 @@ export const Title = ({
       >
         {backArrow && (
           <Link className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={backArrowLink}>
-            <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
+            <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`} />
           </Link>
         )}
         <GTPIcon icon={icon} className={`object-contain w-[36px] h-[36px] ${iconClassName}`} size={iconSize} />
@@ -82,73 +82,114 @@ export const Title = ({
 }
 
 
-  type TitleButtonProps = {
-    href: string;
-    newTab?: boolean;
-    icon?: GTPIconName;
-    iconSize?: "sm" | "md" | "lg";
-    iconBackground?: string;
-    leftIcon?: GTPIconName;
-    rightIcon?: GTPIconName;
-    label: string | React.ReactNode;
-    shortLabel?: string;
-    width?: string;
-    gradientClass?: string;
-    className?: string;
-    containerClassName?: string;
-  };
-
-  export const TitleButtonLink = ({
-    href,
-    newTab,
-    icon,
-    iconSize="sm",
-    iconBackground="bg-color-ui-active",
-    leftIcon,
-    rightIcon,
-    label,
-    width,
-    gradientClass="bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]",
-    className,
-    containerClassName="pl-[38px] md:pl-0"
-  }: TitleButtonProps) => {
+const LinkParent = ({ href, newTab, as, children }: { href: string, newTab?: boolean, as?: "a" | "link" | "button", children: React.ReactNode }) => {
+  if (as === "link" || as === "a") {
     return (
-      <div className={`${containerClassName} select-none`}>
-        <Link
-          href={href}
-          rel={newTab ? "noreferrer" : ""}
-          target={newTab ? "_blank" : ""}
-        >
-          <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
-            <div
-              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "!pr-[15px]"} ${leftIcon ? "pl-[5px]" : "!pl-[15px]"}`}
-              style={{
-                width: width || "fit-content",
-              }}
-            >
-              {(icon || leftIcon) && (<div className={`w-[24px] h-[24px] ${iconBackground} rounded-full flex items-center justify-center`}>
-                {leftIcon && <GTPIcon icon={leftIcon} size={iconSize} />}
-                {icon && <GTPIcon
-                  icon={icon}
-                  size={iconSize}
-                />}
-              </div>
-              )}
-              <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
-                {label}
-              </div>
-              {rightIcon && (<div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
-                <div className="size-[24px] flex items-center justify-center">
-                  <GTPIcon icon={rightIcon} size="sm" />
-                </div>
-              </div>
-              )}
-            </div>
-          </div>
-        </Link>
-      </div>
+      <Link href={href} rel={newTab ? "noreferrer" : ""} target={newTab ? "_blank" : ""}>
+        {children}
+      </Link>
     );
   }
+  if (as === "button") {
+    return (
+      <button onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (href) {
+          window.location.href = href;
+        }
+        if (newTab) {
+          window.open(href, "_blank");
+        }
+      }}>
+        {children}
+      </button>
+    );
+  }
+  return (
+    <div onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (href) {
+        window.location.href = href;
+      }
+      if (newTab) {
+        window.open(href, "_blank");
+      }
+    }}>
+      {children}
+    </div>
+  );
+};
+
+type TitleButtonProps = {
+  href: string;
+  newTab?: boolean;
+  icon?: GTPIconName;
+  iconSize?: "sm" | "md" | "lg";
+  iconBackground?: string;
+  leftIcon?: GTPIconName;
+  rightIcon?: GTPIconName;
+  label: string | React.ReactNode;
+  shortLabel?: string;
+  width?: string;
+  gradientClass?: string;
+  className?: string;
+  containerClassName?: string;
+  as?: "a" | "link" | "button";
+};
+
+export const TitleButtonLink = ({
+  href,
+  newTab,
+  icon,
+  iconSize = "sm",
+  iconBackground = "bg-color-ui-active",
+  leftIcon,
+  rightIcon,
+  label,
+  width,
+  gradientClass = "bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]",
+  className,
+  containerClassName = "pl-[38px] md:pl-0",
+  as = "a"
+}: TitleButtonProps) => {
+
+
+
+  return (
+    <div className={`${containerClassName} select-none`}>
+      <LinkParent as={as} href={href} newTab={newTab}>
+        <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
+          <div
+            className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "!pr-[15px]"} ${leftIcon ? "pl-[5px]" : "!pl-[15px]"}`}
+            style={{
+              width: width || "fit-content",
+            }}
+          >
+            {(icon || leftIcon) && (<div className={`w-[24px] h-[24px] ${iconBackground} rounded-full flex items-center justify-center`}>
+              {leftIcon && <GTPIcon icon={leftIcon} size={iconSize} />}
+              {icon && <GTPIcon
+                icon={icon}
+                size={iconSize}
+              />}
+            </div>
+            )}
+            <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
+              {label}
+            </div>
+            {rightIcon && (<div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
+              <div className="size-[24px] flex items-center justify-center">
+                <GTPIcon icon={rightIcon} size="sm" />
+              </div>
+            </div>
+            )}
+          </div>
+        </div>
+      </LinkParent>
+    </div>
+  );
+}
 
 export const SectionButtonLink = ({
   href,

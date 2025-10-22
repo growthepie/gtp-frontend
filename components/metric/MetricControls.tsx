@@ -44,6 +44,7 @@ const monthly_agg_labels = {
   sum: "Total",
   unique: "Distinct",
   distinct: "Distinct",
+  maa: "Distinct",
 };
 
 type MetricControlsProps = {
@@ -113,16 +114,18 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
         </div>
       ) : (
         <TopRowParent>
-          <div
-            className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
-              ? "translate-y-[calc(-70%)]"
-              : "translate-y-0 "
-              }`}
-          >
-            <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
-              {monthly_agg_labels[monthly_agg]}
+          {monthly_agg_labels[monthly_agg] && (
+            <div
+              className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
+                ? "translate-y-[calc(-70%)]"
+                : "translate-y-0 "
+                }`}
+            >
+              <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
+                {monthly_agg_labels[monthly_agg]}
+              </div>
             </div>
-          </div>
+          )}
           {["daily", "monthly"].map((interval) => (
             <TopRowChild
               key={interval}

@@ -1,4 +1,5 @@
-"use client";
+"use client";;
+import { use } from "react";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
 import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
@@ -24,7 +25,13 @@ const monthly_agg_labels = {
   distinct: "Distinct",
 };
 
-const DataAvailability = ({ params: { metric } }) => {
+const DataAvailability = props => {
+  const params = use(props.params);
+
+  const {
+    metric
+  } = params;
+
   const { is_og } = useParams();
   const {
     data: master,

@@ -11,11 +11,17 @@ import { Description, textToLinkedText } from "@/components/layout/TextComponent
 import { getPageMetadata } from "@/lib/metadata";
 
 type Props = {
-  params: { metric: string };
+  params: Promise<{ metric: string }>;
 };
 
 
-export async function generateMetadata({ params: { metric } }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
+
+  const {
+    metric
+  } = params;
+
   // 1. Check if the metric is valid
   if (
     !metric ||
@@ -56,13 +62,18 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
     };
 }
 
-export default async function Layout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { metric: string };
-}) {
+export default async function Layout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{ metric: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const url = MetricsURLs[params.metric];
 
   const pageData = daMetricItems.find((item) => item.urlKey === params.metric)

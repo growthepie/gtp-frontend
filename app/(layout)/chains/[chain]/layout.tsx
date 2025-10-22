@@ -7,10 +7,11 @@ import { track } from "@vercel/analytics/server";
 import { getPageMetadata } from "@/lib/metadata";
 
 type Props = {
-  params: { chain: string };
+  params: Promise<{ chain: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   // fetch data from API
   const res: MasterResponse = await fetch(MasterURL, {
     cache: "no-store",

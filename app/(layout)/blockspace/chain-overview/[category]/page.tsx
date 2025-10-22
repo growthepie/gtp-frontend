@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, use } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
@@ -23,7 +23,8 @@ import { useRouter } from "next/router";
 import { notFound } from "next/navigation";
 import { useMaster } from "@/contexts/MasterContext";
 
-const ChainOverview = ({ params }: { params: any }) => {
+const ChainOverview = (props: { params: Promise<any> }) => {
+  const params = use(props.params);
   const forceCategory = params.category;
 
   const { AllChainsByKeys } = useMaster();

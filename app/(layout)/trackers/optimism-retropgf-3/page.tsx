@@ -21,6 +21,7 @@ import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
 import ShowLoading from "@/components/layout/ShowLoading";
 import {
+  RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -156,7 +157,7 @@ export default function Page() {
   const { theme } = useTheme();
 
   const lastUpdatedString = useMemo(() => {
-    if (!projectsResponse) return null;
+    if (!projectsResponse || !projectsResponse.projects) return null;
 
     const oldest = projectsResponse.projects.reduce((prev, curr) => {
       return prev.last_updated < curr.last_updated ? prev : curr;
@@ -1678,10 +1679,10 @@ export default function Page() {
   const contentRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const { width: contentWidth } = useResizeObserver({
-    ref: contentRef,
+    ref: contentRef as RefObject<HTMLDivElement>,
   });
   const { width: tableWidth } = useResizeObserver({
-    ref: tableRef,
+    ref: tableRef as RefObject<HTMLTableElement>,
   });
 
   const [isTableWidthWider, setIsTableWidthWider] = useState(false);

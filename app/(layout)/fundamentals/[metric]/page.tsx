@@ -13,9 +13,15 @@ import { MetricBottomControls, MetricTopControls } from "@/components/metric/Met
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 
-const Fundamentals = ({ params: { metric } }) => {
+const Fundamentals = props => {
+  const params = use(props.params);
+
+  const {
+    metric
+  } = params;
+
   const { is_og } = useParams();
   const {
     data: master,

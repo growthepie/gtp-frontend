@@ -26,7 +26,7 @@ import {
 import { getFundamentalsByKey } from "@/lib/navigation";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef, use } from "react";
 import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { ChainsData } from "@/types/api/ChainResponse";
@@ -46,7 +46,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon, RankIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
-const Chain = ({ params }: { params: any }) => {
+const Chain = (props: { params: Promise<any> }) => {
+  const params = use(props.params);
   const { chain } = params;
 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");

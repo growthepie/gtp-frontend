@@ -1,12 +1,5 @@
 "use client";
-import {
-  useMemo,
-  useCallback,
-  useReducer,
-  useState,
-  useRef,
-  useEffect,
-} from "react";
+import { useMemo, useCallback, useReducer, useState, useRef, useEffect, use } from "react";
 import { ContractsURL, MasterURL } from "../../../lib/urls";
 import { Contract } from "@/types/api/ContractsResponse";
 import { ContractsResponse } from "@/types/api/ContractsResponse";
@@ -60,7 +53,8 @@ import { useMaster } from "@/contexts/MasterContext";
 //   }),
 // ];
 
-export default function ContractsPage({ params }: { params: any }) {
+export default function ContractsPage(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const { AllChainsByKeys } = useMaster();
 
   const {

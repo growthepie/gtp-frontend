@@ -18,7 +18,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 
-const Chain = ({ params }: { params: any }) => {
+const Chain = (props: { params: Promise<any> }) => {
+  const params = use(props.params);
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
