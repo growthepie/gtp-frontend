@@ -215,10 +215,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px]`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                    <HorizontalScrollContainer paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                      <div className="w-[954px]">
+                    <HorizontalScrollContainer enableDragScroll={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                      <div className="w-[954px] pr-[20px]">
                         <RowProvider
                           value={{
                             master: oldMaster,
@@ -355,16 +355,16 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
             {/* About Chain Info */}
             <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
-              {chainData.stack.label && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
+              {chainData.stack.label && chainData.stack.label !== 'Custom' && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
               {/*  */}
               {chainData.technology && <MetricTab title="Type"><div>{chainData.technology}</div></MetricTab>}
-              {chainData.raas && <MetricTab title="Rollup as a service"><div>{chainData.raas}</div></MetricTab>}
+              {chainData.raas && chainData.raas !== 'Self-hosted' && <MetricTab title="Rollup as a service"><div>{chainData.raas}</div></MetricTab>}
               {chainData.launch_date && <MetricTab title="Launch Date"><div>{chainData.launch_date ? new Date(chainData.launch_date).toLocaleDateString(undefined, { year: "numeric", month: "long", }) : "N/A"}</div></MetricTab>}
               {/* */}
               {chainData["gas_token"] && <MetricTab title="Gas Token"><div>{chainData["gas_token"]}</div></MetricTab>}
-              {chainData.evm_chain_id && <MetricTab title="Chain ID"><div>{chainData.evm_chain_id ? chainData.evm_chain_id : "N/A"}</div></MetricTab>}
-              {chainData.purpose && <MetricTab title="EVM"><div>{chainData.purpose}</div></MetricTab>}
+              {chainData["caip2"] && <MetricTab title="Chain ID"><div>{chainData["caip2"] ? chainData["caip2"] : "N/A"}</div></MetricTab>}
+              {chainData.purpose && <MetricTab title="VM"><div>{chainData.purpose}</div></MetricTab>}
               {dataAvailToArray(chainData.da_layer).length > 0 && (
               <MetricTab title="Data Availability">
                   <div className="flex gap-x-[5px] text-[10px] leading-[150%] font-medium">
