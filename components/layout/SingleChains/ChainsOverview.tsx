@@ -351,9 +351,9 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <div className="text-sm">
             {chainData.description}
           </div>
-          <div className="grid grid-cols-2 @[1145px]:grid-cols-6 gap-x-[10px] flex-1 h-full">
+          <div className="grid grid-cols-2 @[1145px]:grid-cols-8 gap-x-[10px] flex-1 h-full">
             {/* About Chain Info */}
-            <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
+            <div className="h-full col-span-2 @[1145px]:col-span-4 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
               {chainData.stack.label && chainData.stack.label !== 'Custom' && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
@@ -388,7 +388,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
                 )}
             </div>
             {/* Data Availability */}
-            <div className="h-full col-span-1 @[1145px]:mt-0 mt-[15px] @[1145px]:col-span-2 grid auto-rows-min  @[1145px]:auto-rows-auto @[1145px]:grid-cols-2  gap-[10px]">
+            <div className="h-full col-span-2 @[1145px]:mt-0 mt-[15px] @[1145px]:col-span-4 grid auto-rows-min  @[1145px]:auto-rows-auto @[1145px]:grid-cols-2  gap-[10px]">
               {/* Maturity Level */}
               <div className="h-full col-span-1 @[1145px]:col-span-1 grid grid-rows-1 grid-flow-col auto-cols-fr gap-[10px]">
                 <MetricTab title="Maturity" largerGap={true}>
@@ -407,7 +407,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
               </div>
               <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] max-w-[356px]">
                 <MetricTab title="Links" largerGap={true}>
-                  <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] w-[356px]">
+                  <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px]">
 
                         {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
                         {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
