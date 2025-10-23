@@ -25,15 +25,15 @@ export default function HighlightCards({ metric, icon, chainKey, chainOverviewDa
    const handleCardClick = useCallback(() => {
      const fundamentalsByKey = getFundamentalsByKey;
      const metricItem = fundamentalsByKey[metricKey];
+     const chainUrlKey = chainData.urlKey;
      
      if (metricItem && metricItem.urlKey) {
-       // Set localStorage values for chart controls
-       sessionStorage.setItem('fundamentalsScale', 'stacked');
+        // Set localStorage values for chart controls
+    //    sessionStorage.setItem('fundamentalsScale', 'stacked');
        sessionStorage.setItem('fundamentalsChains', JSON.stringify([chainKey]));
-       
-       router.push(`/fundamentals/${metricItem.urlKey}`);
+       router.push(`/fundamentals/${metricItem.urlKey}/${chainUrlKey}`);
      }
-   }, [metricKey, chainKey, router]);
+   }, [metricKey, chainData, chainKey, router]);
 
  
     if (!chainData || !chainOverviewData) return null;

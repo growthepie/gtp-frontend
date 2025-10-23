@@ -9,6 +9,8 @@ import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponent
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
 import { getPageMetadata } from "@/lib/metadata";
+import { BackButton } from "../../applications/_components/Components";
+import { FundamentalsBackButton } from "./FundamentalsBackButton";
 
 type Props = {
   params: { metric: string };
@@ -62,8 +64,6 @@ export default async function Layout({
   children: React.ReactNode;
   params: { metric: string };
 }) {
-  const url = MetricsURLs[params.metric];
-
   const pageData = metricItems.find((item) => item.urlKey === params.metric)
     ?.page ?? {
     title: "",
@@ -71,12 +71,12 @@ export default async function Layout({
     icon: "",
   };
 
-
-
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
       <PageContainer paddingY="none" >
         <Section>
+          <div className="flex items-center gap-x-[8px]">
+          <FundamentalsBackButton />
           <Title
             icon={pageData.icon as GTPIconName}
             title={pageData.title || "No Title"}
@@ -91,6 +91,7 @@ export default async function Layout({
               )
             }
           />
+          </div>
           <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
           </Description>

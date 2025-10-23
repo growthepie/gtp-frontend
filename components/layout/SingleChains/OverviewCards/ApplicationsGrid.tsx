@@ -19,26 +19,17 @@ import { useTheme } from 'next-themes';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 
 const LOGO_CONFIG = {
-  width: 150,
-  height: 150,
-  padding: 30, // Minimum space around logo
+  width: 213,
+  height: 78,
+  padding: 10, // Minimum space around logo
 };
 
 const LOGO_REGION_GAP = 10;
 
-const TreemapLogo = ({ className = "" }) => {
-  return (
-    
- 
-      <Image 
-        src="/logo-full.svg" 
-        alt="Logo" 
-        width={LOGO_CONFIG.width}
-        height={LOGO_CONFIG.height}
-      />
-    
-  );
+const TreemapLogo = ({ chainName }: { chainName: string }) => {
+  return <ChartWatermarkWithMetricName metricName={`${chainName} Applications`} className="w-[193px] h-[58px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" />;
 };
+
 // ============================================================================
 // Types & Interfaces
 // ============================================================================
@@ -964,7 +955,7 @@ const logoSlot = layoutResult.logoSlot;
                       transition: 'all 0.5s',
                     }}
                   >
-                    <TreemapLogo />
+                    <TreemapLogo chainName={masterData?.chains[chainKey].name || ''} />
                   </div>
                 )}
                 <LayoutGroup id={layoutKey}>

@@ -55,15 +55,15 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     const handleCardClick = useCallback(() => {
         const fundamentalsByKey = getFundamentalsByKey;
         const metricItem = fundamentalsByKey[metricKey];
+        const chainUrlKey = chainData.urlKey;
         
         if (metricItem && metricItem.urlKey) {
             // Set localStorage values for chart controls
-            sessionStorage.setItem('fundamentalsScale', 'stacked');
+            // sessionStorage.setItem('fundamentalsScale', 'stacked');
             sessionStorage.setItem('fundamentalsChains', JSON.stringify([chainKey]));
-            
-            router.push(`/fundamentals/${metricItem.urlKey}`);
+            router.push(`/fundamentals/${metricItem.urlKey}/${chainUrlKey}`);
         }
-    }, [metricKey, chainKey, router]);
+    }, [metricKey, chainData, chainKey, router]);
 
     // Custom Tooltip Component - defined early to avoid hook order issues
     const CustomTooltip = useCallback(({ data, x, y, prefix, suffix }: { data: any[], x: number, y: number, prefix: string, suffix: string }) => {
