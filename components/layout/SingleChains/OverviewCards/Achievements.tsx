@@ -111,7 +111,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
 
                                 <span className="">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " and " : ""}</span>
                                 <span className="numbers-xxs">{data.streaks[key][keyValue].streak_length % 7  || "0"}</span>
-                                <span className=" "><b>&nbsp;days&nbsp;</b>in last week</span>
+                                <span className=" "><b>&nbsp;day{data.streaks[key][keyValue].streak_length % 7  === 1 ? "" : "s"}&nbsp;</b>{data.streaks[key][keyValue].streak_length % 7  > 1 || Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? "in last week" : ""}</span>
                             </div>
                            
                             <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px] -mb-[2px]">
@@ -198,7 +198,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
         const centerY = chartSize / 2;
         
         // Calculate circle position in pixels (center of the circle on the arc)
-        const circleRadius = 4;
+        const circleRadius = 3;
         const circleCenterX = centerX + radiusPixels * Math.cos(angleRad);
         const circleCenterY = centerY - radiusPixels * Math.sin(angleRad); // Negative because Y increases downward
         
@@ -243,7 +243,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     labelLine: {
                         show: false,
                     },
-                    radius: ['85%', '90%'],
+                    radius: ['90%', '95%'],
                     center: ['50%', '50%'],
                     showEmptyCircle: true,
                     emptyCircleStyle: {
@@ -324,7 +324,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     labelLine: {
                         show: false,
                     },
-                    radius: ['85%', '90%'],
+                    radius: ['90%', '95%'],
                     center: ['50%', '50%'],
                     emphasis: {
                         disabled: false,
@@ -373,35 +373,38 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
+                    const prefix = master.metrics[key].units[valueType].prefix;
+                    const suffix = master.metrics[key].units[valueType].suffix;
 
                     return (
                     <div className="flex flex-col items-center overflow-visible" key={key + "lifetime"}>
-                        <div className="flex w-full max-w-[100px] h-[84px] items-center justify-center relative overflow-visible">
+                        <div className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible ">
                             <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                 <ReactECharts 
-                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 84)} 
-                                    style={{ width: '84px', height: '84px', overflow: 'visible' }}
+                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 80)} 
+                                    style={{ width: '80px', height: '80px', overflow: 'visible' }}
                                 /> 
                                 
                             </div>
                             <div className="absolute w-full h-full flex items-center justify-center bottom-[0.5px] right-[0.5px] z-10">
                                 <ReactECharts 
-                                    option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 64)} 
-                                    style={{ width: '64px', height: '64px', }}
+                                    option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 68)} 
+                                    style={{ width: '68px', height: '68px', }}
                                 />
                             </div>
-                            <div className="absolute top-[2px] left-[4px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full z-30">
-                                <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
-                                <div className="text-xxxs text-color-ui-hover">Level</div>
+                            <div className="absolute top-[2px] -left-[6px] w-[34px] h-[34px] flex flex-col -gap-y-[2px] justify-center items-center bg-medium-background/90 rounded-full z-30">
+                                <div className="text-xxxs ">Level&nbsp;</div>
+                                <div className="numbers-xs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
+                                
                             </div>
                             <div className="absolute flex flex-col  gap-y-[2px] justify-center items-center right-0 left-0 top-[37%]">
-                                <div className="numbers-sm">{formatNumber(data.lifetime[key][valueType].total_value)}</div>
+                                <div className="numbers-sm">{prefix}{formatNumber(data.lifetime[key][valueType].total_value)}{suffix}</div>
                                 <div className="flex gap-x-[1px] h-fit items-center numbers-xxxs">
                                     <div className="pt-[1px]">{Math.round(data.lifetime[key][valueType].percent_to_next_level)}%</div> 
                                     <div className="text-xxxs">to</div> 
                                     <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs ">{data.lifetime[key][valueType].level + 1}</div></div>
+                                </div>
                             </div>
-                        </div>
                         <div className="flex w-full gap-x-[2px] items-center justify-center">
                             <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
                              className="w-[15px] h-[15px]"
