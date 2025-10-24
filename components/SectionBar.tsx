@@ -86,8 +86,8 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                     containerClass="flex flex-col gap-y-[10px]"
                     positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                 >
-                {comingSoon && <div className="px-[15px] py-[5px]">SOON Text</div>}
-                {isLocked && <div className="px-[15px] py-[5px]">Locked Text</div>}
+                {comingSoon && <div className="px-[15px] py-[5px]">This section is still in the works and will be released soon. Stay tuned!</div>}
+                {isLocked && <div className="px-[15px] py-[5px]">This section isn't available yet for this chain. Please reach out to our team for more information on how to unlock it.</div>}
                 </GTPTooltipNew>
             ) : (
             <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full
