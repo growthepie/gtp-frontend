@@ -19,15 +19,15 @@ import { useTheme } from 'next-themes';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 
 const LOGO_CONFIG = {
-  width: 213,
-  height: 78,
-  padding: 10, // Minimum space around logo
+  width: 150,
+  height: 150,
+  padding: 0, // Minimum space around logo
 };
 
 const LOGO_REGION_GAP = 10;
 
 const TreemapLogo = ({ chainName }: { chainName: string }) => {
-  return <ChartWatermarkWithMetricName metricName={`${chainName} Applications`} className="w-[193px] h-[58px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" />;
+  return <ChartWatermarkWithMetricName className="w-[150px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" />;
 };
 
 // ============================================================================
@@ -161,7 +161,7 @@ function enrichAppData(
       const appObj = arrayToObject<AppDataRaw>(rawApp, appTypes);
       const projectMeta = ownerProjectMap[appObj.owner_project];
 
-      if(appObj.owner_project === 'npc-com') {
+      if (appObj.owner_project === 'npc-com') {
         console.log("npc-com", appObj, projectMeta);
       }
 
@@ -355,7 +355,22 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
       selectedMainCategory || undefined
     );
 
-    return allNodes.filter(node => node.apps.length > 0);
+    const filteredNodes = allNodes.filter(node => node.apps.length > 0);
+
+    // Add logo as a regular node
+    if (filteredNodes.length > 0) {
+      const totalTxcount = filteredNodes.reduce((sum, node) => sum + node.txcount, 0);
+      const logoNode: CategoryNode = {
+        id: '__logo__',
+        label: 'Logo',
+        txcount: totalTxcount * 0.15, // Logo takes ~15% of the space
+        pctShare: 0,
+        apps: [],
+      };
+      return [...filteredNodes, logoNode];
+    }
+
+    return filteredNodes;
   }, [chainDataOverview, enrichedApps, masterData, selectedMainCategory]);
 
   const dimensions = useMemo(() => {
@@ -399,7 +414,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   ): LayoutNode[] => {
     const totalTxCount = layout.reduce((sum, node) => sum + node.txcount, 0);
     if (totalTxCount === 0) return layout;
-    
+
     const valueToRedistribute = totalTxCount * percentage;
     const totalNonOffendingTxCount = nonOffendingNodes.reduce((sum, node) => sum + node.txcount, 0);
 
@@ -434,280 +449,276 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     return layout;
   };
 
-const computeNodeValue = (node: CategoryNode): number => {
+const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): number => {
+  // Logo gets a fixed reasonable value
+  if (node.id === '__logo__' && otherNodes) {
+    const otherNodeValues = otherNodes.map(node => computeNodeValue(node));
+    const totalOtherNodeValues = otherNodeValues.reduce((sum, value) => sum + value, 0);
+    const logoValue = Math.sqrt(totalOtherNodeValues) * 10;
+
+    return logoValue;
+  }
   return Math.sqrt(node.txcount) + node.apps.length * 1000;
 };
 
-type LogoRegionName = 'top' | 'bottom' | 'left' | 'right';
+  type LogoRegionName = 'top' | 'bottom' | 'left' | 'right';
 
-interface LogoRegionSpec {
-  name: LogoRegionName;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  area: number;
-}
-
-const buildLogoRegions = (
-  dimensions: { width: number; height: number },
-  logoSlot: LogoSlot
-): LogoRegionSpec[] => {
-  const gap = LOGO_REGION_GAP;
-
-  const topHeight = Math.max(0, logoSlot.y - gap);
-  const bottomStart = logoSlot.y + logoSlot.height + gap;
-  const bottomHeight = Math.max(0, dimensions.height - bottomStart);
-  const leftWidth = Math.max(0, logoSlot.x - gap);
-  const rightStart = logoSlot.x + logoSlot.width + gap;
-  const rightWidth = Math.max(0, dimensions.width - rightStart);
-
-  const regions: LogoRegionSpec[] = [
-    {
-      name: 'top',
-      x: 0,
-      y: 0,
-      width: dimensions.width,
-      height: topHeight,
-      area: dimensions.width * topHeight,
-    },
-    {
-      name: 'bottom',
-      x: 0,
-      y: bottomStart,
-      width: dimensions.width,
-      height: bottomHeight,
-      area: dimensions.width * bottomHeight,
-    },
-    {
-      name: 'left',
-      x: 0,
-      y: logoSlot.y + gap,
-      width: leftWidth,
-      height: Math.max(0, logoSlot.height - gap * 2),
-      area: leftWidth * Math.max(0, logoSlot.height - gap * 2),
-    },
-    {
-      name: 'right',
-      x: rightStart,
-      y: logoSlot.y + gap,
-      width: rightWidth,
-      height: Math.max(0, logoSlot.height - gap * 2),
-      area: rightWidth * Math.max(0, logoSlot.height - gap * 2),
-    },
-  ];
-
-  return regions.filter(region => region.area > 0 && region.width > 0 && region.height > 0);
-};
-
-const createTreemapLayout = (
-  nodes: CategoryNode[],
-  size: { width: number; height: number },
-  origin: { x: number; y: number } = { x: 0, y: 0 }
-): LayoutNode[] => {
-  if (!nodes.length) {
-    return [];
+  interface LogoRegionSpec {
+    name: LogoRegionName;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    area: number;
   }
 
-  if (size.width <= 0 || size.height <= 0) {
-    return nodes.map(node => ({
-      ...node,
-      x: origin.x,
-      y: origin.y,
-      width: 0,
-      height: 0,
-    }));
-  }
+  const buildLogoRegions = (
+    dimensions: { width: number; height: number },
+    logoSlot: LogoSlot
+  ): LogoRegionSpec[] => {
+    const gap = LOGO_REGION_GAP;
 
-  const hierarchyData = {
-    name: 'root',
-    children: nodes.map(node => ({
-      ...node,
-      name: node.id,
-      value: computeNodeValue(node),
-    })),
+    const topHeight = Math.max(0, logoSlot.y - gap);
+    const bottomStart = logoSlot.y + logoSlot.height + gap;
+    const bottomHeight = Math.max(0, dimensions.height - bottomStart);
+    const leftWidth = Math.max(0, logoSlot.x - gap);
+    const rightStart = logoSlot.x + logoSlot.width + gap;
+    const rightWidth = Math.max(0, dimensions.width - rightStart);
+
+    console.log("dimensions", dimensions);
+    console.log("logo slot", logoSlot);
+    console.log(`top height: ${topHeight}, bottom height: ${bottomHeight}, left width: ${leftWidth}, right width: ${rightWidth}`);
+
+    const regions: LogoRegionSpec[] = [
+      {
+        name: 'top',
+        x: 0,
+        y: 0,
+        width: dimensions.width,
+        height: topHeight,
+        area: dimensions.width * topHeight,
+      },
+      {
+        name: 'bottom',
+        x: 0,
+        y: bottomStart,
+        width: dimensions.width,
+        height: bottomHeight,
+        area: dimensions.width * bottomHeight,
+      },
+      {
+        name: 'left',
+        x: 0,
+        y: logoSlot.y + gap,
+        width: leftWidth,
+        height: Math.max(0, logoSlot.height - gap * 2),
+        area: leftWidth * Math.max(0, logoSlot.height - gap * 2),
+      },
+      {
+        name: 'right',
+        x: rightStart,
+        y: logoSlot.y + gap,
+        width: rightWidth,
+        height: Math.max(0, logoSlot.height - gap * 2),
+        area: rightWidth * Math.max(0, logoSlot.height - gap * 2),
+      },
+    ];
+
+    return regions.filter(region => region.area > 0 && region.width > 0 && region.height > 0);
   };
 
-  const root = d3.hierarchy(hierarchyData as any)
-    .sum(d => (d as any).value)
-    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+  const createTreemapLayout = (
+    nodes: CategoryNode[],
+    size: { width: number; height: number },
+    origin: { x: number; y: number } = { x: 0, y: 0 }
+  ): LayoutNode[] => {
+    if (!nodes.length) {
+      return [];
+    }
 
-  const shortestSide = Math.min(size.width, size.height);
-  const effectivePadding = shortestSide > 0
-    ? Math.min(10, Math.max(2, Math.floor(shortestSide / 12)))
-    : 0;
+    if (size.width <= 0 || size.height <= 0) {
+      return nodes.map(node => ({
+        ...node,
+        x: origin.x,
+        y: origin.y,
+        width: 0,
+        height: 0,
+      }));
+    }
 
-  const treemap = d3.treemap()
-    .size([size.width, size.height])
-    .paddingInner(effectivePadding)
-    .paddingOuter(0)
-    .tile(d3.treemapSquarify.ratio(2/3));
+    const nonLogoNodes = nodes.filter(node => node.id !== '__logo__');
 
-  treemap(root);
-
-  return root.leaves().map(leaf => {
-    const layoutLeaf = leaf as d3.HierarchyRectangularNode<typeof leaf.data>;
-    const original = nodes.find(n => n.id === (layoutLeaf.data as any).name) ?? nodes[0];
-
-    return {
-      ...original,
-      x: Math.floor(origin.x + layoutLeaf.x0),
-      y: Math.floor(origin.y + layoutLeaf.y0),
-      width: Math.floor(layoutLeaf.x1 - layoutLeaf.x0),
-      height: Math.floor(layoutLeaf.y1 - layoutLeaf.y0),
+    const hierarchyData = {
+      name: 'root',
+      children: nodes.map(node => ({
+        ...node,
+        name: node.id,
+        value: computeNodeValue(node, nonLogoNodes),
+      })),
     };
-  });
-};
 
-const createTreemapLayoutWithLogo = (
-  nodes: CategoryNode[],
-  dimensions: { width: number; height: number },
-  logoSlot: LogoSlot
-): LayoutNode[] => {
-  const regions = buildLogoRegions(dimensions, logoSlot);
+    const root = d3.hierarchy(hierarchyData as any)
+      .sum(d => (d as any).value)
+      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
-  if (!regions.length) {
-    return nodes.map(node => ({
-      ...node,
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
+    const shortestSide = Math.min(size.width, size.height);
+    const effectivePadding = shortestSide > 0
+      ? Math.min(10, Math.max(2, Math.floor(shortestSide / 12)))
+      : 0;
+
+    const treemap = d3.treemap()
+      .size([size.width, size.height])
+      .paddingInner(effectivePadding)
+      .paddingOuter(0)
+      .tile(d3.treemapSquarify.ratio(2 / 3));
+
+    treemap(root);
+
+    return root.leaves().map(leaf => {
+      const layoutLeaf = leaf as d3.HierarchyRectangularNode<typeof leaf.data>;
+      const original = nodes.find(n => n.id === (layoutLeaf.data as any).name) ?? nodes[0];
+
+      return {
+        ...original,
+        x: Math.floor(origin.x + layoutLeaf.x0),
+        y: Math.floor(origin.y + layoutLeaf.y0),
+        width: Math.floor(layoutLeaf.x1 - layoutLeaf.x0),
+        height: Math.floor(layoutLeaf.y1 - layoutLeaf.y0),
+      };
+    });
+  };
+
+  const createTreemapLayoutWithLogo = (
+    nodes: CategoryNode[],
+    dimensions: { width: number; height: number },
+    logoSlot: LogoSlot
+  ): LayoutNode[] => {
+    const regions = buildLogoRegions(dimensions, logoSlot);
+
+    if (!regions.length) {
+      return nodes.map(node => ({
+        ...node,
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      }));
+    }
+
+    const nonLogoNodes = nodes.filter(node => node.id !== '__logo__');
+
+    const nodeEntries = nodes.map(node => ({ node, value: computeNodeValue(node, nonLogoNodes) }));
+    const totalValue = nodeEntries.reduce((sum, entry) => sum + entry.value, 0);
+
+    if (totalValue <= 0) {
+      return createTreemapLayout(nodes, dimensions);
+    }
+
+    const totalRegionArea = regions.reduce((sum, region) => sum + region.area, 0);
+
+    if (totalRegionArea <= 0) {
+      return createTreemapLayout(nodes, dimensions);
+    }
+
+    const areaPerValueUnit = totalRegionArea / totalValue;
+
+    const regionStates = regions.map(region => ({
+      ...region,
+      remainingCapacity: region.area / areaPerValueUnit,
+      assigned: [] as CategoryNode[],
     }));
-  }
 
-  const nodeEntries = nodes.map(node => ({ node, value: computeNodeValue(node) }));
-  const totalValue = nodeEntries.reduce((sum, entry) => sum + entry.value, 0);
+    nodeEntries
+      .sort((a, b) => b.value - a.value)
+      .forEach(({ node, value }) => {
+        const targetRegion = regionStates.reduce((best, candidate) => {
+          if (!best) return candidate;
+          if (candidate.remainingCapacity === best.remainingCapacity) {
+            return candidate.area > best.area ? candidate : best;
+          }
+          return candidate.remainingCapacity > best.remainingCapacity ? candidate : best;
+        }, regionStates[0]);
 
-  if (totalValue <= 0) {
-    return createTreemapLayout(nodes, dimensions);
-  }
+        targetRegion.assigned.push(node);
+        targetRegion.remainingCapacity = Math.max(0, targetRegion.remainingCapacity - value);
+      });
 
-  const totalRegionArea = regions.reduce((sum, region) => sum + region.area, 0);
+    const layouts = regionStates.flatMap(region => {
+      if (!region.assigned.length) {
+        return [] as LayoutNode[];
+      }
 
-  if (totalRegionArea <= 0) {
-    return createTreemapLayout(nodes, dimensions);
-  }
-
-  const areaPerValueUnit = totalRegionArea / totalValue;
-
-  const regionStates = regions.map(region => ({
-    ...region,
-    remainingCapacity: region.area / areaPerValueUnit,
-    assigned: [] as CategoryNode[],
-  }));
-
-  nodeEntries
-    .sort((a, b) => b.value - a.value)
-    .forEach(({ node, value }) => {
-      const targetRegion = regionStates.reduce((best, candidate) => {
-        if (!best) return candidate;
-        if (candidate.remainingCapacity === best.remainingCapacity) {
-          return candidate.area > best.area ? candidate : best;
-        }
-        return candidate.remainingCapacity > best.remainingCapacity ? candidate : best;
-      }, regionStates[0]);
-
-      targetRegion.assigned.push(node);
-      targetRegion.remainingCapacity = Math.max(0, targetRegion.remainingCapacity - value);
+      return createTreemapLayout(
+        region.assigned,
+        { width: region.width, height: region.height },
+        { x: region.x, y: region.y }
+      );
     });
 
-  const layouts = regionStates.flatMap(region => {
-    if (!region.assigned.length) {
-      return [] as LayoutNode[];
-    }
+    return layouts;
+  };
 
-    return createTreemapLayout(
-      region.assigned,
-      { width: region.width, height: region.height },
-      { x: region.x, y: region.y }
-    );
-  });
-
-  return layouts;
-};
-
-const enforceMinWidth = (
-  nodes: CategoryNode[], 
-  dimensions: { width: number, height: number }, 
-  minWidth: number, 
-  minHeight: number
-): LayoutComputationResult => {
-  let layout: LayoutNode[] = [];
-  let currentNodes = JSON.parse(JSON.stringify(nodes));
-  let allNodesAreBigEnough = false;
-  let iterations = 0;
-  const maxIterations = 20;
-
-  const logoWidth = LOGO_CONFIG.width + LOGO_CONFIG.padding * 2;
-  const logoHeight = LOGO_CONFIG.height + LOGO_CONFIG.padding * 2;
-  const hasLogoSlot = dimensions.width >= logoWidth && dimensions.height >= logoHeight;
-  const logoSlot: LogoSlot | null = hasLogoSlot
-    ? {
-        x: Math.floor(dimensions.width / 2 - logoWidth / 2),
-        y: Math.floor(dimensions.height / 2 - logoHeight / 2),
-        width: Math.floor(logoWidth),
-        height: Math.floor(logoHeight),
-      }
-    : null;
-
-  while (!allNodesAreBigEnough && iterations < maxIterations) {
-    const { width, height } = dimensions;
-
-    layout = logoSlot
-      ? createTreemapLayoutWithLogo(currentNodes, dimensions, logoSlot)
-      : createTreemapLayout(currentNodes, dimensions);
-
-    const offendingNodes = layout.filter(leaf => leaf.width < minWidth || leaf.height < minHeight);
-
-    if (offendingNodes.length === 0) {
-      allNodesAreBigEnough = true;
-    } else {
-      const nonOffendingNodes = layout.filter(leaf => leaf.width >= minWidth && leaf.height >= minHeight);
-
-      if (nonOffendingNodes.length === 0) {
-        console.warn('LAYOUT: No non-offending nodes to redistribute value from. Halting iterations.');
-        break;
-      }
-
-      const percentageToRedistribute = 0.01 + (0.05 * Math.pow(iterations, 2));
-
-      const updatedLayout = redistributeTxCountByPercentage(
-        layout,
-        offendingNodes,
-        nonOffendingNodes,
-        percentageToRedistribute
+  const enforceMinWidth = (
+    nodes: CategoryNode[], 
+    dimensions: { width: number, height: number }, 
+    minWidth: number, 
+    minHeight: number
+  ): LayoutNode[] => {  // Just return LayoutNode[], not LayoutComputationResult
+    let layout: LayoutNode[] = [];
+    let currentNodes = JSON.parse(JSON.stringify(nodes));
+    let allNodesAreBigEnough = false;
+    let iterations = 0;
+    const maxIterations = 20;
+  
+    while (!allNodesAreBigEnough && iterations < maxIterations) {
+      // Simple layout - no logo slot logic needed
+      layout = createTreemapLayout(currentNodes, dimensions);
+  
+      // Don't enforce min size on logo node
+      const offendingNodes = layout.filter(
+        leaf => leaf.id !== '__logo__' && (leaf.width < minWidth || leaf.height < minHeight)
       );
-
-      currentNodes = currentNodes.map(node => {
-        const updatedNode = updatedLayout.find(layoutNode => layoutNode.id === node.id);
-        return {
-          ...node,
-          txcount: updatedNode ? updatedNode.txcount : node.txcount,
-        };
-      });
+  
+      if (offendingNodes.length === 0) {
+        allNodesAreBigEnough = true;
+      } else {
+        const nonOffendingNodes = layout.filter(
+          leaf => leaf.id !== '__logo__' && leaf.width >= minWidth && leaf.height >= minHeight
+        );
+  
+        if (nonOffendingNodes.length === 0) {
+          console.warn('LAYOUT: No non-offending nodes to redistribute value from.');
+          break;
+        }
+  
+        const percentageToRedistribute = 0.01 + (0.05 * Math.pow(iterations, 2));
+        const updatedLayout = redistributeTxCountByPercentage(
+          layout,
+          offendingNodes,
+          nonOffendingNodes,
+          percentageToRedistribute
+        );
+  
+        currentNodes = currentNodes.map(node => {
+          const updatedNode = updatedLayout.find(layoutNode => layoutNode.id === node.id);
+          return {
+            ...node,
+            txcount: updatedNode ? updatedNode.txcount : node.txcount,
+          };
+        });
+      }
+      iterations++;
     }
-    iterations++;
-  }
+  
+    return layout.filter(node => node.width > 0 && node.height > 0);
+  };
 
-    if (iterations === maxIterations) {
-      console.warn('LAYOUT: Reached max iterations while trying to enforce minimum area.');
+  const layout = useMemo<LayoutNode[]>(() => {
+    if (categoryNodes.length === 0) {
+      return [];
     }
-
-  const filteredLayout = layout.filter(node => node.width > 0 && node.height > 0);
-
-  return { layout: filteredLayout, logoSlot };
-};
-
-const layoutResult = useMemo<LayoutComputationResult>(() => {
-  if (categoryNodes.length === 0) {
-    return { layout: [], logoSlot: null };
-  }
-  return enforceMinWidth(categoryNodes, dimensions, 85, 110);
-}, [categoryNodes, dimensions]);
-
-const layout = layoutResult.layout;
-const logoSlot = layoutResult.logoSlot;
+    return enforceMinWidth(categoryNodes, dimensions, 85, 110);
+  }, [categoryNodes, dimensions]);
 
   // ============================================================================
   // Event Handlers
@@ -786,7 +797,7 @@ const logoSlot = layoutResult.logoSlot;
 
     resizeObserver.observe(container);
 
-    
+
 
     return () => {
       if (resizeTimeoutRef.current) {
@@ -803,7 +814,7 @@ const logoSlot = layoutResult.logoSlot;
       setWindowWidth(window.innerWidth);
       setWindowHeight(window.innerHeight);
       const container = containerRef.current;
-      if (container) {  
+      if (container) {
         setContainerWidth(container.clientWidth);
       } else {
         setContainerWidth(743);
@@ -852,8 +863,8 @@ const logoSlot = layoutResult.logoSlot;
       })
       .map(([id, label]) => ({ id, label }));
   }, [masterData, chainDataOverview, enrichedApps]);
-  
-  const { theme } = useTheme(); 
+
+  const { theme } = useTheme();
 
   const hideApplications = layout.length === 0;
 
@@ -862,11 +873,11 @@ const logoSlot = layoutResult.logoSlot;
       <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
         {/* Header with category filters */}
         <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
-          <div  className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
+          <div className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
-              <GTPIcon 
-                icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName} 
-                size="sm" 
+              <GTPIcon
+                icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName}
+                size="sm"
                 style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
               />
               <div className="heading-large-md">
@@ -875,7 +886,7 @@ const logoSlot = layoutResult.logoSlot;
             </div>
 
             {/* Category buttons */}
-            <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30}}>
+            <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30 }}>
               <button
                 id="main-category-button-all"
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
@@ -898,7 +909,7 @@ const logoSlot = layoutResult.logoSlot;
                     ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
                     ${hideApplications && 'pointer-events-none'}
                     `}
-                    
+
                   onClick={() => setSelectedMainCategory(category.id)}
                 >
                   {category.label}
@@ -925,42 +936,52 @@ const logoSlot = layoutResult.logoSlot;
                 Applications Not Available
               </div>
               <div className="text-xs text-center px-[30px]">
-                  Application metrics are a paid add-on for each specific chain.<br />
-                  Unfortunately, this chain has not yet added application metrics to growthepie.
-                  <br /><br />
-                  Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+                Application metrics are a paid add-on for each specific chain.<br />
+                Unfortunately, this chain has not yet added application metrics to growthepie.
+                <br /><br />
+                Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
               </div>
             </div>
-            
-            ) : (
+
+          ) : (
             <>
               {/* <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
                 <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
               </div> */}
-              <motion.div
-                ref={containerRef}
-                // @ts-ignore
-                className='relative h-full'
-                animate={{ height: dimensions.height }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              >
-                {logoSlot && (
-                  <div
-                    className="absolute z-[150] overflow-hidden -mt-[2px] flex items-center justify-center border border-color-bg-medium rounded-[15px]"
-                    style={{
-                      left: logoSlot.x,
-                      top: logoSlot.y + 10,
-                      width: logoSlot.width,
-                      height: logoSlot.height - 20,
-                      transition: 'all 0.5s',
-                    }}
-                  >
-                    <TreemapLogo chainName={masterData?.chains[chainKey].name || ''} />
-                  </div>
-                )}
-                <LayoutGroup id={layoutKey}>
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    {layout.map((node) => (
+            <motion.div
+              ref={containerRef}
+              className='relative h-full'
+              animate={{ height: dimensions.height }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <LayoutGroup id={layoutKey}>
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {layout.map((node) => {
+                    // Check if this is the logo node
+                    if (node.id === '__logo__') {
+                      return (
+                        <motion.div
+                          key={`__logo__`}
+                          layoutId="__logo__"
+                          className="absolute z-[150] flex items-center justify-center"
+                          initial={{ opacity: 0 }}
+                          animate={{
+                            opacity: 1,
+                            left: node.x,
+                            top: node.y,
+                            width: node.width,
+                            height: node.height,
+                          }}
+                          exit={{ opacity: 0, left: 0, top: 0, width: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <TreemapLogo chainName={masterData?.chains[chainKey].name || ''} />
+                        </motion.div>
+                      );
+                    }
+                    
+                    // Regular category section
+                    return (
                       <CategorySection
                         key={`${layoutKey}-${node.id}`}
                         node={node}
@@ -985,12 +1006,13 @@ const logoSlot = layoutResult.logoSlot;
                         viewMode={selectedMainCategory === null ? 'main' : 'sub'}
                         layoutId={node.id}
                         selectedMainCategory={selectedMainCategory}
-                
+
                       />
-                    ))}
-                  </AnimatePresence>
-                </LayoutGroup>
-              </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </LayoutGroup>
+            </motion.div>
             </>
           )}
         </div>
@@ -999,26 +1021,26 @@ const logoSlot = layoutResult.logoSlot;
         {!hideApplications && (
           <div className='w-[15px] h-fit z-30'>
             <GTPTooltipNew
-                placement="top-end"
-                size="md"
-                allowInteract={true}
-                trigger={
+              placement="top-end"
+              size="md"
+              allowInteract={true}
+              trigger={
                 <div
                   className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                   data-tooltip-trigger
                 >
-                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                 </div>
-                }
-                containerClass="flex flex-col gap-y-[10px]"
-                positionOffset={{ mainAxis: 10, crossAxis: 0 }}
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 10, crossAxis: 0 }}
 
             >
-                <div>
+              <div>
                 <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                    {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
+                  {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
                 </TooltipBody>
-                </div>
+              </div>
             </GTPTooltipNew>
           </div>
         )}
@@ -1081,7 +1103,7 @@ const CategorySection = ({
     'utility': 'gtp-utilities',
     'token_transfers': 'gtp-tokentransfers',
   }
-  
+
   return (
     <motion.div
       layoutId={layoutId}
@@ -1112,17 +1134,17 @@ const CategorySection = ({
         transition={{ delay: 0.1 }}
       >
         {viewMode === 'main'
-        
-          ? <div className='flex items-center gap-x-[5px]'>
-              <GTPIcon icon={`${categoryIcon[node.id]}` as GTPIconName} size="sm"
-                className="w-[15px] h-[15px]"
-                containerClassName="flex items-center justify-center w-[24px] h-[24px]"
-              />
-              <div className=''>{ShortMainCategoryNames[node.label] || node.label}</div>
 
-            </div>
+          ? <div className='flex items-center gap-x-[5px]'>
+            <GTPIcon icon={`${categoryIcon[node.id]}` as GTPIconName} size="sm"
+              className="w-[15px] h-[15px]"
+              containerClassName="flex items-center justify-center w-[24px] h-[24px]"
+            />
+            <div className=''>{ShortMainCategoryNames[node.label] || node.label}</div>
+
+          </div>
           : (ShortSubCategoryNames[node.label] || node.label)}
-          
+
       </motion.div>
 
       {/* Animated app tiles */}
