@@ -103,6 +103,8 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
+                    const daysValue = data.streaks[key][keyValue].streak_length % 7 + (streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value  > 1 ? 1 : 0);
+
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
                             <div className="text-xxs">
@@ -110,7 +112,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                 <span className="font-bold">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " weeks" : ""}</span>
 
                                 <span className="">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " and " : ""}</span>
-                                <span className="numbers-xxs">{data.streaks[key][keyValue].streak_length % 7  || "0"}</span>
+                                <span className="numbers-xxs">{daysValue  || "0"}</span>
                                 <span className=" "><b>&nbsp;day{data.streaks[key][keyValue].streak_length % 7  === 1 ? "" : "s"}&nbsp;</b>{data.streaks[key][keyValue].streak_length % 7  > 1 || Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? "in last week" : ""}</span>
                             </div>
                            
@@ -120,7 +122,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                     <StreakIcon progress={i < data.streaks[key][keyValue].streak_length ? 100 : 0} />
                                 </div>
                             ))}
-                            <div className="w-[22.16px] h-[39px] z-20 cursor-pointer " 
+                            <div className="w-[22.16px] h-[39px] z-20 cursor-pointer pointer-events-auto" 
                              onMouseEnter={() => setFlameHovered(key)}
                              onMouseLeave={() => setFlameHovered(null)}
                             >
@@ -133,10 +135,21 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                             ))}
                             </div>
                             {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} hoverBar={flameHovered === key} />}
-                            <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs">
-                                <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
-                                {keyData[key].description}
-                            </div>
+                            <GTPTooltipNew placement="bottom-start" allowInteract={true} 
+                            trigger={
+                                <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs cursor-pointer">
+                                    <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
+                                    {keyData[key].description}
+                                </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                            >
+                                    <TooltipBody className="flex flex-col gap-y-[10px]">
+                                        {keyData[key].description}
+                                    </TooltipBody>
+                                
+                            </GTPTooltipNew>
                         </div>
 
                     )
@@ -153,21 +166,24 @@ const StreakBar = ({yesterdayValue, todayValue, keyValue, hoverBar}: {yesterdayV
     const prefix = keyValue === "usd" ? "$" : keyValue === "eth" ? "Ξ" : "";
     return (
         <div className="flex flex-col w-full min-w-[200px]">
-            <div className="flex  pl-[2px] pr-[5px] py-[2px] justify-between w-full bg-color-bg-medium rounded-full">
-                <div className={`flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[2px] justify-start transition-all duration-300 ${hoverBar ? "bg-color-ui-hover" : "bg-color-ui-active"} rounded-full`}
-                 style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
-                >
-                    <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
-
-
+            <div className="flex relative py-[2px] pl-[2px] pr-[3.5px] justify-between w-full bg-color-bg-medium rounded-full">
+                <div className="w-full h-full flex items-center justify-between relative">
+                    <div className={`absolute left-[1px] -top-[1px] h-[17px] rounded-full  ${hoverBar ? "bg-color-ui-hover" : "bg-color-ui-active"} `} 
+                        style={{
+                            width: `${todayValue / (yesterdayValue) * 100}%`,
+                            maxWidth: "100%",
+                        }}>
+                        
+                    </div>
+                    <div className={`flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[5px] z-[5]  justify-start transition-all duration-300 rounded-full`}
+                        style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
+                    >
+                        <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
+                    </div>
+                    <div className="flex items-center gap-x-[5px] h-[15px] pr-[5px] z-[5]">
+                        <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
+                    </div>        
                 </div>
-                <div className="flex items-center gap-x-[5px] h-[15px]">
-                    <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
-
-
-                </div>
-            
-
             </div>
             <div className="flex items-center justify-between gap-x-[5px] px-[8px] pt-[2px]">
                 <div className="text-xxxs ">today</div>
