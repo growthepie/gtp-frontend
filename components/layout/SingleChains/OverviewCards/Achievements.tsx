@@ -145,8 +145,9 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                 containerClass="flex flex-col gap-y-[10px]"
                                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                             >
-                                    <TooltipBody className="flex flex-col gap-y-[10px]">
-                                        {keyData[key].description}
+                                    <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
+                                        {`Yesterdays transactions were ${formatNumber(data.streaks[key][keyValue].yesterday_value)} and today's transactions were (as of ${new Date().toLocaleDateString()}) ${formatNumber(streaksData.data[chainKey][key][keyValue])}. `}
+                                        {`${master.chains[chainKey].name} needs ${formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue])} more transactions to continue the streak.`}
                                     </TooltipBody>
                                 
                             </GTPTooltipNew>
@@ -421,13 +422,32 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                                     <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs ">{data.lifetime[key][valueType].level + 1}</div></div>
                                 </div>
                             </div>
-                        <div className="flex w-full gap-x-[2px] items-center justify-center">
-                            <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
-                             className="w-[15px] h-[15px]"
-                             containerClassName="flex items-center justify-center w-[24px] h-[24px]"
-                            />
-                            <div className="text-xxxs whitespace-nowrap">{master.metrics[key].name}</div>                        
-                        </div>
+                      
+
+                            <GTPTooltipNew
+                                placement="top-end"
+                                size="md"
+                                allowInteract={true}
+                                trigger={
+                                    <div className="flex w-full gap-x-[2px] items-center justify-center ">
+                                        <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
+                                        className="w-[15px] h-[15px]"
+                                        containerClassName="flex items-center justify-center w-[24px] h-[24px]"
+                                        />
+                                        <div className="text-xxxs whitespace-nowrap">{master.metrics[key].name}</div>    
+                                    </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                                >
+                                <div>
+                                    <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                                    {"Lifetime achievements showcase the total accumulated value of the chains key metrics (i.e. liftime revenue, total active addresses, lifetime transactions since inception). Each chart visualizes the chains progress toward the next level based on the total accumulated value."}
+                                    </TooltipBody>
+                                </div>
+                            </GTPTooltipNew>                    
+                        
                         
                          
                      </div>
