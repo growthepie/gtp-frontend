@@ -90,11 +90,13 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
         return (
          <div
-            className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
+            className={`absolute pointer-events-none z-[999] bg-[#2A3433FE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
             style={{
               left: tooltipX,
               top: tooltipY,
+              boxShadow: "0px 0px 27px 0px var(--color-ui-shadow, #151A19)",
             }}
+            
           >
                 <div className="flex items-center gap-x-[5px] justify-between mb-2 pl-[21px] ">
                     <div className="heading-small-xs text-white">{dateStr}</div>

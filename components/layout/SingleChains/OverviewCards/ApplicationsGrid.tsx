@@ -161,10 +161,6 @@ function enrichAppData(
       const appObj = arrayToObject<AppDataRaw>(rawApp, appTypes);
       const projectMeta = ownerProjectMap[appObj.owner_project];
 
-      if (appObj.owner_project === 'npc-com') {
-        console.log("npc-com", appObj, projectMeta);
-      }
-
       if (!projectMeta) return null;
 
       return {
@@ -1179,7 +1175,6 @@ interface AppTileProps {
 
 const AppTile = ({ app, tile, index }: AppTileProps) => {
 
-  console.log(app);
 
   return (
     <motion.div

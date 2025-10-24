@@ -290,6 +290,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                 )}
             </div>
           </div>
+          <SimilarChains chainKey={chainKey} />
         </div>
       )}
     </>
@@ -430,6 +431,47 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
     </div>
   )
 }
+
+
+const SimilarChains = ({ chainKey }: { chainKey: string }) => {
+  const { theme } = useTheme();
+  const { data: masterData } = useMaster();
+  const AllChainsByKeys = useMaster().AllChainsByKeys;
+
+  const randomChains = useMemo(() => {
+    // remove repeating chains and filter for "all_l2s" and chainKey and return 5 random chains
+    const chains = Object.keys(AllChainsByKeys).filter((chain) => chain !== "all_l2s" && chain !== chainKey);
+    return chains.sort(() => Math.random() - 0.5).slice(0, 5).map((chain) => AllChainsByKeys[chain]);
+  }, [AllChainsByKeys, chainKey as string]);
+
+  return (
+    <div className="flex items-center justify-between  w-full bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+      <div className="flex items-center gap-x-[10px]">
+        <GTPIcon icon="gtp-multiple-chains" size="md" className="text-color-ui-hover" />
+        <div className="heading-large-md">Similar Chains</div>
+        
+      </div>
+      {/* add for loop that loops 5 times  */}
+      <div className="flex items-center gap-x-[10px]">
+        {randomChains.map((randomChain, index) => {
+
+          return (
+            <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center bg-color-bg-medium rounded-full">
+                <GTPIcon icon={`gtp:${randomChain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
+                style={{
+                  color: randomChain.colors[theme ?? "dark"][0],
+                }}
+              />
+            </Link>
+          )
+        })}
+        
+      </div>
+      
+    </div>
+  )
+}
+
 
 
 const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: string, href: string, color?: string }) => {
