@@ -194,7 +194,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
       {oldMaster && chainDataOverview && (
         <div className="@container flex flex-col w-full gap-[15px]">
           <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
-          <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
+          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
             <div className="flex flex-col w-full gap-y-[15px]">
             
@@ -318,7 +318,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
-            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium group-hover/aboutchain:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
            />
           <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
         </div>
