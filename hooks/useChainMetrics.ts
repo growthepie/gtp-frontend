@@ -38,6 +38,16 @@ export function useChainMetrics(
   const { fetcher } = useSWRConfig();
   console.log("metricURLKey", metricURLKey);
   const metricKey = MetricURLKeyToAPIKey[metricURLKey];
+
+  if(chainKeys.length === 0) {
+    return {
+      data: undefined,
+      error: "No chains to fetch",
+      isLoading: false,
+      isValidating: false,
+    };
+  }
+
   if (!master.metrics[metricKey]) {
     console.error("Metric not found", metricKey);
     return {
