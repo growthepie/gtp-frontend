@@ -205,7 +205,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
                   </div>
                   <div className="flex-1">
-                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
                   </div>
                 </div>
               </div>
@@ -314,11 +314,11 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
   return (
     <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
       <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] " onClick={() => setOpen(!open)}>
+        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] group/aboutchain" onClick={() => setOpen(!open)}>
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
-            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium group-hover/aboutchain:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
            />
           <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
         </div>

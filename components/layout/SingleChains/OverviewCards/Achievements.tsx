@@ -70,6 +70,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
         }
     }
     
+
     
 
     return (
@@ -105,6 +106,13 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
                     const daysValue = data.streaks[key][keyValue].streak_length % 7 + (streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value  > 1 ? 1 : 0);
 
+                    const lastUpdated = streaksData.last_updated_utc;
+
+                    const lastUpdatedDate = new Date(lastUpdated + " UTC");
+                    const currentDate = new Date();
+                    const minutesPassed = Math.floor((currentDate.getTime() - lastUpdatedDate.getTime()) / (1000 * 60));
+
+                
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
                             <div className="text-xxs">
@@ -146,7 +154,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                             >
                                     <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
-                                        {`Yesterdays transactions were ${formatNumber(data.streaks[key][keyValue].yesterday_value)} and today's transactions were (as of ${new Date().toLocaleDateString()}) ${formatNumber(streaksData.data[chainKey][key][keyValue])}. `}
+                                        {`Yesterdays transactions were ${formatNumber(data.streaks[key][keyValue].yesterday_value)} and today's transactions were (as of ${minutesPassed } minutes ago) ${formatNumber(streaksData.data[chainKey][key][keyValue])}. `}
                                         {`${master.chains[chainKey].name} needs ${formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue])} more transactions to continue the streak.`}
                                     </TooltipBody>
                                 
@@ -194,7 +202,7 @@ const StreakBar = ({yesterdayValue, todayValue, keyValue, hoverBar}: {yesterdayV
     )
 }
 
-export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, master: MasterResponse}) => {
+export const LifetimeAchievments = ({data, master, chainKey}: {data: AchievmentsData, master: MasterResponse, chainKey: string}) => {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -443,7 +451,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                                 >
                                 <div>
                                     <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                    {"Lifetime achievements showcase the total accumulated value of the chains key metrics (i.e. liftime revenue, total active addresses, lifetime transactions since inception). Each chart visualizes the chains progress toward the next level based on the total accumulated value."}
+                                        {`Since ${master.chains[chainKey].name}'s genesis, a total of ${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value)}${suffix || ""} was achieved in ${master.metrics[key].name}.`}
                                     </TooltipBody>
                                 </div>
                             </GTPTooltipNew>                    
