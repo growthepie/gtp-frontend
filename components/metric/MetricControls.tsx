@@ -78,6 +78,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
     selectedTimespan,
     setSelectedTimespan,
     avg,
+    showRollingAverage,
     monthly_agg,
     zoomed,
     setZoomed,
@@ -264,7 +265,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
         )}
       </TopRowParent>
       <div
-        className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && ["365d", "max"].includes(selectedTimespan)
+        className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
           ? "translate-y-[calc(-80%)]"
           : "translate-y-0 "
           }`}

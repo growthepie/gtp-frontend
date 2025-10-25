@@ -194,7 +194,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
       {oldMaster && chainDataOverview && (
         <div className="@container flex flex-col w-full gap-[15px]">
           <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
-          <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
+          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
             <div className="flex flex-col w-full gap-y-[15px]">
             
@@ -205,7 +205,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
                   </div>
                   <div className="flex-1">
-                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} />
+                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
                   </div>
                 </div>
               </div>
@@ -290,6 +290,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                 )}
             </div>
           </div>
+          <SimilarChains chainKey={chainKey} />
         </div>
       )}
     </>
@@ -313,11 +314,11 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
   return (
     <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
       <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] " onClick={() => setOpen(!open)}>
+        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] group/aboutchain" onClick={() => setOpen(!open)}>
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
-            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
            />
           <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
         </div>
@@ -351,9 +352,9 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <div className="text-sm">
             {chainData.description}
           </div>
-          <div className="grid grid-cols-2 @[1145px]:grid-cols-6 gap-x-[10px] flex-1 h-full">
+          <div className="grid grid-cols-2 @[1145px]:grid-cols-8 gap-x-[10px] flex-1 h-full">
             {/* About Chain Info */}
-            <div className="h-full col-span-2 @[1145px]:col-span-3 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
+            <div className="h-full col-span-2 @[1145px]:col-span-4 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
               {chainData.stack.label && chainData.stack.label !== 'Custom' && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
@@ -388,7 +389,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
                 )}
             </div>
             {/* Data Availability */}
-            <div className="h-full col-span-1 @[1145px]:mt-0 mt-[15px] @[1145px]:col-span-2 grid auto-rows-min  @[1145px]:auto-rows-auto @[1145px]:grid-cols-2  gap-[10px]">
+            <div className="h-full col-span-2 @[1145px]:mt-0 mt-[15px] @[1145px]:col-span-4 grid auto-rows-min  @[1145px]:auto-rows-auto @[1145px]:grid-cols-2  gap-[10px]">
               {/* Maturity Level */}
               <div className="h-full col-span-1 @[1145px]:col-span-1 grid grid-rows-1 grid-flow-col auto-cols-fr gap-[10px]">
                 <MetricTab title="Maturity" largerGap={true}>
@@ -407,7 +408,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
               </div>
               <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] max-w-[356px]">
                 <MetricTab title="Links" largerGap={true}>
-                  <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px] w-[356px]">
+                  <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px]">
 
                         {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
                         {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
@@ -430,6 +431,47 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
     </div>
   )
 }
+
+
+const SimilarChains = ({ chainKey }: { chainKey: string }) => {
+  const { theme } = useTheme();
+  const { data: masterData } = useMaster();
+  const AllChainsByKeys = useMaster().AllChainsByKeys;
+
+  const randomChains = useMemo(() => {
+    // remove repeating chains and filter for "all_l2s" and chainKey and return 5 random chains
+    const chains = Object.keys(AllChainsByKeys).filter((chain) => chain !== "all_l2s" && chain !== chainKey);
+    return chains.sort(() => Math.random() - 0.5).slice(0, 5).map((chain) => AllChainsByKeys[chain]);
+  }, [AllChainsByKeys, chainKey as string]);
+
+  return (
+    <div className="flex items-center justify-between  w-full bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+      <div className="flex items-center gap-x-[10px]">
+        <GTPIcon icon="gtp-multiple-chains" size="md" className="text-color-ui-hover" />
+        <div className="heading-large-md">Similar Chains</div>
+        
+      </div>
+      {/* add for loop that loops 5 times  */}
+      <div className="flex items-center gap-x-[10px]">
+        {randomChains.map((randomChain, index) => {
+
+          return (
+            <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center bg-color-bg-medium rounded-full">
+                <GTPIcon icon={`gtp:${randomChain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
+                style={{
+                  color: randomChain.colors[theme ?? "dark"][0],
+                }}
+              />
+            </Link>
+          )
+        })}
+        
+      </div>
+      
+    </div>
+  )
+}
+
 
 
 const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: string, href: string, color?: string }) => {

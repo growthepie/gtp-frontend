@@ -55,15 +55,15 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     const handleCardClick = useCallback(() => {
         const fundamentalsByKey = getFundamentalsByKey;
         const metricItem = fundamentalsByKey[metricKey];
+        const chainUrlKey = chainData.urlKey;
         
         if (metricItem && metricItem.urlKey) {
             // Set localStorage values for chart controls
-            sessionStorage.setItem('fundamentalsScale', 'stacked');
+            // sessionStorage.setItem('fundamentalsScale', 'stacked');
             sessionStorage.setItem('fundamentalsChains', JSON.stringify([chainKey]));
-            
-            router.push(`/fundamentals/${metricItem.urlKey}`);
+            router.push(`/fundamentals/${metricItem.urlKey}/${chainUrlKey}`);
         }
-    }, [metricKey, chainKey, router]);
+    }, [metricKey, chainData, chainKey, router]);
 
     // Custom Tooltip Component - defined early to avoid hook order issues
     const CustomTooltip = useCallback(({ data, x, y, prefix, suffix }: { data: any[], x: number, y: number, prefix: string, suffix: string }) => {
@@ -90,11 +90,13 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
         return (
          <div
-            className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
+            className={`absolute pointer-events-none z-[999] bg-[#2A3433FE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
             style={{
               left: tooltipX,
               top: tooltipY,
+              boxShadow: "0px 0px 27px 0px var(--color-ui-shadow, #151A19)",
             }}
+            
           >
                 <div className="flex items-center gap-x-[5px] justify-between mb-2 pl-[21px] ">
                     <div className="heading-small-xs text-white">{dateStr}</div>

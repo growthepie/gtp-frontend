@@ -70,6 +70,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
         }
     }
     
+
     
 
     return (
@@ -103,6 +104,15 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
+                    const daysValue = data.streaks[key][keyValue].streak_length % 7 + (streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value  > 1 ? 1 : 0);
+
+                    const lastUpdated = streaksData.last_updated_utc;
+
+                    const lastUpdatedDate = new Date(lastUpdated + " UTC");
+                    const currentDate = new Date();
+                    const minutesPassed = Math.floor((currentDate.getTime() - lastUpdatedDate.getTime()) / (1000 * 60));
+
+                
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
                             <div className="text-xxs">
@@ -110,8 +120,8 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                 <span className="font-bold">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " weeks" : ""}</span>
 
                                 <span className="">{Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? " and " : ""}</span>
-                                <span className="numbers-xxs">{data.streaks[key][keyValue].streak_length % 7  || "0"}</span>
-                                <span className=" "><b>&nbsp;days&nbsp;</b>in last week</span>
+                                <span className="numbers-xxs">{daysValue  || "0"}</span>
+                                <span className=" "><b>&nbsp;day{data.streaks[key][keyValue].streak_length % 7  === 1 ? "" : "s"}&nbsp;</b>{data.streaks[key][keyValue].streak_length % 7  > 1 || Math.floor(data.streaks[key][keyValue].streak_length / 7)  > 0 ? "in last week" : ""}</span>
                             </div>
                            
                             <div className="flex items-center gap-x-[5px] h-[35px] pt-[2px] -mb-[2px]">
@@ -120,7 +130,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                                     <StreakIcon progress={i < data.streaks[key][keyValue].streak_length ? 100 : 0} />
                                 </div>
                             ))}
-                            <div className="w-[22.16px] h-[39px] z-20 cursor-pointer " 
+                            <div className="w-[22.16px] h-[39px] z-20 cursor-pointer pointer-events-auto" 
                              onMouseEnter={() => setFlameHovered(key)}
                              onMouseLeave={() => setFlameHovered(null)}
                             >
@@ -133,10 +143,22 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                             ))}
                             </div>
                             {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} hoverBar={flameHovered === key} />}
-                            <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs">
-                                <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
-                                {keyData[key].description}
-                            </div>
+                            <GTPTooltipNew placement="bottom-start" allowInteract={true} 
+                            trigger={
+                                <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs cursor-pointer">
+                                    <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
+                                    {keyData[key].description}
+                                </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                            >
+                                    <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
+                                        {`Yesterdays transactions were ${formatNumber(data.streaks[key][keyValue].yesterday_value)} and today's transactions were (as of ${minutesPassed } minutes ago) ${formatNumber(streaksData.data[chainKey][key][keyValue])}. `}
+                                        {`${master.chains[chainKey].name} needs ${formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue])} more transactions to continue the streak.`}
+                                    </TooltipBody>
+                                
+                            </GTPTooltipNew>
                         </div>
 
                     )
@@ -153,21 +175,24 @@ const StreakBar = ({yesterdayValue, todayValue, keyValue, hoverBar}: {yesterdayV
     const prefix = keyValue === "usd" ? "$" : keyValue === "eth" ? "Ξ" : "";
     return (
         <div className="flex flex-col w-full min-w-[200px]">
-            <div className="flex  pl-[2px] pr-[5px] py-[2px] justify-between w-full bg-color-bg-medium rounded-full">
-                <div className={`flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[2px] justify-start transition-all duration-300 ${hoverBar ? "bg-color-ui-hover" : "bg-color-ui-active"} rounded-full`}
-                 style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
-                >
-                    <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
-
-
+            <div className="flex relative py-[2px] pl-[2px] pr-[3.5px] justify-between w-full bg-color-bg-medium rounded-full">
+                <div className="w-full h-full flex items-center justify-between relative">
+                    <div className={`absolute left-[1px] -top-[1px] h-[17px] rounded-full  ${hoverBar ? "bg-color-ui-hover" : "bg-color-ui-active"} `} 
+                        style={{
+                            width: `${todayValue / (yesterdayValue) * 100}%`,
+                            maxWidth: "100%",
+                        }}>
+                        
+                    </div>
+                    <div className={`flex items-center gap-x-[5px] h-[15px] pl-[5px] pr-[5px] z-[5]  justify-start transition-all duration-300 rounded-full`}
+                        style={{width: `${todayValue / (yesterdayValue) * 100}%`}}
+                    >
+                        <div className="text-xxxs">{prefix}{formatNumber(todayValue)}</div>
+                    </div>
+                    <div className="flex items-center gap-x-[5px] h-[15px] pr-[5px] z-[5]">
+                        <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
+                    </div>        
                 </div>
-                <div className="flex items-center gap-x-[5px] h-[15px]">
-                    <div className="text-xxxs">{prefix}{formatNumber(yesterdayValue)}</div>
-
-
-                </div>
-            
-
             </div>
             <div className="flex items-center justify-between gap-x-[5px] px-[8px] pt-[2px]">
                 <div className="text-xxxs ">today</div>
@@ -177,7 +202,7 @@ const StreakBar = ({yesterdayValue, todayValue, keyValue, hoverBar}: {yesterdayV
     )
 }
 
-export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, master: MasterResponse}) => {
+export const LifetimeAchievments = ({data, master, chainKey}: {data: AchievmentsData, master: MasterResponse, chainKey: string}) => {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -198,7 +223,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
         const centerY = chartSize / 2;
         
         // Calculate circle position in pixels (center of the circle on the arc)
-        const circleRadius = 4;
+        const circleRadius = 3;
         const circleCenterX = centerX + radiusPixels * Math.cos(angleRad);
         const circleCenterY = centerY - radiusPixels * Math.sin(angleRad); // Negative because Y increases downward
         
@@ -243,7 +268,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     labelLine: {
                         show: false,
                     },
-                    radius: ['85%', '90%'],
+                    radius: ['90%', '95%'],
                     center: ['50%', '50%'],
                     showEmptyCircle: true,
                     emptyCircleStyle: {
@@ -324,7 +349,7 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                     labelLine: {
                         show: false,
                     },
-                    radius: ['85%', '90%'],
+                    radius: ['90%', '95%'],
                     center: ['50%', '50%'],
                     emphasis: {
                         disabled: false,
@@ -373,42 +398,64 @@ export const LifetimeAchievments = ({data, master}: {data: AchievmentsData, mast
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
+                    const prefix = master.metrics[key].units[valueType].prefix;
+                    const suffix = master.metrics[key].units[valueType].suffix;
 
                     return (
                     <div className="flex flex-col items-center overflow-visible" key={key + "lifetime"}>
-                        <div className="flex w-full max-w-[100px] h-[84px] items-center justify-center relative overflow-visible">
+                        <div className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible ">
                             <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                 <ReactECharts 
-                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 84)} 
-                                    style={{ width: '84px', height: '84px', overflow: 'visible' }}
+                                    option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 80)} 
+                                    style={{ width: '80px', height: '80px', overflow: 'visible' }}
                                 /> 
                                 
                             </div>
                             <div className="absolute w-full h-full flex items-center justify-center bottom-[0.5px] right-[0.5px] z-10">
                                 <ReactECharts 
-                                    option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 64)} 
-                                    style={{ width: '64px', height: '64px', }}
+                                    option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 68)} 
+                                    style={{ width: '68px', height: '68px', }}
                                 />
                             </div>
-                            <div className="absolute top-[2px] left-[4px] w-[34px] h-[34px] flex flex-col -gap-y-[5px] justify-center items-center bg-medium-background/80 rounded-full z-30">
-                                <div className="numbers-xxs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
-                                <div className="text-xxxs text-color-ui-hover">Level</div>
+                            <div className="absolute top-[2px] -left-[6px] w-[34px] h-[34px] flex flex-col -gap-y-[2px] justify-center items-center bg-medium-background/90 rounded-full z-30">
+                                <div className="text-xxxs ">Level&nbsp;</div>
+                                <div className="numbers-xs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
+                                
                             </div>
                             <div className="absolute flex flex-col  gap-y-[2px] justify-center items-center right-0 left-0 top-[37%]">
-                                <div className="numbers-sm">{formatNumber(data.lifetime[key][valueType].total_value)}</div>
+                                <div className="numbers-sm">{prefix}{formatNumber(data.lifetime[key][valueType].total_value)}{suffix}</div>
                                 <div className="flex gap-x-[1px] h-fit items-center numbers-xxxs">
                                     <div className="pt-[1px]">{Math.round(data.lifetime[key][valueType].percent_to_next_level)}%</div> 
                                     <div className="text-xxxs">to</div> 
                                     <div className="flex items-center justify-center w-[16px] h-[16px] rounded-full bg-color-bg-medium numbers-xxs ">{data.lifetime[key][valueType].level + 1}</div></div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex w-full gap-x-[2px] items-center justify-center">
-                            <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
-                             className="w-[15px] h-[15px]"
-                             containerClassName="flex items-center justify-center w-[24px] h-[24px]"
-                            />
-                            <div className="text-xxxs whitespace-nowrap">{master.metrics[key].name}</div>                        
-                        </div>
+                      
+
+                            <GTPTooltipNew
+                                placement="top-end"
+                                size="md"
+                                allowInteract={true}
+                                trigger={
+                                    <div className="flex w-full gap-x-[2px] items-center justify-center ">
+                                        <GTPIcon icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}` as GTPIconName} size="sm"
+                                        className="w-[15px] h-[15px]"
+                                        containerClassName="flex items-center justify-center w-[24px] h-[24px]"
+                                        />
+                                        <div className="text-xxxs whitespace-nowrap">{master.metrics[key].name}</div>    
+                                    </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                                >
+                                <div>
+                                    <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                                        {`Since ${master.chains[chainKey].name}'s genesis, a total of ${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value)}${suffix || ""} was achieved in ${master.metrics[key].name}.`}
+                                    </TooltipBody>
+                                </div>
+                            </GTPTooltipNew>                    
+                        
                         
                          
                      </div>
