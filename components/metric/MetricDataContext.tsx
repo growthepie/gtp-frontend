@@ -234,7 +234,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
   const log_default = metricsDict[metric_id]?.log_default || false;
 
-  if (!data) return null;
+  // if (!data) return <div>Loading...</div>;
 
   return (
     <MetricDataContext.Provider

@@ -44,15 +44,15 @@ const Fundamentals = ({ params }) => {
 
   return (
     <>
-      <ShowLoading
+      {/* <ShowLoading
         dataLoading={[masterLoading, metricLoading]}
         dataValidating={[masterValidating]}
-      />
-      {master && metricData ? (
+      /> */}
+      {/* {master && metricData ? ( */}
         <FundamentalsContent metric={metric} type="fundamentals" />
-      ) : (
-        <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
-      )}
+      {/* ) : ( */}
+        {/* <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" /> */}
+      {/* )} */}
     </>
   );
 };
