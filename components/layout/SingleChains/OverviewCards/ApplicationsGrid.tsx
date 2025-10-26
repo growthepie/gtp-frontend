@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
+import type { Variants, Transition } from 'framer-motion';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark, { ChartWatermarkWithMetricName } from '../../ChartWatermark';
 import { isMobile } from 'react-device-detect';
@@ -92,7 +93,20 @@ type ViewMode = 'main' | 'sub';
 // Animation Variants (NEW)
 // ============================================================================
 
-const categoryVariants = {
+const SPRING_TRANSITION: Transition = {
+  type: 'spring',
+  stiffness: 200,
+  damping: 25,
+  mass: 1,
+};
+
+const HOVER_SPRING: Transition = {
+  type: 'spring',
+  stiffness: 400,
+  damping: 17,
+};
+
+const categoryVariants: Variants = {
   initial: {
     opacity: 0,
     scale: 0.8,
@@ -102,12 +116,7 @@ const categoryVariants = {
     opacity: 1,
     scale: 1,
     borderColor: "rgb(var(--bg-medium))",
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 25,
-      mass: 1,
-    }
+    transition: SPRING_TRANSITION,
   },
   exit: {
     opacity: 0,
@@ -116,7 +125,7 @@ const categoryVariants = {
   }
 };
 
-const appTileVariants = {
+const appTileVariants: Variants = {
   initial: { opacity: 0, scale: 0 },
   animate: (i: number) => ({
     opacity: 1,
@@ -124,14 +133,12 @@ const appTileVariants = {
     transition: {
       delay: i * 0.02,
       duration: 0.3,
-      stiffness: 300,
-      damping: 20,
     }
   }),
   exit: { opacity: 0, scale: 0 },
   hover: {
     scale: 1.1,
-    transition: { type: "spring", stiffness: 400, damping: 17 }
+    transition: HOVER_SPRING,
   },
   hoverMain: {
     borderColor: "rgb(var(--ui-hover))",
@@ -1108,11 +1115,14 @@ const CategorySection = ({
       variants={categoryVariants}
       initial="initial"
       animate={{
-        ...categoryVariants.animate,
+        opacity: 1,
+        scale: 1,
+        borderColor: "rgb(var(--bg-medium))",
         left: node.x,
         top: node.y,
         width: node.width,
         height: node.height,
+        transition: SPRING_TRANSITION,
       }}
       exit="exit"
       whileHover={viewMode === 'main' ? "hoverMain" : undefined}

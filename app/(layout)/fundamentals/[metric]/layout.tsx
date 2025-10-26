@@ -68,9 +68,10 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: { metric: string };
+  params: Promise<{ metric: string }>;
 }) {
-  const pageData = metricItems.find((item) => item.urlKey === params.metric)
+  const { metric } = await params;
+  const pageData = metricItems.find((item) => item.urlKey === metric)
     ?.page ?? {
     title: "",
     description: "",
@@ -87,7 +88,7 @@ export default async function Layout({
             icon={pageData.icon as GTPIconName}
             title={pageData.title || "No Title"}
             button={
-              params.metric === "transaction-costs" && (
+              metric === "transaction-costs" && (
                 <TitleButtonLink
                   label="Detailed Fees Overview"
                   icon="detailed-fees"
