@@ -100,6 +100,7 @@ const raleway = Raleway({
   variable: "--font-raleway",
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const inter = Inter({
@@ -107,6 +108,7 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const firaMono = Fira_Mono({
@@ -115,6 +117,7 @@ const firaMono = Fira_Mono({
   weight: ["400", "500", "700"],
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const firaSans = Fira_Sans({
@@ -122,6 +125,7 @@ const firaSans = Fira_Sans({
   variable: "--font-fira-sans",
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
+  preload: true,
 });
 
 const sourceCodePro = Source_Code_Pro({
@@ -129,6 +133,7 @@ const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+  preload: true,
 });
 
 export default function RootLayout({
