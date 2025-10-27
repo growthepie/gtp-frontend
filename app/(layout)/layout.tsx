@@ -4,7 +4,7 @@ import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono, Source_Code_Pro } from "next/font/google";
 import Header from "@/components/layout/Header";
-import SidebarContainer from "@/components/layout/SidebarContainer";
+// import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
 import Share from "@/components/Share";
@@ -14,6 +14,8 @@ import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
+import dynamic from "next/dynamic";
+const SidebarContainer = dynamic(() => import("@/components/layout/SidebarContainer"), { ssr: true });
 
 import { generateJsonLd } from "@/utils/json-ld";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});

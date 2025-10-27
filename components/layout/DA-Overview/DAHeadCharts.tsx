@@ -19,7 +19,7 @@ import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { AllDAOverview } from "@/types/api/DAOverviewResponse";
 import { useUIContext } from "@/contexts/UIContext";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import TopDAConsumers from "./TopDAConsumers";
 import "@/app/highcharts.axis.css";
 import { Any } from "react-spring";
@@ -300,13 +300,13 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
     
           // Function to format large numbers with at least 2 decimals
           const formatLargeNumber = (num) => {
-            let formatted = d3.format(".2s")(num).replace(/G/, "B");
+            let formatted = d3Format(".2s")(num).replace(/G/, "B");
             if (/(\.\dK|\.\dM|\.\dB)$/.test(formatted)) {
-              formatted = d3.format(".3s")(num).replace(/G/, "B");
+              formatted = d3Format(".3s")(num).replace(/G/, "B");
             } else if (/(\.\d\dK|\.\d\dM|\.\d\dB)$/.test(formatted)) {
-              formatted = d3.format(".4s")(num).replace(/G/, "B");
+              formatted = d3Format(".4s")(num).replace(/G/, "B");
             } else {
-              formatted = d3.format(".2s")(num).replace(/G/, "B");
+              formatted = d3Format(".2s")(num).replace(/G/, "B");
             }
             return formatted;
           };

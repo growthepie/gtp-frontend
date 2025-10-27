@@ -25,8 +25,10 @@
     "@vercel/analytics": "^1.1.1",
     "concurrently": "^8.2.1",
     "cookies-next": "^2.1.1",
+    "critters": "^0.0.25",
     "crossoriginworker": "^1.1.0",
     "crypto-browserify": "^3.12.1",
+    "d3": "^7.9.0",
     "d3-hierarchy": "^3.1.2",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
@@ -49,7 +51,6 @@
     "pg": "^8.11.3",
     "react": "19.2.0",
     "react-custom-scrollbars-2": "^4.5.0",
-    "react-d3-library": "^1.1.8",
     "react-device-detect": "^2.2.3",
     "react-dom": "19.2.0",
     "react-json-view": "^1.21.3",
@@ -64,7 +65,8 @@
     "swiper": "^11.2.10",
     "swr": "^2.1.1",
     "tinycolor2": "^1.6.0",
-    "usehooks-ts": "^3.1.0"
+    "usehooks-ts": "^3.1.0",
+    "zustand": "^5.0.8"
   },
   "engines": {
     "node": ">=22.0.0"

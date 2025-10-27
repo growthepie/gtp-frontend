@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import {
   navigationItems,
   navigationCategories,
@@ -293,13 +293,13 @@ export default function EconHeadCharts({
 
       // Function to format large numbers with at least 2 decimals
       const formatLargeNumber = (num) => {
-        let formatted = d3.format(".2s")(num).replace(/G/, "B");
+        let formatted = d3Format(".2s")(num).replace(/G/, "B");
         if (/(\.\dK|\.\dM|\.\dB)$/.test(formatted)) {
-          formatted = d3.format(".3s")(num).replace(/G/, "B");
+          formatted = d3Format(".3s")(num).replace(/G/, "B");
         } else if (/(\.\d\dK|\.\d\dM|\.\d\dB)$/.test(formatted)) {
-          formatted = d3.format(".4s")(num).replace(/G/, "B");
+          formatted = d3Format(".4s")(num).replace(/G/, "B");
         } else {
-          formatted = d3.format(".2s")(num).replace(/G/, "B");
+          formatted = d3Format(".2s")(num).replace(/G/, "B");
         }
         return formatted;
       };

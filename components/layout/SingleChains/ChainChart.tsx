@@ -24,7 +24,7 @@ import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import Link from "next/link";
 import {
   Get_AllChainsNavigationItems,
@@ -376,11 +376,11 @@ export default function ChainChart({
     
       let val = parseFloat(value as string);
 
-      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
         if (selectedScale === "percentage") {
-          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
@@ -388,18 +388,18 @@ export default function ChainChart({
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".3s")(val).replace(/G/, "B") + " " + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".4s")(val).replace(/G/, "B") + " " + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".2s")(val).replace(/G/, "B") + " " + suffix;
           } else {
             if(val < 1 && val > -1){
               number = prefix + val.toFixed(2) + " " + suffix;
             }else{
-              number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+              number = prefix + d3Format(".2s")(val).replace(/G/, "B") + " " + suffix;
             }
 
           }
