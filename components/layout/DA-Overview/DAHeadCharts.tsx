@@ -52,7 +52,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
 
     const [chartWidth, setChartWidth] = useState<number | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-    const { isSidebarOpen, isSafariBrowser } = useUIContext();
+    const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+    const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
     const lastPointLines = useMemo<{
         [key: string]: Highcharts.SVGElement[];

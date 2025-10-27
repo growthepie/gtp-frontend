@@ -65,7 +65,7 @@ export default function ChainBreakdown({
   const [sortOrder, setSortOrder] = useState(true);
   const [isBouncing, setIsBouncing] = useState(false);
   const [bounceChain, setBounceChain] = useState("");
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
 

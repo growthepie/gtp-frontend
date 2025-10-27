@@ -19,7 +19,8 @@ export default function SwiperContainer({
   size = "landing",
   }: SwiperContainerProps) {
 
-  const { isSidebarOpen, isMobile } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isMobile = useUIContext((state) => state.isMobile);
 
 
   const sizeClassMap = {

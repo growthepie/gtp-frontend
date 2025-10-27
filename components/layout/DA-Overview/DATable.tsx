@@ -43,7 +43,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 
   const { data: chart_data, error: chart_error, isLoading: chart_loading, isValidating: chart_validating } = useSWR<DATimeseriesResponse>(DATimeseriesURL);
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const { AllDALayersByKeys, AllChainsByKeys, data: master } = useMaster();
 
   const [selectedCategory, setSelectedCategory] = useState("size");

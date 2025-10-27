@@ -27,7 +27,9 @@ import { IS_PRODUCTION } from '@/lib/helpers';
 export default function GlobalFloatingBar() {
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
-  const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const toggleSidebar = useUIContext((state) => state.toggleSidebar);
 
   // State for controlling popover visibility
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
@@ -698,7 +700,7 @@ export default function GlobalFloatingBar() {
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -885,7 +887,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
 }
 
 const GTPLogoOld = () => {
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const toast = useToast(); // Keep toast for fetch error
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);

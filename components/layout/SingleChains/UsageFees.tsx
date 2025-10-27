@@ -14,7 +14,7 @@ export default function UsageFees({
   const [hoverBarIndex, setHoverBarIndex] = useState<Number | null>(null);
   const [selectedBarIndex, setSelectedBarIndex] = useState(23);
   const isMobile = useMediaQuery("(max-width: 1024px)");
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const optIndex = useMemo(() => {
     let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
     let retIndex = 23 - Number(pickIndex);

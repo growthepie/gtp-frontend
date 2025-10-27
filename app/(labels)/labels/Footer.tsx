@@ -16,7 +16,7 @@ export default function Footer({
   downloadCSV: () => void;
   downloadJSON: () => void;
 }) {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   return (
     <div className="fixed z-50 flex flex-col justify-end top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
       <div className="relative">

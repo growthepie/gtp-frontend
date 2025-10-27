@@ -90,7 +90,7 @@ const metricKeysLabels = {
 
 export default function LabelsPage() {
   const { AllChainsByKeys, formatMetric } = useMaster();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const showGwei = true;
   const showCents = true;
 

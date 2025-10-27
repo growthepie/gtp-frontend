@@ -61,7 +61,7 @@ export default function Donations() {
     refreshInterval: 1000 * 60 * 5,
   });
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const { AllChainsByKeys } = useMaster();
 
   const searchParams = useSearchParams();

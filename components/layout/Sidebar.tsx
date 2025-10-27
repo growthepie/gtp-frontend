@@ -29,8 +29,9 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
-  const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
-    useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isMobileSidebarOpen = useUIContext((state) => state.isMobileSidebarOpen);
+  const toggleMobileSidebar = useUIContext((state) => state.toggleMobileSidebar);
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
 

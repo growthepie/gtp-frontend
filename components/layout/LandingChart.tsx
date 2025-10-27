@@ -308,7 +308,9 @@ export default function LandingChart({
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
-  const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
+  const embedData = useUIContext((state) => state.embedData);
 
   const  textToggles = {
     "toggle": {

@@ -25,7 +25,7 @@ import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { use, useCallback, useMemo } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { useUIContext } from "@/contexts/UIContext";
+import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
 import { format as d3Format } from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -90,8 +90,9 @@ export default function FeesChart({
   master,
 }: FeesChartProps) {
   const { theme } = useTheme();
+  useHighchartsWrappers();
   const { AllChainsByKeys } = useMaster();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   // const seriesKey = "txcosts_avg";
   const selectedScale: string = "absolute";
 

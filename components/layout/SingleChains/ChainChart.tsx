@@ -119,7 +119,7 @@ export default function ChainChart({
   const [zoomMin, setZoomMin] = useState<number | null>(null);
   const [zoomMax, setZoomMax] = useState<number | null>(null);
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
 

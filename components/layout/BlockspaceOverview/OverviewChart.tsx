@@ -100,7 +100,7 @@ export default function OverviewChart({
   );
   const reversePerformer = false;
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const { theme } = useTheme();
   const types =
     selectedChain === null

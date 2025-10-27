@@ -231,7 +231,10 @@ function MetricChart({
   };
   
   const { theme } = useTheme();
-  const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isMobile = useUIContext((state) => state.isMobile);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
+  const embedData = useUIContext((state) => state.embedData);
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;

@@ -45,7 +45,7 @@ export default function EthAgg() {
 
   const tab = params.tab as string;
 
-  const { setFocusSwitchEnabled } = useUIContext();
+  const setFocusSwitchEnabled = useUIContext((state) => state.setFocusSwitchEnabled);
   const { showBirthdayAnimation } = useBirthdayAnimation();
 
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);

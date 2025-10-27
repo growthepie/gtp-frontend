@@ -77,7 +77,7 @@ function BreakdownCharts({
   const profitChartRef = useRef<HTMLDivElement>(null);
   const reversePerformer = false;
   const selectedScale: string = "absolute";
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const [isVisible, setIsVisible] = useState(isOpen);
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";

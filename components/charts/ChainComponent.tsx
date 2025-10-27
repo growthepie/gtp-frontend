@@ -70,7 +70,8 @@ const ChainComponent = function ChainComponent({
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
   const { AllChainsByKeys } = useMaster();
   const { width, height } = useWindowSize();
   const { theme } = useTheme();

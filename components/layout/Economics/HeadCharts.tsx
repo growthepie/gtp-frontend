@@ -77,7 +77,7 @@ export default function EconHeadCharts({
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const selectedScale: string = "absolute";
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -85,7 +85,8 @@ export default function EconHeadCharts({
     return "Ξ";
   }, [showUsd]);
 
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);

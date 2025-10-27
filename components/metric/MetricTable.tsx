@@ -165,7 +165,8 @@ const MetricTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id, metric_type]);
 
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
 
   const changesKey = useMemo(() => {
     if (timeIntervalKey === "monthly") {

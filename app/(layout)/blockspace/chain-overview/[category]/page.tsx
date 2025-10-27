@@ -55,7 +55,7 @@ const ChainOverview = (props: { params: Promise<any> }) => {
     "max",
   );
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",

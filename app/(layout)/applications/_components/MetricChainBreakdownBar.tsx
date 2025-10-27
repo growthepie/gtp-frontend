@@ -379,7 +379,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   const { AllChainsByKeys } = useMaster();
   const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);

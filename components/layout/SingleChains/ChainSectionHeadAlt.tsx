@@ -29,7 +29,7 @@ const ChainSectionHead = ({
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
   );
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   // can't interact with content section until dropdown is fully open
   const [isInteractable, setIsInteractable] = useState(false);
 

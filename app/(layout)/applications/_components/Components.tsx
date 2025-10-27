@@ -256,7 +256,7 @@ export type MultipleSelectTopRowChildProps = {
   canSelectNone?: boolean;
 };
 export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false }: MultipleSelectTopRowChildProps) => {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 

@@ -37,7 +37,7 @@ export default function EcosystemDropdown({}: // optOpen,
   // selectedStack: string;
   // setSelectedStack: (show: string) => void;
 }) {
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const [optOpen, setOptOpen] = useState(false);
   const [selectedStack, setSelectedStack] = useState<string | null>(null);

@@ -96,7 +96,7 @@ export const SidebarMenuGroup = memo(({
   sidebarOpen,
   disableAnimation = false,
 }: SidebarProps) => {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
   const ChainGroups = useMemo(() => {

@@ -575,7 +575,7 @@ const ChainRankCell = memo(function ChainRankCell({
   const { data: master } = useMaster();
 
   const router = useRouter();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
     "fundamentalsChains",

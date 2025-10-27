@@ -81,7 +81,7 @@ export default function CategoryMetrics({
     height: any;
   };
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [selectedMode, setSelectedMode] = useState("txcount_");
   const [selectedCategory, setSelectedCategory] = useState(
     queryCategory ?? "defi",

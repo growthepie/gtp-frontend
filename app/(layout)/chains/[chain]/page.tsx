@@ -66,7 +66,7 @@ const Chain = (props: { params: Promise<any> }) => {
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const isMobile = useMediaQuery("(max-width: 1024px)");
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const rankChains = {
     daa: {

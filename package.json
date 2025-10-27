@@ -39,6 +39,7 @@
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.1",
     "highcharts-rounded-corners": "https://github.com/highcharts/rounded-corners/",
+    "immer": "^10.2.0",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "million": "^2.6.4",

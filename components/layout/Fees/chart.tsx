@@ -72,7 +72,7 @@ export default function FeesChart({
   const { AllChainsByKeys } = useMaster();
   const chartRef = useRef<Highcharts.Chart | null | undefined>(undefined);
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const chartColor =
     series[0]?.name &&
     AllChainsByKeys[series[0].name]?.colors[theme ?? "dark"][0];

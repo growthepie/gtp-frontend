@@ -12,7 +12,7 @@ import { useMaster } from "@/contexts/MasterContext";
 
 export default function Search() {
   const { AllChainsByKeys } = useMaster();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 

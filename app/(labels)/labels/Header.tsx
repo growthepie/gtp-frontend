@@ -20,7 +20,7 @@ export default function Header({
   downloadCSV: () => void;
   downloadJSON: () => void;
 }) {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
       <div className="absolute h-[90px] md:h-[170px] w-full overflow-clip">

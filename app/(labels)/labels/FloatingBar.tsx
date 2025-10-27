@@ -22,7 +22,7 @@ export default function FloatingBar({
   downloadCSV: () => void;
   downloadJSON: () => void;
 }) {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
 
   const [showDeploymentTx, setShowDeploymentTx] = useSessionStorage(
     "labels::showDeploymentTx",
