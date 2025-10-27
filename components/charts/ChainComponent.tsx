@@ -75,7 +75,8 @@ const ChainComponent = function ChainComponent({
   const { AllChainsByKeys } = useMaster();
   const { width, height } = useWindowSize();
   const { theme } = useTheme();
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  // const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useUIContext((state) => state.isMobile);
 
   const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<echarts.ECharts[]>([]);

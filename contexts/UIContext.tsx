@@ -51,8 +51,16 @@ export type UIState = {
   setFocusSwitchEnabled: (value: Updater<boolean>) => void;
 };
 
+const getInitialSidebarOpen = () => {
+  if (typeof window === "undefined") {
+    // server render: rely on CSS to collapse for smaller viewports
+    return true;
+  }
+  return window.innerWidth >= 1280;
+};
+
 export const useUIStore = create<UIState>((set) => ({
-  isSidebarOpen: false,
+  isSidebarOpen: getInitialSidebarOpen(),
   setIsSidebarOpen: (value) =>
     set((state) => ({
       isSidebarOpen: resolveState(value, state.isSidebarOpen),
