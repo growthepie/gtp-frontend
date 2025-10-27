@@ -77,7 +77,7 @@ export default function EmailAuthInline({ onSubmit }: EmailAuthInlineProps) {
           {success ? (
             <div className="flex-1 min-w-0 flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-sm text-color-text-primary">Check your email!</span>
+                <span className="text-sm text-color-text-primary">Check your email! (check your spam/junk folder if you don't see it in your inbox)</span>
                 <span className="text-xs text-color-text-secondary">Magic link sent to {email}</span>
               </div>
               <button

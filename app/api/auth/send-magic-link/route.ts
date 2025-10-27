@@ -188,19 +188,21 @@ export async function POST(request: NextRequest) {
 
     // Send Discord notification for magic link generation
     const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
-    // if (discordWebhook) {
-    //   try {
-    //     fetch(discordWebhook, {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({
-    //         content: `🔗 **Magic link sent** → \`${email}\` (${process.env.NEXT_PUBLIC_VERCEL_ENV || 'local'})`
-    //       })
-    //     }).catch(e => console.error('Discord webhook failed:', e));
-    //   } catch (e) {
-    //     console.error("Failed to send Discord notification:", e);
-    //   }
-    // }
+    if (discordWebhook) {
+      try {
+        fetch(discordWebhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: `**Magic link sent for ${friendlyDomain}** → \`${email}\``,
+            // supress notifications
+            flags: 4096
+          })
+        }).catch(e => console.error('Discord webhook failed:', e));
+      } catch (e) {
+        console.error("Failed to send Discord notification:", e);
+      }
+    }
 
     return NextResponse.json({
       success: true,
