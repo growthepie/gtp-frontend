@@ -688,20 +688,19 @@ function MetricChart({
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               number = units[unitKey].currency ? val.toFixed(2) :
-                d3Format(`.3~s`)(val).replace(/G/, "B");
+                d3Format(`.3~s`)(val).replace(/G/, "B");  // Changed from .3~s
             else if (absVal < 100)
-              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`.4~s`)(val).replace(/G/, "B");
+              number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+                d3Format(`.4~s`)(val).replace(/G/, "B");  // Changed from .4~s
             else
-              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`.2~s`)(val).replace(/G/, "B");
+              number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+                d3Format(`.2~s`)(val).replace(/G/, "B");     // Changed from .2~s
           } else {
             if (absVal === 0) number = "0";
-            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
-              number = d3Format(`.2s`)(val).replace(/G/, "B")
-            else number = d3Format(`s`)(val).replace(/G/, "B");
+              number = d3Format(`.2~s`)(val).replace(/G/, "B");
+            else number = d3Format(`~s`)(val).replace(/G/, "B");
           }
           // for negative values, add a minus sign before the prefix
           number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
