@@ -19,7 +19,7 @@ import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -440,26 +440,26 @@ export default function ComparisonChart({
         }
       }
 
-      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
         if (selectedScale === "percentage") {
-          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
           if (showGwei && showUsd) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".4s")(val).replace(/G/, "B") + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            number = prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
           }
         }
       }
