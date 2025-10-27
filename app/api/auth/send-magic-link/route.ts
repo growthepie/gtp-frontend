@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(resendApiKey);
 
     const mailOptions = {
-      from: 'growthepie.com <noreply@auth.growthepie.com>',
+      from: 'growthepie.com <login@auth.growthepie.com>',
       to: email,
       subject: `Your ${friendlyDomain} Access Link`,
       html: `
