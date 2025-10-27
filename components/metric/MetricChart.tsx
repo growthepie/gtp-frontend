@@ -685,13 +685,13 @@ function MetricChart({
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               number = units[unitKey].currency ? val.toFixed(2) :
-                d3Format(`~.3s`)(val).replace(/G/, "B");
+                d3Format(`.3~s`)(val).replace(/G/, "B");
             else if (absVal < 100)
               number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`~.4s`)(val).replace(/G/, "B")
+                d3Format(`.4~s`)(val).replace(/G/, "B");
             else
               number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`~.2s`)(val).replace(/G/, "B");
+                d3Format(`.2~s`)(val).replace(/G/, "B");
           } else {
             if (absVal === 0) number = "0";
             else if (absVal < 0.1) number = val.toFixed(3);
