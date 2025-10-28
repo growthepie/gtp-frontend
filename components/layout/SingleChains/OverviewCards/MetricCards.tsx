@@ -132,7 +132,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
             className="group relative rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover xs:p-[10px] p-[15px] w-full flex justify-between h-2xl transition-colors duration-200 cursor-pointer"
             onClick={handleCardClick}
         >
-            <div className="flex items-center gap-x-[10px] relative w-[110px] md:min-w-[175px]">
+            <div className="flex items-center gap-x-[10px] relative w-[80px] md:min-w-[175px]">
                 <div className="!size-[24px] xs:!size-[28px] absolute xs:top-auto xs:left-auto -left-[22px] -top-[22px] xs:relative flex items-center justify-center">
                     <GTPTooltipNew
                             placement="top-end"
@@ -154,7 +154,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 </div>
                 <div className="heading-large-xxs xs:heading-large-xs ">{metricData.name}</div>
             </div>
-            <div className="flex-1 flex justify-center items-center max-w-[160px] overflow-visible">
+            <div className="flex-1 flex justify-center items-center max-w-[120px] sm:max-w-[160px] overflow-visible">
                 <MetricChart 
                     metricKey={metricKey} 
                     metricData={metricData} 
@@ -170,7 +170,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                     suffix={suffix}
                 />
             </div>
-            <div className="flex flex-col gap-y-[2px] justify-center items-end md:min-w-[120px] pl-[5px] group-hover:pr-[20px] transition-all duration-200">
+            <div className="flex flex-col gap-y-[2px] justify-center items-end min-w-[90px] [md:min-w-[120px] pl-[5px] group-hover:pr-[20px] transition-all duration-200">
                 <div className=" numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color: chainData.colors.dark[0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[valueIndex], 2)} {suffix}
                 </div>
