@@ -241,6 +241,11 @@ module.exports = {
     function({ addUtilities, theme }) {
       // Define base styles for each category
       const baseStyles = {
+        'heading': {
+          fontFamily: theme("fontFamily.raleway"),
+          fontWeight: '600', // bold (adjusted from 700)
+          lineHeight: '120%',
+        },
         'heading-large': {
           fontFamily: theme("fontFamily.raleway"),
           fontWeight: '600', // bold (adjusted from 700)
@@ -276,6 +281,20 @@ module.exports = {
 
       // Define size variants for each category
       const sizeVariants = {
+        'heading': {
+          'xxxs': ["10px", "15px"],
+          'xxs': ["12px", "17px"],
+          'xs': ["14px", "17px"],
+          'sm': ["16px", "19px"],
+          'md': ["20px", "24px"],
+          'lg': ["24px", "28px"],
+          'xl': ["36px", "43px"],
+          '2xl': ["48px", "48px"],
+          '3xl': ["60px", "60px"],
+          '4xl': ["72px", "72px"],
+          '5xl': ["80px", "80px"],
+          '6xl': ["92px", "92px"],
+        },
         'heading-large': {
           'xxxs': ["10px", "15px"],
           'xxs': ["12px", "17px"],
@@ -337,10 +356,10 @@ module.exports = {
         'text': {
           'xxxs': ["9px", "9px"],
           'xxs': ["10px", "15px"],
-          'xs': ["12px", "18px"],
+          'xs': ["12px", "16px"],  // Updated: lineHeight 18px → 16px
           'sm': ["14px", "16px"],
-          'md': ["16px", "24px"],
-          'lg': ["18px", "27px"],
+          'md': ["15px", "24px"],  // Updated: fontSize 16px → 15px
+          'lg': ["18px", "28px"],  // Updated: lineHeight 27px → 28px
           'xl': ["20px", "30px"],
           '2xl': ["22px", "36px"],
           '3xl': ["30px", "36px"],
