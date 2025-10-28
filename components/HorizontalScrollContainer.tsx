@@ -15,6 +15,7 @@ type HorizontalScrollContainerProps = {
   className?: string;
   children?: React.ReactNode;
   includeMargin?: boolean;
+  hideScrollbar?: boolean; // when true, suppress the custom scrollbar UI
   paddingRight?: number;
   paddingLeft?: number;
   paddingTop?: number;
@@ -31,6 +32,7 @@ export default function HorizontalScrollContainer({
   children,
   className,
   includeMargin = true,
+  hideScrollbar = false,
   paddingRight = 0,
   paddingLeft = 0,
   paddingTop = 0,
@@ -43,6 +45,7 @@ export default function HorizontalScrollContainer({
   scrollToAlign = "center",
 }: HorizontalScrollContainerProps) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
+  const [isScrollable, setIsScrollable] = useState(false);
   const [contentScrollAreaRef, { width: contentScrollAreaWidth }] =
     useElementSizeObserver<HTMLDivElement>();
   const [scrollerRef, { width: scrollerWidth }] =
@@ -65,6 +68,8 @@ export default function HorizontalScrollContainer({
         ? (contentArea.scrollLeft / scrollableWidth) * 100
         : 0;
       setCurrentScrollPercentage(scrollPercentage);
+      const SCROLL_TOLERANCE_PX = 2;
+      setIsScrollable(scrollableWidth > SCROLL_TOLERANCE_PX);
     }
   }, [contentScrollAreaRef]);
 
@@ -426,11 +431,8 @@ export default function HorizontalScrollContainer({
     return `${currentScrollPercentage}%`;
   }, [currentScrollPercentage, scrollerWidth]);
 
-  // Determine whether to show the custom scrollbar
-  const showScroller = useMemo(() => {
-    const TOLERANCE_PX = 2; // ignore tiny deltas
-    return contentWidth - contentScrollAreaWidth > TOLERANCE_PX;
-  }, [contentWidth, contentScrollAreaWidth]);
+  // Determine whether to show the custom scrollbar using real DOM scrollability
+  const showScroller = isScrollable;
 
   // Manage gradient masks based on scroll position
   const [maskGradient, setMaskGradient] = useState<string>("");
@@ -470,6 +472,11 @@ export default function HorizontalScrollContainer({
       setMaskGradient("");
     }
   }, [showScroller, showLeftGradient, showRightGradient, leftMaskWidth]);
+
+  // Re-evaluate scrollability when measured sizes change on first load or resize
+  useEffect(() => {
+    updateScrollableAreaScroll();
+  }, [contentWidth, contentScrollAreaWidth, updateScrollableAreaScroll]);
 
   return (
     <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
@@ -521,7 +528,7 @@ export default function HorizontalScrollContainer({
       </div>
 
       {/* Scrollbar */}
-      {showScroller && (
+      {showScroller && !hideScrollbar && (
         <div className="pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center">
           <div
             className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full relative"

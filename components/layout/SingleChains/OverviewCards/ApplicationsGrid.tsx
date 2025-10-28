@@ -868,7 +868,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     <MotionConfig reducedMotion="user">
       <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
         {/* Header with category filters */}
-        <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
+        <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} hideScrollbar={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
           <div className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon

@@ -9,7 +9,7 @@ export function SectionBar({ children }: { children: React.ReactNode }) {
     const isMobile = useMediaQuery("(max-width: 1440px)");
     
     return(
-        <HorizontalScrollContainer includeMargin={false} className="w-full h-[46px] relative items-center overflow-y-hidden !px-0">
+        <HorizontalScrollContainer hideScrollbar includeMargin={false} className="w-full h-[46px] relative items-center overflow-y-hidden !px-0">
             <div className={`${isMobile ? "flex gap-[5px] justify-start overflow-clip" : "grid grid-flow-col auto-cols-fr gap-[5px]"} w-full h-[46px] relative items-center`}>
             <div className="absolute -bottom-[22px] left-0 w-full h-full px-[7px]">
                 <div className="bg-color-bg-default rounded-full h-[24px] absolute w-[99%] overflow-clip"
