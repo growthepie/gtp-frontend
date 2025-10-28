@@ -17,6 +17,7 @@ import ChartWatermark, { ChartWatermarkWithMetricName } from '../../ChartWaterma
 import { isMobile } from 'react-device-detect';
 import { useTheme } from 'next-themes';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { useUIContext } from '@/contexts/UIContext';
 
 const LOGO_CONFIG = {
   width: 150,
@@ -288,6 +289,8 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { isSidebarOpen } = useUIContext();
 
   // ============================================================================
   // Data Fetching
@@ -804,8 +807,6 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
   }, []);
 
   useEffect(() => {
-
-
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       setWindowHeight(window.innerHeight);
@@ -825,6 +826,27 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  const sidebarTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+      if(sidebarTimeoutRef.current) {
+        clearTimeout(sidebarTimeoutRef.current);
+      }
+      sidebarTimeoutRef.current = setTimeout(() => {
+        const container = containerRef.current;
+        if (container) {
+          setContainerWidth(container.clientWidth);
+        } else {
+          setContainerWidth(743);
+        }
+      }, 300);
+    
+  return () => {
+    if(sidebarTimeoutRef.current) {
+      clearTimeout(sidebarTimeoutRef.current);
+    }
+  };
+}, [isSidebarOpen]);
 
   const layoutKey = selectedMainCategory === null ? 'main' : `sub-${selectedMainCategory}`;
   const selectedCategoryLabel = selectedMainCategory
