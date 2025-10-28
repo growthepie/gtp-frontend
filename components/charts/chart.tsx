@@ -765,7 +765,7 @@ export const Chart = ({
               </div>
             </div>
             {series.length === 0 && (
-              <div className="absolute top-[calc(50%+40px)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+              <div className="absolute top-[calc(50%+40px)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
                 No chain(s) selected for comparison. Please select at least one.
               </div>
             )}
@@ -775,7 +775,7 @@ export const Chart = ({
             <div className="w-10 h-10 animate-spin">
               <Icon
                 icon="feather:loader"
-                className="w-10 h-10 text-forest-500"
+                className="w-10 h-10 text-color-text-primary"
               />
             </div>
           </div>

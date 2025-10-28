@@ -355,7 +355,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
               return (   
                 
               <SplideSlide key={metricKey + "_splide"} className="select-none">       
-                <div className={`relative flex flex-col w-full overflow-hidden h-[232px] bg-[#1F2726] rounded-2xl  group 
+                <div className={`relative flex flex-col w-full overflow-hidden h-[232px] bg-color-bg-default rounded-2xl  group 
                 ${selectedTimespan === "1d" ?  "hidden" : "flex flex-col"}`} key={metricKey}>
                     <Link
                         className={`absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${/*link ? "cursor-pointer" : ""*/ ""}`}
@@ -366,7 +366,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                     
                         <div>{chart_titles[metricKey]}</div>
                         <div
-                            className={`rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10 ${/*!link ? "hidden" : "block" */ ""}`}
+                            className={`rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10 ${/*!link ? "hidden" : "block" */ ""}`}
                         >
                             <Icon
                             icon="feather:arrow-right"
@@ -388,9 +388,9 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                     <div className="absolute bottom-[40%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
                         <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
-                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/70 pointer-events-none">
                           <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-                          <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                          <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                               {new Date(
                                 timespans[selectedTimespan].xMin,
                               ).toLocaleDateString("en-GB", {
@@ -402,8 +402,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
 
                           </div>
                     </div>
-                    <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
-                          <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                    <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/70 pointer-events-none">
+                          <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                             {new Date(
                                 timespans[selectedTimespan].xMax,
                               ).toLocaleDateString("en-GB", {

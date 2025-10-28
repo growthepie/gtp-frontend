@@ -1039,7 +1039,7 @@ export default function FeesPage() {
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
-              color: "#1F2726",
+              color: "rgb(var(--bg-default))",
             }}
           >
             {lessThanOverride && (
@@ -1258,9 +1258,9 @@ export default function FeesPage() {
         <Header />
 
         <FeesContainer className={`hidden md:block`}>
-          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] z-10">
+          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-color-bg-medium  shadow-[0px_0px_50px_0px_#000000] z-10">
             <a
-              className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+              className="flex items-center w-[162px] bg-color-bg-default gap-x-[10px] rounded-full p-[10px] gap"
               href="https://www.growthepie.com/"
               target="_blank"
             >
@@ -1314,7 +1314,7 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${hoverSettings
+              className={`flex items-center relative h-[44px] bg-color-bg-default gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${hoverSettings
                 ? "w-[336px] justify-start"
                 : "w-[128px] justify-start"
                 }`}
@@ -1347,7 +1347,7 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${hoverSettings
+              className={`absolute top-6 min-h-0 bg-color-ui-active right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${hoverSettings
                 ? `shadow-[0px_4px_46.2px_0px_#000000]`
                 : "shadow-transparent"
                 }`}
@@ -1375,14 +1375,14 @@ export default function FeesPage() {
                 <div className="flex flex-col w-full">
                   <div className="flex items-center w-full">
                     <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
-                      <div className="font-normal text-forest-500/50 text-right">
+                      <div className="font-normal text-color-text-primary/50 text-right">
                         Units
                       </div>
                       <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                         <div className="flex flex-1 items-center place-self-end">
                           <Icon
                             icon="gtp:gtp-dollar"
-                            className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${hoverSettings ? "text-sm" : ""
+                            className={`h-[15px] w-[15px] font-[900] text-color-text-primary relative ${hoverSettings ? "text-sm" : ""
                               }`}
                           />
                           <div className="font-semibold text-right pl-[8px]">
@@ -1390,7 +1390,7 @@ export default function FeesPage() {
                           </div>
                         </div>
                         {/* <div className="flex gap-x-[10px] items-center"> */}
-                        <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                        <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                         <div
                           className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                           onClick={() => {
@@ -1431,7 +1431,7 @@ export default function FeesPage() {
                               key={categoryKey + "_categories"}
                               className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
                             >
-                              <div className="font-normal text-forest-500/50 text-right">
+                              <div className="font-normal text-color-text-primary/50 text-right">
                                 {categoryKey} Metrics
                               </div>
                               {Object.keys(master.fee_metrics)
@@ -1469,7 +1469,7 @@ export default function FeesPage() {
                                       <div className="flex flex-1 items-center place-self-end">
                                         <Icon
                                           icon=""
-                                          className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${hoverSettings ? "text-sm" : ""
+                                          className={`h-[15px] w-[15px] font-[900] text-color-text-primary relative self-center justify-self-center ${hoverSettings ? "text-sm" : ""
                                             }`}
                                         />
                                         <div className="flex-1 font-semibold">
@@ -1477,7 +1477,7 @@ export default function FeesPage() {
                                         </div>
                                       </div>
                                       {/* <div className="flex gap-x-[10px] items-center"> */}
-                                      <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                                      <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                                       <div
                                         className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                                         onClick={() => {
@@ -1587,7 +1587,7 @@ export default function FeesPage() {
           <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold md:pl-[15px]">
             How much a typical user paid on L2s
           </h1>
-          <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
+          <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-color-border border bg-color-bg-default text-[12px] rounded-r-full leading-[1] font-bold">
             {NUM_HOURS - selectedBarIndex === 1
               ? "1 hour Ago"
               : `${NUM_HOURS - selectedBarIndex} hours ago`}
@@ -1631,7 +1631,7 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                     <div
-                      className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
+                      className="bg-color-bg-medium text-color-text-primary text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
                       onClick={() => {
                         if (!availabilityFilter && DAIndex === 0) {
                           setAvailabilityFilter(true);
@@ -1737,7 +1737,7 @@ export default function FeesPage() {
                             (metric) => metrics[metric].enabled,
                           ).length > 1 && (
                               <>
-                                <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-color-text-primary/30 whitespace-nowrap">
                                   {category} Metrics
                                 </div>
                                 <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
@@ -1797,7 +1797,7 @@ export default function FeesPage() {
                                         (metric) => metrics[metric].enabled,
                                       ).length === 1 && (
                                           <div className="absolute -top-[22px] flex flex-col items-end place-self-end">
-                                            <div className="flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                            <div className="flex items-start justify-end text-[10px] font-normal text-color-text-primary/30 whitespace-nowrap">
                                               {category} Metrics
                                             </div>
                                             <div className="w-[125px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
@@ -1850,7 +1850,7 @@ export default function FeesPage() {
                       {Array.from({ length: NUM_HOURS }, (_, index) => (
                         <div
                           key={index.toString() + "columns"}
-                          className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
+                          className={`flex items-end w-[5px] origin-bottom  border-t border-x border-color-border bg-color-bg-medium hover:cursor-pointer rounded-t-full transition-transform duration-100 
                           ${selectedBarIndex === index
                               ? "scale-[1.5] bg-transparent"
                               : hoverBarIndex === index
@@ -1879,7 +1879,7 @@ export default function FeesPage() {
                         </div>
                       ))}
                       <div
-                        className={`flex w-[17px] h-[17px] items-center justify-center p-0.5 rounded-full absolute bottom-[0.5px] -right-[29px] bg-[#1F2726] cursor-pointer`}
+                        className={`flex w-[17px] h-[17px] items-center justify-center p-0.5 rounded-full absolute bottom-[0.5px] -right-[29px] bg-color-bg-default cursor-pointer`}
                         onClick={(e) => {
                           toggleAllChains();
 
@@ -1948,7 +1948,7 @@ export default function FeesPage() {
                       style={{ ...style }}
                     >
                       <div
-                        className={`w-full border-forest-700 border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
+                        className={`w-full border-color-border border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
                       ${isMobile ? "text-[12px]" : "text-[14px]"} ${selectedChains[item.chain[1]]
                             ? "opacity-100"
                             : "opacity-50"
@@ -1981,7 +1981,7 @@ export default function FeesPage() {
                               : AllChainsByKeys[item.chain[1]].label}
                           </Link>
                           <div
-                            className={`group bg-[#344240] flex rounded-full transition-width duration-300 pl-[5px] pr-[5px] h-[18px] gap-x-[3px] whitespace-nowrap`}
+                            className={`group bg-color-bg-medium flex rounded-full transition-width duration-300 pl-[5px] pr-[5px] h-[18px] gap-x-[3px] whitespace-nowrap`}
                             onMouseEnter={() => {
                               setHoveredItems({
                                 hoveredChain: item.chain[1],
@@ -2026,7 +2026,7 @@ export default function FeesPage() {
                                       selectedAvailability === avail.label &&
                                       selectedChains[item.chain[1]]
                                       ? "text-forest-200"
-                                      : "text-[#CDD8D3]/60"
+                                      : "text-color-text-primary/60"
                                       }
                                   `}
                                   />
@@ -2035,7 +2035,7 @@ export default function FeesPage() {
                                       selectedAvailability === avail.label &&
                                       selectedChains[item.chain[1]]
                                       ? "text-forest-200"
-                                      : "text-[#CDD8D3]/60"
+                                      : "text-color-text-primary/60"
                                       }`}
                                   >
                                     {avail.label}
@@ -2047,7 +2047,7 @@ export default function FeesPage() {
                                     key={avail.label}
                                     className="w-[12px] h-[12px] flex items-center justify-center"
                                     style={{
-                                      color: "#5A6462",
+                                      color: "rgb(var(--ui-hover))",
                                     }}
                                   >
                                     +
@@ -2200,8 +2200,8 @@ export default function FeesPage() {
                         <div className="absolute right-[0px]">
                           <div
                             className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
-                              ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                              : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                              ? " bg-white dark:bg-color-ui-active dark:hover:forest-800"
+                              : " bg-forest-50 dark:bg-color-bg-default hover:bg-forest-50"
                               }`}
                             onClick={() => {
                               if (selectedQualitative === "availability") {
@@ -2322,8 +2322,8 @@ export default function FeesPage() {
                             </div>
                             <div
                               className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
-                                ? "bg-forest-50 dark:bg-[#1F2726]"
-                                : "bg-white dark:bg-[#1F2726]"
+                                ? "bg-forest-50 dark:bg-color-bg-default"
+                                : "bg-white dark:bg-color-bg-default"
                                 }`}
                             >
                               <Icon
@@ -2347,7 +2347,7 @@ export default function FeesPage() {
                 })}
                 {master && (
                   <div
-                    className={`absolute bottom-[28px] w-full border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${isMobile ? "text-[12px]" : "text-[14px]"
+                    className={`absolute bottom-[28px] w-full border-color-border border-[1px] rounded-full bg-color-bg-default border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${isMobile ? "text-[12px]" : "text-[14px]"
                       }`}
                   >
                     <div
@@ -2540,7 +2540,7 @@ export default function FeesPage() {
             }}
           >
             <div
-              className={`absolute w-fit border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
+              className={`absolute w-fit border-color-border border-[1px] rounded-full bg-color-bg-default border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
                 isMobile ? "text-[12px]" : "text-[14px]"
               }`}
             >

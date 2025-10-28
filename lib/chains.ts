@@ -17,6 +17,108 @@ export type Chain = {
   darkTextOnBackground: boolean;
 };
 
+export type ChainOverview = {
+  data: {
+    chain_id: string;
+    chain_name: string;
+    events: ChainEvent[];
+    ranking: ChainRanking;
+    kpi_cards: ChainKpiCard;
+    ecosystem: Ecosystem;
+    achievements: AchievmentsData;
+    blockspace: {
+      blockspace: BlockspaceCO;
+    };
+  }
+};
+
+
+export type AchievmentsData = {
+  streaks: {
+    txcount: {
+      streak_length: number;
+      yesterday_value: number;
+    };
+    fees: {
+      usd: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+      eth: {
+        streak_length: number;
+        yesterday_value: number;
+      };
+    };
+  };
+  lifetime: {
+    [key: string]: {
+      [key: string]: {
+        level: number;
+        total_value: number;
+        percent_to_next_level: number;
+      }
+    }
+  }
+}
+
+export type BlockspaceCO = {
+  types: string[];
+  data: [][];
+};
+
+export type Ecosystem = {
+  active_apps: {
+    count: number;
+  }
+  apps: {
+    types: string[];
+    data: [][];
+  }
+ 
+}
+
+export type ChainEvent = {
+  date: string;
+  type: string; 
+  title: string; 
+  short_title: string; 
+  description: string;
+  source: string;
+}
+
+export type ChainKpiCard = {
+  [key: string]: ChainKpiCardItem;
+}
+export type ChainKpiCardItem = {
+  sparkline: {
+    types: string[];
+    data: [number, number][];
+    change: number;
+  };
+  current_values: {
+    types: string[];
+    data: number[];
+  
+  }
+  wow_change: {
+    types: string[];
+    data: number[];
+  }
+  
+};
+
+
+export type ChainRanking = {
+  [key: string]: ChainRankingItem;
+}
+
+export type ChainRankingItem = {
+  rank: number;
+  out_of: number;
+  color_scale: number;
+  value: number;
+}
+
 // used by the MasterProvider to create the AllChains objects/arrays
 export const Get_AllChainsByKeys = (master: MasterResponse) => {
   let chains: { [key: string]: any } = {};

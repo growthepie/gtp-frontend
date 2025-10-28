@@ -103,7 +103,7 @@ export default function ContractCard({
         }
       }}
     >
-      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200 min-h-[156px]">
+      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-color-bg-default hover:cursor-pointer hover:bg-color-bg-default hover:dark:bg-color-ui-hover transition-colors duration-200 min-h-[156px]">
         <div className="flex flex-row justify-between items-center w-full relative ">
           <div className="flex flex-row items-center">
             <div className="flex flex-col">

@@ -940,20 +940,21 @@ export default function LandingChart({
         split: false,
         followPointer: true,
         followTouchMove: true,
-        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        // backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        backgroundColor: "rgb(var(--bg-default) / 0.95)",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
         outside: true,
         useHTML: true,
         shadow: {
-          color: "black",
-          opacity: 0.015,
-          offsetX: 2,
-          offsetY: 2,
+          color: "rgb(var(--ui-shadow) / 0.4)",
+          offsetX: 0,
+          offsetY: 0,
+          width: 10,
         },
         style: {
-          color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          color: "rgb(var(--text-primary))",
         },
         enabled: isDragging ? false : true,
       },
@@ -1167,7 +1168,7 @@ export default function LandingChart({
               <div className="w-10 h-10 animate-spin">
                 <Icon
                   icon="feather:loader"
-                  className="w-10 h-10 text-forest-500"
+                  className="w-10 h-10 text-color-text-primary"
                 />
               </div>
             </div>
@@ -1176,7 +1177,7 @@ export default function LandingChart({
             <ChartWatermark className="w-[128.67px] md:w-[192.87px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
           {filteredData.length === 0 && (
-            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
               No chain(s) selected for comparison. Please select at least one.
             </div>
           )}
@@ -1244,11 +1245,7 @@ export default function LandingChart({
                   <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
                 </div>
               </div>
-              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex"
-                style={{
-                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
-                }}
-              >
+              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex shadow-card-dark">
                 <div className="flex items-center gap-x-[10px]">
                   <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
                   <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
@@ -1284,11 +1281,7 @@ export default function LandingChart({
 
               </div>
               {/*Tooltip area: */}
-              <div className="bg-background group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
-                style={{
-                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
-                }}
-              >
+              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px] shadow-card-dark">
                 <div className="flex items-center gap-x-[10px]">
                   <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
                   <div className="heading-small-xs">Composition</div>
@@ -1330,11 +1323,7 @@ export default function LandingChart({
                     </div>
               </div>
               {/*Tooltip area: */}
-              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
-                style={{
-                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
-                }}
-              >
+              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px] shadow-card-dark">
                 <div className="flex items-center gap-x-[10px] ">
                   <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
                   <div className="heading-small-xs">Composition Split</div>
@@ -1400,7 +1389,7 @@ export default function LandingChart({
                   <div>Reset Zoom</div>
                 </button>
                 <button
-                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-3.5 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-3.5 2xl:px-4 font-medium bg-color-bg-default dark:bg-color-ui-active`}
                 >
                   {intervalShown?.label}
                 </button>
@@ -1429,7 +1418,7 @@ export default function LandingChart({
               <div className="w-10 h-10 animate-spin">
                 <Icon
                   icon="feather:loader"
-                  className="w-10 h-10 text-forest-500"
+                  className="w-10 h-10 text-color-text-primary"
                 />
               </div>
             </div>
@@ -1438,7 +1427,7 @@ export default function LandingChart({
             <ChartWatermark className="w-[128.67px] md:w-[192.87px] text-forest-300 dark:text-[#EAECEB]" />
           </div>
           {filteredData.length === 0 && (
-            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
               No chain(s) selected for comparison. Please select at least one.
             </div>
           )}
@@ -1448,7 +1437,7 @@ export default function LandingChart({
       </div>
       <div className="pb-0">
         <div className="h-[34px] flex flex-col justify-start ">
-            <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[34px]">
+            <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 relative h-[34px]">
               {/* toggle ETH */}
               <div>
                 <div className={`z-10 pl-0.5 ${focusEnabled ? "flex items-center" : "hidden"}`} >
@@ -1473,7 +1462,7 @@ export default function LandingChart({
                     </TooltipTrigger>
                     <TooltipContent>
                         <div className="flex flex-col items-center">
-                            <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div className="p-[15px] text-sm bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
                               
                               <div className="text-xs text-wrap">
                                   We only count unique "sender" addresses. If an address interacts with multiple chains, it is only counted once in the total.

@@ -574,7 +574,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex items-center bg-[#344240] gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer"
+                  className="flex items-center bg-color-bg-medium gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer"
                   onClick={() => {
                     setEnableDASort(true);
                     if (DAIndex === allChainsDA.length - 1) {
@@ -638,7 +638,7 @@ export default function ChainBreakdown({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
                               The sum of fees that were paid by users of the
@@ -688,7 +688,7 @@ export default function ChainBreakdown({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xs ">
                               The chains onchain expenses. L1 costs are gas fees
@@ -801,7 +801,7 @@ export default function ChainBreakdown({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xs ">
                               The chains total revenue minus its costs.
@@ -850,7 +850,7 @@ export default function ChainBreakdown({
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs ">
                               The profit margin of the chain calculated as
@@ -898,7 +898,7 @@ export default function ChainBreakdown({
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="flex flex-col items-center">
-                      <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                      <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                         <div className="flex flex-col gap-y-[5px] items-center">
                           <div className="flex items-center gap-x-[5px] text-xxs ">
                             The total amount of data that is stored in Blobs.
@@ -962,7 +962,7 @@ export default function ChainBreakdown({
                         )} `}
                       >
                         <div
-                          className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
+                          className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-color-ui-active cursor-pointer"
                           onClick={(e) => {
                             handleClick(e, item.key);
                             e.stopPropagation();
@@ -1007,7 +1007,7 @@ export default function ChainBreakdown({
                         </div>
 
                         <div
-                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px]"
+                          className="flex items-center bg-color-bg-medium gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px]"
                           key={localDataAvail.label}
                           onClick={(e) => {
                             if (
@@ -1245,7 +1245,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
+                            className={`absolute h-[4px] bg-color-ui-hover w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
                               .total[0] > 0
                               ? "rounded-r-full"
                               : "rounded-l-full"
@@ -1288,7 +1288,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${data[item.key][selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1302,7 +1302,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${data[item.key][selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1316,7 +1316,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${data[item.key][selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1330,7 +1330,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${data[item.key][selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1449,7 +1449,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${totals[selectedTimespan].profit_margin
+                            className={`absolute h-[4px] bg-color-ui-hover w-[50px] z-0 ${totals[selectedTimespan].profit_margin
                               .total[0] > 0
                               ? "rounded-r-full"
                               : "rounded-l-full"
@@ -1492,7 +1492,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${totals[selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1506,7 +1506,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${totals[selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1520,7 +1520,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${totals[selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div
@@ -1534,7 +1534,7 @@ export default function ChainBreakdown({
                               className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${totals[selectedTimespan].profit_margin
                                 .total[0] > 0
                                 ? "hidden"
-                                : "bg-[#5A6462] block"
+                                : "bg-color-ui-hover block"
                                 }`}
                             ></div>
                             <div

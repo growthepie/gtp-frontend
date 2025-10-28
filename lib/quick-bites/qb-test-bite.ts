@@ -251,6 +251,22 @@ const testBite: QuickBiteData = {
         }
         ],
       },
+
+      yAxisLine: [{
+        xValue: 		1755388800000, //position on x-axis
+        annotationPositionY: 50, //pixel offset
+        annotationPositionX: 30, //pixel offset
+        annotationText: "Target",
+        lineStyle: "Dash", //Dash, Dot, Solid, DashDot, LongDash, LongDashDot
+        lineColor: "#19D9D6",
+        textColor: "#19D9D6",
+        textFontSize: "9px",
+        
+        backgroundColor: "#19D9D6",
+
+        lineWidth: 1,
+
+      }],
       height: 400,
       caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
       seeMetricURL: "https://www.growthepie.com/data-availability"

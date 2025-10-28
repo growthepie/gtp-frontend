@@ -164,7 +164,7 @@ export const GTPTooltipNew = ({
             refs.setFloating(node);
           }}
           style={floatingStyles}
-          className={`${containerClass} ${GTPTooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-card-dark z-50`}
+          className={`${containerClass} ${GTPTooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-card-dark z-50`}
           {...getFloatingProps({
             // No need for onMouseLeave here anymore if allowInteract is false,
             // useHover + CSSTransition handles it
@@ -257,7 +257,7 @@ const TooltipSizeClassMap = {
 
 export const Tooltip = ({ children, size = "sm", className }: TooltipProps) => {
   return (
-    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] ${className}`}>
+    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] ${className}`}>
       {children}
     </div>
   );
@@ -367,7 +367,7 @@ export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyl
   return (
     <>
       <TooltipHeader title={project_name} icon={
-        <div className="size-[24px] flex items-center justify-center rounded-full bg-[#151A19]">
+        <div className="size-[24px] flex items-center justify-center rounded-full bg-color-ui-active">
           <GTPIcon icon={icon} size="sm" className={iconClassName} style={iconStyle} />
         </div>
         } />
@@ -383,7 +383,7 @@ export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyl
               <div className="whitespace-nowrap overflow-hidden heading-small-xxs">
                 {contractAddress && chain ? 'Attest this contract' : 'See more here.'}
               </div>
-              <div className="size-[15px] bg-[#344240] rounded-full flex items-center justify-center">
+              <div className="size-[15px] bg-color-bg-medium rounded-full flex items-center justify-center">
                 <div className="size-[15px] flex items-center justify-center">
                   <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
                 </div>
@@ -441,7 +441,7 @@ export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPA
               priority={true}
             />
           ) : (
-            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+            <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>
               <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
             </div>
           )
@@ -449,7 +449,7 @@ export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPA
         rightIcon={
           projectData.on_apps_page ? (
             <div className="flex flex-1 items-center justify-end">
-              <div className="size-[18px] bg-[#344240] rounded-full flex items-center justify-center">
+              <div className="size-[18px] bg-color-bg-medium rounded-full flex items-center justify-center">
                 <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
               </div>
             </div>

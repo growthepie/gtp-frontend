@@ -27,17 +27,18 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metri
         .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
 
     return (
-    <div className="pt-[45px] md:pt-[30px] flex flex-col gap-y-[15px]">
+    <div className="pt-[45px] md:pt-[50px] md:pb-[50px] flex flex-col gap-y-[15px]">
         <div className="flex justify-between items-center">
             <Title
                 title="Related Quick Bites"
                 icon="gtp-quick-bites"
                 as="h1"
+                titleSize="md"
             />
             <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More bites" />
         </div>
         
-        <div className="text-md leading-[150%] pl-[45px] pb-[15px]">
+        <div className="text-md leading-[150%] pl-[45px]">
             See related quick bites for this metric. Quick bites are blog-style articles that go in-depth on certain topics, backed by live data.
         </div>
         

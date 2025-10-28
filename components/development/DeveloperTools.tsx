@@ -1,4 +1,6 @@
 import ApiTool, { GlobalSearchToggleButton } from "./ApiTool";
+import DarkModeToggleButton from "./DarkModeToggle";
+import NotificationTool from "./NotificationTool";
 
 export default function DeveloperTools() {
 
@@ -6,7 +8,7 @@ export default function DeveloperTools() {
     return null;
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 bg-white dark:bg-black text-[0.6rem] leading-snug font-mono px-1 py-0.5">
+    <div className="fixed bottom-0 left-0 bg-white dark:bg-black text-[0.6rem] leading-snug font-mono px-1 py-0.5 z-[9999] select-none">
       <div className="flex gap-x-2">
         <div>
           <div className="block sm:hidden">{"< sm"}</div>
@@ -17,7 +19,9 @@ export default function DeveloperTools() {
           <div className="hidden 2xl:block">{"2xl"}</div>
         </div>
         <ApiTool />
-        <GlobalSearchToggleButton />
+        <NotificationTool />
+        {/* <GlobalSearchToggleButton /> */}
+        <DarkModeToggleButton />
       </div>
     </div>
   )

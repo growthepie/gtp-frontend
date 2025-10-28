@@ -39,9 +39,9 @@ export default function FloatingBar({
 
   return (
 
-    <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
+    <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-color-bg-medium  shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
       <Link
-        className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+        className="flex items-center bg-color-bg-default gap-x-[10px] rounded-full p-[10px] gap"
         href="https://www.growthepie.com/"
         target="_blank"
       >
@@ -51,7 +51,7 @@ export default function FloatingBar({
       </Link>
       <Search />
       <div className="group relative w-fit z-50">
-        <div className="cursor-pointer flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300">
+        <div className="cursor-pointer flex items-center bg-color-bg-default gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300">
           <div className="w-6 h-6">
             <SettingsIcon />
           </div>
@@ -60,12 +60,12 @@ export default function FloatingBar({
           </div>
         </div>
         <div className="relative max-h-0 w-0 lg:w-[125px] group-hover:w-[300px] group-hover:max-h-[200px] overflow-hidden transition-all duration-300" />
-        <div className={`absolute bottom-4 md:bottom-auto md:top-4 right-0 bg-[#151A19] rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] w-[125px] max-h-0 group-hover:w-[300px] group-hover:max-h-[180px] -z-10`}>
+        <div className={`absolute bottom-4 md:bottom-auto md:top-4 right-0 bg-color-ui-active rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] w-[125px] max-h-0 group-hover:w-[300px] group-hover:max-h-[180px] -z-10`}>
           <div className={`pb-[50px] pt-[0px] md:pt-[30px] md:pb-[20px] flex flex-col`}>
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">
                 <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
-                  <div className="font-normal text-forest-500/50 text-right">
+                  <div className="font-normal text-color-text-primary/50 text-right">
                     Columns
                   </div>
                   <div className="grid grid-cols-[125px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
@@ -74,7 +74,7 @@ export default function FloatingBar({
                         Deployment Address
                       </div>
                     </div>
-                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                    <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                       onClick={() => {
@@ -116,7 +116,7 @@ export default function FloatingBar({
                         Deployer Tx
                       </div>
                     </div>
-                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                    <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                       onClick={() => {
@@ -162,7 +162,7 @@ export default function FloatingBar({
       <div className={`group relative w-fit z-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:block" : "hidden md:block"}`}>
         <Tooltip allowInteract={true}>
           <TooltipTrigger className="w-full flex items-center justify-center">
-            <div className={`cursor-pointer w-full ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:flex" : "hidden md:flex"} items-center justify-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] transition-all duration-300`}>
+            <div className={`cursor-pointer w-full ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:flex" : "hidden md:flex"} items-center justify-center bg-color-bg-default gap-x-[10px] rounded-full p-[10px] transition-all duration-300`}>
               <div className={`w-6 h-6 grayscale opacity-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "!opacity-100 !grayscale-0" : ""}`}>
                 <DownloadIcon />
               </div>
@@ -172,7 +172,7 @@ export default function FloatingBar({
             </div>
           </TooltipTrigger>
           {(labelsNumberFiltered === 0 || labelsNumberFiltered >= 200) && (
-            <TooltipContent className="p-[11px] text-xs bg-forest-1000 text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-[51]">
+            <TooltipContent className="p-[11px] text-xs bg-color-ui-active text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-[51]">
               <div>To use the export functionality, please filter down to 200 records or less.</div>
               <div className="">If you need access to more labels, reach out via our <Link
                 rel="noopener"
@@ -191,12 +191,12 @@ export default function FloatingBar({
           )}
         </Tooltip>
         <div className={`relative max-h-0 w-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:flex group-hover:w-[90px] group-hover:max-h-[200px]"} overflow-hidden transition-all duration-300`} />
-        <div className={`absolute bottom-0 md:bottom-auto md:top-4 right-0 bg-[#151A19] rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] !w-[0px] max-h-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:!w-[90px] group-hover:max-h-[180px]"} -z-10`}>
+        <div className={`absolute bottom-0 md:bottom-auto md:top-4 right-0 bg-color-ui-active rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] !w-[0px] max-h-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:!w-[90px] group-hover:max-h-[180px]"} -z-10`}>
           <div className={`pb-[50px] pt-[0px] md:pt-[30px] md:pb-[20px] flex flex-col`}>
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">
                 <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full  text-right">
-                  <div className="font-normal text-forest-500/50 text-right px-3.5">
+                  <div className="font-normal text-color-text-primary/50 text-right px-3.5">
                     Format
                   </div>
                   <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {

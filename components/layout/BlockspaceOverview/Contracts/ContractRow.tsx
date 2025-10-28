@@ -212,11 +212,11 @@ export default function ContractRow({
                             <TooltipTrigger>
                               <Icon
                                 icon="feather:info"
-                                className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                               />
                             </TooltipTrigger>
                             <TooltipContent className="z-[110]">
-                              <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                              <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                                 <div className="font-medium">
                                   This is the Contract name.
                                 </div>
@@ -241,11 +241,11 @@ export default function ContractRow({
                             <TooltipTrigger>
                               <Icon
                                 icon="feather:info"
-                                className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                               />
                             </TooltipTrigger>
                             <TooltipContent className="z-[110]">
-                              <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                              <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                                 <div className="font-medium">
                                   This is the Project name.
                                 </div>
@@ -276,7 +276,7 @@ export default function ContractRow({
                               <option
                                 key={key}
                                 value={key}
-                                className="bg-forest-50 dark:bg-[#1F2726]"
+                                className="bg-forest-50 dark:bg-color-bg-default"
                               >
                                 {
                                   master.blockspace_categories.main_categories[
@@ -303,7 +303,7 @@ export default function ContractRow({
                               <option
                                 key={key}
                                 value={key}
-                                className="bg-forest-50 dark:bg-[#1F2726]"
+                                className="bg-forest-50 dark:bg-color-bg-default"
                               >
                                 {formatSubcategories(key)}
                               </option>
@@ -331,7 +331,7 @@ export default function ContractRow({
                   </div>
                   <div className="flex space-x-[15px] items-start justify-center w-full font-medium pt-[15px]">
                     <button
-                      className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500"
+                      className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-color-text-primary"
                       onClick={() => setSelectedContract(null)}
                       disabled={isFormSubmitting}
                     >

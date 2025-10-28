@@ -102,7 +102,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
+      <body className="bg-forest-50 text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
         <Providers forcedTheme="dark">
           <MasterProvider>
             <ToastProvider>

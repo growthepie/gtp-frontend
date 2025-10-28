@@ -18,13 +18,14 @@
 export interface EthereumEvents {
   date: string;
   description: string;
-  issuance: string;
+  issuance?: string;
   short_title: string;
   show_in_chart: boolean;
   source: string;
   title: string;
   type: string;
 }
+
 
 
 export interface CompositionTypes {
@@ -60,6 +61,7 @@ export interface ChainInfo {
   name_short: string;
   url_key: string;
   chain_type: string;
+  evm_chain_id: string;
   ecosystem: string[];
   deployment: "PROD" | "DEV";
   name_short: string;
@@ -119,6 +121,7 @@ export interface MetricInfo {
   name: string;
   metric_keys: string[];
   units: { [key: string]: UnitSchema };
+  icon: string;
   avg: boolean;
   all_l2s_aggregate: string;
   fundamental: boolean;

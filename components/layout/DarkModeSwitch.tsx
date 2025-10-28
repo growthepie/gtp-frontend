@@ -64,7 +64,7 @@ export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
             <div
               className={`absolute left-0.5 top-0.5 ${
                 isMobile ? "w-[18px] h-[18px]" : "w-6 h-6"
-              } rounded-full transition-transform duration-200 ease-in-out bg-[#1F2726] text-forest-500 ${
+              } rounded-full transition-transform duration-200 ease-in-out bg-color-bg-default text-color-text-primary ${
                 theme === "dark"
                   ? "transform translate-x-full"
                   : "translate-x-0"

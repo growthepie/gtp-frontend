@@ -1,4 +1,4 @@
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'; // 1. Import usePathname
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type ParserFunction<T> = (value: string | null) => T;
@@ -12,6 +12,16 @@ interface UseSearchParamStateOptions<T> {
   skipUrlUpdate?: boolean | ((value: T) => boolean);
   debounceMs?: number;
 }
+
+// Batch coordinator to prevent race conditions when multiple params update simultaneously
+const pendingUpdates = new Map<string, {
+  value: any;
+  defaultValue: any;
+  serializer?: SerializerFunction<any>;
+  skipUrlUpdate?: boolean | ((value: any) => boolean);
+}>();
+let batchTimer: NodeJS.Timeout | null = null;
+let routerContext: { router: any; pathname: string; searchParams: URLSearchParams; mode: 'push' | 'replace' } | null = null;
 
 // Optimized shallow equality check for primitive types and simple objects
 function shallowEqual<T>(a: T, b: T): boolean {
@@ -48,6 +58,58 @@ function safeParser<T>(parser: ParserFunction<T> | undefined, value: string | nu
   }
 }
 
+// Add this after safeParser function
+
+function flushBatchedUpdates() {
+  if (pendingUpdates.size === 0 || !routerContext) {
+    return;
+  }
+
+  const { router, pathname, searchParams, mode } = routerContext;
+  const newParams = new URLSearchParams(searchParams.toString());
+  let hasChanges = false;
+
+  pendingUpdates.forEach((update, paramName) => {
+    const shouldSkip = typeof update.skipUrlUpdate === 'function'
+      ? update.skipUrlUpdate(update.value)
+      : update.skipUrlUpdate;
+
+    if (shouldSkip) return;
+
+    if (shallowEqual(update.value, update.defaultValue) || update.value === null || update.value === undefined) {
+      if (newParams.has(paramName)) {
+        newParams.delete(paramName);
+        hasChanges = true;
+      }
+    } else {
+      try {
+        const serialized = update.serializer ? update.serializer(update.value) : String(update.value);
+        if (newParams.get(paramName) !== serialized) {
+          newParams.set(paramName, serialized);
+          hasChanges = true;
+        }
+      } catch (error) {
+        console.warn(`Failed to serialize search param:`, error);
+      }
+    }
+  });
+
+  pendingUpdates.clear();
+
+  if (hasChanges) {
+    const newUrl = newParams.toString() ? `${pathname}?${newParams}` : pathname;
+    const scrollY = window.scrollY;
+    
+    if (mode === 'replace') {
+      router.replace(newUrl, { scroll: false });
+    } else {
+      router.push(newUrl, { scroll: false });
+    }
+    
+    requestAnimationFrame(() => window.scrollTo(0, scrollY));
+  }
+}
+
 export function useSearchParamState<T>(
   paramName: string,
   options: UseSearchParamStateOptions<T>
@@ -58,17 +120,18 @@ export function useSearchParamState<T>(
     serializer,
     updateMode = 'replace',
     skipUrlUpdate = false,
-    debounceMs = 100,
+    debounceMs = 300, // Increased default debounce
   } = options;
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname(); // 2. Get the current pathname
+  const pathname = usePathname();
 
   // Use refs to track values and avoid stale closures
   const lastUrlValueRef = useRef<T | null>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isUpdatingUrlRef = useRef(false);
+  const pendingValueRef = useRef<T | null>(null);
+  const lastSerializedRef = useRef<string | null>(null);
   
   // Parse initial value from URL
   const parseUrlValue = useCallback(() => {
@@ -78,87 +141,45 @@ export function useSearchParamState<T>(
       : safeParser(parser, paramValue, defaultValue);
   }, [searchParams, paramName, parser, defaultValue]);
   
-  const [state, setState] = useState<T>(() => parseUrlValue());
+  const [state, setState] = useState<T>(() => {
+    const initial = parseUrlValue();
+    lastUrlValueRef.current = initial;
+    return initial;
+  });
 
   // Debounced URL update function
   const updateUrl = useCallback((newValue: T) => {
-    const scrollY = window.scrollY; // Save before update
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
+    // Update router context
+    routerContext = { router, pathname, searchParams, mode: updateMode };
     
-    updateTimeoutRef.current = setTimeout(() => {
-      const shouldSkipUrlUpdate = typeof skipUrlUpdate === 'function'
-        ? skipUrlUpdate(newValue)
-        : skipUrlUpdate;
-      
-      if (shouldSkipUrlUpdate) return;
-      
-      isUpdatingUrlRef.current = true;
-      
-      const newParams = new URLSearchParams(searchParams.toString());
-      
-      // Remove param if value equals default
-      if (shallowEqual(newValue, defaultValue) || 
-          newValue === null || 
-          newValue === undefined) {
-        newParams.delete(paramName);
-      } else {
-        try {
-          const serializedValue = serializer 
-            ? serializer(newValue) 
-            : String(newValue);
-          newParams.set(paramName, serializedValue);
-        } catch (error) {
-          console.warn(`Failed to serialize search param value:`, error);
-          return;
-        }
-      }
-      
-      // 3. Construct the full URL with the pathname
-      const newQueryString = newParams.toString();
-      const newUrl = newQueryString ? `${pathname}?${newQueryString}` : pathname;
-
-      if (updateMode === 'replace') {
-        console.log('replace', newUrl);
-        router.replace(newUrl, { scroll: false });
-      } else {
-        console.log('push', newUrl);
-        router.push(newUrl);
-      }
-      
-      // Reset flag after a brief delay
-      setTimeout(() => {
-        isUpdatingUrlRef.current = false;
-      }, 50);
-      
-      // Restore after update
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: scrollY, behavior: 'instant' });
-      });
+    // Queue this update
+    pendingUpdates.set(paramName, {
+      value: newValue,
+      defaultValue,
+      serializer,
+      skipUrlUpdate,
+    });
+    
+    // Schedule batch flush
+    if (batchTimer) clearTimeout(batchTimer);
+    batchTimer = setTimeout(() => {
+      flushBatchedUpdates();
+      batchTimer = null;
     }, debounceMs);
-
-
-  }, [
-    pathname, // 4. Add pathname to dependency array
-    searchParams, 
-    paramName, 
-    defaultValue, 
-    serializer, 
-    updateMode, 
-    router, 
-    skipUrlUpdate, 
-    debounceMs
-  ]);
+    
+    lastUrlValueRef.current = newValue;
+  }, [router, pathname, searchParams, updateMode, paramName, defaultValue, serializer, skipUrlUpdate, debounceMs]);
 
   // Sync state with URL changes (only from external navigation)
   useEffect(() => {
-    // Skip if we're currently updating the URL ourselves
-    if (isUpdatingUrlRef.current) return;
-    
     const newUrlValue = parseUrlValue();
     
-    // Only update state if URL value actually changed
+    // Check if we have a pending update for this value
+    if (pendingValueRef.current !== null && shallowEqual(pendingValueRef.current, newUrlValue)) {
+      return;
+    }
+    
+    // Only update if the URL value actually changed from what we last knew
     if (!shallowEqual(lastUrlValueRef.current, newUrlValue)) {
       lastUrlValueRef.current = newUrlValue;
       
@@ -167,7 +188,7 @@ export function useSearchParamState<T>(
         setState(newUrlValue);
       }
     }
-  }, [searchParams, parseUrlValue]); // Removed 'state' dependency to prevent loops
+  }, [searchParams, parseUrlValue]); // Removed 'state' dependency
 
   // Memoized setter function
   const setStateAndUrl = useCallback((valueOrUpdater: T | ((prev: T) => T)) => {
@@ -194,14 +215,15 @@ export function useSearchParamState<T>(
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
+      // delete the pending update for this param
+      pendingUpdates.delete(paramName);
     };
-  }, []);
+  }, [paramName]);
 
   return [state, setStateAndUrl];
 }
 
-// --- The rest of the file remains the same ---
-// ... (parsers, serializers, and specific hooks)
+// Parsers and serializers
 export const parsers = {
   number: (value: string | null): number => {
     if (value === null) return 0;

@@ -4,6 +4,7 @@
 const nextConfig = {
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    scrollRestoration: true,
   },
   async rewrites() {
     return {
@@ -154,7 +155,7 @@ const nextConfig = {
       // Only include the icons redirect in production, not in development
       ...(isDevelopment ? [] : [{
         source: "/icons",
-        destination: "https://icons.growthepie.xyz/",
+        destination: "https://icons.growthepie.com/",
         permanent: true,
       }]),
       {

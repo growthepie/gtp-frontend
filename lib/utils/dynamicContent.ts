@@ -143,6 +143,32 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle ethereum scaling data placeholders
+      if (processedItem.includes('{{ethereum')) {
+        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.xyz/v1/quick-bites/ethereum-scaling/data.json");
+
+        const ethereumCurrentTPS = parseFloat(ethereumScalingData.data.historical_tps.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        });
+        const ethereumHistoricalScale = (parseFloat(ethereumScalingData.data.historical_tps.total) / 0.71).toLocaleString("en-GB", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        });
+
+        const ethereumMultiplier = (10000 / parseFloat(ethereumScalingData.data.historical_tps.total)).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        // Replace all placeholders regardless of individual checks
+        processedItem = processedItem
+          .replace('{{ethereumCurrentTPS}}', ethereumCurrentTPS || 'N/A')
+          .replace('{{ethereumHistoricalScale}}', ethereumHistoricalScale || 'N/A')
+          .replace('{{ethereumMultiplier}}', ethereumMultiplier || 'N/A')
+
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

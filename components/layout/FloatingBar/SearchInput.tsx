@@ -44,7 +44,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     <div className={`relative w-full ${className}`}>
       <div className="relative transition-all duration-300">
         {/* Background overlay */}
-        <div className="absolute inset-0 bg-[#1F2726] rounded-[22px] min-h-[44px]" />
+        <div className="absolute inset-0 bg-color-bg-default rounded-[22px] min-h-[44px]" />
 
         {/* Search bar content */}
         <div className="relative flex px-[10px] gap-x-[10px] items-center min-h-[44px] rounded-[22px] z-[2]">

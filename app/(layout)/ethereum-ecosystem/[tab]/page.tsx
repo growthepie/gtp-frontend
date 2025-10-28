@@ -101,7 +101,7 @@ export default function EthAgg() {
         <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${selectedBreakdownGroup === "Metrics" ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'}`}>
           <div className="overflow-hidden">
             <Container className="mb-[15px]">
-              <div className="px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px]">
+              <div className="px-[30px] py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
                 <div className="heading-large-lg select-auto">{titles[selectedBreakdownGroup]}</div>
                 <div className="text-sm select-auto">
                   {Messages[selectedBreakdownGroup]}

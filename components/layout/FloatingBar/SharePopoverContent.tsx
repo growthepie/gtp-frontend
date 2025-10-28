@@ -159,7 +159,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
 
   return (
     <div
-      className={`bg-forest-50 dark:bg-[#1F2726] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
+      className={`bg-forest-50 dark:bg-color-bg-default rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
                  transition-all duration-300 select-none ${topSelection === "social"
           ? "w-[calc(100vw-40px)] xs:w-[calc(100vw-56px)] md:w-[453px]" // Adjusted for potential popover padding
           : "w-[calc(100vw-40px)] xs:w-[calc(100vw-56px)] md:w-[579px]"
@@ -195,7 +195,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
       <div className="flex gap-x-[5px] mt-[15px]">
         <div
           className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "social"
-              ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
+              ? "bg-forest-200 border-forest-200 dark:bg-color-ui-active dark:border-[#151A19]"
               : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
             }`}
           onClick={() => {
@@ -211,7 +211,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
         {embedEnabled && (
           <div
             className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "embed"
-                ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
+                ? "bg-forest-200 border-forest-200 dark:bg-color-ui-active dark:border-[#151A19]"
                 : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
               }`}
             onClick={() => {
@@ -230,7 +230,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
         <div className="flex flex-col-reverse items-center mt-[30px] w-full text-[16px] leading-[150%] min-h-[234px] justify-between">
           <div className="flex flex-col w-full">
             <div
-              className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px] mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:bg-forest-500 hover:dark:bg-[#5A6462] hover:cursor-pointer transition-colors"
+              className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px] mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:bg-forest-500 hover:dark:bg-color-ui-hover hover:cursor-pointer transition-colors"
               onClick={() => {
                 copyText(currentURL ? currentURL : "");
                 triggerCopy();
@@ -251,12 +251,12 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
               </div>
               <div className="ml-auto flex items-center">
                 <Icon
-                  className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-0" : "opacity-100"
+                  className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary  ${copied ? "opacity-0" : "opacity-100"
                     }`}
                   icon="feather:copy"
                 />
                 <Icon
-                  className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-100" : "opacity-0"
+                  className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary  ${copied ? "opacity-100" : "opacity-0"
                     }`}
                   icon="feather:check"
                 />
@@ -265,7 +265,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
           </div>
           <div className="flex flex-col gap-y-[5px] w-full">
             <div
-              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
               onClick={() => {
                 handleSendEmail();
                 track("clicked Email in Share Social window", {
@@ -280,7 +280,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
               </div>
             </div>
             <div
-              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
               onClick={() => {
                 shareOnReddit();
                 track("clicked Reddit in Share Social window", {
@@ -298,7 +298,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
               </div>
             </div>
             <div
-              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
+              className="flex items-center w-full h-[54px] border-forest-500 dark:border-[#5A6462] border-[3px] dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover p-[15px] rounded-full cursor-pointer gap-x-[10px] transition-colors"
               onClick={() => {
                 shareOnTwitter();
                 track("clicked Twitter in Share Social window", {
@@ -328,7 +328,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                 }&title=${embedData.title}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer"
+              className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-color-ui-hover cursor-pointer"
             >
               Click here to test embed
             </Link>
@@ -336,7 +336,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
           <textarea
             value={embedIframe}
             readOnly
-            className="font-light font-mono p-[15px] rounded-[15px] md:rounded-[25px] border-forest-500 dark:border-forest-600 border-[1px] h-full min-h-[100px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-[#1F2726] dark:text-forest-100"
+            className="font-light font-mono p-[15px] rounded-[15px] md:rounded-[25px] border-forest-500 dark:border-forest-600 border-[1px] h-full min-h-[100px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-color-bg-default dark:text-forest-100"
             onClick={(e) => {
               e.currentTarget.select();
               track("clicked Embed Code textarea in Share window", {
@@ -358,7 +358,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-global-search-tooltip flex items-center justify-center pr-[3px]">
-                  <div className="flex flex-col px-3 py-4 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
+                  <div className="flex flex-col px-3 py-4 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
                     <div className="font-semibold">
                       Snapshot Timeframe
                     </div>
@@ -439,7 +439,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                 </div>
                 <div className="flex items-center w-full gap-x-[5px]">
                   <div
-                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.width <= 450 && "opacity-30 pointer-events-none"
+                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover ${embedData.width <= 450 && "opacity-30 pointer-events-none"
                       }`}
                   >
                     <div
@@ -478,7 +478,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                     </div>
                   </div>
                   <div
-                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800`}
+                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover`}
                   >
                     <div
                       className="w-[24px] h-[24px] cursor-pointer"
@@ -509,7 +509,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                 </div>
                 <div className="flex items-center w-full gap-x-[5px]">
                   <div
-                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.height <= 500 && "opacity-30 pointer-events-none"
+                    className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover ${embedData.height <= 500 && "opacity-30 pointer-events-none"
                       }`}
                   >
                     <div
@@ -547,7 +547,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                       px
                     </div>
                   </div>
-                  <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800">
+                  <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-color-ui-hover">
                     <div
                       className="w-[24px] h-[24px] cursor-pointer"
                       onClick={() => {
@@ -570,7 +570,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
               </div>
 
               <div
-                className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors"
+                className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-color-bg-default hover:bg-forest-500 hover:dark:bg-color-ui-hover border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors"
                 onClick={() => {
                   copyText(embedIframe);
                   triggerCopy();
@@ -589,12 +589,12 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                 </div>
                 <div className="flex ml-auto relative w-[24px] h-[24px]">
                   <Icon
-                    className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-0" : "opacity-100"
+                    className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary ${copied ? "opacity-0" : "opacity-100"
                       }`}
                     icon="feather:copy"
                   />
                   <Icon
-                    className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-100" : "opacity-0"
+                    className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-color-text-primary ${copied ? "opacity-100" : "opacity-0"
                       }`}
                     icon="feather:check"
                   />
@@ -603,7 +603,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
               <div className="relative text-center text-xs text-forest-400 mt-1"> {/* Adjusted for spacing */}
                 or{" "}
                 <span
-                  className="cursor-pointer underline text-forest-900 dark:text-forest-500 hover:text-black dark:hover:text-forest-50"
+                  className="cursor-pointer underline text-forest-900 dark:text-color-text-primary hover:text-black dark:hover:text-forest-50"
                   onClick={() => {
                     copyText(markdownEmbedIframe);
                     triggerCopyMarkdownEmbed();

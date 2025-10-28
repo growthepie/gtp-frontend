@@ -2,20 +2,19 @@
 import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 import { addCollection } from "@iconify/react";
-import GTPIcons from "@/icons/gtp.json";
-import GTPIconsFigmaExport from "@/icons/gtp-figma-export.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
-import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
-import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
+// import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { useEffect } from "react";
+import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
 
 // load icons
-addCollection(GTPIcons);
-addCollection(GTPIconsFigmaExport);
+// addCollection(GTPIcons);
+// addCollection(GTPIconsFigmaExport);
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -74,31 +73,34 @@ const devMiddleware = (useSWRNext) => {
 export function Providers({ children, forcedTheme }: ProvidersProps) {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
+  useEffect(() => {
+    // Start loading icons immediately
+    gtpIconsLoader.loadIcons();
+  }, []);
+
   return (
     <NavigationProvider>
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
-        forcedTheme={"dark"}
+        forcedTheme={!IS_PRODUCTION ? undefined : "dark"} // force dark for production
         disableTransitionOnChange
       >
         <SWRConfig
           value={{
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-            // refreshInterval: 1000 * 60 * 60, // 1 hour
+            dedupingInterval: 10000, // 10 seconds
           }}
         >
             <MasterProvider>
-              <ProjectsMetadataProvider>
                 <UIContextProvider>
                 <ToastProvider>
-                  <ConfettiProvider>
+                  {/* <ConfettiProvider> */}
                     {children}
-                  </ConfettiProvider>
+                  {/* </ConfettiProvider> */}
                 </ToastProvider>
               </UIContextProvider>
-            </ProjectsMetadataProvider>
             </MasterProvider>
         </SWRConfig>
       </ThemeProvider>

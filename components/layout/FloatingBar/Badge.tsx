@@ -38,7 +38,7 @@ export const Badge = memo(({
     }
   };
 
-  const badgeClasses = `flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full ${className}`;
+  const badgeClasses = `flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} text-[10px] rounded-full ${className}`;
   
   if (size === "sm") {
     return (
@@ -50,7 +50,7 @@ export const Badge = memo(({
           <div className="flex items-center justify-center w-[12px] h-[12px]">
             <GTPIcon
               icon={leftIcon as GTPIconName}
-              className="text-[#CDD8D3] w-[10px] h-[10px]"
+              className="text-color-text-primary w-[10px] h-[10px]"
               style={{
                 color: leftIconColor,
               }}
@@ -61,7 +61,7 @@ export const Badge = memo(({
           <div className="w-[0px] h-[12px]" />
         )}
         {showLabel && (
-          <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+          <div className="text-color-text-primary leading-[120%] text-[10px] truncate">
             {label}
           </div>
         )}
@@ -90,7 +90,7 @@ export const Badge = memo(({
         <div className="flex items-center justify-center w-[25px] h-[25px]">
           <GTPIcon
             icon={leftIcon as GTPIconName}
-            className="text-[#CDD8D3] w-[15px] h-[15px]"
+            className="text-color-text-primary w-[15px] h-[15px]"
             style={{
               color: leftIconColor,
             }}
@@ -101,7 +101,7 @@ export const Badge = memo(({
         <div className="w-[3px] h-[25px]" />
       )}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate">
+        <div className="text-color-text-primary leading-[150%] pr-0.5 truncate">
           {label}
         </div>
       )}

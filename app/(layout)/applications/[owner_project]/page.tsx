@@ -21,7 +21,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
-import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
+import { MetricChainBreakdownBar, TooltipProvider } from "../_components/MetricChainBreakdownBar";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
 import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
@@ -54,7 +54,7 @@ export default function Page({ params: { owner_project } }: Props) {
               rel="noopener noreferrer"
               target="_blank"
               href={Sources[s] ?? ""}
-              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+              className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
             >
               {s}
             </Link>
@@ -70,30 +70,32 @@ export default function Page({ params: { owner_project } }: Props) {
 
   return (
     <>
-      <ChartScaleProvider
-        scaleDefs={{
-          absolute: {
-            label: 'Absolute',
-            value: 'absolute',
-          },
-          stacked: {
-            label: 'Stacked',
-            value: 'stacked',
-          },
-          percentage: {
-            label: 'Percentage',
-            value: 'percentage',
-          },
+      <TooltipProvider>
+        <ChartScaleProvider
+          scaleDefs={{
+            absolute: {
+              label: 'Absolute',
+              value: 'absolute',
+            },
+            stacked: {
+              label: 'Stacked',
+              value: 'stacked',
+            },
+            percentage: {
+              label: 'Percentage',
+              value: 'percentage',
+            },
 
-        }}
-      >
-        {selectedMetrics.map((metric, index) => (
-          <MetricSection metric={metric} owner_project={owner_project} key={index} />
-        ))}
-        <Container className="pt-[30px]">
-          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
-        </Container>
-      </ChartScaleProvider>
+          }}
+        >
+          {selectedMetrics.map((metric, index) => (
+            <MetricSection metric={metric} owner_project={owner_project} key={index} />
+          ))}
+          <Container className="pt-[30px]">
+            <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
+          </Container>
+        </ChartScaleProvider>
+      </TooltipProvider>
 
       <Container>
         <div className="pt-[30px] pb-[15px]">
@@ -135,7 +137,7 @@ export default function Page({ params: { owner_project } }: Props) {
       </Container>
       <ContractsTable />
       <Container>
-        {/* <div className="rounded-md bg-forest-1000/60 h-[152px] w-full"></div> */}
+        {/* <div className="rounded-md bg-color-ui-active/60 h-[152px] w-full"></div> */}
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
             <div className="heading-large">Similar Applications</div>
@@ -145,7 +147,7 @@ export default function Page({ params: { owner_project } }: Props) {
           </div>
 
         </div>
-        {/* <div className="rounded-md bg-forest-1000/60 h-[140px] w-full"></div> */}
+        {/* <div className="rounded-md bg-color-ui-active/60 h-[140px] w-full"></div> */}
       </Container>
       <SimilarApplications owner_project={owner_project} />
 
@@ -367,7 +369,7 @@ const ContractsTable = () => {
       </HorizontalScrollContainer>
       {contracts.length > 5 && (
         <div className="flex items-center justify-center pt-[21px]">
-          <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-[#CDD8D3] cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
+          <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-color-text-primary cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
             {showMore ? "Show less" : "Show more"}
           </div>
         </div>
@@ -456,7 +458,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
     >
       <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
         <div
-          className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
+          className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]"
         >
           <div className="size-[26px] flex items-center justify-center">
             <GTPIcon icon={`${contract.origin_key}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />

@@ -924,12 +924,17 @@ const ChainComponent = function ChainComponent({
         show: true,
         trigger: 'axis',
         triggerOn: 'mousemove|click', // Add click for mobile support
-        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        // backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        backgroundColor: "rgb(var(--bg-default) / 0.95)",
+        shadowColor: "rgb(var(--ui-shadow))",
+        shadowBlur: 27,
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
         borderWidth: 0,
         borderRadius: 17,
         padding: 0,
         textStyle: {
-          color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          color: "rgb(var(--text-primary))",
         },
         formatter: tooltipFormatter,
         confine: isMobile ? true : false,
@@ -1144,7 +1149,7 @@ const ChainComponent = function ChainComponent({
             rel="noopener noreferrer"
             target="_blank"
             href={Sources[s] ?? ""}
-            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
           >
             {s}
           </Link>
@@ -1181,7 +1186,7 @@ const ChainComponent = function ChainComponent({
       suppressHydrationWarning={true}
     >
       <div className="w-full h-[146px] md:h-[176px] relative" ref={chartContainerRef}>
-        <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
+        <div className="absolute w-full h-full bg-forest-50 dark:bg-color-bg-default rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <ReactECharts
             ref={chartRef}
@@ -1227,7 +1232,7 @@ const ChainComponent = function ChainComponent({
             <GTPIcon 
               icon={"feather:arrow-right" as GTPIconName} 
               size="sm" className="!size-[11px]" 
-              containerClassName='!size-[15px] flex items-center justify-center bg-medium-background rounded-full' 
+              containerClassName='!size-[15px] flex items-center justify-center bg-color-bg-medium rounded-full' 
             />
           </Link>
           <div className="numbers-lg leading-snug h-[20px] font-medium flex items-center">
@@ -1247,7 +1252,7 @@ const ChainComponent = function ChainComponent({
             className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
           ></div> */}
         </div>
-        {/* <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
+        {/* <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-color-text-primary opacity-20 pointer-events-none">
           <Icon
             icon={getNavIcon(category)}
             className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] text-forest-900 dark:text-forest-200"
@@ -1270,7 +1275,7 @@ const ChainComponent = function ChainComponent({
             </div>
           </TooltipTrigger>
           <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-            <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto h-[80px] flex items-center">
+            <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto h-[80px] flex items-center">
               <div className="flex flex-col space-y-1">
                 <div className="font-bold text-sm leading-snug">
                   Data Sources:

@@ -6,7 +6,7 @@ import Icon from "@/components/layout/Icon";
 
 export default function BottomBanner() {
   return (
-    <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726]">
+    <div className="relative bottom-0 bg-forest-50  dark:bg-color-bg-default">
       <div className="p-[20px] md:p-[50px] flex gap-x-[10px] items-start justify-between">
         <div className="flex flex-col gap-y-[10px] w-full md:w-auto">
           <div className="flex items-center gap-x-[10px]">

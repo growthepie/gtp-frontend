@@ -12,7 +12,7 @@ const highlightsBlock = [
 
 const imageBlock = ["```image",
   JSON.stringify({
-    src: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.png",
+    src: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.webp",
     alt: "Building the World Ledger",
     width: "460",
     height: "390",
@@ -58,7 +58,7 @@ const anniversaryReport: QuickBiteData = {
     ...highlightsAndImageBlock,
     "> (Download Full Report)[https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf]",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.png",
+  image: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.webp",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/anniversary-report.png",
   date: "2025-08-12",
   related: [],

@@ -264,7 +264,7 @@ export async function getPageMetadata(
   };
 
   if (!templateMetadata) {
-    console.warn(`No metadata found in hardcoded data for path template: ${pathTemplate}`);
+    // console.warn(`No metadata found in hardcoded data for path template: ${pathTemplate}`);
     return defaultMetadata;
   }
 

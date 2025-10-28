@@ -27,6 +27,7 @@
     "cookies-next": "^2.1.1",
     "crossoriginworker": "^1.1.0",
     "crypto-browserify": "^3.12.1",
+    "d3-hierarchy": "^3.1.2",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
     "file-saver": "^2.0.5",
@@ -65,11 +66,15 @@
     "tinycolor2": "^1.6.0",
     "usehooks-ts": "^3.1.0"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "devDependencies": {
     "@iconify/react": "^4.1.0",
     "@iconify/tools": "^2.2.6",
     "@iconify/types": "^2.0.0",
     "@react-spring/types": "^9.7.2",
+    "@types/d3-hierarchy": "^3.1.7",
     "@types/gtag.js": "^0.0.12",
     "@types/jsdom": "^21.1.7",
     "@types/lodash": "^4.14.191",

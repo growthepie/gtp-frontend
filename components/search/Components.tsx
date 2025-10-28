@@ -25,6 +25,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { track } from "@vercel/analytics/react";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -154,12 +155,12 @@ export const HeaderSearchButton = () => {
   }
 
   return (
-    <HeaderButton size={isMobile ? "md" : "xl"} className={`cursor-pointer group ${isMobile ? "bg-transparent" : "bg-[#344240]"}`} onClick={() => handleOpenSearch()} ariaLabel="Search" >
+    <HeaderButton size={isMobile ? "md" : "xl"} className={`cursor-pointer group ${isMobile ? "bg-transparent" : "bg-color-bg-medium"}`} onClick={() => handleOpenSearch()} ariaLabel="Search" >
       <div className="flex items-center">
         <GTPIcon icon="gtp-search" size="md" />
         {!isMobile && (
         <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
-          <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-[#344240] bg-[#1F2726] flex items-center justify-center">/</div>
+          <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-color-bg-medium bg-color-bg-default flex items-center justify-center">/</div>
         </div>
         )}
       </div>
@@ -212,6 +213,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showMore?: any;
   setShowMore?: any;
   showSearchContainer?: boolean;
+  hideClearButtonOnMobile?: boolean; // Add this prop
   onInputFocus?: () => void;
   onInputBlur?: () => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -219,7 +221,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
 }
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -248,8 +250,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const query = searchParams.get("query") || "";
     const [localQuery, setLocalQuery] = useState(query);
     const { totalMatches } = useSearchBuckets();
+    const [isFocused, setIsFocused] = useState(false);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(true);
       // Call original onFocus if provided for SearchBar's internal logic
       if (onFocus) {
         onFocus(event);
@@ -261,6 +265,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     const handleInternalBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(false);
       // Call original onBlur if provided for SearchBar's internal logic
       if (onBlur) {
         onBlur(event);
@@ -274,14 +279,17 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     // Create a debounced version of the search update function
     const debouncedUpdateSearch = useMemo(
       () => debounce((newValue: string) => {
-        // get existing query params
-        let newSearchParams = new URLSearchParams(window.location.search);
-        newSearchParams.set("query", newValue);
-
-        // create new url
-        let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-        window.history.replaceState(null, "", url);
-      }, 50),
+        const sp = new URLSearchParams(window.location.search);
+        const current = sp.get("query") ?? "";
+        if (current === newValue) return;
+    
+        if (newValue) sp.set("query", newValue); else sp.delete("query");
+        const next = `${pathname}?${decodeURIComponent(sp.toString())}`;
+        const now = `${window.location.pathname}${window.location.search}`;
+        if (next !== now) {
+          window.history.replaceState(null, "", next);
+        }
+      }, 100), // you can raise to 100–150ms on mobile to cut churn
       [pathname]
     );
 
@@ -321,7 +329,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       return (
         <div className={`flex w-full flex-col-reverse md:flex-col`}>
             {/* first child: the search bar w/ Icon and input */}
-            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
+            <div className="flex w-full gap-x-[10px] items-center bg-color-bg-default rounded-[22px] h-[44px] p-[10px]">
               {localQuery.length > 0 ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
                   <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
@@ -333,21 +341,21 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 ref={localInputRef}
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
                 placeholder="Search"
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}
                 onBlur={handleInternalBlur}
               />
-              <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
-                <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
-                  <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
+              <div className={`absolute flex items-center gap-x-[10px] right-[15px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
+                <div className="flex items-center px-[15px] h-[24px] border border-color-text-primary rounded-full select-none">
+                  <div className="text-xxxs text-color-text-primary font-medium font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className="hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -366,9 +374,14 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   </svg>
                 </div>
               </div>
+              <div className={`flex items-center justify-center size-[18px] rounded-[5px] bg-color-bg-medium pointer-events-none transition-opacity duration-200 ${isFocused || localQuery.length > 0 ? "opacity-0" : "opacity-100"}`}>
+                <div className="heading-small-sm text-color-text-primary">/</div>
+              </div>
             </div>
             {/* second child: the filter selection container */}
-            <Filters showMore={showMore} setShowMore={setShowMore} />
+            <div className="hidden md:block">
+              <Filters showMore={showMore} setShowMore={setShowMore} />
+            </div>
           </div>
       );
     }
@@ -380,7 +393,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           {/* flex-col to make it so the children are stacked vertically */}
           <div className="flex w-full flex-col">
             {/* first child: the search bar w/ Icon and input */}
-            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
+            <div className="flex w-full gap-x-[10px] items-center bg-color-bg-default rounded-[22px] h-[44px] p-2.5">
               {localQuery.length > 0 ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
                   <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
@@ -393,19 +406,20 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                className={`flex-1 h-full bg-transparent text-white placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
                 placeholder="Search"
                 value={localQuery}
                 onChange={handleSearchChange}
               />
-              <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
-                <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
-                  <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
+              <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
+                <div className="flex items-center px-[15px] h-[24px] border border-color-text-primary rounded-full select-none">
+                  <div className="text-xxxs text-color-text-primary font-medium font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
+                {/* Conditionally hide X button on mobile based on prop */}
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]`}
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -791,9 +805,9 @@ export const SearchBadge = memo(({
   onClick,
   label,
   leftIcon,
-  leftIconColor = "#CDD8D3",
+  leftIconColor = "rgb(var(--text-primary))",
   rightIcon,
-  rightIconColor = "#5A6462",
+  rightIconColor = "rgb(var(--ui-hover))",
   rightIconSize = "base",
   size = "base",
   className,
@@ -836,7 +850,7 @@ export const SearchBadge = memo(({
             size="sm"
             className="!size-[12px]"
             style={{
-              color: "#5A6462", // Force the grey color for GTP icons
+              color: "rgb(var(--ui-hover))", // Force the grey color for GTP icons
             }}
           />
         </div>
@@ -848,7 +862,7 @@ export const SearchBadge = memo(({
       <div className="flex items-center justify-center w-[15px] h-[15px]">
         <Icon
           icon={leftIcon}
-          className="text-[#CDD8D3] w-[15px] h-[15px]"
+          className="text-color-text-primary w-[15px] h-[15px]"
           style={{
             color: leftIconColor,
           }}
@@ -859,12 +873,12 @@ export const SearchBadge = memo(({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
+      className={`flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} hover:bg-color-ui-hover active:bg-color-ui-hover text-xs rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
       onClick={onClick ? handleClick : undefined}
     >
       {getLeftIcon()}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate max-w-[185px]">
+        <div className="text-color-text-primary leading-[150%] pr-0.5 truncate max-w-[185px]">
           {label}
         </div>
       )}
@@ -942,7 +956,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout
+        // If measurements aren't available yet, use a simple fallback layout for desktop
         if (!rect) {
           // Simple fallback: assume items are in rows of 3
           const itemsPerRow = 3;
@@ -959,8 +973,15 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           dataMap[rowIndex].push(key);
           
           // Set "See more" for the last item in row 2 if there are more items
+          // Only set it for the last item in the row, not every item
           if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+            // Check if this is the last item in row 2
+            const nextItemRowIndex = Math.floor((itemIndex + 1) / itemsPerRow);
+            if (nextItemRowIndex > 2) {
+              // Calculate the actual position in the row (rightmost position)
+              const actualRowLength = dataMap[rowIndex].length;
+              newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+            }
           }
           return;
         }
@@ -1012,7 +1033,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // Fallback for stack results too
+            // If measurements aren't available yet, use a simple fallback layout for desktop
             if (!rect) {
               const itemsPerRow = 3;
               const rowIndex = Math.floor(optionIndex / itemsPerRow);
@@ -1027,8 +1048,16 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               }
               dataMap[rowIndex].push(key);
               
+              // Set "See more" for the last item in row 2 if there are more items
+              // Only set it for the last item in the row, not every item
               if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+                // Check if this is the last item in row 2
+                const nextItemRowIndex = Math.floor((optionIndex + 1) / itemsPerRow);
+                if (nextItemRowIndex > 2) {
+                  // Calculate the actual position in the row (rightmost position)
+                  const actualRowLength = dataMap[rowIndex].length;
+                  newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+                }
               }
               return;
             }
@@ -1194,6 +1223,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         // If keyboard navigation is active, exit it first
         if (!isCoordsNull) {
           setKeyCoords({ y: null, x: null });
+          // Dispatch event to focus search input
+          window.dispatchEvent(new CustomEvent('focusSearchInput'));
         } else {
           // If no keyboard navigation, dispatch event to handle clear/close
           window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
@@ -1268,10 +1299,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                   {isBucketMatch ? (
                     <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
                   ) : (
-                    <span className="text-white">{type}</span>
+                    <span className="text-color-text-primary">{type}</span>
                   )}
                 </div>
-                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full max-sm:mt-[-3px]" />
+                <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full max-sm:mt-[-3px]" />
               </div>
               
               <div className="flex flex-col gap-[5px]">
@@ -1317,7 +1348,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                       
                       return (
                         <div key={group.label} className="flex flex-col gap-[5px]">
-                          <div className="text-xxs" style={{ color: '#5A6462' }}>
+                          <div className="text-xxs" style={{ color: 'rgb(var(--ui-hover))' }}>
                             <span>Chains that are part of the &quot;</span>
                             <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
                             <span>&quot;:</span>
@@ -1368,7 +1399,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 }
 
 
-const BucketItem = ({
+export const BucketItem = ({
   item,
   itemKey,
   isSelected,
@@ -1405,31 +1436,41 @@ const BucketItem = ({
   // For stack results, check if the item matches the query
   const shouldGreyOut = isStackResult && query && !normalizeString(item.label).includes(normalizeString(query));
 
+  const targetUrl = lastBucketIndeces[itemKey] && !showMore[bucket] 
+  ? isApps 
+    ? isBucketMatch 
+      ? `/applications` // No search params for Applications bucket match
+      : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
+    : isQuickBites 
+      ? `/quick-bites` 
+      : ``
+  : item.url;
+
   return (
     <Link
       data-selected={isSelected ? "true" : "false"}
-      href={lastBucketIndeces[itemKey] && !showMore[bucket] 
-        ? isApps 
-          ? isBucketMatch 
-            ? `/applications` // No search params for Applications bucket match
-            : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
-          : isQuickBites 
-            ? `/quick-bites` 
-            : ``
-        : item.url}
+      href={targetUrl}
       key={item.label}
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
 
       onClick={(e) => {
+        // Stop event propagation to prevent parent click handlers from firing
+        e.stopPropagation();
+        console.log("Search Badge Clicked", { location: "Search", page: `${query}::${targetUrl}` });
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+          console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {
+            track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
             return; // Don't prevent default, let Link handle navigation
           }
           // For other buckets, expand the results
           setShowMore(prev => ({ ...prev, [bucket]: true }));
+          // Track the show more event
+          track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
+
           // Blur to remove focus rectangle on mouse click
           if (e.currentTarget instanceof HTMLElement) {
             e.currentTarget.blur();
@@ -1437,6 +1478,8 @@ const BucketItem = ({
           e.preventDefault(); // Prevent navigation for expansion
           return;
         }
+        // Track the result click for other buckets
+        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
 
       onKeyDown={(e) => {
@@ -1444,10 +1487,14 @@ const BucketItem = ({
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
             // For Quick Bites and Applications, let the Link navigate naturally
             if (isQuickBites || isApps) {
+              track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
               return; // Don't prevent default, let Link handle navigation
             }
             // For other buckets, expand the results
             setShowMore(prev => ({ ...prev, [bucket]: true }));
+            // Track the show more event
+            track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
+
             setKeyboardExpandedStacks(prev => {
               const newSet = new Set(prev);
               newSet.add(itemKey);
@@ -1456,16 +1503,18 @@ const BucketItem = ({
             e.preventDefault(); // Prevent navigation for expansion
           }
         }
+        // Track the result click for other buckets
+        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-[#5A6462]"} hover:underline bg-[#151A19] text-xxs`}>
+        <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-color-ui-hover"} hover:underline bg-color-ui-active text-xxs`}>
           <div>See more...</div>
         </div>
       )}
       <SearchBadge
-        className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+        className={`!cursor-pointer ${isSelected ? "!bg-color-ui-hover" : ""}`}
         label={
           shouldGreyOut 
             ? <span className="opacity-50">{item.label}</span> // Grey out entire text for unmatched stack results
@@ -1475,7 +1524,7 @@ const BucketItem = ({
               : item.label
         }
         leftIcon={`${item.icon}` as GTPIconName}
-        leftIconColor={item.color || "white"}
+        leftIconColor={item.color || "rgb(var(--text-primary))"}
         rightIcon=""
       />
     </Link>
@@ -1551,10 +1600,10 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
+    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-color-bg-medium rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-        <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+        <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
           {children}
         </div>
       </div>
@@ -1568,12 +1617,14 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22" 
               height="10" 
               rx="2" 
-              fill={pressedKey === 'ArrowUp' ? "#5A6462" : "#151A19"}
+              // fill={pressedKey === 'ArrowUp' ? "#5A6462" : "#151A19"}
+              className={`${pressedKey === 'ArrowUp' ? "fill-color-ui-hover" : "fill-color-ui-active"}`}
             />
             <path 
               d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" 
-              fill="#CDD8D3" 
-              stroke="#CDD8D3"
+              className="text-color-text-primary stroke-color-text-primary"
+              // fill="#CDD8D3" 
+              // stroke="#CDD8D3"
             />
             
             {/* Left arrow */}
@@ -1586,8 +1637,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path 
               d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" 
-              fill="#CDD8D3" 
-              stroke="#CDD8D3"
+              className="text-color-text-primary stroke-color-text-primary"
+              // fill="#CDD8D3" 
+              // stroke="#CDD8D3"
             />
             
             {/* Right arrow */}
@@ -1601,8 +1653,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path 
               d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" 
-              fill="#CDD8D3" 
-              stroke="#CDD8D3"
+              className="text-color-text-primary stroke-color-text-primary"
+              // fill="#CDD8D3" 
+              // stroke="#CDD8D3"
             />
             
             {/* Down arrow */}
@@ -1616,11 +1669,12 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             />
             <path 
               d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" 
-              fill="#CDD8D3" 
-              stroke="#CDD8D3"
+              className="text-color-text-primary stroke-color-text-primary"
+              // fill="#CDD8D3" 
+              // stroke="#CDD8D3"
             />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -1629,21 +1683,22 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22" 
               height="20" 
               rx="2" 
-              fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"} 
+              // fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"} 
+              className={`${pressedKey === 'Enter' ? "fill-color-ui-hover" : "fill-color-ui-active"}`}
             />
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2" />
-            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" stroke-width="2" />
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" className="text-color-text-primary stroke-color-text-primary" />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
-          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
-            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
+          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
+            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-color-text-primary numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
               ESC
             </div>
           </div>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
         </div>
       </div>
     </div>

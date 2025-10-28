@@ -2,6 +2,162 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --bg-default: 252 253 253; /* #fcfdfd | rgb(252, 253, 253) */
+    --bg-medium: 236 243 243; /* #ecf3f3 | rgb(236, 243, 243) */
+    --ui-hover: 200 218 218; /* #c8dada | rgb(200, 218, 218) */
+    --ui-active: 229 240 240; /* #e5f0f0 | rgb(229, 240, 240) */
+    --ui-shadow: 215 218 218; /* #d7dada | rgb(215, 218, 218) */
+    --text-primary: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
+    --text-secondary: 121 139 137; /* #798b89 | rgb(121, 139, 137) */
+    --accent-red: 232 60 82; /* #e83c52 | rgb(232, 60, 82) */
+    --accent-yellow: 229 179 0; /* #e5b300 | rgb(229, 179, 0) */
+    --accent-petrol: 14 111 122; /* #0e6f7a | rgb(14, 111, 122) */
+    --accent-turquoise: 0 207 197; /* #00cfc5 | rgb(0, 207, 197) */
+    --positive: 24 169 87; /* #18a957 | rgb(24, 169, 87) */
+    --negative: 217 44 44; /* #d92c2c | rgb(217, 44, 44) */
+    --chains-arbitrum-nova: 171 58 7; /* #ab3a07 | rgb(171, 58, 7) */
+    --chains-arbitrum-one: 8 110 201; /* #086ec9 | rgb(8, 110, 201) */
+    --chains-b3: 51 104 239; /* #3368ef | rgb(51, 104, 239) */
+    --chains-base: 0 0 255; /* #0000ff | rgb(0, 0, 255) */
+    --chains-blast: 57 55 2; /* #393702 | rgb(57, 55, 2) */
+    --chains-celestia: 147 75 237; /* #934bed | rgb(147, 75, 237) */
+    --chains-celo: 145 146 0; /* #919200 | rgb(145, 146, 0) */
+    --chains-derive: 159 68 4; /* #9f4404 | rgb(159, 68, 4) */
+    --chains-eclipse: 2 110 1; /* #026e01 | rgb(2, 110, 1) */
+    --chains-eigenda: 49 26 232; /* #311ae8 | rgb(49, 26, 232) */
+    --chains-ethereum: 37 109 233; /* #256de9 | rgb(37, 109, 233) */
+    --chains-ethereum-blobs: 107 81 0; /* #6b5100 | rgb(107, 81, 0) */
+    --chains-ethereum-calldata: 0 102 102; /* #006666 | rgb(0, 102, 102) */
+    --chains-fraxtal: 20 111 196; /* #146fc4 | rgb(20, 111, 196) */
+    --chains-gravity: 141 80 0; /* #8d5000 | rgb(141, 80, 0) */
+    --chains-imx: 2 112 83; /* #027053 | rgb(2, 112, 83) */
+    --chains-ink: 113 50 245; /* #7132f5 | rgb(113, 50, 245) */
+    --chains-linea: 0 82 110; /* #00526e | rgb(0, 82, 110) */
+    --chains-lisk: 97 63 255; /* #613fff | rgb(97, 63, 255) */
+    --chains-loopring: 85 100 238; /* #5564ee | rgb(85, 100, 238) */
+    --chains-manta: 194 4 184; /* #c204b8 | rgb(194, 4, 184) */
+    --chains-mantle: 14 111 122; /* #0e6f7a | rgb(14, 111, 122) */
+    --chains-metis: 0 112 136; /* #007088 | rgb(0, 112, 136) */
+    --chains-mint: 8 78 25; /* #084e19 | rgb(8, 78, 25) */
+    --chains-mode: 64 72 0; /* #404800 | rgb(64, 72, 0) */
+    --chains-op-mainnet: 193 1 24; /* #c10118 | rgb(193, 1, 24) */
+    --chains-orderly: 102 96 240; /* #6660f0 | rgb(102, 96, 240) */
+    --chains-pgn: 75 105 2; /* #4b6902 | rgb(75, 105, 2) */
+    --chains-plume: 178 43 0; /* #b22b00 | rgb(178, 43, 0) */
+    --chains-polygon-zkevm: 173 13 197; /* #ad0dc5 | rgb(173, 13, 197) */
+    --chains-real: 77 103 236; /* #4d67ec | rgb(77, 103, 236) */
+    --chains-redstone: 168 0 1; /* #a80001 | rgb(168, 0, 1) */
+    --chains-rhino: 141 79 6; /* #8d4f06 | rgb(141, 79, 6) */
+    --chains-scroll: 85 72 0; /* #554800 | rgb(85, 72, 0) */
+    --chains-soneium: 56 55 53; /* #383735 | rgb(56, 55, 53) */
+    --chains-starknet: 184 36 18; /* #b82412 | rgb(184, 36, 18) */
+    --chains-swell: 0 90 244; /* #005af4 | rgb(0, 90, 244) */
+    --chains-taiko: 186 18 122; /* #ba127a | rgb(186, 18, 122) */
+    --chains-unichain: 195 0 124; /* #c3007c | rgb(195, 0, 124) */
+    --chains-world: 120 115 103; /* #787367 | rgb(120, 115, 103) */
+    --chains-zircuit: 1 111 84; /* #016f54 | rgb(1, 111, 84) */
+    --chains-zksync-era: 22 43 223; /* #162bdf | rgb(22, 43, 223) */
+    --chains-zora: 8 111 154; /* #086f9a | rgb(8, 111, 154) */
+    --chains-unlisted1: 8 79 72; /* #084f48 | rgb(8, 79, 72) */
+    --chains-unlisted2: 11 111 102; /* #0b6f66 | rgb(11, 111, 102) */
+    --chains-unlisted3: 9 88 81; /* #095851 | rgb(9, 88, 81) */
+    --chains-unlisted4: 6 65 60; /* #06413c | rgb(6, 65, 60) */
+    --chains-unlisted5: 11 110 102; /* #0b6e66 | rgb(11, 110, 102) */
+    --chains-unlisted6: 9 87 80; /* #095750 | rgb(9, 87, 80) */
+    --chains-unlisted7: 6 64 59; /* #06403b | rgb(6, 64, 59) */
+    --chains-unlisted8: 9 92 86; /* #095c56 | rgb(9, 92, 86) */
+    --chains-custom-warm-1: 155 1 19; /* #9b0113 | rgb(155, 1, 19) */
+    --chains-custom-warm-2: 186 35 1; /* #ba2301 | rgb(186, 35, 1) */
+    --chains-custom-warm-3: 157 70 1; /* #9d4601 | rgb(157, 70, 1) */
+    --chains-custom-warm-4: 130 87 1; /* #825701 | rgb(130, 87, 1) */
+    --chains-custom-warm-5: 110 94 0; /* #6e5e00 | rgb(110, 94, 0) */
+    --chains-custom-cool-1: 9 85 93; /* #09555d | rgb(9, 85, 93) */
+    --chains-custom-cool-2: 11 111 117; /* #0b6f75 | rgb(11, 111, 117) */
+    --chains-custom-cool-3: 8 77 78; /* #084d4e | rgb(8, 77, 78) */
+    --chains-custom-cool-4: 11 112 110; /* #0b706e | rgb(11, 112, 110) */
+    --chains-custom-cool-5: 3 73 70; /* #034946 | rgb(3, 73, 70) */
+  }
+
+  .dark {
+    --bg-default: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
+    --bg-medium: 52 66 64; /* #344240 | rgb(52, 66, 64) */
+    --ui-hover: 90 100 98; /* #5a6462 | rgb(90, 100, 98) */
+    --ui-active: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
+    --ui-shadow: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
+    --text-primary: 205 216 211; /* #cdd8d3 | rgb(205, 216, 211) */
+    --text-secondary: 75 83 79; /* #4b534f | rgb(75, 83, 79) */
+    --accent-red: 254 84 104; /* #fe5468 | rgb(254, 84, 104) */
+    --accent-yellow: 255 223 39; /* #ffdf27 | rgb(255, 223, 39) */
+    --accent-petrol: 16 128 140; /* #10808c | rgb(16, 128, 140) */
+    --accent-turquoise: 29 247 239; /* #1df7ef | rgb(29, 247, 239) */
+    --positive: 76 255 126; /* #4cff7e | rgb(76, 255, 126) */
+    --negative: 255 56 56; /* #ff3838 | rgb(255, 56, 56) */
+    --chains-arbitrum-nova: 244 152 110; /* #f4986e | rgb(244, 152, 110) */
+    --chains-arbitrum-one: 106 217 255; /* #6ad9ff | rgb(106, 217, 255) */
+    --chains-b3: 161 185 248; /* #a1b9f8 | rgb(161, 185, 248) */
+    --chains-base: 52 103 248; /* #3467f8 | rgb(52, 103, 248) */
+    --chains-blast: 233 226 56; /* #e9e238 | rgb(233, 226, 56) */
+    --chains-celestia: 204 171 247; /* #ccabf7 | rgb(204, 171, 247) */
+    --chains-celo: 252 255 82; /* #fcff52 | rgb(252, 255, 82) */
+    --chains-derive: 251 148 75; /* #fb944b | rgb(251, 148, 75) */
+    --chains-eclipse: 161 254 160; /* #a1fea0 | rgb(161, 254, 160) */
+    --chains-eigenda: 186 179 241; /* #bab3f1 | rgb(186, 179, 241) */
+    --chains-ethereum: 163 184 217; /* #a3b8d9 | rgb(163, 184, 217) */
+    --chains-ethereum-blobs: 255 195 0; /* #ffc300 | rgb(255, 195, 0) */
+    --chains-ethereum-calldata: 0 204 204; /* #00cccc | rgb(0, 204, 204) */
+    --chains-fraxtal: 137 189 238; /* #89bdee | rgb(137, 189, 238) */
+    --chains-gravity: 255 172 67; /* #ffac43 | rgb(255, 172, 67) */
+    --chains-imx: 58 252 201; /* #3afcc9 | rgb(58, 252, 201) */
+    --chains-ink: 139 107 255; /* #8b6bff | rgb(139, 107, 255) */
+    --chains-linea: 169 233 255; /* #a9e9ff | rgb(169, 233, 255) */
+    --chains-lisk: 190 176 255; /* #beb0ff | rgb(190, 176, 255) */
+    --chains-loopring: 175 182 240; /* #afb6f0 | rgb(175, 182, 240) */
+    --chains-manta: 253 148 247; /* #fd94f7 | rgb(253, 148, 247) */
+    --chains-mantle: 24 193 211; /* #18c1d3 | rgb(24, 193, 211) */
+    --chains-metis: 0 210 255; /* #00d2ff | rgb(0, 210, 255) */
+    --chains-mint: 50 201 88; /* #32c958 | rgb(50, 201, 88) */
+    --chains-mode: 196 223 0; /* #c4df00 | rgb(196, 223, 0) */
+    --chains-op-mainnet: 240 69 88; /* #f04558 | rgb(240, 69, 88) */
+    --chains-orderly: 219 218 248; /* #dbdaf8 | rgb(219, 218, 248) */
+    --chains-pgn: 215 253 123; /* #d7fd7b | rgb(215, 253, 123) */
+    --chains-plume: 255 102 75; /* #ff664b | rgb(255, 102, 75) */
+    --chains-polygon-zkevm: 243 192 251; /* #f3c0fb | rgb(243, 192, 251) */
+    --chains-real: 183 191 227; /* #b7bfe3 | rgb(183, 191, 227) */
+    --chains-redstone: 255 198 198; /* #ffc6c6 | rgb(255, 198, 198) */
+    --chains-rhino: 240 193 137; /* #f0c189 | rgb(240, 193, 137) */
+    --chains-scroll: 255 227 64; /* #ffe340 | rgb(255, 227, 64) */
+    --chains-soneium: 215 226 220; /* #d7e2dc | rgb(215, 226, 220) */
+    --chains-starknet: 241 155 145; /* #f19b91 | rgb(241, 155, 145) */
+    --chains-swell: 148 188 255; /* #94bcff | rgb(148, 188, 255) */
+    --chains-taiko: 232 24 153; /* #e81899 | rgb(232, 24, 153) */
+    --chains-unichain: 255 149 215; /* #ff95d7 | rgb(255, 149, 215) */
+    --chains-world: 217 208 193; /* #d9d0c1 | rgb(217, 208, 193) */
+    --chains-zircuit: 1 203 154; /* #01cb9a | rgb(1, 203, 154) */
+    --chains-zksync-era: 198 203 242; /* #c6cbf2 | rgb(198, 203, 242) */
+    --chains-zora: 82 197 246; /* #52c5f6 | rgb(82, 197, 246) */
+    --chains-unlisted1: 175 181 181; /* #afb5b5 | rgb(175, 181, 181) */
+    --chains-unlisted2: 187 194 193; /* #bbc2c1 | rgb(187, 194, 193) */
+    --chains-unlisted3: 201 206 205; /* #c9cecd | rgb(201, 206, 205) */
+    --chains-unlisted4: 171 181 180; /* #abb5b4 | rgb(171, 181, 180) */
+    --chains-unlisted5: 172 183 182; /* #acb7b6 | rgb(172, 183, 182) */
+    --chains-unlisted6: 185 196 195; /* #b9c4c3 | rgb(185, 196, 195) */
+    --chains-unlisted7: 167 183 182; /* #a7b7b6 | rgb(167, 183, 182) */
+    --chains-unlisted8: 179 197 195; /* #b3c5c3 | rgb(179, 197, 195) */
+    --chains-custom-warm-1: 254 148 160; /* #fe94a0 | rgb(254, 148, 160) */
+    --chains-custom-warm-2: 254 175 157; /* #feaf9d | rgb(254, 175, 157) */
+    --chains-custom-warm-3: 254 168 97; /* #fea861 | rgb(254, 168, 97) */
+    --chains-custom-warm-4: 254 188 55; /* #febc37 | rgb(254, 188, 55) */
+    --chains-custom-warm-5: 255 223 39; /* #ffdf27 | rgb(255, 223, 39) */
+    --chains-custom-cool-1: 25 202 221; /* #19cadd | rgb(25, 202, 221) */
+    --chains-custom-cool-2: 24 202 211; /* #18cad3 | rgb(24, 202, 211) */
+    --chains-custom-cool-3: 25 203 205; /* #19cbcd | rgb(25, 203, 205) */
+    --chains-custom-cool-4: 25 217 214; /* #19d9d6 | rgb(25, 217, 214) */
+    --chains-custom-cool-5: 29 247 239; /* #1df7ef | rgb(29, 247, 239) */
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -182,23 +338,65 @@ input:focus-visible {
   }
 }
 
+
+
+
 .fade-edge-div {
   position: relative;
   overflow: visible;
-  /* mask fade distance, for use in mask calculations */
-  --mask-height: 30px;
-  /* The content mask is a linear gradient from top to bottom */
+  /* The content mask is a linear gradient from left to right */
   --mask-image-content: linear-gradient(
     to right,
-    transparent 12px,
+    transparent,
+    black 30px,
+    black calc(100% - 60px),
+    transparent calc(100% - 30px),
+    transparent
+  );
+  /* Apply the mask image */
+  mask-image: var(--mask-image-content);
+  mask-size: 100% 100%;
+  mask-position: 0 0;
+  mask-repeat: no-repeat;
+}
+
+@media (max-width: 767px) {
+  .fade-edge-div {
+    position: relative;
+    overflow: visible;
+    /* The content mask is a linear gradient from left to right */
+    --mask-image-content: linear-gradient(
+      to right,
+      transparent,
+      black 30px,
+      black calc(100% - 30px),
+      transparent
+    );
+    /* Apply the mask image */
+    mask-image: var(--mask-image-content);
+    mask-size: 100% 100%;
+    mask-position: 0 0;
+    mask-repeat: no-repeat;
+  }
+}
+
+.fade-edge-div-vertical {
+  position: relative;
+  overflow: visible;
+  /* mask fade distance, for use in mask calculations */
+  --mask-height: 10px;
+  /* The content mask is a linear gradient from top to bottom */
+  --mask-image-content: linear-gradient(
+    to bottom,
+    transparent 5px,
     black var(--mask-height),
     black calc(100% - var(--mask-height)),
-    transparent calc(100% - 12px)
+    transparent calc(100% - 5px)
   );
   /* Apply the mask image and mask size variables */
   mask-image: var(--mask-image-content);
   mask-size: var(--mask-size-content);
-  /* Position the content gradient in the top left, and the 
+  /* Position the content gradient in the top left, and the
   scroll gradient in the top right */
   mask-position: 0 0, 100% 0;
 

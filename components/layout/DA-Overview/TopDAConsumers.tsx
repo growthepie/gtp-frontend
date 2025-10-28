@@ -119,7 +119,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                                     maxWidth: "100%",
                                 }}
                             >
-                                <div className="bg-[#1F2726] w-[122px] h-[30px] rounded-full flex items-center pl-[6px] pr-[5px] gap-x-[10px]">
+                                <div className="bg-color-bg-default w-[122px] h-[30px] rounded-full flex items-center pl-[6px] pr-[5px] gap-x-[10px]">
                                     {AllChainsByKeys[sortedDAConsumers[item.index][0]] || custom_logo_keys.includes(sortedDAConsumers[item.index][0]) ?
                                     
                                         (

@@ -22,6 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return acc;
   }, {} as { [key: string]: ChainInfo & { key: string } });
 
+  // Check if the chain exists before accessing its properties
+  if (!AllChainsByUrlKey[params.chain]) {
+    return {
+      title: "Chain not found",
+      description: "Chain not found",
+    };
+  }
 
   const key = AllChainsByUrlKey[params.chain].key;
   const urlKey = AllChainsByUrlKey[params.chain].url_key;

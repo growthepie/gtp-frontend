@@ -116,11 +116,12 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
               const options = chartConfig.options || {};
               
               // Get title, subtitle, dimensions
-              const { title, subtitle, width, height, caption } = chartConfig;
+              const { title, subtitle, width, height, caption, margins } = chartConfig;
               
               blocks.push({
                 id: generateBlockId(),
                 type: 'chart',
+                margins,
                 chartType,
                 data,
                 options,
@@ -146,11 +147,12 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
           const chartType = chartConfig.type || 'line';
           const data = chartConfig.data || [];
           const options = chartConfig.options || {};
-          const { title, subtitle, width, height, caption } = chartConfig;
+          const { title, subtitle, width, height, caption, margins } = chartConfig;
           
           blocks.push({
             id: generateBlockId(),
             type: 'chart',
+            margins,
             chartType,
             data,
             options,

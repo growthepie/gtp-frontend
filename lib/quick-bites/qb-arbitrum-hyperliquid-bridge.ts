@@ -45,7 +45,7 @@ const ArbPercentage = [
   "```chart",
     JSON.stringify({
       type: "area",
-      title: "Hyperliquid USDC Market Share",
+      title: "Stablecoin Dominance on Arbitrum One",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -95,6 +95,7 @@ const CircleStacked = [
     JSON.stringify({
       type: "area",
       title: "USDC Supply Breakdown",
+      margins: "none",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -134,6 +135,7 @@ const CirclePercentage = [
     JSON.stringify({
       type: "area",
       title: "Hyperliquid USDC Market Share",
+      margins: "none",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -172,7 +174,7 @@ const CirclePercentage = [
 const CircleCharts = ["```container",
   JSON.stringify({
     blocks: [CircleStacked, CirclePercentage],
-    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center",
+    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center gap-[15px]",
   }),
   "```",
 ];
@@ -264,9 +266,14 @@ const arbitrumHyperliquidBridge: QuickBiteData = {
     name: "Circle LLC",
     url: "/applications/circlefin"
   },
+  {
+    icon: "gtp-metrics-stablecoinmarketcap",
+    name: "Stablecoin Supply",
+    url: "/fundamentals/stablecoin-market-cap"
+  },
 ],
   icon: "arbitrum-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default arbitrumHyperliquidBridge;

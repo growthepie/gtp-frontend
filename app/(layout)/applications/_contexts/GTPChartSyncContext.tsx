@@ -21,7 +21,7 @@ const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover
   if (!chart?.options?.chart?.type) return;
 
   const chartType = chart.options.chart.type as SupportedChartType;
-  
+
   if (!['pie', 'area', 'line'].includes(chartType)) return;
 
   // Disable animation during updates for better performance
@@ -34,10 +34,10 @@ const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover
     if (chartType === 'pie') {
       const series = chart.series[0];
       if (!series?.points) return;
-      
+
       // Reset all points
       series.points.forEach(point => point.setState(''));
-      
+
       if (seriesName) {
         const matchedPoint = series.points.find(point => point.name === seriesName);
         if (matchedPoint) {
@@ -50,37 +50,56 @@ const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover
     } else {
       // For area/line charts
       const selectedName = (chart as any).selectedSeriesName;
-      
+      let needsRedraw = false;
+
       chart.series.forEach(series => {
         let opacity = 1.0;
-        
+        let zIndex = 1;
+
         if (isHover) {
           // Hovering behavior
           if (selectedName) {
-            opacity = series.name === selectedName ? 1.0 : 
+            opacity = series.name === selectedName ? 1.0 :
                      series.name === seriesName ? 0.7 : 0.2;
+            zIndex = 100;
           } else {
-            opacity = !seriesName || series.name === seriesName ? 1.0 : 0.4;
+            opacity = !seriesName || series.name === seriesName ? 1.0 : 0.2;
+            zIndex = 1;
           }
         } else {
           // Selection behavior
           const visible = !seriesName || series.name === seriesName;
           opacity = visible ? 1.0 : 0.2;
+          zIndex = 1;
           (chart as any).selectedSeriesName = seriesName;
         }
-        
-        series.update({
-          opacity: opacity as number,
-          type: chartType
-        }, false);
+
+        // Only update if opacity actually changed
+        if (series.options.opacity !== opacity) {
+          series.update({
+            opacity: opacity as number,
+            type: chartType,
+            zIndex: zIndex
+          }, false);
+          needsRedraw = true;
+        }
       });
+
+      // Only redraw if something changed
+      if (needsRedraw) {
+        chart.redraw();
+      }
     }
   } finally {
-    // Restore animation setting and redraw once
+    // Restore animation setting
     if (chart.options?.chart) {
       chart.options.chart.animation = originalAnimation;
     }
-    chart.redraw();
+
+    // Redraw pie charts always (they don't check needsRedraw)
+    if (chartType === 'pie') {
+      chart.redraw();
+    }
   }
 };
 
@@ -95,32 +114,63 @@ interface ChartContextValue {
 
 const ChartContext = createContext<ChartContextValue | null>(null);
 
+// Use a stable Map that persists across React StrictMode double-renders
+const globalChartsMap = new Map<string, Highcharts.Chart>();
+
 // Simplified provider that manages both hovering and selection
-export const ChartSyncProvider: React.FC<PropsWithChildren> = memo(({ children }) => {
-  const chartsRef = useRef(new Map<string, Highcharts.Chart>());
+export const ChartSyncProvider: React.FC<PropsWithChildren> = ({ children }) => {
+  const chartsRef = useRef(globalChartsMap);
   const [hoveredSeriesName, setHoveredSeriesNameState] = useState<string | null>(null);
   const [selectedSeriesName, setSelectedSeriesNameState] = useState<string | null>(null);
-  
-  // Use throttle instead of debounce for smoother updates
+  const rafRef = useRef<number | null>(null);
+
+  // Store hover state in a ref to avoid triggering re-renders on every hover
+  const hoveredSeriesNameRef = useRef<string | null>(null);
+
+  // Use throttle with RAF batching for smoother updates
   const throttledHoverUpdate = useMemo(
     () => throttle((name: string | null) => {
-      setHoveredSeriesNameState(name);
-      chartsRef.current.forEach(chart => updateChart(chart, name, true));
-    }, 40),  // 25fps is usually sufficient for smooth animations
+      // Cancel any pending RAF
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Batch chart updates in a single animation frame
+      rafRef.current = requestAnimationFrame(() => {
+        hoveredSeriesNameRef.current = name;
+        chartsRef.current.forEach(chart => updateChart(chart, name, true));
+        rafRef.current = null;
+      });
+    }, 16),  // ~60fps for smoother animations
     []
   );
   
   useEffect(() => {
     return () => {
       throttledHoverUpdate.cancel();
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, [throttledHoverUpdate]);
   
   const setHoveredSeriesName = useCallback((name: string | null) => {
     if (!name) {
       throttledHoverUpdate.cancel();
-      setHoveredSeriesNameState(null);
-      chartsRef.current.forEach(chart => updateChart(chart, null, true));
+
+      // Cancel any pending RAF
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Batch unhover in RAF for consistency
+      rafRef.current = requestAnimationFrame(() => {
+        hoveredSeriesNameRef.current = null;
+        chartsRef.current.forEach(chart => {
+          updateChart(chart, null, true);
+        });
+        rafRef.current = null;
+      });
       return;
     }
     throttledHoverUpdate(name);
@@ -131,22 +181,26 @@ export const ChartSyncProvider: React.FC<PropsWithChildren> = memo(({ children }
     chartsRef.current.forEach(chart => updateChart(chart, name, false));
   }, []);
   
+  // Don't memoize the charts Map - always use the current ref
+  // Use refs for hover state to avoid re-renders
   const value = useMemo(() => ({
-    charts: chartsRef.current,
-    hoveredSeriesName,
+    get charts() {
+      return chartsRef.current;
+    },
+    get hoveredSeriesName() {
+      return hoveredSeriesNameRef.current;
+    },
     setHoveredSeriesName,
     selectedSeriesName,
     setSelectedSeriesName
-  }), [hoveredSeriesName, setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName]);
+  }), [setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName]);
   
   return (
     <ChartContext.Provider value={value}>
       {children}
     </ChartContext.Provider>
   );
-});
-
-ChartSyncProvider.displayName = "ChartSyncProvider";
+};
 
 // Simplified hook for chart components to use
 export const useChartSync = () => {
@@ -161,15 +215,16 @@ export const useChartSync = () => {
     const chartId = Math.random().toString(36).substring(2, 9);
     context.charts.set(chartId, chart);
     chartIdRef.current = chartId;
-    
+
     // Apply current states on registration
-    if (context.hoveredSeriesName) {
-      updateChart(chart, context.hoveredSeriesName, true);
+    const currentHoveredSeries = context.hoveredSeriesName;
+    if (currentHoveredSeries) {
+      updateChart(chart, currentHoveredSeries, true);
     }
     if (context.selectedSeriesName) {
       updateChart(chart, context.selectedSeriesName, false);
     }
-    
+
     return chartId;
   }, [context]);
   

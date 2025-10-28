@@ -89,7 +89,7 @@ export default function SwiperContainer({
 
   return (
     <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
-      <div className={`relative wrapper w-full ${sizeClassMap[size]}`}>
+      <div className={`relative wrapper w-full ${sizeClassMap[size]} ${size === "landing" ? "md:pr-[15px]" : ""}`}>
         <Splide
           ref={splideRef}
           options={{

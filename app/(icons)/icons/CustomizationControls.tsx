@@ -56,7 +56,7 @@ const ModeRadioOption: React.FC<{
   children: React.ReactNode;
 }> = ({ value, currentMode, onChange, title, children }) => (
   <label
-    className="flex items-center gap-1.5 cursor-pointer text-xs text-[#CDD8D3] hover:text-white transition-colors relative pl-4"
+    className="flex items-center gap-1.5 cursor-pointer text-xs text-color-text-primary hover:text-white transition-colors relative pl-4"
     title={title}
   >
     {/* Custom Radio Circle */}
@@ -318,33 +318,33 @@ const CustomizationControls: React.FC = () => {
             <h4 className="font-medium text-xs mb-1 text-[#5A6462] uppercase tracking-wider">Shift Colors (Chains & Socials only)</h4>
             <div className='space-y-2'>
               {/* Hue */}
-              <label className='block text-xs font-medium text-[#CDD8D3] opacity-90' htmlFor="hue-slider">Hue ({hslShifts.hue}°)</label>
+              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="hue-slider">Hue ({hslShifts.hue}°)</label>
               <input
                 id="hue-slider"
                 type="range" min="-180" max="180" step="1" value={hslShifts.hue}
                 onChange={(e) => throttledSetHueShift(parseInt(e.target.value, 10))}
                 onDoubleClick={() => setHueShift(0)}
-                className="w-full h-1.5 bg-[#344240] rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
+                className="w-full h-1.5 bg-color-bg-medium rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
                 title='Shift Hue (-180 to 180). Double-click to reset.'
               />
               {/* Saturation */}
-              <label className='block text-xs font-medium text-[#CDD8D3] opacity-90' htmlFor="saturation-slider">Saturation ({hslShifts.saturation}%)</label>
+              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="saturation-slider">Saturation ({hslShifts.saturation}%)</label>
               <input
                 id="saturation-slider"
                 type="range" min="-100" max="100" step="1" value={hslShifts.saturation}
                 onChange={(e) => throttledSetSaturationShift(parseInt(e.target.value, 10))}
                 onDoubleClick={() => setSaturationShift(0)}
-                className="w-full h-1.5 bg-[#344240] rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
+                className="w-full h-1.5 bg-color-bg-medium rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
                 title='Shift Saturation (-100% to 100%). Double-click to reset.'
               />
               {/* Lightness */}
-              <label className='block text-xs font-medium text-[#CDD8D3] opacity-90' htmlFor="lightness-slider">Lightness ({hslShifts.lightness}%)</label>
+              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="lightness-slider">Lightness ({hslShifts.lightness}%)</label>
               <input
                 id="lightness-slider"
                 type="range" min="-100" max="100" step="1" value={hslShifts.lightness}
                 onChange={(e) => throttledSetLightnessShift(parseInt(e.target.value, 10))}
                 onDoubleClick={() => setLightnessShift(0)}
-                className="w-full h-1.5 bg-[#344240] rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
+                className="w-full h-1.5 bg-color-bg-medium rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-[#151A19] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500"
                 title='Shift Lightness (-100% to 100%). Double-click to reset.'
               />
             </div>

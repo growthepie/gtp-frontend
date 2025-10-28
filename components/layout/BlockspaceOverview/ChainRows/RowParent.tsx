@@ -105,7 +105,7 @@ export default function RowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-[#CDD8D3]`}
+            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-color-text-primary`}
             style={{
               backgroundColor: lightenHexColor(
                 AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
@@ -117,7 +117,7 @@ export default function RowParent({ chainKey, index }) {
               // boxSizing: "border-box",
             }}
           >
-            <div className="flex items-center h-[31px] w-[140px] gap-x-[10px] min-w-[140px] z-10 rounded-full bg-[#1F2726]">
+            <div className="flex items-center h-[31px] w-[140px] gap-x-[10px] min-w-[140px] z-10 rounded-full bg-color-bg-default">
               <div
                 className="flex justify-center items-center w-[30px] h-full z-20 "
                 style={{
@@ -151,7 +151,7 @@ export default function RowParent({ chainKey, index }) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                    <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                    <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
                       {DisabledStates[selectedMode][chainKey].reason}
                     </div>
                   </TooltipContent>
@@ -172,15 +172,15 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all min-w-[140px]  rounded-full  text-[#CDD8D3] ${forceSelectedChain
+            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all min-w-[140px]  rounded-full  text-color-text-primary ${forceSelectedChain
               ? isCategoryHovered("all_chain")
                 ? isCategoryHovered("all_chain") && allCats
-                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
-                  : `rounded-l-full shadow-lg z-[30] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
+                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[39px] border-[2px] left-[0px] bg-color-bg-default`
+                  : `rounded-l-full shadow-lg z-[30] w-[147px] h-[41px] border-[2px] left-[0px] bg-color-bg-default`
                 : allCats
-                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
-                  : "z-[20] left-[2px] bg-[#1F2726]"
-              : "z-[20] left-[2px] bg-[#1F2726]"
+                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[41px] border-[2px] left-[0px] bg-color-ui-active`
+                  : "z-[20] left-[2px] bg-color-bg-default"
+              : "z-[20] left-[2px] bg-color-bg-default"
               }  ${forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"

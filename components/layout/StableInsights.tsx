@@ -445,7 +445,7 @@ export default function StableInsights({ }: {}) {
             rel="noopener noreferrer"
             target="_blank"
             href={Sources[s] ?? ""}
-            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
           >
             {s}
           </Link>
@@ -561,7 +561,7 @@ export default function StableInsights({ }: {}) {
                   <div className="text-[14px]">Holder</div>
                   <div className="flex justify-end text-[12px]">Amount</div>
                   <div className="flex justify-end">
-                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-bold leading-tight">Share</div>
+                    <div className="flex justify-center text-[9px] items-center bg-color-bg-medium rounded-full h-[16px] w-[45px] font-bold leading-tight">Share</div>
                   </div>
                 </GridTableHeader>
                 <VerticalScrollContainer height={420}>
@@ -624,7 +624,7 @@ export default function StableInsights({ }: {}) {
                         </div>
                         <div className="flex justify-end text-[14px]">${formatNumber(data.holders_table[key].balance)}</div>
                         <div className="flex justify-end">
-                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px] font-medium leading-tight">
+                          <div className="flex justify-center text-[9px] items-center bg-color-ui-hover rounded-full h-[16px] w-[45px] font-medium leading-tight">
                             {formatNumber(data.holders_table[key].share * 100)}%
                           </div>
                         </div>
@@ -640,7 +640,7 @@ export default function StableInsights({ }: {}) {
                       )}
                       {combinedHolders && (
                         <div className="flex justify-end">
-                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
+                          <div className="flex justify-center text-[9px] items-center bg-color-ui-hover rounded-full h-[16px] w-[45px]">
                             {formatNumber(combinedHolders.others.share * 100)}%
                           </div>
                         </div>
@@ -651,7 +651,7 @@ export default function StableInsights({ }: {}) {
                   </div>
                 </VerticalScrollContainer>
                 <div className="pr-[22px] pt-[5px]">
-                  <GridTableRow gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]" className="bg-[#5A6462] !border-[#CDD8D3] font-medium">
+                  <GridTableRow gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]" className="bg-color-ui-hover !border-[#CDD8D3] font-medium">
                     <div className="text-[12px] truncate min-w-0">Total Glo Dollar Holders</div>
                     <div className="flex justify-end text-[14px]">${formatNumber(data.chart.data[data.chart.data.length - 1][2])}</div>
                     <div className="flex justify-end">
@@ -974,8 +974,8 @@ export default function StableInsights({ }: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="select-none w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] mt-[10px]">
-              <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
+            <div className="select-none w-full bg-color-bg-default rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] mt-[10px]">
+              <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-color-ui-active">
                 Total Market Cap
               </div>
               <InfoToolTip placement="left" allowInteract>
@@ -985,7 +985,7 @@ export default function StableInsights({ }: {}) {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                  <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
                     <div className="flex flex-col space-y-1">
                       <div className="font-bold text-sm leading-snug">
                         Data Sources:

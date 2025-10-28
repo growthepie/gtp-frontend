@@ -418,9 +418,9 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
     return (
       <div className="flex items-center gap-x-[2px]">
         <div className="numbers-xs mr-[3px]">{da_row.count}</div>
-        <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mr-[5px]"></div>
+        <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full mr-[5px]"></div>
         {retHTML}
-        <div className="ml-[3px] w-auto pl-[5px] pr-[6px] py-[1.5px] rounded-full bg-[#344240] text-xxs">
+        <div className="ml-[3px] w-auto pl-[5px] pr-[6px] py-[1.5px] rounded-full bg-color-bg-medium text-xxs">
           {`+ ${more} more`}
         </div>
       </div>
@@ -512,7 +512,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </TooltipTrigger>
               <TooltipContent>
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                     <div className="flex flex-col gap-y-[5px] items-center">
                       <div className="flex items-center gap-x-[5px] text-xxs">
                         The amount of data that was submitted to the DA layer.
@@ -553,7 +553,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </TooltipTrigger>
               <TooltipContent>
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                     <div className="flex flex-col gap-y-[5px] items-center">
                       <div className="flex items-center gap-x-[5px] text-xxs">
                         The fees collected by the DA layer for processing and storing data.
@@ -594,7 +594,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </TooltipTrigger>
               <TooltipContent>
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                     <div className="flex flex-col gap-y-[5px] items-center">
                       <div className="flex items-center gap-x-[5px] text-xxs">
                         The average cost that a Layer 2 pays per Megabyte of data submitted.
@@ -615,7 +615,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               }
             }}
           >
-            <div className="flex gap-x-[3px] items-center">{`DA Consumers (Total`}<div className="w-[6px] h-[6px] bg-[#344240] rounded-full"></div>{`Chains)`}</div>
+            <div className="flex gap-x-[3px] items-center">{`DA Consumers (Total`}<div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full"></div>{`Chains)`}</div>
             <Icon
               icon={
                 selectedCategory !== "da_consumers"
@@ -635,7 +635,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </TooltipTrigger>
               <TooltipContent>
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                  <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                     <div className="flex flex-col gap-y-[5px] items-center">
                       <div className="flex items-center gap-x-[5px] text-xxs">
                         The Layer 2 networks that have submitted at least 100MB worth of data to the DA layer.
@@ -667,7 +667,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
                               Blob Count
@@ -711,12 +711,12 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   }}
                 >
                   <div
-                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-[#1F2726] ${columnBorder(
+                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-color-bg-default ${columnBorder(
                       "name",
                       item.key,
                     )} `}
                   >
-                    <div className="w-[26px] h-[26px] relative rounded-full bg-[#151A19] flex items-center justify-center" title={item.key.replaceAll("_", "-")}>
+                    <div className="w-[26px] h-[26px] relative rounded-full bg-color-ui-active flex items-center justify-center" title={item.key.replaceAll("_", "-")}>
                       <Icon icon={`gtp:${AllDALayersByKeys[item.key].url_key.replaceAll("_", "-")}-logo-monochrome`} className="w-[15px] h-[15px]"
                         style={{
                           color:
@@ -740,7 +740,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     <div className="text-xs">{AllDALayersByKeys[item.key].name}</div>
                   </div>
                   <div
-                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-[#1F2726] ${columnBorder(
+                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-color-bg-default ${columnBorder(
                       "size",
                       item.key,
                     )} `}
@@ -809,7 +809,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </div>
                   </div>
                   <div
-                    className={`flex items-center numbers-xs justify-end w-full px-[5px] h-full bg-[#1F2726]  ${columnBorder(
+                    className={`flex items-center numbers-xs justify-end w-full px-[5px] h-full bg-color-bg-default  ${columnBorder(
                       "fees_per_mb",
                       item.key,
                     )} `}
@@ -845,7 +845,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   </div>
 
                   <div
-                    className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-[#1F2726] group/more ${columnBorder(
+                    className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-color-bg-default group/more ${columnBorder(
                       "fixed_parameters",
                       item.key,
                     )} `}

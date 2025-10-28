@@ -62,9 +62,9 @@ export default function Header({
           </div>
         </div>
         {/* <LabelsContainer className="invisible pt-[102px] pointer-events-auto">
-          <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
+          <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-color-bg-medium shadow-[0px_0px_50px_0px_#000000]">
             <a
-              className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
+              className="flex items-center w-[162px] h-[44px] bg-color-bg-default gap-x-[10px] rounded-full px-2 gap"
               href="https://www.growthepie.com/"
               target="_blank"
             >
@@ -76,9 +76,9 @@ export default function Header({
       </header>
       <LabelsContainer className={`absolute top-[76px] w-full`}>
         {!isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
-        {/* <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
+        {/* <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-color-bg-medium  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
           <Link
-            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+            className="flex items-center bg-color-bg-default gap-x-[10px] rounded-full p-[10px] gap"
             href="https://www.growthepie.com/"
             target="_blank"
           >
@@ -88,7 +88,7 @@ export default function Header({
           </Link>
           <Search />
           <div
-            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300"
+            className="flex items-center bg-color-bg-default gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300"
           >
             <div className="w-6 h-6">
               <SettingsIcon />
@@ -98,7 +98,7 @@ export default function Header({
             </div>
           </div>
           <div
-            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+            className="flex items-center bg-color-bg-default gap-x-[10px] rounded-full p-[10px] gap"
           >
             <div className="w-6 h-6">
               <DownloadIcon />

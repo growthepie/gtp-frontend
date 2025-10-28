@@ -22,6 +22,10 @@ interface IconContextMenuProps {
   wrapperClassName?: string;
   // Whether this is the logo (to show "Open in new tab" option)
   isLogo?: boolean;
+  // Optional context menu options
+  contextMenuOptions?: {
+    isLink: boolean;
+  };
 }
 
 export const IconContextMenu = ({
@@ -31,6 +35,7 @@ export const IconContextMenu = ({
   iconPageUrl = "https://icons.growthepie.xyz", // Default URL
   wrapperClassName,
   isLogo = false, // Default to false
+  contextMenuOptions = { isLink: false },
 }: IconContextMenuProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -159,18 +164,26 @@ export const IconContextMenu = ({
     setIsOpen(false);
   };
 
+  // Add new handler for Brand Guide
+  const handleBrandGuide = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    window.open("https://api.growthepie.com/brand/growthepie_brand_guide.zip", "_blank");
+    setIsOpen(false);
+  };
+
   const options = [
-    ...(isLogo ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
-    { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
-    { icon: "gtp-download", label: "Download", onClick: handleDownload },
-    ...(iconPageUrl ? [{ icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage }] : [])
+    ...(isLogo || contextMenuOptions.isLink ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
+     { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
+     { icon: "gtp-download", label: "Download", onClick: handleDownload },
+     ...(isLogo ? [{ icon: "gtp-growthepie-logo", label: "Brand Guide", onClick: handleBrandGuide }] : []),
+     { icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage },
   ];
 
   // Define the menu content
   const menuContent = (
     <div
       ref={menuRef}
-      className="fixed z-context-menu flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
+      className="fixed z-context-menu flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
       style={{ left: position.left, top: position.top, bottom: position.bottom, right: position.right }}
       // Prevent context menu on the menu itself
       onContextMenu={(e) => e.preventDefault()}
@@ -180,11 +193,17 @@ export const IconContextMenu = ({
           <button
             key={option.label}
             onClick={option.onClick}
-            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50"
+            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-color-ui-hover/50"
           >
             <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
               {/* Ensure GTPIcon is imported correctly */}
-              <GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />
+              <div className={`flex items-center justify-center w-[16px] h-[16px] ${option.label === "Brand Guide" ? "pt-[3px]" : ""}`}>
+                <GTPIcon 
+                  icon={option.icon as GTPIconName} 
+                  size={option.label === "Brand Guide" ? "md" : "sm"} 
+                  className={option.label === "Brand Guide" ? "!size-[16px]" : "!size-[12px]"} 
+                />
+              </div>
               <span>{option.label}</span>
             </div>
             {/* Optional: Shortcut placeholder */}

@@ -503,14 +503,14 @@ export default function Treemap({ d }: { d?: any }) {
 
   return (
     <div>
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 relative">
         {/* <div className="flex justify-center items-center">
           {["gas_fees", "txcount"].map((valueType) => (
             <button
               key={valueType}
               className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
                 selectedValueType.includes(valueType)
-                  ? "bg-forest-500 dark:bg-forest-1000"
+                  ? "bg-forest-500 dark:bg-color-ui-active"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
@@ -530,7 +530,7 @@ export default function Treemap({ d }: { d?: any }) {
               key={valueType}
               className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
                 selectedValueType.includes(valueType)
-                  ? "bg-forest-500 dark:bg-forest-1000"
+                  ? "bg-forest-500 dark:bg-color-ui-active"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
@@ -544,11 +544,11 @@ export default function Treemap({ d }: { d?: any }) {
             </button>
           ))}
         </div> */}
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-color-bg-default bg-forest-50 md:py-[2px]">
           <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
               className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${selectedValueType.includes("gas_fees")
-                ? "bg-forest-500 dark:bg-forest-1000"
+                ? "bg-forest-500 dark:bg-color-ui-active"
                 : "hover:bg-forest-500/10"
                 }`}
               onClick={() => {
@@ -559,7 +559,7 @@ export default function Treemap({ d }: { d?: any }) {
             </button>
             <button
               className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedValueType.includes("txcount")
-                ? "bg-forest-500 dark:bg-forest-1000"
+                ? "bg-forest-500 dark:bg-color-ui-active"
                 : "hover:bg-forest-500/10"
                 }`}
               onClick={() => {
@@ -578,7 +578,7 @@ export default function Treemap({ d }: { d?: any }) {
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                 className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
-                  ? "bg-forest-500 dark:bg-forest-1000"
+                  ? "bg-forest-500 dark:bg-color-ui-active"
                   : "hover:bg-forest-500/10"
                   }`}
                 onClick={() => {
@@ -609,7 +609,7 @@ export default function Treemap({ d }: { d?: any }) {
                 : "translate-y-0"
               }`}
           >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+            <div className="font-medium bg-color-bg-default dark:bg-color-ui-active rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-color-border dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
             </div>
           </div>

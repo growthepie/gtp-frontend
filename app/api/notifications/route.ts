@@ -8,7 +8,7 @@ const CACHE_TTL_SECONDS = 300; // 5 minutes
 
 export type NotificationType = {
   id: string;
-  displayPages: string;
+  displayPages: string[];
   body: string;
   desc: string;
   url?: string;
@@ -44,6 +44,7 @@ async function fetchData() {
     const records = Array.isArray(jsonResponse?.records)
       ? jsonResponse.records
       : [];
+
 
     const result = records
       .map((record: any) => {
@@ -84,7 +85,7 @@ async function fetchData() {
 
         return {
           id: record?.id || "",
-          displayPages: record?.fields?.["Display Page"] || "",
+          displayPages: record?.fields?.["Display Page"] || [],
           body: record?.fields?.["Body"] || "",
           desc: record?.fields?.["Head"] || "",
           url: record?.fields?.["URL"] || "",
@@ -100,7 +101,7 @@ async function fetchData() {
       .filter(
         (notification: NotificationType) =>
           BranchesToInclude.includes(notification.branch) &&
-          notification.displayPages &&
+          notification.displayPages.length > 0 &&
           notification.body &&
           notification.startTimestamp &&
           notification.endTimestamp &&

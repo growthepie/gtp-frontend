@@ -24,7 +24,7 @@ const KpiBlock: React.FC<KpiBlockProps> = ({ block }) => {
       {cards.map((card, index) => (
         <div
           key={index}
-          className='flex-1 p-[15px] pt-[10px] flex flex-col items-center rounded-[11px] bg-[#344240] shadow-md'
+          className='flex-1 p-[15px] pt-[10px] flex flex-col items-center rounded-[11px] bg-color-bg-medium shadow-md'
         >
           <div className="flex w-full justify-between items-center gap-x-[8px]">
             <div />

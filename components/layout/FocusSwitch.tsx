@@ -24,8 +24,11 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
 
   useEffect(() => {
     const handleResize = () => {
-      setIsResizing(true);
-      setTimeout(() => setIsResizing(false), 200);
+      // Only apply resize opacity on desktop where this component is visible
+      if (window.innerWidth >= 768) { // md breakpoint
+        setIsResizing(true);
+        setTimeout(() => setIsResizing(false), 200);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -83,10 +86,10 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
   }
 
   return (
-    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : ""}`}>
+    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}>
       {/* Show spinner overlay while updating */}
       {isUpdating && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-forest-100 dark:bg-forest-950 bg-opacity-20 dark:bg-opacity-20 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center z-10 bg-color-bg-default dark:bg-forest-950 bg-opacity-20 dark:bg-opacity-20 rounded-lg">
           <div className="w-4 h-4 border-[3px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
         </div>
       )}
@@ -94,7 +97,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
         values={{
           left: {
             value: "totalEcosystem",
-            label: "Total Ecosystem"
+            label: "Ecosystem"
           },
           right: {
             value: "l2Focus",
@@ -112,7 +115,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
             </TooltipTrigger>
             <TooltipContent>
               <div className="flex flex-col items-center">
-                <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                <div className="p-[15px] text-sm bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
                   <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
                   <div className="text-xxs text-wrap">
                     Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.

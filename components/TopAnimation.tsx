@@ -143,7 +143,7 @@ const TopAnimation = () => {
   return (
     <div>
       <div
-        className="w-[full] h-[125px] rounded-[99px] bg-[#2A343399] border-[2px] border-[#CDD8D3] lg:flex justify-between items-center text-[#CDD8D3] overflow-hidden
+        className="w-[full] h-[125px] rounded-[99px] bg-[#2A343399] border-[2px] border-[#CDD8D3] lg:flex justify-between items-center text-color-text-primary overflow-hidden
                       hidden max-w-[1120px]"
       >
         <div className="ml-12 items-center flex">

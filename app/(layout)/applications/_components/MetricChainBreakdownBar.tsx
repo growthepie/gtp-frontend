@@ -145,6 +145,8 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
 interface TooltipContextType {
   showTooltip: (e: React.MouseEvent, content: React.ReactNode) => void;
   hideTooltip: () => void;
+  hoverTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
+  setContainerRef?: (ref: HTMLDivElement | null) => void;
 }
 
 const TooltipContext = React.createContext<TooltipContextType | null>(null);
@@ -165,18 +167,25 @@ const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [content, setContent] = useState<React.ReactNode>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const fadeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Shared across all ChainBars
+  const containerRef = useRef<HTMLDivElement | null>(null); // Reference to the metric bar container
   const lastUpdateTime = useRef<number>(0);
   const lastCoords = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
   const offsetX = 10;
   const offsetY = 10;
 
   const showTooltip = useCallback((e: React.MouseEvent, newContent: React.ReactNode) => {
-    // Clear any existing fade out timeout
+    // Clear any existing timeouts
     if (fadeTimeout.current) {
       clearTimeout(fadeTimeout.current);
       fadeTimeout.current = null;
     }
-    
+    if (hideTimeout.current) {
+      clearTimeout(hideTimeout.current);
+      hideTimeout.current = null;
+    }
+
     // Set initial coordinates from the mouse event
     const initialCoords = {
       x: e.clientX + offsetX,
@@ -185,67 +194,100 @@ const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setCoords(initialCoords);
     lastCoords.current = initialCoords;
     setContent(newContent);
-    
+
     // Make tooltip visible first with opacity 0
     setVisible(true);
-    
+
     // Then animate opacity in next frame for smooth transition
     requestAnimationFrame(() => {
       setOpacity(1);
     });
   }, []);
-  
+
   const hideTooltip = useCallback(() => {
-    // Start fade out animation
-    setOpacity(0);
-    
-    // Remove from DOM after animation completes
-    fadeTimeout.current = setTimeout(() => {
-      setVisible(false);
-    }, 150); // Match transition duration
+    // Don't hide immediately - delay to allow smooth transitions between sections
+    hideTimeout.current = setTimeout(() => {
+      // Start fade out animation
+      setOpacity(0);
+
+      // Remove from DOM after animation completes
+      fadeTimeout.current = setTimeout(() => {
+        setVisible(false);
+      }, 150); // Match transition duration
+
+      hideTimeout.current = null;
+    }, 100); // 100ms delay before starting hide animation
   }, []);
 
   // Update position when mouse moves, but throttle updates
   const handleMouseMove = useCallback((e: MouseEvent) => {
+    // Don't update if tooltip is not visible
     if (!visible) return;
-    
+
     // Throttle updates to every 16ms (roughly 60fps)
     const now = Date.now();
     if (now - lastUpdateTime.current < 16) return;
-    
+
     const newCoords = {
       x: e.clientX + offsetX,
       y: e.clientY + offsetY,
     };
-    
+
     // Only update if the mouse has moved at least 2 pixels
     const dx = Math.abs(newCoords.x - lastCoords.current.x);
     const dy = Math.abs(newCoords.y - lastCoords.current.y);
     if (dx < 2 && dy < 2) return;
-    
+
     lastCoords.current = newCoords;
     lastUpdateTime.current = now;
     setCoords(newCoords);
-  }, [visible, offsetX, offsetY]);
+  }, [visible]);
 
   useEffect(() => {
     // Add global mouse move listener
     window.addEventListener('mousemove', handleMouseMove);
-    
+
+    // Add mouseleave listener to the container to hide tooltip when leaving metric bar area
+    const handleContainerMouseLeave = () => {
+      if (visible) {
+        // Immediately hide tooltip when leaving the entire metric bar area
+        setOpacity(0);
+        fadeTimeout.current = setTimeout(() => {
+          setVisible(false);
+        }, 150);
+      }
+    };
+
+    // Find the metric bar container (will be set up via data attribute)
+    const container = document.querySelector('[data-metric-bar-container]') as HTMLDivElement;
+    if (container) {
+      containerRef.current = container;
+      container.addEventListener('mouseleave', handleContainerMouseLeave);
+    }
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      if (containerRef.current) {
+        containerRef.current.removeEventListener('mouseleave', handleContainerMouseLeave);
+      }
       if (fadeTimeout.current) {
         clearTimeout(fadeTimeout.current);
       }
+      if (hideTimeout.current) {
+        clearTimeout(hideTimeout.current);
+      }
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
     };
-  }, [handleMouseMove]);
+  }, [handleMouseMove, visible]);
 
   useEffect(() => {
     if (visible && tooltipRef.current) {
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
       let newX = coords.x;
       let newY = coords.y;
-      
+
       // Prevent overflow on edges
       if (coords.x + tooltipRect.width > window.innerWidth) {
         newX = window.innerWidth - tooltipRect.width - 20;
@@ -267,8 +309,17 @@ const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
   }, [coords, visible, adjustedCoords.x, adjustedCoords.y]);
 
+  const value = useMemo(() => ({
+    showTooltip,
+    hideTooltip,
+    hoverTimeoutRef,
+    setContainerRef: (ref: HTMLDivElement | null) => {
+      containerRef.current = ref;
+    }
+  }), [showTooltip, hideTooltip]);
+
   return (
-    <TooltipContext.Provider value={{ showTooltip, hideTooltip }}>
+    <TooltipContext.Provider value={value}>
       {children}
       {visible && (
         <div
@@ -279,7 +330,7 @@ const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
             opacity: opacity,
             transition: 'opacity 150ms ease-in-out',
           }}
-          className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
+          className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-color-bg-default text-white rounded-[17px] shadow-lg pointer-events-none z-50"
         >
           {content}
         </div>
@@ -316,6 +367,9 @@ const blendColors = (color1: string, color2: string, percentage: number): string
 
   return rgbToHex(r, g, b);
 };
+
+// Export the TooltipProvider so it can be used at a higher level
+export { TooltipProvider };
 
 export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   // Get all necessary context and state
@@ -409,7 +463,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     }
 
     return (
-      <div className="flex flex-col gap-y-[5px] min-w-[240px] h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+      <div className="flex flex-col gap-y-[5px] min-w-[240px] h-full pr-[15px] py-[15px] text-color-text-primary">
         <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
           <ApplicationIcon owner_project={owner_project} size="sm" />
           <div className='heading-small-xs !font-normal'>
@@ -469,45 +523,43 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   if (!metricData) return null;
 
   return (
-    <TooltipProvider>
-      <div className="pb-[15px]">
-        <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
-          <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-            <BarHeaderSection 
-              owner_project={owner_project} 
-              total={total} 
-              ownerProjectToProjectData={ownerProjectToProjectData} 
-              prefix={prefix} 
-              decimals={decimals}
-              tooltipContent={allTooltipContent}
-              zIndex={chainsData.length + 1}
-            />
-            <div className="flex flex-1 h-full">
-              {chainsData.map(([chain, chainValues], i) => (
-                <ChainBar 
-                  key={chain}
-                  chain={chain}
-                  index={i}
-                  total={total}
-                  chainFirstSeen={data.first_seen[chain]}
-                  metricData={metricData}
-                  selectedTimespan={selectedTimespan}
-                  timespans={timespans}
-                  valueKey={valueKey}
-                  percentages={percentages}
-                  containerWidth={containerWidth}
-                  AllChainsByKeys={AllChainsByKeys}
-                  metricsDef={metricsDef}
-                  metric={metric}
-                  prefix={prefix}
-                  decimals={decimals}
-                />
-              ))}
-            </div>
+    <div className="pb-[15px]" data-metric-bar-container>
+      <div className="flex items-center h-[34px] rounded-full bg-color-bg-medium p-[2px]">
+        <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
+          <BarHeaderSection
+            owner_project={owner_project}
+            total={total}
+            ownerProjectToProjectData={ownerProjectToProjectData}
+            prefix={prefix}
+            decimals={decimals}
+            tooltipContent={allTooltipContent}
+            zIndex={chainsData.length + 1}
+          />
+          <div className="flex flex-1 h-full">
+            {chainsData.map(([chain, chainValues], i) => (
+              <ChainBar
+                key={chain}
+                chain={chain}
+                index={i}
+                total={total}
+                chainFirstSeen={data.first_seen[chain]}
+                metricData={metricData}
+                selectedTimespan={selectedTimespan}
+                timespans={timespans}
+                valueKey={valueKey}
+                percentages={percentages}
+                containerWidth={containerWidth}
+                AllChainsByKeys={AllChainsByKeys}
+                metricsDef={metricsDef}
+                metric={metric}
+                prefix={prefix}
+                decimals={decimals}
+              />
+            ))}
           </div>
         </div>
       </div>
-    </TooltipProvider>
+    </div>
   );
 };
 
@@ -531,9 +583,10 @@ const BarHeaderSection = ({
   const { showTooltip, hideTooltip } = useTooltip();
   
   return (
-    <div 
-      className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-[#1F2726] p-[2px] rounded-full pr-[10px]" 
+    <div
+      className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-color-bg-default p-[2px] rounded-full pr-[10px] cursor-default"
       style={{ zIndex: zIndex }}
+      data-tooltip-trigger
       onMouseEnter={(e) => showTooltip(e, tooltipContent)}
       onMouseLeave={hideTooltip}
     >
@@ -582,12 +635,28 @@ const ChainBar = memo(({
   prefix: string;
   decimals: number;
 }) => {
-  const { hoveredSeriesName, setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName } = useChartSync();
+  const { setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName } = useChartSync();
   const { owner_project } = useApplicationDetailsData();
-  const { showTooltip, hideTooltip } = useTooltip();
+  const { showTooltip, hideTooltip, hoverTimeoutRef } = useTooltip();
+
+  // Track local hover state for visual updates (dimming effect)
+  const [isLocallyHovered, setIsLocallyHovered] = useState(false);
+  const [globalHoveredSeries, setGlobalHoveredSeries] = useState<string | null>(null);
+
+  // Listen for global hover changes from other ChainBar components
+  useEffect(() => {
+    const handleHoverChange = (e: CustomEvent) => {
+      setGlobalHoveredSeries(e.detail.chain);
+    };
+
+    window.addEventListener('chainbar-hover' as any, handleHoverChange);
+    return () => {
+      window.removeEventListener('chainbar-hover' as any, handleHoverChange);
+    };
+  }, []);
 
   // Determine if this bar is hovered or selected
-  const isHovered = hoveredSeriesName === chain;
+  const isHovered = isLocallyHovered || globalHoveredSeries === chain;
   const isSelected = selectedSeriesName === chain;
   const computedZIndex = percentages.length - index;
 
@@ -620,7 +689,7 @@ const ChainBar = memo(({
   }
 
   const tooltipContent = useMemo(() => (
-    <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+    <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-color-text-primary">
       <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
         <ApplicationIcon owner_project={owner_project} size="sm" />
         <div className='heading-small-xs !font-normal'>
@@ -678,48 +747,81 @@ const ChainBar = memo(({
     </div>
   ), [chain, owner_project, metricData, selectedTimespan, valueKey, total, AllChainsByKeys, prefix, decimals, metricsDef, metric, firstSeen]);
 
-  const barColor = useMemo(() => {
-    const isActiveOrNone = isHovered || isSelected || (hoveredSeriesName === null && selectedSeriesName === null);
-    const color = AllChainsByKeys[chain].colors.dark[0];
-    if (isActiveOrNone) {
-      return color;
-    }
-    return blendColors(color, "#1F2726", 0.9);
-  }, [isHovered, isSelected, hoveredSeriesName, selectedSeriesName, AllChainsByKeys, chain]);
+  // Cache the base color and blended color to avoid recalculating
+  const baseColor = AllChainsByKeys[chain].colors.dark[0];
+  // const dimmedColor = useMemo(() => blendColors(baseColor, "rgb(var(--bg-default))", 0.9), [baseColor]);
+  const dimmedColor = "color-mix(in srgb, " + baseColor + " 5%, rgb(var(--bg-default)) 95%)";
 
-  const textColor = useMemo(() => {
-    return AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3";
-  }, [chain, AllChainsByKeys]);
+  const barColor = useMemo(() => {
+    const isActiveOrNone = isHovered || isSelected || (globalHoveredSeries === null && selectedSeriesName === null);
+    if (isActiveOrNone) {
+      return baseColor;
+    }
+    return dimmedColor;
+  }, [isHovered, isSelected, globalHoveredSeries, selectedSeriesName, baseColor, dimmedColor]);
 
   const boxShadow = useMemo(() => {
-    return (isHovered || isSelected) ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none";
-  }, [isHovered, isSelected, chain, AllChainsByKeys]);
+    return (isHovered || isSelected) ? `0 0 10px ${baseColor}66` : "none";
+  }, [isHovered, isSelected, baseColor]);
 
   const opacity = useMemo(() => {
-    const isActiveOrNone = isHovered || isSelected || (hoveredSeriesName === null && selectedSeriesName === null);
+    const isActiveOrNone = isHovered || isSelected || (globalHoveredSeries === null && selectedSeriesName === null);
     if(isActiveOrNone) return 1;
-    if(hoveredSeriesName === chain){
+    if(globalHoveredSeries === chain){
       return 0.8;
     }else{
       return 0.4;
     }
-  }, [chain, hoveredSeriesName, isHovered, isSelected, selectedSeriesName]);
+  }, [chain, globalHoveredSeries, isHovered, isSelected, selectedSeriesName]);
 
   const handleClick = useCallback(() => {
     setSelectedSeriesName(isSelected ? null : chain);
   }, [chain, isSelected, setSelectedSeriesName]);
 
+  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
+    // Clear any pending leave timeout from other sections
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    // Update local hover state for this bar
+    setIsLocallyHovered(true);
+    setGlobalHoveredSeries(chain);
+
+    // Broadcast hover change to all other ChainBar components
+    const event = new CustomEvent('chainbar-hover', { detail: { chain } });
+    window.dispatchEvent(event);
+
+    // Notify context for chart synchronization
+    setHoveredSeriesName(chain);
+    showTooltip(e, tooltipContent);
+  }, [chain, setHoveredSeriesName, showTooltip, tooltipContent, hoverTimeoutRef]);
+
+  const handleMouseLeave = useCallback(() => {
+    // Clear local hover state immediately
+    setIsLocallyHovered(false);
+
+    // Don't clear global state immediately - add a small delay to allow moving to adjacent sections
+    hoverTimeoutRef.current = setTimeout(() => {
+      setGlobalHoveredSeries(null);
+
+      // Broadcast unhover to all other ChainBar components
+      const event = new CustomEvent('chainbar-hover', { detail: { chain: null } });
+      window.dispatchEvent(event);
+
+      setHoveredSeriesName(null);
+      hideTooltip();
+      hoverTimeoutRef.current = null;
+    }, 100); // Increased to 100ms for smoother section-to-section transitions
+  }, [setHoveredSeriesName, hideTooltip, hoverTimeoutRef]);
+
   return (
     <div
-      className="absolute h-full rounded-full transition-[box-shadow, background, width] duration-300 cursor-pointer"
-      onMouseEnter={(e) => {
-        setHoveredSeriesName(chain);
-        showTooltip(e, tooltipContent);
-      }}
-      onMouseLeave={() => {
-        setHoveredSeriesName(null);
-        hideTooltip();
-      }}
+      className="absolute h-full rounded-full transition-[box-shadow,background] duration-150 cursor-pointer"
+      data-tooltip-trigger
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       style={{
         background: barColor,
@@ -730,13 +832,13 @@ const ChainBar = memo(({
       }}
     >
       <div
-        className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] select-none"
+        className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-color-text-primary select-none"
         style={{ zIndex: computedZIndex + 1 }}
       >
         <div
           className="flex items-center gap-x-[5px]"
           style={{
-            color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
+            color: AllChainsByKeys[chain].darkTextOnBackground ? "rgb(var(--bg-default))" : "rgb(var(--text-primary))",
             opacity: opacity,
           }}
         >

@@ -97,7 +97,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
                   quality={90}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-forest-500">
+                <div className="w-full h-full flex items-center justify-center text-color-text-primary">
                   <span>Image not available</span>
                 </div>
               )}
