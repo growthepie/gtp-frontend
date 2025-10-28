@@ -24,6 +24,7 @@ export interface Author {
     url?: string;
     pathToData?: string;
     dashStyle?: DashStyleValue;
+    yMultiplication?: number;  // Multiplier for y-axis values (e.g., 100 for converting decimals to percentages)
   }
   
   export type ChartOptions = Partial<Options>;
