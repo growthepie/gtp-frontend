@@ -1168,6 +1168,21 @@ const CategorySection = ({
       {/* Animated app tiles */}
       <AnimatePresence mode="popLayout" initial={false}>
         {tiles.map((tile, i) => {
+          const hasOverflow = node.apps.length > tiles.length && tiles.length > 1;
+          const isLastTile = i === tiles.length - 1;
+
+          if (hasOverflow && isLastTile) {
+            const remaining = node.apps.length - (tiles.length - 1);
+            return (
+              <MoreTile
+                key={`${node.id}-more`}
+                tile={tile}
+                index={i}
+                count={remaining}
+              />
+            );
+          }
+
           const app = node.apps[i];
           if (!app) return null;
 
@@ -1277,6 +1292,54 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
 };
 
 // ============================================================================
+// More Tile Component - replaces last tile when apps overflow visible tiles
+// ============================================================================
+
+interface MoreTileProps {
+  tile: { x: number; y: number; highlighted: boolean };
+  index: number;
+  count: number;
+}
+
+const MoreTile = ({ tile, index, count }: MoreTileProps) => {
+  return (
+    <motion.div
+      variants={appTileVariants}
+      initial="initial"
+      animate={{
+        opacity: tile.highlighted ? 1 : 0.3,
+        scale: 1,
+        left: tile.x,
+        top: tile.y,
+        transition: {
+          delay: index * 0.02,
+          duration: 0.3,
+          stiffness: 300,
+          damping: 20,
+        }
+      }}
+      exit="exit"
+      custom={index}
+      className='absolute w-[62px] h-[62px] flex flex-col items-center justify-start'
+    >
+      <div className='flex flex-col items-center justify-center w-full'>
+        <motion.div
+          className="w-[44px] h-[44px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
+          whileHover="hover"
+          variants={appTileVariants}
+        >
+          <div className="w-[34px] h-[34px] bg-color-ui-active rounded-[8px] flex flex-col items-center justify-center">
+            <span className="heading-xxxs">{`+${count}`}</span>
+            <span className="text-xxxs">{`more`}</span>
+          </div>
+        </motion.div>
+      </div>
+      
+    </motion.div>
+  );
+};
+
+// ============================================================================
 // Tile Generation Utility (unchanged)
 // ============================================================================
 
@@ -1300,21 +1363,21 @@ function generateConstrainedTiles(
   const maxCols = Math.floor(availableW / (TILE + GAP));
   const maxRows = Math.floor(availableH / (TILE + GAP));
 
-  const tilesToShow = Math.max(Math.min(appCount, 3), appCount);
+  const estimatedYilesToShow = Math.max(Math.min(appCount, 3), appCount);
 
   let actualCols: number;
   let actualRows: number;
 
-  if (tilesToShow <= 3) {
-    actualCols = tilesToShow;
+  if (estimatedYilesToShow <= 3) {
+    actualCols = estimatedYilesToShow;
     actualRows = 1;
   } else {
-    actualCols = Math.min(maxCols, Math.ceil(Math.sqrt(tilesToShow)));
-    actualRows = Math.ceil(tilesToShow / actualCols);
+    actualCols = Math.min(maxCols, Math.ceil(Math.sqrt(estimatedYilesToShow)));
+    actualRows = Math.ceil(estimatedYilesToShow / actualCols);
 
-    if (tilesToShow <= 12 && maxCols >= 6) {
-      actualCols = Math.min(maxCols, Math.max(3, Math.ceil(tilesToShow / 2)));
-      actualRows = Math.ceil(tilesToShow / actualCols);
+    if (estimatedYilesToShow <= 12 && maxCols >= 6) {
+      actualCols = Math.min(maxCols, Math.max(3, Math.ceil(estimatedYilesToShow / 2)));
+      actualRows = Math.ceil(estimatedYilesToShow / actualCols);
     }
   }
 
