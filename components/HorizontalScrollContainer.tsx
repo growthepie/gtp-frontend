@@ -428,27 +428,32 @@ export default function HorizontalScrollContainer({
 
   // Determine whether to show the custom scrollbar
   const showScroller = useMemo(() => {
-    return contentWidth > contentScrollAreaWidth;
+    const TOLERANCE_PX = 2; // ignore tiny deltas
+    return contentWidth - contentScrollAreaWidth > TOLERANCE_PX;
   }, [contentWidth, contentScrollAreaWidth]);
 
   // Manage gradient masks based on scroll position
   const [maskGradient, setMaskGradient] = useState<string>("");
 
   const showLeftGradient = useMemo(() => {
-    return currentScrollPercentage > 0;
-  }, [currentScrollPercentage]);
+    return showScroller && currentScrollPercentage > 0;
+  }, [showScroller, currentScrollPercentage]);
 
   const showRightGradient = useMemo(() => {
+    if (!showScroller) return false;
     if (!forcedMinWidth) return currentScrollPercentage < 100;
-    else
-      return (
-        currentScrollPercentage < 100 && contentScrollAreaWidth <= forcedMinWidth
-      );
-  }, [currentScrollPercentage, contentScrollAreaWidth, forcedMinWidth]);
+    return (
+      currentScrollPercentage < 100 && contentScrollAreaWidth <= forcedMinWidth
+    );
+  }, [showScroller, currentScrollPercentage, contentScrollAreaWidth, forcedMinWidth]);
 
   const leftMaskWidth = reduceLeftMask ? 20 : 50;
 
   useEffect(() => {
+    if (!showScroller) {
+      setMaskGradient("");
+      return;
+    }
     if (showLeftGradient && showRightGradient) {
       setMaskGradient(
         `linear-gradient(to right, transparent, black ${leftMaskWidth}px, black calc(100% - 50px), transparent)`
@@ -464,7 +469,7 @@ export default function HorizontalScrollContainer({
     } else {
       setMaskGradient("");
     }
-  }, [showLeftGradient, showRightGradient, leftMaskWidth]);
+  }, [showScroller, showLeftGradient, showRightGradient, leftMaskWidth]);
 
   return (
     <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
