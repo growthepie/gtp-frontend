@@ -473,6 +473,26 @@ export default function HorizontalScrollContainer({
     }
   }, [showScroller, showLeftGradient, showRightGradient, leftMaskWidth]);
 
+  // Re-check scrollability on size changes and after initial layout/font load
+  useEffect(() => {
+    // schedule a check on the next frame to ensure layout is settled
+    const raf = requestAnimationFrame(() => updateScrollableAreaScroll());
+    return () => cancelAnimationFrame(raf);
+  }, [contentWidth, contentScrollAreaWidth, updateScrollableAreaScroll]);
+
+  useEffect(() => {
+    // extra safety: when fonts finish loading, widths may change subtly
+    let isMounted = true;
+    if ((document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(() => {
+        if (isMounted) updateScrollableAreaScroll();
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [updateScrollableAreaScroll]);
+
   // Re-evaluate scrollability when measured sizes change on first load or resize
   useEffect(() => {
     updateScrollableAreaScroll();
