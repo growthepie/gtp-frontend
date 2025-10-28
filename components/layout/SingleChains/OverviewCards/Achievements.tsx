@@ -74,7 +74,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
     
 
     return (
-        <div className="flex flex-col w-full gap-y-[15px]">
+        <div className="flex flex-col w-full gap-y-[15px] ">
             <div className="flex items-center gap-x-[10px]">
                 <div className="heading-large-xs">Streaks</div>
                 <GTPTooltipNew
@@ -100,7 +100,7 @@ export const StreaksAchievments = ({data, master, streaksData, chainKey}: {data:
                       </div>
                     </GTPTooltipNew>
             </div>
-            <div className="flex flex-nowrap justify-between w-full items-start gap-x-[10px] gap-y-[10px]">
+            <div className="flex flex-col xs:flex-row sm:flex-nowrap justify-center w-full xs:items-start items-center gap-x-[10px] gap-y-[10px]">
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
@@ -394,7 +394,7 @@ export const LifetimeAchievments = ({data, master, chainKey}: {data: Achievments
                       </div>
                 </GTPTooltipNew>
             </div>
-            <div className="flex flex-nowrap justify-between gap-x-[10px] gap-y-[10px] overflow-visible">
+            <div className="flex flex-wrap xs:flex-nowrap justify-between gap-x-[10px] gap-y-[10px] overflow-visible">
                 {Object.keys(data.lifetime).map((key) => {
                     
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
@@ -402,7 +402,7 @@ export const LifetimeAchievments = ({data, master, chainKey}: {data: Achievments
                     const suffix = master.metrics[key].units[valueType].suffix;
 
                     return (
-                    <div className="flex flex-col items-center overflow-visible" key={key + "lifetime"}>
+                    <div className="flex flex-col flex-1 xs:flex-none items-center overflow-visible" key={key + "lifetime"}>
                         <div className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible ">
                             <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                 <ReactECharts 

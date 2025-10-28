@@ -198,10 +198,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
             <div className="flex flex-col w-full gap-y-[15px]">
             
-              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-fit`}>
+              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
                 <div className="flex justify-between  flex-wrap gap-x-[10px] pt-[5px]">
-                  <div className="">
+                  <div className="w-full xs:w-auto">
                     {streaksData && <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />}
                   </div>
                   <div className="flex-1">
@@ -298,7 +298,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
 }
 
 
-const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, master: any, chainKey: string }) => {
+const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, master: any, chainKey: string }) => {
 
 
   const [open, setOpen] = useState<boolean>(true);
@@ -314,7 +314,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
   return (
     <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
       <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] cursor-pointer pl-[30px] group/aboutchain" onClick={() => setOpen(!open)}>
+        <div className="flex items-center gap-x-[15px] cursor-pointer xs:pl-[30px] pl-[15px] group/aboutchain" onClick={() => setOpen(!open)}>
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
@@ -323,7 +323,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
           <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
-        <div className={`px-[30px] w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[100px] opacity-100" : "max-w-[1200px] max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
+        <div className={`xs:pl-[30px] xs:pr-[30px] pl-[15px] pr-[15px] w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[110px] opacity-100" : "max-w-[1200px] max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
 
           {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
           {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
@@ -339,7 +339,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
         {/* </HorizontalScrollContainer> */}
       </div>
 
-      <div className="flex justify-between gap-x-[10px] transition-all duration-300 pr-[30px] pl-[30px]"
+      <div className="flex justify-between gap-x-[10px] transition-all duration-300 pr-[30px] xs:pl-[30px] pl-[15px]"
         style={{
           maxHeight: open ? 800 : 0,
           paddingTop: open ? "15px" : 0,
@@ -445,9 +445,9 @@ const SimilarChains = ({ chainKey }: { chainKey: string }) => {
   }, [AllChainsByKeys, chainKey as string]);
 
   return (
-    <div className="flex items-center justify-between  w-full bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+    <div className="flex xs:flex-row flex-col xs:items-center xs:justify-between xs:gap-y-0 gap-y-[10px] justify-start w-full bg-color-bg-default rounded-[15px] xs:px-[30px] px-[15px] xs:py-[15px] py-[10px]">
       <div className="flex items-center gap-x-[10px]">
-        <GTPIcon icon="gtp-multiple-chains" size="md" className="text-color-ui-hover" />
+        <GTPIcon icon="gtp-multiple-chains" className="text-color-ui-hover w-[24px] h-[24px] " />
         <div className="heading-large-md">Similar Chains</div>
         
       </div>
@@ -481,12 +481,12 @@ const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: 
     <Link href={href} className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer"
 
     >
-      {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[15px] !h-[15px] ${color ? `text-[${color}]` : "text-inherit"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
+      {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px] ${color ? `text-[${color}]` : "text-inherit"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
       style={{
         color: color ? color : "inherit",
       }}
       />}
-      <div className=" text-sm">{label}</div>
+      <div className=" text-xs xs:text-sm">{label}</div>
     </Link>
   )
 }
@@ -557,9 +557,9 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
         </div>
       </div>
       <div ref={chipRef} className="flex items-center bg-color-bg-medium hover:bg-color-ui-hover transition-all gap-x-[10px] justify-between duration-300 pl-[15px] pr-[5px] rounded-[20px] h-[26px] z-20 relative" style={{ width: panelWidth ?? undefined }}>
-          {icon && <GTPIcon icon={icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[15px] !h-[15px] flex justify-center items-center" />}
-          <div className=" text-sm min-w-fit whitespace-nowrap z-20">{label}</div>
-          <GTPIcon icon={"gtp-chevronright-monochrome"} className="!w-[10.67px] !h-[10.67px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[11px] !h-[11px] flex justify-center items-center z-20" />
+          {icon && <GTPIcon icon={icon as GTPIconName} className=" !w-[12px] xs:!w-[15px] !h-[12px] xs:!h-[15px]" containerClassName="!w-[16px] xs:!w-[15px] !h-[16px] xs:!h-[15px] flex justify-center items-center" />}
+          <div className=" text-xs xs:text-sm min-w-fit whitespace-nowrap z-20">{label}</div>
+          <GTPIcon icon={"gtp-chevronright-monochrome"} className=" !w-[8px] xs:!w-[10.67px] !h-[8px] xs:!h-[10.67px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[11px] !h-[11px] flex justify-center items-center z-20" />
       </div>
     </div>
   )
