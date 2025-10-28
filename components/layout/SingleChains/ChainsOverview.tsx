@@ -217,8 +217,8 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
               {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px]`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                    <HorizontalScrollContainer enableDragScroll={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                      <div className="w-[954px] pr-[20px]">
+                    <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                      <div className="w-full min-w-[954px] pr-[20px]">
                         <RowProvider
                           value={{
                             master: oldMaster,
@@ -273,7 +273,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                   </div>
                 ) : (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
-                    <div className="px-[30px] heading-large-md">Usage Breakdown</div>
+                    <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
                     <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2]`}>
                       <GTPIcon icon="gtp-lock" size="md" className="" />
                       <div className="heading-large-md">
@@ -297,11 +297,96 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
   )
 }
 
+const CountDownCircle = ({ 
+  seconds,
+  size = 15,
+  backgroundColor = 'rgb(var(--bg-medium))',
+  textColor = 'rgb(var(--text-primary))',
+  strokeWidth,
+  onComplete
+}: { 
+  seconds: number;
+  size?: number;
+  backgroundColor?: string;
+  textColor?: string;
+  strokeWidth?: number;
+  onComplete?: () => void;
+}) => {
+  const [progress, setProgress] = useState(1); // 1 = full circle, 0 = empty
+  const startTimeRef = useRef<number>(Date.now());
+  const animationFrameRef = useRef<number>();
+  
+  // Calculate proportional stroke width if not provided
+  const actualStrokeWidth = strokeWidth || Math.max(1, size / 7);
+  
+  // Calculate dimensions based on size
+  const center = size / 2;
+  const radius = Math.max(1, (size - actualStrokeWidth) / 2);
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - progress);
+  
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const newProgress = Math.max(0, 1 - (elapsed / (seconds * 1000)));
+      
+      setProgress(newProgress);
+      
+      if (newProgress > 0) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      } else if (onComplete) {
+        onComplete();
+      }
+    };
+    
+    animationFrameRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [seconds, onComplete]);
+  
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      style={{ transform: 'rotate(-90deg)' }}
+    >
+      {/* Background circle */}
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="none"
+        stroke={backgroundColor}
+        strokeWidth={actualStrokeWidth}
+      />
+      
+      {/* Animated progress circle */}
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="none"
+        stroke={textColor}
+        strokeWidth={actualStrokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={strokeDashoffset}
+      />
+    </svg>
+  );
+};
+
+
 
 const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, master: any, chainKey: string }) => {
-
-
   const [open, setOpen] = useState<boolean>(true);
+  const [isHovering, setIsHovering] = useState<boolean>(false);
   const { theme } = useTheme();
   const { data: masterData } = useMaster();
   const AllChainsByKeys = useMaster().AllChainsByKeys;
@@ -310,21 +395,44 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
   const twitter = socials.Twitter;
 
 
+  const [timerKey, setTimerKey] = useState<number>(0);
+  const handleComplete = () => {
+    setOpen(false);
+  };
+
+  // Reset timer when open state or hover state changes
+  useEffect(() => {
+    if (open && !isHovering) {
+      setTimerKey(prev => prev + 1);
+    }
+  }, [open, isHovering]);
 
   return (
-    <div className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px]`}>
-      <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start gap-[15px]">
-        <div className="flex items-center gap-x-[15px] cursor-pointer xs:pl-[30px] pl-[15px] group/aboutchain" onClick={() => setOpen(!open)}>
+    <div 
+      className={`select-none flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <div className={`absolute top-[15px] right-[30px] h-[26px] flex items-center justify-center ${isHovering || !open ? "opacity-0" : "opacity-100"} transition-[opacity] duration-300`}>
+        <CountDownCircle 
+          seconds={7} 
+          key={timerKey}
+          onComplete={handleComplete}
+        />
+      </div>
+      <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start @container/header gap-y-[10px]">
+        <div className="flex items-center gap-x-[15px] cursor-pointer xs:pl-[30px] pl-[15px] group/aboutchain whitespace-nowrap min-w-[200px] flex-1" onClick={() => setOpen(!open)}>
+          <div className="w-[26px] h-[26px] flex items-center justify-center">
           <GTPIcon 
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
             containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
            />
-          <div className="heading-large-md text-color-ui-hover whitespace-nowrap">{chainData.name}</div>
+           </div>
+          <div className="heading-large-md text-color-ui-hover whitespace-nowrap min-w-0 truncate">{chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
-        <div className={`xs:pl-[30px] xs:pr-[30px] pl-[15px] pr-[15px] w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] transition-[opacity] duration-300 ${!open ? "max-w-[1200px] max-h-[110px] opacity-100" : "max-w-[1200px] max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
-
+        <div className={`px-[30px] @[1155px]/header:pl-0 w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] ${!open ? "max-w-[1200px] max-h-[110px] opacity-100 transition-[opacity] duration-300  " : "max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
           {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
           {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
           {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
@@ -509,6 +617,7 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
   }, []);
 
   return (
+    <div style={{ minWidth: chipBaseWidth ?? undefined, maxWidth: chipBaseWidth ?? undefined }}>
     <div
       className="relative group transition-all duration-300 isolate z-0 hover:z-50 focus-within:z-50 cursor-pointer"
       onMouseEnter={() => {
@@ -525,42 +634,46 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
     >
       {/* Hidden measurement block to determine natural content width */}
       <div className="absolute opacity-0 pointer-events-none -z-10">
-        <div ref={measureRef} className="rounded-[20px] p-[10px] w-fit">
-          <div className="flex flex-col gap-y-[10px] pt-[24px] items-stretch w-fit">
+        <div ref={measureRef} className="rounded-b-[22px] p-[10px] w-fit">
+          <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
             {links.map((link) => (
-              <div key={`measure-${link.label}`} className="flex items-center gap-x-[10px] h-[26px] whitespace-nowrap">
-                <GTPIcon icon={!link.icon ? ("feather:globe" as GTPIconName) : (link.icon as GTPIconName)} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center" />
-                <div className=" heading-small-xs">{link.label}</div>
-              </div>
+              <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+                <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
+                  <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                  <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </div>
       <div
-        className={`absolute top-0 left-0 overflow-hidden z-10 transition-all duration-300 bg-color-bg-default rounded-[20px] py-[10px]`}
+        className={`absolute top-0 left-0 overflow-hidden z-10 transition-all duration-300 bg-color-ui-active rounded-[22px] py-[10px] ${linkHeight === 26 ? "shadow-none" : "shadow-standard"}`}
         style={{
           height: linkHeight,
           width: panelWidth ?? undefined,
-          boxShadow: linkHeight === 26 ? "none" : "0px 0px 27px 0px var(--color-ui-shadow, #151A19)"
+          // boxShadow: linkHeight === 26 ? "none" : "0px 0px 27px 0px var(--color-ui-shadow, #151A19)"
         }}
       >
-        <div className="flex flex-col gap-y-[10px] w-full pt-[24px] items-stretch ">
+        <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
           {links.map((link) => (
-            <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer">
+            <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
               <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
-                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] pl-[5px] z-20 !h-[26px] flex justify-center items-center" />
-                <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{link.label}</div>
-                <div className="absolute w-[98%] left-[1px] top-0 bottom-0 z-10 group-hover/row:bg-color-ui-hover  rounded-[10px]"></div>
+                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
               </div>
             </Link>
           ))}
         </div>
       </div>
       <div ref={chipRef} className="flex items-center bg-color-bg-medium hover:bg-color-ui-hover transition-all gap-x-[10px] justify-between duration-300 pl-[15px] pr-[5px] rounded-[20px] h-[26px] z-20 relative" style={{ width: panelWidth ?? undefined }}>
-          {icon && <GTPIcon icon={icon as GTPIconName} className=" !w-[12px] xs:!w-[15px] !h-[12px] xs:!h-[15px]" containerClassName="!w-[16px] xs:!w-[15px] !h-[16px] xs:!h-[15px] flex justify-center items-center" />}
-          <div className=" text-xs xs:text-sm min-w-fit whitespace-nowrap z-20">{label}</div>
+        <div className="flex items-center gap-x-[10px]">
+            {icon && <GTPIcon icon={icon as GTPIconName} className=" !w-[12px] xs:!w-[15px] !h-[12px] xs:!h-[15px]" containerClassName="!w-[16px] xs:!w-[15px] !h-[16px] xs:!h-[15px] flex justify-center items-center" />}
+            <div className=" text-xs xs:text-sm min-w-fit whitespace-nowrap z-20">{label}</div>
+          </div>
           <GTPIcon icon={"gtp-chevronright-monochrome"} className=" !w-[8px] xs:!w-[10.67px] !h-[8px] xs:!h-[10.67px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[11px] !h-[11px] flex justify-center items-center z-20" />
       </div>
+    </div>
     </div>
   )
 }
