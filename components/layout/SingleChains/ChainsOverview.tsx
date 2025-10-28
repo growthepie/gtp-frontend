@@ -568,8 +568,8 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
 const MetricTab = ({ title, children, largerGap = false }: { title: string; children: React.ReactNode, largerGap?: boolean }) => {
   return (
     <div className={`flex flex-col ${largerGap ? "gap-y-[10px]" : "gap-y-[2px]"}`}>
-      <div className="heading-large-xxs text-[#5A6462] whitespace-nowrap">{title}</div>
-      <div className="text-sm">{children}</div>
+      <div className="heading-xxs text-[#5A6462] whitespace-nowrap">{title}</div>
+      <div className="text-md">{children}</div>
     </div>
   )
 }
