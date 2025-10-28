@@ -27,7 +27,7 @@ const LOGO_CONFIG = {
 const LOGO_REGION_GAP = 10;
 
 const TreemapLogo = ({ chainName }: { chainName: string }) => {
-  return <ChartWatermarkWithMetricName className="w-[150px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" />;
+  return <ChartWatermarkWithMetricName className="w-[150px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" useColor={true} />;
 };
 
 // ============================================================================
