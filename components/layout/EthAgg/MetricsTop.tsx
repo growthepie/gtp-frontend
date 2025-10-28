@@ -144,7 +144,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
       <div
         className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
-            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
+            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-standard'
             : 'relative overflow-hidden duration-500'
           }
           ${isExpandButtonHovered && '!z-[1001]'}
