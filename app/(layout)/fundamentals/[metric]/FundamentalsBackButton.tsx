@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { BackButton } from "../../applications/_components/Components";
 import { useMaster } from "@/contexts/MasterContext";
+import { SmartBackButton } from "@/components/SmartBackButton";
 
 export const FundamentalsBackButton = () => {
   const [isChainFocused, setIsChainFocused] = useState(false);
@@ -20,6 +20,6 @@ export const FundamentalsBackButton = () => {
     return null;
   }
   return (
-  <BackButton />
+    <SmartBackButton />
   );
 };
