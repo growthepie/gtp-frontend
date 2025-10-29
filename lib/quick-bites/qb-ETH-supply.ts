@@ -113,6 +113,8 @@ const ethSupply: QuickBiteData = {
     "## The Merge (September 2022)",
     "The transition from Proof of Work to Proof of Stake marked a dramatic reduction in ETH issuance. Mining rewards (~13,000 ETH/day) were replaced with staking rewards (~1,700 ETH/day), reducing new ETH issuance by about 87%. This change made Ethereum's supply dynamics mathematically predictable with minimal and precisely controlled issuance. Additionally, The Merge reduced Ethereum's energy consumption by approximately 99.95%, as energy-intensive mining was replaced with environmentally friendly staking.",
 
+    "For a more detailed breakdown of ETH supply metrics, including real-time burn rates and staking rewards, visit [ultrasound.money](https://ultrasound.money/).",
+
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/eth-supply.png",
