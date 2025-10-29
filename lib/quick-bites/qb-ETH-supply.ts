@@ -1,7 +1,8 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { truncate } from 'fs';
 
 const ethSupply: QuickBiteData = {
-  title: "ETH Circulating Supply Tracker",
+  title: "ETH Supply & Issuance Tracker",
   subtitle: "Track Ethereum's total supply and issuance over time",
   content: [
     "Ethereum's monetary policy has evolved significantly since its inception, particularly after the transition to Proof of Stake (The Merge) and the implementation of EIP-1559 (The Burn). These changes have fundamentally altered how new ETH enters circulation and how the total supply changes over time.",
