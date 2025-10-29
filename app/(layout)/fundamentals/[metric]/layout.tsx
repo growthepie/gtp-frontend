@@ -103,17 +103,35 @@ export default async function Layout({
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
           note={
-            pageData.note && (
-              <div className="text-xs">
-                <span className="font-semibold text-forest-200 dark:text-forest-400">
-                  Note:{" "}
-                </span>
-                {pageData.note}
-              </div>
-            )
+        pageData.note && (
+          <div className="text-xs">
+            <span className="font-semibold text-forest-200 dark:text-forest-400">
+          Note:{" "}
+            </span>
+            {pageData.note}
+          </div>
+        )
           }
           startOpen
         />
+        {pageData.calculation && (
+          <QuestionAnswer
+        question={`How is ${pageData.title} calculated?`}
+        answer={pageData.calculation}
+          />
+        )}
+        {pageData.how_gamed && (
+          <QuestionAnswer
+            question={`How can ${pageData.title} be gamed?`}
+            answer={pageData.how_gamed}
+          />
+        )}
+        {pageData.interpretation && (
+          <QuestionAnswer
+            question={`How to interpret ${pageData.title}?`}
+            answer={pageData.interpretation}
+          />
+        )}
       </PageContainer>
     </PageRoot>
   );

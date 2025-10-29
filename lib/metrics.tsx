@@ -11,6 +11,9 @@ export type MetricItem = {
     description: string;
     note?: string | React.ReactNode;
     why?: string;
+    calculation?: string;
+    how_gamed?: string | React.ReactNode;
+    interpretation?: string;
     icon?: string;
     showGwei?: boolean;
     reversePerformer?: boolean;
@@ -52,8 +55,22 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Active Addresses",
       description:
-        "The number of distinct addresses that interacted with a chain. This only includes addresses that initiated a transaction or interacted with a smart contract.",
-      why: "Active addresses is a widely used metric for estimating the engagement on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall activity of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
+        "The number of distinct wallet addresses that actively interacted with a blockchain. This includes addresses that initiated a transaction or executed a smart contract call — in other words, addresses that were active onchain.",
+      why: "Active addresses is a key onchain metric for measuring user activity and engagement on a blockchain network. While not a perfect proxy for unique users - since one person can control multiple wallets - it still provides valuable insight into how many independent participants are interacting with the network over time.",
+      calculation: "At growthepie, we analyze every transaction and count unique 'from' addresses per time period (daily, weekly, or monthly). Unlike some other data providers, we exclude 'to' addresses, since they represent passive recipients rather than active participants. This approach ensures that our active address metric reflects real user-initiated activity. This onchain metric is also often called 'Daily Active Users (DAU)' or 'Unique Wallets (UW)'.",
+      how_gamed: (
+        <>
+          Active address is one of the most contentious metrics. Its counts can be inflated through sybil behavior, where many fake wallets are created to simulate activity - often during airdrops or incentive campaigns. For this reason, it's best to always interpret active addresses alongside other onchain metrics like{" "}
+          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+            Chain Revenue
+          </a>
+          {" "}or{" "}
+          <a href="/fundamentals/total-value-secured" className="text-forest-500 underline">
+            Total Value Secured
+          </a> as well as looking into the most active contracts on this chain to get a full picture of real network engagement.
+        </>
+      ),
+      interpretation: "A rising number of active addresses generally indicates growing user interest and adoption of the blockchain, while a declining count may signal waning engagement. However, it's important to consider active addresses in context with other metrics, as high activity doesn't always equate to a healthy or valuable network.",
       icon: "gtp-metrics-activeaddresses",
     },
     icon: "gtp-metrics-activeaddresses",
@@ -69,6 +86,9 @@ export const metricItems: MetricItem[] = [
       description:
         "The number of transactions on the network. We only count transactions that are executed by users/smart contracts - no system transactions.",
       why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
+      calculation: "At growthepie, we analyze every block and count the number of user-initiated transactions. We exclude system transactions that are not initiated by users or smart contracts to ensure that our transaction count metric accurately reflects real network activity. As example, OP-Stack chains have one system transaction per block (42k transactions per day) which we exclude from our counts.",
+      how_gamed: "Transaction count can be artificially inflated through spam transactions or micro-transactions that do not represent meaningful activity on the network. Especially since transaction costs dropped for Layer 2s (after the Dencun upgrade in March 2024). Also worth noting: transaction can vary in complexity. The gas used for a transaction can range from 21,000 for a simple ETH transfer to several hundred thousand for more complex interactions. This metric is best analyzed together with Chain Revenue or Transaction Costs. If users have to pay high fees to get their transactions in they are less likely to spam the network.",
+      interpretation: "A rising transaction count generally indicates growing user interest and adoption of the blockchain, while a declining count may signal waning engagement. However, it's important to consider transaction count in context with other metrics, as high activity doesn't always equate to a healthy or valuable network.",
       icon: "gtp-metrics-transactioncount",
     },
     icon: "gtp-metrics-transactioncount",
@@ -84,6 +104,20 @@ export const metricItems: MetricItem[] = [
       description:
         "Throughput is the amount of gas used per second, reflecting how much computational work the network is handling. We only include EVM equivalent Layer 2 gas usage.",
       why: "Throughput is a crucial metric for assessing scalability, reflecting a blockchain's actual compute capacity more accurately than transaction counts, which can vary in complexity (i.e. 21,000 gas for an eth transfer vs 280,000 gas for a simple Uniswap swap). Similarly to how modern storage devices are marketed with specs on read/write speeds rather than the number of files they can process, throughput provides a direct measure of a blockchain's ability to handle compute effectively. Throughput also reveals how close a chain is to its operational limits. This metric is essential for app developers and Layer 2 teams to gauge growth potential, potential cost implications, and performance constraints.",
+      calculation: "At growthepie, we analyze every transaction and sum the total gas used by user-initiated transactions within that block. We then calculate the average gas used per second (dividing block gas usage by block time) to determine the throughput. By focusing on EVM equivalent Layer 2 gas usage, we ensure that our throughput metric accurately reflects the computational work being performed on the network. Important to note: we measure throughput based on gas used, not gas limit or block gas target.",
+      how_gamed: (
+        <>
+          Since throughput focuses on gas used rather than transaction count, it is less susceptible to manipulation through small spam transactions. However, it is still possible that larger transactions could be used to flood the network. This metric is best analyzed together with{" "}
+          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+            Chain Revenue
+          </a>
+          {" "}or{" "}
+          <a href="/fundamentals/transaction-costs" className="text-forest-500 underline">
+            Transaction Costs
+          </a>. If users have to pay high fees to get their transactions in they are less likely to spam the network.
+        </>
+      ),
+      interpretation: "The throughput chart often appears as a flat line for some chains (i.e. Base) because they operate well below their maximum capacity (block gas target). If a chain is operating close to its maximum throughput, it may experience congestion and higher fees during periods of high demand.",
       icon: "gtp-metrics-throughput",
     },
     icon: "gtp-metrics-throughput",
@@ -99,6 +133,9 @@ export const metricItems: MetricItem[] = [
       description:
         "The value of all stablecoins that are secured by the chain. Stablecoins are cryptocurrencies that attempt to peg their market value to a fiat currency like the U.S. dollar or Euro.",
       why: "Stablecoin supply is a crucial metric for evaluating the growth and development of a blockchain's use-cases. Stablecoins are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is harder to inflate than Total Value Secured which includes all types of tokens.",
+      calculation: "At growthepie, we aggregate the total supply of all stablecoins that are issued on or bridged to the chain. We consider a stablecoin to be any cryptocurrency that is pegged to a fiat currency or other stable asset. We exclude stablecoins that are accruing interest (i.e. interest bearing stablecoins) to ensure that our stablecoin supply metric accurately reflects the amount of stable value held on the chain. You can find the full list of stablecoins we track in our DNA GitHub repository.",
+      how_gamed: "Stablecoin supply is generally a very reliable metric, since stablecoins are typically backed by real-world assets (either cash or treasuries). This makes it more difficult to artificially inflate this metric compared to other value-based metrics (like Total Value Secured).",
+      interpretation: "A rising stablecoin supply generally indicates growing user interest and trust in the blockchain, while a declining supply may signal waning confidence. However, it's important to consider stablecoin supply in context with other metrics, as high stablecoin holdings don't always equate to a healthy or valuable network.",
       icon: "gtp-metrics-stablecoinmarketcap",
     },
     icon: "gtp-metrics-stablecoinmarketcap",
@@ -114,6 +151,20 @@ export const metricItems: MetricItem[] = [
       description:
         "The sum of all assets secured by the chain, including canonically bridged, externally bridged, and natively issued tokens. Methodology and data is derived from L2Beat.com.",
       why: "Total Value Secured is a crucial metric for assessing the success in a blockchain. High TVS indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
+      calculation: "At growthepie, we leverage data from L2BEAT to calculate Total Value Secured (TVS). TVS includes all assets secured by the chain, including canonically bridged, externally bridged, and natively issued tokens. It is a sum of stablecoins, other tokens, and public RWAs.",
+      how_gamed: (
+        <>
+          Total Value Secured can be artificially inflated through the use of wrapped tokens or other synthetic assets that do not represent real value. Additionally, the use of bridges to transfer assets between chains can also lead to double-counting of value if not properly accounted for. For these reasons, it's important to interpret TVS alongside other metrics like{" "}
+          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+            Chain Revenue
+          </a>
+          {" "}or{" "}
+          <a href="/fundamentals/stablecoin-supply" className="text-forest-500 underline">
+            Stablecoin Supply
+          </a> to get a full picture of a chain's health.
+        </>
+      ),
+      interpretation: "A rising TVS generally indicates growing user interest and trust in the blockchain, while a declining TVS may signal waning confidence. However, it's important to consider TVS in context with other metrics, as high TVS doesn't always equate to a healthy or valuable network.",
       icon: "gtp-metrics-totalvaluelocked",
     },
     icon: "gtp-metrics-totalvaluelocked",
@@ -135,6 +186,9 @@ export const metricItems: MetricItem[] = [
         </>
       ),
       why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs.",
+      calculation: "At growthepie, we analyze every transaction and calculate the fees paid per transaction. We then determine the median transaction cost to provide a representative value that reflects typical user expenses. This approach ensures that our transaction cost metric accurately captures the cost of using the network for everyday activities. It is important to note that many other data providers report average transaction costs, which can be skewed by a small number of high-cost transactions. This onchain metric is also often called 'Median Gas Fee per Transaction' or 'Transaction Fees'.",
+      how_gamed: "Transaction costs are hard to manipulate directly, since they are determined by network demand and gas prices and hence reflect real user costs.",
+      interpretation: "Lower transaction costs generally indicate a more user-friendly and accessible blockchain, while higher costs may deter users and limit adoption. During periods of high network congestion, transaction costs can spike significantly, making it more expensive for users to interact with the blockchain.",
       icon: "gtp-metrics-transactioncosts",
       showGwei: true,
       reversePerformer: true,
