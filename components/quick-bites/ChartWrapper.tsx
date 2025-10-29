@@ -124,10 +124,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     
     return jsonMeta.meta.map((series: any, index: number) => ({
       ...series,
-      processedData: jsonData[index]?.map((item: any) => [
-        item[series.xIndex],
-        item[series.yIndex]
-      ]) || []
+      processedData: (() => {
+        const rawData = jsonData[index]?.map((item: any) => [
+          item[series.xIndex],
+          item[series.yIndex]
+        ]) || [];
+
+        // Apply yMultiplication if specified
+        return series.yMultiplication
+          ? rawData.map(([x, y]) => [x, y * series.yMultiplication])
+          : rawData;
+      })()
     }));
   }, [jsonMeta, jsonData]);
 
