@@ -82,11 +82,6 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
           <PageContainer className="hidden md:block" paddingY="none">
             <MetricBottomControls metric={metric} />
           </PageContainer>
-
-          {/* Add Related Quick Bites Section */}
-          {/* <PageContainer className="" paddingY="none">
-            <MetricRelatedQuickBites metricKey={metric} metricType={type} />
-          </PageContainer> */}
         </MetricSeriesProvider>
       </MetricContextWrapper>
     </>

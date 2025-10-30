@@ -43,19 +43,19 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
   const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
   return {
-      title: metadata.title,
-      description: metadata.description,
-      openGraph: {
-        images: [
-          {
-            url: `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png?date=${dateString}`,
-            width: 1200,
-            height: 627,
-            alt: "growthepie.com",
-          },
-        ],
-      },
-    };
+    title: metadata.title,
+    description: metadata.description,
+    openGraph: {
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png?date=${dateString}`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+    },
+  };
 }
 
 export default async function Layout({
@@ -74,25 +74,25 @@ export default async function Layout({
 
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
-      
+
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
-          <FundamentalsBackButton />
-          <Title
-            icon={pageData.icon as GTPIconName}
-            title={pageData.title || "No Title"}
-            button={
-              params.metric === "transaction-costs" && (
-                <TitleButtonLink
-                  label="Detailed Fees Overview"
-                  icon="detailed-fees"
-                  href="https://fees.growthepie.com/"
-                  newTab
-                />
-              )
-            }
-          />
+            <FundamentalsBackButton />
+            <Title
+              icon={pageData.icon as GTPIconName}
+              title={pageData.title || "No Title"}
+              button={
+                params.metric === "transaction-costs" && (
+                  <TitleButtonLink
+                    label="Detailed Fees Overview"
+                    icon="detailed-fees"
+                    href="https://fees.growthepie.com/"
+                    newTab
+                  />
+                )
+              }
+            />
           </div>
           <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
@@ -110,21 +110,21 @@ export default async function Layout({
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
           note={
-        pageData.note && (
-          <div className="text-xs">
-            <span className="font-semibold text-forest-200 dark:text-forest-400">
-          Note:{" "}
-            </span>
-            {pageData.note}
-          </div>
-        )
+            pageData.note && (
+              <div className="text-xs">
+                <span className="font-semibold text-forest-200 dark:text-forest-400">
+                  Note:{" "}
+                </span>
+                {pageData.note}
+              </div>
+            )
           }
           startOpen
         />
         {pageData.calculation && (
           <QuestionAnswer
-        question={`How is ${pageData.title} calculated?`}
-        answer={pageData.calculation}
+            question={`How is ${pageData.title} calculated?`}
+            answer={pageData.calculation}
           />
         )}
         {pageData.how_gamed && (
@@ -140,10 +140,7 @@ export default async function Layout({
           />
         )}
       </PageContainer>
-      {/* Add Related Quick Bites Section */}
-      <PageContainer className="" paddingY="none">
-        <MetricRelatedQuickBites metricKey={params.metric} metricType="fundamentals" />
-      </PageContainer>
+      <MetricRelatedQuickBites metricKey={params.metric} metricType="fundamentals" includePageContainer={true} />
     </PageRoot>
   );
 }
