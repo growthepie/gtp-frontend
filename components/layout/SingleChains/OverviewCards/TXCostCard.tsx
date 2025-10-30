@@ -77,12 +77,14 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData }
         }
     }
 
+    console.log(lastCostData)
+
     return (
         <div className="group bg-color-bg-default xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[86px]">
             {/* <div className="text-[0.6rem]">{JSON.stringify(lastCostData)}</div> */}
             <div className="flex justify-between items-center">
-                <div className="flex gap-x-[10px] h-[28px] relative items-center">
-                    <div className="!size-[28px] absolute xs:left-auto xs:top-auto -left-[24px] -top-[24px] xs:relative flex items-center justify-center">
+                <div className="flex xs:gap-x-[10px] gap-x-[2px] h-[28px] relative items-center">
+                    <div className="!size-[28px] relative flex items-center justify-center">
                         <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
                             <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
                             <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{ color: rankingColor }}>12</div>

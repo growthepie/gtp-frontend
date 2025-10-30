@@ -132,15 +132,15 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
             className="group relative rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover xs:p-[10px] p-[15px] w-full flex justify-between h-2xl transition-colors duration-200 cursor-pointer"
             onClick={handleCardClick}
         >
-            <div className="flex items-center gap-x-[10px] relative w-[80px] md:min-w-[175px]">
-                <div className="!size-[24px] xs:!size-[28px] absolute xs:top-auto xs:left-auto -left-[22px] -top-[22px] xs:relative flex items-center justify-center">
+            <div className="flex items-center gap-x-[10px] relative w-[80px] md:min-w-[175px] ">
+                <div className="!size-[14px] xs:!size-[28px] relative flex items-center justify-center">
                     <GTPTooltipNew
                             placement="top-end"
                             allowInteract={true}
                             trigger={
-                                <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                                    <div className="absolute numbers-xxxs -left-[11px] top-[0%] w-[24px] h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
+                                <div className=" w-[12px] h-[12px] xs:w-[24px] xs:h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
+                                    <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={rankingColor} className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" containerClassName="relative flex items-center justify-center left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
+                                    <div className="numbers-xxxs -left-[11px] absolute top-[0%] w-[12px] h-[12px] xs:w-[24px] xs:h-[24px] flex justify-center items-center" style={{color: rankingColor}}>
                                         {overviewData.data.ranking[metricKey].rank}
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 </div>
                 <div className="heading-large-xxs xs:heading-large-xs ">{metricData.name}</div>
             </div>
-            <div className="flex-1 flex justify-center items-center max-w-[120px] sm:max-w-[160px] overflow-visible">
+            <div className="flex-1 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible">
                 <MetricChart 
                     metricKey={metricKey} 
                     metricData={metricData} 

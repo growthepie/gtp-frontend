@@ -13,6 +13,7 @@ interface TPSChartProps {
   // The prop is updated to accept an array of HistoryItem objects
   overrideColor?: string[];
   data: HistoryItem[];
+  chainName: string;
 }
 
 // Your existing formatNumberWithSI function...
@@ -45,7 +46,7 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
-export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
+export const TPSChart = React.memo(({ data, overrideColor, chainName }: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +81,7 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
 
     // const maxValue = Math.max(...tpsValues);
     // const yAxisMax = Math.ceil(maxValue / 5) * 5;
+
 
     return {
       backgroundColor: 'transparent',
@@ -139,6 +141,7 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
             maximumFractionDigits: 1,
             minimumFractionDigits: 1,
           }).format(value);
+         
 
           // Format the date for display in the tooltip
           const formattedDate = new Intl.DateTimeFormat("en-GB", {
@@ -159,7 +162,7 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
             </div>
               <div class="flex w-full gap-x-[5px] items-center font-medium">
                 <div class="w-[15px] h-[10px] rounded-r-full" style="background-color: ${barColor}"></div>
-                <div class="tooltip-point-name text-xs">Ethereum Ecosystem</div>
+                <div class="tooltip-point-name text-xs">${chainName || "Ethereum Ecosystem"}</div>
                 <div class="flex-1 text-right justify-end flex numbers-xs">
                   ${formattedValue}
                 </div>

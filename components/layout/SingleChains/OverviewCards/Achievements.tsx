@@ -71,9 +71,9 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
     }
 
 // streak text - examples: "2 weeks and 3 days in last week", "6 days in last week"
-    const getStreakText = (streakLength: number) => {
+    const getStreakText = (streakLength: number, addDays: boolean = false) => {
         const weeks = Math.floor(streakLength / 7);
-        const days = streakLength % 7;
+        const days = streakLength % 7 + (addDays ? 1 : 0);
         if (weeks > 0 && days > 0) {
             return `<b>${weeks} weeks</b> and <b>${days} days</b> in last week`;
         } else if (weeks > 0) {
@@ -129,7 +129,7 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
 
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
-                            <div className="text-xxs" dangerouslySetInnerHTML={{ __html: getStreakText(data.streaks[key][keyValue].streak_length) }} />
+                            <div className="text-xxs" dangerouslySetInnerHTML={{ __html: getStreakText(data.streaks[key][keyValue].streak_length, streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value > 1) }} />
                             <div className="flex flex-col items-center -space-y-[4px]">
                             <div className="flex items-center gap-x-[5px] h-[39px] pt-[2px]">
                                 {Array.from({ length: data.streaks[key][keyValue].streak_length }, (_, i) => (
@@ -422,7 +422,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
             </div>
             <div 
                 style={{ '--breakpoint': `${Object.keys(data.lifetime).length * 100}px` } as React.CSSProperties}
-                className="@container/lifetime-achievements flex flex-wrap @[var(--breakpoint)]/lifetime-achievements:flex-nowrap justify-between min-w-[300px] gap-x-[10px] gap-y-[10px] overflow-visible pt-[6px] pl-[7px] pb-[19px]"
+                className="@container/lifetime-achievements flex flex-wrap sm:flex-nowrap justify-between min-w-[300px] gap-x-[10px] gap-y-[10px] overflow-visible pt-[6px] pl-[7px] pb-[19px]"
             >
                 {Object.keys(data.lifetime).map((key) => {
 
