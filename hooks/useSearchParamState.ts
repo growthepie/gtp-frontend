@@ -98,7 +98,7 @@ function flushBatchedUpdates() {
 
   if (hasChanges) {
     const newUrl = newParams.toString() ? `${pathname}?${newParams}` : pathname;
-    const scrollY = window.scrollY;
+    // const scrollY = window.scrollY;
     
     if (mode === 'replace') {
       router.replace(newUrl, { scroll: false });
@@ -106,7 +106,7 @@ function flushBatchedUpdates() {
       router.push(newUrl, { scroll: false });
     }
     
-    requestAnimationFrame(() => window.scrollTo(0, scrollY));
+    // requestAnimationFrame(() => window.scrollTo(0, scrollY));
   }
 }
 

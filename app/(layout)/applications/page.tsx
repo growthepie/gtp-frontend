@@ -37,7 +37,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
   preload(ApplicationsURLs.overview.replace('{timespan}', timespan), { as: 'fetch', crossOrigin: "anonymous" });
 });
 
-const SCROLL_POS_KEY = 'scrollPos-applications';
+// const SCROLL_POS_KEY = 'scrollPos-applications';
 
 export default function Page() {
   const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
@@ -48,63 +48,63 @@ export default function Page() {
   const [topGainersRef, { height: topGainersHeight }] = useElementSizeObserver<HTMLDivElement>();
 
 
-  useEffect(() => {
-    const handleScroll = () => {
-      sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
-  useLayoutEffect(() => {
-    const restoreScroll = () => {
-      const savedScroll = sessionStorage.getItem(SCROLL_POS_KEY);
+  // useLayoutEffect(() => {
+  //   const restoreScroll = () => {
+  //     const savedScroll = sessionStorage.getItem(SCROLL_POS_KEY);
 
-      if (!savedScroll) {
-        return;
-      }
+  //     if (!savedScroll) {
+  //       return;
+  //     }
 
-      console.log("Attempting to restore scroll with scroll position:", savedScroll);
-      const scrollY = parseInt(savedScroll);
+  //     console.log("Attempting to restore scroll with scroll position:", savedScroll);
+  //     const scrollY = parseInt(savedScroll);
 
-      // Track start time for the 1-second attempt window
-      const startTime = Date.now();
-      const maxDuration = 1000; // 1 second in milliseconds
+  //     // Track start time for the 1-second attempt window
+  //     const startTime = Date.now();
+  //     const maxDuration = 1000; // 1 second in milliseconds
 
-      // Function to attempt scrolling with retries
-      const attemptScroll = () => {
-        const pageHeight = document.documentElement.scrollHeight;
-        const currentTime = Date.now();
-        const timeElapsed = currentTime - startTime;
+  //     // Function to attempt scrolling with retries
+  //     const attemptScroll = () => {
+  //       const pageHeight = document.documentElement.scrollHeight;
+  //       const currentTime = Date.now();
+  //       const timeElapsed = currentTime - startTime;
 
-        if (scrollY < pageHeight) {
-          // Page is tall enough, perform scroll
-          window.scrollTo(0, scrollY);
-          sessionStorage.removeItem(SCROLL_POS_KEY);
-          return true; // Success
-        } else if (timeElapsed < maxDuration) {
-          // Still within time window, retry soon
-          setTimeout(attemptScroll, 50); // Check every 50ms
-          return false; // Still trying
-        } else {
-          // Time's up, couldn't scroll
-          sessionStorage.removeItem(SCROLL_POS_KEY);
-          return false; // Failed
-        }
-      };
+  //       if (scrollY < pageHeight) {
+  //         // Page is tall enough, perform scroll
+  //         window.scrollTo(0, scrollY);
+  //         sessionStorage.removeItem(SCROLL_POS_KEY);
+  //         return true; // Success
+  //       } else if (timeElapsed < maxDuration) {
+  //         // Still within time window, retry soon
+  //         setTimeout(attemptScroll, 50); // Check every 50ms
+  //         return false; // Still trying
+  //       } else {
+  //         // Time's up, couldn't scroll
+  //         sessionStorage.removeItem(SCROLL_POS_KEY);
+  //         return false; // Failed
+  //       }
+  //     };
 
-      // Start the attempt cycle
-      attemptScroll();
-    };
+  //     // Start the attempt cycle
+  //     attemptScroll();
+  //   };
 
-    const referrer = document.referrer;
-    // if the referrer is the applications page, restore the scroll
-    if (referrer.includes("/applications/")) {
-      restoreScroll();
-    }
+  //   const referrer = document.referrer;
+  //   // if the referrer is the applications page, restore the scroll
+  //   if (referrer.includes("/applications/")) {
+  //     restoreScroll();
+  //   }
 
-  }, []);
+  // }, []);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
