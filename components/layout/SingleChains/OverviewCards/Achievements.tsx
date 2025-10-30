@@ -422,7 +422,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
             </div>
             <div 
                 style={{ '--breakpoint': `${Object.keys(data.lifetime).length * 100}px` } as React.CSSProperties}
-                className="@container/lifetime-achievements flex flex-wrap sm:flex-nowrap justify-between min-w-[300px] gap-x-[10px] gap-y-[10px] overflow-visible pt-[6px] pl-[7px] pb-[19px]"
+                className="@container/lifetime-achievements flex flex-wrap justify-center md:justify-between min-w-[300px] gap-x-[10px] gap-y-[10px] overflow-visible pt-[6px] pl-[7px] pb-[19px]"
             >
                 {Object.keys(data.lifetime).map((key) => {
 
