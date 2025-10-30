@@ -571,6 +571,7 @@ const SimilarChains = ({ chainKey }: { chainKey: string }) => {
               size="md"
               allowInteract={true}
               containerClass="max-w-fit pl-[15px]"
+              key={index + randomChain.urlKey}
               trigger={
                 <div>
                   <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
