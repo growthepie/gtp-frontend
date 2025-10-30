@@ -147,6 +147,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     setManagerReady(true);
   }, []);
 
+  if(!managerReady) {
+    return children;
+  }
+
   return (
     <NavigationContext.Provider 
       value={{
