@@ -135,7 +135,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
             <div className="flex items-center gap-x-[10px] relative w-[80px] md:min-w-[175px] ">
                 <div className="!size-[14px] xs:!size-[28px] relative flex items-center justify-center">
                     <GTPTooltipNew
-                            placement="top-end"
+                            placement="top-start"
                             allowInteract={true}
                             trigger={
                                 <div className=" w-[12px] h-[12px] xs:w-[24px] xs:h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
@@ -145,10 +145,12 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                                     </div>
                                 </div>
                             }
-                            containerClass="w-[24px] h-[24px] mb-[5px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center"
+                            containerClass="mb-[5px] pl-[10px] p-[2px] min-w-[300px] relative flex items-center justify-center"
                             positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                           >
-                            <></>
+                            <div>
+                                {`${master.chains[chainKey].name} ranks #${overviewData.data.ranking[metricKey].rank} for ${metricData.name} among chains listed on growthepie.`}
+                            </div>
                     </GTPTooltipNew>
 
                 </div>
