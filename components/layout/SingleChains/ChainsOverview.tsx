@@ -304,7 +304,8 @@ const CountDownCircle = ({
   backgroundColor = 'rgb(var(--bg-medium))',
   textColor = 'rgb(var(--text-primary))',
   strokeWidth,
-  onComplete
+  onComplete,
+  isPaused = false,
 }: { 
   seconds: number;
   size?: number;
@@ -312,9 +313,11 @@ const CountDownCircle = ({
   textColor?: string;
   strokeWidth?: number;
   onComplete?: () => void;
+  isPaused?: boolean;
 }) => {
   const [progress, setProgress] = useState(1); // 1 = full circle, 0 = empty
-  const startTimeRef = useRef<number>(Date.now());
+  const elapsedRef = useRef(0);
+  const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number>();
   
   // Calculate proportional stroke width if not provided
@@ -327,17 +330,29 @@ const CountDownCircle = ({
   const strokeDashoffset = circumference * (1 - progress);
   
   useEffect(() => {
+    if (isPaused || elapsedRef.current >= seconds * 1000) {
+      return;
+    }
+
     startTimeRef.current = Date.now();
-    
+
     const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const newProgress = Math.max(0, 1 - (elapsed / (seconds * 1000)));
+      if (isPaused) {
+        return;
+      }
+
+      const now = Date.now();
+      const elapsedSinceResume = startTimeRef.current ? now - startTimeRef.current : 0;
+      const totalElapsed = elapsedRef.current + elapsedSinceResume;
+      const newProgress = Math.max(0, 1 - (totalElapsed / (seconds * 1000)));
       
       setProgress(newProgress);
       
       if (newProgress > 0) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else if (onComplete) {
+        elapsedRef.current = seconds * 1000;
+        animationFrameRef.current = undefined;
         onComplete();
       }
     };
@@ -347,9 +362,14 @@ const CountDownCircle = ({
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = undefined;
+      }
+      if (startTimeRef.current !== null) {
+        elapsedRef.current += Date.now() - startTimeRef.current;
+        startTimeRef.current = null;
       }
     };
-  }, [seconds, onComplete]);
+  }, [seconds, onComplete, isPaused]);
   
   return (
     <svg 
@@ -398,7 +418,9 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
 
   const [timerKey, setTimerKey] = useState<number>(0);
   const handleComplete = () => {
-    setOpen(false);
+    if (!isHovering) {
+      setOpen(false);
+    }
   };
 
   // Reset timer when open state or hover state changes
@@ -419,6 +441,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
           seconds={7} 
           key={timerKey}
           onComplete={handleComplete}
+          isPaused={isHovering}
         />
       </div>
       <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start @container/header gap-y-[10px]">
@@ -428,8 +451,8 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
             icon="gtp-chevronright-monochrome" size="sm" 
             className={`!size-[10.67px]`} 
             containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
-           />
-           </div>
+          />
+          </div>
           <div className="heading-large-md text-color-ui-hover whitespace-nowrap min-w-0 truncate">{chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
