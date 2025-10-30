@@ -275,7 +275,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
           </div>
-          <div className='numbers-sm text-color-ui-hover'>{uptimeData.subheading}</div>
+          <div className={`numbers-sm text-color-ui-hover ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
         </div>
       </div>
     </>

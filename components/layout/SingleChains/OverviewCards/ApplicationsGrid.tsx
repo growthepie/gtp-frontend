@@ -262,16 +262,17 @@ function buildCategoryNodes(
 
 interface DensePackedTreeMapProps {
   chainKey: string;
+  width?: number;
 }
 
-const DensePackedTreeMap = ({ chainKey }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
   const [selectedMainCategory, setSelectedMainCategory] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isResizing, setIsResizing] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(DEFAULT_CONTAINER_WIDTH);
+  const [containerWidth, setContainerWidth] = useState(width || DEFAULT_CONTAINER_WIDTH);
   const [showHint, setShowHint] = useState(false);
   const { AllChainsByKeys } = useMaster();
 
