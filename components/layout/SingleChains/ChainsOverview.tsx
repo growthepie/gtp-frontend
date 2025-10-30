@@ -212,7 +212,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
               </div>
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}>
                 <ProjectsMetadataProvider>
-                  <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={oldMaster} />
+                  <ApplicationsGrid chainKey={chainKey} />
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (

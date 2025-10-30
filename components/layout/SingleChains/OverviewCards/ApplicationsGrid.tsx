@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import * as d3 from 'd3-hierarchy';
 import useSWR from 'swr';
-import { ChainOverview } from '@/lib/chains';
+import { ChainOverview, Ecosystem } from '@/lib/chains';
 import { MasterResponse } from '@/types/api/MasterResponse';
 import { useMaster } from '@/contexts/MasterContext';
 import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/ProjectsMetadataContext';
@@ -18,7 +18,7 @@ import { isMobile } from 'react-device-detect';
 import { useTheme } from 'next-themes';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import { useUIContext } from '@/contexts/UIContext';
-import { useLocalStorage } from 'usehooks-ts';
+import { EthereumEcosystemBuildersResponse } from '@/types/api/EthereumEcosystemBuildersResponse';
 
 const LOGO_CONFIG = {
   width: 150,
@@ -27,6 +27,7 @@ const LOGO_CONFIG = {
 };
 
 const LOGO_REGION_GAP = 10;
+const DEFAULT_CONTAINER_WIDTH = 1920;
 
 const TreemapLogo = ({ chainName }: { chainName: string }) => {
   return <ChartWatermarkWithMetricName className="w-[150px] opacity-20 text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" useColor={true} />;
@@ -121,11 +122,11 @@ const categoryVariants = {
 const appTileVariants = {
   initial: { opacity: 0, scale: 0 },
   animate: (i: number) => ({
-    opacity: 1,
+    opacity: 0,
     scale: 1,
     transition: {
-      delay: i * 0.02,
-      duration: 0.3,
+      delay: i * 0.01,
+      duration: 0.05,
       stiffness: 300,
       damping: 20,
     }
@@ -203,8 +204,6 @@ function groupAppsByCategory(
 }
 
 function buildCategoryNodes(
-  blockspaceData: any[] | undefined,
-  blockspaceTypes: string[] | undefined,
   apps: EnrichedApp[],
   masterData: any,
   viewMode: ViewMode,
@@ -241,28 +240,20 @@ function buildCategoryNodes(
     return nodes.sort((a, b) => b.txcount - a.txcount);
   }
 
-  if (!blockspaceData || !blockspaceTypes) return [];
 
-  const categoryMap = masterData.blockspace_categories.main_categories;
+  const categoryDict : { [key: string]: string } = masterData.blockspace_categories.main_categories;
 
-  return blockspaceData
-    .filter(item => {
-      const mainCategoryId = item[blockspaceTypes.indexOf('main_category_id')];
-      return mainCategoryId !== 'unlabeled';
-    })
-    .map(item => {
-      const categoryId = item[blockspaceTypes.indexOf('main_category_id')];
-      const categoryLabel = categoryMap[categoryId];
-      const categoryApps = groupedApps.get(categoryLabel) || [];
+  const nodes = Object.entries(categoryDict).map(([id, label]) => ({
+    id: id,
+    label: label,
+    txcount: groupedApps.get(label)?.reduce((sum, app) => sum + app.txcount, 0) || 0,
+    pctShare: (groupedApps.get(label)?.reduce((sum, app) => sum + app.txcount, 0) || 0 ) / apps.reduce((sum, app) => sum + app.txcount, 0) * 100 || 0,
+    apps: groupedApps.get(label) || [],
+  }));
 
-      return {
-        id: categoryId,
-        label: categoryLabel,
-        txcount: item[blockspaceTypes.indexOf('txcount')],
-        pctShare: item[blockspaceTypes.indexOf('pct_share')],
-        apps: categoryApps,
-      };
-    });
+  console.log("nodes", nodes);
+
+  return nodes;
 }
 
 // ============================================================================
@@ -271,20 +262,17 @@ function buildCategoryNodes(
 
 interface DensePackedTreeMapProps {
   chainKey: string;
-  chainData: any;
-  master: MasterResponse;
 }
 
-const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
   const [selectedMainCategory, setSelectedMainCategory] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isResizing, setIsResizing] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(743);
+  const [containerWidth, setContainerWidth] = useState(DEFAULT_CONTAINER_WIDTH);
   const [showHint, setShowHint] = useState(false);
-  const [useOverviewData, setUseOverviewData] = useLocalStorage("useOverviewData", false);
   const { AllChainsByKeys } = useMaster();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -294,18 +282,37 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
 
   const { isSidebarOpen } = useUIContext();
 
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const measure = () => {
+      const width = container.clientWidth || DEFAULT_CONTAINER_WIDTH;
+      setContainerWidth(width);
+    };
+
+    measure();
+
+    const rafId = window.requestAnimationFrame(measure);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   // ============================================================================
   // Data Fetching
   // ============================================================================
-  const { data: chainDataOverview } = useSWR<ChainOverview>(
-    `https://api.growthepie.com/v1/chains/${chainKey}/overview.json`
+  const { data: chainDataOverview } = useSWR<ChainOverview | EthereumEcosystemBuildersResponse>(
+    chainKey === "ethereum-ecosystem" ? 
+      "https://api.growthepie.com/v1/ecosystem/builders.json"
+       : `https://api.growthepie.com/v1/chains/${chainKey}/overview.json`
   );
 
   const { data: masterData } = useMaster();
 
-  const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(
-    `https://api.growthepie.com/v1/apps/app_overview_7d.json`
-  );
+  // const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(
+  //   `https://api.growthepie.com/v1/apps/app_overview_7d.json`
+  // );
 
   const { filteredProjectsData, ownerProjectToProjectData } = useProjectsMetadata();
 
@@ -327,39 +334,26 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   }, [filteredProjectsData]);
 
   const appDataSource = useMemo(() => {
-    if (useOverviewData) {
-      const overviewApps = chainDataOverview?.data?.ecosystem?.apps;
-      if (!overviewApps?.data || !overviewApps.types) {
-        return null;
-      }
-
-      const hasOriginKey = overviewApps.types.includes('origin_key');
-      const types = hasOriginKey ? overviewApps.types : [...overviewApps.types, 'origin_key'];
-      const data = hasOriginKey
-        ? overviewApps.data
-        : overviewApps.data.map(app => [...app, chainKey]);
-
-      return { data, types };
+    let overviewApps: { data: [][]; types: string[] } | null = null;
+    if (chainKey === "ethereum-ecosystem") {
+      overviewApps = ((chainDataOverview as EthereumEcosystemBuildersResponse)?.data?.ecosystem  as Ecosystem)?.apps;
+    }
+    else {
+      overviewApps = (chainDataOverview as ChainOverview)?.data?.ecosystem?.apps;
     }
 
-    if (!applicationsData?.data?.data || !applicationsData?.data?.types) {
+    if (!overviewApps?.data || !overviewApps.types) {
       return null;
     }
 
-    const originIndex = applicationsData.data.types.indexOf('origin_key');
-    if (originIndex === -1) {
-      return null;
-    }
+    const hasOriginKey = overviewApps.types.includes('origin_key');
+    const types = hasOriginKey ? overviewApps.types : [...overviewApps.types, 'origin_key'];
+    const data = hasOriginKey
+      ? overviewApps.data
+      : overviewApps.data.map(app => [...app, chainKey]);
 
-    const filteredData = applicationsData.data.data.filter(
-      app => app[originIndex] === chainKey
-    );
-
-    return {
-      data: filteredData,
-      types: applicationsData.data.types,
-    };
-  }, [useOverviewData, chainDataOverview, applicationsData, chainKey]);
+    return { data, types };
+  }, [chainDataOverview, chainKey]);
 
   const enrichedApps = useMemo(() => {
     if (!appDataSource) {
@@ -375,12 +369,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   }, [appDataSource, filteredProjectsData, ownerProjectMap]);
 
   const categoryNodes = useMemo(() => {
-    const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
-    const blockspaceTypes = chainDataOverview?.data.blockspace.blockspace.types;
-
     const allNodes = buildCategoryNodes(
-      blockspaceData,
-      blockspaceTypes,
       enrichedApps,
       masterData,
       selectedMainCategory === null ? 'main' : 'sub',
@@ -403,11 +392,11 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     }
 
     return filteredNodes;
-  }, [chainDataOverview, enrichedApps, masterData, selectedMainCategory]);
+  }, [enrichedApps, masterData, selectedMainCategory]);
 
   const dimensions = useMemo(() => {
     const MIN_HEIGHT = 245;
-    const MAX_HEIGHT = windowHeight - 300;
+    const MAX_HEIGHT = windowHeight - (chainKey === "ethereum-ecosystem" ? 600 : 300);
     const MAX_APPS = 20;
 
     if (categoryNodes.length === 0) {
@@ -770,12 +759,6 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     setShowHint(false);
   };
 
-  const handleToggleDataSource = () => {
-    setUseOverviewData(prev => !prev);
-    // setSelectedMainCategory(null);
-    setShowHint(false);
-  };
-
   // Handle ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -853,15 +836,19 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
       if (container) {
         setContainerWidth(container.clientWidth);
       } else {
-        setContainerWidth(743);
+        setContainerWidth(DEFAULT_CONTAINER_WIDTH);
       }
     };
 
     window.addEventListener('resize', handleResize);
 
+    handleResize();
+    const rafId = window.requestAnimationFrame(handleResize);
+
     setTimeout(handleResize, 300);
 
     return () => {
+      window.cancelAnimationFrame(rafId);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
@@ -876,7 +863,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
         if (container) {
           setContainerWidth(container.clientWidth);
         } else {
-          setContainerWidth(743);
+          setContainerWidth(DEFAULT_CONTAINER_WIDTH);
         }
       }, 300);
     
@@ -903,27 +890,22 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
   // Get main categories for buttons
   const mainCategories = useMemo(() => {
-    if (!masterData?.blockspace_categories?.main_categories) return [];
+    const mainCategoryEntries = Object.entries(masterData?.blockspace_categories?.main_categories || {});
+    if (!mainCategoryEntries.length) return [];
 
-    const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
-    if (!blockspaceData) return [];
-
-    return Object.entries(masterData.blockspace_categories.main_categories)
-      .filter(([id]) => {
-        const hasData = blockspaceData.some(
-          item => item[chainDataOverview.data.blockspace.blockspace.types.indexOf('main_category_id')] === id
-        );
-        const hasApps = enrichedApps.some(app =>
-          masterData.blockspace_categories.main_categories[id] === app.mainCategory
-        );
-        return hasData && hasApps && id !== 'unlabeled';
+    return mainCategoryEntries
+      .filter(([_, label]) => {
+        const hasData = enrichedApps.some(app => app.mainCategory === label);
+        return hasData && label !== 'unlabeled';
       })
       .map(([id, label]) => ({ id, label }));
-  }, [masterData, chainDataOverview, enrichedApps]);
+  }, [enrichedApps, masterData?.blockspace_categories?.main_categories]);
 
   const { theme } = useTheme();
 
   const hideApplications = layout.length === 0;
+
+  const computedChainKey = chainKey === "ethereum-ecosystem" ? "ethereum" : chainKey;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -933,9 +915,9 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
           <div className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon
-                icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName}
+                icon={`gtp:${AllChainsByKeys[computedChainKey].urlKey}-logo-monochrome` as GTPIconName}
                 size="sm"
-                style={{ color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] }}
+                style={{ color: AllChainsByKeys[computedChainKey].colors[theme ?? "dark"][0] }}
               />
               <div className="heading-large-md">
                 Applications
@@ -1032,7 +1014,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                           exit={{ opacity: 0, left: 0, top: 0, width: 0, height: 0 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <TreemapLogo chainName={masterData?.chains[chainKey].name || ''} />
+                          <TreemapLogo chainName={masterData?.chains[computedChainKey].name || ''} />
                         </motion.div>
                       );
                     }
@@ -1075,16 +1057,6 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
         </div>
       </div>
       <div className="flex items-center justify-end pt-[10px] px-[30px] w-full h-[24px] gap-x-[10px]">
-        <div className="flex gap-x-[5px]">
-          <div className="heading-xxs">Toggle Data Source</div>
-        <button
-          type="button"
-          onClick={handleToggleDataSource}
-          className="text-xxxs px-[10px] border border-color-text-primary/30 rounded-full hover:bg-color-ui-hover transition"
-        >
-          now using {useOverviewData ? `/chains/${chainKey}/overview.json` : `/apps/app_overview_7d.json`}
-        </button>
-        </div>
         {!hideApplications && (
           <div className='w-[15px] h-fit z-30'>
             <GTPTooltipNew
@@ -1264,22 +1236,25 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
 
   return (
     <motion.div
-      variants={appTileVariants}
-      initial="initial"
+      initial={{
+        opacity: 0,
+        scale: 0,
+        left: tile.x,
+        top: tile.y,
+      }}
       animate={{
         opacity: tile.highlighted ? 1 : 0.3,
         scale: 1,
         left: tile.x,
         top: tile.y,
-        transition: {
-          delay: index * 0.02,
-          duration: 0.3,
-          stiffness: 300,
-          damping: 20,
-        }
       }}
-      exit="exit"
-      custom={index}
+      exit={{ opacity: 0, scale: 0, left: tile.x, top: tile.y }}
+      transition={{
+        delay: index * 0.02,
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      }}
       className='absolute w-[62px] h-[62px]'
     >
       <GTPTooltipNew
@@ -1353,22 +1328,25 @@ interface MoreTileProps {
 const MoreTile = ({ tile, index, count }: MoreTileProps) => {
   return (
     <motion.div
-      variants={appTileVariants}
-      initial="initial"
+      initial={{
+        opacity: 0,
+        scale: 0,
+        left: tile.x,
+        top: tile.y,
+      }}
       animate={{
         opacity: tile.highlighted ? 1 : 0.3,
         scale: 1,
         left: tile.x,
         top: tile.y,
-        transition: {
-          delay: index * 0.02,
-          duration: 0.3,
-          stiffness: 300,
-          damping: 20,
-        }
       }}
-      exit="exit"
-      custom={index}
+      exit={{ opacity: 0, scale: 0, left: tile.x, top: tile.y }}
+      transition={{
+        delay: index * 0.02,
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      }}
       className='absolute w-[62px] h-[62px] flex flex-col items-center justify-start'
     >
       <div className='flex flex-col items-center justify-center w-full'>

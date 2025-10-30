@@ -26,7 +26,9 @@ import { useParams } from "next/navigation";
 import { EthAggResponse } from "@/types/api/EthAggResponse";
 import { HistoryData } from "@/components/layout/EthAgg/types";
 import { useBirthdayAnimation } from "@/components/animations/useBirthdayAnimation";
-import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
+import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
+import { ProjectsMetadataProvider } from "../../applications/_contexts/ProjectsMetadataContext";
+// import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
 
@@ -85,7 +87,7 @@ export default function EthAgg() {
   return (
     <>
       {/* Birthday Animation Overlay */}
-      {showBirthdayAnimation && (
+      {/* {showBirthdayAnimation && (
         <ConfettiAnimation 
           isActive={true}
           duration={10000}
@@ -93,7 +95,7 @@ export default function EthAgg() {
           fullScreen={true}
           showFullAnimation={true}
         />
-      )}
+      )} */}
       
       <ShowLoading dataLoading={[isEcosystemLoading, isHistoryLoading]} dataValidating={[isEcosystemValidating, isHistoryValidating]} />
       <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
@@ -110,13 +112,10 @@ export default function EthAgg() {
             </Container>
           </div>
         </div>
-
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
-        <Container className="pt-[30px]">
-          <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
-        </Container>
-
+        <BuildersAndApps selectedBreakdownGroup={selectedBreakdownGroup} />
+        <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
       </div>
       {/* <ShowLoading
         dataLoading={[econLoading, masterLoading]}
@@ -135,6 +134,19 @@ export default function EthAgg() {
   );
 }
 
+const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
+  if (selectedBreakdownGroup !== "Builders & Apps") return null;
+  return (
+    <Container>
+      <div className="px-[30px] py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
+    <ProjectsMetadataProvider>
+          <ApplicationsGrid chainKey="ethereum-ecosystem" />
+        </ProjectsMetadataProvider>
+        </div>
+    </Container>
+  )
+}
+
 
 
 const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
@@ -142,7 +154,7 @@ const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
   if (selectedBreakdownGroup !== "Ethereum Ecosystem") return null;
 
   return (
-    <div className='flex flex-col gap-y-[15px]'>
+    <Container className="!pt-[60px]">
       <div className='flex items-center w-full justify-between'>
         <div className='flex items-center gap-x-[8px]'>
           <GTPIcon icon={"gtp-read"} size='lg' />
@@ -151,6 +163,6 @@ const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
 
       </div>
       <div className='text-md pl-[44px]'>Learn why Ethereum is built the way it is, how it prioritizes security, sovereignty and freedom to use applications for everyone. </div>
-    </div>
+    </Container>
   )
 }
