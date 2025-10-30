@@ -9,10 +9,12 @@ type GradientMaskProps = {
 };
 
 const GradientMask: React.FC<GradientMaskProps> = ({ direction, isVisible }) => {
+  let defaultColor = "rgb(var(--bg-default))";
+
   const gradientClass =
     direction === "left"
-      ? "bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)]"
-      : "bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]";
+      ? `bg-[linear-gradient(-90deg,${defaultColor}_0%,#161C1BEE_76%)]`
+      : `bg-[linear-gradient(90deg,${defaultColor}_0%,#161C1BEE_76%)]`;
 
   const positionClass = direction === "left" ? "-left-[58px]" : "-right-[58px]";
 
