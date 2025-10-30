@@ -85,9 +85,9 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       const SCROLL_POS_KEY = `scrollPos-${pathname}`;
       const GO_BACK_SCROLL_POS_PATHNAME_KEY = `goBack-scrollPos-pathname`;
       const GO_BACK_SCROLL_POS_PATHNAME = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
-      console.log("[NavigationContext::handleScroll] Handling scroll", `pathname: ${pathname}, GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}, SCROLL_POS_KEY: ${SCROLL_POS_KEY}`);
+      // console.log("[NavigationContext::handleScroll] Handling scroll", `pathname: ${pathname}, GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}, SCROLL_POS_KEY: ${SCROLL_POS_KEY}`);
       if(GO_BACK_SCROLL_POS_PATHNAME === SCROLL_POS_KEY) {
-        console.log("[NavigationContext::handleScroll] Go back scroll key is the same as the current scroll key, skipping scroll position save", GO_BACK_SCROLL_POS_PATHNAME, SCROLL_POS_KEY);
+        // console.log("[NavigationContext::handleScroll] Go back scroll key is the same as the current scroll key, skipping scroll position save", GO_BACK_SCROLL_POS_PATHNAME, SCROLL_POS_KEY);
         return;
       }
       sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
@@ -101,15 +101,15 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
 
     // restore scroll position for routes
     const restoreScroll = () => {
-      console.log("[NavigationContext::restoreScroll] Restoring scroll position for route", `pathname: ${pathname}`);
+      // console.log("[NavigationContext::restoreScroll] Restoring scroll position for route", `pathname: ${pathname}`);
       const GO_BACK_SCROLL_POS_PATHNAME_KEY = `goBack-scrollPos-pathname`;
       const GO_BACK_SCROLL_POS_PATHNAME = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
 
       if(GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) {
-        console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}`);
+        // console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}`);
         const savedScroll = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME);
         if (!savedScroll) return;
-        console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
+        // console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
         restoreAfterLayout(parseInt(savedScroll));
 
         // remove the goBack-scrollPos-key session storage key
@@ -121,14 +121,14 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
       if(usedBrowserBackButton) {
         const savedScroll = sessionStorage.getItem(`scrollPos-${pathname}`);
         if (!savedScroll) return;
-        console.log("[NavigationContext::restoreScroll] (USED_BROWSER_BACK_BUTTON) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
+        // console.log("[NavigationContext::restoreScroll] (USED_BROWSER_BACK_BUTTON) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
         restoreAfterLayout(parseInt(savedScroll));
         sessionStorage.removeItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
         setUsedBrowserBackButton(false);
         return;
       }
 
-      console.log("[NavigationContext::restoreScroll] No scroll position for route to restore");
+      // console.log("[NavigationContext::restoreScroll] No scroll position for route to restore");
     };
     restoreScroll();
   }, [pathname, usedBrowserBackButton]);
