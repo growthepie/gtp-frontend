@@ -18,6 +18,7 @@ import { isMobile } from 'react-device-detect';
 import { useTheme } from 'next-themes';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import { useUIContext } from '@/contexts/UIContext';
+import { useLocalStorage } from 'usehooks-ts';
 
 const LOGO_CONFIG = {
   width: 150,
@@ -283,6 +284,7 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   const [isResizing, setIsResizing] = useState(false);
   const [containerWidth, setContainerWidth] = useState(743);
   const [showHint, setShowHint] = useState(false);
+  const [useOverviewData, setUseOverviewData] = useLocalStorage("useOverviewData", false);
   const { AllChainsByKeys } = useMaster();
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -296,13 +298,13 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
   // Data Fetching
   // ============================================================================
   const { data: chainDataOverview } = useSWR<ChainOverview>(
-    `https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`
+    `https://api.growthepie.com/v1/chains/${chainKey}/overview.json`
   );
 
   const { data: masterData } = useMaster();
 
   const { data: applicationsData } = useSWR<{ data: { data: any[], types: string[] } }>(
-    `https://api.growthepie.xyz/v1/apps/app_overview_7d.json`
+    `https://api.growthepie.com/v1/apps/app_overview_7d.json`
   );
 
   const { filteredProjectsData, ownerProjectToProjectData } = useProjectsMetadata();
@@ -324,22 +326,53 @@ const DensePackedTreeMap = ({ chainKey, chainData, master }: DensePackedTreeMapP
     }, {} as Record<string, ProjectMetadata>);
   }, [filteredProjectsData]);
 
+  const appDataSource = useMemo(() => {
+    if (useOverviewData) {
+      const overviewApps = chainDataOverview?.data?.ecosystem?.apps;
+      if (!overviewApps?.data || !overviewApps.types) {
+        return null;
+      }
+
+      const hasOriginKey = overviewApps.types.includes('origin_key');
+      const types = hasOriginKey ? overviewApps.types : [...overviewApps.types, 'origin_key'];
+      const data = hasOriginKey
+        ? overviewApps.data
+        : overviewApps.data.map(app => [...app, chainKey]);
+
+      return { data, types };
+    }
+
+    if (!applicationsData?.data?.data || !applicationsData?.data?.types) {
+      return null;
+    }
+
+    const originIndex = applicationsData.data.types.indexOf('origin_key');
+    if (originIndex === -1) {
+      return null;
+    }
+
+    const filteredData = applicationsData.data.data.filter(
+      app => app[originIndex] === chainKey
+    );
+
+    return {
+      data: filteredData,
+      types: applicationsData.data.types,
+    };
+  }, [useOverviewData, chainDataOverview, applicationsData, chainKey]);
+
   const enrichedApps = useMemo(() => {
-    if (!applicationsData?.data.data || !applicationsData?.data.types || !ownerProjectMap) {
+    if (!appDataSource) {
       return [];
     }
 
-    const appsForChain = applicationsData.data.data.filter(
-      app => app[applicationsData.data.types.indexOf('origin_key')] === chainKey
-    );
-
     return enrichAppData(
-      appsForChain,
-      applicationsData.data.types,
+      appDataSource.data,
+      appDataSource.types,
       filteredProjectsData,
       ownerProjectMap
     );
-  }, [applicationsData, chainKey, filteredProjectsData, ownerProjectMap]);
+  }, [appDataSource, filteredProjectsData, ownerProjectMap]);
 
   const categoryNodes = useMemo(() => {
     const blockspaceData = chainDataOverview?.data.blockspace.blockspace.data;
@@ -737,6 +770,12 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     setShowHint(false);
   };
 
+  const handleToggleDataSource = () => {
+    setUseOverviewData(prev => !prev);
+    // setSelectedMainCategory(null);
+    setShowHint(false);
+  };
+
   // Handle ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1035,7 +1074,17 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
           )}
         </div>
       </div>
-      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full h-[24px]">
+      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full h-[24px] gap-x-[10px]">
+        <div className="flex gap-x-[5px]">
+          <div className="heading-xxs">Toggle Data Source</div>
+        <button
+          type="button"
+          onClick={handleToggleDataSource}
+          className="text-xxxs px-[10px] border border-color-text-primary/30 rounded-full hover:bg-color-ui-hover transition"
+        >
+          now using {useOverviewData ? `/chains/${chainKey}/overview.json` : `/apps/app_overview_7d.json`}
+        </button>
+        </div>
         {!hideApplications && (
           <div className='w-[15px] h-fit z-30'>
             <GTPTooltipNew
