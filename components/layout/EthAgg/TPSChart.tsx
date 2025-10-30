@@ -13,7 +13,7 @@ interface TPSChartProps {
   // The prop is updated to accept an array of HistoryItem objects
   overrideColor?: string[];
   data: HistoryItem[];
-  chainName: string;
+  chainName?: string;
 }
 
 // Your existing formatNumberWithSI function...
@@ -46,7 +46,7 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
-export const TPSChart = React.memo(({ data, overrideColor, chainName }: TPSChartProps) => {
+export const TPSChart = React.memo(({ data, overrideColor, chainName}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
