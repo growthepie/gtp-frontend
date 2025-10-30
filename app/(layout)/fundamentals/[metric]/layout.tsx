@@ -5,12 +5,13 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 import { metricItems } from "@/lib/metrics";
-import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
+import { Title, TitleButtonLink, SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
 import { getPageMetadata } from "@/lib/metadata";
 import { BackButton } from "../../applications/_components/Components";
 import { FundamentalsBackButton } from "./FundamentalsBackButton";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 type Props = {
   params: { metric: string };
@@ -73,6 +74,7 @@ export default async function Layout({
 
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
+      
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
@@ -98,7 +100,12 @@ export default async function Layout({
         </Section>
       </PageContainer>
       {children}
-      <PageContainer paddingY="none">
+      <PageContainer paddingY="none" className="!pt-[45px]">
+        <SectionTitle
+          icon={"gtp-faq"}
+          title={"About this metric"}
+        />
+        <SectionDescription>Learn more about this metric, the methodology we apply and what it tells you.</SectionDescription>
         <QuestionAnswer
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
@@ -132,6 +139,10 @@ export default async function Layout({
             answer={pageData.interpretation}
           />
         )}
+      </PageContainer>
+      {/* Add Related Quick Bites Section */}
+      <PageContainer className="" paddingY="none">
+        <MetricRelatedQuickBites metricKey={params.metric} metricType="fundamentals" />
       </PageContainer>
     </PageRoot>
   );
