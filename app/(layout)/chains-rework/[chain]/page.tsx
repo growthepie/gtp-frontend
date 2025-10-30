@@ -30,6 +30,7 @@ import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { ChainOverview } from "@/lib/chains";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -37,11 +38,18 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 // Memoized tab content components
 const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, chain: string, master: any }) => {
   const chainData = master.chains[chainKey];
-  if(!master || !chainData) return <div className="p-8 text-center">Loading overview...</div>;
+  const { data: chainDataOverview, isLoading: chainDataOverviewLoading, isValidating: chainDataOverviewValidating } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+
+  if(!master || !chainData || !chainDataOverview) return (
+  <div className="w-full h-[60vh] overflow-hidden">
+    <ShowLoading dataLoading={[chainDataOverviewLoading, chainDataOverviewValidating]} dataValidating={[chainDataOverviewValidating]} section={true} />
+  </div>
+  );
   
   return (
-
-    <ChainsOverview chainKey={chainKey} chainData={chainData} master={master} />
+    <>
+          <ChainsOverview chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
+    </>
   );
 });
 

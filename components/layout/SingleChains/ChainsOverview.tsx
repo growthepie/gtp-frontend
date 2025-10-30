@@ -96,7 +96,7 @@ function dataAvailToArray(x: string) {
   return retObject;
 }
 
-const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, chainData: ChainInfo, master: any }) => {
+const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: ChainInfo, master: any, chainDataOverview: ChainOverview }) => {
 
   const {
     data: oldMaster,
@@ -109,7 +109,6 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
   const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.xyz/v1/chains/all/streaks_today.json`);
 
 
-  const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
 
@@ -550,12 +549,13 @@ const SimilarChains = ({ chainKey }: { chainKey: string }) => {
 
   const randomChains = useMemo(() => {
     // remove repeating chains and filter for "all_l2s" and chainKey and return 5 random chains
-    const chains = Object.keys(AllChainsByKeys).filter((chain) => chain !== "all_l2s" && chain !== chainKey);
+    const chains = Object.keys(AllChainsByKeys).filter((chain) => chain !== "all_l2s" && chain !== "multiple" && chain !== chainKey);
     return chains.sort(() => Math.random() - 0.5).slice(0, 5).map((chain) => AllChainsByKeys[chain]);
   }, [AllChainsByKeys, chainKey as string]);
+  
 
   return (
-    <div className="flex xs:flex-row flex-col xs:items-center xs:justify-between xs:gap-y-0 gap-y-[10px] justify-start w-full bg-color-bg-default rounded-[15px] xs:px-[30px] px-[15px] xs:py-[15px] py-[10px]">
+    <div className="flex xs:flex-row flex-col xs:items-center xs:justify-between xs:gap-y-0 gap-y-[10px] justify-start w-full transition-all duration-300 bg-color-bg-default rounded-[15px] xs:px-[30px] px-[15px] xs:py-[15px] py-[10px]">
       <div className="flex items-center gap-x-[10px]">
         <GTPIcon icon="gtp-multiple-chains" className="text-color-ui-hover w-[24px] h-[24px] " />
         <div className="heading-large-md">Similar Chains</div>
@@ -566,18 +566,28 @@ const SimilarChains = ({ chainKey }: { chainKey: string }) => {
         {randomChains.map((randomChain, index) => {
 
           return (
-            <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center bg-color-bg-medium rounded-full">
-                <GTPIcon icon={`gtp:${randomChain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
-                style={{
-                  color: randomChain.colors[theme ?? "dark"][0],
-                }}
-              />
-            </Link>
+            <GTPTooltipNew
+              placement="top"
+              size="md"
+              allowInteract={true}
+              containerClass="max-w-fit pl-[15px]"
+              trigger={
+                <div>
+                  <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
+                    <GTPIcon icon={`gtp:${randomChain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
+                    style={{
+                      color: randomChain.colors[theme ?? "dark"][0],
+                    }}
+                    />
+                  </Link>
+                </div>
+              }
+            >
+              <div className="text-sm">{randomChain.label}</div>
+            </GTPTooltipNew>
           )
         })}
-        
       </div>
-      
     </div>
   )
 }
@@ -588,7 +598,7 @@ const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: 
 
 
   return (
-    <Link href={href} className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer"
+    <Link href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer"
 
     >
       {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px] ${color ? `text-[${color}]` : "text-inherit"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
@@ -639,7 +649,7 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
         <div ref={measureRef} className="rounded-b-[22px] p-[10px] w-fit">
           <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
             {links.map((link) => (
-              <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+              <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
                 <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
                   <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
                   <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
@@ -659,7 +669,7 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
       >
         <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
           {links.map((link) => (
-            <Link href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+            <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
               <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
                 <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
                 <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>

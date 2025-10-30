@@ -138,7 +138,8 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
     }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
 
 
-    
+
+
 
    
     return (
@@ -151,7 +152,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             {chainDataTPS && (
                 <>
                         <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-                        <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />
+                        {chainDataTPS.tx_cost_avg !== 0 && <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />}
                 </>
             )}
             {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}

@@ -47,15 +47,16 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
   return (
     <div className="bg-color-bg-default xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[146px]">
       <div className="flex gap-x-[10px] h-[28px] items-center relative ">
-        <GTPIcon icon="gtp-metrics-transactionspersecond" size="sm" containerClassName="!size-[28px] absolute xs:left-auto xs:top-auto -left-[26px] -top-[26px] xs:relative flex items-center justify-center" />
+        <GTPIcon icon="gtp-metrics-transactionspersecond" size="sm" containerClassName="!size-[28px] relative flex items-center justify-center" />
         <div className="heading-large-xs ">Transactions Per Second</div>
       </div>
       <div className={`relative transition-height duration-500 w-full h-[54px] overflow-visible`}>
-          <div className="w-full h-full xs:ml-0 -ml-[15px]">
+          <div className="w-full h-full xs:ml-0 -ml-[5px]">
             <TPSChart 
               key={`tps-chart-${chainKey}-${chartData.length}`}
               data={chartData} 
               overrideColor={master.chains[chainKey].colors.dark} 
+              chainName={chainData.display_name}
             />
           </div>
         </div>

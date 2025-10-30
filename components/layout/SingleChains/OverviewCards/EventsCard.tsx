@@ -87,7 +87,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                         return child;
                     })}
                 </div>
-                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-color-bg-default flex items-center justify-center pt-[12px] z-40 cursor-pointer"
+                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-gradient-to-b from-color-bg-default/20 via-color-bg-default/100 to-color-bg-default flex items-center justify-center pt-[12px] z-40 cursor-pointer"
                     onClick={() => {
                      
                         setExpanded(!expanded)
@@ -217,7 +217,7 @@ export const EventItem = ({
                         className={`${measuredInnerHeight > MAX_EXPANDED_HEIGHT ? 'overflow-y-auto pr-[5px]' : 'overflow-visible flex flex-col gap-y-[5px]'} `}
                         style={{ maxHeight: measuredInnerHeight > MAX_EXPANDED_HEIGHT ? MAX_EXPANDED_HEIGHT : undefined }}
                     >
-                        <div className="text-xxs">{event.description}</div>
+                        <div className="text-xs">{event.description}</div>
                         <div className="w-full flex justify-end h-[16px]">
 
                             {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
