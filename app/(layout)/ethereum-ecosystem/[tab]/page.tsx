@@ -23,7 +23,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
 import { useParams } from "next/navigation";
-import { EthAggResponse } from "@/types/api/EthAggResponse";
+import { EthereumEcosystemOverviewResponse } from "@/types/api/EthereumEcosystemOverviewResponse";
 import { HistoryData } from "@/components/layout/EthAgg/types";
 import { useBirthdayAnimation } from "@/components/animations/useBirthdayAnimation";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
@@ -42,7 +42,7 @@ export default function EthAgg() {
   const params = useParams();
 
   // for loading the ecosystem data
-  const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthAggResponse>(EthAggURL);
+  const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
   const { data: historyData, isLoading: isHistoryLoading, isValidating: isHistoryValidating } = useSWR<HistoryData>("https://sse.growthepie.com/api/history")
 
   const tab = params.tab as string;
