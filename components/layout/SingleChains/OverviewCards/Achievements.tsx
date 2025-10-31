@@ -153,7 +153,7 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                             {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} hoverBar={flameHovered === `${key}-streak-icon-progress`} />}
                             </div>
                             </div>
-                            <GTPTooltipNew placement="bottom-start" allowInteract={true}
+                            <GTPTooltipNew placement="bottom" allowInteract={true}
                                 trigger={
                                     // <div className="flex items-center gap-x-[5px] pt-[11px] text-xxxs cursor-pointer">
                                     //     <GTPIcon icon={keyData[key].icon as GTPIconName} size="sm" />
@@ -167,7 +167,7 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                                         <div className="text-xxxs whitespace-nowrap -mb-[4px]">{keyData[key].description}</div>
                                     </div>
                                 }
-                                containerClass="flex flex-col gap-y-[10px]"
+                                containerClass="flex flex-col gap-y-[10px] min-w-[250px]"
                                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                             >
                                 <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
@@ -465,7 +465,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
 
 
                             <GTPTooltipNew
-                                placement="top-end"
+                                placement="bottom"
                                 size="md"
                                 allowInteract={true}
                                 trigger={

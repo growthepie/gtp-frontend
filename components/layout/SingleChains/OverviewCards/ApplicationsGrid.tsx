@@ -1057,7 +1057,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
           )}
         </div>
       </div>
-      <div className="flex items-center justify-end pt-[10px] px-[30px] w-full h-[24px] gap-x-[10px]">
+      <div className="flex items-center justify-end pt-[10px] px-[15px] w-full h-[24px] gap-x-[10px]">
         {!hideApplications && (
           <div className='w-[15px] h-fit z-30'>
             <GTPTooltipNew

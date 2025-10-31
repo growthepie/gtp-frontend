@@ -199,7 +199,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
             
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
-                <div className="flex justify-between flex-wrap gap-x-[10px] pt-[10px] overflow-wrap">
+                <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
                   {streaksData?.data[chainKey] && (
                     <div className="w-full xs:flex-1">
                       <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />
@@ -216,7 +216,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px]`}>
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
                     <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
                       <div className="w-full min-w-[954px] pr-[20px]">
@@ -245,7 +245,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                         </RowProvider>
                       </div>
                     </HorizontalScrollContainer>
-                    <div className="flex items-center justify-end pr-[15px]  w-full">
+                    <div className="flex items-center justify-end pr-[15px] w-full absolute bottom-[15px] right-[0px]">
                       <div className='w-[15px] h-fit z-30'>
                         <GTPTooltipNew
                           placement="top-end"
@@ -265,7 +265,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                         >
                           <div>
                             <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                              {"Tooltip content"}
+                              {"Useage breakdown"}
                             </TooltipBody>
                           </div>
                         </GTPTooltipNew>
@@ -486,7 +486,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
           </div>
           <div className="grid grid-cols-2 @[1145px]:grid-cols-8 gap-x-[10px] flex-1 h-full">
             {/* About Chain Info */}
-            <div className="h-full col-span-2 @[1145px]:col-span-4 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-auto gap-x-[3px] gap-y-[8px]">
+            <div className="h-full col-span-2 @[1145px]:col-span-4 grid grid-rows-4 @[1145px]:grid-rows-3 grid-flow-col-dense auto-cols-[minmax(0,200px)] gap-x-[3px] gap-y-[8px]">
               {chainData.company && <MetricTab title="Company"><div>{chainData.company ? chainData.company : "N/A"}</div></MetricTab>}
               {chainData.stack.label && chainData.stack.label !== 'Custom' && <MetricTab title="Stack"><div>{chainData.stack.label}</div></MetricTab>}
               {chainData.bucket && <MetricTab title="Cluster"><div>{chainData.bucket}</div></MetricTab>}
@@ -533,7 +533,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
                       />
                     )}
 
-                    <div className="text-sm">{masterData?.maturity_levels[chainData.maturity]?.description}</div>
+                    <div className="text-md leading-[24px]">{masterData?.maturity_levels[chainData.maturity]?.description}</div>
                   </div>
                 </MetricTab>
 
