@@ -142,7 +142,7 @@ const ethSupply: QuickBiteData = {
     },
   ],
   icon: "ethereum-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default ethSupply;
