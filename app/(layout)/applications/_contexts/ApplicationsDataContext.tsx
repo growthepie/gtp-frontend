@@ -254,6 +254,30 @@ const devMiddleware = (useSWRNext) => {
   };
 };
 
+export type ApplicationsViewOptions = {
+  enforcedOriginKeys?: string[];
+  allowChainSelection?: boolean;
+  hideChainFilter?: boolean;
+  hideChainsColumn?: boolean;
+  titleOverride?: string;
+  descriptionOverride?: string;
+  detailFallbackHref?: string;
+  onSelectApplication?: (ownerProject: string) => void;
+  selectedApplication?: string;
+};
+
+export type ResolvedApplicationsViewOptions = {
+  enforcedOriginKeys: string[];
+  allowChainSelection: boolean;
+  hideChainFilter: boolean;
+  hideChainsColumn: boolean;
+  titleOverride?: string;
+  descriptionOverride?: string;
+  detailFallbackHref?: string;
+  onSelectApplication?: (ownerProject: string) => void;
+  selectedApplication?: string;
+};
+
 export type ApplicationsDataContextType = {
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
@@ -268,13 +292,22 @@ export type ApplicationsDataContextType = {
   medianMetric: string;
   medianMetricKey: string;
   getIsLoading: () => boolean;
+  viewOptions: ResolvedApplicationsViewOptions;
 }
 
 
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
 
-export const ApplicationsDataProvider = ({ children, disableShowLoading = false }: { children: React.ReactNode; disableShowLoading?: boolean }) => {
+export const ApplicationsDataProvider = ({
+  children,
+  disableShowLoading = false,
+  viewOptions: viewOptionsProp,
+}: {
+  children: React.ReactNode;
+  disableShowLoading?: boolean;
+  viewOptions?: ApplicationsViewOptions;
+}) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly } = useTimespan();
   const { sort, setSort } = useSort();
@@ -302,15 +335,35 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
   const { metricsDef, setSelectedMetrics, selectedMetrics } = useMetrics();
+
+  const resolvedViewOptions = useMemo<ResolvedApplicationsViewOptions>(() => ({
+    enforcedOriginKeys: viewOptionsProp?.enforcedOriginKeys ?? [],
+    allowChainSelection: viewOptionsProp?.allowChainSelection ?? true,
+    hideChainFilter: viewOptionsProp?.hideChainFilter ?? false,
+    hideChainsColumn: viewOptionsProp?.hideChainsColumn ?? false,
+    titleOverride: viewOptionsProp?.titleOverride,
+    descriptionOverride: viewOptionsProp?.descriptionOverride,
+    detailFallbackHref: viewOptionsProp?.detailFallbackHref,
+    onSelectApplication: viewOptionsProp?.onSelectApplication,
+    selectedApplication: viewOptionsProp?.selectedApplication,
+  }), [viewOptionsProp]);
   
   /* < Query Params > */
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const selectedChainsParam = useMemo(() =>
-    searchParams.get("origin_key")?.split(",") || [],
+  const selectedChainsParam = useMemo(
+    () => searchParams.get("origin_key")?.split(",") || [],
     [searchParams]
+  );
+
+  const selectedChains = useMemo(
+    () =>
+      resolvedViewOptions.enforcedOriginKeys.length > 0
+        ? resolvedViewOptions.enforcedOriginKeys
+        : selectedChainsParam,
+    [resolvedViewOptions.enforcedOriginKeys, selectedChainsParam]
   );
 
   const selectedStringFiltersParam = useMemo(() =>
@@ -330,6 +383,9 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     MAIN_CATEGORY = "main_category",
   }
   const handleFilters = (type: FilterType, value: string[]) => {
+    if (type === FilterType.CHAIN && !resolvedViewOptions.allowChainSelection) {
+      return;
+    }
     // update the params
     updateSearchQuery({
       [type]: value,
@@ -415,7 +471,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     }
     const aggregated = aggregateProjectData(
       applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
-        origin_key: selectedChainsParam,
+        origin_key: selectedChains,
         owner_project: selectedStringFiltersParam,
         main_category: selectedMainCategoryParam,
       },
@@ -423,7 +479,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
       focusEnabled
     );
     return aggregated;
-  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled]);
+  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled]);
 
   const applicationDataAggregated = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -488,6 +544,10 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
 
   // distinct chains across all data
   const applicationsChains = useMemo(() => {
+    if (resolvedViewOptions.enforcedOriginKeys.length > 0) {
+      return Array.from(new Set(resolvedViewOptions.enforcedOriginKeys));
+    }
+
     const chains = new Set<string>();
     applicationDataFiltered.forEach((app) => {
       app.origin_keys.forEach((chain) => {
@@ -495,7 +555,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
       });
     });
     return Array.from(chains);
-  }, [applicationDataFiltered]);
+  }, [applicationDataFiltered, resolvedViewOptions.enforcedOriginKeys]);
 
   // Function to check if data is loading
   const getIsLoading = useCallback(() => {
@@ -505,8 +565,11 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
   return (
     <ApplicationsDataContext.Provider
       value={{
-        selectedChains: selectedChainsParam,
-        setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
+        selectedChains,
+        setSelectedChains: (value) => {
+          if (!resolvedViewOptions.allowChainSelection) return;
+          handleFilters(FilterType.CHAIN, value);
+        },
         applicationDataAggregated: applicationDataAggregated,
         applicationDataAggregatedAndFiltered,
         isLoading: applicationsTimespanLoading || masterLoading,
@@ -518,14 +581,15 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
         medianMetric,
         medianMetricKey,
         getIsLoading,
+        viewOptions: resolvedViewOptions,
       }}
         >
-      {!disableShowLoading && (
+      {/* {!disableShowLoading && (
         <ShowLoading
           dataLoading={[masterLoading, applicationsTimespanLoading]}
           dataValidating={[masterValidating, applicationsTimespanValidating]}
         />
-      )}
+      )} */}
       {children}
     </ApplicationsDataContext.Provider>
   );

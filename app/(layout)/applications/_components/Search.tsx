@@ -41,11 +41,16 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   }
 }
 
-export default function Search({ hideChainSection = false }: SearchProps) {
+export default function Search({ hideChainSection: hideChainSectionProp }: SearchProps = {}) {
   const { AllChainsByKeys } = useMaster();
   const { availableMainCategories } = useProjectsMetadata(); // Added
   const { isMobile } = useUIContext();
-  const { applicationDataAggregatedAndFiltered, applicationsChains } = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered, applicationsChains, viewOptions } = useApplicationsData();
+
+  const hideChainSection = useMemo(() => {
+    const forcedHide = !viewOptions.allowChainSelection || viewOptions.hideChainFilter;
+    return hideChainSectionProp ?? forcedHide;
+  }, [hideChainSectionProp, viewOptions.allowChainSelection, viewOptions.hideChainFilter]);
   
   // Get Next.js URL utilities
   const searchParams = useSearchParams();
@@ -151,7 +156,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
       value: string
     ) => {
       if (key === "origin_key") {
-        if (hideChainSection) return; // prevent modifying origin_key when hidden/locked
+        if (hideChainSection || !viewOptions.allowChainSelection) return; // prevent modifying origin_key when hidden/locked
         const newChains = chainsFromParams.includes(value)
           ? chainsFromParams.filter(chain => chain !== value)
           : [...chainsFromParams, value];
@@ -177,19 +182,19 @@ export default function Search({ hideChainSection = false }: SearchProps) {
       setInternalSearch("");
       setSearch("");
     },
-    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams, hideChainSection]
+    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams, hideChainSection, viewOptions.allowChainSelection]
   );
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
-    if (!hideChainSection) newSearchParams.delete('origin_key');
+    if (!hideChainSection && viewOptions.allowChainSelection) newSearchParams.delete('origin_key');
     newSearchParams.delete('owner_project');
     newSearchParams.delete('main_category');
     
     const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
     window.history.replaceState(null, "", url);
-  }, [pathname, searchParams, hideChainSection]);
+  }, [pathname, searchParams, hideChainSection, viewOptions.allowChainSelection]);
 
   const [applicationsAutocomplete, setApplicationsAutocomplete] = useSessionStorage<{
     address: string[];

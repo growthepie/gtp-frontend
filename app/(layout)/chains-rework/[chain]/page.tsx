@@ -1,25 +1,25 @@
 "use client";
-import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import Container from "@/components/layout/Container";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
 import { useState, useMemo, memo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ChainInfo } from "@/types/api/MasterResponse";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
-import AppsChain from "@/components/layout/SingleChains/AppsChain";
 import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
 import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
-import { ApplicationsDataProvider, useApplicationsData } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import { ApplicationDetailsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
+import { ChartSyncProvider } from "@/app/(layout)/applications/_contexts/GTPChartSyncContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
-import Controls from "@/app/(layout)/applications/_components/Controls";
+import { ApplicationsOverviewContent } from "@/app/(layout)/applications/_components/ApplicationsOverviewContent";
+import ApplicationDetailsPage from "@/app/(layout)/applications/[owner_project]/page";
 import { ChainsBaseURL, FeesURLs } from "@/lib/urls";
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
@@ -27,7 +27,6 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
-import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
@@ -169,28 +168,39 @@ const EconomicsContent = memo(({ chainKey, master }: { chainKey: string, master:
   );
 });
 
-// Inner component that can access the ApplicationsDataContext
-const AppsContentInner = memo(({ chainInfo, chainKey }: { chainInfo: any, chainKey: string }) => {
-  const { getIsLoading } = useApplicationsData();
-  
-  if (getIsLoading()) {
-    return (
-      <div className="w-full h-[60vh] overflow-hidden">
-        <ShowLoading
-          dataLoading={[true]}
-          dataValidating={[]}
-          section={true}
-        />
-      </div>
-    );
-  }
-
-  return <AppsChain chainInfo={chainInfo} chainKey={chainKey} defaultQuery={chainInfo?.name || ""} />;
-});
-
 const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any }) => {
   const chainInfo = master?.chains?.[chainKey];
-  
+  const chainName = (chainInfo?.name ?? chainKey) || "Chain";
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const selectedApplication = searchParams.get("app") ?? undefined;
+
+  const buildUrl = useCallback(
+    (params: URLSearchParams) => {
+      const query = params.toString();
+      return query ? `${pathname}?${query}` : pathname;
+    },
+    [pathname]
+  );
+
+  const handleSelectApplication = useCallback(
+    (ownerProject: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "apps");
+      params.set("app", ownerProject);
+      router.push(buildUrl(params), { scroll: false });
+    },
+    [buildUrl, router, searchParams]
+  );
+
+  const detailFallbackHref = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("app");
+    return buildUrl(params);
+  }, [buildUrl, searchParams]);
+
   return (
     <div className="mt-[-5px]">
       <TimespanProvider timespans={{
@@ -234,9 +244,32 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ProjectsMetadataProvider>
-              <ApplicationsDataProvider disableShowLoading={true}>
-                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-                <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
+              <ApplicationsDataProvider
+                disableShowLoading
+                viewOptions={{
+                  enforcedOriginKeys: chainKey ? [chainKey] : [],
+                  allowChainSelection: false,
+                  hideChainFilter: true,
+                  hideChainsColumn: false,
+                  titleOverride: `${chainName} Applications`,
+                  descriptionOverride: `An overview of the most used applications on ${chainName}.`,
+                  onSelectApplication: handleSelectApplication,
+                  detailFallbackHref,
+                  selectedApplication,
+                }}
+              >
+                <Container className="flex flex-col w-full gap-y-[15px] overflow-visible" isPageRoot>
+                  <PageTitleAndDescriptionAndControls />
+                </Container>
+                {selectedApplication ? (
+                  <ApplicationDetailsDataProvider owner_project={selectedApplication} key={selectedApplication}>
+                    <ChartSyncProvider>
+                      <ApplicationDetailsPage params={{ owner_project: selectedApplication }} />
+                    </ChartSyncProvider>
+                  </ApplicationDetailsDataProvider>
+                ) : (
+                  <ApplicationsOverviewContent />
+                )}
               </ApplicationsDataProvider>
             </ProjectsMetadataProvider>
           </SortProvider>
@@ -329,7 +362,6 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
 OverviewContent.displayName = 'OverviewContent';
 FundamentalsContent.displayName = 'FundamentalsContent';
 EconomicsContent.displayName = 'EconomicsContent';
-AppsContentInner.displayName = 'AppsContentInner';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
@@ -367,6 +399,10 @@ const Chain = ({ params }: { params: any }) => {
         // Set tab parameter for other tabs
         currentParams.set("tab", selectedTab);
       }
+
+      if (selectedTab !== "apps") {
+        currentParams.delete("app");
+      }
       
       const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
       router.replace(newUrl, { scroll: false });
@@ -397,17 +433,21 @@ const Chain = ({ params }: { params: any }) => {
 
 
     return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
+        <>
+        <Container className={`flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none ${selectedTab === "apps" ? "overflow-visible" : ""}`}>
             <ChainTabs 
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}>
+            </Container>
+            <div className={`${selectedTab !== "overview" ? "pt-[30px]" : "pt-[15px]"} ${selectedTab === "apps" ? "px-0" : "px-[20px] md:px-[50px]"}`}>
               {TabContent}
             </div>
+        <Container>
             <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
+        </>
     )
 }
 

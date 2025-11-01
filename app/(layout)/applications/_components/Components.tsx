@@ -94,10 +94,14 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
 export const PageTitleAndDescriptionAndControls = () => {
   const pathname = usePathname();
   const [urlOwnerProject, setUrlOwnerProject] = useState<string | null>(null);
+  const { viewOptions } = useApplicationsData();
   useEffect(() => {
-    // console.log(window.location.pathname.split("/")[2]);
-    // setUrlOwnerProject(window.location.pathname.split("/")[2]);
-    setUrlOwnerProject(pathname.split("/")[2]);
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments[0] === "applications" && segments.length > 1) {
+      setUrlOwnerProject(segments[1]);
+    } else {
+      setUrlOwnerProject(null);
+    }
   }, [pathname]);
 
   const [scrollY, setScrollY] = useState(0);
@@ -115,7 +119,9 @@ export const PageTitleAndDescriptionAndControls = () => {
   }, []);
 
 
-  if (!urlOwnerProject) return (
+  const detailOwnerProject = viewOptions.selectedApplication ?? urlOwnerProject;
+
+  if (!detailOwnerProject) return (
     <>
       <div className="flex items-center h-[43px] gap-x-[8px]">
         {/* <GTPIcon icon="gtp-project" size="lg" /> */}
@@ -124,7 +130,7 @@ export const PageTitleAndDescriptionAndControls = () => {
         </Heading> */}
         <Title
           icon="gtp-project"
-          title="Applications"
+          title={viewOptions.titleOverride ?? "Applications"}
           containerClassName="flex md:w-full md:items-center md:justify-between"
           button={
             <>
@@ -146,7 +152,7 @@ export const PageTitleAndDescriptionAndControls = () => {
       </div>
       <div className="flex items-end justify-between gap-x-[10px]">
         <div className="text-sm">
-          An overview of the most used applications across the Ethereum ecosystem.
+          {viewOptions.descriptionOverride ?? "An overview of the most used applications across the Ethereum ecosystem."}
         </div>
         <div className="flex md:hidden">
           <Link
@@ -172,25 +178,25 @@ export const PageTitleAndDescriptionAndControls = () => {
         <div className="flex flex-col flex-1 gap-y-[15px]">
           <div className="flex items-center min-h-[43px] gap-x-[8px]">
             {/* <BackButton /> */}
-            <SmartBackButton />
+            <SmartBackButton fallbackHref={viewOptions.detailFallbackHref ?? "/applications"} />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
-              <ApplicationIcon owner_project={urlOwnerProject} size="md" />
+              <ApplicationIcon owner_project={detailOwnerProject} size="md" />
               <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px] flex-1" as="h1">
-                <ApplicationDisplayName owner_project={urlOwnerProject} />
+                <ApplicationDisplayName owner_project={detailOwnerProject} />
               </Heading>
             </div>
           </div>
 
           <div className="flex-1 text-sm font-medium">
-            <ApplicationDescription owner_project={urlOwnerProject} />
+            <ApplicationDescription owner_project={detailOwnerProject} />
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
         </div>
         <div className="hidden lg:block">
-          <ProjectDetailsLinks owner_project={urlOwnerProject} />
+          <ProjectDetailsLinks owner_project={detailOwnerProject} />
         </div>
         <div className="block lg:hidden">
-          <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
+          <ProjectDetailsLinks owner_project={detailOwnerProject} mobile />
         </div>
       </div>
       {/* <Search /> */}
@@ -491,7 +497,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
 ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
 export const ApplicationCard = memo(({ application, className, width, chainsPage, chainKey }: { application?: AggregatedDataRow, className?: string, width?: number, chainsPage?: boolean, chainKey?: string }) => {
-  const { medianMetric, medianMetricKey } = useApplicationsData();
+  const { medianMetric, medianMetricKey, viewOptions } = useApplicationsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -548,10 +554,29 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
     )
   }
 
+  const defaultHref = {
+    pathname: `/applications/${application.owner_project}`,
+    query: searchParams.toString().replace(/%2C/g, ","),
+  };
+
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}
+    <Link
+      href={defaultHref}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
       style={{ width: width || undefined }}
+      onClick={(e) => {
+        if (
+          viewOptions.onSelectApplication &&
+          e.button === 0 &&
+          !e.metaKey &&
+          !e.ctrlKey &&
+          !e.shiftKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
+          viewOptions.onSelectApplication(application.owner_project);
+        }
+      }}
     >
       <div>
         <div className="flex flex-col">

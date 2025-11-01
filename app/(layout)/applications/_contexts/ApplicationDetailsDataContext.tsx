@@ -113,11 +113,13 @@ export const ApplicationDetailsDataContext = createContext<ApplicationDetailsDat
 type ApplicationDetailsDataProviderProps = {
   owner_project: string;
   children: React.ReactNode;
+  disableShowLoading?: boolean;
 }
 
 export const ApplicationDetailsDataProvider = ({
   children,
   owner_project,
+  disableShowLoading = false,
 }: ApplicationDetailsDataProviderProps ) => {
   const { 
     data: applicationDetailsData,
@@ -266,10 +268,12 @@ export const ApplicationDetailsDataProvider = ({
       selectedSeriesName,
       setSelectedSeriesName,
     }}>
-      <ShowLoading 
-        dataLoading={[applicationDetailsLoading]} 
-        dataValidating={[applicationDetailsValidating]} 
-      />
+      {!disableShowLoading && (
+        <ShowLoading 
+            dataLoading={[applicationDetailsLoading]} 
+            dataValidating={[applicationDetailsValidating]} 
+          />
+      )}
       {/* <>{JSON.stringify(sort)} {JSON.stringify(overviewSort)}</> */}
       {filteredApplicationDetailsData && children}
     </ApplicationDetailsDataContext.Provider>
