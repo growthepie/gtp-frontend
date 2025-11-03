@@ -4,40 +4,56 @@ const baseUrl = "https://www.growthepie.com";
 const gtpMain = {
   siteUrl: "https://www.growthepie.com",
   generateRobotsTxt: true,
+
+  // Keep non-pages & internals out of XML sitemaps
   exclude: [
     "/server-sitemap.xml",
     "/applications-sitemap.xml",
-    "/blog",
+    // internals
+    "/_next/*",
+    "/_next/image*",
     "/api/*",
+    // existing
     "/embed/*",
     "/embed",
-    "/trackers/*",
-    "/blockspace/*",
     "/fees",
     "/helpers",
     "/fees-explainer",
     "/contracts",
-    "/economics",
-    "/scroll",
-    "/labels",
     "/refactor",
   ],
+
   robotsTxtOptions: {
+    // This actually controls the robots.txt content
+    policies: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [
+          "/_next/",          // all Next.js build assets
+          "/_next/image",     // the image optimizer endpoint
+          "/embed/",          
+          "/refactor",
+        ],
+      },
+    ],
     exclude: ["/server-sitemap.xml", "/server-applications-sitemap.xml"],
     additionalSitemaps: [
-      `https://www.growthepie.com/server-sitemap.xml`,
-      `https://www.growthepie.com/server-applications-sitemap.xml`
+      "https://www.growthepie.com/server-sitemap.xml",
+      "https://www.growthepie.com/server-applications-sitemap.xml",
     ],
   },
 };
 
-// for fees.growthepie.com & dev.fees.growthepie.com
+// fees & labels variants unchanged except add the same robots policies + /_next/* excludes
 const gtpFees = {
   siteUrl: "https://fees.growthepie.com",
   generateRobotsTxt: true,
   exclude: [
-    "/blog",
+    "/_next/*",
+    "/_next/image*",
     "/api/*",
+    "/blog",
     "/embed/*",
     "/embed",
     "/trackers/*",
@@ -50,24 +66,27 @@ const gtpFees = {
     "/server-sitemap.xml",
     "/helpers",
     "/fees-explainer",
-    "/contracts",
     "/economics",
     "/scroll",
     "/labels",
     "/refactor",
   ],
   robotsTxtOptions: {
+    policies: [
+      { userAgent: "*", allow: "/", disallow: ["/_next/", "/_next/image", "/api/"] },
+    ],
     exclude: ["/server-sitemap.xml"],
   },
 };
 
-// for labels.growthepie.com & dev.labels.growthepie.com
 const gtpLabels = {
   siteUrl: "https://labels.growthepie.com",
   generateRobotsTxt: true,
   exclude: [
-    "/blog",
+    "/_next/*",
+    "/_next/image*",
     "/api/*",
+    "/blog",
     "/embed/*",
     "/embed",
     "/trackers/*",
@@ -80,25 +99,21 @@ const gtpLabels = {
     "/server-sitemap.xml",
     "/helpers",
     "/fees-explainer",
-    "/contracts",
     "/economics",
     "/scroll",
     "/labels",
     "/refactor",
   ],
   robotsTxtOptions: {
+    policies: [
+      { userAgent: "*", allow: "/", disallow: ["/_next/", "/_next/image", "/api/"] },
+    ],
     exclude: ["/server-sitemap.xml"],
   },
 };
 
 let exportOjb = gtpMain;
+if (baseUrl.includes("labels.")) exportOjb = gtpLabels;
+if (baseUrl.includes("fees.")) exportOjb = gtpFees;
 
-if (baseUrl.includes("labels.")) {
-  exportOjb = gtpLabels;
-}
-if (baseUrl.includes("fees.")) {
-  exportOjb = gtpFees;
-}
-
-/** @type {import('next-sitemap').IConfig} */
 module.exports = exportOjb;
