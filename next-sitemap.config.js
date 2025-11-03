@@ -30,7 +30,6 @@ const gtpMain = {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/_next/",          // all Next.js build assets
           "/_next/image",     // the image optimizer endpoint
           "/embed/",          
           "/refactor",
@@ -73,7 +72,7 @@ const gtpFees = {
   ],
   robotsTxtOptions: {
     policies: [
-      { userAgent: "*", allow: "/", disallow: ["/_next/", "/_next/image", "/api/"] },
+      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/"] },
     ],
     exclude: ["/server-sitemap.xml"],
   },
@@ -106,7 +105,7 @@ const gtpLabels = {
   ],
   robotsTxtOptions: {
     policies: [
-      { userAgent: "*", allow: "/", disallow: ["/_next/", "/_next/image", "/api/"] },
+      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/"] },
     ],
     exclude: ["/server-sitemap.xml"],
   },
