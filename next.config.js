@@ -215,6 +215,25 @@ const nextConfig = {
       }
     ];
   },
+  async headers() {
+    return [
+      {
+        // All build assets (JS, CSS, fonts, images in /_next/static)
+        source: "/_next/static/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      {
+        // Image optimizer endpoint – allow fetch, don’t index the URL itself
+        source: "/_next/image",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      {
+        // APIs shouldn’t be indexed either
+        source: "/api/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+    ];
+  },
   images: {
     dangerouslyAllowSVG: true,
     // domains: ["ipfs.io", "content.optimism.io"],
