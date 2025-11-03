@@ -11,6 +11,9 @@ export default function Head({ params }: Props) {
   const qb = getQuickBiteBySlug(params.slug);
   if (!qb) return null;
 
+  const serializeJsonLd = (data: unknown) =>
+    JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
+
   const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
     dateModified: qb.date,
     language: 'en',
@@ -32,7 +35,9 @@ export default function Head({ params }: Props) {
     jsonLdBreadcrumbs,
     ...(jsonLdFaq ? [jsonLdFaq] : []),
     ...jsonLdDatasets,
-  ];
+  ].filter(Boolean);
+
+  if (!graphs.length) return null;
 
   return (
     <>
@@ -41,7 +46,7 @@ export default function Head({ params }: Props) {
           key={i}
           type="application/ld+json"
           // IMPORTANT: stringify here so it's SSR in the HEAD HTML
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(obj) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
         />
       ))}
     </>
