@@ -283,12 +283,16 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
 
   const { isSidebarOpen } = useUIContext();
 
+  // Horizontal padding applied to the parent container (px-[30px] = 30px left + 30px right)
+  const CONTAINER_HORIZONTAL_PADDING = 30;
+
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const measure = () => {
-      const width = container.clientWidth || DEFAULT_CONTAINER_WIDTH;
+      // Measure the parent's clientWidth and subtract horizontal padding
+      const width = (container.clientWidth - CONTAINER_HORIZONTAL_PADDING) || DEFAULT_CONTAINER_WIDTH;
       setContainerWidth(width);
     };
 
@@ -802,7 +806,8 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width;
+        // Subtract horizontal padding from the measured width
+        const width = entry.contentRect.width - CONTAINER_HORIZONTAL_PADDING;
         setIsResizing(true);
 
         if (resizeTimeoutRef.current) {
@@ -835,7 +840,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
       setWindowHeight(window.innerHeight);
       const container = containerRef.current;
       if (container) {
-        setContainerWidth(container.clientWidth);
+        setContainerWidth(container.clientWidth - CONTAINER_HORIZONTAL_PADDING);
       } else {
         setContainerWidth(DEFAULT_CONTAINER_WIDTH);
       }
@@ -862,7 +867,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
       sidebarTimeoutRef.current = setTimeout(() => {
         const container = containerRef.current;
         if (container) {
-          setContainerWidth(container.clientWidth);
+          setContainerWidth(container.clientWidth - CONTAINER_HORIZONTAL_PADDING);
         } else {
           setContainerWidth(DEFAULT_CONTAINER_WIDTH);
         }
@@ -959,7 +964,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
           </div>
         </HorizontalScrollContainer>
         {/* Animated Treemap visualization */}
-        <div className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+        <div ref={containerRef} className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -989,7 +994,6 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                 <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
               </div> */}
             <motion.div
-              ref={containerRef}
               className='relative h-full'
               animate={{ height: dimensions.height }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
