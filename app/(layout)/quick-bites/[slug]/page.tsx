@@ -54,7 +54,7 @@ export default async function Page({ params }: Props) {
   let jsonLdDatasets: unknown[] = [];
 
   try {
-    const mod = await import(`@/lib/quick-bites/${params.slug}`);
+    const mod = await import(`@/lib/quick-bites/${params.slug}.ts`);
     if ('jsonLdFaq' in mod) jsonLdFaq = (mod as any).jsonLdFaq;
     if ('jsonLdDatasets' in mod && Array.isArray((mod as any).jsonLdDatasets)) {
       jsonLdDatasets = (mod as any).jsonLdDatasets;
