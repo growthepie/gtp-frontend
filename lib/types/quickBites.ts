@@ -31,6 +31,7 @@ export interface Author {
   export interface QuickBiteData {
     title: string;
     subtitle: string;
+    summary?: string | ""; // Optional summary for SEO
     content: string[];
     image: string;
     og_image?: string;
