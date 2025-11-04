@@ -55,30 +55,12 @@ export default async function Page({ params }: Props) {
   });
   const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
 
-  let jsonLdFaq: unknown;
-  let jsonLdDatasets: unknown[] = [];
-
-  try {
-    const safeSlug = params.slug.match(/^[\w-]+$/)?.[0]; // basic guard
-    if (safeSlug) {
-      const mod = (await import(
-        /* webpackInclude: /\.\/qb-[\w-]+\.ts$/ */
-        '../../../../lib/quick-bites/' + `qb-${safeSlug}.ts`
-      )) as QbModule;
-
-      if (mod.jsonLdFaq !== undefined) jsonLdFaq = mod.jsonLdFaq;
-      if (Array.isArray(mod.jsonLdDatasets)) jsonLdDatasets = mod.jsonLdDatasets;
-    }
-  } catch {
-    // Optional module exports are best-effort only
-  }
-
   const graphs = [
     jsonLdArticle,
     jsonLdBreadcrumbs,
-    ...(jsonLdFaq ? [jsonLdFaq] : []),
-    ...jsonLdDatasets,
-  ].filter(Boolean);
+    ...(qb.jsonLdFaq ? [qb.jsonLdFaq] : []),
+    ...(qb.jsonLdDatasets ?? []),
+  ];
 
   return (
     <>

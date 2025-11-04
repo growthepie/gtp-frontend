@@ -217,6 +217,66 @@ export const faqItems: FaqItem[] = [
   },
 ];
 
+/** ----------------------------------------------------------------
+ *  Additional JSON-LD exports (i.e. FAQ or Dataset) for this Quick Bite
+ *  ---------------------------------------------------------------- */
+
+export const jsonLdFaq = generateJsonLdFaq(faqItems);
+export const jsonLdDatasets = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Ethereum Mainnet Historical TPS (monthly)",
+    description: "Historical TPS proxy derived from gas/sec, converted assuming ~100k gas per tx.",
+    license: "https://www.growthepie.com/terms",
+    creator: { "@type": "Organization", name: "growthepie" },
+    temporalCoverage: "2015-07-30/2025-10-31",
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "date" },
+      { "@type": "PropertyValue", name: "tps" }
+    ],
+    distribution: [{
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
+      description: "See path data.historical_tps.monthly.values"
+    }]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Projected Ethereum Mainnet TPS (monthly)",
+    description: "Illustrative projection towards ~10,000 TPS under a ~3× YoY assumption.",
+    creator: { "@type": "Organization", name: "growthepie" },
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "date" },
+      { "@type": "PropertyValue", name: "tps" }
+    ],
+    distribution: [{
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
+      description: "See path data.projected_tps.monthly.values"
+    }]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Projected TPS across Ethereum Layer 2s (monthly)",
+    description: "Aggregate L2 projection towards million-TPS territory.",
+    creator: { "@type": "Organization", name: "growthepie" },
+    variableMeasured: [
+      { "@type": "PropertyValue", name: "date" },
+      { "@type": "PropertyValue", name: "tps" }
+    ],
+    distribution: [{
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
+      description: "See path data.l2_projected_tps.monthly.values"
+    }]
+  }
+];
 
 const ethereumScaling: QuickBiteData = {
   title: "Scaling Ethereum Mainnet to 10,000 TPS",
@@ -292,67 +352,8 @@ const ethereumScaling: QuickBiteData = {
   ],
   icon: "ethereum-logo-monochrome",
   showInMenu: true,
+  jsonLdDatasets: jsonLdDatasets,
+  jsonLdFaq: jsonLdFaq,
 };
 
 export default ethereumScaling;
-
-/** ----------------------------------------------------------------
- *  Additional JSON-LD exports (i.e. FAQ or Dataset) for this Quick Bite
- *  ---------------------------------------------------------------- */
-
-export const jsonLdFaq = generateJsonLdFaq(faqItems);
-export const jsonLdDatasets = [
-  {
-    "@context": "https://schema.org",
-    "@type": "Dataset",
-    name: "Ethereum Mainnet Historical TPS (monthly)",
-    description: "Historical TPS proxy derived from gas/sec, converted assuming ~100k gas per tx.",
-    license: "https://www.growthepie.com/terms",
-    creator: { "@type": "Organization", name: "growthepie" },
-    temporalCoverage: "2015-07-30/2025-10-31",
-    variableMeasured: [
-      { "@type": "PropertyValue", name: "date" },
-      { "@type": "PropertyValue", name: "tps" }
-    ],
-    distribution: [{
-      "@type": "DataDownload",
-      encodingFormat: "application/json",
-      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
-      description: "See path data.historical_tps.monthly.values"
-    }]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Dataset",
-    name: "Projected Ethereum Mainnet TPS (monthly)",
-    description: "Illustrative projection towards ~10,000 TPS under a ~3× YoY assumption.",
-    creator: { "@type": "Organization", name: "growthepie" },
-    variableMeasured: [
-      { "@type": "PropertyValue", name: "date" },
-      { "@type": "PropertyValue", name: "tps" }
-    ],
-    distribution: [{
-      "@type": "DataDownload",
-      encodingFormat: "application/json",
-      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
-      description: "See path data.projected_tps.monthly.values"
-    }]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Dataset",
-    name: "Projected TPS across Ethereum Layer 2s (monthly)",
-    description: "Aggregate L2 projection towards million-TPS territory.",
-    creator: { "@type": "Organization", name: "growthepie" },
-    variableMeasured: [
-      { "@type": "PropertyValue", name: "date" },
-      { "@type": "PropertyValue", name: "tps" }
-    ],
-    distribution: [{
-      "@type": "DataDownload",
-      encodingFormat: "application/json",
-      contentUrl: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
-      description: "See path data.l2_projected_tps.monthly.values"
-    }]
-  }
-];
