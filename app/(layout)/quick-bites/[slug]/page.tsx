@@ -11,6 +11,11 @@ import {
 
 type Props = { params: { slug: string } };
 
+type QbModule = {
+  jsonLdFaq?: unknown;
+  jsonLdDatasets?: unknown[];
+};
+
 // ----- SEO: generate <head> metadata -----
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const qb = getQuickBiteBySlug(params.slug);
@@ -54,10 +59,15 @@ export default async function Page({ params }: Props) {
   let jsonLdDatasets: unknown[] = [];
 
   try {
-    const mod = await import(`@/lib/quick-bites/${params.slug}.ts`);
-    if ('jsonLdFaq' in mod) jsonLdFaq = (mod as any).jsonLdFaq;
-    if ('jsonLdDatasets' in mod && Array.isArray((mod as any).jsonLdDatasets)) {
-      jsonLdDatasets = (mod as any).jsonLdDatasets;
+    const safeSlug = params.slug.match(/^[\w-]+$/)?.[0]; // basic guard
+    if (safeSlug) {
+      const mod = (await import(
+        /* webpackInclude: /\.\/qb-[\w-]+\.ts$/ */
+        '../../../../lib/quick-bites/' + `qb-${safeSlug}.ts`
+      )) as QbModule;
+
+      if (mod.jsonLdFaq !== undefined) jsonLdFaq = mod.jsonLdFaq;
+      if (Array.isArray(mod.jsonLdDatasets)) jsonLdDatasets = mod.jsonLdDatasets;
     }
   } catch {
     // Optional module exports are best-effort only

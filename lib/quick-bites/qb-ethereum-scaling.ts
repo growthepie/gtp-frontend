@@ -4,8 +4,6 @@ import {
   FaqItem, renderFaqMarkdown, generateJsonLdFaq,
 } from './seo_helper';
 
-const slug = "ethereum-scaling";
-
 const MainKPIs = [
   "```kpi-cards",
   JSON.stringify([
