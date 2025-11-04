@@ -228,7 +228,7 @@ export const jsonLdDatasets = [
     "@type": "Dataset",
     name: "Ethereum Mainnet Historical TPS (monthly)",
     description: "Historical TPS proxy derived from gas/sec, converted assuming ~100k gas per tx.",
-    license: "https://www.growthepie.com/terms",
+    license: "https://creativecommons.org/licenses/by-nc/4.0/",
     creator: { "@type": "Organization", name: "growthepie" },
     temporalCoverage: "2015-07-30/2025-10-31",
     variableMeasured: [
@@ -246,7 +246,8 @@ export const jsonLdDatasets = [
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: "Projected Ethereum Mainnet TPS (monthly)",
-    description: "Illustrative projection towards ~10,000 TPS under a ~3× YoY assumption.",
+    description: "Illustrative projection towards ~10,000 TPS under a ~3x YoY assumption.",
+    license: "https://creativecommons.org/licenses/by-nc/4.0/",
     creator: { "@type": "Organization", name: "growthepie" },
     variableMeasured: [
       { "@type": "PropertyValue", name: "date" },
@@ -264,6 +265,7 @@ export const jsonLdDatasets = [
     "@type": "Dataset",
     name: "Projected TPS across Ethereum Layer 2s (monthly)",
     description: "Aggregate L2 projection towards million-TPS territory.",
+    license: "https://creativecommons.org/licenses/by-nc/4.0/",
     creator: { "@type": "Organization", name: "growthepie" },
     variableMeasured: [
       { "@type": "PropertyValue", name: "date" },
