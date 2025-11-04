@@ -14,6 +14,12 @@ const gtpMain = {
     "/_next/image*",
     "/api/*",
     // existing
+    "/blog",
+    "/trackers/*",
+    "/blockspace/*",
+    "/economics",
+    "/scroll",
+    "/labels",
     "/embed/*",
     "/embed",
     "/fees",
