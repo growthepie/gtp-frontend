@@ -265,7 +265,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                         >
                           <div>
                             <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                              {"Useage breakdown"}
+                              {"Breakdown of the chain's transactions in the last 7 days by different usage categories."}
                             </TooltipBody>
                           </div>
                         </GTPTooltipNew>
