@@ -2,7 +2,7 @@
 import useSWR from "swr";
 import { useState, useEffect, useMemo } from "react";
 import { useSSEChains } from "../useSSEChains";
-import TPSChartCard from "./TPSChartCard";
+import TPSChartCard, { ChainTPSHistoryItem } from "./TPSChartCard";
 import TXCostCard from "./TXCostCard";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -18,32 +18,26 @@ import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 import { ChainOverview } from "@/lib/chains";
 
-
-
-export interface ChainTPSHistoryItem {
-    "24h_high": number;
-    "24h_high_timestamp": string;
-    ath: number;
-    ath_timestamp: string;
-    chain_name: string; 
-    display_name: string;
-    timestamp: string;
-    tps: number; 
-    tx_cost_avg: number;
-    tx_cost_avg_usd: number;
-    tx_cost_erc20_transfer: number;
-    tx_cost_erc20_transfer_usd: number;
-    tx_cost_median: number;
-    tx_cost_median_usd: number;
-    tx_cost_swap: number;
-    tx_cost_swap_usd: number;
-} 
-
 interface HistoryArrayItem {
     tps: number;
     timestamp: string;
     timestamp_ms: number;
 }
+
+const COST_KEYS: Array<keyof ChainTPSHistoryItem> = [
+    "tx_cost_erc20_transfer",
+    "tx_cost_swap",
+    "tx_cost_avg",
+    "tx_cost_median",
+];
+
+const hasNonZeroTxCost = (data?: Partial<ChainTPSHistoryItem> | null) => {
+    if (!data) return false;
+    return COST_KEYS.some((key) => {
+        const value = data[key];
+        return typeof value === "number" && !Number.isNaN(value) && value !== 0;
+    });
+};
 
 
 const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoContent?: string, leftIcon?: string }) => {
@@ -98,6 +92,7 @@ const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoC
 export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: ChainOverview }) {
 
     const [tpsHistory, setTpsHistory] = useState<any[]>([]);
+    const [costHistory, setCostHistory] = useState<ChainTPSHistoryItem[]>([]);
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
     const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
     const [height, setHeight] = useState<number[]>([]);
@@ -113,7 +108,10 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
 
     useEffect(() => {
         if (initialHistory?.history) {
-        setTpsHistory([...initialHistory.history].reverse());
+        const reversedHistory = [...initialHistory.history].reverse();
+        setTpsHistory(reversedHistory);
+        const initialCostEntries = (reversedHistory as ChainTPSHistoryItem[]).filter((item) => hasNonZeroTxCost(item));
+        setCostHistory(initialCostEntries.slice(-24));
         }
     }, [initialHistory]);
 
@@ -137,6 +135,37 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
         }
     }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
 
+    useEffect(() => {
+        if (!chainDataTPS || !lastUpdated) return;
+
+        setCostHistory((prev) => {
+        if (!hasNonZeroTxCost(chainDataTPS)) {
+            return prev;
+        }
+
+        const lastEntry = prev[prev.length - 1];
+        if (lastEntry && lastEntry.timestamp === chainDataTPS.timestamp) {
+            const updated = [...prev];
+            updated[updated.length - 1] = chainDataTPS;
+            return updated;
+        }
+
+        const updatedHistory = [...prev, chainDataTPS];
+        return updatedHistory.slice(-24);
+        });
+    }, [chainDataTPS, lastUpdated]);
+
+    const hasTxCostData = useMemo(() => {
+        if (costHistory.length > 0) return true;
+        return hasNonZeroTxCost(chainDataTPS);
+    }, [costHistory, chainDataTPS]);
+
+    const latestCostDatum = useMemo(() => {
+        if (chainDataTPS && hasNonZeroTxCost(chainDataTPS)) {
+        return chainDataTPS;
+        }
+        return costHistory[costHistory.length - 1];
+    }, [chainDataTPS, costHistory]);
 
 
 
@@ -152,7 +181,15 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             {chainDataTPS && (
                 <>
                         <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-                        {chainDataTPS.tx_cost_avg !== 0 && <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} overviewData={chainDataOverview} />}
+                        {(hasTxCostData && latestCostDatum || costHistory.length > 0) && (
+                            <TXCostCard
+                                chainKey={chainKey}
+                                chainData={latestCostDatum}
+                                master={master}
+                                overviewData={chainDataOverview}
+                                costHistory={costHistory}
+                            />
+                        )}
                 </>
             )}
             {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}

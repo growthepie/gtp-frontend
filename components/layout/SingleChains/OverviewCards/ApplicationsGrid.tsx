@@ -251,7 +251,7 @@ function buildCategoryNodes(
     apps: groupedApps.get(label) || [],
   }));
 
-  console.log("nodes", nodes);
+
 
   return nodes;
 }
@@ -438,35 +438,52 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
     nonOffendingNodes: LayoutNode[],
     percentage: number
   ): LayoutNode[] => {
+    if (offendingNodes.length === 0 || percentage <= 0) {
+      return layout;
+    }
+
     const totalTxCount = layout.reduce((sum, node) => sum + node.txcount, 0);
     if (totalTxCount === 0) return layout;
 
-    const valueToRedistribute = totalTxCount * percentage;
     const totalNonOffendingTxCount = nonOffendingNodes.reduce((sum, node) => sum + node.txcount, 0);
+    if (totalNonOffendingTxCount <= 0) {
+      return layout;
+    }
 
-    if (totalNonOffendingTxCount > 0) {
-      nonOffendingNodes.forEach(node => {
-        const proportion = node.txcount / totalNonOffendingTxCount;
-        const valueToRemove = valueToRedistribute * proportion;
-        node.txcount = Math.max(0, node.txcount - valueToRemove);
-      });
+    const desiredRedistribution = Math.min(totalTxCount * percentage, totalNonOffendingTxCount);
+    if (desiredRedistribution <= 0) {
+      return layout;
+    }
+
+    let actualRedistributed = 0;
+
+    nonOffendingNodes.forEach(node => {
+      if (node.txcount <= 0) {
+        return;
+      }
+
+      const proportion = node.txcount / totalNonOffendingTxCount;
+      const amountToRemove = Math.min(node.txcount, desiredRedistribution * proportion);
+      node.txcount -= amountToRemove;
+      actualRedistributed += amountToRemove;
+    });
+
+    if (actualRedistributed <= 0) {
+      return layout;
     }
 
     const totalOffendingTxCount = offendingNodes.reduce((sum, node) => sum + node.txcount, 0);
-    let totalNeedFactor = offendingNodes.reduce(
-      (sum, node) => sum + (totalOffendingTxCount - node.txcount),
-      0
-    );
+    const needFactors = offendingNodes.map(node => Math.max(0, totalOffendingTxCount - node.txcount));
+    const totalNeedFactor = needFactors.reduce((sum, value) => sum + value, 0);
 
     if (totalNeedFactor > 0) {
-      offendingNodes.forEach(node => {
-        const needFactor = totalOffendingTxCount - node.txcount;
+      offendingNodes.forEach((node, index) => {
+        const needFactor = needFactors[index];
         const proportionOfNeed = needFactor / totalNeedFactor;
-        const valueToAdd = valueToRedistribute * proportionOfNeed;
-        node.txcount += valueToAdd;
+        node.txcount += actualRedistributed * proportionOfNeed;
       });
-    } else if (offendingNodes.length > 0) {
-      const valuePerNode = valueToRedistribute / offendingNodes.length;
+    } else {
+      const valuePerNode = actualRedistributed / offendingNodes.length;
       offendingNodes.forEach(node => {
         node.txcount += valuePerNode;
       });
@@ -510,10 +527,6 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     const leftWidth = Math.max(0, logoSlot.x - gap);
     const rightStart = logoSlot.x + logoSlot.width + gap;
     const rightWidth = Math.max(0, dimensions.width - rightStart);
-
-    console.log("dimensions", dimensions);
-    console.log("logo slot", logoSlot);
-    console.log(`top height: ${topHeight}, bottom height: ${bottomHeight}, left width: ${leftWidth}, right width: ${rightWidth}`);
 
     const regions: LogoRegionSpec[] = [
       {
@@ -713,11 +726,12 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
         );
   
         if (nonOffendingNodes.length === 0) {
-          console.warn('LAYOUT: No non-offending nodes to redistribute value from.');
+          console.warn('LAYOUT: No non-offending nodes to redistribute value from. Falling back to base layout.');
+          layout = createTreemapLayout(nodes, dimensions);
           break;
         }
-  
-        const percentageToRedistribute = 0.01 + (0.05 * Math.pow(iterations, 2));
+
+        const percentageToRedistribute = Math.min(0.25, 0.05 * (iterations + 1));
         const updatedLayout = redistributeTxCountByPercentage(
           layout,
           offendingNodes,

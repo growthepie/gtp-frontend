@@ -99,6 +99,7 @@ export interface ChainInfo {
     [key: string]: "locked" | "active" | "soon";
   };
   supported_metrics: string[];
+  similar_chains: string[];
 }
 
 export interface BlockExplorers {

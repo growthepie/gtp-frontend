@@ -1,14 +1,12 @@
 "use client";
 
 import { GTPIcon } from "../../GTPIcon";
-import { GTPIconName } from "@/icons/gtp-icon-names";
-import { useMemo, useEffect, useState, useRef } from "react";
+import { useMemo, useEffect, useState } from "react";
 import moment from "moment";
 import { useLocalStorage } from "usehooks-ts";
 import { HistoryDots } from "../../EthAgg/HistoryDots";
 import { getGradientColor } from "../../EthAgg/helpers";
 import { GetRankingColor } from "@/lib/chains";
-import { chain } from "lodash";
 import { formatNumber } from "@/lib/utils/formatters";
 export interface ChainData {
     chain_name:                 string;
@@ -33,42 +31,37 @@ export interface ChainData {
 }
 
 
-export default function TXCostCard({ chainKey, chainData, master, overviewData }: { chainKey: string, chainData: ChainData, master: any, overviewData?: any }) {
+export default function TXCostCard({ chainKey, chainData, master, overviewData, costHistory }: { chainKey: string, chainData: ChainData, master: any, overviewData?: any, costHistory: ChainData[] }) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-    // const [txCostHistory, setTxCostHistory] = useState<number[]>([]);
-    const [costHistory, setCostHistory] = useState<ChainData[]>([]);
-    const [txCostSelectedIndex, setTxCostSelectedIndex] = useState<number>(23);
+    const [txCostSelectedIndex, setTxCostSelectedIndex] = useState<number | null>(null);
     const [txCostHoverIndex, setTxCostHoverIndex] = useState<number | null>(null);
+    const recentCostHistory = useMemo(() => costHistory.slice(-24), [costHistory]);
 
     useEffect(() => {
-        // let history = [...txCostHistory, chainData["tx_cost_median"]];
-        let hist: ChainData[];
-        const timeSinceLastUpdate = Math.abs(moment.utc(chainData["last_updated"]).diff(moment.utc(), "seconds"));
-        if(chainData["tx_cost_median"] === 0 && costHistory.length > 0 && timeSinceLastUpdate < 60) {
-            hist = [...costHistory, costHistory[costHistory.length - 1]];
-        } else {
-            hist = [...costHistory, chainData];
+        if (recentCostHistory.length === 0) {
+            setTxCostSelectedIndex(null);
+            return;
         }
-        hist = hist.slice(-24);
-        setCostHistory(hist);
-    }, [chainData]);
 
+        setTxCostSelectedIndex((prev) => {
+            if (prev === null) {
+                return recentCostHistory.length - 1;
+            }
+            return Math.min(prev, recentCostHistory.length - 1);
+        });
+    }, [recentCostHistory.length]);
 
     // Get ranking color for transaction costs if overview data is available
     const rankingColor = overviewData?.data?.ranking?.txcosts
         ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100)
         : master.chains[chainKey].colors.dark[0];
 
-    // const sumOfAllTxCosts = chainData["tx_cost_erc20_transfer"] + chainData["tx_cost_swap"] + chainData["tx_cost_avg"] + chainData["tx_cost_median"];
-
-    // if(sumOfAllTxCosts === 0) return null;
-
-    /* if median is 0, hold on to last set of values for upto 60 seconds, hide if still, otherwise update to latest values */
-
-    const lastCostData = txCostHoverIndex ? costHistory[txCostHoverIndex] : costHistory[costHistory.length - 1];
+    const activeIndex = txCostHoverIndex ?? txCostSelectedIndex ?? (recentCostHistory.length ? recentCostHistory.length - 1 : null);
+    const lastCostData = activeIndex !== null ? recentCostHistory[activeIndex] : undefined;
 
     const getDisplayValue = (key: string, showUsd: boolean) => {
+        if (!lastCostData) return "N/A";
         const valueKey = showUsd ? key + "_usd" : key;
         if(showUsd){
             return "$" + lastCostData[valueKey]?.toFixed(lastCostData[valueKey] < 0.0001 ? 6 : 4);
@@ -77,7 +70,6 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData }
         }
     }
 
-    console.log(lastCostData)
 
     return (
         <div className="group bg-color-bg-default xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[86px]">
@@ -94,7 +86,14 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData }
                     <div className="heading-large-xs ">Transaction Cost</div>
                 </div>
                 <div className="w-[150px] flex items-center justify-center gap-x-[2px]">
-                    <HistoryDots data={costHistory.map((x) => x["tx_cost_median"])} selectedIndex={txCostSelectedIndex} hoverIndex={txCostHoverIndex} onSelect={setTxCostSelectedIndex} onHover={setTxCostHoverIndex} getGradientColor={getGradientColor} />
+                    <HistoryDots
+                        data={recentCostHistory.map((x) => x["tx_cost_median"])}
+                        selectedIndex={txCostSelectedIndex ?? Math.max(recentCostHistory.length - 1, 0)}
+                        hoverIndex={txCostHoverIndex}
+                        onSelect={setTxCostSelectedIndex}
+                        onHover={setTxCostHoverIndex}
+                        getGradientColor={getGradientColor}
+                    />
                 </div>
             </div>
             <div className="flex justify-end flex-wrap ">

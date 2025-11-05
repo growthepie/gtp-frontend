@@ -291,7 +291,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 )}
             </div>
           </div>
-          <SimilarChains chainKey={chainKey} />
+          <SimilarChains chainKey={chainKey} similarChains={master.chains[chainKey].similar_chains} />
         </div>
       )}
     </>
@@ -565,7 +565,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
 }
 
 
-const SimilarChains = ({ chainKey }: { chainKey: string }) => {
+const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarChains: string[] }) => {
   const { theme } = useTheme();
   const { data: masterData } = useMaster();
   const AllChainsByKeys = useMaster().AllChainsByKeys;
@@ -586,28 +586,29 @@ const SimilarChains = ({ chainKey }: { chainKey: string }) => {
       </div>
       {/* add for loop that loops 5 times  */}
       <div className="flex items-center gap-x-[10px]">
-        {randomChains.map((randomChain, index) => {
-
+        {similarChains.map((chainKey, index) => {
+          const chain = AllChainsByKeys[chainKey];
+          if (!chain) return null;
           return (
             <GTPTooltipNew
               placement="top"
               size="md"
               allowInteract={true}
               containerClass="max-w-fit pl-[15px]"
-              key={index + randomChain.urlKey}
+              key={index + chain.urlKey}
               trigger={
                 <div>
-                  <Link href={`/chains-rework/${randomChain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
-                    <GTPIcon icon={`gtp:${randomChain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
+                  <Link href={`/chains-rework/${chain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
+                    <GTPIcon icon={`gtp:${chain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
                     style={{
-                      color: randomChain.colors[theme ?? "dark"][0],
+                      color: chain.colors[theme ?? "dark"][0],
                     }}
                     />
                   </Link>
                 </div>
               }
             >
-              <div className="text-sm">{randomChain.label}</div>
+              <div className="text-sm">{chain.label}</div>
             </GTPTooltipNew>
           )
         })}
