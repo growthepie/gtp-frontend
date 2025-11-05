@@ -1,11 +1,10 @@
 "use client";
 import Container from "@/components/layout/Container";
 import { useLocalStorage } from "usehooks-ts";
-import { useTheme } from "next-themes";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
 import { useState, useMemo, memo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
@@ -21,7 +20,6 @@ import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/
 import { ApplicationsOverviewContent } from "@/app/(layout)/applications/_components/ApplicationsOverviewContent";
 import ApplicationDetailsPage from "@/app/(layout)/applications/[owner_project]/page";
 import { ChainsBaseURL, FeesURLs } from "@/lib/urls";
-import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
@@ -168,37 +166,45 @@ const EconomicsContent = memo(({ chainKey, master }: { chainKey: string, master:
   );
 });
 
-const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any }) => {
+const AppsContent = memo(({
+  chainKey,
+  chain,
+  master,
+  selectedApplication,
+}: {
+  chainKey: string;
+  chain: string;
+  master: any;
+  selectedApplication?: string;
+}) => {
   const chainInfo = master?.chains?.[chainKey];
   const chainName = (chainInfo?.name ?? chainKey) || "Chain";
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const selectedApplication = searchParams.get("app") ?? undefined;
+  const basePath = useMemo(() => `/chains-rework/${chain}/apps`, [chain]);
 
   const buildUrl = useCallback(
-    (params: URLSearchParams) => {
-      const query = params.toString();
-      return query ? `${pathname}?${query}` : pathname;
+    (params: URLSearchParams, ownerProject?: string) => {
+      const cleanParams = new URLSearchParams(params);
+      cleanParams.delete("app");
+      const query = cleanParams.toString();
+      const path = ownerProject ? `${basePath}/${ownerProject}` : basePath;
+      return query ? `${path}?${query}` : path;
     },
-    [pathname]
+    [basePath]
   );
 
   const handleSelectApplication = useCallback(
     (ownerProject: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", "apps");
-      params.set("app", ownerProject);
-      router.push(buildUrl(params), { scroll: false });
+      const href = buildUrl(params, ownerProject);
+      router.push(href, { scroll: false });
     },
     [buildUrl, router, searchParams]
   );
 
   const detailFallbackHref = useMemo(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("app");
-    return buildUrl(params);
+    return buildUrl(new URLSearchParams(searchParams.toString()));
   }, [buildUrl, searchParams]);
 
   return (
@@ -251,7 +257,8 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
                   allowChainSelection: false,
                   hideChainFilter: true,
                   hideChainsColumn: false,
-                  titleOverride: `${chainName} Applications`,
+                  titleOverride: `Applications on ${chainName}`,
+                  titleSize: "md",
                   descriptionOverride: `An overview of the most used applications on ${chainName}.`,
                   onSelectApplication: handleSelectApplication,
                   detailFallbackHref,
@@ -365,91 +372,154 @@ EconomicsContent.displayName = 'EconomicsContent';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
-const Chain = ({ params }: { params: any }) => {
-    const { chain } = params;
-    const master = useMaster();
-    const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
-    const { theme } = useTheme();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-    
-    // Initialize selectedTab based on URL parameter, defaulting to "overview"
-    const [selectedTab, setSelectedTab] = useState<string>(() => {
-      const tabFromUrl = searchParams.get("tab");
-      return tabFromUrl || "overview";
-    });
-  
-    const { AllChains, AllChainsByKeys } = useMaster();
-  
-    const [chainKey, setChainKey] = useState<string>(
-      AllChains.find((c) => c.urlKey === chain)?.key
-        ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
-        : "",
+const VALID_TABS = new Set(["overview", "fundamentals", "economics", "apps", "blockspace"]);
+
+const Chain = ({ params }: { params: { chain: string; segments?: string[] } }) => {
+  const { chain, segments } = params;
+  const master = useMaster();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const tabFromSegments = segments?.[0];
+  const selectedTab = useMemo(() => {
+    if (!tabFromSegments) return "overview";
+    return VALID_TABS.has(tabFromSegments) ? tabFromSegments : "overview";
+  }, [tabFromSegments]);
+
+  const selectedApplication = useMemo(() => {
+    if (selectedTab !== "apps") return undefined;
+    if (!segments || segments.length < 2) return undefined;
+    return segments[1];
+  }, [segments, selectedTab]);
+
+  const { AllChains, AllChainsByKeys } = useMaster();
+
+  const [chainKey, setChainKey] = useState<string>(() => {
+    const match = AllChains.find((c) => c.urlKey === chain);
+    return match?.key ?? "";
+  });
+
+  useEffect(() => {
+    const match = AllChains.find((c) => c.urlKey === chain);
+    if (match?.key && match.key !== chainKey) {
+      setChainKey(match.key);
+    }
+  }, [AllChains, chain, chainKey]);
+
+  // Redirect legacy ?tab= usage to segment-based routing
+  useEffect(() => {
+    const legacyTab = searchParams.get("tab");
+    if (!legacyTab) return;
+    if (!VALID_TABS.has(legacyTab)) return;
+    if (legacyTab === selectedTab) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("tab");
+    if (legacyTab !== "apps") {
+      params.delete("app");
+    }
+
+    const basePath = `/chains-rework/${chain}${legacyTab === "overview" ? "" : `/${legacyTab}`}`;
+    const queryString = params.toString();
+    router.replace(`${basePath}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+  }, [chain, router, searchParams, selectedTab]);
+
+  // Redirect legacy ?app= usage to segment-based routing
+  useEffect(() => {
+    const legacyApp = searchParams.get("app");
+    if (selectedTab !== "apps") return;
+    if (!legacyApp && !selectedApplication) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("app");
+    const queryString = params.toString();
+
+    const effectiveApp = selectedApplication ?? legacyApp ?? "";
+    const target = `/chains-rework/${chain}/apps${effectiveApp ? `/${effectiveApp}` : ""}${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    const current = `${window.location.pathname}${window.location.search ?? ""}`;
+    if (current !== target) {
+      router.replace(target, { scroll: false });
+    }
+  }, [chain, router, searchParams, selectedApplication, selectedTab]);
+
+  const navigateToTab = useCallback(
+    (tab: string) => {
+      if (tab === selectedTab) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (tab !== "apps") {
+        params.delete("app");
+      }
+      const basePath = `/chains-rework/${chain}${tab === "overview" ? "" : `/${tab}`}`;
+      const queryString = params.toString();
+      router.push(`${basePath}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+    },
+    [chain, router, searchParams, selectedTab]
+  );
+
+  const TabContent = useMemo(() => {
+    const props = { chainKey, chain, master };
+
+    switch (selectedTab) {
+      case "overview":
+        return <OverviewContent {...props} />;
+      case "fundamentals":
+        return <FundamentalsContent {...props} />;
+      case "economics":
+        return <EconomicsContent chainKey={chainKey} master={master} />;
+      case "apps":
+        return (
+          <AppsContent
+            chainKey={chainKey}
+            chain={chain}
+            master={master}
+            selectedApplication={selectedApplication}
+          />
+        );
+      case "blockspace":
+        return <BlockspaceContent chainKey={chainKey} master={master} />;
+      default:
+        return <div className="p-8 text-center">Tab not found</div>;
+    }
+  }, [chain, chainKey, master, selectedApplication, selectedTab, showUsd]);
+
+  if (!chainKey || !master?.chains?.[chainKey]) {
+    return (
+      <div className="w-full h-[60vh] overflow-hidden">
+        <ShowLoading dataLoading={[true]} dataValidating={[]} section={true} />
+      </div>
     );
+  }
 
-    // Update URL when selectedTab changes
-    useEffect(() => {
-      const currentParams = new URLSearchParams(searchParams.toString());
-      
-      if (selectedTab === "overview") {
-        // Remove tab parameter for overview (default)
-        currentParams.delete("tab");
-      } else {
-        // Set tab parameter for other tabs
-        currentParams.set("tab", selectedTab);
-      }
-
-      if (selectedTab !== "apps") {
-        currentParams.delete("app");
-      }
-      
-      const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
-      router.replace(newUrl, { scroll: false });
-    }, [selectedTab, router, searchParams]);
-
-
-
-    // Memoized tab content renderer
-    const TabContent = useMemo(() => {
-      const props = { chainKey, chain, master };
-      
-      switch (selectedTab) {
-        case "overview":
-          return <OverviewContent {...props} />;
-        case "fundamentals":
-          return <FundamentalsContent {...props} />;
-        case "economics":
-          return <EconomicsContent chainKey={chainKey} master={master} />;
-        case "apps":
-          return <AppsContent chainKey={chainKey} master={master} />;
-        case "blockspace":
-          return <BlockspaceContent chainKey={chainKey} master={master} />;
-        default:
-          return <div className="p-8 text-center">Tab not found</div>;
-      }
-    }, [selectedTab, chainKey, chain, master, showUsd]);
-
-
-
-    return(
-        <>
-        <Container className={`flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none ${selectedTab === "apps" ? "overflow-visible" : ""}`}>
-            <ChainTabs 
-              chainInfo={master.chains[chainKey]} 
-              selectedTab={selectedTab} 
-              setSelectedTab={setSelectedTab} 
-            />
-            </Container>
-            <div className={`${selectedTab !== "overview" ? "pt-[30px]" : "pt-[15px]"} ${selectedTab === "apps" ? "px-0" : "px-[20px] md:px-[50px]"}`}>
-              {TabContent}
-            </div>
-        <Container>
-            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
-        </Container>
-        </>
-    )
-}
-
+  return (
+    <>
+      <Container
+        className={`flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none ${
+          selectedTab === "apps" ? "overflow-visible" : ""
+        }`}
+      >
+        <ChainTabs
+          chainInfo={master.chains[chainKey]}
+          selectedTab={selectedTab}
+          setSelectedTab={navigateToTab}
+        />
+      </Container>
+      <div
+        className={`${selectedTab !== "overview" ? "pt-[30px]" : "pt-[15px]"} ${
+          selectedTab === "apps" ? "px-0" : "px-[20px] md:px-[50px]"
+        }`}
+      >
+        {TabContent}
+      </div>
+      <Container>
+        <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
+      </Container>
+    </>
+  );
+};
 
 export default Chain;

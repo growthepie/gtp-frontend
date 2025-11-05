@@ -128,9 +128,11 @@ export const PageTitleAndDescriptionAndControls = () => {
         {/* <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
           Applications
         </Heading> */}
+        {viewOptions.titleSize}
         <Title
           icon="gtp-project"
           title={viewOptions.titleOverride ?? "Applications"}
+          titleSize={viewOptions.titleSize ?? "lg"}
           containerClassName="flex md:w-full md:items-center md:justify-between"
           button={
             <>

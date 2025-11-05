@@ -21,7 +21,7 @@ type TitleProps = {
 
 const titleSizeMap = {
   sm: "heading-md",
-  md: "heading-lg",
+  md: "heading-large-lg",
   lg: "heading-large-xl"
 };
 
@@ -43,7 +43,7 @@ export const Title = ({
     return (
       <div
         id={id}
-        className={`flex items-center h-[43px] gap-x-[8px]  ${containerClassName}`}
+        className={`flex items-center h-[43px] gap-x-[8px] ${containerClassName}`}
       >
         {backArrow && (
           <Link className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={backArrowLink}>
@@ -70,7 +70,7 @@ export const Title = ({
       >
         <GTPIcon icon={icon} className={iconClassName} size={iconSize} />
         <Heading
-          className="leading-[120%] text-[36px] md:text-[36px] break-inside-avoid"
+          className={`${titleSizeMap[titleSize]} ${titleClassName}`}
           as={as}
         >
           {title}

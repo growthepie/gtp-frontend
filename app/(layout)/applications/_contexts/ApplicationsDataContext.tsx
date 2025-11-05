@@ -260,6 +260,7 @@ export type ApplicationsViewOptions = {
   hideChainFilter?: boolean;
   hideChainsColumn?: boolean;
   titleOverride?: string;
+  titleSize?: "sm" | "md" | "lg";
   descriptionOverride?: string;
   detailFallbackHref?: string;
   onSelectApplication?: (ownerProject: string) => void;
@@ -272,6 +273,7 @@ export type ResolvedApplicationsViewOptions = {
   hideChainFilter: boolean;
   hideChainsColumn: boolean;
   titleOverride?: string;
+  titleSize?: "sm" | "md" | "lg";
   descriptionOverride?: string;
   detailFallbackHref?: string;
   onSelectApplication?: (ownerProject: string) => void;
@@ -343,6 +345,7 @@ export const ApplicationsDataProvider = ({
     hideChainsColumn: viewOptionsProp?.hideChainsColumn ?? false,
     titleOverride: viewOptionsProp?.titleOverride,
     descriptionOverride: viewOptionsProp?.descriptionOverride,
+    titleSize: viewOptionsProp?.titleSize ?? "lg",
     detailFallbackHref: viewOptionsProp?.detailFallbackHref,
     onSelectApplication: viewOptionsProp?.onSelectApplication,
     selectedApplication: viewOptionsProp?.selectedApplication,
