@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getPageMetadata } from "@/lib/metadata";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,8 +37,9 @@ export default async function Layout({
     params: { metric: string };
 }) {
     return (
-        <div>
+        <>
             {children}
-        </div>
+            <MetricRelatedQuickBites metricKey="data-availability" metricType="data-availability" includePageContainer={true} />
+        </>
     )
 }

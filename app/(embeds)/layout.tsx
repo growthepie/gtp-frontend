@@ -8,60 +8,10 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 // import Head from "./head";
-import { Graph } from "schema-dts";
 
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.growthepie.com/#organization",
-      name: "growthepie",
-      url: "https://www.growthepie.com",
-      logo: "https://www.growthepie.com/logo_full.png",
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.growthepie.com/#website",
-      url: "https://www.growthepie.com",
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-      publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.growthepie.com/logo_full.png",
-        },
-      },
-    },
-  ],
-};
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: false});
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.com",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.com/logo_full.png",
-//     },
-//   },
-// };
-
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",

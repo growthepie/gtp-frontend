@@ -5,10 +5,13 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 import { metricItems } from "@/lib/metrics";
-import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
+import { Title, TitleButtonLink, SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
 import { getPageMetadata } from "@/lib/metadata";
+import { BackButton } from "../../applications/_components/Components";
+import { FundamentalsBackButton } from "./FundamentalsBackButton";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 type Props = {
   params: { metric: string };
@@ -40,19 +43,19 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
   const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
   return {
-      title: metadata.title,
-      description: metadata.description,
-      openGraph: {
-        images: [
-          {
-            url: `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png?date=${dateString}`,
-            width: 1200,
-            height: 627,
-            alt: "growthepie.com",
-          },
-        ],
-      },
-    };
+    title: metadata.title,
+    description: metadata.description,
+    openGraph: {
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png?date=${dateString}`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+    },
+  };
 }
 
 export default async function Layout({
@@ -62,8 +65,6 @@ export default async function Layout({
   children: React.ReactNode;
   params: { metric: string };
 }) {
-  const url = MetricsURLs[params.metric];
-
   const pageData = metricItems.find((item) => item.urlKey === params.metric)
     ?.page ?? {
     title: "",
@@ -71,33 +72,40 @@ export default async function Layout({
     icon: "",
   };
 
-
-
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
+
       <PageContainer paddingY="none" >
         <Section>
-          <Title
-            icon={pageData.icon as GTPIconName}
-            title={pageData.title || "No Title"}
-            button={
-              params.metric === "transaction-costs" && (
-                <TitleButtonLink
-                  label="Detailed Fees Overview"
-                  icon="detailed-fees"
-                  href="https://fees.growthepie.com/"
-                  newTab
-                />
-              )
-            }
-          />
+          <div className="flex items-center gap-x-[8px]">
+            <FundamentalsBackButton />
+            <Title
+              icon={pageData.icon as GTPIconName}
+              title={pageData.title || "No Title"}
+              button={
+                params.metric === "transaction-costs" && (
+                  <TitleButtonLink
+                    label="Detailed Fees Overview"
+                    icon="detailed-fees"
+                    href="https://fees.growthepie.com/"
+                    newTab
+                  />
+                )
+              }
+            />
+          </div>
           <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>
       </PageContainer>
       {children}
-      <PageContainer paddingY="none">
+      <PageContainer paddingY="none" className="!pt-[45px]">
+        <SectionTitle
+          icon={"gtp-faq"}
+          title={"About this metric"}
+        />
+        <SectionDescription>Learn more about this metric, the methodology we apply and what it tells you.</SectionDescription>
         <QuestionAnswer
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
@@ -113,7 +121,26 @@ export default async function Layout({
           }
           startOpen
         />
+        {pageData.calculation && (
+          <QuestionAnswer
+            question={`How is ${pageData.title} calculated?`}
+            answer={pageData.calculation}
+          />
+        )}
+        {pageData.how_gamed && (
+          <QuestionAnswer
+            question={`How can ${pageData.title} be gamed?`}
+            answer={pageData.how_gamed}
+          />
+        )}
+        {pageData.interpretation && (
+          <QuestionAnswer
+            question={`How to interpret ${pageData.title}?`}
+            answer={pageData.interpretation}
+          />
+        )}
       </PageContainer>
+      <MetricRelatedQuickBites metricKey={params.metric} metricType="fundamentals" includePageContainer={true} />
     </PageRoot>
   );
 }

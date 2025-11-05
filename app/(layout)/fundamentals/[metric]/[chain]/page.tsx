@@ -13,9 +13,9 @@ import { MetricBottomControls, MetricTopControls } from "@/components/metric/Met
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
-const Fundamentals = ({ params: { metric } }) => {
+const Fundamentals = ({ params: { metric, chain } }) => {
   const { is_og } = useParams();
   const {
     data: master,
@@ -24,7 +24,7 @@ const Fundamentals = ({ params: { metric } }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const { SupportedChainKeys, AllChains } = useMaster();
+  const { SupportedChainKeys, AllChains, DefaultChainSelection } = useMaster();
 
   // Determine which chains to fetch
   const chainsToFetch = useMemo(() => {
@@ -63,7 +63,7 @@ type FundamentalsContentProps = {
 const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
   return (
     <>
-      <MetricContextWrapper metric={metric} metric_type="fundamentals">
+      <MetricContextWrapper metric={metric} metric_type="fundamentals" defaultTimespan="max" defaultTimeInterval="daily" defaultScale="stacked" showRollingAverage={false}>
         <MetricSeriesProvider metric_type={type}>
           <PageContainer className="" paddingY="none">
             <MetricTopControls metric={metric} />
@@ -82,6 +82,11 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
           <PageContainer className="hidden md:block" paddingY="none">
             <MetricBottomControls metric={metric} />
           </PageContainer>
+
+          {/* Add Related Quick Bites Section */}
+          {/* <PageContainer className="" paddingY="none">
+            <MetricRelatedQuickBites metricKey={metric} metricType={type} />
+          </PageContainer> */}
         </MetricSeriesProvider>
       </MetricContextWrapper>
     </>

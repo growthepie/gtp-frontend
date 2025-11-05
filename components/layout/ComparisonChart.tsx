@@ -1139,19 +1139,46 @@ export default function ComparisonChart({
 
       let fillOpacity = undefined;
 
-      let seriesFill = "transparent";
+      let seriesFill: string | Highcharts.GradientColorObject = "transparent";
 
-      if (isAreaChart) {
-        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+      let shadow: Highcharts.ShadowOptionsObject | undefined = undefined;
+
+      if (["area", "line"].includes(getSeriesType(name)) && selectedScale !== "stacked") {
+        shadow = {
+          color: MetadataByKeys[name]?.colors.dark[1] + "66",
+          width: 9,
+        };
       }
 
       if (isAreaChart) {
-        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+        seriesFill = {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "99"],
+            [1, MetadataByKeys[name]?.colors[theme ?? "dark"][1] + "33"],
+          ],
+        };
       }
 
-      let fillColor =
+      let fillColor: Highcharts.GradientColorObject | string | undefined =
         selectedTimeInterval === "daily"
-          ? MetadataByKeys[name]?.colors[theme ?? "dark"][0]
+          ? {
+              linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1,
+              },
+              stops: [
+                [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "99"],
+                [1, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33"],
+              ],
+            }
           : undefined;
       let color =
         selectedTimeInterval === "daily"
@@ -1260,6 +1287,7 @@ export default function ComparisonChart({
         fillColor,
         fillOpacity,
         color,
+        shadow,
       };
     },
     [
@@ -1513,134 +1541,14 @@ export default function ComparisonChart({
                 .color,
               borderColor:
                 MetadataByKeys[series.name]?.colors[theme ?? "dark"][0],
-              borderWidth: 1,
+              borderWidth: 0,
               lineWidth: 2,
               ...// @ts-ignore
-              (["area", "line"].includes(getSeriesType(series.name))
+              (getSeriesData(series.name, series.types, series.data).shadow
                 ? {
-                  shadow: {
-                    color:
-                      MetadataByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][1] + "FF",
-                    width: 10,
-                  },
-                  // color: {
-                  //   linearGradient: {
-                  //     x1: 0,
-                  //     y1: 0,
-                  //     x2: 1,
-                  //     y2: 0,
-                  //   },
-                  //   stops: [
-                  //     [
-                  //       0,
-                  //       MetadataByKeys[series.name]?.colors[
-                  //         theme ?? "dark"
-                  //       ][0],
-                  //     ],
-                  //     // [0.33, MetadataByKeys[series.name].colors[1]],
-                  //     [
-                  //       1,
-                  //       MetadataByKeys[series.name]?.colors[
-                  //         theme ?? "dark"
-                  //       ][1],
-                  //     ],
-                  //   ],
-                  // },
+                  shadow: getSeriesData(series.name, series.types, series.data).shadow,
                 }
-                : series.name === "all_l2s"
-                  ? {
-                    borderColor: "transparent",
-                    shadow: "none",
-                    // shadow: {
-                    //   color: "#CDD8D3" + "FF",
-                    //   // color:
-                    //   //   MetadataByKeys[series.name].colors[theme ?? "dark"][1] + "33",
-                    //   // width: 10,
-                    //   offsetX: 0,
-                    //   offsetY: 0,
-                    //   width: 2,
-                    // },
-                    // color: {
-                    //   linearGradient: {
-                    //     x1: 0,
-                    //     y1: 0,
-                    //     x2: 0,
-                    //     y2: 1,
-                    //   },
-                    //   stops:
-                    //     theme === "dark"
-                    //       ? [
-                    //           [
-                    //             0,
-                    //             MetadataByKeys[series.name]?.colors[
-                    //               theme ?? "dark"
-                    //             ][0] + "E6",
-                    //           ],
-
-                    //           [
-                    //             1,
-                    //             MetadataByKeys[series.name]?.colors[
-                    //               theme ?? "dark"
-                    //             ][1] + "E6",
-                    //           ],
-                    //         ]
-                    //       : [
-                    //           [
-                    //             0,
-                    //             MetadataByKeys[series.name]?.colors[
-                    //               theme ?? "dark"
-                    //             ][0] + "E6",
-                    //           ],
-
-                    //           [
-                    //             1,
-                    //             MetadataByKeys[series.name]?.colors[
-                    //               theme ?? "dark"
-                    //             ][1] + "E6",
-                    //           ],
-                    //         ],
-                    // },
-                  }
-                  : {
-                    borderColor: "transparent",
-                    shadow: "none",
-                    // shadow: {
-                    //   color: "#CDD8D3" + "FF",
-                    //   offsetX: 0,
-                    //   offsetY: 0,
-                    //   width: 2,
-                    // },
-                    // fillColor: {
-                    //   linearGradient: {
-                    //     x1: 0,
-                    //     y1: 0,
-                    //     x2: 0,
-                    //     y2: 1,
-                    //   },
-                    //   stops: [
-                    //     [
-                    //       0,
-                    //       MetadataByKeys[series.name]?.colors[
-                    //         theme ?? "dark"
-                    //       ][0] + "FF",
-                    //     ],
-                    //     [
-                    //       0.349,
-                    //       MetadataByKeys[series.name]?.colors[
-                    //         theme ?? "dark"
-                    //       ][0] + "88",
-                    //     ],
-                    //     [
-                    //       1,
-                    //       MetadataByKeys[series.name]?.colors[
-                    //         theme ?? "dark"
-                    //       ][0] + "00",
-                    //     ],
-                    //   ],
-                    // },
-                  }),
+                : {}),
               states: {
                 hover: {
                   enabled: true,

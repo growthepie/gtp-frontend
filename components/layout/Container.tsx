@@ -111,7 +111,7 @@ export const PageContainer = ({ children, className = '', gapSize = "md", direct
 export const Section = ({ children, className = '' }: ContainerProps) => {
   return (
     <section
-      className="flex flex-col gap-y-[15px]"
+      className={`flex flex-col gap-y-[15px] ${className}`}
     >
       {children}
     </section>

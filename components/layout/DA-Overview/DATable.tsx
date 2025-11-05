@@ -360,7 +360,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
     },
   );
 
-  const EXTRA_PADDING = 65;
+  const EXTRA_PADDING = 0;
 
   const minimumHeight = useMemo(() => {
     let retHeight: number = 39;

@@ -156,7 +156,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
       ownerProjectToProjectData,
       projectNameToProjectData,
       availableMainCategories,
-      filteredProjectsData: filteredProjectsData ? filteredProjectsData.data : null,
+      filteredProjectsData: projectsData ? projectsData.data : filteredProjectsData ? filteredProjectsData.data : null,
     }}>
       {projectsData && children}
     </ProjectsMetadataContext.Provider>

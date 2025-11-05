@@ -124,7 +124,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
       if (["area", "line"].includes(getSeriesType(name)) && selectedScale !== "stacked") {
         shadow = {
-          color: MetadataByKeys[name]?.colors.dark[1] + "FF",
+          color: MetadataByKeys[name]?.colors.dark[1] + "66",
           width: 9,
         };
       }

@@ -5,10 +5,11 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 import { daMetricItems } from "@/lib/metrics";
-import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
+import { SectionDescription, SectionTitle, Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
 import { getPageMetadata } from "@/lib/metadata";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 type Props = {
   params: { metric: string };
@@ -41,19 +42,19 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
   const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
   return {
-      title: metadata.title,
-      description: metadata.description,
-      openGraph: {
-        images: [
-          {
-            url: `https://api.growthepie.com/v1/og_images/data-availability/${metric}.png?date=${dateString}`,
-            width: 1200,
-            height: 627,
-            alt: "growthepie.com",
-          },
-        ],
-      },
-    };
+    title: metadata.title,
+    description: metadata.description,
+    openGraph: {
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/data-availability/${metric}.png?date=${dateString}`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+    },
+  };
 }
 
 export default async function Layout({
@@ -98,7 +99,12 @@ export default async function Layout({
         </Section>
       </PageContainer>
       {children}
-      <PageContainer paddingY="none">
+      <PageContainer paddingY="none" className="!pt-[45px]">
+        <SectionTitle
+          icon={"gtp-faq"}
+          title={"About this metric"}
+        />
+        <SectionDescription>Learn more about this metric, the methodology we apply and what it tells you.</SectionDescription>
         <QuestionAnswer
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
@@ -115,6 +121,7 @@ export default async function Layout({
           startOpen
         />
       </PageContainer>
+      
     </PageRoot>
   );
 }

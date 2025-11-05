@@ -29,6 +29,11 @@ export interface Author {
   
   export type ChartOptions = Partial<Options>;
   
+export interface JsonLdThing {
+  ['@context']: 'https://schema.org' | string; // minimal, flexible
+  [k: string]: any;
+}
+
   export interface QuickBiteData {
     title: string;
     subtitle: string;
@@ -43,6 +48,8 @@ export interface Author {
     topics?: Topic[];
     KpiCards?: KpiCard[];
     showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
+    jsonLdFaq?: JsonLdThing;
+    jsonLdDatasets?: JsonLdThing[];
   }
 
   export interface KpiCard {

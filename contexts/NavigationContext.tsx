@@ -1,8 +1,6 @@
 "use client";
-
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-
 interface NavigationContextType {
   previousPath: string | null;
   navigationHistory: string[];
@@ -29,43 +27,111 @@ interface NavigationProviderProps {
   children: ReactNode;
 }
 
+function restoreAfterLayout(savedScroll: number, retries = 5) {
+  if (retries === 0) return;
+  requestAnimationFrame(() => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (maxScroll >= savedScroll || retries === 1) {
+      window.scrollTo(0, savedScroll);
+    } else {
+      restoreAfterLayout(savedScroll, retries - 1);
+    }
+  });
+}
+
 export function NavigationProvider({ children }: NavigationProviderProps) {
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
   const [previousPath, setPreviousPath] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-  const pathname = usePathname();
+  const [pathname, setPathname] = useState<string | null>(null);
+  const [usedBrowserBackButton, setUsedBrowserBackButton] = useState(false);
 
-  // Set mounted state on client side
-  useEffect(() => {
-    setIsMounted(true);
+  const handlePathChange = useCallback((nextPath: string) => {
+    setPathname(nextPath);
+  }, []);
+
+  const handleBrowserBackNavigation = useCallback(() => {
+    setUsedBrowserBackButton(true);
   }, []);
 
   useEffect(() => {
-    // Only track navigation on client side when pathname is available
-    if (!isMounted || !pathname) return;
+    if (!pathname) return;
 
     setNavigationHistory(prev => {
-      // Don't add the same path consecutively
       if (prev[prev.length - 1] === pathname) {
         return prev;
       }
 
-      const newHistory = [...prev, pathname];
-      // Keep only last 10 entries to prevent memory issues
-      if (newHistory.length > 10) {
-        return newHistory.slice(-10);
+      const updatedHistory = [...prev, pathname];
+      if (updatedHistory.length > 10) {
+        return updatedHistory.slice(-10);
       }
-      return newHistory;
+      return updatedHistory;
     });
+  }, [pathname]);
 
-    // Set previous path using functional update to access latest state
-    setNavigationHistory(prev => {
-      if (prev.length > 1) {
-        setPreviousPath(prev[prev.length - 2]);
+  useEffect(() => {
+    if (navigationHistory.length >= 2) {
+      setPreviousPath(navigationHistory[navigationHistory.length - 2]);
+    } else {
+      setPreviousPath(null);
+    }
+  }, [navigationHistory]);
+
+  useEffect(() => {
+    if (!pathname) return;
+
+    // scroll position for routes
+    const handleScroll = () => {
+      const SCROLL_POS_KEY = `scrollPos-${pathname}`;
+      const GO_BACK_SCROLL_POS_PATHNAME_KEY = `goBack-scrollPos-pathname`;
+      const GO_BACK_SCROLL_POS_PATHNAME = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
+      // console.log("[NavigationContext::handleScroll] Handling scroll", `pathname: ${pathname}, GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}, SCROLL_POS_KEY: ${SCROLL_POS_KEY}`);
+      if(GO_BACK_SCROLL_POS_PATHNAME === SCROLL_POS_KEY) {
+        // console.log("[NavigationContext::handleScroll] Go back scroll key is the same as the current scroll key, skipping scroll position save", GO_BACK_SCROLL_POS_PATHNAME, SCROLL_POS_KEY);
+        return;
       }
-      return prev;
-    });
-  }, [pathname, isMounted]); // Depend on both pathname and mounted state
+      sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!pathname) return;
+
+    // restore scroll position for routes
+    const restoreScroll = () => {
+      // console.log("[NavigationContext::restoreScroll] Restoring scroll position for route", `pathname: ${pathname}`);
+      const GO_BACK_SCROLL_POS_PATHNAME_KEY = `goBack-scrollPos-pathname`;
+      const GO_BACK_SCROLL_POS_PATHNAME = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
+
+      if(GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) {
+        // console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `GO_BACK_SCROLL_POS_PATHNAME: ${GO_BACK_SCROLL_POS_PATHNAME}`);
+        const savedScroll = sessionStorage.getItem(GO_BACK_SCROLL_POS_PATHNAME);
+        if (!savedScroll) return;
+        // console.log("[NavigationContext::restoreScroll] (GO_BACK_SCROLL_POS_PATHNAME === `scrollPos-${pathname}`) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
+        restoreAfterLayout(parseInt(savedScroll));
+
+        // remove the goBack-scrollPos-key session storage key
+        sessionStorage.removeItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
+        return;
+      }
+
+      // check if the user used the browser back button
+      if(usedBrowserBackButton) {
+        const savedScroll = sessionStorage.getItem(`scrollPos-${pathname}`);
+        if (!savedScroll) return;
+        // console.log("[NavigationContext::restoreScroll] (USED_BROWSER_BACK_BUTTON) Restoring scroll position for route", `savedScroll: ${savedScroll}`);
+        restoreAfterLayout(parseInt(savedScroll));
+        sessionStorage.removeItem(GO_BACK_SCROLL_POS_PATHNAME_KEY);
+        setUsedBrowserBackButton(false);
+        return;
+      }
+
+      // console.log("[NavigationContext::restoreScroll] No scroll position for route to restore");
+    };
+    restoreScroll();
+  }, [pathname, usedBrowserBackButton]);
 
   const getPreviousPath = () => {
     if (navigationHistory.length >= 2) {
@@ -75,6 +141,15 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   };
 
   const canGoBack = navigationHistory.length > 1;
+  const [managerReady, setManagerReady] = useState(false);
+
+  useEffect(() => {
+    setManagerReady(true);
+  }, []);
+
+  if(!managerReady) {
+    return children;
+  }
 
   return (
     <NavigationContext.Provider 
@@ -85,7 +160,41 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
         getPreviousPath,
       }}
     >
+      {managerReady && (
+        <NavigationStateManager 
+          onPathChange={handlePathChange}
+          onBrowserBackNavigation={handleBrowserBackNavigation}
+        />
+      )}
       {children}
     </NavigationContext.Provider>
   );
+}
+
+interface NavigationStateManagerProps {
+  onPathChange: (pathname: string) => void;
+  onBrowserBackNavigation: () => void;
+}
+
+function NavigationStateManager({ onPathChange, onBrowserBackNavigation }: NavigationStateManagerProps) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname) {
+      onPathChange(pathname);
+    }
+  }, [pathname, onPathChange]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      onBrowserBackNavigation();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [onBrowserBackNavigation]);
+
+  return null;
 }

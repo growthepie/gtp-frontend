@@ -93,6 +93,43 @@ export interface GenerateSeoOptions {
   language?: string; // default: "en"
 }
 
+// helper: normalize to ISO-8601 WITH timezone
+const toIsoWithTZ = (value?: string | Date): string | undefined => {
+  if (!value) return undefined;
+
+  // If it's already a Date
+  if (value instanceof Date) return value.toISOString();
+
+  const s = String(value).trim();
+  if (!s) return undefined;
+
+  // Already has time + explicit TZ? keep it
+  if (
+    /T/.test(s) &&
+    (/[zZ]$/.test(s) || /[+\-]\d{2}:\d{2}$/.test(s))
+  ) {
+    return s;
+  }
+
+  // Date only (YYYY-MM-DD) → midnight UTC
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return `${s}T00:00:00Z`;
+  }
+
+  // Datetime without TZ (YYYY-MM-DDTHH:MM[:SS]) → append Z
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(s)) {
+    return `${s}Z`;
+  }
+
+  // Fallback: let Date parse it and serialize with TZ
+  const d = new Date(s);
+  if (!isNaN(d.valueOf())) return d.toISOString();
+
+  // Couldn’t parse
+  return undefined;
+};
+
+
 const pickSummary = (data: QuickBiteData) =>
   (data as any).summary ||
   data.subtitle ||
@@ -170,6 +207,12 @@ export function generateJsonLdArticle(
   const summary = pickSummary(data);
   const image = pickImage(data);
 
+  // 🆕 normalize dates
+  const datePublishedIso = toIsoWithTZ((data as any).date || (data as any).publishedAt);
+  const dateModifiedIso = toIsoWithTZ(
+    opts.dateModified ?? (data as any).updatedAt ?? (data as any).date
+  );
+
   return {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -177,8 +220,9 @@ export function generateJsonLdArticle(
     alternativeHeadline: data.subtitle,
     description: summary,
     inLanguage: opts.language ?? "en",
-    datePublished: data.date,
-    dateModified: opts.dateModified ?? data.date,
+    // only include if valid ISO with TZ
+    ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
+    ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
     author: toAuthors(data),
     publisher: {
       "@type": "Organization",

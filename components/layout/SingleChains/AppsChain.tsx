@@ -40,12 +40,13 @@ interface AppsChainProps {
 }
 
 export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: AppsChainProps) {
-  const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, setSelectedChains, medianMetric, medianMetricKey } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
 
   const [topGainersRef, { height: topGainersHeight }] = useElementSizeObserver<HTMLDivElement>();
+
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -57,6 +58,12 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
       application.origin_keys.includes(chainKey)
     );
   }, [applicationDataAggregatedAndFiltered, chainKey]);
+
+
+  useEffect(() => {
+    if (!chainKey) return;
+    setSelectedChains([chainKey]);
+  }, [chainKey, setSelectedChains]);
 
   const { topGainers, topLosers } = useMemo(() => {
     const medianMetricValues = chainFilteredApplications.map((application) => application[medianMetricKey])

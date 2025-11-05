@@ -3,9 +3,18 @@ import { notFound } from 'next/navigation';
 import ClientQuickBitePage from './ClientQuickBitePage';
 import { getQuickBiteBySlug } from '@/lib/quick-bites/quickBites';
 import type { Metadata } from 'next';
-import { generateSeo } from '@/lib/quick-bites/seo_helper';
+import {
+  generateJsonLdArticle,
+  generateJsonLdBreadcrumbs,
+  generateSeo,
+} from '@/lib/quick-bites/seo_helper';
 
 type Props = { params: { slug: string } };
+
+type QbModule = {
+  jsonLdFaq?: unknown;
+  jsonLdDatasets?: unknown[];
+};
 
 // ----- SEO: generate <head> metadata -----
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,6 +46,32 @@ export default async function Page({ params }: Props) {
   const qb = getQuickBiteBySlug(params.slug);
   if (!qb) return notFound();
 
-  // JSON-LD is injected in app/(layout)/quick-bites/[slug]/head.tsx
-  return <ClientQuickBitePage params={params} />;
+  const serializeJsonLd = (data: unknown) =>
+    JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
+
+  const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
+    dateModified: qb.date,
+    language: 'en',
+  });
+  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
+
+  const graphs = [
+    jsonLdArticle,
+    jsonLdBreadcrumbs,
+    ...(qb.jsonLdFaq ? [qb.jsonLdFaq] : []),
+    ...(qb.jsonLdDatasets ?? []),
+  ];
+
+  return (
+    <>
+      {graphs.map((obj, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
+        />
+      ))}
+      <ClientQuickBitePage params={params} />
+    </>
+  );
 }

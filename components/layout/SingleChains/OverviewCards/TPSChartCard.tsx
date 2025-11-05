@@ -9,22 +9,25 @@ import moment from "moment";
 
 
  export interface ChainTPSHistoryItem {
-    "24h_high": number;
-    "24h_high_timestamp": string;
-    ath: number;
-    ath_timestamp: string;
-    chain_name: string; 
-    display_name: string;
-    timestamp: string;
-    tps: number; 
-    tx_cost_avg: number;
-    tx_cost_avg_usd: number;
-    tx_cost_erc20_transfer: number;
-    tx_cost_erc20_transfer_usd: number;
-    tx_cost_median: number;
-    tx_cost_median_usd: number;
-    tx_cost_swap: number;
-    tx_cost_swap_usd: number;
+  chain_name:                 string;
+  display_name:               string;
+  block_time:                 number;
+  tps:                        number;
+  timestamp:                  number;
+  tx_cost_erc20_transfer:     number;
+  tx_cost_erc20_transfer_usd: number;
+  tx_cost_swap:               number;
+  tx_cost_swap_usd:           number;
+  tx_cost_avg:                number;
+  tx_cost_avg_usd:            number;
+  tx_cost_median:             number;
+  tx_cost_median_usd:         number;
+  last_updated:               Date;
+  ath:                        number;
+  ath_timestamp:              Date;
+  "24h_high":                 number;
+  "24h_high_timestamp":       Date;
+  is_active:                  boolean;
 } 
 
 interface HistoryArrayItem {
@@ -42,20 +45,23 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
 
 
   return (
-    <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[146px]">
-      <div className="flex gap-x-[10px] h-[28px] items-center ">
-        <GTPIcon icon="gtp-metrics-transactionspersecond" size="sm" containerClassName="!size-[28px] flex items-center justify-center" />
+    <div className="bg-color-bg-default xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[146px]">
+      <div className="flex gap-x-[10px] h-[28px] items-center relative ">
+        <GTPIcon icon="gtp-metrics-transactionspersecond" size="sm" containerClassName="!size-[28px] relative flex items-center justify-center" />
         <div className="heading-large-xs ">Transactions Per Second</div>
       </div>
       <div className={`relative transition-height duration-500 w-full h-[54px] overflow-visible`}>
-          <TPSChart 
-            key={`tps-chart-${chainKey}-${chartData.length}`}
-            data={chartData} 
-            overrideColor={master.chains[chainKey].colors.dark} 
-          />
+          <div className="w-full h-full xs:ml-0 -ml-[5px]">
+            <TPSChart 
+              key={`tps-chart-${chainKey}-${chartData.length}`}
+              data={chartData} 
+              overrideColor={master.chains[chainKey].colors.dark} 
+              chainName={chainData.display_name}
+            />
+          </div>
         </div>
 
-        <div className="flex justify-between pl-[45px] items-center">
+        <div className="flex justify-between xs:pl-[45px] pl-[5px] items-center">
           <div className="flex flex-col gap-y-[10px] md:flex-row md:w-full">
             <div className="flex flex-col gap-y-[2px] group ">
                   <div className="heading-small-xs numbers-sm">{chainData.block_time ? chainData.block_time > 1 ? chainData.block_time + " s" : chainData.block_time * 1000 + " ms" : "N/A"}</div>
@@ -80,7 +86,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   </div>
             </div>
             <div className="flex items-center gap-x-[8px] heading-small-xs  group">
-                  <div className="flex flex-col gap-y-[2px] items-end md:items-start">
+                  <div className="flex flex-col gap-y-[2px] items-end">
                     <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)}</div>
                     <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">Current TPS</div>
                   </div>

@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
-import { Graph } from "schema-dts";
 import Share from "@/components/Share";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
@@ -15,58 +14,10 @@ import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.growthepie.com/#organization",
-      name: "growthepie",
-      url: "https://www.growthepie.com",
-      logo: "https://www.growthepie.com/logo_full.png",
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.growthepie.com/#website",
-      url: "https://www.growthepie.com",
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-      publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.growthepie.com/logo_full.png",
-        },
-      },
-    },
-  ],
-};
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.com",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.com/logo_full.png",
-//     },
-//   },
-// };
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",
@@ -223,7 +174,7 @@ export default function RootLayout({
             </div>
           </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex min-h-screen w-full max-w-[1700px] md:pl-[30px]">
+            <div className="flex min-h-screen w-full max-w-[1920px] md:pl-[30px]">
               <ProjectsMetadataProvider>
                 <GlobalSearchBar />
               </ProjectsMetadataProvider>
@@ -241,7 +192,7 @@ export default function RootLayout({
                   <Footer />
                 </div>
               </div>
-              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1700px] justify-end">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1920px] justify-end">
                 <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
                     {/* <Details /> */}
                     <Share />
