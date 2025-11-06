@@ -51,6 +51,7 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
+  columnOrder?: string[];
   columnDefinitions: {
     [key: string]: {
       sortByValue: boolean;

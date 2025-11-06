@@ -46,6 +46,8 @@ const gtpMain = {
     additionalSitemaps: [
       "https://www.growthepie.com/server-sitemap.xml",
       "https://www.growthepie.com/server-applications-sitemap.xml",
+      "https://www.growthepie.com/chains-sitemap.xml",
+      "https://www.growthepie.com/fundamentals-sitemap.xml",
     ],
   },
 };
