@@ -34,6 +34,8 @@ export interface JsonLdThing {
   [k: string]: any;
 }
 
+  export type FaqItem = { q: string; a: string };
+
   export interface QuickBiteData {
     title: string;
     subtitle: string;
@@ -50,6 +52,7 @@ export interface JsonLdThing {
     showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
     jsonLdFaq?: JsonLdThing;
     jsonLdDatasets?: JsonLdThing[];
+    faq?: FaqItem[];
   }
 
   export interface KpiCard {

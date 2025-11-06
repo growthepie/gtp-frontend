@@ -3,11 +3,39 @@
 // FAQ helper functions and types
 export type FaqItem = { q: string; a: string };
 
-export const renderFaqMarkdown = (items: FaqItem[]) =>
-  [
-    "# FAQ",
-    ...items.flatMap(({ q, a }) => [`### ${q}`, `- ${a}`]),
+type RenderFaqOptions = {
+  title?: string;
+  description?: string;
+  layout?: 'accordion' | 'list';
+  className?: string;
+  showInMenu?: boolean;
+};
+
+export const renderFaqMarkdown = (
+  items: FaqItem[],
+  options: RenderFaqOptions = {}
+) => {
+  const {
+    title = 'FAQ',
+    description,
+    layout,
+    className,
+    showInMenu,
+  } = options;
+
+  return [
+    '```faq',
+    JSON.stringify({
+      title,
+      description,
+      layout,
+      className,
+      showInMenu,
+      items: items.map(({ q, a }) => ({ question: q, answer: a })),
+    }),
+    '```',
   ];
+};
 
 export const generateJsonLdFaq = (items: FaqItem[]) => ({
   "@context": "https://schema.org",

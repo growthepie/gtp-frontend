@@ -356,6 +356,7 @@ const ethereumScaling: QuickBiteData = {
   showInMenu: true,
   jsonLdDatasets: jsonLdDatasets,
   jsonLdFaq: jsonLdFaq,
+  faq: faqItems,
 };
 
 export default ethereumScaling;
