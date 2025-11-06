@@ -455,6 +455,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
   // Add state to track keyboard-triggered expansions
   const [keyboardExpandedStacks, setKeyboardExpandedStacks] = useState<Set<string>>(new Set());
+  
+  // Ref to track if a click is from keyboard navigation
+  const keyboardClickItemKeyRef = useRef<string | null>(null);
 
   // Modify the useEffect to only select first item for keyboard-triggered expansions
   useEffect(() => {
@@ -533,7 +536,13 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         const selectedKey = keyMapping[currentY][currentX];
         const selectedElement = childRefs.current[selectedKey];
         if (selectedElement) {
+          // Mark this click as keyboard-triggered
+          keyboardClickItemKeyRef.current = selectedKey;
           selectedElement.click();
+          // Clear the ref after a short delay to allow the click handler to process it
+          setTimeout(() => {
+            keyboardClickItemKeyRef.current = null;
+          }, 0);
         }
       } else if (event.key === 'Escape') {
         event.preventDefault();
@@ -756,6 +765,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                         showMore={showMore}
                         setShowMore={setShowMore}
                         setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                        keyboardClickItemKeyRef={keyboardClickItemKeyRef}
                       />
                     )
                   })}
@@ -801,6 +811,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                                 showMore={showMore}
                                 setShowMore={setShowMore}
                                 setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                                keyboardClickItemKeyRef={keyboardClickItemKeyRef}
                               />
                             );
                           })}
