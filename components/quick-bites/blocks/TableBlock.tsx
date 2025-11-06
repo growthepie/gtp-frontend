@@ -46,7 +46,39 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     return columns || block.columnDefinitions || {};
   }, [block.readFromJSON, block.columnDefinitions, jsonData]);
 
-  const columnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
+  const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
+
+  const columnKeyOrder = useMemo(() => {
+    if (!Array.isArray(block.columnOrder) || block.columnOrder.length === 0) {
+      return defaultColumnKeyOrder;
+    }
+
+    const seen = new Set<string>();
+    const orderedKeys: string[] = [];
+
+    block.columnOrder.forEach((key) => {
+      if (dynamicColumnKeys[key] && !seen.has(key)) {
+        orderedKeys.push(key);
+        seen.add(key);
+      }
+    });
+
+    defaultColumnKeyOrder.forEach((key) => {
+      if (!seen.has(key)) {
+        orderedKeys.push(key);
+        seen.add(key);
+      }
+    });
+
+    return orderedKeys;
+  }, [block.columnOrder, defaultColumnKeyOrder, dynamicColumnKeys]);
+
+  const columnIndexMap = useMemo(() => {
+    return defaultColumnKeyOrder.reduce((acc, key, index) => {
+      acc[key] = index;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [defaultColumnKeyOrder]);
 
   const columnDefinitions = useMemo(() => {
     if (block.columnDefinitions) {
@@ -66,9 +98,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     }
     const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
-    return rowsArray.map(row => row.map((cellValue, index) => {
+    return rowsArray.map(row => columnKeyOrder.map((columnKey) => {
+      const sourceIndex = columnIndexMap[columnKey];
+      const cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
       const cellObject: { value: any; link?: string; icon?: string; color?: string; } = { value: cellValue };
-      const columnKey = columnKeyOrder[index];
       const columnDef = columnDefinitions[columnKey];
       
       // Generate link if add_url is defined in column definition
@@ -78,7 +111,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       
       return cellObject;
     }));
-  }, [block.readFromJSON, block.rowData, jsonData, columnKeyOrder]);
+  }, [block.readFromJSON, block.rowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
 
   const sortedRows = useMemo(() => {
     const dataToSort = [...processedRows];
@@ -224,7 +257,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                           }}
                         >
                           <div
-                            className="truncate transition-all duration-300"
+                            className="truncate transition-all duration-300 min-w-0"
                             style={{ direction: 'ltr' }}
                             onClick={() => {
                               navigator.clipboard.writeText(cellData?.value)
@@ -232,7 +265,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                           >
                             {cellData?.value.slice(0, cellData?.value.length - 6)}
                           </div>
-                          <div className="transition-all duration-300">
+                          <div className="transition-all duration-300 flex-shrink-0">
                             {cellData?.value.slice(-6)}
                           </div>
 

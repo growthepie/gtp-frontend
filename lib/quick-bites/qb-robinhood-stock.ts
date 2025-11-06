@@ -80,7 +80,7 @@ const robinhoodStock: QuickBiteData = {
         ticker: {
           label: "Ticker",
           type: "string",
-          minWidth: 80,
+          minWidth: 50,
           isNumeric: false,
           sortByValue: true,
           copyable: false,
@@ -89,7 +89,7 @@ const robinhoodStock: QuickBiteData = {
         name: {
           label: "Name",
           type: "string",
-          minWidth: 120,
+          minWidth: 150,
           isNumeric: false,
           sortByValue: true
         },
@@ -101,6 +101,14 @@ const robinhoodStock: QuickBiteData = {
           sortByValue: false,
           copyable: true,
           add_url: "https://arbiscan.io/address/${cellValue}"
+        },
+        tokenization_date: {
+          label: "Tokenized Since",
+          type: "string",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true,
+          copyable: false
         },
         usd_stock_price: {
           label: "Stock Price",
@@ -118,7 +126,7 @@ const robinhoodStock: QuickBiteData = {
         stocks_tokenized: {
           label: "Shares Tokenized",
           type: "number",
-          minWidth: 100,
+          minWidth: 80,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -130,7 +138,7 @@ const robinhoodStock: QuickBiteData = {
         stocks_tokenized_7d_change_pct: {
           label: "Shares 7d Change",
           type: "number",
-          minWidth: 100,
+          minWidth: 80,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -154,11 +162,7 @@ const robinhoodStock: QuickBiteData = {
           }
         },
       },
-      columnOrder: ["ticker", "name", "contract_address", "usd_stock_price", "stocks_tokenized", "usd_outstanding"], // Add this
-      // filterOnStateKey: {
-      //   stateKey: "selectedTicker",
-      //   columnKey: "ticker",
-      // }
+      columnOrder: ["ticker", "name", "contract_address", "tokenization_date", "usd_stock_price", "stocks_tokenized", "stocks_tokenized_7d_change_pct", "usd_outstanding"],
     }),
     "```",
 
