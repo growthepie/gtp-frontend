@@ -452,7 +452,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
             <div className='heading-small-xxxs text-color-ui-hover'>
               <div className='group-hover:hidden'>All-Time High</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{globalMetrics.total_tps_24h_high_timestamp && globalMetrics.total_tps_ath_timestamp && globalMetrics.total_tps_24h_high_timestamp > globalMetrics.total_tps_ath_timestamp ? moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC") : moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
             <div className='numbers-sm'>{globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
