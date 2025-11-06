@@ -196,7 +196,7 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/applications/[slug]",
-    "Title Template": "{{name}} Analytics | Ethereum App Metrics | growthepie",
+    "Title Template": "{{name}} | Ethereum Application Analytics | growthepie",
     "Description Template": "Explore {{name}}’s onchain activity across Ethereum L1 and L2s — including transactions, users, and fees paid.",
     "Status": "Published"
   },
@@ -210,6 +210,12 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
     "Path": "/ethereum-ecosystem/metrics",
     "Title Template": "Ethereum Ecosystem Metrics | growthepie",
     "Description Template": "View real-time Ethereum ecosystem metrics — TPS, uptime, stablecoin supply, and more - across the whole ecosystem.",
+    "Status": "Published"
+  },
+  {
+    "Path": "/quick-bites",
+    "Title Template": "Quick Bites | Ethereum Data Stories | growthepie",
+    "Description Template": "Data-driven articles, updating daily with insights and stories from the Ethereum ecosystem.",
     "Status": "Published"
   }
 ];

@@ -8,8 +8,8 @@ export async function generateMetadata(): Promise<Metadata> {
     {}
   );
   return {
-    title: metadata.title || "Quick Bites - growthepie",
-    description: metadata.description || "In-depth looks at interesting blockchain development trends and technologies across the Ethereum ecosystem.",
+    title: metadata.title || "Quick Bites | Ethereum Data Stories | growthepie",
+    description: metadata.description || "Data-driven articles, updating daily with insights and stories from the Ethereum ecosystem.",
     openGraph: {
       images: [
         {
