@@ -1,8 +1,9 @@
 import { isValidElement, type ReactElement, type ReactNode } from "react";
-import { metricItems, type MetricItem } from "@/lib/metrics";
+import { metricCategories, metricItems, type MetricItem } from "@/lib/metrics";
 import { MetricsURLs } from "@/lib/urls";
 
 const CANONICAL_BASE = "https://www.growthepie.com/fundamentals";
+const DEFAULT_LANGUAGE = "en";
 
 export const findMetricConfig = (metric: string): MetricItem | undefined =>
   metricItems.find((item) => item.urlKey === metric);
@@ -49,6 +50,88 @@ const extractText = (element: ReactElement): string => {
     }
     return "";
   }).join(" ");
+};
+
+const toIsoString = (value?: string): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return undefined;
+  return date.toISOString();
+};
+
+export const buildKeywords = (metricConfig: MetricItem): string[] => {
+  const set = new Set<string>();
+
+  const { page, label, category } = metricConfig;
+  if (label) set.add(label);
+  if (page?.title) set.add(page.title);
+  if (category && metricCategories?.[category]?.label) {
+    set.add(metricCategories[category].label);
+  } else if (category) {
+    set.add(category.replace(/-/g, " "));
+  }
+
+  (page?.tags ?? []).forEach((tag) => {
+    const text = nodeToString(tag);
+    if (text) set.add(text);
+  });
+
+  return Array.from(set).map((keyword) => keyword.trim()).filter(Boolean);
+};
+
+export const buildAboutThings = (metricConfig: MetricItem) =>
+  buildKeywords(metricConfig).map((keyword) => ({
+    "@type": "Thing" as const,
+    name: keyword,
+  }));
+
+export const buildDefinedTermSet = (
+  metric: string,
+  pageData?: MetricItem["page"]
+) => {
+  if (!pageData?.title) return null;
+
+  const terms = [
+    pageData.description
+      ? {
+          "@type": "DefinedTerm" as const,
+          name: pageData.title,
+          description: nodeToString(pageData.description),
+        }
+      : null,
+    pageData.calculation
+      ? {
+          "@type": "DefinedTerm" as const,
+          name: `${pageData.title} calculation`,
+          description: nodeToString(pageData.calculation),
+        }
+      : null,
+    pageData.why
+      ? {
+          "@type": "DefinedTerm" as const,
+          name: `${pageData.title} significance`,
+          description: nodeToString(pageData.why),
+        }
+      : null,
+    pageData.interpretation
+      ? {
+          "@type": "DefinedTerm" as const,
+          name: `${pageData.title} interpretation`,
+          description: nodeToString(pageData.interpretation),
+        }
+      : null,
+  ].filter(Boolean);
+
+  if (terms.length === 0) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: `${pageData.title} definitions`,
+    inLanguage: DEFAULT_LANGUAGE,
+    url: canonicalUrlForMetric(metric),
+    hasDefinedTerm: terms,
+  };
 };
 
 type FaqEntry = { question: string; answer: string };
@@ -99,7 +182,12 @@ export const buildFaqJsonLd = (
 export const buildDatasetJsonLd = (
   metric: string,
   pageData?: MetricItem["page"],
-  options?: { description?: string }
+  options?: {
+    description?: string;
+    keywords?: string[];
+    about?: Array<{ "@type": "Thing"; name: string }>;
+    dateModified?: string;
+  }
 ) => {
   const dataUrl = MetricsURLs[metric];
   if (!dataUrl) return null;
@@ -109,6 +197,9 @@ export const buildDatasetJsonLd = (
     options?.description ||
     nodeToString(pageData?.description) ||
     `${title} across the Ethereum ecosystem.`;
+  const keywords = options?.keywords?.filter(Boolean);
+  const about = options?.about?.filter(Boolean);
+  const dateModified = toIsoString(options?.dateModified);
 
   return {
     "@context": "https://schema.org",
@@ -130,6 +221,10 @@ export const buildDatasetJsonLd = (
         description: `${title} dataset as JSON download.`,
       },
     ],
+    ...(keywords && keywords.length > 0 ? { keywords } : {}),
+    ...(about && about.length > 0 ? { about } : {}),
+    ...(dateModified ? { dateModified } : {}),
+    inLanguage: DEFAULT_LANGUAGE,
     variableMeasured: [
       {
         "@type": "PropertyValue",

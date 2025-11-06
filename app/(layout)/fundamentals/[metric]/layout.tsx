@@ -1,7 +1,10 @@
 import { Metadata } from "next";
 import {
+  buildAboutThings,
   buildDatasetJsonLd,
+  buildDefinedTermSet,
   buildFaqJsonLd,
+  buildKeywords,
   canonicalUrlForMetric,
   findMetricConfig,
   nodeToString,
@@ -16,11 +19,25 @@ import { Description, textToLinkedText } from "@/components/layout/TextComponent
 import { getPageMetadata } from "@/lib/metadata";
 import { FundamentalsBackButton } from "./FundamentalsBackButton";
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { cache } from "react";
 
 type Props = {
   params: { metric: string };
 };
 
+const fetchMasterData = cache(async (): Promise<MasterResponse> => {
+  const response = await fetch(MasterURL, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load master data for fundamentals: ${response.status}`);
+  }
+
+  return response.json();
+});
 
 export async function generateMetadata({ params: { metric } }: Props): Promise<Metadata> {
   if (!metric) {
@@ -40,15 +57,22 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
     return notFound();
   }
 
-  const metadata = await getPageMetadata(`/fundamentals/${metric}`, {});
+  const [metadata, master] = await Promise.all([
+    getPageMetadata(`/fundamentals/${metric}`, {}),
+    fetchMasterData(),
+  ]);
   const pageTitle = metricConfig.page?.title || metricConfig.label || metadata.title;
-  const canonical = canonicalUrlForMetric(metric);
+  const canonical = metadata.canonical ?? canonicalUrlForMetric(metric);
   const defaultDescription =
     "Explore key fundamentals for Ethereum L1 and L2 networks, backed by growthepie datasets.";
   const description =
     metadata.description ||
     nodeToString(metricConfig.page?.description) ||
     defaultDescription;
+  const keywords = buildKeywords(metricConfig);
+  const lastUpdated = master.last_updated_utc
+    ? new Date(master.last_updated_utc).toISOString()
+    : new Date().toISOString();
   const currentDate = new Date();
   // Set the time to 2 am
   currentDate.setHours(2, 0, 0, 0);
@@ -60,6 +84,7 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   return {
     title,
     description,
+    keywords,
     alternates: {
       canonical,
     },
@@ -83,6 +108,9 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
       title,
       description,
       images: [ogImageUrl],
+    },
+    other: {
+      "last-modified": lastUpdated,
     },
   };
 }
@@ -112,10 +140,23 @@ export default async function Layout({
     icon: "",
   };
   const pageTitle = pageData.title || metricConfig.label || "No Title";
+  const metadata = await getPageMetadata(`/fundamentals/${params.metric}`, {});
+  const master = await fetchMasterData();
+  const keywords = buildKeywords(metricConfig);
+  const aboutThings = buildAboutThings(metricConfig);
+  const lastUpdated = master.last_updated_utc
+    ? new Date(master.last_updated_utc).toISOString()
+    : new Date().toISOString();
 
   const faqJsonLd = buildFaqJsonLd(params.metric, metricConfig.page);
-  const datasetJsonLd = buildDatasetJsonLd(params.metric, metricConfig.page);
-  const jsonLdGraphs = [faqJsonLd, datasetJsonLd].filter(Boolean) as Record<
+  const datasetJsonLd = buildDatasetJsonLd(params.metric, metricConfig.page, {
+    description: metadata.description,
+    keywords,
+    about: aboutThings,
+    dateModified: lastUpdated,
+  });
+  const definedTermSetJsonLd = buildDefinedTermSet(params.metric, metricConfig.page);
+  const jsonLdGraphs = [datasetJsonLd, faqJsonLd, definedTermSetJsonLd].filter(Boolean) as Record<
     string,
     unknown
   >[];
