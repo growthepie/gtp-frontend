@@ -1,6 +1,6 @@
 import { types } from "util";
 
-export type EthAggResponse = {
+export type EthereumEcosystemOverviewResponse = {
     data: {
         tps: Tps;
         count_layer2s: CountLayer2s;

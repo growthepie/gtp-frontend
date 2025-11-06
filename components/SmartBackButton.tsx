@@ -50,10 +50,20 @@ export function SmartBackButton({
     e.preventDefault();
 
     if (canGoBack) {
+      // set goBack-scrollPos-key session storage key
+      console.log("[SmartBackButton / NavigationContext] Setting goBack-scrollPos-pathname session storage key", `scrollPos-${pathname}`);
+      const previousPath = getPreviousPath();
+      sessionStorage.setItem(`goBack-scrollPos-pathname`, `scrollPos-${previousPath}`);
       router.back();
     } else {
+      
       // Use intelligent fallback that navigates to parent route
       const intelligentFallback = getIntelligentFallback(pathname, fallbackHref);
+
+      // set goBack-${intelligentFallback} session storage key
+      console.log("[SmartBackButton / NavigationContext] Setting goBack-scrollPos-pathname session storage key", `scrollPos-${intelligentFallback}`);
+      sessionStorage.setItem(`goBack-scrollPos-pathname`, `scrollPos-${intelligentFallback}`);
+
       router.push(intelligentFallback);
     }
   };

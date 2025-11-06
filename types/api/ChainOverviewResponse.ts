@@ -62,6 +62,7 @@ export interface Categories {
 
 
 export interface StreaksData {
+  last_updated_utc: string;
   data: {
     [key: string]: {
       txcount: {

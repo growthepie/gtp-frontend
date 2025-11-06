@@ -66,6 +66,7 @@ type MetricChartControlsContextType = {
   chartComponent: RefObject<Highcharts.Chart> | undefined;
   setChartComponent: (chart: RefObject<Highcharts.Chart>) => void;
   setIntervalShown: (interval: { min: number; max: number; num: number; label: string } | null) => void;
+  showRollingAverage: boolean;
 };
 
 const MetricChartControlsContext = createContext<MetricChartControlsContextType>({
@@ -104,6 +105,7 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
   setChartComponent: () => { },
   intervalShown: null,
   setIntervalShown: () => { },
+  showRollingAverage: true,
 });
 
 type MetricChartControlsProviderProps = {
@@ -113,6 +115,9 @@ type MetricChartControlsProviderProps = {
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
   selectedTimeInterval?: string;
+  selectedTimespan?: string;
+  showRollingAverage?: boolean;
+  defaultScale?: string;
   setSelectedTimeInterval?: (timeInterval: string) => void;
 };
 
@@ -123,7 +128,10 @@ export const MetricChartControlsProvider = ({
   embed_start_timestamp = undefined,
   embed_end_timestamp = undefined,
   selectedTimeInterval: providedSelectedTimeInterval,
+  selectedTimespan: providedSelectedTimespan,
+  showRollingAverage = true,
   setSelectedTimeInterval: providedSetSelectedTimeInterval,
+  defaultScale: providedDefaultScale,
 }: MetricChartControlsProviderProps) => {
   const UrlsMap = {
     fundamentals: MetricsURLs,
@@ -189,6 +197,19 @@ export const MetricChartControlsProvider = ({
     "absolute",
   );
 
+  useEffect(() => {
+    if (providedSelectedTimespan) {
+      setSelectedTimespan(providedSelectedTimespan);
+    }
+    if (providedSelectedTimeInterval) {
+      setInternalSelectedTimeInterval(providedSelectedTimeInterval);
+    }
+    if (providedDefaultScale) {
+      console.log("setting selected scale to", providedDefaultScale);
+      setSelectedScale(providedDefaultScale);
+    }
+  }, []);
+
   const [selectedYAxisScale, setSelectedYAxisScale] = useState(log_default ? "logarithmic" : "linear");
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
@@ -236,7 +257,7 @@ export const MetricChartControlsProvider = ({
     if (!data) return "daily";
 
     if (
-      data.avg === true &&
+      data.avg === true && showRollingAverage &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
@@ -247,7 +268,7 @@ export const MetricChartControlsProvider = ({
     }
 
     return "daily";
-  }, [data, selectedTimeInterval, selectedTimespan]);
+  }, [data, selectedTimeInterval, selectedTimespan, showRollingAverage]);
 
   const [chartComponent, setChartComponent] = useState<RefObject<Highcharts.Chart>>();
 
@@ -311,6 +332,7 @@ export const MetricChartControlsProvider = ({
         setChartComponent: setChartComponent,
         intervalShown: intervalShown,
         setIntervalShown: setIntervalShown,
+        showRollingAverage: showRollingAverage,
       }}
     >
       {children}

@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EconomicsURL, EthAggURL } from "@/lib/urls";
 import {
   EconomicsResponse,
@@ -22,11 +22,14 @@ import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
-import { useParams } from "next/navigation";
-import { EthAggResponse } from "@/types/api/EthAggResponse";
+import { useParams, useRouter } from "next/navigation";
+import { EthereumEcosystemOverviewResponse } from "@/types/api/EthereumEcosystemOverviewResponse";
 import { HistoryData } from "@/components/layout/EthAgg/types";
 import { useBirthdayAnimation } from "@/components/animations/useBirthdayAnimation";
-import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
+import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
+import { ProjectsMetadataProvider } from "../../applications/_contexts/ProjectsMetadataContext";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+// import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
 
@@ -36,22 +39,39 @@ const TABS = {
   "builders-and-apps": "Builders & Apps",
 }
 
+const useCustomState = (defaultValue: string) => {
+  const [state, setState] = useState<string>(defaultValue);
+  
+  useEffect(() => {
+    const key = Object.keys(TABS).find((key) => TABS[key] === state);
+    if (key) {
+      window.history.pushState({}, '', `/ethereum-ecosystem/${key}`);
+    }
+  }, [state]);
+  return [state, setState] as [string, (value: string) => void];
+}
+
 export default function EthAgg() {
   const params = useParams();
+  const tab = params.tab as string;
+  const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useCustomState(TABS[tab as keyof typeof TABS]);
 
   // for loading the ecosystem data
-  const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthAggResponse>(EthAggURL);
+  const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
   const { data: historyData, isLoading: isHistoryLoading, isValidating: isHistoryValidating } = useSWR<HistoryData>("https://sse.growthepie.com/api/history")
 
-  const tab = params.tab as string;
-
   const { setFocusSwitchEnabled } = useUIContext();
-  const { showBirthdayAnimation } = useBirthdayAnimation();
+  // const { showBirthdayAnimation } = useBirthdayAnimation();
 
-  const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
-  const [isMonthly, setIsMonthly] = useState(false);
-  const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+  // // const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);
+  // const selectedBreakdownGroup = useMemo(() => {
+  //   return TABS[tab];
+  // }, [tab]);
+
+
+  // const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  // const [isMonthly, setIsMonthly] = useState(false);
+  // const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
 
   useEffect(() => {
     // Disable scroll restoration
@@ -85,7 +105,7 @@ export default function EthAgg() {
   return (
     <>
       {/* Birthday Animation Overlay */}
-      {showBirthdayAnimation && (
+      {/* {showBirthdayAnimation && (
         <ConfettiAnimation 
           isActive={true}
           duration={10000}
@@ -93,8 +113,8 @@ export default function EthAgg() {
           fullScreen={true}
           showFullAnimation={true}
         />
-      )}
-      
+      )} */}
+
       <ShowLoading dataLoading={[isEcosystemLoading, isHistoryLoading]} dataValidating={[isEcosystemValidating, isHistoryValidating]} />
       <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
       <div className="flex flex-col pt-[15px]">
@@ -110,29 +130,37 @@ export default function EthAgg() {
             </Container>
           </div>
         </div>
-
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
-        <Container className="pt-[30px]">
-          <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
-        </Container>
-
+        <BuildersAndApps selectedBreakdownGroup={selectedBreakdownGroup} />
+        <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
       </div>
-      {/* <ShowLoading
-        dataLoading={[econLoading, masterLoading]}
-        dataValidating={[econValidating, masterValidating]}
-      /> */}
-      {/*Data Availability Fee Markets */}
-      {/* <div className={`flex flex-col transition-[gap] duration-300 ${selectedTimespan === "1d" ? "gap-y-[15px]" : "gap-y-[30px]"}`}>
-        <div className={`flex flex-col gap-y-[15px]`}>
-          {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
-        </div>
-        {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
-      </div> */}
-
-
     </>
   );
+}
+
+const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
+  const showContainer = selectedBreakdownGroup === "Builders & Apps";
+  const [isMounted, setIsMounted] = useState(false);
+  const [containerRef, { width: containerWidth }] = useElementSizeObserver<HTMLDivElement>();
+
+  useEffect(() => {
+    if (!showContainer) {
+      setIsMounted(false);
+      return;
+    }
+    setIsMounted(true);
+  }, [showContainer]);
+
+  return (
+    <Container className={`${showContainer ? 'max-h-[calc(100vh-300px)]' : 'max-h-0'} overflow-hidden`}>
+      <div ref={containerRef} className="py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
+        <ProjectsMetadataProvider>
+          {isMounted && containerWidth > 0 && <ApplicationsGrid chainKey="ethereum-ecosystem" width={containerWidth} />}
+        </ProjectsMetadataProvider>
+      </div>
+    </Container>
+  )
 }
 
 
@@ -142,7 +170,7 @@ const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
   if (selectedBreakdownGroup !== "Ethereum Ecosystem") return null;
 
   return (
-    <div className='flex flex-col gap-y-[15px]'>
+    <Container className="!pt-[60px]">
       <div className='flex items-center w-full justify-between'>
         <div className='flex items-center gap-x-[8px]'>
           <GTPIcon icon={"gtp-read"} size='lg' />
@@ -151,6 +179,6 @@ const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
 
       </div>
       <div className='text-md pl-[44px]'>Learn why Ethereum is built the way it is, how it prioritizes security, sovereignty and freedom to use applications for everyone. </div>
-    </div>
+    </Container>
   )
 }

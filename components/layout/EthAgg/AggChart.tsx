@@ -431,7 +431,7 @@ export function AggChart({
 
     return (
       <div
-        className={`absolute pointer-events-none z-[999] bg-color-bg-default rounded-[15px] p-3 ${widthClassNames} ${heightClassNames} text-xs font-raleway shadow-card-dark`}
+        className={`absolute pointer-events-none z-[999] bg-color-bg-default rounded-[15px] p-3 ${widthClassNames} ${heightClassNames} text-xs font-raleway shadow-standard`}
         style={{
           left: tooltipX,
           top: tooltipY,

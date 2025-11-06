@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, Dispatch, SetStateAction, Children, cloneElement, isValidElement } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import { ChainOverview } from "@/lib/chains";
 import { MasterResponse, EthereumEvents } from "@/types/api/MasterResponse";
@@ -18,6 +18,8 @@ export default function EventsCard({ children, totalHeight }: { children: React.
     const [measuredContentHeight, setMeasuredContentHeight] = useState<number>(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const toggleRef = useRef<HTMLDivElement | null>(null);
+    const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
+    const [lockedEvent, setLockedEvent] = useState<string | null>(null);
 
 
 
@@ -45,7 +47,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
             resizeObserver.disconnect();
             window.removeEventListener('resize', updateMeasuredHeight);
         };
-    }, []);
+    }, [expanded, hoveredEvent, lockedEvent]);
 
 
 
@@ -66,16 +68,26 @@ export default function EventsCard({ children, totalHeight }: { children: React.
       >
             {/* <div className="heading-large-md ">Events</div> */}
 
-            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-card-dark" : ""}`}
+            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
                  style={{
-                    height: expanded ? (measuredContentHeight + 50 || totalHeight) : measuredContentHeight < 355 ? measuredContentHeight + 50 : 355
+                    height: expanded ? (measuredContentHeight + 110 || totalHeight) : 245
                  }}
             >
                 <div className="heading-large-md">Events</div>
                 <div ref={contentRef}>
-                    {children}
+                    {Children.map(children, (child) => {
+                        if (isValidElement(child)) {
+                            return cloneElement(child, {
+                                hoveredEvent,
+                                setHoveredEvent,
+                                lockedEvent,
+                                setLockedEvent,
+                            } as any);
+                        }
+                        return child;
+                    })}
                 </div>
-                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-color-bg-default flex items-center justify-center pt-[12px] z-40 cursor-pointer"
+                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-gradient-to-b from-color-bg-default/20 via-color-bg-default/100 to-color-bg-default flex items-center justify-center pt-[12px] z-40 cursor-pointer"
                     onClick={() => {
                      
                         setExpanded(!expanded)
@@ -104,7 +116,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                             >
                                 <div>
                                 <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                    {"Tooltip content"}
+                                    {"This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details."}
                                 </TooltipBody>
                                 </div>
                             </GTPTooltipNew>
@@ -123,20 +135,34 @@ export default function EventsCard({ children, totalHeight }: { children: React.
 
 
 
-export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEvents, setHeight: Dispatch<SetStateAction<number[]>>, eventIndex: number}) => {
+export const EventItem = ({ 
+    event, 
+    setHeight, 
+    eventIndex,
+    hoveredEvent,
+    setHoveredEvent,
+    lockedEvent,
+    setLockedEvent,
+    finalIndex
+}: { 
+    event: EthereumEvents, 
+    setHeight: Dispatch<SetStateAction<number[]>>, 
+    eventIndex: number,
+    hoveredEvent?: string | null,
+    setHoveredEvent?: Dispatch<SetStateAction<string | null>>,
+    lockedEvent?: string | null,
+    setLockedEvent?: Dispatch<SetStateAction<string | null>>
+    finalIndex: number
+}) => {
 
-
-    const [eventHover, setEventHover] = useState<string | null>(null);
-    const [eventExpanded, setEventExpanded] = useState<string | null>(null);
     const contentInnerRef = useRef<HTMLDivElement | null>(null);
     const [measuredInnerHeight, setMeasuredInnerHeight] = useState<number>(0);
     const MAX_EXPANDED_HEIGHT = 150; // px; adjust as needed
 
-
-    //make it so if heightIndex is 0, set eventExpanded to the event.date
+    // Initialize the first 3 events as locked open
     useEffect(() => {
-        if (eventIndex < 3) {
-            setEventExpanded(event.date);
+        if (eventIndex < 1 && setLockedEvent && !lockedEvent) {
+            setLockedEvent(event.date);
         }
     }, []);
 
@@ -159,18 +185,21 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
         };
     }, []);
 
+    // Determine if this event should be shown as expanded
+    const isExpanded = lockedEvent === event.date || hoveredEvent === event.date;
+
     return (
         <div className="flex gap-x-[5px] cursor-pointer" 
-            onMouseEnter={() => setEventHover(event.date)}
-            onMouseLeave={() => setEventHover(null)}
+            onMouseEnter={() => setHoveredEvent?.(event.date)}
+            onMouseLeave={() => setHoveredEvent?.(null)}
             onClick={() => {
-   
-                setEventExpanded(eventExpanded === event.date ? null : event.date);
+                // Toggle locked state: if already locked, unlock it; otherwise lock it
+                setLockedEvent?.(lockedEvent === event.date ? null : event.date);
             }}
         >
             <div className="w-[24px] flex flex-col">
-                <EventIcon event={event} eventHover={eventHover} index={eventIndex} eventExpanded={eventExpanded} />
-                <div className={`flex-1 -mb-[7px] relative ${eventExpanded || eventHover ? "-mt-[0px]" : "-mt-[6px]"} transition-opacity duration-300`}>
+                <EventIcon event={event} eventHover={hoveredEvent ?? null} index={eventIndex} eventExpanded={lockedEvent ?? null} />
+                <div className={`flex-1 -mb-[7px] relative ${isExpanded ? "-mt-[0px]" : "-mt-[6px]"} transition-opacity duration-300 ${eventIndex === finalIndex ? "hidden" : ""}`}>
                     <div className="absolute ml-[calc(50%-1px)] mr-[calc(50%-1px)] left-0 top-0 bottom-0 w-[2px] text-[#5A6462] bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_3px,transparent_3px,transparent_14px)]" />
                 </div>
             </div>
@@ -181,14 +210,14 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
                 </div>
                 <div
                     className={`w-full flex flex-col transition-[height] duration-300 overflow-hidden`}
-                    style={{ height: (eventExpanded === event.date || eventHover === event.date) ? Math.min(measuredInnerHeight, MAX_EXPANDED_HEIGHT) : 0 }}
+                    style={{ height: isExpanded ? Math.min(measuredInnerHeight, MAX_EXPANDED_HEIGHT) : 0 }}
                 >
                     <div
                         ref={contentInnerRef}
                         className={`${measuredInnerHeight > MAX_EXPANDED_HEIGHT ? 'overflow-y-auto pr-[5px]' : 'overflow-visible flex flex-col gap-y-[5px]'} `}
                         style={{ maxHeight: measuredInnerHeight > MAX_EXPANDED_HEIGHT ? MAX_EXPANDED_HEIGHT : undefined }}
                     >
-                        <div className="text-xxs">{event.description}</div>
+                        <div className="text-xs">{event.description}</div>
                         <div className="w-full flex justify-end h-[16px]">
 
                             {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}

@@ -171,7 +171,7 @@ export default function NotificationTool() {
         </div>
       </div>
       
-      <div className="font-mono text-[12px] absolute bottom-full -right-[4px] mb-1 bg-white dark:bg-black rounded py-2 min-w-48 shadow-card-dark">
+      <div className="font-mono text-[12px] absolute bottom-full -right-[4px] mb-1 bg-white dark:bg-black rounded py-2 min-w-48 shadow-standard">
         <div className="mb-2 px-2">Notification Mode</div>
         {modes.map(mode => (
           <div

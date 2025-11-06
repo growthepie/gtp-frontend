@@ -1,231 +1,295 @@
-const hardcodedMetadataArray = [
+type RawMetadataRecord = {
+  Path: string;
+  "Title Template": string;
+  "Description Template": string;
+  Status?: string;
+  Canonical?: string;
+  "No Index"?: boolean;
+};
+
+const hardcodedMetadataArray: RawMetadataRecord[] = [
   {
     "Path": "/",
-    "Title Template": "growthepie – Ethereum Ecosystem Analytics",
-    "Description Template": "Comprehensive data and insights across Ethereum Layer 1 and Layer 2 networks. Visualize usage, economics, and growth of the entire Ethereum ecosystem.",
+    "Title Template": "growthepie - Ethereum Ecosystem Analytics & Layer 2 Insights",
+    "Description Template": "The open analytics platform for the Ethereum ecosystem - empowering builders with actionable insights to grow the pie. From Mainnet to Layer 2s and onchain applications, explore open data on usage, growth, and adoption",
     "Status": "Published"
   },
   {
     "Path": "/applications",
-    "Title Template": "Ethereum Applications Dashboard | growthepie",
-    "Description Template": "Track the top applications across Ethereum L1 and L2s. See app metrics such as transaction count, active addresses and fees paid.",
+    "Title Template": "Ethereum Ecosystem Applications | growthepie",
+    "Description Template": "Discover the most active Ethereum and Layer 2 applications. Compare transactions, users, and on-chain revenue over time.",
     "Status": "Published"
   },
   {
     "Path": "/contributors",
-    "Title Template": "growthepie Contributors | Ethereum Ecosystem Builders",
-    "Description Template": "Get to know growthepie's contributors and team members.",
+    "Title Template": "growthepie Contributors | growthepie",
+    "Description Template": "Meet the contributors and builders behind growthepie — the open analytics platform for the Ethereum ecosystem.",
     "Status": "Published"
   },
   {
     "Path": "/economics",
-    "Title Template": "Ethereum Onchain Economics Dashboard | growthepie",
-    "Description Template": "Explore fees, profit, and economic activity across Ethereum Layer 1 and 2s. Understand protocol health with core metrics.",
+    "Title Template": "Ethereum Onchain Economics | Revenue, Costs, Profits | growthepie",
+    "Description Template": "Explore protocol revenue, fees, and profit across Ethereum and its scaling layers. Analyze network health through economic metrics and profit margins.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability",
-    "Title Template": "Data Availability Layer Comparison | Ethereum Rollups",
-    "Description Template": "Compare Ethereum rollups and their data availability solutions like Celestia, looking at DA consumers cost, blob data posted, and blob count.",
+    "Title Template": "Data Availability Comparison | Ethereum Blobs & Alt DA Layers | growthepie",
+    "Description Template": "Compare how Ethereum layer 2s use Data Availability layers like Ethereum Blobs, EigenDA, Celestia. Analyze blob usage, posting costs, and scalability trends.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/daily-active-addresses",
-    "Title Template": "Daily Active Addresses | growthepie",
-    "Description Template": "Track daily active addresses across Ethereum L1 and major L2s to measure user engagement and growth.",
+    "Title Template": "Daily Active Addresses | Ethereum Ecosystem | growthepie",
+    "Description Template": "Track daily active addresses on Ethereum and major Layer 2s to measure adoption, retention, and ecosystem growth.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/fees-paid-by-users",
-    "Title Template": "Fees Paid by Users | growthepie",
-    "Description Template": "Compare transaction fees paid by users across Ethereum and its L2s over time.",
+    "Title Template": "Chain Revenue | Ethereum Ecosystem | growthepie",
+    "Description Template": "Compare fees paid by users across Ethereum and its Layer 2s. Understand cost efficiency and user demand trends.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/fully-diluted-valuation",
-    "Title Template": "Fully Diluted Valuation (FDV) | growthepie",
-    "Description Template": "Analyze the FDV of Ethereum-based tokens and how value is distributed across ecosystems.",
+    "Title Template": "Fully Diluted Valuation | Ethereum Ecosystem | growthepie",
+    "Description Template": "Analyze token valuations across Ethereum ecosystems. See how value is distributed between L1 and major L2s.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/market-cap",
-    "Title Template": "Market Capitalization Overview | growthepie",
-    "Description Template": "Explore the market cap of Ethereum and L2-native tokens with historical views and daily aggregations.",
+    "Title Template": "Market Cap | Ethereum Ecosystem | growthepie",
+    "Description Template": "Monitor market capitalization of Ethereum and L2-native tokens with historical and real-time charts.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/profit",
-    "Title Template": "Protocol Profitability | growthepie",
-    "Description Template": "Compare revenue vs. costs to evaluate profitability across Ethereum L1 and Layer 2s.",
+    "Title Template": "Onchain Profit | Ethereum Ecosystem | growthepie",
+    "Description Template": "Explore a how much onchain profit is generated across Layer 2s.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/rent-paid",
-    "Title Template": "Rent Paid to Ethereum | growthepie",
-    "Description Template": "View rent paid by rollups to Ethereum Mainnet for security and data availability.",
+    "Title Template": "Rent Paid to Ethereum | Ethereum Ecosystem | growthepie",
+    "Description Template": "View how much each layer 2 pays Ethereum for security and data availability — the backbone of Ethereum’s rollup-centric model.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/stablecoin-market-cap",
-    "Title Template": "Stablecoin Supply | growthepie",
-    "Description Template": "Analyze the distribution and growth of stablecoins across Ethereum and its scaling layers.",
+    "Title Template": "Stablecoin Market Cap | Ethereum Ecosystem | growthepie",
+    "Description Template": "Track stablecoin supply (like USDC and USDT) and growth across Ethereum and its Layer 2s.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/throughput",
-    "Title Template": "Ethereum Ecosystem Throughput | growthepie",
-    "Description Template": "Measure transaction throughput across Ethereum and major Layer 2 networks.",
+    "Title Template": "Throughput | Ethereum Ecosystem | growthepie",
+    "Description Template": "Measure gas per second across Ethereum and major Layer 2 chains. Benchmark scalability and performance.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/app-revenue",
-    "Title Template": "Application Revenue in Ethereum Ecosystem | growthepie",
-    "Description Template": "Track revenue generated by applications across Ethereum L1 and L2s. Understand how much value is captured by different apps.",
+    "Title Template": "Application Revenue | Ethereum Ecosystem | growthepie",
+    "Description Template": "See how much revenue apps generate across Ethereum and its Layer 2s. Compare trends across chains and timeframes.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/total-value-secured",
-    "Title Template": "Total Value Secured (TVS) | growthepie",
-    "Description Template": "Understand how much value each chain secures — a metric of chain security and importance.",
+    "Title Template": "Total Value Secured (TVS) | Ethereum Ecosystem | growthepie",
+    "Description Template": "Understand the total value secured by each Ethereum chain — a measure of network trust and importance.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/transaction-costs",
-    "Title Template": "Transaction Costs | growthepie",
-    "Description Template": "Compare the average cost of transacting across Ethereum L1 and L2s.",
+    "Title Template": "Transaction Costs | Ethereum Ecosystem | growthepie",
+    "Description Template": "Compare how much it costs users to transact across Ethereum and its Layer 2 networks.",
     "Status": "Published"
   },
   {
     "Path": "/fundamentals/transaction-count",
-    "Title Template": "Transaction Count | growthepie",
-    "Description Template": "Analyze raw transaction count across Ethereum and its Layer 2 networks.",
+    "Title Template": "Transaction Count | Ethereum Ecosystem | growthepie",
+    "Description Template": "Analyze transaction activity across Ethereum and L2s. Track adoption and throughput growth over time.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/blob-count",
-    "Title Template": "Blob Count Analysis | growthepie",
-    "Description Template": "View the total blobs posted to Ethereum and other DA providers for data availability — across rollups and chains.",
+    "Title Template": "Blob Count | Ethereum Ecosystem | growthepie",
+    "Description Template": "Monitor blob posting activity across Ethereum and DA providers — key insight into rollup scalability.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/da-consumers",
-    "Title Template": "Data Availability Consumers | growthepie",
-    "Description Template": "Track which chains consume Ethereum's data availability layer as well as other DA providers, and how much.",
+    "Title Template": "Data Availability Consumers | Ethereum Ecosystem | growthepie",
+    "Description Template": "See how many users different DA providers serve for rollups and layer 2s over time.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/data-posted",
-    "Title Template": "Data Posted by Rollups | growthepie",
-    "Description Template": "Compare total data posted per chain over time, measured in bytes.",
+    "Title Template": "Data Posted by L2s | Ethereum Ecosystem | growthepie",
+    "Description Template": "Compare the data posted by layer 2s to different data availability layers like Ethereum Blobs and EigenDA.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/fees-paid",
-    "Title Template": "DA Fees Paid | growthepie",
-    "Description Template": "See which rollups pay the most for data availability on Ethereum and other Data Availability providers such as Celestia.",
+    "Title Template": "Data Availability Fees | Ethereum Ecosystem | growthepie",
+    "Description Template": "Explore how much DA providers charge layer 2s for data posting and availability services.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/fees-paid-per-megabyte",
-    "Title Template": "Cost per Megabyte | growthepie",
-    "Description Template": "Compare DA cost efficiency by measuring fees paid per megabyte of data.",
+    "Title Template": "Cost per Megabyte | Ethereum Ecosystem | growthepie",
+    "Description Template": "Compare how much different DA providers charge layer 2s per megabyte of data posted.",
     "Status": "Published"
   },
   {
     "Path": "/trackers/glodollar",
-    "Title Template": "Glo Dollar Dashboard | growthepie",
-    "Description Template": "Track adoption and onchain activity of the Glo Dollar stablecoin across Ethereum L1 and L2s.",
+    "Title Template": "Glo Dollar (GLO) Stablecoin Analytics | growthepie",
+    "Description Template": "Track the growth of the Glo Dollar stablecoin across Ethereum and Layer 2s.",
     "Status": "Published"
   },
   {
     "Path": "/trackers/octant",
-    "Title Template": "Octant Metrics Dashboard | growthepie",
-    "Description Template": "View engagement, deposits, and matching amounts from Octant onchain participation during different Epochs.",
+    "Title Template": "Octant Participation Metrics | growthepie",
+    "Description Template": "Track ongoing Octant epochs - a public goods funding initiative for Ethereum.",
     "Status": "Published"
   },
   {
     "Path": "/trackers/optimism-retropgf-3",
-    "Title Template": "Optimism RetroPGF 3 Tracker | growthepie",
-    "Description Template": "Analyze project visibility and impact in Optimism’s RetroPGF 3 funding round.",
+    "Title Template": "Optimism RetroPGF 3 Dashboard | Project Insights | growthepie",
+    "Description Template": "Track the Optimism RetroPGF 3 project funding round.",
     "Status": "Published"
   },
   {
     "Path": "/blockspace/category-comparison",
     "Title Template": "Blockspace Usage by Category | growthepie",
-    "Description Template": "Compare how different application categories utilize Ethereum L1 and L2 blockspace. Analyze usage trends over time through subcategories.",
+    "Description Template": "Compare how different chains in the Ethereum ecosystem are used across major categories like DeFi, NFTs, and DA.",
     "Status": "Published"
   },
   {
     "Path": "/blockspace/chain-overview",
-    "Title Template": "Ethereum Chain Overview | growthepie",
-    "Description Template": "Visualize and compare how different chains are being use across Ethereum L1 and Layer 2s. Understand each chain's role in the ecosystem.",
+    "Title Template": "Blockspace Usage Overview | growthepie",
+    "Description Template": "Compare how different chains in the Ethereum ecosystem are used across major categories like DeFi, NFTs, and DA.",
     "Status": "Published"
   },
   {
     "Path": "/donate",
-    "Title Template": "Support growthepie",
-    "Description Template": "Fund open analytics for Ethereum. Help maintain and grow an independent, public goods platform tracking the Ethereum ecosystem.",
+    "Title Template": "Support growthepie | Fund Open Ethereum Analytics | growthepie",
+    "Description Template": "Help growthepie remain open and independent. Your support funds transparent analytics for the Ethereum community.",
     "Status": "Published"
   },
   {
     "Path": "/privacy-policy",
-    "Title Template": "Privacy Policy",
-    "Description Template": "Review how growthepie collects, processes, and protects your data across the platform.",
+    "Title Template": "Privacy Policy | growthepie",
+    "Description Template": "Learn how growthepie handles, processes, and protects your data in accordance with privacy regulations.",
     "Status": "Published"
   },
   {
     "Path": "/imprint",
-    "Title Template": "Imprint",
-    "Description Template": "Official legal and publishing information for growthepie, the Ethereum analytics platform.",
+    "Title Template": "Imprint | growthepie",
+    "Description Template": "Legal and publishing details for growthepie — the open Ethereum analytics platform.",
     "Status": "Published"
   },
   {
     "Path": "/icons",
-    "Title Template": "growthepie Icons",
-    "Description Template": "Access the icon set used across growthepie’s dashboards.",
+    "Title Template": "Icons | growthepie",
+    "Description Template": "Access the open-source icon set powering growthepie’s data dashboards.",
     "Status": "Published"
   },
   {
     "Path": "/applications/[slug]",
-    "Title Template": "{{name}} Metrics | growthepie",
-    "Description Template": "Track {{name}} usage across Ethereum L1 and L2s. See app metrics such as transaction count, active addresses and fees paid.",
+    "Title Template": "{{name}} Analytics | Ethereum App Metrics | growthepie",
+    "Description Template": "Explore {{name}}’s onchain activity across Ethereum L1 and L2s — including transactions, users, and fees paid.",
     "Status": "Published"
   },
   {
     "Path": "/chains/[slug]",
-    "Title Template": "{{chainName}} Metrics | growthepie",
-    "Description Template": "Get to know {{chainName}} and learn about the chain's usage using fundamental and economic metrics as well as its tracked applications.",
+    "Title Template": "{{chainName}} Metrics | Ethereum Layer 2 Analytics | growthepie",
+    "Description Template": "Analyze {{chainName}}’s realtime TPS, onchain metrics, application usage, and many more insights.",
     "Status": "Published"
   },
   {
     "Path": "/ethereum-ecosystem/metrics",
     "Title Template": "Ethereum Ecosystem Metrics | growthepie",
-    "Description Template": "Explore real-time metrics for the Ethereum Ecosystem (Mainnet & Layer 2s): Track uptime, TPS, fees, and analyze its growth.",
+    "Description Template": "View real-time Ethereum ecosystem metrics — TPS, uptime, stablecoin supply, and more - across the whole ecosystem.",
     "Status": "Published"
   }
 ];
 
+const SITE_NAME = "growthepie";
+const SITE_ORIGIN = "https://www.growthepie.com";
+const BRAND_SEPARATOR = " | ";
+const DEFAULT_TITLE = `${SITE_NAME} – Ethereum Ecosystem Analytics`;
+const DEFAULT_DESCRIPTION =
+  "Comprehensive analytics across Ethereum Layer 1 and Layer 2 networks.";
+const MAX_DESCRIPTION_LENGTH = 158;
+const PLACEHOLDER_PATTERN = /\{\{([\w.-]+)\}\}/g;
+
+const normalizeText = (value: string): string =>
+  value.replace(/\s+/g, " ").trim();
+
+const ensureBrand = (title: string): string => {
+  const normalized = normalizeText(title || "");
+  if (!normalized) return SITE_NAME;
+  if (normalized.toLowerCase().includes(SITE_NAME)) return normalized;
+  const separator = normalized.includes("|") ? " " : BRAND_SEPARATOR;
+  return `${normalized}${separator}${SITE_NAME}`;
+};
+
+const clampDescription = (description: string): string => {
+  const normalized = normalizeText(description || "");
+  if (normalized.length <= MAX_DESCRIPTION_LENGTH) {
+    return normalized;
+  }
+
+  const truncated = normalized.slice(0, MAX_DESCRIPTION_LENGTH - 3);
+  const lastSpace = truncated.lastIndexOf(" ");
+  const safeCut = lastSpace > 40 ? truncated.slice(0, lastSpace) : truncated;
+  return `${safeCut}...`;
+};
+
+const computeCanonical = (path: string, explicit?: string): string | undefined => {
+  if (explicit) return explicit;
+  if (!path || path.includes("[") || path.includes("{")) return undefined;
+  return `${SITE_ORIGIN}${path}`;
+};
+
 export interface PageMetadata {
   title: string;
   description: string;
+  canonical?: string;
+  noIndex?: boolean;
 }
 
-type MetadataMap = Map<string, PageMetadata>;
+type MetadataTemplate = {
+  titleTemplate: string;
+  descriptionTemplate: string;
+  canonical?: string;
+  noIndex?: boolean;
+};
+
+type MetadataMap = Map<string, MetadataTemplate>;
 
 // --- Process Hardcoded Data into a Map (Done once on module load) ---
 const allMetadataMap: MetadataMap = new Map();
 
 hardcodedMetadataArray.forEach((record) => {
-  // Optional: Filter by Status if needed
-  if (record.Status === 'Published') {
-    const path = record.Path;
-    const title = record['Title Template']; // Access using bracket notation due to space
-    const description = record['Description Template']; // Access using bracket notation
+  const status = (record.Status ?? "published").toLowerCase();
+  const includeEntry = status === "published" || status === "noindex";
+  if (!includeEntry) return;
 
-    if (path && title && description) {
-      allMetadataMap.set(path, { title, description });
-    }
-  }
+  const path = normalizeText(record.Path ?? "");
+  const rawTitle = record["Title Template"] ?? "";
+  const rawDescription = record["Description Template"] ?? DEFAULT_DESCRIPTION;
+  if (!path || !rawTitle || !rawDescription) return;
+
+  const titleTemplate = ensureBrand(rawTitle);
+  const descriptionTemplate = clampDescription(rawDescription);
+
+  allMetadataMap.set(path, {
+    titleTemplate,
+    descriptionTemplate,
+    canonical: computeCanonical(path, record.Canonical?.trim()),
+    noIndex: status === "noindex" || record["No Index"] === true,
+  });
 });
 
 
@@ -238,15 +302,16 @@ export async function getAllMetadata(): Promise<MetadataMap> {
 // --- Helper Function to Get Metadata for a Specific Page ---
 
 // Interface for dynamic data needed to fill placeholders
-interface DynamicData {
-  [key: string]: string | number | undefined; // e.g., { name: 'Uniswap', chainName: 'Optimism' }
-}
+type DynamicData = Record<string, string | number | undefined>;
 
 // Helper to replace placeholders like {{variableName}}
 function replacePlaceholders(template: string, data: DynamicData): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    // Use String() to handle potential numbers, provide default empty string if undefined/null
-    return String(data[key] ?? '');
+  return template.replace(PLACEHOLDER_PATTERN, (_match, key) => {
+    const value = data[key];
+    if (value === undefined || value === null) {
+      return "";
+    }
+    return normalizeText(String(value));
   });
 }
 
@@ -255,12 +320,14 @@ export async function getPageMetadata(
   dynamicData: DynamicData = {} // Data to fill placeholders, e.g., { name: 'App Name' }
 ): Promise<PageMetadata> {
   // Get the map (this is now very fast as it returns the pre-processed map)
+  const normalizedPath = normalizeText(pathTemplate);
   const allMetadata = await getAllMetadata();
-  const templateMetadata = allMetadata.get(pathTemplate);
+  const templateMetadata = allMetadata.get(normalizedPath);
 
   const defaultMetadata: PageMetadata = {
-    title: 'growthepie', // Your site-wide default title
-    description: 'Ethereum Ecosystem Analytics', // Your site-wide default description
+    title: ensureBrand(DEFAULT_TITLE),
+    description: clampDescription(DEFAULT_DESCRIPTION),
+    canonical: computeCanonical(normalizedPath),
   };
 
   if (!templateMetadata) {
@@ -269,11 +336,18 @@ export async function getPageMetadata(
   }
 
   // Replace placeholders if dynamic data is provided
-  const finalTitle = replacePlaceholders(templateMetadata.title, dynamicData);
-  const finalDescription = replacePlaceholders(templateMetadata.description, dynamicData);
+  const finalTitle = ensureBrand(
+    replacePlaceholders(templateMetadata.titleTemplate, dynamicData)
+  );
+  const finalDescription = clampDescription(
+    replacePlaceholders(templateMetadata.descriptionTemplate, dynamicData)
+  );
 
   return {
     title: finalTitle,
     description: finalDescription,
+    canonical:
+      templateMetadata.canonical ?? computeCanonical(normalizedPath),
+    noIndex: templateMetadata.noIndex,
   };
 }

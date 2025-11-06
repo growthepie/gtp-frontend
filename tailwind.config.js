@@ -103,14 +103,13 @@ module.exports = {
         "color-ui-active": "rgb(var(--ui-active) / <alpha-value>)",
         "color-ui-shadow": "rgb(var(--ui-shadow) / <alpha-value>)",
         "color-text-primary": "rgb(var(--text-primary) / <alpha-value>)",
-        "color-text-black": "rgb(var(--text-black) / <alpha-value>)",
+        "color-text-secondary": "rgb(var(--text-secondary) / <alpha-value>)",
         "color-accent-red": "rgb(var(--accent-red) / <alpha-value>)",
         "color-accent-yellow": "rgb(var(--accent-yellow) / <alpha-value>)",
         "color-accent-petrol": "rgb(var(--accent-petrol) / <alpha-value>)",
         "color-accent-turquoise": "rgb(var(--accent-turquoise) / <alpha-value>)",
         "color-positive": "rgb(var(--positive) / <alpha-value>)",
         "color-negative": "rgb(var(--negative) / <alpha-value>)",
-        "color-border": "rgb(var(--border) / <alpha-value>)",
         "chains-arbitrum-nova": "rgb(var(--chains-arbitrum-nova) / <alpha-value>)",
         "chains-arbitrum-one": "rgb(var(--chains-arbitrum-one) / <alpha-value>)",
         "chains-b3": "rgb(var(--chains-b3) / <alpha-value>)",
@@ -211,6 +210,7 @@ module.exports = {
       },
       boxShadow: {
         'card-dark': '0px 0px 27px rgb(var(--ui-shadow))',
+        "standard": "0px 0px 27px 0px rgba(21, 26, 25, 1)"
       },
     },
   },
@@ -242,6 +242,11 @@ module.exports = {
     function({ addUtilities, theme }) {
       // Define base styles for each category
       const baseStyles = {
+        'heading': {
+          fontFamily: theme("fontFamily.raleway"),
+          fontWeight: '600', // bold (adjusted from 700)
+          lineHeight: '120%',
+        },
         'heading-large': {
           fontFamily: theme("fontFamily.raleway"),
           fontWeight: '600', // bold (adjusted from 700)
@@ -277,19 +282,33 @@ module.exports = {
 
       // Define size variants for each category
       const sizeVariants = {
+        'heading': {
+          'xxxs': ["10px", "15px"],
+          'xxs': ["12px", "17px"],
+          'xs': ["14px", "17px"],
+          'sm': ["16px", "19px"],
+          'md': ["20px", "24px"],
+          'lg': ["24px", "28px"],
+          'xl': ["36px", "43px"],
+          '2xl': ["48px", "48px"],
+          '3xl': ["60px", "60px"],
+          '4xl': ["72px", "72px"],
+          '5xl': ["80px", "80px"],
+          '6xl': ["92px", "92px"],
+        },
         'heading-large': {
-          'xxxs': '10px',
-          'xxs': '12px',
-          'xs': '14px',
-          'sm': '16px',
-          'md': '20px',
-          'lg': '30px',
-          'xl': '36px',
-          '2xl': '48px',
-          '3xl': '60px',
-          '4xl': '72px',
-          '5xl': '80px',
-          '6xl': '92px',
+          'xxxs': ["10px", "15px"],
+          'xxs': ["12px", "17px"],
+          'xs': ["14px", "17px"],
+          'sm': ["16px", "19px"],
+          'md': ["20px", "24px"],
+          'lg': ["24px", "28px"],
+          'xl': ["36px", "43px"],
+          '2xl': ["48px", "48px"],
+          '3xl': ["60px", "60px"],
+          '4xl': ["72px", "72px"],
+          '5xl': ["80px", "80px"],
+          '6xl': ["92px", "92px"],
         },
         'heading-small': {
           'xxxxxs': '7px',
@@ -322,32 +341,32 @@ module.exports = {
           '6xl': '80px',
         },
         'numbers': {
-          'xxxs': '9px',
-          'xxs': '10px',
-          'xs': '12px',
-          'sm': '14px',
-          'md': '16px',
-          'lg': '18px',
-          'xl': '20px',
-          '2xl': '24px',
-          '3xl': '30px',
-          '4xl': '36px',
-          '5xl': '48px',
-          '6xl': '60px',
+          'xxxs': ["9px", "9px"],
+          'xxs': ["10px", "10px"],
+          'xs': ["12px", "12px"],
+          'sm': ["14px", "14px"],
+          'md': ["16px", "16px"],
+          'lg': ["18px", "18px"],
+          'xl': ["20px", "20px"],
+          '2xl': ["24px", "24px"],
+          '3xl': ["30px", "30px"],
+          '4xl': ["36px", "36px"],
+          '5xl': ["48px", "48px"],
+          '6xl': ["60px", "60px"],
         },
         'text': {
-          'xxxs': '9px',
-          'xxs': '10px',
-          'xs': '12px',
-          'sm': '14px',
-          'md': '16px',
-          'lg': '18px',
-          'xl': '20px',
-          '2xl': '24px',
-          '3xl': '30px',
-          '4xl': '36px',
-          '5xl': '48px',
-          '6xl': '60px',
+          'xxxs': ["9px", "9px"],
+          'xxs': ["10px", "15px"],
+          'xs': ["12px", "16px"],  // Updated: lineHeight 18px → 16px
+          'sm': ["14px", "16px"],
+          'md': ["15px", "24px"],  // Updated: fontSize 16px → 15px
+          'lg': ["18px", "28px"],  // Updated: lineHeight 27px → 28px
+          'xl': ["20px", "30px"],
+          '2xl': ["22px", "36px"],
+          '3xl': ["30px", "36px"],
+          '4xl': ["36px", "54px"],
+          '5xl': ["48px", "72px"],
+          '6xl': ["60px", "90px"],
         },
       };
 
@@ -355,16 +374,25 @@ module.exports = {
 
       // Iterate over each category to generate utilities
       Object.keys(baseStyles).forEach(category => {
-        // Base class (e.g., .heading-large)
-        newUtilities[`.${category}`] = baseStyles[category];
-
         // Size variants (e.g., .heading-large-xxxs)
-        Object.entries(sizeVariants[category]).forEach(([size, fontSize]) => {
-          newUtilities[`.${category}-${size}`] = {
-            ...baseStyles[category],
-            fontSize: fontSize,
-          };
-        });
+        if (sizeVariants[category]) {
+          Object.entries(sizeVariants[category]).forEach(([size, value]) => {
+            if(typeof value === 'string') {
+              newUtilities[`.${category}-${size}`] = {
+                ...baseStyles[category],
+                fontSize: value,
+                lineHeight: parseFloat(value) * 1.2 + 'px',
+              };
+            } else {
+              const [fontSize, lineHeight] = value;
+              newUtilities[`.${category}-${size}`] = {
+                ...baseStyles[category],
+                fontSize: fontSize,
+                lineHeight: lineHeight,
+              };
+            }
+          });
+        }
       });
 
       // Add the generated utilities to Tailwind

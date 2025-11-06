@@ -39,7 +39,7 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
             .map((tab, index) => (
             <div
                 key={tab}
-                onClick={() => setSelectedTab(tab)}
+                onClick={() =>  !(chainInfo.tab_status[tab] === "locked" || chainInfo.tab_status[tab] === "soon") ? setSelectedTab(tab) : undefined}
                 onMouseEnter={() => setHoveredTab(tab)}
                 onMouseLeave={() => setHoveredTab(null)}
             >

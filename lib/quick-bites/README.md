@@ -46,6 +46,7 @@ All properties are required unless marked as optional:
 |----------|------|-------------|---------|
 | `title` | `string` | Main headline | `"Arbitrum Timeboost Revenue Analysis"` |
 | `subtitle` | `string` | Supporting description | `"How the new fee mechanism is performing"` |
+| `summary` | `string` | Short 1-2 sentence summary for SEO | `"xxx"` |
 | `content` | `string[]` | Array of content blocks | `["# Header", "Text content", "```chart"]` |
 | `image` | `string` | Banner image URL | `"https://api.growthepie.com/v1/quick-bites/banners/timeboost.png"` |
 | `date` | `string` | Publication date (YYYY-MM-DD) | `"2025-01-15"` |

@@ -29,9 +29,19 @@ export type ChainOverview = {
     blockspace: {
       blockspace: BlockspaceCO;
     };
+    highlights: Highlights;
   }
 };
 
+export type Highlights = {
+  metric_id: string;
+  metric_name: string;
+  icon: string;
+  type: string;
+  text: string;
+  value: number;
+  date: string;
+}
 
 export type AchievmentsData = {
   streaks: {
@@ -74,7 +84,6 @@ export type Ecosystem = {
     types: string[];
     data: [][];
   }
- 
 }
 
 export type ChainEvent = {

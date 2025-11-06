@@ -926,7 +926,7 @@ const Chain = ({ params }: { params: any }) => {
                     </ChainSectionHeadAlt>
                   </div>
                   <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0 lg:max-w-[125px]">
-                    <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] min-[1700px]:min-w-[125px] transition-all duration-300">
+                    <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] min-[1920px]:min-w-[125px] transition-all duration-300">
                       <ChainSectionHeadAlt
                         title={"Risk"}
                         enableDropdown={isMobile}

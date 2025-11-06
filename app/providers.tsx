@@ -35,11 +35,34 @@ const requestOptions = {
   headers: headers,
 };
 
-const singleOrMultiFetcher = (urlOrUrls) => {
+const singleOrMultiFetcher = async (urlOrUrls) => {
+  const fetchWithErrorHandling = async (url) => {
+    const response = await fetch(url, requestOptions);
+
+    // For 404/403 errors on chain metrics, return null instead of throwing
+    if (!response.ok && url.includes('/metrics/chains/')) {
+      if (response.status === 404 || response.status === 403) {
+        // Return null for expected missing data
+        return null;
+      }
+    }
+
+    // For successful responses, parse JSON
+    if (response.ok) {
+      return response.json();
+    }
+
+    // For other errors, throw with status information
+    const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
+    error.status = response.status;
+    error.response = response;
+    throw error;
+  };
+
   if (Array.isArray(urlOrUrls)) {
-    return Promise.all(urlOrUrls.map(url => fetch(url, requestOptions).then((r) => r.json())));
+    return Promise.all(urlOrUrls.map(fetchWithErrorHandling));
   }
-  return fetch(urlOrUrls, requestOptions).then((r) => r.json());
+  return fetchWithErrorHandling(urlOrUrls);
 };
 
 const devMiddleware = (useSWRNext) => {
@@ -91,6 +114,22 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
             dedupingInterval: 10000, // 10 seconds
+            onError: (error, key) => {
+              // Silence expected errors from chain metrics endpoints that return 403/404
+              if (typeof key === 'string' && key.includes('/metrics/chains/')) {
+                // Check for JSON parse errors (403/404 responses return HTML)
+                if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                  return; // Silently ignore
+                }
+                // Check for fetch failures (CORS blocks)
+                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                  return; // Silently ignore
+                }
+              }
+
+              // Log other errors
+              console.error('[SWR Error] Key:', key, 'Error:', error);
+            },
           }}
         >
             <MasterProvider>

@@ -1,9 +1,5 @@
 "use client";
-import { MetricsResponse } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
-import { MetricsURLs } from "@/lib/urls";
-import {
-} from "@/lib/chains";
 import { PageContainer } from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
@@ -15,13 +11,9 @@ import MetricChart from "@/components/metric/MetricChart";
 import MetricTable from "@/components/metric/MetricTable";
 import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
-
-const monthly_agg_labels = {
-  avg: "Average",
-  sum: "Total",
-  unique: "Distinct",
-  distinct: "Distinct",
-};
+import { useChainMetrics } from "@/hooks/useChainMetrics";
+import { useMaster } from "@/contexts/MasterContext";
+import { useMemo } from "react";
 
 const Fundamentals = ({ params: { metric } }) => {
   const { is_og } = useParams();
@@ -32,18 +24,27 @@ const Fundamentals = ({ params: { metric } }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const { SupportedChainKeys, AllChains } = useMaster();
+
+  // Determine which chains to fetch
+  const chainsToFetch = useMemo(() => {
+    return AllChains.filter((chain) =>
+      SupportedChainKeys.includes(chain.key),
+    ).map((chain) => chain.key);
+  }, [AllChains, SupportedChainKeys]);
+
+  // Fetch metric data at page level for SWR caching
   const {
     data: metricData,
     error: metricError,
     isLoading: metricLoading,
-    isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[metric]);
+  } = useChainMetrics(metric, chainsToFetch, master!);
 
   return (
     <>
       <ShowLoading
         dataLoading={[masterLoading, metricLoading]}
-        dataValidating={[masterValidating, metricValidating]}
+        dataValidating={[masterValidating]}
       />
       {master && metricData ? (
         <FundamentalsContent metric={metric} type="fundamentals" />
@@ -80,11 +81,6 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
           </div>
           <PageContainer className="hidden md:block" paddingY="none">
             <MetricBottomControls metric={metric} />
-          </PageContainer>
-
-          {/* Add Related Quick Bites Section */}
-          <PageContainer className="" paddingY="none">
-            <MetricRelatedQuickBites metricKey={metric} metricType={type} />
           </PageContainer>
         </MetricSeriesProvider>
       </MetricContextWrapper>
