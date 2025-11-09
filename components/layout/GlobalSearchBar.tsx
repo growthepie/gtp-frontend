@@ -52,7 +52,7 @@ export default function GlobalFloatingBar() {
       // Delay to allow the animation to complete
       const timer = setTimeout(() => {
         setAuthAnimationComplete(true);
-      }, 2000); // Match this to your CSS transition duration
+      }, 1000); // Match this to your CSS transition duration
       return () => clearTimeout(timer);
     } else {
       setAuthAnimationComplete(false);
@@ -542,8 +542,8 @@ export default function GlobalFloatingBar() {
 
       {/* Main floating bar */}
       <div
-        className={`fixed z-global-search left-0 right-0 flex justify-center w-full pointer-events-none transition-all duration-[2000ms] ease-out ${!isAuthenticated && isProtectedDomain
-            ? 'translate-y-[calc(-50%-30vh)] md:translate-y-[calc(-50%+30vh)]' // Centered when not authenticated
+        className={`fixed z-global-search left-0 right-0 flex justify-center w-full pointer-events-none transition-all duration-[1000ms] ease-out ${!isAuthenticated && isProtectedDomain
+            ? 'translate-y-[calc(+84px-50vh-84px/2)] md:translate-y-[calc(-84px+50vh-84px/2)]' // Centered when not authenticated
             : '' // Normal position when authenticated
           } bottom-0 md:bottom-auto md:top-[0px] pb-[30px] md:pb-0 md:pt-[30px]`}
       >
