@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
             <div class="wrapper">
               <div class="container">
                 <div class="logo">
-                  <img src="https://www.growthepie.com/logo_full.png" alt="${friendlyDomain} logo">
+                  <img src="https://${friendlyDomain}/logo_full.png" alt="${friendlyDomain}">
                 </div>
                 <p class="text">Click the button below to sign in:</p>
 
