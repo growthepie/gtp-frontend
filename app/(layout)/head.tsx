@@ -1,6 +1,6 @@
 import { getCookie } from "cookies-next";
 import Script from "next/script";
-import { BASE_URL } from "@/lib/helpers";
+import { AUTH_SUBDOMAIN, BASE_URL } from "@/lib/helpers";
 import { MasterURL } from "@/lib/urls";
 
 export default function Head() {
@@ -93,6 +93,9 @@ export default function Head() {
           />
         )}
       </>
+      {AUTH_SUBDOMAIN && (
+        <meta name="robots" content="noindex" />
+      )}
       {/* )} */}
     </>
   );
