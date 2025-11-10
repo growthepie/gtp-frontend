@@ -12,6 +12,7 @@ import { useProjectsMetadata } from "./ProjectsMetadataContext";
 import { useSort } from "./SortContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 
 export type AggregatedDataRow = {
   owner_project: string;
@@ -84,7 +85,8 @@ function aggregateProjectData(
   ownerProjectToProjectData: { [key: string]: any },
   filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], main_category: [] },
   timespan: string,
-  focusEnabled: boolean
+  focusEnabled: boolean,
+  supportedChainsKeys: string[]
 ): AggregatedDataRow[] {
   // Generate cache key
   const cacheKey = getCacheKey(timespan, filters, focusEnabled);
@@ -119,7 +121,7 @@ function aggregateProjectData(
   // Pre-filter data 
   // 1. Apply origin_key filter if specified
   // 2. Apply focusEnabled filter to exclude ethereum if enabled
-  let filteredData = data;
+  let filteredData = data.filter(entry => supportedChainsKeys.includes(entry[typeIndexes.origin_key] as string));
   
   if (filters.origin_key.length > 0) {
     filteredData = filteredData.filter(entry => 
@@ -385,6 +387,10 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const supportedChainKeys = useMemo(() => {
+    return Get_SupportedChainKeys(master) || [];
+  }, [master]);
+
   const multiFetcher = (urls) => {
     if (!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
 
@@ -420,10 +426,11 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
         main_category: selectedMainCategoryParam,
       },
       selectedTimespan,
-      focusEnabled
+      focusEnabled,
+      supportedChainKeys
     );
     return aggregated;
-  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled]);
+  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled, supportedChainKeys]);
 
   const applicationDataAggregated = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -445,9 +452,10 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
         main_category: [],
       },
       selectedTimespan,
-      focusEnabled
+      focusEnabled,
+      supportedChainKeys
     )
-  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled]);
+  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled, supportedChainKeys]);
 
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string | null; display_name: string }>,
@@ -510,7 +518,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
         applicationDataAggregated: applicationDataAggregated,
         applicationDataAggregatedAndFiltered,
         isLoading: applicationsTimespanLoading || masterLoading,
-        applicationsChains,
+        applicationsChains: applicationsChains.filter(chain => supportedChainKeys.includes(chain)),
         selectedStringFilters: selectedStringFiltersParam,
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
         selectedMainCategories: selectedMainCategoryParam,
