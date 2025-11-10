@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
 import { throttle } from 'lodash';
+import ChartWatermark from '../ChartWatermark';
 
 // It's good practice to define the shape of your data
 type HistoryItem = {
@@ -206,7 +207,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName}: TPSChartP
   }, [data]); // The hook now depends on the `data` prop
 
   return (
-    <div ref={containerRef} className="w-full h-[58px] -mt-[5px]">
+    <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
       <ReactECharts
         ref={chartRef}
         opts={{
@@ -217,6 +218,11 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName}: TPSChartP
         lazyUpdate={true}
         style={{ height: '100%' }}
       />
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-[-25.353px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+        <div className="w-[147px]">
+          <ChartWatermark className="opacity-20 w-full h-auto" />
+        </div>
+      </div>
     </div>
   );
 });

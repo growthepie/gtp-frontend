@@ -26,6 +26,7 @@ import { LinkButton } from '../LinkButton';
 import moment from 'moment';
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import ChartWatermark from '../ChartWatermark';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -331,6 +332,13 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         {mainContent}
 
         {expandedContent}
+        
+        {/* Watermark */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-[114.599px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+          <div className="w-[147px]">
+            <ChartWatermark className="opacity-20 w-full h-auto" />
+          </div>
+        </div>
       </ExpandableCardContainer>
     </div>
   );
@@ -646,6 +654,12 @@ export const TokenTransferFeeCard = React.memo(({
               </animated.div>
             ))}
           </div>
+        </div>
+      </div>
+      {/* Watermark */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-[114.599px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+        <div className="w-[147px]">
+          <ChartWatermark className="opacity-20 w-full h-auto" />
         </div>
       </div>
     </>
