@@ -149,6 +149,9 @@ export async function POST(request: NextRequest) {
             </style>
           </head>
           <body>
+            <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
+              Your secure access link for ${friendlyDomain} is ready. Sign in now.
+            </div>
             <div class="wrapper">
               <div class="container">
                 <div class="logo">
@@ -156,17 +159,47 @@ export async function POST(request: NextRequest) {
                 </div>
                 <p class="text">Click the button below to sign in:</p>
 
-                <div style="text-align: center;">
-                  <a href="${verifyUrl}" class="button">Access ${friendlyDomain}</a>
+                <div style="text-align: center; margin: 30px 0;">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+                              href="${verifyUrl}" 
+                              style="height:50px;v-text-anchor:middle;width:280px;" 
+                              arcsize="50%" 
+                              strokecolor="#FF8855" 
+                              fillcolor="#FF8855">
+                    <w:anchorlock/>
+                    <center style="color:#000000;font-family:sans-serif;font-size:16px;font-weight:bold;">
+                      Access ${friendlyDomain}
+                    </center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-->
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                    <tr>
+                      <td align="center" style="border-radius: 25px; background: linear-gradient(135deg, #FE5468 0%, #FFDF27 100%); background-color: #FF8855;">
+                        <a href="${verifyUrl}" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style="display: inline-block; padding: 14px 40px; color: #000000; text-decoration: none; font-weight: bold; font-size: 16px; border-radius: 25px;">
+                          Access ${friendlyDomain}
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  <!--<![endif]-->
                 </div>
 
-                <p style="font-size: 14px; color: #88A09D; /* forest-400 */">
+                <p style="font-size: 14px; color: #88A09D;">
                   Or copy and paste this link into your browser:
-                  <br>
-                  <code class="link-code">
-                    ${verifyUrl}
-                  </code>
                 </p>
+                <div style="background: #1B2524; padding: 12px; border-radius: 5px; margin-top: 8px; border: 1px solid #364240;">
+                  <a href="${verifyUrl}" 
+                    style="color: #4CFF7E !important; text-decoration: none; word-break: break-all; font-size: 13px;"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    ${verifyUrl}
+                  </a>
+                </div>
               </div>
             </div>
           </body>
