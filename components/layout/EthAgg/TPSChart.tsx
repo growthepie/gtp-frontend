@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
 import { throttle } from 'lodash';
-import ChartWatermark from '../ChartWatermark';
+import ChartWatermark, { ChartWatermarkWithMetricName } from '../ChartWatermark';
 
 // It's good practice to define the shape of your data
 type HistoryItem = {
@@ -15,6 +15,7 @@ interface TPSChartProps {
   overrideColor?: string[];
   data: HistoryItem[];
   chainName?: string;
+  centerWatermark?: boolean;
 }
 
 // Your existing formatNumberWithSI function...
@@ -47,7 +48,7 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
-export const TPSChart = React.memo(({ data, overrideColor, chainName}: TPSChartProps) => {
+export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -218,9 +219,13 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName}: TPSChartP
         lazyUpdate={true}
         style={{ height: '100%' }}
       />
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-[-25.353px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
-        <div className="w-[147px]">
-          <ChartWatermark className="opacity-20 w-full h-auto" />
+      <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-start w-[147px] -space-y-[3.811px] ${centerWatermark ? 'top-1/2 -translate-y-1/2 z-10' : 'bottom-[-25.353px]'}`}>
+        <div className={`w-[147px] ${centerWatermark ? 'opacity-40' : ''}`}>
+          {centerWatermark ? (
+            <ChartWatermarkWithMetricName className="w-full h-auto" useColor={true} />
+          ) : (
+            <ChartWatermark className="opacity-20 w-full h-auto" />
+          )}
         </div>
       </div>
     </div>

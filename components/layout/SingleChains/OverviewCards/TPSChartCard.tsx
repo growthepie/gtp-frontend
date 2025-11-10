@@ -57,6 +57,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
               data={chartData} 
               overrideColor={master.chains[chainKey].colors.dark} 
               chainName={chainData.display_name}
+              centerWatermark={true}
             />
           </div>
         </div>
