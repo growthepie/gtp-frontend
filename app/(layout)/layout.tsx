@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   description: description,
   openGraph: {
     title: "growthepie",
-    description: "Understand every slice of Ethereum",
+    description: "Visualizing Ethereum's Story Through Data",
     url: "https://www.growthepie.com",
     images: [
       {
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "growthepie.com",
-    description: "Understand every slice of Ethereum",
+    description: "Visualizing Ethereum's Story Through Data",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
