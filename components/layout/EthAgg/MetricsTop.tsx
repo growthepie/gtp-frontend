@@ -334,7 +334,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         {expandedContent}
         
         {/* Watermark */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[114.599px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
           <div className="w-[147px]">
             <ChartWatermark className="opacity-20 w-full h-auto" />
           </div>
@@ -657,7 +657,7 @@ export const TokenTransferFeeCard = React.memo(({
         </div>
       </div>
       {/* Watermark */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-[114.599px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
         <div className="w-[147px]">
           <ChartWatermark className="opacity-20 w-full h-auto" />
         </div>
