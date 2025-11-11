@@ -80,10 +80,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       // if not production, add the chains rework item
       if(!IS_PRODUCTION) {
         const chainsNavigationItemsCopy = structuredClone(ChainsNavigationItems);
-        chainsNavigationItemsCopy.options.forEach((option) => {
-          option.url = option.url?.replace("/chains/", "/chains-rework/");
-        });
-        newNavigationItems.splice(3, 0, {...chainsNavigationItemsCopy, name: "Chains", label: "Chains Rework", key: "chains-rework"});
+
       }
 
       return newNavigationItems;
