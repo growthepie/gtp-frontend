@@ -598,7 +598,7 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
               key={index + chain.urlKey}
               trigger={
                 <div>
-                  <Link href={`/chains-rework/${chain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
+                  <Link href={`/chains/${chain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
                     <GTPIcon icon={`gtp:${chain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
                     style={{
                       color: chain.colors[theme ?? "dark"][0],

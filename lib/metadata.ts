@@ -10,7 +10,7 @@ type RawMetadataRecord = {
 const hardcodedMetadataArray: RawMetadataRecord[] = [
   {
     "Path": "/",
-    "Title Template": "growthepie - Ethereum Ecosystem Analytics & Layer 2 Insights",
+    "Title Template": "growthepie - Ethereum Ecosystem Analytics",
     "Description Template": "The open analytics platform for the Ethereum ecosystem - empowering builders with actionable insights to grow the pie. From Mainnet to Layer 2s and onchain applications, explore open data on usage, growth, and adoption",
     "Status": "Published"
   },
