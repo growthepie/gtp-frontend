@@ -125,7 +125,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
               {monthly_agg_labels[monthly_agg]}
             </div>
           </div>
-          {["daily", "monthly"].map((interval) => (
+          {["daily", "weekly", "monthly"].map((interval) => (
             <TopRowChild
               key={interval}
               className={"capitalize"}
@@ -142,6 +142,32 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                     const closestTimespan = Object.keys(timespans)
                       .filter((timespan) =>
                         ["90d", "180d", "365d", "max"].includes(timespan),
+                      )
+                      .reduce((prev, curr) =>
+                        Math.abs(
+                          timespans[curr].xMax -
+                          timespans[selectedTimespan].xMax,
+                        ) <
+                          Math.abs(
+                            timespans[prev].xMax -
+                            timespans[selectedTimespan].xMax,
+                          )
+                          ? curr
+                          : prev,
+                      );
+
+                    setSelectedTimespan(closestTimespan);
+                  }
+                } else if (interval === "weekly") {
+                  if ("365d" === selectedTimespan) {
+                    setSelectedTimespan("52w");
+                  } else if ("max" === selectedTimespan) {
+                    setSelectedTimespan("maxW");
+                  } else {
+                    // find closest timespan
+                    const closestTimespan = Object.keys(timespans)
+                      .filter((timespan) =>
+                        ["12w", "24w", "52w", "maxW"].includes(timespan),
                       )
                       .reduce((prev, curr) =>
                         Math.abs(
@@ -216,7 +242,9 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
             .filter((timespan) =>
               selectedTimeInterval === "daily"
                 ? ["90d", "180d", "365d", "max"].includes(timespan)
-                : ["6m", "12m", "maxM"].includes(timespan),
+                : selectedTimeInterval === "weekly"
+                  ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                  : ["6m", "12m", "maxM"].includes(timespan),
             )
             .map((timespan) => (
               <TopRowChild

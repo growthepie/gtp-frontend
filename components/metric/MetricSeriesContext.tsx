@@ -69,7 +69,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     (name: string) => {
       if (name === "ethereum" && focusEnabled) {
         // show column chart for ethereum if monthly and stacked
-        if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
+        if ((selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") && selectedScale === "stacked")
           return "column";
         // else respect the selectedScale for ethereum
         if (selectedScale === "percentage") return "area";
@@ -252,19 +252,19 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         },
       };
 
-      const todaysDateUTC = new Date().getUTCDate();
+      const todaysDayOfMonthUTC = new Date().getUTCDate();
 
       const secondZoneDottedColumnColor =
-        todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+        todaysDayOfMonthUTC === 1 ? columnColor : dottedColumnColor;
 
-      const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
+      const secondZoneDashStyle = todaysDayOfMonthUTC === 1 ? "Solid" : "Dot";
 
 
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
       if (selectedTimeInterval === "monthly") {
 
-        if (seriesData.length > 1 && todaysDateUTC !== 1) {
+        if (seriesData.length > 1 && todaysDayOfMonthUTC !== 1) {
           zoneAxis = "x";
           zones = [
             {
@@ -284,7 +284,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                 : MetadataByKeys[name].colors["dark"][0],
             },
           ];
-        } else if (todaysDateUTC !== 1) {
+        } else if (todaysDayOfMonthUTC !== 1) {
           zoneAxis = "x";
           zones = [
             {
@@ -310,6 +310,44 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
             }
           ];
         }
+      }else if (selectedTimeInterval === "weekly") {
+        const todaysDateUTC = new Date().getTime();
+        const daysSinceLastDataPoint = Math.floor((todaysDateUTC - seriesData[seriesData.length - 1][0]) / (1000 * 60 * 60 * 24));
+
+        if(daysSinceLastDataPoint >= 7) {
+          zoneAxis = "x";
+          zones = [
+            {
+              // value: monthlyData[monthlyData.length - 2][0],
+              dashStyle: "Solid",
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? columnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            }
+          ];
+        }else{
+          zoneAxis = "x";
+          zones = [
+            {
+              value: seriesData[seriesData.length - 2][0] + 1,
+              dashStyle: "Solid",
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? columnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            },
+            {
+              // value: monthlyData[monthlyData.length - 2][0],
+              dashStyle: secondZoneDashStyle,
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? secondZoneDottedColumnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            },
+          ];
+        }
+
       }
 
       return {
@@ -376,7 +414,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
     const pointsSettings = {
       pointPlacement:
-        selectedTimeInterval === "monthly" &&
+        (selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") &&
           selectedScale === "stacked"
           ? 0
           : 0.5,

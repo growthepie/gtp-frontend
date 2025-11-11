@@ -263,6 +263,10 @@ export const MetricChartControlsProvider = ({
       return "daily_7d_rolling";
     }
 
+    if (selectedTimeInterval === "weekly") {
+      return "weekly";
+    }
+
     if (selectedTimeInterval === "monthly") {
       return "monthly";
     }
