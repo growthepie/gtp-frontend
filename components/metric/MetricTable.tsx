@@ -344,28 +344,59 @@ const MetricTable = ({
   }, [reversePerformer]);
 
   const lastValueLabels = {
-    monthly: "last 30d",
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
+    monthly: "Last Month",
+    weekly: "Last Week",
   };
 
 
-  const timespanLabels = {
-    "1d": "24h",
-    // "7d": "7 days",
-    "30d": "30 days",
-    "365d": "1 year",
-  };
+  // const timespanLabels = {
+  //   "1d": "24h",
+  //   // "7d": "7 days",
+  //   "30d": "30 days",
+  //   "365d": "1 year",
+  // };
 
-  const timespanLabelsMonthly = {
-    "30d": "1 month",
-    // "90d": "3 months",
-    "180d": "6 months",
-    "365d": "1 year",
-  };
+  // const timespanLabelsMonthly = {
+  //   "30d": "1 month",
+  //   // "90d": "3 months",
+  //   "180d": "6 months",
+  //   "365d": "1 year",
+  // };
+
+
+
+  const timespanLabels: { [key: string]: { [key: string]: string } } = {
+    daily: {
+      "1d": "24 hours",
+      // "7d": "7 days",
+      "30d": "30 days",
+      "365d": "365 days",
+    },
+    daily_7d_rolling: {
+      "1d": "24 hrs",
+      // "7d": "7 days",
+      "30d": "30 days",
+      "365d": "365 days",
+    },
+    weekly: {
+      "7d": "7 days",
+      // "30d": "4 weeks",
+      // "90d": "12 weeks",
+      "180d": "180 days",
+      "365d": "365 days",
+    },
+    monthly: {
+      "30d": "30 days",
+      "180d": "180 days",
+      "365d": "365 days",
+    },
+  }
 
   // New function to create rows with placeholders
   const rowsWithPlaceholders = useCallback(() => {
+    console.log("sort.metric", sort.metric);
     const sortedRows = rows().sort((a, b) => {
       const aIsSelected = selectedChains.includes(a.chain.key);
       const bIsSelected = selectedChains.includes(b.chain.key);
@@ -392,10 +423,11 @@ const MetricTable = ({
         return sort.sortOrder === "desc" ? b.chain.key.localeCompare(a.chain.key) : a.chain.key.localeCompare(b.chain.key);
       }
       // if sort.metric is a timespan, sort by the timespan value
-      else if (Object.keys(timespanLabels).includes(sort.metric)) {
-        const timespanIndex = Object.keys(timespanLabels).indexOf(sort.metric);
-        const bVal = b.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
-        const aVal = a.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
+      else if (Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric)) {
+        console.log("Object.keys(timespanLabels).includes(sort.metric)", Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric));
+        const timespanIndex = Object.keys(timespanLabels[timeIntervalKey]).indexOf(sort.metric);
+        const bVal = b.data[changesKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
+        const aVal = a.data[changesKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
 
         if (aIsSelected && !bIsSelected) {
           return -1;
@@ -441,7 +473,7 @@ const MetricTable = ({
     }
 
     return result;
-  }, [rows, selectedChains, sort, timespanLabels, changesKey]);
+  }, [rows, selectedChains, sort, timespanLabels, changesKey, reversePerformer]);
 
   let height = 0;
   const transitions = useTransition(
@@ -578,7 +610,7 @@ const MetricTable = ({
     ],
   );
 
-  if (!data) return null;
+  if (!data || !timespanLabels[timeIntervalKey]) return timeIntervalKey;
 
   return (
     <HorizontalScrollContainer includeMargin={isMobile ? true : false}>
@@ -622,19 +654,45 @@ const MetricTable = ({
                 </GridTableHeaderCell>
                 {/* Timespans */}
                 {Object.entries(
-                  timeIntervalKey === "monthly"
-                    ? timespanLabelsMonthly
-                    : timespanLabels,
+                  timespanLabels[timeIntervalKey],
                 ).map(([timespan, label]) => (
                   <GridTableHeaderCell
                     key={timespan}
                     metric={timespan}
                     justify="end"
                     className="heading-small-xxs"
-                    sort={sort}
-                    setSort={setSort}
+                    // sort={sort}
+                    // setSort={setSort}
                   >
-                    {label}
+                    {/* {label} */}
+                    <div
+                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] flex`}
+                      onClick={() => {
+                        setSort({
+                          metric: timespan, //"gas_fees_change_pct",
+                          sortOrder:
+                            sort.metric === timespan
+                              ? sort.sortOrder === "asc"
+                                ? "desc"
+                                : "asc"
+                              : "desc",
+                        });
+                      }}
+                    >
+                      <div className="text-xxxs !leading-[14px]">{label}</div>
+                      {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
+                      <Icon
+                        icon={
+                          sort.metric === timespan && sort.sortOrder === "asc"
+                            ? "feather:arrow-up"
+                            : "feather:arrow-down"
+                        }
+                        className="w-[10px] h-[10px]"
+                        style={{
+                          opacity: sort.metric === timespan ? 1 : 0.2,
+                        }}
+                      />
+                    </div>
                   </GridTableHeaderCell>
                 ))}
               </GridTableHeader>
@@ -727,9 +785,7 @@ const MetricTable = ({
               </GridTableHeaderCell>
               {/* Timespans */}
               {Object.entries(
-                timeIntervalKey === "monthly"
-                  ? timespanLabelsMonthly
-                  : timespanLabels,
+                timespanLabels[timeIntervalKey],
               ).map(([timespan, label]) => (
                 <GridTableHeaderCell key={timespan} metric={timespan} justify="end" className="heading-small-xxs" sort={sort} setSort={setSort}>
                   {label}
@@ -882,9 +938,7 @@ const MetricTable = ({
                       </div>
                     </div>
                     {Object.keys(
-                      timeIntervalKey === "monthly"
-                        ? timespanLabelsMonthly
-                        : timespanLabels,
+                      timespanLabels[timeIntervalKey],
                     ).map((timespan) => (
                       <div key={timespan} className="w-full text-right">
                         {changesValueIndex !== undefined && item.data[changesKey][timespan][changesValueIndex] ===
