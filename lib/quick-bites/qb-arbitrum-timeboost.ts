@@ -1,9 +1,11 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const arbitrumTimeboost: QuickBiteData = {
+const arbitrumTimeboost: QuickBiteData = createQuickBite({
   title: "Timeboost: An Express Lane for Arbitrum",
   subtitle: "Timeboost allows to better capitalize on MEV by providing express lane access for users",
+  shortTitle: "Arbitrum Timeboost",
   content: [
 
     "# Timeboost Usage",
@@ -153,6 +155,6 @@ const arbitrumTimeboost: QuickBiteData = {
     url: "/fundamentals/fees-paid-by-users"
   }],
   icon: "arbitrum-logo-monochrome"
-};
+});
 
 export default arbitrumTimeboost;

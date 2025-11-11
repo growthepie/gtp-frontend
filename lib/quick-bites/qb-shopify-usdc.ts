@@ -1,8 +1,10 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const BaseCommercePaymentProtocol: QuickBiteData = {
+const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
   title: "Base: Commerce Payment Protocol (+Shopify)",
   subtitle: "A game changer for E-commerce, stablecoins are going mainstream",
+  shortTitle: "Base Commerce",
   content: [
 
     'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world". ([1])[https://www.shopify.com/news/stablecoins-on-shopify] This marked the birth of the Commerce Payment Protocol on Base (Layer 2) bringing tradtional E-commerce onchain.',
@@ -210,7 +212,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
   }
 ],
 icon: "base-logo-monochrome"
-};
+});
 
 
 export default BaseCommercePaymentProtocol;
