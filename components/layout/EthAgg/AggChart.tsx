@@ -11,6 +11,7 @@ import { AggChartProps } from './MetricsCharts';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
+import Link from 'next/link';
 
 
 export function formatNumberWithSI(num: number): string {
@@ -121,6 +122,7 @@ export function AggChart({
   title,
   tooltipContent,
   prefix,
+  urlKey,
   dataSource,
   seriesConfigs,
   totalValueExtractor,
@@ -641,7 +643,11 @@ export function AggChart({
       {/* Header */}
       <div className={`flex h-[56px] pl-[24px] sm:pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
         <div className='flex gap-x-[5px] sm:gap-x-[10px] items-center z-[10] flex-1 sm:pt-0 pt-[5px]'>
-          <div className='heading-large-xs sm:heading-large-sm md:heading-large-md'>{title}</div>
+          {urlKey ? (
+            <Link href={`/fundamentals/${urlKey}`} className='heading-large-xs sm:heading-large-sm hover:underline md:heading-large-md'>{title}</Link>
+          ) : (
+            <div className='heading-large-xs sm:heading-large-sm md:heading-large-md'>{title}</div>
+          )}
           <GTPTooltipNew
             placement="top-start"
             trigger={
