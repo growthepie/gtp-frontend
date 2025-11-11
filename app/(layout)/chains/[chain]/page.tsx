@@ -61,21 +61,6 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
-  
-  const {
-    data: usageData,
-    error: usageError,
-    isLoading: usageLoading,
-    isValidating: usageValidating,
-  } = useSWR<ChainData>(`https://api.growthepie.com/v1/chains/blockspace/${chainKey}.json`);
-
-  const {
-    data: feeData,
-    error: feeError,
-    isLoading: feeLoading,
-    isValidating: feeValidating,
-  } = useSWR(FeesURLs.table);
-
   const { cache, mutate } = useSWRConfig();
 
   const fetchChainData = useCallback(async () => {
@@ -114,11 +99,11 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
     fetchChainData();
   }, [chainKey, fetchChainData]);
 
-  if (usageLoading || !chainData) return (
+  if (chainLoading || !chainData) return (
     <div className="w-full h-[60vh] overflow-hidden">
       <ShowLoading
-        dataLoading={[usageLoading, !chainData]}
-        dataValidating={[usageValidating]}
+        dataLoading={[chainLoading, !chainData]}
+        dataValidating={[chainValidating]}
         section={true}
         
       />
