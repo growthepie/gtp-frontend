@@ -39,7 +39,7 @@ import MetricChart from "./MetricChart";
 import MetricTable from "./MetricTable";
 import Page from "@/app/(embeds)/embed/user-base/page";
 
-const monthly_agg_labels = {
+const weekly_monthly_agg_labels = {
   avg: "Average",
   sum: "Total",
   unique: "Distinct",
@@ -84,6 +84,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
     setZoomed,
     chartComponent,
     intervalShown,
+    metric_type,
   } = useMetricChartControls();
 
   const {
@@ -115,20 +116,11 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
         </div>
       ) : (
         <TopRowParent>
-          <div
-            className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
-              ? "translate-y-[calc(-70%)]"
-              : "translate-y-0 "
-              }`}
-          >
-            <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
-              {monthly_agg_labels[monthly_agg]}
-            </div>
-          </div>
-          {["daily", "weekly", "monthly"].map((interval) => (
+          
+          {(metric_type === "fundamentals" ? ["daily", "weekly", "monthly"] : ["daily", "monthly"]).map((interval) => (
             <TopRowChild
               key={interval}
-              className={"capitalize"}
+              className={"capitalize relative"}
               isSelected={selectedTimeInterval === interval}
               onClick={() => {
                 if (selectedTimeInterval === interval) return;
@@ -195,9 +187,9 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                 } else {
                   if (["365d", "52w"].includes(selectedTimespan)) {
                     setSelectedTimespan("12m");
-                  } else if (["180d", "24w"].includes(selectedTimespan)) {
+                  } else if ("180d" === selectedTimespan || "24w" === selectedTimespan) {
                     setSelectedTimespan("6m");
-                  } else if (["max", "maxW"].includes(selectedTimespan)) {
+                  } else if ("max" === selectedTimespan || "maxW" === selectedTimespan) {
                     setSelectedTimespan("maxM");
                   } else {
                     // find closest timespan
@@ -225,6 +217,18 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                 setZoomed(false);
               }}
             >
+              {["monthly", "weekly"].includes(interval) && (
+                <div
+                  className={`absolute transition-[transform] block duration-300 ease-in-out -z-10 top-0 left-[10px] right-[10px] ${selectedTimeInterval === interval && monthly_agg && ["monthly", "weekly"].includes(selectedTimeInterval)
+                    ? "translate-y-[calc(-90%)]"
+                    : "translate-y-0 "
+                    }`}
+                >
+                  <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
+                    {weekly_monthly_agg_labels[monthly_agg]}
+                  </div>
+                </div>
+              )}
               <span className="hidden md:block">{interval}</span>
               <span className="block md:hidden">{interval[0]}</span>
             </TopRowChild>
