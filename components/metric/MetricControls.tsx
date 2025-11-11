@@ -133,9 +133,13 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
               onClick={() => {
                 if (selectedTimeInterval === interval) return;
                 if (interval === "daily") {
-                  if ("12m" === selectedTimespan) {
+                  if(["12w"].includes(selectedTimespan)) {
+                    setSelectedTimespan("90d");
+                  } else if (["6m", "24m"].includes(selectedTimespan)) {
+                    setSelectedTimespan("180d");
+                  }else if (["12m", "52w"].includes(selectedTimespan)) {
                     setSelectedTimespan("365d");
-                  } else if ("maxM" === selectedTimespan) {
+                  } else if (["maxM", "maxW"].includes(selectedTimespan)) {
                     setSelectedTimespan("max");
                   } else {
                     // find closest timespan
@@ -159,9 +163,13 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                     setSelectedTimespan(closestTimespan);
                   }
                 } else if (interval === "weekly") {
-                  if ("365d" === selectedTimespan) {
+                  if(["90d"].includes(selectedTimespan)) {
+                    setSelectedTimespan("12w");
+                  } else if(["365d", "12m"].includes(selectedTimespan)) {
                     setSelectedTimespan("52w");
-                  } else if ("max" === selectedTimespan) {
+                  } else if (["180d", "6m"].includes(selectedTimespan)) {
+                    setSelectedTimespan("24w");
+                  } else if (["max", "maxM"].includes(selectedTimespan)) {
                     setSelectedTimespan("maxW");
                   } else {
                     // find closest timespan
@@ -185,9 +193,11 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                     setSelectedTimespan(closestTimespan);
                   }
                 } else {
-                  if ("365d" === selectedTimespan) {
+                  if (["365d", "52w"].includes(selectedTimespan)) {
                     setSelectedTimespan("12m");
-                  } else if ("max" === selectedTimespan) {
+                  } else if (["180d", "24w"].includes(selectedTimespan)) {
+                    setSelectedTimespan("6m");
+                  } else if (["max", "maxW"].includes(selectedTimespan)) {
                     setSelectedTimespan("maxM");
                   } else {
                     // find closest timespan
