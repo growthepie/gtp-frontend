@@ -39,6 +39,7 @@ export interface JsonLdThing {
   export interface QuickBiteData {
     title: string;
     subtitle: string;
+    shortTitle: string; // Must be <= 20 characters for card layouts
     summary?: string | ""; // Optional summary for SEO
     content: string[];
     image: string;

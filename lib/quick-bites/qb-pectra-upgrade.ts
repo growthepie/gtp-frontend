@@ -1,8 +1,10 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const pectraUpgrade: QuickBiteData = {
+const pectraUpgrade: QuickBiteData = createQuickBite({
   title: "Pectra: The People's Upgrade",
   subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
+  shortTitle: "Pectra Upgrade",
   content: [
     "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and cheaper to interact with the Ethereum ecosystem.",
 
@@ -153,6 +155,6 @@ const pectraUpgrade: QuickBiteData = {
     url: "/data-availability/blob-count"
   }],
   icon: "ethereum-logo-monochrome"
-};
+});
 
-export default pectraUpgrade; 
+export default pectraUpgrade;

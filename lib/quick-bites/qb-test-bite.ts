@@ -1,4 +1,5 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 /**
  * Test Quick Bite - Example implementation showcasing all available content blocks
@@ -12,9 +13,10 @@ import { QuickBiteData } from '@/lib/types/quickBites';
  * - Text formatting (headers, bold, callouts, lists)
  */
 
-const testBite: QuickBiteData = {
+const testBite: QuickBiteData = createQuickBite({
   title: "This is a Test Quick Bite",
   subtitle: "Trying out different types of blocks",
+  shortTitle: "Test Quick Bite",
   content: [
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
     "```kpi-cards",JSON.stringify(
@@ -451,6 +453,6 @@ const testBite: QuickBiteData = {
     url: "/chains/base"
   }],
   showInMenu: false
-};
+});
 
-export default testBite; 
+export default testBite;
