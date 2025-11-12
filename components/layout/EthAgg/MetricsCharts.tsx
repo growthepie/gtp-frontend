@@ -395,31 +395,31 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
               <div className='flex items-center gap-x-[5px]'>
                 <GTPIcon
                   icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
-                  size='lg'
+                  size='md'
                   style={{ color }}
                 />
                 <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
               </div>
-              <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-color-bg-medium'>
-                <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
+              <div className='flex items-center justify-center w-[26px] h-[26px] rounded-full bg-color-bg-medium'>
+                <GTPIcon icon="gtp-chevronright-monochrome" size='sm' containerClassName='!w-[16px] !h-[16px] flex justify-center items-center' className='!w-[10.67px] !h-[10.67px] -mr-[2px]' />
               </div>
             </div>
-            <div className='flex gap-x-[10px] items-center'>
-              <div className='flex flex-col gap-y-[5px]'>
+            <div className='flex gap-x-[10px] items-center justify-between'>
+              <div className='flex flex-col gap-y-[5px] w-[125px]'>
                 <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
                 <div className='text-xs'>Wallets Yesterday</div>
               </div>
-              <div className='flex flex-col gap-y-[5px]'>
+              <div className='flex flex-col gap-y-[5px] w-[125px]'>
                 <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
                 <div className='text-xs'>Total Wallets</div>
               </div>
             </div>
-            <div className='flex gap-x-[10px] items-center'>
-              <div className='flex flex-col gap-y-[5px]'>
+            <div className='flex gap-x-[10px] items-center justify-between'>
+              <div className='flex flex-col gap-y-[5px] w-[125px]'>
                 <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
                 <div className='text-xs'>Stablecoin Supply</div>
               </div>
-              <div className='flex flex-col gap-y-[5px]'>
+              <div className='flex flex-col gap-y-[5px] w-[125px]'>
                 <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
                 <div className='text-xs'>TPS/Day</div>
               </div>
@@ -436,7 +436,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                         key={project.owner_project}
                         size="md"
                         placement="top-start"
-                        allowInteract={true}
+                        allowInteract={false}
                         trigger={
                           <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
                             <ApplicationIcon owner_project={project.owner_project} size='sm' />

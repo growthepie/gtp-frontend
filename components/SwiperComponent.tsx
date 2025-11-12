@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import Container from "./layout/Container";
 import { Pagination, Navigation } from "swiper/modules";
@@ -7,6 +7,8 @@ import { Pagination, Navigation } from "swiper/modules";
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import { useResizeObserver } from "usehooks-ts";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 const styleString = `
                 .focus-carousel {
                     overflow: visible !important;
@@ -29,20 +31,25 @@ const styleString = `
                     margin-top: 15px;
                     padding-top: 2px;
                     height: 12px;
+                    width: 100% !important;
                 }
                 .focus-carousel .swiper-pagination-bullet {
-                    background-color: #5A6462;
+                    background-color: rgb(var(--text-primary));
                     opacity: 0.5;
                     transition: all 0.3s ease;
+                    width: 12px;
+                    height: 12px;
+                    padding: 2px 2px !important;
+                    margin: 0 2px !important;
                 }
                 .focus-carousel .swiper-pagination-bullet-active {
-                    background-color: #1F2726;
+                    background-color: rgb(var(--text-primary));
                     opacity: 1;
-                    transform: scale(1.2);
+                    transform: scale(0.67);
                 }
                 @media (prefers-color-scheme: dark) {
                     .focus-carousel .swiper-pagination-bullet-active {
-                        background-color: #CDD7D5;
+                        background-color: rgb(var(--text-primary));
                     }
                 }
                 @media (max-width: 1023px) {
@@ -61,8 +68,13 @@ const styleString = `
 
 export default function SwiperComponent({ children }: { children: React.ReactNode }) {
     const childrenArray = React.Children.toArray(children);
+    const [swiperContainerRef, { width: swiperContainerWidth }] = useElementSizeObserver<HTMLDivElement>();
 
-    const updateVisibleSlides = (swiper: any) => {
+    const slidesPerView = useMemo(() => {
+        return Math.min(Math.floor(swiperContainerWidth / (265 + 15)), childrenArray.length );
+    }, [swiperContainerWidth, childrenArray.length]);
+
+    const updateVisibleSlides = useCallback((swiper: any) => {
         const slides = swiper.slides;
         const activeIndex = swiper.activeIndex;
         
@@ -73,20 +85,19 @@ export default function SwiperComponent({ children }: { children: React.ReactNod
         
         // Add class to the first 3 visible slides at 1024px+
         const isMobile = window.innerWidth < 1024;
-        const visibleCount = isMobile ? (window.innerWidth < 768 ? 1 : 1) : 3;
+        const visibleCount = isMobile ? (window.innerWidth < 768 ? 1 : 1) : Math.min(slidesPerView, 5);
         
         for (let i = 0; i < visibleCount && activeIndex + i < slides.length; i++) {
             slides[activeIndex + i]?.classList.add('swiper-slide-fully-visible');
         }
-    };
+    }, [slidesPerView]);
 
     return (
         <Container>
             <style>{styleString}</style>
-            
-            <div className="py-5">
-                <Swiper
-                    slidesPerView={5}
+            <div className="py-5" ref={swiperContainerRef}>
+                {swiperContainerWidth > 0 && <Swiper
+                    slidesPerView={slidesPerView}
                     spaceBetween={15}
                     centeredSlides={true}
                     navigation={false}
@@ -96,6 +107,8 @@ export default function SwiperComponent({ children }: { children: React.ReactNod
                     }}
                     onSlideChange={updateVisibleSlides}
                     onSwiper={updateVisibleSlides}
+                    onResize={updateVisibleSlides}
+                    onInit={updateVisibleSlides}
                     breakpoints={{
                         320: {
                             slidesPerView: 1.3,
@@ -115,6 +128,7 @@ export default function SwiperComponent({ children }: { children: React.ReactNod
                     }}
                     modules={[Pagination, Navigation]}
                     className="focus-carousel"
+                    resizeObserver={true}
                 > 
                     {childrenArray.map((child, index) => (
                         <SwiperSlide key={index + "swiper"}>
@@ -123,7 +137,7 @@ export default function SwiperComponent({ children }: { children: React.ReactNod
                             </div>
                         </SwiperSlide>
                     ))}
-                </Swiper>
+                </Swiper>}
             </div>
         </Container>
     );
