@@ -1,44 +1,29 @@
 "use client";
 
-import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
-import HighchartsColumnSeries from "highcharts/es-modules/Series/Column/ColumnSeries"
 import Highcharts, {
   AxisLabelsFormatterContextObject,
   Tick,
-  chart,
-  color,
 } from "highcharts/highstock";
-import { motion, useAnimation, AnimatePresence } from "framer-motion";
-import Heading from "@/components/layout/Heading";
 import {
   useState,
   useEffect,
   useMemo,
   useRef,
   useCallback,
-  useLayoutEffect,
 } from "react";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { debounce, fill, merge } from "lodash";
+import { merge } from "lodash";
 import { Switch } from "../Switch";
-import {
-  // AllChainsByKeys,
-  // EnabledChainsByKeys,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
-import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import Link from "next/link";
-import { Sources } from "@/lib/datasources";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
-import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
 import {
