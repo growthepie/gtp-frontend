@@ -151,6 +151,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
                         style={{
                           color: showColor ? resolvedColor || '#344240' : '#344240'
                         }}
+                        title={topic.name}
+                        aria-label={topic.name}
                       >
                         <GTPIcon icon={(resolvedIcon || "chain-dark") as GTPIconName} size="sm" />
                       </Link>
