@@ -256,6 +256,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
 
   const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [height, setHeight] = useState<number[]>([]);
 
   if (!masterData) {
     return null;
@@ -267,7 +268,6 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
-  const [height, setHeight] = useState<number[]>([]);
 
 
   return (
