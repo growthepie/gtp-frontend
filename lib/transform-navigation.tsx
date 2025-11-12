@@ -65,7 +65,7 @@ export const transformNavigationToSidebar = (
     }
 
     // ---- Special bucketing for Chains → chain-link children
-    if ((item.key === 'chains' || item.key === 'chains-rework') && master) {
+    if ((item.key === 'chains') && master) {
       const children: (SidebarLink | SidebarChainLink | SidebarSectionTitle)[] = [];
 
       const chainsByBucket: { [bucket: string]: any[] } = Object.entries(master.chains).reduce(
