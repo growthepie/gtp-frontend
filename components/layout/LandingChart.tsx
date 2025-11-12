@@ -684,7 +684,9 @@ export default function LandingChart({
 
   // const containerRef = useRef<HTMLDivElement>(null);
 
-  const [containerRef, { width, height }] = useElementSizeObserver();
+  const [containerRef, { width, height }] = useElementSizeObserver({
+    enabled: is_embed,
+  });
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
