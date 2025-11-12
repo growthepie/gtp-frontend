@@ -36,6 +36,7 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
 import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
@@ -427,25 +428,6 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-
-  const updateContainerSize = useCallback(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    const nextSize = {
-      width: element.clientWidth,
-      height: element.clientHeight,
-    };
-
-    setContainerSize((prev) => {
-      if (prev.width === nextSize.width && prev.height === nextSize.height) {
-        return prev;
-      }
-      return nextSize;
-    });
-  }, []);
 
   const [daysShown, setDaysShown] = useState(900);
 
@@ -737,34 +719,15 @@ export default function LandingChart({
     }
   }, [selectedTimespan, timespans]);
 
-  useLayoutEffect(() => {
-    updateContainerSize();
-  }, [updateContainerSize, isSidebarOpen, is_embed]);
+  // const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const handleResize = () => {
-      updateContainerSize();
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize();
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [updateContainerSize]);
+  const [containerRef, { width, height }] = useElementSizeObserver();
 
   const getChartHeight = useCallback(() => {
-    if (is_embed) {
-      return containerSize.height || (isMobile ? 284 : 400);
-    }
+    if (is_embed) return height;
     if (isMobile) return 284;
     return 400;
-  }, [containerSize.height, isMobile, is_embed]);
+  }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
@@ -1175,16 +1138,10 @@ export default function LandingChart({
   }, [isMobile, is_embed]);
 
   useEffect(() => {
-    const chart = chartComponent.current;
-    if (!chart) {
-      return;
+    if (chartComponent.current) {
+      chartComponent.current.setSize(width, getChartHeight(), true);
     }
-
-    const nextHeight = getChartHeight();
-
-    chart.setSize(undefined, nextHeight, false);
-    chart.reflow();
-  }, [containerSize.width, getChartHeight]);
+  }, [is_embed, width, height, getChartHeight, isSidebarOpen]);
 
   if (is_embed)
     return (
