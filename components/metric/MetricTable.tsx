@@ -346,8 +346,8 @@ const MetricTable = ({
   const lastValueLabels = {
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
-    monthly: "Last Month",
-    weekly: "Last Week",
+    monthly: "Last 30d",
+    weekly: "Last 7d",
   };
 
 
