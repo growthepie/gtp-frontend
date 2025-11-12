@@ -77,12 +77,13 @@ const quickBiteIds = ["ethereum-scaling"];
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
   return (
-    <Link 
+    <a
       href={`/quick-bites/${slug}`}
       className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"  
       style={{
         background: `url(${quickBite.image}) no-repeat center center / cover`,
       }}
+      {...({ fetchPriority: "high" } as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
     >
         <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
         <div className="flex justify-end">
@@ -95,7 +96,7 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
         className="absolute top-0 left-0 w-full h-full rounded-[15px] z-0 pointer-events-none"
         />
 
-    </Link>
+    </a>
   )
 };
 
