@@ -1175,6 +1175,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     }
   }, [memoizedQuery, allFilteredData, keyboardExpandedStacks, keyMapping, getKey, setKeyCoords]);
 
+  const [hasEnteredKeyboardNav, setHasEnteredKeyboardNav] = useState(false);
+
   // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1185,20 +1187,28 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       const currentX = keyCoords.x ?? 0;
 
       if (event.key === 'ArrowUp') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== 0) {
           setKeyCoords({ y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1) });
+        }else if (currentY === 0) {
+          setHasEnteredKeyboardNav(false);
+          setKeyCoords({ y: null, x: null });
         }
       } else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        setHasEnteredKeyboardNav(true);
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== keyMapping.length - 1) {
           setKeyCoords({ y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1) });
         }
       } else if (event.key === 'ArrowLeft') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
@@ -1206,6 +1216,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           setKeyCoords({ y: currentY, x: currentX - 1 });
         }
       } else if (event.key === 'ArrowRight') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: currentY, x: currentX + 1 });
@@ -1226,6 +1238,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           }, 0);
         }
       } else if (event.key === 'Escape') {
+        if(hasEnteredKeyboardNav){
+          setHasEnteredKeyboardNav(false);
+        }
         event.preventDefault();
         event.stopPropagation();
         

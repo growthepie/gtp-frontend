@@ -877,7 +877,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               ESC
             </div>
           </div>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Back</div>
         </div>
       </div>
     </div>
