@@ -1,5 +1,5 @@
 "use client";
-import React, { memo, useMemo, createContext, useContext, useEffect, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 import ChainComponent from "@/components/charts/ChainComponent";
 import Link from "next/link";
 import Image from "next/image";
@@ -74,8 +74,29 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
 };
 
 const quickBiteIds = ["ethereum-scaling"];
+const quickBiteItems: { slug: string; quickBite: QuickBiteData }[] = quickBiteIds
+  .map((quickBiteId) => ({
+    slug: quickBiteId,
+    quickBite: getQuickBiteBySlug(quickBiteId),
+  }))
+  .filter(
+    (
+      quickBite,
+    ): quickBite is { slug: string; quickBite: QuickBiteData } =>
+      quickBite.quickBite !== undefined,
+  );
 
-const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
+const QuickBiteCard = ({
+  quickBite,
+  slug,
+  forceLightText = false,
+  isPriority = false,
+}: {
+  quickBite: QuickBiteData;
+  slug: string;
+  forceLightText?: boolean;
+  isPriority?: boolean;
+}) => {
  
   return (
     <Link
@@ -86,8 +107,8 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
         src={quickBite.image}
         alt={quickBite.title}
         fill
-        priority
-        fetchPriority="high"
+        priority={isPriority}
+        fetchPriority={isPriority ? "high" : "auto"}
         sizes="(min-width: 768px) 320px, 145px"
         className="absolute inset-0 z-10 h-full w-full object-cover"
       />
@@ -143,20 +164,18 @@ export default function LandingSwiperItems() {
     }
   }, [landing]);
 
-  const [quickBiteItems, setQuickBiteItems] = useState<{slug: string, quickBite: QuickBiteData}[]>([]);
-  useEffect(() => {
-    const quickBites = quickBiteIds.map(quickBiteId => ({slug: quickBiteId, quickBite: getQuickBiteBySlug(quickBiteId)}));
-    setQuickBiteItems(quickBites.filter((quickBite): quickBite is {slug: string, quickBite: QuickBiteData} => quickBite.quickBite !== undefined));
-  }, []);
-
-
   return (
     // <FocusProvider>
       <SplideTrack>
-        {quickBiteItems.map(({slug, quickBite}) => (
+        {quickBiteItems.map(({slug, quickBite}, index) => (
           <SplideSlide key={slug}>
             <div className="group w-full">
-              <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
+              <QuickBiteCard
+                quickBite={quickBite}
+                slug={slug}
+                forceLightText={true}
+                isPriority={index === 0}
+              />
             </div>
           </SplideSlide>
         ))}
