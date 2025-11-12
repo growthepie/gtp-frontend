@@ -989,7 +989,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             />
           </div> */}
           {hideApplications ? (
-            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2] min-h-[192px]`}>
+            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
               <GTPIcon icon="gtp-lock" size="md" className="" />
               <div className="heading-large-md">
                 Applications Not Available

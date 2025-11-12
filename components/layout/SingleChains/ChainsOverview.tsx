@@ -275,7 +275,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 ) : (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
                     <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
-                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2]`}>
+                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2]`}>
                       <GTPIcon icon="gtp-lock" size="md" className="" />
                       <div className="heading-large-md">
                         Usage Breakdown Not Available
