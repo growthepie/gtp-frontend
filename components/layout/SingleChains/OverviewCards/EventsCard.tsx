@@ -13,7 +13,7 @@ import { LinkButton } from '@/components/layout/LinkButton';
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 
-export default function EventsCard({ children, totalHeight, customTitleArea, minHeight }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number }) {
+export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number, tooltipContent?: string }) {
     const [expanded, setExpanded] = useState(false);
     const [measuredContentHeight, setMeasuredContentHeight] = useState<number>(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -106,7 +106,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                 >
                     <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className={`text-[#5A6462] transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
                  
-              
+                    {tooltipContent && (    
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">
                         <div className='w-[15px] h-fit z-30'>
                             <GTPTooltipNew
@@ -127,13 +127,13 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                             >
                                 <div>
                                 <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                    {"This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details."}
+                                {tooltipContent}
                                 </TooltipBody>
                                 </div>
                             </GTPTooltipNew>
                         </div>
                     </div>
-
+                    )}
 
                 </div>
             </div>

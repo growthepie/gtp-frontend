@@ -200,7 +200,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             ))}
             <PartitionLine />
             {chainDataOverview && (
-                <EventsCard totalHeight={500}>
+                <EventsCard totalHeight={500} tooltipContent="This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details.">
                     <div className="heading-large-md pb-[30px]">Events</div>
                     {[...chainDataOverview.data.events]
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
