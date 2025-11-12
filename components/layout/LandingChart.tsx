@@ -46,15 +46,12 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
-import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
-import { transparent } from "tailwindcss/colors";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
-import { DynamicLabel } from "../home/LandingHeaders";
 
 
 const COLORS = {
@@ -304,18 +301,10 @@ export default function LandingChart({
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
   }) {
-  const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
-
-  const  textToggles = {
-    "toggle": {
-      "total": "Total Ethereum Ecosystem",
-      "l2": "Layer 2 Ecosystem"
-      }
-  }
 
 
   // useEffect(() => {
@@ -328,9 +317,6 @@ export default function LandingChart({
   // }, [embedData]);
 
   useHighchartsWrappers();
-
-  const [maskIds, setMaskIds] = useState<{ rightMaskId: string; leftMaskId: string } | null>(null);
-
 
 
   useEffect(() => {
@@ -391,9 +377,6 @@ export default function LandingChart({
     selectedMetric === "Composition Split" ? "percentage" : "absolute",
   );
 
-  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
   const [zoomMax, setZoomMax] = useState(0);
@@ -409,8 +392,6 @@ export default function LandingChart({
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(
     embed_show_mainnet ?? false,
   );
-
-  const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
   // 2xl breakpoint
@@ -428,8 +409,6 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-
-  const [daysShown, setDaysShown] = useState(900);
 
   const chartConfig = useMemo(() => {
     if (!data) return null;
@@ -659,7 +638,6 @@ export default function LandingChart({
     embedData.timeframe,
     maxDate,
     selectedScale,
-    selectedTimeInterval,
     selectedTimespan,
     showEthereumMainnet,
     showUsd,
@@ -1232,12 +1210,6 @@ export default function LandingChart({
                 setSelectedScale("absolute");
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
-              onMouseEnter={() => {
-                setHoveredMetric("Total Ethereum Ecosystem");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
-              }}
             >
               <div className="flex items-center justify-center gap-x-[5px]  ">
                 <div className="flex items-center gap-x-[5px]">
@@ -1263,12 +1235,6 @@ export default function LandingChart({
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
                 setSelectedMetric("Composition");
-              }}
-              onMouseEnter={() => {
-                setHoveredMetric("Composition");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
               }}
             >
               {/*Title Area */}
@@ -1307,12 +1273,6 @@ export default function LandingChart({
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
-              }}
-              onMouseEnter={() => {
-                setHoveredMetric("Composition Split");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
               }}
             >
               {/*Title Area */}
