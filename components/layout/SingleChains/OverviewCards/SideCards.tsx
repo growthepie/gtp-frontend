@@ -201,6 +201,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             <PartitionLine />
             {chainDataOverview && (
                 <EventsCard totalHeight={500}>
+                    <div className="heading-large-md pb-[30px]">Events</div>
                     {[...chainDataOverview.data.events]
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((event, index) => (
