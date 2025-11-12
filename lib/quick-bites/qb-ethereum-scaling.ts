@@ -336,6 +336,17 @@ const ethereumScaling: QuickBiteData = createQuickBite({
     "- 100,000 gas per transaction for converting gas/sec → TPS",
     "- Illustrative 3x YoY L1 growth curve; 4x YoY for aggregate L2s",
 
+    "## More Content",
+    "Listen to Justin Drake discuss Lean Ethereum and scaling on [Bankless](https://www.youtube.com/watch?v=k53WcsldV1Y):",
+    "```iframe",
+    JSON.stringify({
+      src: "https://www.youtube.com/embed/k53WcsldV1Y?si=j87grXem25CHOU1P",
+      width: "100%",
+      height: "500px",
+      caption: "Justin Drake on Lean Ethereum - Bankless Podcast",
+    }),
+    "```",
+
     "**Disclaimer**",
     "Projections are illustrative and depend on research, engineering, coordination, and market conditions. Not financial advice.",
   ],
