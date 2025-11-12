@@ -2,6 +2,7 @@
 import React, { memo, useMemo, createContext, useContext, useEffect, useState } from "react";
 import ChainComponent from "@/components/charts/ChainComponent";
 import Link from "next/link";
+import Image from "next/image";
 import Icon from "@/components/layout/Icon";
 import { LandingURL } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
@@ -77,27 +78,41 @@ const quickBiteIds = ["ethereum-scaling"];
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
   return (
-    <a
+    <Link
       href={`/quick-bites/${slug}`}
-      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"  
-      style={{
-        background: `url(${quickBite.image}) no-repeat center center / cover`,
-      }}
-      {...({ fetchPriority: "high" } as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] overflow-hidden bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"
     >
-        <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
-        <div className="flex justify-end">
-          <TitleButtonLink label="Full Article" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
-        </div>
-        <div style={{
+      <Image
+        src={quickBite.image}
+        alt={quickBite.title}
+        fill
+        priority
+        fetchPriority="high"
+        sizes="(min-width: 768px) 320px, 145px"
+        className="absolute inset-0 z-10 h-full w-full object-cover"
+      />
+      <div
+        className="absolute inset-0 -z-10 w-full h-full pointer-events-none"
+        style={{
           opacity: 0.6,
           background: "linear-gradient(180deg, var(--color-bg-default, #1F2726) 15%, rgba(31, 39, 38, 0.00) 54.17%)",
-        }} 
-        className="absolute top-0 left-0 w-full h-full rounded-[15px] z-0 pointer-events-none"
+        }}
+        aria-hidden="true"
+      />
+      <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
+      <div className="flex justify-end z-10">
+        <TitleButtonLink
+          label="Full Article"
+          href={`/quick-bites/${slug}`}
+          className="w-fit"
+          containerClassName="!border-none"
+          leftIcon={undefined}
+          rightIcon={"feather:arrow-right" as GTPIconName}
+          gradientClass="bg-[#263130]"
         />
-
-    </a>
-  )
+      </div>
+    </Link>
+  );
 };
 
 const metricIds = ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"];
