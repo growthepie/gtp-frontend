@@ -28,9 +28,18 @@ export function HistoryDots({
   const maxCost = Math.max(...data);
   const minCost = Math.min(...data);
 
+  const normalizedSelectedIndex = Math.min(
+    Math.max(selectedIndex, 0),
+    totalDots - 1
+  );
+  const normalizedHoverIndex =
+    hoverIndex === null
+      ? null
+      : Math.min(Math.max(hoverIndex, 0), totalDots - 1);
+
   // Pre-calculate positions and sizes
   for (let i = 0; i < totalDots; i++) {
-    const size = selectedIndex === i ? 10 : 5;
+    const size = normalizedSelectedIndex === i ? 10 : 5;
     dotSizes.push(size);
     positions.push(cumulativeWidth);
     cumulativeWidth += size + (i < totalDots - 1 ? 1 : 0); // 1px gap
@@ -49,9 +58,11 @@ export function HistoryDots({
         const percentage = range > 0 ? ((cost - minCost) / range) * 100 : 50; // default to 50 if no range
         const color = getGradientColor(percentage);
 
-        const scale = selectedIndex === index ? 2 : hoverIndex === index ? 1.5 : 1;
-        const size = selectedIndex === index ? 10 : hoverIndex === index ? 5 : 5;
-        const zIndex = selectedIndex === index ? 10 : hoverIndex === index ? 5 : 0;
+        const isSelected = normalizedSelectedIndex === index;
+        const isHovered = normalizedHoverIndex === index;
+        const scale = isSelected ? 2 : isHovered ? 1.5 : 1;
+        const size = isSelected ? 10 : 5;
+        const zIndex = isSelected ? 10 : isHovered ? 5 : 0;
 
         return (
           <div 
@@ -64,7 +75,7 @@ export function HistoryDots({
           }}
           >
             <div
-              className={`rounded-full transition-all duration-50 absolute w-[5px] h-[5px] cursor-pointer`}
+              className={`rounded-full transition-all duration-500 absolute w-[5px] h-[5px] cursor-pointer`}
               onMouseEnter={() => onHover(index)}
               onMouseLeave={() => onHover(null)}
              

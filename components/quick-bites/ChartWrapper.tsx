@@ -40,6 +40,18 @@ interface ChartWrapperProps {
   title?: string;
   subtitle?: string;
   jsonData?: any;
+  yAxisLine?: {
+    xValue: number;
+    annotationPositionY: number;
+    annotationPositionX: number;
+    annotationText: string;
+    lineStyle?: "solid" | "dashed" | "dotted" | "dashdot" | "longdash" | "longdashdot";
+    lineColor?: string;
+    textColor?: string;
+    lineWidth?: number;
+    textFontSize?: string;
+    backgroundColor?: string;
+  }[];
   jsonMeta?: {
     meta: {
       type?: string,
@@ -71,6 +83,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   // stacking,
   jsonData,
   jsonMeta,
+  yAxisLine,
   seeMetricURL,
   showXAsDate = false,
   disableTooltipSort = false
@@ -111,10 +124,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     
     return jsonMeta.meta.map((series: any, index: number) => ({
       ...series,
-      processedData: jsonData[index]?.map((item: any) => [
-        item[series.xIndex],
-        item[series.yIndex]
-      ]) || []
+      processedData: (() => {
+        const rawData = jsonData[index]?.map((item: any) => [
+          item[series.xIndex],
+          item[series.yIndex]
+        ]) || [];
+
+        // Apply yMultiplication if specified
+        return series.yMultiplication
+          ? rawData.map(([x, y]) => [x, y * series.yMultiplication])
+          : rawData;
+      })()
     }));
   }, [jsonMeta, jsonData]);
 
@@ -421,6 +441,26 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               type={showXAsDate ? "datetime" : undefined}
               tickAmount={5}
               tickLength={15}
+              plotLines={yAxisLine?.map((line) => ({
+                value: line.xValue,
+                color: line.lineColor || (theme === 'dark' ? '#CDD8D3' : '#293332'),
+                width: line.lineWidth || 1,
+                zIndex: 5,
+                dashStyle: line.lineStyle as Highcharts.DashStyleValue || 'solid',
+                label: {
+                  text: `<div class="text-xxs font-raleway bg-${line.backgroundColor || 'color-bg-default'} rounded-[15px] px-2 py-1">${line.annotationText}</div>`,
+                  useHTML: true,
+                  align: 'center',
+                  rotation: 0,
+                  x: line.annotationPositionX,
+                  y: line.annotationPositionY,
+                  style: {
+                    color: line.textColor || (theme === 'dark' ? '#CDD8D3' : '#293332'),
+                    fontSize: line.textFontSize || '9px',
+                    fontFamily: 'Raleway'
+                  }
+                }
+              }))}
             />
             <YAxis
               id="0"

@@ -164,7 +164,7 @@ export const GTPTooltipNew = ({
             refs.setFloating(node);
           }}
           style={floatingStyles}
-          className={`${containerClass} ${GTPTooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-card-dark z-50`}
+          className={`${containerClass} ${GTPTooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard z-50`}
           {...getFloatingProps({
             // No need for onMouseLeave here anymore if allowInteract is false,
             // useHover + CSSTransition handles it

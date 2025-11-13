@@ -1455,6 +1455,13 @@ export default function ChainChart({
     return missingData;
   }, [data, getNoDataMessage]);
 
+  const [hoverChainKey, setHoverChainKey] = useState<string | null>(null);
+
+  const textColors = {
+    default: "text-white",
+    darkTextOnBackground: "text-color-bg-default",
+  }
+
   if (!master || !data) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1506,11 +1513,9 @@ export default function ChainChart({
             >
               <div
                 className={` font-[500] leading-[150%] text-[12px] ${compChain
-                  ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                    (theme === "light" &&
-                      (compChain === "ethereum" || compChain === "imx"))
-                    ? "text-forest-50"
-                    : "text-color-text-primary"
+                  ? AllChainsByKeys[compChain].darkTextOnBackground
+                    ? textColors.darkTextOnBackground
+                    : textColors.default
                   : "text-forest-400 dark:text-[#5A6462]"
                   }`}
               >
@@ -1518,12 +1523,10 @@ export default function ChainChart({
               </div>
               <div
                 className={`flex font-[550] ${compChain
-                  ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                    (theme === "light" &&
-                      (compChain === "ethereum" || compChain === "imx"))
-                    ? "text-forest-50"
-                    : "text-color-text-primary"
-                  : ""
+                  ? AllChainsByKeys[compChain].darkTextOnBackground
+                    ? textColors.darkTextOnBackground
+                    : textColors.default
+                  : textColors.default
                   } gap-x-[5px] justify-center items-center w-32`}
               >
                 {compChain && (
@@ -1604,7 +1607,11 @@ export default function ChainChart({
                   }}
                   key={index}
                   onMouseOver={() => {
+                    setHoverChainKey(chain.key);
                     preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
+                  }}
+                  onMouseLeave={() => {
+                    setHoverChainKey(null);
                   }}
                 >
                   <Icon
@@ -1615,13 +1622,13 @@ export default function ChainChart({
                   <div className="flex w-[22px] h-[22px] items-center justify-center">
                     <Icon
                       icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                      className={`transition-all duration-300 ${compChain === chain.key
+                      className={`${compChain === chain.key
                         ? "w-[22px] h-[22px]"
                         : "w-[15px] h-[15px]"
                         }`}
                       style={{
                         color:
-                          compChain === chain.key
+                          compChain === chain.key || hoverChainKey === chain.key
                             ? AllChainsByKeys[chain.key].colors[
                             theme ?? "dark"
                             ][0]

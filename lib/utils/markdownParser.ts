@@ -1,5 +1,5 @@
 // File: lib/utils/markdownParser.ts
-import { ContentBlock, generateBlockId } from '@/lib/types/blockTypes';
+import { ContentBlock, FaqBlock, generateBlockId } from '@/lib/types/blockTypes';
 
 // Simple utility to convert markdown to raw HTML without remark
 // This is a placeholder - we'll use react-markdown for actual rendering at component level
@@ -24,7 +24,7 @@ export async function processMarkdownContent(content: string[]): Promise<Content
     return [];
   }
 
-  const blocks: ContentBlock[] = [];
+  let blocks: ContentBlock[] = [];
   
   for (let i = 0; i < content.length; i++) {
     try {
@@ -64,7 +64,7 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       
       // Handle dropdown blocks - ADD THIS SECTION
-      if (text.startsWith('```dropdown')) {
+      else if (text.startsWith('```dropdown')) {
         // Check if the next line contains JSON data
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
@@ -76,6 +76,22 @@ export async function processMarkdownContent(content: string[]): Promise<Content
             if (dropdownBlock) {
               blocks.push(dropdownBlock);
               i += 2; // Important: Skip the JSON and closing marker lines
+              continue;
+            }
+          }
+        }
+      }
+      // Handle FAQ blocks
+      else if (text.startsWith('```faq')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+
+          if (closingMarker) {
+            const faqBlock = parseFaqBlock(jsonString);
+            if (faqBlock) {
+              blocks.push(faqBlock);
+              i += 2;
               continue;
             }
           }
@@ -202,6 +218,12 @@ export async function processMarkdownContent(content: string[]): Promise<Content
     }
   }
   
+  const faqBlocks = blocks.filter((block): block is FaqBlock => block.type === 'faq');
+  if (faqBlocks.length) {
+    const nonFaqBlocks = blocks.filter((block) => block.type !== 'faq');
+    blocks = [...nonFaqBlocks, ...faqBlocks];
+  }
+
   return blocks;
 }
 
@@ -338,6 +360,69 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
   }
 }
 
+function parseFaqBlock(jsonString: string): ContentBlock | null {
+  try {
+    const faqConfig = JSON.parse(jsonString);
+
+    const rawItems = Array.isArray(faqConfig?.items)
+      ? faqConfig.items
+      : Array.isArray(faqConfig)
+        ? faqConfig
+        : Array.isArray(faqConfig?.faq)
+          ? faqConfig.faq
+          : [];
+
+    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+      console.error('Error parsing FAQ data: items array is required.');
+      return null;
+    }
+
+    const items = rawItems
+      .map((item: any) => {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+
+        const question = String(item.question ?? item.q ?? '').trim();
+        const answerRaw = String(item.answer ?? item.a ?? '').trim();
+
+        if (!question && !answerRaw) {
+          return null;
+        }
+
+        return {
+          question,
+          answer: parseBoldText(answerRaw),
+        };
+      })
+      .filter((item): item is { question: string; answer: string } => Boolean(item));
+
+    if (!items.length) {
+      console.error('Error parsing FAQ data: no valid FAQ items found.');
+      return null;
+    }
+
+    const layout = faqConfig.layout === 'list' ? 'list' : 'accordion';
+    const description = typeof faqConfig.description === 'string'
+      ? parseBoldText(faqConfig.description)
+      : '';
+
+    return {
+      id: generateBlockId(),
+      type: 'faq',
+      title: faqConfig.title || faqConfig.heading || '',
+      description,
+      className: faqConfig.className || '',
+      layout,
+      items,
+      showInMenu: parseShowInMenu(faqConfig),
+    };
+  } catch (error) {
+    console.error('Error parsing FAQ data:', error);
+    return null;
+  }
+}
+
 // Corrected helper function to parse kpi-cards blocks
 function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
   try {
@@ -395,6 +480,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null,
+      yAxisLine: chartConfig.yAxisLine || [],
       showInMenu: parseShowInMenu(chartConfig),
       filterOnStateKey: chartConfig.filterOnStateKey || undefined
     };
@@ -428,6 +514,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         type: 'table' as const,
         content: tableConfig.content || '',
         className: tableConfig.className || '',
+        columnOrder: Array.isArray(tableConfig.columnOrder) ? tableConfig.columnOrder : undefined,
         columnSortBy: tableConfig.columnSortBy || undefined,
         columnDefinitions: tableConfig.columnDefinitions || {},
         readFromJSON: true,
@@ -465,6 +552,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         type: 'table' as const,
         content: tableConfig.content || '',
         className: tableConfig.className || '',
+        columnOrder: Array.isArray(tableConfig.columnOrder) ? tableConfig.columnOrder : undefined,
         columnDefinitions: tableConfig.columnDefinitions || {},
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: false,

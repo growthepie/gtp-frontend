@@ -1,196 +1,77 @@
-"use client";
-
+// NOTE: This file is a Server Component (no "use client")
 import { notFound } from 'next/navigation';
-import Container from '@/components/layout/Container';
-import { GTPIcon } from '@/components/layout/GTPIcon';
-import { GTPIconName } from '@/icons/gtp-icon-names';
-import { getQuickBiteBySlug, getRelatedQuickBites } from '@/lib/quick-bites/quickBites';
-import ClientAuthorLink from '@/components/quick-bites/ClientAuthorLink';
-import Block from '@/components/quick-bites/Block';
-import { formatDate } from '@/lib/utils/formatters';
-import { processMarkdownContent } from '@/lib/utils/markdownParser';
-import RelatedQuickBites from '@/components/RelatedQuickBites';
-import { Author, QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
-import Link from 'next/link';
-import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
-import Icon from "@/components/layout/Icon";
-import { ContentBlock } from '@/lib/types/blockTypes';
-import { Fragment, useEffect, useState } from 'react';
-import ShowLoading from '@/components/layout/ShowLoading';
-import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import the new utility
-import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
-import { useMaster } from '@/contexts/MasterContext';
-import { getChainInfoFromUrl } from '@/lib/chains';
-import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
-import { SmartBackButton } from '@/components/SmartBackButton';
+import ClientQuickBitePage from './ClientQuickBitePage';
+import { getQuickBiteBySlug } from '@/lib/quick-bites/quickBites';
+import type { Metadata } from 'next';
+import {
+  generateJsonLdArticle,
+  generateJsonLdBreadcrumbs,
+  generateSeo,
+} from '@/lib/quick-bites/seo_helper';
 
-type Props = {
-  params: { slug: string };
+type Props = { params: { slug: string } };
+
+type QbModule = {
+  jsonLdFaq?: unknown;
+  jsonLdDatasets?: unknown[];
 };
 
-export default function QuickBitePage({ params }: Props) {
-  const { AllChainsByKeys } = useMaster();
-  const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(null);
-  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
-  const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>([]);
-  const [showNotFound, setShowNotFound] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+// ----- SEO: generate <head> metadata -----
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const qb = getQuickBiteBySlug(params.slug);
+  if (!qb) return {};
 
-  useEffect(() => {
-    const fetchContentBlocks = async () => {
-      try {
-        setIsLoading(true);
-        
-        const quickBite = getQuickBiteBySlug(params.slug);
-        if (!quickBite) {
-          setShowNotFound(true);
-          return;
-        }
+  const seo = generateSeo(params.slug, qb);
 
-        // Get related quick bites from the original related array
-        const relatedQuickBites = quickBite.related
-          ? quickBite.related
-              .map(slug => {
-                const data = getQuickBiteBySlug(slug);
-                return data ? { ...data, slug } : null;
-              })
-              .filter((item): item is QuickBiteWithSlug => item !== null)
-          : [];
-        setRelatedContent(relatedQuickBites);
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    alternates: { canonical: seo.canonical },
+    openGraph: {
+      type: 'article',
+      title: seo.og.title,
+      description: seo.og.description,
+      images: seo.og.image ? [{ url: seo.og.image }] : undefined,
+    },
+    twitter: {
+      card: seo.twitter.card,
+      title: seo.twitter.title,
+      description: seo.twitter.description,
+      images: seo.twitter.image ? [seo.twitter.image] : undefined,
+    },
+  };
+}
 
-        // Process dynamic content BEFORE processing markdown
-        const processedContent = await processDynamicContent(quickBite.content);
-        
-        // Update the quick bite with processed content
-        const updatedQuickBite = {
-          ...quickBite,
-          content: processedContent
-        };
-        setQuickBite(updatedQuickBite);
+export default async function Page({ params }: Props) {
+  const qb = getQuickBiteBySlug(params.slug);
+  if (!qb) return notFound();
 
-        // Process markdown with the dynamic content already resolved
-        const blocks = await processMarkdownContent(processedContent);
-        setContentBlocks(blocks);
-        
-      } catch (error) {
-        console.error('Error processing quick bite content:', error);
-        setShowNotFound(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchContentBlocks();
-  }, [params.slug]);
+  const serializeJsonLd = (data: unknown) =>
+    JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
 
-  if (showNotFound) {
-    return notFound();
-  }
-  
+  const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
+    dateModified: qb.date,
+    language: 'en',
+  });
+  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
+
+  const graphs = [
+    jsonLdArticle,
+    jsonLdBreadcrumbs,
+    ...(qb.jsonLdFaq ? [qb.jsonLdFaq] : []),
+    ...(qb.jsonLdDatasets ?? []),
+  ];
+
   return (
     <>
-      <ShowLoading 
-        dataLoading={[isLoading || !QuickBite || !contentBlocks.length]} 
-        dataValidating={[]} 
-      />
-      <div className="">
-        <Container
-          className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
-          isPageRoot
-        >
-          {/* Header section */}
-          <div className=" flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
-            <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
-              {/* Back button */}
-              {/* <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium hover:bg-color-ui-hover" href={"/"}>
-                <Icon icon="feather:arrow-left" className="size-[26px] text-color-text-primary" />
-              </Link>    */}
-              <SmartBackButton />
-              {/* Icon */}
-              <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>   
-                <GTPIcon icon="gtp-quick-bites" size="lg" />
-              </div>
-              {/* Title */} 
-              <h1
-                className={`leading-snug heading-large-md md:heading-large-lg xl:heading-large-xl flex items-center `}              
-              >
-                {QuickBite && QuickBite.title}
-              </h1>
-            </div>
-            {/* Author section */}
-            <div className="flex lg:justify-normal justify-between lg:w-auto w-full  items-center h-full gap-x-2 text-sm">
-              <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={"/"}>
-                <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
-              </Link>  
-              <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
-                {QuickBite && QuickBite.author && (
-                  <>
-                    <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'>
-                      {QuickBite.author.map((author) => (
-                        <Fragment key={author.xUsername}>
-                          <ClientAuthorLink 
-                            name={author.name} 
-                            xUsername={author.xUsername} 
-                          />
-                          <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
-                            <circle cx="3" cy="3" r="3" />
-                          </svg>
-                        </Fragment>
-                      ))}
-                    </div>
-                  </>
-                )}
-                <span className='text-xxs lg:text-sm'>{QuickBite && formatDate(QuickBite.date)}</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Main content with blocks */}
-          <QuickBiteProvider>
-            <div className="lg:pl-[45px] lg:pr-[120px]">
-              <div className=" md:mx-auto">
-                {contentBlocks.map((block) => {
-                  
-                  return <Block key={block.id} block={block} />
-                })}
-              </div>
-            </div>
-          </QuickBiteProvider>
-
-          {/* Content metadata and tags */}
-          <div className="h-[34px] px-[15px] py-[5px] bg-color-bg-default rounded-full flex items-center gap-x-[10px]">
-            <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
-            <div className="flex items-center gap-x-[5px]">
-              {QuickBite && QuickBite.topics && QuickBite.topics.map((topic) => {
-                let resolvedIcon: GTPIconName | undefined = topic.icon;
-                let resolvedColor = topic.color;
-                
-                if (topic.url.startsWith('/chains/') && !topic.icon) {
-                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
-                  if (chainInfo) {
-                    resolvedIcon = chainInfo.icon as GTPIconName;
-                    resolvedColor = chainInfo.color;
-                  }
-                }
-                
-                return topic.url ? (
-                  <Link key={topic.url} href={topic.url} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-color-bg-medium">
-                    <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
-                    <div className="text-xs">{topic.name}</div>
-                  </Link>
-                ) : (
-                  <div key={topic.name} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-color-bg-medium">
-                    <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
-                    <div className="text-xs">{topic.name}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <RelatedQuickBites slug={params.slug} />
-        </Container>
-      </div>
+      {graphs.map((obj, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
+        />
+      ))}
+      <ClientQuickBitePage params={params} />
     </>
   );
 }

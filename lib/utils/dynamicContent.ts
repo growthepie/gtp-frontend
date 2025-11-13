@@ -108,6 +108,67 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           .replace('{{robinhood_stockCount}}', stockCount || 'N/A');
       }
 
+      // Handle ethereum scaling data placeholders
+      if (processedItem.includes('{{ethereum')) {
+        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.xyz/v1/quick-bites/ethereum-scaling/data.json");
+
+        const ethereumCurrentTPS = parseFloat(ethereumScalingData.data.historical_tps.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        });
+        const ethereumHistoricalScale = (parseFloat(ethereumScalingData.data.historical_tps.total) / 0.71).toLocaleString("en-GB", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1
+        });
+
+        const ethereumMultiplier = (10000 / parseFloat(ethereumScalingData.data.historical_tps.total)).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        // Replace all placeholders regardless of individual checks
+        processedItem = processedItem
+          .replace('{{ethereumCurrentTPS}}', ethereumCurrentTPS || 'N/A')
+          .replace('{{ethereumHistoricalScale}}', ethereumHistoricalScale || 'N/A')
+          .replace('{{ethereumMultiplier}}', ethereumMultiplier || 'N/A')
+
+      }
+
+      // Handle Ethereum ETH supply placeholders
+      if (processedItem.includes('{{eth_')) {
+        const ethSupplyData = await fetchData('eth_supply', "https://api.growthepie.xyz/v1/eim/eth_supply.json");
+
+        if (ethSupplyData?.data?.chart) {
+          // Get the latest values from supply data
+          const supplyData = ethSupplyData.data.chart.eth_supply.daily.data;
+          const issuanceData = ethSupplyData.data.chart.eth_issuance_rate.daily.data;
+
+          // Get the latest total supply
+          const latestSupply = supplyData[supplyData.length - 1][1];
+          const totalSupply = parseFloat(latestSupply).toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+
+          // Calculate net issuance over last 30 days
+          const today = supplyData[supplyData.length - 1][1];
+          const thirtyDaysAgo = supplyData[supplyData.length - 31][1];
+          const netIssuance = (today - thirtyDaysAgo).toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+
+          // Get the latest annual issuance rate (already in percentage form)
+          const annualIssuanceRate = (issuanceData[issuanceData.length - 1][1] * 100).toFixed(2);
+
+          // Replace all placeholders
+          processedItem = processedItem
+            .replace('{{eth_total_supply}}', totalSupply || 'N/A')
+            .replace('{{eth_net_issuance_30d}}', netIssuance || 'N/A')
+            .replace('{{eth_annual_issuance_rate}}', annualIssuanceRate || 'N/A');
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

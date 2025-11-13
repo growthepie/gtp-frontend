@@ -36,7 +36,7 @@ export default async function Page() {
           className="heading-large-xl max-w-[900px]"
           as="h1"
         >
-          Understand Every Slice of Ethereum
+          Visualizing Ethereum's Story Through Data
         </Heading>
         <div className="flex items-center gap-[10px]">
           <Subheading className="text-lg md:text-xl">
@@ -101,12 +101,10 @@ export default async function Page() {
             question="What's growthepie?"
             answer={
               <>
-                At growthepie, our mission is to provide comprehensive and
-                accurate analytics for the Ethereum ecosystem. Through our
-                analytics interface, we aim to educate and increase
-                transparency. Our goal is to be one of the go-to resources for
-                those seeking to learn more about Ethereum Mainnet, Layer 2s,
-                and their impact on the future of the Ethereum ecosystem.
+                growthepie is the open analytics platform for the Ethereum 
+                ecosystem - empowering builders with actionable insights 
+                to grow the pie. From Mainnet to Layer 2s and onchain applications, 
+                explore open data on usage, growth, and adoption. 
               </>
             }
           />
@@ -114,8 +112,8 @@ export default async function Page() {
             question="What's up with the name 'growthepie'?"
             answer={
               <>
-                We view the different scaling solutions for the Ethereum
-                ecosystem as complementary technologies that enable more use
+                We view Ethereum's different scaling solutions
+                as complementary technologies for the ecosystem that enable more use
                 cases, rather than competitors vying for market share. We
                 believe that the space is a positive-sum game, where each unique
                 flavor of layer 2 technology brings its own benefits to the

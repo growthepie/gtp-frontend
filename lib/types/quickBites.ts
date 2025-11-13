@@ -24,13 +24,22 @@ export interface Author {
     url?: string;
     pathToData?: string;
     dashStyle?: DashStyleValue;
+    yMultiplication?: number;  // Multiplier for y-axis values (e.g., 100 for converting decimals to percentages)
   }
   
   export type ChartOptions = Partial<Options>;
   
+export interface JsonLdThing {
+  ['@context']: 'https://schema.org' | string; // minimal, flexible
+  [k: string]: any;
+}
+
+  export type FaqItem = { q: string; a: string };
+
   export interface QuickBiteData {
     title: string;
     subtitle: string;
+    summary?: string | ""; // Optional summary for SEO
     content: string[];
     image: string;
     og_image?: string;
@@ -41,6 +50,9 @@ export interface Author {
     topics?: Topic[];
     KpiCards?: KpiCard[];
     showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
+    jsonLdFaq?: JsonLdThing;
+    jsonLdDatasets?: JsonLdThing[];
+    faq?: FaqItem[];
   }
 
   export interface KpiCard {

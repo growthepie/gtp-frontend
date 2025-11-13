@@ -20,9 +20,9 @@ type TitleProps = {
 };
 
 const titleSizeMap = {
-  sm: "text-[24px]",
-  md: "text-[30px]",
-  lg: "text-[36px]"
+  sm: "heading-md",
+  md: "heading-lg",
+  lg: "heading-large-xl"
 };
 
 export const Title = ({
@@ -79,6 +79,44 @@ export const Title = ({
       {button}
     </div>
   );
+}
+
+export const SectionTitle = ({
+  icon,
+  iconSize = "lg",
+  title,
+  titleSize = "md",
+  containerClassName,
+  titleClassName,
+  iconClassName,
+  id,
+  as = "h2",
+}: TitleProps) => {
+  return (
+    <div
+      id={id}
+      className={`flex items-center gap-x-[8px]  ${containerClassName}`}
+    >
+      <GTPIcon icon={icon} className={`${iconClassName}`} size={iconSize} />
+      <Heading
+        className={`leading-snug ${titleSizeMap[titleSize]} ${titleClassName}`}
+        as={as}
+      >
+        {title}
+      </Heading>
+    </div>
+  );
+}
+
+type SectionDescriptionProps = {
+  children: React.ReactNode;
+  className?: string;
+}
+export const SectionDescription = ({
+  children,
+  className,
+}: SectionDescriptionProps) => {
+  return <div className={`text-md ${className}`}>{children}</div>;
 }
 
 

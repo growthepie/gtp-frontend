@@ -3,7 +3,7 @@ import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import useSWR from 'swr';
 import { EthAggURL } from '@/lib/urls';
-import { EthAggResponse, CountLayer2s, Tps, Stables, Gdp, MeetL2s } from '@/types/api/EthAggResponse';
+import { EthereumEcosystemOverviewResponse, CountLayer2s, Tps, Stables, Gdp, MeetL2s } from '@/types/api/EthereumEcosystemOverviewResponse';
 import "@/app/highcharts.axis.css";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
@@ -62,7 +62,7 @@ const formatNumber = (number: number, decimals = 2): string => {
 };
 
 function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) {
-  const { data, error, isLoading } = useSWR<EthAggResponse>(EthAggURL);
+  const { data, error, isLoading } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
   const [showUsd] = useLocalStorage("showUsd", true);
   const { AllChainsByKeys } = useMaster();
 

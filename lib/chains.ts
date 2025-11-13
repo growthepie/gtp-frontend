@@ -84,7 +84,6 @@ export type Ecosystem = {
     types: string[];
     data: [][];
   }
- 
 }
 
 export type ChainEvent = {

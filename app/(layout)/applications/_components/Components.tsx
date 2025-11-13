@@ -717,11 +717,12 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
               <Image
                 src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
                 width={15} height={15}
-                className="select-none rounded-full size-[15px]"
+                className="select-none rounded-full !w-[15px] !h-[15px] !object-cover"
                 alt={owner_project}
                 onDragStart={(e) => e.preventDefault()}
                 loading="eager"
                 priority={true}
+                unoptimized={true}
               />
             ) : (
               <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>

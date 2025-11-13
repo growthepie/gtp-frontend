@@ -15,6 +15,7 @@ export type BlockType =
   | 'kpi-cards' // For KPI card blocks
   | 'dropdown'   // For dropdown blocks
   | 'titleButton'   // For title button blocks
+  | 'faq' // For FAQ blocks
   | 'table'; // For table blocks
 
 export interface BaseBlock {
@@ -50,6 +51,7 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
+  columnOrder?: string[];
   columnDefinitions: {
     [key: string]: {
       sortByValue: boolean;
@@ -126,6 +128,18 @@ export interface ChartBlock extends BaseBlock {
     }[];
   } | null;
   seeMetricURL?: string | null;
+  yAxisLine?: {
+    xValue: number;
+    annotationPositionX: number; // Pixel offset X
+    annotationPositionY: number; // Pixel offset Y
+    annotationText: string;
+    lineStyle?: "solid" | "dashed" | "dotted" | "dashdot" | "longdash" | "longdashdot";
+    lineColor?: string;
+    lineWidth?: number;
+    textColor?: string;
+    textFontSize?: string;
+    backgroundColor?: string;
+  }[];
   filterOnStateKey?: {
     stateKey: string;
     columnKey: string;
@@ -197,6 +211,20 @@ export interface TitleButtonBlock extends BaseBlock {
   className?: string;
 }
 
+export interface FaqBlockItem {
+  question: string;
+  answer: string;
+}
+
+export interface FaqBlock extends BaseBlock {
+  type: 'faq';
+  title?: string;
+  description?: string;
+  className?: string;
+  layout?: 'accordion' | 'list';
+  items: FaqBlockItem[];
+}
+
 import { DropdownOption } from '@/components/quick-bites/Dropdown';
 export interface DropdownBlock extends BaseBlock {
   type: 'dropdown';
@@ -237,7 +265,8 @@ export type ContentBlock =
   | IframeBlock
   | ListBlock
   | KpiCardsBlock
-  | TitleButtonBlock;
+  | TitleButtonBlock
+  | FaqBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {

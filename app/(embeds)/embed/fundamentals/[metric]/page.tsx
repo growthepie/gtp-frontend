@@ -165,8 +165,8 @@ const Chain = ({ params }: { params: any }) => {
               return {
                 name: chain,
                 // type: 'spline',
-                types: metricData.data.chains[chain][timeIntervalKey].types,
-                data: metricData.data.chains[chain][timeIntervalKey].data,
+                types: metricData.data.chains[chain][timeIntervalKey]?.types || [],
+                data: metricData.data.chains[chain][timeIntervalKey]?.data || [],
               };
             })}
           metric_id={metricData.data.metric_id}

@@ -26,6 +26,7 @@ import { LinkButton } from '../LinkButton';
 import moment from 'moment';
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import ChartWatermark from '../ChartWatermark';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -140,14 +141,15 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   );
 
   return (
-    <div className="relative h-full min-h-[306px] w-full z-0">
+    <div className={`relative w-full z-0 ${isCompact ? '!h-[150px]' : 'h-full min-h-[306px]'}`}>
       <div
         className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
-            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
+            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-standard'
             : 'relative overflow-hidden duration-500'
           }
           ${isExpandButtonHovered && '!z-[1001]'}
+          ${isCompact ? '!h-[150px]' : ''}
           ${className}`
         }
         onMouseEnter={() => setIsExpandButtonHovered(true)}
@@ -270,11 +272,11 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
     <>
       <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
       <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
-        <div className='flex flex-col gap-y-[5px]'>
+        <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
           </div>
-          <div className='numbers-sm text-color-ui-hover'>{uptimeData.subheading}</div>
+          <div className={`numbers-sm text-color-ui-hover ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
         </div>
       </div>
     </>
@@ -294,8 +296,8 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           height: !showEvents ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px`
         }}
       >
-        <div className='heading-large-md text-color-ui-hover mb-2'>Network Upgrades</div>
-        <div ref={listRef} className="relative">
+        <div className={`heading-large-md text-color-ui-hover mb-2 ${isCompact ? 'opacity-0' : 'opacity-100'} transition-[opacity] duration-500`}>Network Upgrades</div>
+        <div ref={listRef} className={`relative ${isCompact ? 'h-0 overflow-hidden' : 'h-auto'} transition-[height] duration-500`}>
           {reversedEvents.map((event: any, index: number) => {
             return (
               <div key={event.date}>
@@ -330,6 +332,13 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         {mainContent}
 
         {expandedContent}
+        
+        {/* Watermark */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+          <div className="w-[147px]">
+            <ChartWatermark className="opacity-20 w-full h-auto" />
+          </div>
+        </div>
       </ExpandableCardContainer>
     </div>
   );
@@ -453,7 +462,9 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div className='group-hover:hidden'>All-Time High</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
-            <div className='numbers-sm'>{globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+            {globalMetrics.total_tps_24h_high && globalMetrics.total_tps_ath && (
+              <div className='numbers-sm'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+            )}
           </div>
           {/* 24h Peak */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
@@ -643,6 +654,12 @@ export const TokenTransferFeeCard = React.memo(({
               </animated.div>
             ))}
           </div>
+        </div>
+      </div>
+      {/* Watermark */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+        <div className="w-[147px]">
+          <ChartWatermark className="opacity-20 w-full h-auto" />
         </div>
       </div>
     </>
