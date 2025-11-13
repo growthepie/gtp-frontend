@@ -1,3 +1,25 @@
+const path = require("path");
+const Module = require("module");
+
+require("ts-node/register/transpile-only");
+
+const projectRoot = __dirname;
+const originalResolveFilename = Module._resolveFilename;
+Module._resolveFilename = function (request, parent, isMain, options) {
+  if (request && request.startsWith("@/")) {
+    const resolvedRequest = path.join(projectRoot, request.slice(2));
+    return originalResolveFilename.call(
+      this,
+      resolvedRequest,
+      parent,
+      isMain,
+      options
+    );
+  }
+
+  return originalResolveFilename.call(this, request, parent, isMain, options);
+};
+
 const baseUrl = "https://www.growthepie.com";
 
 // for www.growthepie.com & dev.growthepie.com
@@ -9,6 +31,7 @@ const gtpMain = {
   exclude: [
     "/server-sitemap.xml",
     "/applications-sitemap.xml",
+    "/quick-bites-sitemap.xml",
     // internals
     "/_next/*",
     "/_next/image*",
@@ -46,6 +69,9 @@ const gtpMain = {
     additionalSitemaps: [
       "https://www.growthepie.com/server-sitemap.xml",
       "https://www.growthepie.com/server-applications-sitemap.xml",
+      "https://www.growthepie.com/chains-sitemap.xml",
+      "https://www.growthepie.com/fundamentals-sitemap.xml",
+      "https://www.growthepie.com/quick-bites-sitemap.xml",
     ],
   },
 };

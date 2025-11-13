@@ -36,7 +36,7 @@ export default async function Page() {
           className="heading-large-xl max-w-[900px]"
           as="h1"
         >
-          Understand Every Slice of Ethereum
+          Visualizing Ethereum's Story Through Data
         </Heading>
         <div className="flex items-center gap-[10px]">
           <Subheading className="text-lg md:text-xl">

@@ -5,8 +5,8 @@ import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 
 export async function GET(request: Request) {
   const apps = new Set<string>();
-  // Fetch all apps for each timespan and get a SET of the owner_projects
-  const timespans = ["1d", "7d", "30d", "90d", "365d", "max"];
+  // Fetch all apps using the max timespan
+  const timespans = ["max"];
   
   for (const timespan of timespans) {
     const appsResp = await fetch(ApplicationsURLs.overview.replace('{timespan}', `${timespan}`));

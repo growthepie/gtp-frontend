@@ -25,7 +25,7 @@ interface AchievmentsData {
     }
 }
 
-const formatNumber = (value: number): string => {
+const formatNumber = (value: number, decimals: number = 1): string => {
     const numValue = Number(value);
 
     if (isNaN(numValue)) {
@@ -37,15 +37,15 @@ const formatNumber = (value: number): string => {
     }
 
     if (numValue >= 1000000000) {
-        return (numValue / 1000000000).toFixed(1).replace('.0', '') + 'B';
+        return (numValue / 1000000000).toFixed(decimals) + 'B';
     }
 
     if (numValue >= 1000000) {
-        return (numValue / 1000000).toFixed(1).replace('.0', '') + 'M';
+        return (numValue / 1000000).toFixed(decimals) + 'M';
     }
 
     if (numValue >= 1000) {
-        return (numValue / 1000).toFixed(1).replace('.0', '') + 'K';
+        return (numValue / 1000).toFixed(decimals) + 'K';
     }
 
     return numValue.toString();
@@ -172,13 +172,13 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                             >
                                 <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
                                     <div>
-                                    Yesterday's <span className="font-bold">{keyData[key].name}</span> were {formatNumber(data.streaks[key][keyValue].yesterday_value)} and today's <span className="font-bold">{keyData[key].name}</span> were (as of {minutesPassed} minutes ago) {formatNumber(streaksData.data[chainKey][key][keyValue])}. 
+                                    Today, {master.chains[chainKey].name} processed {formatNumber(streaksData.data[chainKey][key][keyValue], 2)} <span className="font-bold">{keyData[key].name}</span> (as of {minutesPassed} minutes ago).
                                     <br />
                                     <br />
                                     {data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue] < 0 ? <>
-                                    {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue]))} <span className="font-bold">{keyData[key].name}</span>.
+                                    {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue]), 2)} <span className="font-bold">{keyData[key].name}</span>.
                                     </> : <>
-                                    {master.chains[chainKey].name} needs {formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue])} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
+                                    {master.chains[chainKey].name} needs {formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue], 2)} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
                                     </>}
                                     </div>
                                 </TooltipBody>
@@ -213,10 +213,10 @@ const StreakBar = ({ yesterdayValue, todayValue, keyValue, hoverBar }: { yesterd
                     <div className={`flex items-center gap-x-[5px] h-[19px] pl-[5px] pr-[5px] z-[5]  justify-start transition-all duration-300 rounded-full`}
                         style={{ width: `${todayValue / (yesterdayValue) * 100}%` }}
                     >
-                        <div className="text-xxxs -mb-[1px]">{prefix}{formatNumber(todayValue)}</div>
+                        <div className="text-xxxs -mb-[1px]">{prefix}{formatNumber(todayValue, 2)}</div>
                     </div>
                     <div className="flex items-center gap-x-[5px] h-[15px] pr-[5px] z-[5]">
-                        <div className="text-xxxs -mb-[1px]">{prefix}{formatNumber(yesterdayValue)}</div>
+                        <div className="text-xxxs -mb-[1px]">{prefix}{formatNumber(yesterdayValue, 2)}</div>
                     </div>
                 </div>
             </div>
@@ -483,7 +483,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                             >
                                 <div>
                                     <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                        {`Since ${master.chains[chainKey].name}'s genesis, a total of ${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value)}${suffix || ""} was achieved in ${master.metrics[key].name}.`}
+                                        {`Since ${master.chains[chainKey].name}'s genesis, a total of ${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value, 2)}${suffix || ""} was achieved in ${master.metrics[key].name}.`}
                                     </TooltipBody>
                                 </div>
                             </GTPTooltipNew>

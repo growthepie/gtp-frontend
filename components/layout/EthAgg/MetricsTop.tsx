@@ -26,6 +26,7 @@ import { LinkButton } from '../LinkButton';
 import moment from 'moment';
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import ChartWatermark from '../ChartWatermark';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -331,6 +332,13 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         {mainContent}
 
         {expandedContent}
+        
+        {/* Watermark */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+          <div className="w-[147px]">
+            <ChartWatermark className="opacity-20 w-full h-auto" />
+          </div>
+        </div>
       </ExpandableCardContainer>
     </div>
   );
@@ -454,7 +462,9 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div className='group-hover:hidden'>All-Time High</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
-            <div className='numbers-sm'>{globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+            {globalMetrics.total_tps_24h_high && globalMetrics.total_tps_ath && (
+              <div className='numbers-sm'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+            )}
           </div>
           {/* 24h Peak */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
@@ -644,6 +654,12 @@ export const TokenTransferFeeCard = React.memo(({
               </animated.div>
             ))}
           </div>
+        </div>
+      </div>
+      {/* Watermark */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
+        <div className="w-[147px]">
+          <ChartWatermark className="opacity-20 w-full h-auto" />
         </div>
       </div>
     </>

@@ -1136,6 +1136,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   // Add state to track keyboard-triggered expansions
   const [keyboardExpandedStacks, setKeyboardExpandedStacks] = useState<Set<string>>(new Set());
+  
+  // Ref to track if a click is from keyboard navigation
+  const keyboardClickItemKeyRef = useRef<string | null>(null);
 
   // Modify the useEffect to only select first item for keyboard-triggered expansions
   useEffect(() => {
@@ -1214,7 +1217,13 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const selectedKey = keyMapping[currentY][currentX];
         const selectedElement = childRefs.current[selectedKey];
         if (selectedElement) {
+          // Mark this click as keyboard-triggered
+          keyboardClickItemKeyRef.current = selectedKey;
           selectedElement.click();
+          // Clear the ref after a short delay to allow the click handler to process it
+          setTimeout(() => {
+            keyboardClickItemKeyRef.current = null;
+          }, 0);
         }
       } else if (event.key === 'Escape') {
         event.preventDefault();
@@ -1333,6 +1342,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                             showMore={showMore}
                             setShowMore={setShowMore}
                             setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                            keyboardClickItemKeyRef={keyboardClickItemKeyRef}
                           />
                         )
                       })}
@@ -1379,6 +1389,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                                     showMore={showMore}
                                     setShowMore={setShowMore}
                                     setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                                    keyboardClickItemKeyRef={keyboardClickItemKeyRef}
                                   />
                                 );
                               })}
@@ -1409,7 +1420,8 @@ export const BucketItem = ({
   query,
   showMore,
   setShowMore,
-  setKeyboardExpandedStacks
+  setKeyboardExpandedStacks,
+  keyboardClickItemKeyRef
 }: {
   item: any,
   itemKey: string,
@@ -1420,7 +1432,8 @@ export const BucketItem = ({
   query: string,
   showMore: { [key: string]: boolean },
   setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
-  setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>
+  setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>,
+  keyboardClickItemKeyRef: React.MutableRefObject<string | null>
 }) => {
   // Handle bucket match with trailing space
   const cleanBucket = bucket.trim();
@@ -1459,6 +1472,11 @@ export const BucketItem = ({
         // Stop event propagation to prevent parent click handlers from firing
         e.stopPropagation();
         console.log("Search Badge Clicked", { location: "Search", page: `${query}::${targetUrl}` });
+        
+        // Check if this is a keyboard-triggered click or a new tab open (Ctrl/Cmd+Click)
+        const isKeyboardClick = keyboardClickItemKeyRef.current === itemKey;
+        const isNewTabClick = e.ctrlKey || e.metaKey;
+        
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
           console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
           // For Quick Bites and Applications, let the Link navigate naturally
@@ -1482,6 +1500,18 @@ export const BucketItem = ({
         track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
 
+      onAuxClick={(e) => {
+        // Track middle mouse button click (opens in new tab)
+        if (e.button === 1) {
+          track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+        }
+      }}
+
+      onContextMenu={(e) => {
+        // Track right-click (user may open in new tab from context menu)
+        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+      }}
+
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
@@ -1501,10 +1531,11 @@ export const BucketItem = ({
               return newSet;
             });
             e.preventDefault(); // Prevent navigation for expansion
+          } else {
+            // Track keyboard selection for other buckets (Enter key on regular items)
+            track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
           }
         }
-        // Track the result click for other buckets
-        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
       className="relative"
     >

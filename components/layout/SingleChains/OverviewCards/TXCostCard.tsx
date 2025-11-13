@@ -45,10 +45,21 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
         }
 
         setTxCostSelectedIndex((prev) => {
+            const lastIndex = recentCostHistory.length - 1;
+
             if (prev === null) {
-                return recentCostHistory.length - 1;
+                return lastIndex;
             }
-            return Math.min(prev, recentCostHistory.length - 1);
+
+            if (prev >= recentCostHistory.length || prev < 0) {
+                return lastIndex;
+            }
+
+            if (recentCostHistory.length > 1 && prev === recentCostHistory.length - 2) {
+                return lastIndex;
+            }
+
+            return prev;
         });
     }, [recentCostHistory.length]);
 
@@ -85,7 +96,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
 
                     <div className="heading-large-xs ">Transaction Cost</div>
                 </div>
-                <div className="w-[150px] flex items-center justify-center gap-x-[2px]">
+                <div className="w-[150px] flex items-center justify-end gap-x-[2px] bg">
                     <HistoryDots
                         data={recentCostHistory.map((x) => x["tx_cost_median"])}
                         selectedIndex={txCostSelectedIndex ?? Math.max(recentCostHistory.length - 1, 0)}
