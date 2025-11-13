@@ -208,6 +208,14 @@ const dataAvailabilityGroup: NavigationItem = {
 };
 
     export const navigationItems: NavigationItem[] = [
+      {
+        name: "Home",
+        label: "Home",
+        icon: "gtp-house",
+        options: [],
+        href: "/home",
+        newChild: true,
+      },
       { 
         name: "Ecosystem",
         label: "Ecosystem",

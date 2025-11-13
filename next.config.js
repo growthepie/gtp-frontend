@@ -130,18 +130,18 @@ const nextConfig = {
           destination: "/icons",
         },
         ...(AUTH_SUBDOMAIN ? [
+        // {
+        //   source: "/",
+        //   has: [
+        //     {
+        //       type: "host",
+        //       value: AUTH_SUBDOMAIN + ".growthepie.com",
+        //     },
+        //   ],
+        //   destination: "/chains/" + AUTH_SUBDOMAIN,
+        // },
         {
-          source: "/",
-          has: [
-            {
-              type: "host",
-              value: AUTH_SUBDOMAIN + ".growthepie.com",
-            },
-          ],
-          destination: "/chains/" + AUTH_SUBDOMAIN,
-        },
-        {
-          source: "/landing",
+          source: "/home",
           has: [
             {
               type: "host",
@@ -150,18 +150,18 @@ const nextConfig = {
           ],
           destination: "/",
         },
+        // {
+        //   source: "/",
+        //   has: [
+        //     {
+        //       type: "host",
+        //       value: AUTH_SUBDOMAIN + "-dev.growthepie.com",
+        //     },
+        //   ],
+        //   destination: "/chains/" + AUTH_SUBDOMAIN,
+        // },
         {
-          source: "/",
-          has: [
-            {
-              type: "host",
-              value: AUTH_SUBDOMAIN + "-dev.growthepie.com",
-            },
-          ],
-          destination: "/chains/" + AUTH_SUBDOMAIN,
-        },
-        {
-          source: "/landing",
+          source: "/home",
           has: [
             {
               type: "host",
@@ -253,7 +253,32 @@ const nextConfig = {
         source: "/quick-bites/shopify-usdc",
         destination: "/quick-bites/base-commerce",
         permanent: true,
-      }
+      },
+      // AUTH SUBDOMAIN redirects
+      ...(AUTH_SUBDOMAIN ? [
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + ".growthepie.com",
+            },
+          ],
+          destination: "/chains/" + AUTH_SUBDOMAIN,
+          permanent: true,
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: AUTH_SUBDOMAIN + "-dev.growthepie.com",
+            },
+          ],
+          destination: "/chains/" + AUTH_SUBDOMAIN,
+          permanent: true,
+        }
+      ] : []),
     ];
   },
   async headers() {
