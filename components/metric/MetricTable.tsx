@@ -23,6 +23,36 @@ import {
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 
+const timeIntervalSummaryKeys = {
+  daily: "last_1d",
+  daily_7d_rolling: "last_1d",
+  weekly: "last_7d",
+  monthly: "last_30d",
+}
+
+const timespanLabels: { [key: string]: { [key: string]: string } } = {
+  daily: {
+    "1d": "24 hours",
+    "30d": "30 days",
+    "365d": "1 year",
+  },
+  daily_7d_rolling: {
+    "1d": "24 hrs",
+    "30d": "30 days",
+    "365d": "1 year",
+  },
+  weekly: {
+    "7d": "1 week",
+    "28d": "4 weeks",
+    "365d": "1 year",
+  },
+  monthly: {
+    "30d": "1 mo",
+    "180d": "6 mos",
+    "365d": "1 year",
+  },
+}
+
 const MetricTable = ({
   metric_type,
 }: {
@@ -47,6 +77,7 @@ const MetricTable = ({
     timeIntervals,
     selectedTimeInterval,
   } = useMetricData();
+  
   const {
     selectedChains,
     setSelectedChains,
@@ -165,14 +196,6 @@ const MetricTable = ({
 
   const { isSidebarOpen, isSafariBrowser } = useUIContext();
 
-  const changesKey = useMemo(() => {
-    if (timeIntervalKey === "monthly") {
-      return "changes_monthly";
-    }
-
-    return "changes";
-  }, [timeIntervalKey]);
-
   const lastValueTimeIntervalKey = useMemo(() => {
     if (timeIntervalKey === "daily_7d_rolling") {
       return "daily";
@@ -185,7 +208,10 @@ const MetricTable = ({
     if (!data) return;
 
     const sampleChainDataTypes =
-      data.chains[chainKeys[0]][lastValueTimeIntervalKey].types;
+      data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
+
+    console.log("data", data);
+    console.log("sampleChainDataTypes", sampleChainDataTypes);
 
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
@@ -201,7 +227,10 @@ const MetricTable = ({
   const changesValueIndex = useMemo(() => {
     if (!data) return;
 
-    const sampleChainChangesTypes = data.chains[chainKeys[0]][changesKey].types;
+    console.log("data", data, "lastValueTimeIntervalKey", lastValueTimeIntervalKey);
+    const sampleChainChangesTypes = data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
+
+    console.log("changesValueIndex::sampleChainChangesTypes", sampleChainChangesTypes);
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -212,7 +241,7 @@ const MetricTable = ({
     } else {
       return 0;
     }
-  }, [changesKey, data, showUsd]);
+  }, [lastValueTimeIntervalKey, data, showUsd]);
 
   const lastValues = useMemo(() => {
     if (!data) return null;
@@ -220,29 +249,42 @@ const MetricTable = ({
     return chainKeys
       .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
       .reduce((acc, chain) => {
-        let types = data.chains[chain][lastValueTimeIntervalKey].types;
+        let types = data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].types;
         let values =
-          data.chains[chain][lastValueTimeIntervalKey].data[
-          data.chains[chain][lastValueTimeIntervalKey].data.length - 1
-          ];
+          data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].data;
+
+        console.log("lastValues::types", types, "values", values);
+
+        let valueIndex = 0;
+
+        if(types.includes("usd")) {
+          if (showUsd) {
+            valueIndex = types.indexOf("usd");
+          } else {
+            valueIndex = types.indexOf("eth");
+          }
+        }
+
         let lastVal = values[valueIndex];
 
-        if (lastValueTimeIntervalKey === "monthly") {
-          types = data.chains[chain].last_30d.types;
-          values = data.chains[chain].last_30d.data;
+        console.log("lastValues::data", data);
 
-          let monthlyValueIndex = 0;
+        // if (lastValueTimeIntervalKey === "monthly") {
+        //   types = data.chains[chain].last_30d.types;
+        //   values = data.chains[chain].last_30d.data;
 
-          if (types.includes("usd")) {
-            if (showUsd) {
-              monthlyValueIndex = types.indexOf("usd");
-            } else {
-              monthlyValueIndex = types.indexOf("eth");
-            }
-          }
+        //   let monthlyValueIndex = 0;
 
-          lastVal = values[monthlyValueIndex];
-        }
+        //   if (types.includes("usd")) {
+        //     if (showUsd) {
+        //       monthlyValueIndex = types.indexOf("usd");
+        //     } else {
+        //       monthlyValueIndex = types.indexOf("eth");
+        //     }
+        //   }
+
+        //   lastVal = values[monthlyValueIndex];
+        // }
 
         return {
           ...acc,
@@ -350,50 +392,6 @@ const MetricTable = ({
     weekly: "Last 7d",
   };
 
-
-  // const timespanLabels = {
-  //   "1d": "24h",
-  //   // "7d": "7 days",
-  //   "30d": "30 days",
-  //   "365d": "1 year",
-  // };
-
-  // const timespanLabelsMonthly = {
-  //   "30d": "1 month",
-  //   // "90d": "3 months",
-  //   "180d": "6 months",
-  //   "365d": "1 year",
-  // };
-
-
-
-  const timespanLabels: { [key: string]: { [key: string]: string } } = {
-    daily: {
-      "1d": "24 hours",
-      // "7d": "7 days",
-      "30d": "30 days",
-      "365d": "365 days",
-    },
-    daily_7d_rolling: {
-      "1d": "24 hrs",
-      // "7d": "7 days",
-      "30d": "30 days",
-      "365d": "365 days",
-    },
-    weekly: {
-      "7d": "7 days",
-      // "30d": "4 weeks",
-      // "90d": "12 weeks",
-      "180d": "180 days",
-      "365d": "365 days",
-    },
-    monthly: {
-      "30d": "30 days",
-      "180d": "180 days",
-      "365d": "365 days",
-    },
-  }
-
   // New function to create rows with placeholders
   const rowsWithPlaceholders = useCallback(() => {
     console.log("sort.metric", sort.metric);
@@ -426,8 +424,8 @@ const MetricTable = ({
       else if (Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric)) {
         console.log("Object.keys(timespanLabels).includes(sort.metric)", Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric));
         const timespanIndex = Object.keys(timespanLabels[timeIntervalKey]).indexOf(sort.metric);
-        const bVal = b.data[changesKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
-        const aVal = a.data[changesKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
+        const bVal = b.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
+        const aVal = a.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
 
         if (aIsSelected && !bIsSelected) {
           return -1;
@@ -473,7 +471,7 @@ const MetricTable = ({
     }
 
     return result;
-  }, [rows, selectedChains, sort, timespanLabels, changesKey, reversePerformer]);
+  }, [rows, selectedChains, sort, timespanLabels, lastValueTimeIntervalKey, reversePerformer]);
 
   let height = 0;
   const transitions = useTransition(
@@ -530,6 +528,7 @@ const MetricTable = ({
 
   const getDisplayValue = useCallback(
     (item: any) => {
+      console.log("getDisplayValue:item", item);
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
 
       if (!master)
@@ -564,11 +563,13 @@ const MetricTable = ({
       //   ][1],
       // );
 
-      if (lastValueTimeIntervalKey === "monthly") {
-        types = item.data.last_30d.types;
-        values = item.data.last_30d.data;
-        // value = formatNumber(values[0]);
-      }
+      // if (lastValueTimeIntervalKey === "monthly") {
+      //   types = item.data.last_30d.types;
+      //   values = item.data.last_30d.data;
+      //   // value = formatNumber(values[0]);
+      // }
+
+      console.log("getDisplayValue:item", item, "types", types, "values", values);
 
       let value;
       if (!focusEnabled && item.chain.key !== "ethereum") {
@@ -941,7 +942,7 @@ const MetricTable = ({
                       timespanLabels[timeIntervalKey],
                     ).map((timespan) => (
                       <div key={timespan} className="w-full text-right">
-                        {changesValueIndex !== undefined && item.data[changesKey][timespan][changesValueIndex] ===
+                        {changesValueIndex !== undefined && item.data.changes[lastValueTimeIntervalKey][timespan][changesValueIndex] ===
                           null ? (
                           <span className="inline-block text-center text-gray-500 numbers-xs">
                             —
@@ -949,7 +950,7 @@ const MetricTable = ({
                         ) : changesValueIndex !== undefined ? (
                           <>
                             {(reversePerformer ? -1.0 : 1.0) *
-                              item.data[changesKey][timespan][
+                              item.data.changes[lastValueTimeIntervalKey][timespan][
                               changesValueIndex
                               ] >=
                               0 ? (
@@ -965,7 +966,7 @@ const MetricTable = ({
                                 {(() => {
                                   const rawPercentage = Math.abs(
                                     Math.round(
-                                      item.data[changesKey][timespan][
+                                      item.data.changes[lastValueTimeIntervalKey][timespan][
                                       changesValueIndex
                                       ] * 1000,
                                     ) / 10,
@@ -1001,7 +1002,7 @@ const MetricTable = ({
                                 {reversePerformer ? "+" : "-"}
                                 {Math.abs(
                                   Math.round(
-                                    item.data[changesKey][timespan][
+                                    item.data.changes[lastValueTimeIntervalKey][timespan][
                                     changesValueIndex
                                     ] * 1000,
                                   ) / 10,

@@ -176,15 +176,7 @@ function transformToChainData(
 
   return {
     chain_name: chainKey, // Will be enriched with actual name from Master context
-    changes: {
-      types: changes.daily.types as string[],
-      "1d": changes.daily["1d"],
-      "7d": changes.daily["7d"],
-      "30d": changes.daily["30d"],
-      "90d": changes.daily["90d"],
-      "180d": changes.daily["180d"],
-      "365d": changes.daily["365d"],
-    },
+    changes: changes,
     daily: {
       types: timeseries.daily.types as string[],
       data: timeseries.daily.data,
@@ -193,13 +185,13 @@ function transformToChainData(
       types: timeseries.daily_7d_rolling.types as string[],
       data: timeseries.daily_7d_rolling.data,
     } : undefined,
-    changes_monthly: {
-      types: changes.monthly.types as string[],
-      "30d": changes.monthly["30d"],
-      "90d": changes.monthly["90d"],
-      "180d": changes.monthly["180d"],
-      "365d": changes.monthly["365d"],
-    },
+    // changes_monthly: {
+    //   types: changes.monthly.types as string[],
+    //   "30d": changes.monthly["30d"],
+    //   "90d": changes.monthly["90d"],
+    //   "180d": changes.monthly["180d"],
+    //   "365d": changes.monthly["365d"],
+    // },
     monthly: {
       types: timeseries.monthly.types as string[],
       data: timeseries.monthly.data,
@@ -208,9 +200,10 @@ function transformToChainData(
       types: timeseries.weekly.types as string[],
       data: timeseries.weekly.data,
     } : undefined,
-    last_30d: {
-      types: summary.last_30d.types as string[],
-      data: summary.last_30d.data,
-    },
+    summary: summary
+    // last_30d: {
+    //   types: summary.last_30d.types as string[],
+    //   data: summary.last_30d.data,
+    // },
   };
 }
