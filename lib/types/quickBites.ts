@@ -25,6 +25,7 @@ export interface Author {
     pathToData?: string;
     dashStyle?: DashStyleValue;
     yMultiplication?: number;  // Multiplier for y-axis values (e.g., 100 for converting decimals to percentages)
+    makeNegative?: boolean; // Flip y-values (e.g., for outflows)
   }
   
   export type ChartOptions = Partial<Options>;

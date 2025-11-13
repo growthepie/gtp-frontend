@@ -64,7 +64,9 @@ interface ChartWrapperProps {
       suffix?: string,
       prefix?: string,
       tooltipDecimals?: number,
-      dashStyle?: Highcharts.DashStyleValue
+      dashStyle?: Highcharts.DashStyleValue,
+      makeNegative?: boolean,
+      yMultiplication?: number
     }[]
   }
   seeMetricURL?: string | null;
@@ -130,10 +132,20 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           item[series.yIndex]
         ]) || [];
 
-        // Apply yMultiplication if specified
-        return series.yMultiplication
-          ? rawData.map(([x, y]) => [x, y * series.yMultiplication])
-          : rawData;
+        // Apply transformations (multiplication, negation) if specified
+        return rawData.map(([x, y]) => {
+          let transformedY = y;
+
+          if (typeof series.yMultiplication === "number") {
+            transformedY = transformedY * series.yMultiplication;
+          }
+
+          if (series.makeNegative) {
+            transformedY = -transformedY;
+          }
+
+          return [x, transformedY];
+        });
       })()
     }));
   }, [jsonMeta, jsonData]);
@@ -236,7 +248,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           const currentPrefix = jsonMeta?.meta[index].prefix || '';
           const currentSuffix = jsonMeta?.meta[index].suffix || '';
-          const currentDecimals = jsonMeta?.meta[index].tooltipDecimals || 2;
+          const currentDecimals = jsonMeta?.meta[index].tooltipDecimals ?? 2;
 
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {

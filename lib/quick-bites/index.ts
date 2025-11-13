@@ -9,6 +9,7 @@ import anniversaryReport from './qb-anniversary-report';
 import arbitrumHyperliquidBridge from './qb-arbitrum-hyperliquid-bridge';
 import ethereumScaling from './qb-ethereum-scaling';
 import ethSupply from './qb-ETH-supply';
+import lineaTokenBurn from './qb-linea-burn';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -20,6 +21,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "arbitrum-hyperliquid-bridge": arbitrumHyperliquidBridge,
   "ethereum-scaling": ethereumScaling,
   "eth-supply": ethSupply,
+  "linea-burn": lineaTokenBurn,
 };
 
 export default QUICK_BITES_DATA; 
