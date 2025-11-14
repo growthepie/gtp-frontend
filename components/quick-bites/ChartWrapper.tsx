@@ -134,6 +134,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
         // Apply transformations (multiplication, negation) if specified
         return rawData.map(([x, y]) => {
+          if (y === null || y === undefined) return [x, null];
+
           let transformedY = y;
 
           if (typeof series.yMultiplication === "number") {

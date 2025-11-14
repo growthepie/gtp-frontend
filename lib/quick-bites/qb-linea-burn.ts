@@ -52,7 +52,7 @@ const lineaTokenBurn: QuickBiteData = {
     "# Network Economics Overview",
     "```chart",
     JSON.stringify({
-      type: "area",
+      type: "column",
       title: "Gas Fee Income vs Operating Costs",
       subtitle: "Daily gas fee income, operating costs breakdown, and amount available for burn (in USD).",
       stacking: "normal",
@@ -81,7 +81,7 @@ const lineaTokenBurn: QuickBiteData = {
             tooltipDecimals: 2,
             url: "https://api.growthepie.com/v1/quick-bites/linea/profit_calculation.json",
             pathToData: "data.daily.values",
-            makeNegative: false
+            makeNegative: true
           },
           {
             name: "Costs (Infra)",
@@ -93,7 +93,7 @@ const lineaTokenBurn: QuickBiteData = {
             tooltipDecimals: 2,
             url: "https://api.growthepie.com/v1/quick-bites/linea/profit_calculation.json",
             pathToData: "data.daily.values",
-            makeNegative: false
+            makeNegative: true
           }
         ],
       },
@@ -108,12 +108,12 @@ const lineaTokenBurn: QuickBiteData = {
         {
           title: "Max LINEA Supply",
           value: "{{linea_max_supply}}",
-          description: "total max supply",
+          description: "fixed",
           icon: "gtp-metrics-fullydilutedvaluation",
           info: "Maximum supply of LINEA tokens set at genesis (72,009,990,000 LINEA).",
         },
         {
-          title: "Projected Annual Burn Rate",
+          title: "Projected Annual LINEA Burn",
           value: "{{linea_projected_annual_burn_rate}}",
           description: "LINEA tokens per year",
           icon: "gtp-realtime",
@@ -122,7 +122,7 @@ const lineaTokenBurn: QuickBiteData = {
         {
           title: "Annual Burn as % of Max Supply",
           value: "{{linea_projected_annual_burn_rate_percentage}}%",
-          description: "of 72B max supply",
+          description: "",
           icon: "gtp-metrics-chains-percentage",
           info: "Projected annual burn rate as a percentage of the maximum LINEA token supply (72,009,990,000).",
         },
@@ -142,7 +142,7 @@ const lineaTokenBurn: QuickBiteData = {
         meta: [
           {
             name: "LINEA Burnt",
-            color: "#ccff00",
+            color: "#62DEFE",
             type: "column",
             oppositeYAxis: false,
             xIndex: 0,
@@ -154,12 +154,12 @@ const lineaTokenBurn: QuickBiteData = {
             pathToData: "data.daily.values",
           },
           {
-            name: "LINEA Burnt (USD)",
-            color: "#9fcc2e",
+            name: "Total LINEA Burnt",
+            color: "#62dffea7",
             type: "line",
             oppositeYAxis: true,
             xIndex: 0,
-            yIndex: 3,
+            yIndex: 7,
             suffix: null,
             prefix: '$',
             tooltipDecimals: 2,
@@ -182,12 +182,12 @@ const lineaTokenBurn: QuickBiteData = {
       dataAsJson: {
         meta: [
           {
-            name: "ETH Burned (USD)",
-            color: "#8fa3d9",
+            name: "Total ETH Burned",
+            color: "#627deab9",
             type: "line",
             oppositeYAxis: true,
             xIndex: 0,
-            yIndex: 4,
+            yIndex: 8,
             suffix: null,
             prefix: '$',
             tooltipDecimals: 2,
