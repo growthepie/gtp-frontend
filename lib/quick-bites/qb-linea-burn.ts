@@ -52,16 +52,16 @@ const lineaTokenBurn: QuickBiteData = {
     "# Network Economics Overview",
     "```chart",
     JSON.stringify({
-      type: "column",
       title: "Gas Fee Income vs Operating Costs",
       subtitle: "Daily gas fee income, operating costs breakdown, and amount available for burn (in USD).",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Gas Fee Income",
             color: "#00c805",
+            type: "column",
+            stacking: "normal",
             xIndex: 0,
             yIndex: 6,
             suffix: null,
@@ -74,6 +74,8 @@ const lineaTokenBurn: QuickBiteData = {
           {
             name: "Costs (L1 rent)",
             color: "#ff9999",
+            type: "column",
+            stacking: "normal",
             xIndex: 0,
             yIndex: 8,
             suffix: null,
@@ -86,6 +88,8 @@ const lineaTokenBurn: QuickBiteData = {
           {
             name: "Costs (Infra)",
             color: "#ffcccc",
+            type: "column",
+            stacking: "normal",
             xIndex: 0,
             yIndex: 9,
             suffix: null,
@@ -141,19 +145,6 @@ const lineaTokenBurn: QuickBiteData = {
       dataAsJson: {
         meta: [
           {
-            name: "LINEA Burnt",
-            color: "#62DEFE",
-            type: "column",
-            oppositeYAxis: false,
-            xIndex: 0,
-            yIndex: 1,
-            suffix: ' LINEA',
-            prefix: null,
-            tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
-            pathToData: "data.daily.values",
-          },
-          {
             name: "Total LINEA Burnt",
             color: "#62dffea7",
             type: "line",
@@ -163,6 +154,19 @@ const lineaTokenBurn: QuickBiteData = {
             suffix: null,
             prefix: '$',
             tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
+            pathToData: "data.daily.values",
+          },
+          {
+            name: "LINEA Burnt",
+            color: "#62DEFE",
+            type: "column",
+            oppositeYAxis: false,
+            xIndex: 0,
+            yIndex: 1,
+            suffix: ' LINEA',
+            prefix: null,
+            tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
             pathToData: "data.daily.values",
           }
