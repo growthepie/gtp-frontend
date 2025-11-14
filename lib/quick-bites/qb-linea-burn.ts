@@ -39,11 +39,11 @@ const lineaTokenBurn: QuickBiteData = {
           info: "Total USD value of ETH burned (at time of burn).",
         },
         {
-          title: "Total Profits Allocated for Burn",
-          value: "${{linea_totals_amount_for_burn_usd}}",
+          title: "Total USD Burnt",
+          value: "${{linea_total_usd_burnt}}",
           description: "since 11th of Sep. 2025",
           icon: "gtp-message",
-          info: "Total USD profits allocated for token burn. Might deviate due to late invoicing of costs.",
+          info: "Total USD value of tokens burned. Lags behind total profit due to delay in burn processing.",
         },
       ]
     ),

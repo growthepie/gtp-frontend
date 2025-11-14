@@ -242,6 +242,9 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             ? formatNumber(data.totals_amount_for_burn_usd, 0) 
             : 'N/A';
 
+          // Calculate total USD burnt
+          const lineaTotalUsdBurnt = formatNumber(Number(data.totals_lineatokensbridged_usd) + Number(data.totals_ethburnt_usd), 2);
+
           // Calculate the projected annual burn rate based on linea_totals_lineatokensbridged_linea
           // Amount burnt since September 11th 2025
           const startDate = new Date('2025-09-11').getTime();
@@ -292,7 +295,8 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             // Locally calculated values
             .replace('{{linea_projected_annual_burn_rate}}', formattedProjectedAnnualBurnRate)
             .replace('{{linea_projected_annual_burn_rate_percentage}}', projectedAnnualBurnRatePercentage)
-            .replace('{{linea_max_supply}}', formattedMaxLineaSupply);
+            .replace('{{linea_max_supply}}', formattedMaxLineaSupply)
+            .replace('{{linea_total_usd_burnt}}', lineaTotalUsdBurnt);
         }
       }
 
