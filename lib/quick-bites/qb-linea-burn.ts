@@ -6,7 +6,7 @@ const lineaTokenBurn: QuickBiteData = {
   subtitle: "Tracking Linea's token burn mechanism and network economics",
   content: [
     "# Introduction:",
-    " Linea has introduced a dual token burn mechanism that burns both ETH and LINEA as a percentage of chain revenue after expenses. We will also be exploring the economic data Linea is publishing onchain." ,
+    " Linea has introduced a dual-token burn mechanism that burns both ETH and LINEA by using all the profits the Linea chain generates after operating expenses. We will also be exploring the economic data Linea is publishing onchain." ,
     "- July 29th 2025: Linea announced its plans for a new dual token burn mechanism",
     "- September 10th 2025: Linea token generation event (TGE)",
     "- November 4th 2025: Dual token burn mechanism went live - backdated to September 11th 2025",
@@ -125,6 +125,9 @@ const lineaTokenBurn: QuickBiteData = {
 
     "# Linea Economics & Supply Projections",
 
+    " Linea has begun publishing its operating costs onchain for full transparency. This gives us insight into the profits of running an L2 and also allows us to get a better understanding of its operating costs:",
+    " Total amount burned = gross gas fee income − operating costs (L1 rent + offchain infrastructure).",
+
     "```kpi-cards",JSON.stringify(
       [
         {
@@ -157,7 +160,7 @@ const lineaTokenBurn: QuickBiteData = {
     "```kpi-cards",JSON.stringify(
       [
         {
-          title: "Annual Burn as % of Max Supply",
+          title: "Projected Annual Burn as % of Max Supply",
           value: "{{linea_projected_annual_burn_rate_percentage}}%",
           description: "",
           icon: "gtp-metrics-chains-percentage",
@@ -174,7 +177,7 @@ const lineaTokenBurn: QuickBiteData = {
     ),
     "```",
 
-    "> Note: Projected burn rates are calculated based on historical data since September 11th, 2025, and assume constant burn rates. Actual future burn rates may vary significantly based on network activity and economic conditions.",
+    "> Note: Projected burn rates are calculated based on historical data since September 11th, 2025 and assume constant burn rates. Actual future burn rates may vary significantly based on network activity and economic conditions.",
 
     "```chart",
     JSON.stringify({
