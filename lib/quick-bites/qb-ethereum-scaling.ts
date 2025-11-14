@@ -350,8 +350,8 @@ const ethereumScaling: QuickBiteData = createQuickBite({
     "**Disclaimer**",
     "Projections are illustrative and depend on research, engineering, coordination, and market conditions. Not financial advice.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/ethereun_scaling_2.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/ethereum_scaling_og.png",
+  image: "/quick-bites/ethereum_scaling.webp",
+  og_image: "/quick-bites/ethereum_scaling.webp",
   date: "2025-10-17",
   related: [],
   author: [
