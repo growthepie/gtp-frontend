@@ -207,7 +207,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             : 'N/A';
           
           const gasFeeIncomeUsd = data.totals_gas_fee_income_usd 
-            ? formatNumber(data.totals_gas_fee_income_usd, 2) 
+            ? formatNumber(data.totals_gas_fee_income_usd, 0) 
             : 'N/A';
           
           const operatingCosts = data.totals_operating_costs 
@@ -215,7 +215,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             : 'N/A';
           
           const operatingCostsUsd = data.totals_operating_costs_usd 
-            ? formatNumber(data.totals_operating_costs_usd, 2) 
+            ? formatNumber(data.totals_operating_costs_usd, 0) 
             : 'N/A';
           
           const operatingCostsL1 = data.totals_operating_costs_l1 
@@ -239,7 +239,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             : 'N/A';
           
           const amountForBurnUsd = data.totals_amount_for_burn_usd 
-            ? formatNumber(data.totals_amount_for_burn_usd, 2) 
+            ? formatNumber(data.totals_amount_for_burn_usd, 0) 
             : 'N/A';
 
           // Calculate the projected annual burn rate based on linea_totals_lineatokensbridged_linea
