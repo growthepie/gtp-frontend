@@ -227,6 +227,10 @@ const lineaTokenBurn: QuickBiteData = {
   author: [{
     name: "Lorenz Lehmann",
     xUsername: "LehmannLorenz",
+  },
+  {
+    name: "ETH Wave",
+    xUsername: "TrueWaveBreak"
   }],
   topics: [
     {
