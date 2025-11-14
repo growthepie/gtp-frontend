@@ -140,10 +140,23 @@ const lineaTokenBurn: QuickBiteData = {
     JSON.stringify({
       type: "column",
       title: "LINEA Token Burns",
-      subtitle: "Daily LINEA tokens burnt and their USD value over time.",
+      subtitle: "Total LINEA tokens burnt and their USD value over time.",
       showXAsDate: true,
       dataAsJson: {
         meta: [
+          {
+            name: "Total LINEA Burnt",
+            color: "#62DEFE",
+            type: "line",
+            oppositeYAxis: false,
+            xIndex: 0,
+            yIndex: 5,
+            suffix: ' LINEA',
+            prefix: null,
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
+            pathToData: "data.daily.values",
+          },
           {
             name: "Total LINEA Burnt",
             color: "#62dffea7",
@@ -156,24 +169,11 @@ const lineaTokenBurn: QuickBiteData = {
             tooltipDecimals: 2,
             url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
             pathToData: "data.daily.values",
-          },
-          {
-            name: "LINEA Burnt",
-            color: "#62DEFE",
-            type: "column",
-            oppositeYAxis: false,
-            xIndex: 0,
-            yIndex: 1,
-            suffix: ' LINEA',
-            prefix: null,
-            tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/linea/burn.json",
-            pathToData: "data.daily.values",
           }
         ],
       },
       height: 400,
-      caption: "Daily LINEA tokens burnt (left axis) and their USD value (right axis).",
+      caption: "Total LINEA tokens burnt (left axis) and their USD value (right axis).",
     }),
     "```",
 
@@ -181,7 +181,7 @@ const lineaTokenBurn: QuickBiteData = {
     JSON.stringify({
       type: "column",
       title: "ETH Burns",
-      subtitle: "Daily ETH burned and its USD value over time.",
+      subtitle: "Total ETH burned and its USD value over time.",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -199,12 +199,12 @@ const lineaTokenBurn: QuickBiteData = {
             pathToData: "data.daily.values",
           },
           {
-            name: "ETH Burned",
+            name: "Total ETH Burned",
             color: "#627eea",
-            type: "column",
+            type: "line",
             oppositeYAxis: false,
             xIndex: 0,
-            yIndex: 2,
+            yIndex: 6,
             suffix: ' ETH',
             prefix: null,
             tooltipDecimals: 3,
@@ -214,16 +214,10 @@ const lineaTokenBurn: QuickBiteData = {
         ],
       },
       height: 400,
-      caption: "Daily ETH burned (left axis) and its USD value (right axis).",
+      caption: "Total ETH burned (left axis) and its USD value (right axis).",
     }),
     "```",
-
-    "# Projected Supply Impact",
-    "Based on the current burn rate since September 11th, 2025:",
-
     
-
-
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/linea.png",
