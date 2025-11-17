@@ -51,7 +51,8 @@ interface JsonMeta {
     prefix?: string,
     url?: string,
     pathToData?: string,
-    dashStyle?: Highcharts.DashStyleValue
+    dashStyle?: Highcharts.DashStyleValue,
+    makeNegative?: boolean
   }[]
 }
 

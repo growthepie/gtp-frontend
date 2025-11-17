@@ -169,6 +169,137 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle Linea burn data placeholders
+      if (processedItem.includes('{{linea_') || processedItem.includes('{{total_usd_profits_allocated_for_burn}}')) {
+        const lineaKpisData = await fetchData('linea_kpis', "https://api.growthepie.com/v1/quick-bites/linea/kpis.json");
+
+        if (lineaKpisData?.data) {
+          const data = lineaKpisData.data;
+
+          // Format numbers with appropriate decimals
+          const formatNumber = (value: number | string, decimals: number = 0) => {
+            const numValue = typeof value === 'string' ? parseFloat(value) : value;
+            return numValue.toLocaleString("en-GB", {
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals
+            });
+          };
+
+          // Extract and format all values
+          const lineaTokensBridged = data.totals_lineatokensbridged_linea 
+            ? formatNumber(data.totals_lineatokensbridged_linea, 0) 
+            : 'N/A';
+          
+          const lineaTokensBridgedUsd = data.totals_lineatokensbridged_usd 
+            ? formatNumber(data.totals_lineatokensbridged_usd, 2) 
+            : 'N/A';
+          
+          const ethBurnt = data.totals_ethburnt_eth 
+            ? formatNumber(data.totals_ethburnt_eth, 2) 
+            : 'N/A';
+          
+          const ethBurntUsd = data.totals_ethburnt_usd 
+            ? formatNumber(data.totals_ethburnt_usd, 2) 
+            : 'N/A';
+          
+          const gasFeeIncome = data.totals_gas_fee_income 
+            ? formatNumber(data.totals_gas_fee_income, 2) 
+            : 'N/A';
+          
+          const gasFeeIncomeUsd = data.totals_gas_fee_income_usd 
+            ? formatNumber(data.totals_gas_fee_income_usd, 0) 
+            : 'N/A';
+          
+          const operatingCosts = data.totals_operating_costs 
+            ? formatNumber(data.totals_operating_costs, 2) 
+            : 'N/A';
+          
+          const operatingCostsUsd = data.totals_operating_costs_usd 
+            ? formatNumber(data.totals_operating_costs_usd, 0) 
+            : 'N/A';
+          
+          const operatingCostsL1 = data.totals_operating_costs_l1 
+            ? formatNumber(data.totals_operating_costs_l1, 2) 
+            : 'N/A';
+          
+          const operatingCostsL1Usd = data.totals_operating_costs_l1_usd 
+            ? formatNumber(data.totals_operating_costs_l1_usd, 2) 
+            : 'N/A';
+          
+          const operatingCostsInfra = data.totals_operating_costs_infrastructure 
+            ? formatNumber(data.totals_operating_costs_infrastructure, 2) 
+            : 'N/A';
+          
+          const operatingCostsInfraUsd = data.totals_operating_costs_infrastructure_usd 
+            ? formatNumber(data.totals_operating_costs_infrastructure_usd, 2) 
+            : 'N/A';
+          
+          const amountForBurn = data.totals_amount_for_burn 
+            ? formatNumber(data.totals_amount_for_burn, 2) 
+            : 'N/A';
+          
+          const amountForBurnUsd = data.totals_amount_for_burn_usd 
+            ? formatNumber(data.totals_amount_for_burn_usd, 0) 
+            : 'N/A';
+
+          // Calculate total USD burnt
+          const lineaTotalUsdBurnt = formatNumber(Number(data.totals_lineatokensbridged_usd) + Number(data.totals_ethburnt_usd), 2);
+
+          // Calculate the projected annual burn rate based on linea_totals_lineatokensbridged_linea
+          // Amount burnt since September 11th 2025
+          const startDate = new Date('2025-09-11').getTime();
+          const currentDate = new Date().getTime();
+          const daysSinceStart = (currentDate - startDate) / (1000 * 60 * 60 * 24);
+          
+          const dailyBurnRate = data.totals_lineatokensbridged_linea 
+            ? data.totals_lineatokensbridged_linea / daysSinceStart
+            : 0;
+          
+          const projectedAnnualBurnRate = dailyBurnRate * 365;
+          
+          const maxLineaSupply = 72009990000;
+          const projectedAnnualBurnRatePercentage = projectedAnnualBurnRate > 0
+            ? ((projectedAnnualBurnRate / maxLineaSupply) * 100).toFixed(3)
+            : 'N/A';
+          
+          const formattedProjectedAnnualBurnRate = projectedAnnualBurnRate > 0
+            ? projectedAnnualBurnRate.toLocaleString("en-GB", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              })
+            : 'N/A';
+          
+          const formattedMaxLineaSupply = maxLineaSupply.toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+
+          // Replace all placeholders
+          processedItem = processedItem
+            .replace('{{linea_totals_lineatokensburned_linea}}', lineaTokensBridged)
+            .replace('{{linea_totals_lineatokensbridged_linea}}', lineaTokensBridged)
+            .replace('{{linea_totals_lineatokensbridged_usd}}', lineaTokensBridgedUsd)
+            .replace('{{linea_totals_ethburnt_eth}}', ethBurnt)
+            .replace('{{linea_totals_ethburnt_usd}}', ethBurntUsd)
+            .replace('{{linea_totals_gas_fee_income}}', gasFeeIncome)
+            .replace('{{linea_totals_gas_fee_income_usd}}', gasFeeIncomeUsd)
+            .replace('{{linea_totals_operating_costs}}', operatingCosts)
+            .replace('{{linea_totals_operating_costs_usd}}', operatingCostsUsd)
+            .replace('{{linea_totals_operating_costs_l1}}', operatingCostsL1)
+            .replace('{{linea_totals_operating_costs_l1_usd}}', operatingCostsL1Usd)
+            .replace('{{linea_totals_operating_costs_infrastructure}}', operatingCostsInfra)
+            .replace('{{linea_totals_operating_costs_infrastructure_usd}}', operatingCostsInfraUsd)
+            .replace('{{linea_totals_amount_for_burn}}', amountForBurn)
+            .replace('{{linea_totals_amount_for_burn_usd}}', amountForBurnUsd)
+            .replace('{{total_usd_profits_allocated_for_burn}}', amountForBurnUsd)
+            // Locally calculated values
+            .replace('{{linea_projected_annual_burn_rate}}', formattedProjectedAnnualBurnRate)
+            .replace('{{linea_projected_annual_burn_rate_percentage}}', projectedAnnualBurnRatePercentage)
+            .replace('{{linea_max_supply}}', formattedMaxLineaSupply)
+            .replace('{{linea_total_usd_burnt}}', lineaTotalUsdBurnt);
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

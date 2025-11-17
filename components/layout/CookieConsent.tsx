@@ -7,13 +7,21 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { track } from "@vercel/analytics/react";
 import EthereumSVG from "@/public/donate/ethereum.svg";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 export default function CookieConsent() {
+  const searchParams = useSearchParams();
+  const isOgMode = searchParams?.get("is_og") === "true";
   const [consent, setConsent] = useState(true);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
+    if (isOgMode) {
+      setConsent(true);
+      return;
+    }
+
     setConsent(hasCookie("gtpCookieConsent"));
-  }, []);
+  }, [isOgMode]);
 
   const acceptCookie = () => {
     setConsent(true);
