@@ -78,8 +78,10 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
             return `<b>${weeks} weeks</b> and <b>${days} days</b> in last week`;
         } else if (weeks > 0) {
             return `<b>${weeks} weeks</b> in last week`;
-        } else if (days > 0) {
+         } else if (days > 1) {
             return `<b>${days} days</b> in last week`;
+        } else if (days > 0) {
+            return `<b>${days} day</b> in last week`;
         } else {
             return "<b>0 days</b> in last week";
         }
