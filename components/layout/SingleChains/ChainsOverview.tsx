@@ -191,7 +191,9 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
   return (
     <>
       {oldMaster && chainDataOverview && (
-        <div className="@container flex flex-col w-full gap-[15px]">
+        <div className="@container flex flex-col w-full gap-[15px]"
+        id="chains-page-title"
+        >
           <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
           <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
             <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
