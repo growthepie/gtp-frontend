@@ -4,6 +4,7 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 const lineaTokenBurn: QuickBiteData = {
   title: "Linea Token Burn Tracker",
   subtitle: "Tracking Linea's token burn mechanism and network economics",
+  shortTitle: "Linea Token Burn Tracker",
   content: [
     "# Introduction:",
     " Linea has introduced a dual-token burn mechanism that burns both ETH and LINEA by using all the profits the Linea chain generates after operating expenses. We will also be exploring the economic data Linea is publishing onchain." ,
