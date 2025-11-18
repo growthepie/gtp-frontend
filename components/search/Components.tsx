@@ -487,6 +487,7 @@ export const useSearchBuckets = () => {
     
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
+      .filter(navItem => navItem.name !== "Quick Bites")
       .reduce((acc, navItem) => {
         // If this is Blockspace, insert Quick Bites first
         if (navItem.name === "Blockspace") {
