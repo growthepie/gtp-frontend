@@ -535,9 +535,25 @@ export default function LandingChart({
     return maxDate;
   }, [embed_end_timestamp, filteredData]);
 
+  const minDate = useMemo(() => {
+    if (embed_start_timestamp) return new Date(embed_start_timestamp);
+
+    let minDate = new Date();
+    if (filteredData && filteredData[0].name !== "") {
+      minDate = new Date(
+        filteredData.length > 0 &&
+          filteredData[0].data[0][0]
+          ? filteredData[0].data[0][0]
+          : 0,
+      );
+    }
+    return minDate;
+  }, [embed_start_timestamp, filteredData]);
+
   const timespans = useMemo(() => {
-    const buffer = selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000;
+    const buffer = selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000 / 2;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
+    const minMinusBuffer = minDate.valueOf() - buffer;
 
     return {
       // "30d": {
@@ -550,7 +566,7 @@ export default function LandingChart({
         label: "90 days",
         labelShort: "90d",
         value: 90,
-        xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer.valueOf() - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {

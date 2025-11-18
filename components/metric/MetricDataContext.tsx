@@ -165,7 +165,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     if (!data) return {};
     const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
     const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
-    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
+    const maxPlusBuffer = new Date(maxDailyUnix).valueOf();
     const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
 
     // calculate how many days are 6 months ago from the max date
@@ -178,7 +178,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
