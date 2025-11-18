@@ -13,7 +13,7 @@ import { LinkButton } from '@/components/layout/LinkButton';
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 
-export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number, tooltipContent?: string }) {
+export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent, isHidden }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number, tooltipContent?: string, isHidden?: boolean }) {
     const [expanded, setExpanded] = useState(false);
     const [measuredContentHeight, setMeasuredContentHeight] = useState<number>(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -69,15 +69,15 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
       )}
       <div
         // className={`rounded-[15px] px-[30px] py-[15px] bg-color-bg-default w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
-        className={`w-full h-full relative transition-height duration-300 flex-1 `}
+        className={`w-full h-full relative transition-height duration-300 flex-1 ${isHidden ? "hidden" : ""}`}
        
       >
             {/* <div className="heading-large-md ">Events</div> */}
 
             <div className={`relative z-10 flex flex-col bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
                  style={{
-                    height:  (expanded ? (measuredContentHeight + 110 || totalHeight) : 245),
-                    minHeight: minHeight || "100%",
+                    height: isHidden ? 0 : (expanded ? (measuredContentHeight + 110 || totalHeight) : 245),
+                    minHeight: isHidden ? 0 : (minHeight || "100%"),
                  }}
             >
                 
