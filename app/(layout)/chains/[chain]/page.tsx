@@ -382,13 +382,15 @@ const Chain = ({ params }: { params: any }) => {
 
 
     return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
+        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none"
+        id="chains-page-title"
+        >
             <ChainTabs 
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}>
+            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`} id="content-container">
               {TabContent}
             </div>
             <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
