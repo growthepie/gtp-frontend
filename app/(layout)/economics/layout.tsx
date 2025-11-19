@@ -46,7 +46,7 @@ export default async function Layout({
           </Heading>
         </div>
         <div className="text-[14px] mb-[30px]">
-          Aggregated metrics across all chains listed in the table below.
+          Ethereum ecosystem economics of Layer 2s. This page contains a breakdown by revenue, costs, and profit. Only onchain revenue and costs are considered in this analysis.
         </div>
       </Container>
       <div>{children}</div>
@@ -60,11 +60,11 @@ export default async function Layout({
             <>
               <div className="pb-[10px]">
                 <div>
-                  Our Onchain Economics page breaks down how profitable Layer 2s operate onchain:
+                  Our Onchain Economics page breaks down how profitable Layer 2s operate:
                 </div>
                 <ul className="list-disc list-inside pt-[5px] text-[14px] space-y-[5px]">
                   <li><span className="font-bold">Profit</span> is defined as the difference between Revenue and Costs.</li>
-                  <li><span className="font-bold">Revenue</span> is the total amount generated from transaction fees on the Layer 2 (L2) blockchain.</li>
+                  <li><span className="font-bold">Revenue</span> is the total amount generated from transaction fees on the Layer 2.</li>
                   <li><span className="font-bold">Costs</span> are divided into two main components:</li>
                   <li className="list-none">
                     <ul className="list-disc list-inside pl-[20px] text-[14px] -mt-[5px]">
@@ -93,7 +93,6 @@ export default async function Layout({
               <ul className="list-disc list-inside pt-[5px] text-[14px]">
                 <li>We only account for onchain, trackable costs.</li>
                 <li>Server costs, offchain computations, and overheads (e.g., marketing, staffing) are <span className="font-semibold ">not included</span> in this analysis.</li>
-                <li><span className="font-bold">Net Profit (Offchain)</span> refers to the remaining profit after onchain costs, which is available to the company before taxes.</li>
               </ul>
             </>
           }

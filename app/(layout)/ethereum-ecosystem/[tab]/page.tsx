@@ -177,110 +177,17 @@ const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
         </div>
         <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
           <QuestionAnswer
-            question="What's growthepie?"
+            question="What are applications in this context?"
             answer={
               <>
-                growthepie is the open analytics platform for the Ethereum 
-                ecosystem - empowering builders with actionable insights 
-                to grow the pie. From Mainnet to Layer 2s and onchain applications, 
-                explore open data on usage, growth, and adoption. 
+                Applications are projects that are deployed onchain on
+                Ethereum Mainnet or any Layer 2. We map smart contracts to 
+                their respective applications to provide insights into their
+                usage and performance.
               </>
             }
           />
-          <QuestionAnswer
-            question="What's up with the name 'growthepie'?"
-            answer={
-              <>
-                We view Ethereum's different scaling solutions
-                as complementary technologies for the ecosystem that enable more use
-                cases, rather than competitors vying for market share. We
-                believe that the space is a positive-sum game, where each unique
-                flavor of layer 2 technology brings its own benefits to the
-                table, and together {" "}
-                <Link
-                  href="https://en.wikipedia.org/wiki/Growing_the_pie"
-                  className="underline"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  &quot;growing the pie&quot;
-                </Link>{" "}
-                for everyone. Hence the name
-                &quot;growthepie&quot; - we&apos;re all in this together, and the pie
-                is getting bigger in many different ways. Btw, our brand name is always
-                one word and lowercase: growthepie.
-              </>
-            }
-          />
-          <QuestionAnswer
-            question="What's the difference between Ethereum Mainnet and the Ethereum ecosystem?"
-            answer={
-              <>
-                Ethereum Mainnet, also called Ethereum L1, is the Ethereum blockchain
-                that launched in 2015. The Ethereum ecosystem, however, includes many
-                blockchains that are built on top of Ethereum Mainnet (Layer 2s). These
-                blockchains settle to Ethereum Mainnet and therefore can benefit from
-                some of its security guarantees. Not all of these chains necessarily run
-                the EVM (Ethereum Virtual Machine) - Layer 2s can also use other VMs 
-                (i.e. CairoVM, SVM, FuelVM, etc.). The VM doesn't define the Ethereum 
-                ecosystem - settling to Ethereum Mainnet defines it.
-              </>
-            }
-          />
-          <QuestionAnswer
-            question='What exactly does "Active on Multiple Chains" stand for?'
-            answer={
-              <>
-                The &quot;multiple&quot; category denotes addresses that were
-                active on multiple networks (Ethereum Mainnet OR Layer 2) within a given week.
-                This implies that if an address was active on different networks,
-                such as Arbitrum and OP Mainnet, in the same week, it would
-                be included in the &quot;multiple&quot; category. For a more detailed
-                breakdown of active addresses on each individual chain, please
-                refer to the{" "}
-                <Link
-                  href="https://www.growthepie.com/fundamentals/daily-active-addresses"
-                  className="underline"
-                >
-                  &quot;Active addresses&quot;
-                </Link>{" "}
-                tab.
-              </>
-            }
-          />
-          <QuestionAnswer
-            question="I attested contract labels via the Open Labels Initiative - when will they show on the Applications section?"
-            answer={
-              <>
-                Thank you for attesting your contracts via <Link
-                  href="https://www.openlabelsinitiative.org/"
-                  className="underline"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  OLI
-                </Link>!
-                Your attestations are securely stored in the OLI Label Pool.
-                We, as growthepie, consume labels from the OLI Label Pool and
-                we apply our own verification step before we add them to our platform.
-                Usually, this step takes 1 to 3 days and you should see your application
-                being listed very soon. In case you have issues, please reach out via
-                Discord.
-              </>
-            }
-          />
-          <QuestionAnswer
-            question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
-            answer={
-              <>
-                The goal is to cover as many Layer 2s as possible. We will add
-                more Layer 2s over time. For our type of analysis, we need
-                access to the raw data of each L2. This makes adding new L2s
-                time and resource-consuming. Our goal is to cover at least 80%
-                of all Ethereum ecosystem usage.
-              </>
-            }
-          />
+
           </div>
           </Container>
       </div>
