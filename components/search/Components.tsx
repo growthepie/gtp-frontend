@@ -21,7 +21,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';
 import { Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -483,7 +483,8 @@ export const useSearchBuckets = () => {
     
     // Get all quick bites for the Quick Bites bucket
     const allQuickBites = getAllQuickBites()
-      .filter(quickBite => quickBite.slug !== "test-bite"); // Filter out test quick bite
+      .filter(quickBite => quickBite.slug !== "test-bite") // Filter out test quick bite
+      .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false); // Hide non-live bites in production
     
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
