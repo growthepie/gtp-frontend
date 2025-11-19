@@ -236,8 +236,8 @@ const lineaTokenBurn: QuickBiteData = {
     "```",    
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/linea.png",
-  og_image: "",
+  image: "/quick-bites/linea-burn.webp",
+  og_image: "/quick-bites/linea-burn.webp",
   date: "2025-11-13",
   related: [],
   author: [{
