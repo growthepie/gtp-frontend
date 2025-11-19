@@ -265,7 +265,7 @@ const lineaTokenBurn: QuickBiteData = {
     },
   ],
   icon: "linea-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default lineaTokenBurn;
