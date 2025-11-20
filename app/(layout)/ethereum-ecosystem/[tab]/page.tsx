@@ -163,9 +163,9 @@ const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
         </ProjectsMetadataProvider>
       </div>
       )}
-      <div className="w-full flex items-start pt-[0px] -ml-[20px] md:-ml-[50px]">
+      <div className="w-full flex items-start pt-[0px] -pl-[20px] md:-pl-[50px] ">
       {isMounted && (
-        <Container>
+        <div>
           <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
             <GTPIcon
               icon="gtp-faq"
@@ -192,7 +192,7 @@ const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
             />
 
           </div>
-        </Container>
+          </div>
         )}
       </div>
     </Container>
