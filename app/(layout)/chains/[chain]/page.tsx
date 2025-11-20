@@ -391,7 +391,7 @@ const Chain = ({ params }: { params: any }) => {
               setSelectedTab={setSelectedTab} 
               
             />
-            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  id="chains-page-title">
+            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}
             </div>
             <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />

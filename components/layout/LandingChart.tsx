@@ -1193,7 +1193,7 @@ export default function LandingChart({
     >
       <div
         className={`h-[225px] lg:h-[81px] 2xl:h-[60px] ${isMobile ? "mb-[30px]" : "mb-0"
-          }`}
+          }`}   id="content-container"
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
@@ -1399,7 +1399,7 @@ export default function LandingChart({
         </TopRowContainer>
       </div>
       <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] "
-            id="content-container"
+         
       >
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
