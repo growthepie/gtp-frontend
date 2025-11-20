@@ -1188,12 +1188,13 @@ export default function LandingChart({
 
   return (
     <div
-
-      className={`w-full h-full flex flex-col justify-between `}
+      id="content-container"
+      className={`w-full h-full flex flex-col justify-between `} 
     >
       <div
-        className={`h-[225px] lg:h-[81px] 2xl:h-[60px] ${isMobile ? "mb-[30px]" : "mb-0"
-          }`}   id="content-container"
+        id="content-container"
+        className={`h-[225px] lg:h-[81px] 2xl:h-[60px]  ${isMobile ? "mb-[30px]" : "mb-0"
+          }`}   
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
