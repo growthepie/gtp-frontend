@@ -1,11 +1,11 @@
 "use client";
-import { useMemo, useState, useEffect, createContext, useContext, RefObject, ReactNode } from "react";
+import { useMemo, useState, useEffect, createContext, useContext, RefObject, ReactNode, useRef } from "react";
 import Error from "next/error";
 import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import ComparisonChart from "@/components/layout/ComparisonChart";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
@@ -89,16 +89,72 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
 
   const {
     timespans,
+    timeIntervals,
   } = useMetricData();
 
   const { theme } = useTheme()
 
+  const isCompactMode = useMediaQuery("(max-width: 1023px)");
   const navItem = useMemo(() => {
     return metricItems.find((item) => item.key === metric);
   }, [metric]);
 
+  // ref object for the container of the timespan buttons
+  const timespanContainerRef = useRef<HTMLDivElement>(null);
+  // ref object for each timespan button in order to get the positions of the buttons
+  const timespanRefs = useRef<{ [key: string]: RefObject<HTMLButtonElement> }>({});
+
+  const [left365d, setLeft365d] = useState<number | null>(null);
+  const [rightMax, setRightMax] = useState<number | null>(null);
+
+  useEffect(() => {
+    const calculatePositions = () => {
+      // get the positions of the timespan buttons
+      const timespanButtons = Object.entries(timespanRefs.current);
+      const timespanButtonPositions = timespanButtons.reduce((acc, [key, button]) => {
+        acc[key] = button.current?.getBoundingClientRect();
+        return acc;
+      }, {} as { [key: string]: DOMRect | undefined });
+  
+      const timespanContainerPosition = timespanContainerRef.current?.getBoundingClientRect();
+      
+      if (timespanButtonPositions && timespanContainerPosition && 
+          timespanButtonPositions["365d"] && timespanButtonPositions["max"]) {
+        // Calculate left offset: distance from container left to 365d button left
+        const left = timespanButtonPositions["365d"].left - timespanContainerPosition.left;
+        
+        // Calculate right offset: distance from container right to max button right
+        const right = timespanContainerPosition.right - timespanButtonPositions["max"].right;
+        
+        setLeft365d(left);
+        setRightMax(right);
+      }
+    };
+  
+    // Calculate on mount and when dependencies change
+    calculatePositions();
+  
+    // Add window resize listener
+    window.addEventListener('resize', calculatePositions);
+  
+    // Optional: Use ResizeObserver for more accurate tracking
+    const resizeObserver = new ResizeObserver(() => {
+      calculatePositions();
+    });
+  
+    if (timespanContainerRef.current) {
+      resizeObserver.observe(timespanContainerRef.current);
+    }
+  
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', calculatePositions);
+      resizeObserver.disconnect();
+    };
+  }, [selectedTimeInterval, selectedTimespan]); // Add dependencies that affect button rendering
+
   return (
-    <TopRowContainer className="relative">
+    <TopRowContainer className="relative" ref={timespanContainerRef}>
       {is_embed ? (
         <div className="hidden md:flex justify-center items-center">
           <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
@@ -117,7 +173,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
       ) : (
         <TopRowParent>
           
-          {(metric_type === "fundamentals" ? ["daily", "weekly", "monthly"] : ["daily", "monthly"]).map((interval) => (
+          {timeIntervals.map((interval) => (
             <TopRowChild
               key={interval}
               className={"capitalize relative"}
@@ -262,6 +318,11 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
             )
             .map((timespan) => (
               <TopRowChild
+                ref={(el) => {
+                  if (el) {
+                    timespanRefs.current[timespan] = { current: el };
+                  }
+                }}
                 key={timespan}
                 isSelected={selectedTimespan === timespan}
                 onClick={() => {
@@ -303,18 +364,23 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
             </button>
           </>
         )}
-      </TopRowParent>
-      <div
-        className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
-          ? "translate-y-[calc(-80%)]"
-          : "translate-y-0 "
-          }`}
-      >
-        <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
-          <span className="hidden md:block">7-day rolling average</span>
-          <span className="block md:hidden">7-day average</span>
+        <div
+          className={`absolute transition-[transform] block duration-300 ease-in-out -z-10 bottom-0 md:top-0 left-[10px] right-[10px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
+            ? "translate-y-[calc(100%)] lg:translate-y-[-18px]"
+            : "translate-y-0 lg:translate-y-0"
+            }`}
+            style={{
+              left: left365d ? left365d + (isCompactMode ? 5 : 15) : 0,
+              right: rightMax ? rightMax + (isCompactMode ? 5 : 15) : 0,
+
+            }}
+        >
+          <div className="text-[0.65rem] md:text-xs font-medium transition-[colors] bg-color-bg-default dark:bg-color-ui-active rounded-b-2xl lg:rounded-b-none lg:rounded-t-2xl border border-t-0 lg:border-t lg:border-b-0 border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
+            <span className="hidden md:block">7-day rolling average</span>
+            <span className="block md:hidden">7-day average</span>  
+          </div>
         </div>
-      </div>
+      </TopRowParent>
     </TopRowContainer>
   );
 }
