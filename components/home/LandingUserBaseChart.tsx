@@ -68,8 +68,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
           <Container
             className={`w-full`}
           >
-            <div></div>
-            {/* <LandingChart
+            <LandingChart
               data={data}
               master={master}
               sources={landing.data.metrics.engagement.source}
@@ -82,7 +81,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
               selectedMetric={selectedMetric}
               metric={selectedTimeInterval}
               setSelectedMetric={setSelectedMetric}
-            /> */}
+            />
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
