@@ -365,10 +365,10 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
           </>
         )}
         <div
-          className={`absolute transition-[transform] block duration-300 ease-in-out -z-10 bottom-0 md:top-0 left-[10px] right-[10px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
+          className={`absolute transition-[transform,opacity] block duration-300 ease-in-out -z-10 bottom-0 md:top-0 left-[10px] right-[10px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
             ? "translate-y-[calc(100%)] lg:translate-y-[-18px]"
             : "translate-y-0 lg:translate-y-0"
-            }`}
+            } ${left365d !== null && rightMax !== null ? "opacity-100" : "opacity-0"}`}
             style={{
               left: left365d ? left365d + (isCompactMode ? 5 : 15) : 0,
               right: rightMax ? rightMax + (isCompactMode ? 5 : 15) : 0,
