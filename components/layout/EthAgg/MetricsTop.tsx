@@ -271,7 +271,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
 
   return (
-  <EventsCard totalHeight={EXPANDED_LIST_HEIGHT} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
+  <EventsCard totalHeight={EXPANDED_LIST_HEIGHT } isHidden={isHidden} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
     <>
       <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
       <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
@@ -283,6 +283,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         </div>
       </div>
       <div className="heading-large-md pb-[15px]">Events</div>
+      
     </>
   }>
     {reversedEvents.map((event: any, index: number) => {

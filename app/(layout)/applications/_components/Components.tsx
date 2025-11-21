@@ -760,19 +760,13 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
         e.stopPropagation();
       }}
     >
-      <div className="heading-small-xs">Top Gainers and Losers</div>
+      <div className="heading-small-xs">Top Gainers</div>
       <div className="text-xs">
-        This section shows applications that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
-      </div>
-      <div className="text-xs">
-        <ul className="list-disc list-inside">
-          <li>3 &quot;Top Gainers&quot;</li>
-          <li>3 &quot;Top Losers&quot;</li>
-        </ul>
+        This section shows applications that have experienced the most significant positive change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
       </div>
 
       <div className="text-xxs">
-        This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+        Calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
       </div>
 
       {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.

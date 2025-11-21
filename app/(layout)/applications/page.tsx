@@ -107,7 +107,7 @@ export default function Page() {
   // }, []);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { topGainers, topLosers } = useMemo(() => {
+  const { topGainers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
@@ -118,22 +118,24 @@ export default function Page() {
     const filteredApplications = applicationDataAggregatedAndFiltered
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
 
-    // top 3 applications with highest change_pct
+    const changePctKey = medianMetricKey + "_change_pct";
+
+    // top 6 applications with highest positive change_pct only
+    const gainers = [...filteredApplications]
+      .filter((application) => application[changePctKey] > 0 && application[changePctKey] !== Infinity)
+      .sort((a, b) => b[changePctKey] - a[changePctKey])
+      .slice(0, 6);
+
     return {
-      topGainers: [...filteredApplications]
-        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
-      topLosers: [...filteredApplications]
-        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
+      topGainers: gainers,
     }
   }, [applicationDataAggregatedAndFiltered, medianMetricKey, showUsd]);
 
 
 
   const hideTopGainersAndLosers = useMemo(() => {
-    return selectedTimespan === "max" || selectedStringFilters.length > 0;
-  }, [selectedTimespan, selectedStringFilters]);
+    return selectedTimespan === "max" || selectedStringFilters.length > 0 || topGainers.length === 0;
+  }, [selectedTimespan, selectedStringFilters, topGainers.length]);
 
   return (
     <>
@@ -148,10 +150,10 @@ export default function Page() {
         >
           <Container className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
+              <div className="heading-large">Top Gainers by {metricsDef[medianMetric].name}</div>
               <div className="flex justify-between items-center gap-x-[10px]">
                 <div className="text-xs">
-                  Projects that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                  Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
                 </div>
                 <Tooltip placement="left">
                   <TooltipTrigger>
@@ -171,9 +173,6 @@ export default function Page() {
               {topGainers.map((application, index) => (
                 <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
-              {topLosers.map((application, index) => (
-                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
               {isLoading && new Array(6).fill(0).map((_, index) => (
                 <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
@@ -181,7 +180,7 @@ export default function Page() {
           
             <div className={`block md:hidden`}>
               <div className="pt-[10px]">
-                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+                <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application} />)} />
               </div>
             </div>
           </div>
