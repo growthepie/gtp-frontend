@@ -51,7 +51,7 @@ export default async function Page() {
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <LandingSecondHeaders />
       </Container>
-      <LandingUserBaseChart />
+     
       {/* {!IS_PRODUCTION && ( */}
         <QuickBitesSection />
       {/* )} */}
