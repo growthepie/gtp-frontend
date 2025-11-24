@@ -57,11 +57,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
   
   return (
     <>
-      <ShowLoading
-        dataLoading={[masterLoading, landingLoading]}
-        dataValidating={[masterValidating, landingValidating]}
-        fullScreen={true}
-      />
+
 
       {data && landing && master && AllChainsByKeys ? (
         <>
