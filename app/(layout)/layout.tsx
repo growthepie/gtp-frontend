@@ -176,7 +176,7 @@ export default function RootLayout({
               <ProjectsMetadataProvider>
                 <GlobalSearchBar />
               </ProjectsMetadataProvider>
-              <SidebarContainer />
+            
               <div
                 id="content-panel"
                 className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-inherit"
