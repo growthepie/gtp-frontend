@@ -31,6 +31,7 @@ import { ProjectsMetadataProvider } from "../../applications/_contexts/ProjectsM
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Link from "next/link";
+import { Title } from "@/components/layout/TextHeadingComponents";
 // import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
@@ -123,10 +124,7 @@ export default function EthAgg() {
         isPageRoot
       >
         <div className="flex items-center h-[43px] gap-x-[8px] ">
-          <GTPIcon icon="gtp-ethereumlogo" size="lg" />
-          <Heading className="heading-large-xl leading-snug " as="h1">
-            {"Ethereum Ecosystem Metrics"}
-          </Heading>
+          <Title title="Ethereum Ecosystem" icon="gtp-ethereumlogo" as="h1"  />
         </div>
 
       </Container>
