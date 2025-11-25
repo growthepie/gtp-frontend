@@ -118,8 +118,8 @@ const ethSupply: QuickBiteData = createQuickBite({
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/eth-supply.png",
-  og_image: "",
+  image: "/quick-bites/eth-supply.webp",
+  og_image: "/quick-bites/eth-supply.webp",
   date: "2025-10-28",
   related: [],
   author: [{

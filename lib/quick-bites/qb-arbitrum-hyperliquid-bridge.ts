@@ -246,8 +246,8 @@ const arbitrumHyperliquidBridge: QuickBiteData = createQuickBite({
     ...ArbPercentage,
 
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/hyperliquid.png",
-  og_image: "",
+  image: "/quick-bites/hyperliquid.webp",
+  og_image: "/quick-bites/hyperliquid.webp",
   date: "2025-09-10",
   related: [],
   author: [{
