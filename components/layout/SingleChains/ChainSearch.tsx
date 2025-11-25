@@ -13,7 +13,7 @@ interface ChainSearchProps {
 
 export default function ChainSearch({ chainInfo, chainKey }: ChainSearchProps) {
   return (
-    <div className="sticky top-0 z-[10] flex flex-col w-full pt-[0px] gap-y-[15px] overflow-visible">
+    <div className="sticky top-0 z-[20] flex flex-col w-full pt-[0px] gap-y-[15px] overflow-visible">
       <div className="flex flex-col gap-y-[10px]">
       <div className="flex items-center h-[43px] gap-x-[8px]">
         {/* <GTPIcon icon="gtp-project" size="lg" /> */}
