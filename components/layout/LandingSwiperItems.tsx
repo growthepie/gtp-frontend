@@ -73,7 +73,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["ethereum-scaling"];
+const quickBiteIds = ["linea-burn"];
 const quickBiteItems: { slug: string; quickBite: QuickBiteData }[] = quickBiteIds
   .map((quickBiteId) => ({
     slug: quickBiteId,
