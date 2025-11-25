@@ -205,14 +205,15 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
                 <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
+                <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
+                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
+                  </div>
                   {streaksData?.data[chainKey] && (
                     <div className="w-full xs:flex-1">
                       <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />
                     </div>
                   )}
-                  <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
-                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
-                  </div>
+
                 </div>
               </div>
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}>
