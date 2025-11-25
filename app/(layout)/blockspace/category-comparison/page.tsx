@@ -13,6 +13,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { Icon } from "@iconify/react";
 import { PageContainer } from "@/components/layout/Container";
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 const CategoryComparison = () => {
   const {
@@ -50,18 +51,7 @@ const CategoryComparison = () => {
       >
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">
-            <Icon
-              icon={"gtp:gtp-compare"}
-              className="object-contain w-[32px] h-[32px]"
-              height={36}
-              width={36}
-            />
-            <Heading
-              className="text-[26px] leading-snug lg:text-[36px]"
-              as="h1"
-            >
-              Category Comparison
-            </Heading>
+            <Title title="Category Comparison" icon="gtp-compare" as="h1"  />
           </div>
           <EcosystemDropdown />
         </div>
