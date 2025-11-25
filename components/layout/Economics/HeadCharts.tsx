@@ -620,7 +620,7 @@ export default function EconHeadCharts({
                           />
                         </div>
                       </div>
-                      <div className="absolute text-[18px] top-[18px] right-[30px] numbers">
+                      <div className="absolute numbers-lg top-[18px] right-[30px] numbers">
                         {!isMultipleSeries
                           ? valuePrefix +
 
