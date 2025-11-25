@@ -417,7 +417,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                 >
                     <div>
                         <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                            {"Lifetime achievements showcase the total accumulated value of the chains key metrics (i.e. liftime revenue, total active addresses, lifetime transactions since inception). Each chart visualizes the chains progress toward the next level based on the total accumulated value."}
+                            {"Lifetime achievements showcase the total accumulated value of the chains key metrics since inception. Each chart visualizes the chains progress toward the next level based on the total accumulated value."}
                         </TooltipBody>
                     </div>
                 </GTPTooltipNew>
