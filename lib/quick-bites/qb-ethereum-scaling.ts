@@ -1,5 +1,6 @@
 // lib/quick-bites/ethereum-scaling.ts
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 import { 
   FaqItem, renderFaqMarkdown, generateJsonLdFaq,
 } from './seo_helper';
@@ -280,9 +281,10 @@ export const jsonLdDatasets = [
   }
 ];
 
-const ethereumScaling: QuickBiteData = {
+const ethereumScaling: QuickBiteData = createQuickBite({
   title: "Scaling Ethereum Mainnet to 10,000 TPS",
   subtitle: "The road to ~1 Ggas/s on Layer 1 and ~1 Tgas/s across Layer 2s",
+  shortTitle: "Scaling Ethereum",
   summary: "Data-driven projection of Ethereum's path to ~10,000 TPS on L1 and million-TPS with L2s—charts, assumptions, and roadmap context.",
   content: [
     "Ethereum is on a clear path to scale. Over the next six years, Ethereum Mainnet throughput is expected to surge toward 10,000 transactions per second (TPS) - roughly 1 gigagas per second - while Layer 2s collectively push the ecosystem toward million-TPS capacity.",
@@ -334,11 +336,22 @@ const ethereumScaling: QuickBiteData = {
     "- 100,000 gas per transaction for converting gas/sec → TPS",
     "- Illustrative 3x YoY L1 growth curve; 4x YoY for aggregate L2s",
 
+    "## More Content",
+    "Listen to Justin Drake discuss Lean Ethereum and scaling on [Bankless](https://www.youtube.com/watch?v=k53WcsldV1Y):",
+    "```iframe",
+    JSON.stringify({
+      src: "https://www.youtube.com/embed/k53WcsldV1Y?si=j87grXem25CHOU1P",
+      width: "100%",
+      height: "500px",
+      caption: "Justin Drake on Lean Ethereum - Bankless Podcast",
+    }),
+    "```",
+
     "**Disclaimer**",
     "Projections are illustrative and depend on research, engineering, coordination, and market conditions. Not financial advice.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/ethereun_scaling_2.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/ethereum_scaling_og.png",
+  image: "/quick-bites/ethereum_scaling.webp",
+  og_image: "/quick-bites/ethereum_scaling.webp",
   date: "2025-10-17",
   related: [],
   author: [
@@ -357,6 +370,6 @@ const ethereumScaling: QuickBiteData = {
   jsonLdDatasets: jsonLdDatasets,
   jsonLdFaq: jsonLdFaq,
   faq: faqItems,
-};
+});
 
 export default ethereumScaling;

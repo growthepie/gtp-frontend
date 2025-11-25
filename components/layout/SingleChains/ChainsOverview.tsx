@@ -280,7 +280,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 ) : (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
                     <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
-                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2]`}>
+                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2]`}>
                       <GTPIcon icon="gtp-lock" size="md" className="" />
                       <div className="heading-large-md">
                         Usage Breakdown Not Available
@@ -467,11 +467,11 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
           {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
           {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
-          {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />}
-          {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />}
+          {/* {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />} */}
           {Object.keys(master.chains[chainKey].links.block_explorers).length > 0 && <LinkDropdown label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />}
           {Object.keys(master.chains[chainKey].links.bridges).length > 0 && <LinkDropdown label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />}
-
+          {Object.keys(master.chains[chainKey].links.others).length > 0 && <LinkDropdown label="Others" links={Object.keys(master.chains[chainKey].links.others).map((other) => ({ icon: socials[other]?.icon, label: other, href: master.chains[chainKey].links.others[other] }))} />}
+          {/* {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />} */}
         </div>
         {/* </HorizontalScrollContainer> */}
       </div>
@@ -552,10 +552,11 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
                         {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
                         {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
-                        {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />}
-                        {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />}
+                        {/* {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />} */}
                         {Object.keys(master.chains[chainKey].links.block_explorers).length > 0 && <LinkDropdown label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />}
                         {Object.keys(master.chains[chainKey].links.bridges).length > 0 && <LinkDropdown label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />}
+                        {Object.keys(master.chains[chainKey].links.others).length > 0 && <LinkDropdown label="Others" links={Object.keys(master.chains[chainKey].links.others).map((other) => ({ icon: socials[other]?.icon, label: other, href: master.chains[chainKey].links.others[other] }))} />}
+                        {/* {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />} */}
 
                   </div>
                 </MetricTab>

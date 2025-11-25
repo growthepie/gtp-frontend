@@ -23,6 +23,36 @@ import {
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 
+const timeIntervalSummaryKeys = {
+  daily: "last_1d",
+  daily_7d_rolling: "last_1d",
+  weekly: "last_7d",
+  monthly: "last_30d",
+}
+
+const timespanLabels: { [key: string]: { [key: string]: string } } = {
+  daily: {
+    "1d": "24 hours",
+    "30d": "30 days",
+    "365d": "1 year",
+  },
+  daily_7d_rolling: {
+    "1d": "24 hrs",
+    "30d": "30 days",
+    "365d": "1 year",
+  },
+  weekly: {
+    "7d": "1 week",
+    "28d": "4 weeks",
+    "365d": "1 year",
+  },
+  monthly: {
+    "30d": "1 mo",
+    "180d": "6 mos",
+    "365d": "1 year",
+  },
+}
+
 const MetricTable = ({
   metric_type,
 }: {
@@ -47,6 +77,7 @@ const MetricTable = ({
     timeIntervals,
     selectedTimeInterval,
   } = useMetricData();
+  
   const {
     selectedChains,
     setSelectedChains,
@@ -165,14 +196,6 @@ const MetricTable = ({
 
   const { isSidebarOpen, isSafariBrowser } = useUIContext();
 
-  const changesKey = useMemo(() => {
-    if (timeIntervalKey === "monthly") {
-      return "changes_monthly";
-    }
-
-    return "changes";
-  }, [timeIntervalKey]);
-
   const lastValueTimeIntervalKey = useMemo(() => {
     if (timeIntervalKey === "daily_7d_rolling") {
       return "daily";
@@ -185,7 +208,7 @@ const MetricTable = ({
     if (!data) return;
 
     const sampleChainDataTypes =
-      data.chains[chainKeys[0]][lastValueTimeIntervalKey].types;
+      data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
 
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
@@ -201,7 +224,7 @@ const MetricTable = ({
   const changesValueIndex = useMemo(() => {
     if (!data) return;
 
-    const sampleChainChangesTypes = data.chains[chainKeys[0]][changesKey].types;
+    const sampleChainChangesTypes = data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -212,7 +235,7 @@ const MetricTable = ({
     } else {
       return 0;
     }
-  }, [changesKey, data, showUsd]);
+  }, [lastValueTimeIntervalKey, data, showUsd]);
 
   const lastValues = useMemo(() => {
     if (!data) return null;
@@ -220,29 +243,38 @@ const MetricTable = ({
     return chainKeys
       .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
       .reduce((acc, chain) => {
-        let types = data.chains[chain][lastValueTimeIntervalKey].types;
+        let types = data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].types;
         let values =
-          data.chains[chain][lastValueTimeIntervalKey].data[
-          data.chains[chain][lastValueTimeIntervalKey].data.length - 1
-          ];
+          data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].data;
+
+        let valueIndex = 0;
+
+        if(types.includes("usd")) {
+          if (showUsd) {
+            valueIndex = types.indexOf("usd");
+          } else {
+            valueIndex = types.indexOf("eth");
+          }
+        }
+
         let lastVal = values[valueIndex];
 
-        if (lastValueTimeIntervalKey === "monthly") {
-          types = data.chains[chain].last_30d.types;
-          values = data.chains[chain].last_30d.data;
+        // if (lastValueTimeIntervalKey === "monthly") {
+        //   types = data.chains[chain].last_30d.types;
+        //   values = data.chains[chain].last_30d.data;
 
-          let monthlyValueIndex = 0;
+        //   let monthlyValueIndex = 0;
 
-          if (types.includes("usd")) {
-            if (showUsd) {
-              monthlyValueIndex = types.indexOf("usd");
-            } else {
-              monthlyValueIndex = types.indexOf("eth");
-            }
-          }
+        //   if (types.includes("usd")) {
+        //     if (showUsd) {
+        //       monthlyValueIndex = types.indexOf("usd");
+        //     } else {
+        //       monthlyValueIndex = types.indexOf("eth");
+        //     }
+        //   }
 
-          lastVal = values[monthlyValueIndex];
-        }
+        //   lastVal = values[monthlyValueIndex];
+        // }
 
         return {
           ...acc,
@@ -344,24 +376,10 @@ const MetricTable = ({
   }, [reversePerformer]);
 
   const lastValueLabels = {
-    monthly: "last 30d",
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
-  };
-
-
-  const timespanLabels = {
-    "1d": "24h",
-    // "7d": "7 days",
-    "30d": "30 days",
-    "365d": "1 year",
-  };
-
-  const timespanLabelsMonthly = {
-    "30d": "1 month",
-    // "90d": "3 months",
-    "180d": "6 months",
-    "365d": "1 year",
+    monthly: "Last 30d",
+    weekly: "Last 7d",
   };
 
   // New function to create rows with placeholders
@@ -392,10 +410,10 @@ const MetricTable = ({
         return sort.sortOrder === "desc" ? b.chain.key.localeCompare(a.chain.key) : a.chain.key.localeCompare(b.chain.key);
       }
       // if sort.metric is a timespan, sort by the timespan value
-      else if (Object.keys(timespanLabels).includes(sort.metric)) {
-        const timespanIndex = Object.keys(timespanLabels).indexOf(sort.metric);
-        const bVal = b.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
-        const aVal = a.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
+      else if (Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric)) {
+        const timespanIndex = Object.keys(timespanLabels[timeIntervalKey]).indexOf(sort.metric);
+        const bVal = b.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
+        const aVal = a.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
 
         if (aIsSelected && !bIsSelected) {
           return -1;
@@ -441,7 +459,7 @@ const MetricTable = ({
     }
 
     return result;
-  }, [rows, selectedChains, sort, timespanLabels, changesKey]);
+  }, [rows, selectedChains, sort, timespanLabels, lastValueTimeIntervalKey, reversePerformer]);
 
   let height = 0;
   const transitions = useTransition(
@@ -532,11 +550,11 @@ const MetricTable = ({
       //   ][1],
       // );
 
-      if (lastValueTimeIntervalKey === "monthly") {
-        types = item.data.last_30d.types;
-        values = item.data.last_30d.data;
-        // value = formatNumber(values[0]);
-      }
+      // if (lastValueTimeIntervalKey === "monthly") {
+      //   types = item.data.last_30d.types;
+      //   values = item.data.last_30d.data;
+      //   // value = formatNumber(values[0]);
+      // }
 
       let value;
       if (!focusEnabled && item.chain.key !== "ethereum") {
@@ -578,7 +596,7 @@ const MetricTable = ({
     ],
   );
 
-  if (!data) return null;
+  if (!data || !timespanLabels[timeIntervalKey]) return timeIntervalKey;
 
   return (
     <HorizontalScrollContainer includeMargin={isMobile ? true : false}>
@@ -622,19 +640,45 @@ const MetricTable = ({
                 </GridTableHeaderCell>
                 {/* Timespans */}
                 {Object.entries(
-                  timeIntervalKey === "monthly"
-                    ? timespanLabelsMonthly
-                    : timespanLabels,
+                  timespanLabels[timeIntervalKey],
                 ).map(([timespan, label]) => (
                   <GridTableHeaderCell
                     key={timespan}
                     metric={timespan}
                     justify="end"
                     className="heading-small-xxs"
-                    sort={sort}
-                    setSort={setSort}
+                    // sort={sort}
+                    // setSort={setSort}
                   >
-                    {label}
+                    {/* {label} */}
+                    <div
+                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] flex`}
+                      onClick={() => {
+                        setSort({
+                          metric: timespan, //"gas_fees_change_pct",
+                          sortOrder:
+                            sort.metric === timespan
+                              ? sort.sortOrder === "asc"
+                                ? "desc"
+                                : "asc"
+                              : "desc",
+                        });
+                      }}
+                    >
+                      <div className="text-xxxs !leading-[14px]">{label}</div>
+                      {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
+                      <Icon
+                        icon={
+                          sort.metric === timespan && sort.sortOrder === "asc"
+                            ? "feather:arrow-up"
+                            : "feather:arrow-down"
+                        }
+                        className="w-[10px] h-[10px]"
+                        style={{
+                          opacity: sort.metric === timespan ? 1 : 0.2,
+                        }}
+                      />
+                    </div>
                   </GridTableHeaderCell>
                 ))}
               </GridTableHeader>
@@ -727,9 +771,7 @@ const MetricTable = ({
               </GridTableHeaderCell>
               {/* Timespans */}
               {Object.entries(
-                timeIntervalKey === "monthly"
-                  ? timespanLabelsMonthly
-                  : timespanLabels,
+                timespanLabels[timeIntervalKey],
               ).map(([timespan, label]) => (
                 <GridTableHeaderCell key={timespan} metric={timespan} justify="end" className="heading-small-xxs" sort={sort} setSort={setSort}>
                   {label}
@@ -882,12 +924,10 @@ const MetricTable = ({
                       </div>
                     </div>
                     {Object.keys(
-                      timeIntervalKey === "monthly"
-                        ? timespanLabelsMonthly
-                        : timespanLabels,
+                      timespanLabels[timeIntervalKey],
                     ).map((timespan) => (
                       <div key={timespan} className="w-full text-right">
-                        {changesValueIndex !== undefined && item.data[changesKey][timespan][changesValueIndex] ===
+                        {changesValueIndex !== undefined && item.data.changes[lastValueTimeIntervalKey][timespan][changesValueIndex] ===
                           null ? (
                           <span className="inline-block text-center text-gray-500 numbers-xs">
                             —
@@ -895,7 +935,7 @@ const MetricTable = ({
                         ) : changesValueIndex !== undefined ? (
                           <>
                             {(reversePerformer ? -1.0 : 1.0) *
-                              item.data[changesKey][timespan][
+                              item.data.changes[lastValueTimeIntervalKey][timespan][
                               changesValueIndex
                               ] >=
                               0 ? (
@@ -911,7 +951,7 @@ const MetricTable = ({
                                 {(() => {
                                   const rawPercentage = Math.abs(
                                     Math.round(
-                                      item.data[changesKey][timespan][
+                                      item.data.changes[lastValueTimeIntervalKey][timespan][
                                       changesValueIndex
                                       ] * 1000,
                                     ) / 10,
@@ -947,7 +987,7 @@ const MetricTable = ({
                                 {reversePerformer ? "+" : "-"}
                                 {Math.abs(
                                   Math.round(
-                                    item.data[changesKey][timespan][
+                                    item.data.changes[lastValueTimeIntervalKey][timespan][
                                     changesValueIndex
                                     ] * 1000,
                                   ) / 10,

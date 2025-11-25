@@ -21,7 +21,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';
 import { Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -483,10 +483,12 @@ export const useSearchBuckets = () => {
     
     // Get all quick bites for the Quick Bites bucket
     const allQuickBites = getAllQuickBites()
-      .filter(quickBite => quickBite.slug !== "test-bite"); // Filter out test quick bite
+      .filter(quickBite => quickBite.slug !== "test-bite") // Filter out test quick bite
+      .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false); // Hide non-live bites in production
     
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
+      .filter(navItem => navItem.name !== "Quick Bites")
       .reduce((acc, navItem) => {
         // If this is Blockspace, insert Quick Bites first
         if (navItem.name === "Blockspace") {
@@ -1175,6 +1177,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     }
   }, [memoizedQuery, allFilteredData, keyboardExpandedStacks, keyMapping, getKey, setKeyCoords]);
 
+  const [hasEnteredKeyboardNav, setHasEnteredKeyboardNav] = useState(false);
+
   // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1185,20 +1189,28 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       const currentX = keyCoords.x ?? 0;
 
       if (event.key === 'ArrowUp') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== 0) {
           setKeyCoords({ y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1) });
+        }else if (currentY === 0) {
+          setHasEnteredKeyboardNav(false);
+          setKeyCoords({ y: null, x: null });
         }
       } else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        setHasEnteredKeyboardNav(true);
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== keyMapping.length - 1) {
           setKeyCoords({ y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1) });
         }
       } else if (event.key === 'ArrowLeft') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
@@ -1206,6 +1218,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           setKeyCoords({ y: currentY, x: currentX - 1 });
         }
       } else if (event.key === 'ArrowRight') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: currentY, x: currentX + 1 });
@@ -1226,6 +1240,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           }, 0);
         }
       } else if (event.key === 'Escape') {
+        if(hasEnteredKeyboardNav){
+          setHasEnteredKeyboardNav(false);
+        }
         event.preventDefault();
         event.stopPropagation();
         

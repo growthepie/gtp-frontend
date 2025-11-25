@@ -79,6 +79,8 @@ export default function SidebarContainer() {
             <Link
               href="/"
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-[width] duration-sidebar ease-sidebar`}
+              title="Link to growthepie"
+              aria-label="Link to growthepie"
             >
               <IconContextMenu 
                 getSvgData={getLogoSvgData} 

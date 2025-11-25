@@ -1,23 +1,18 @@
-import Home from "@/components/home/Home";
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import Icon from "@/components/layout/ServerIcon";
 import Subheading from "@/components/layout/Subheading";
 import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { LinkButton } from "@/components/layout/LinkButton";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -249,7 +244,7 @@ export default async function Page() {
           />
         </div>
       </Container>
-      <Home />
+     
     </>
   );
 }

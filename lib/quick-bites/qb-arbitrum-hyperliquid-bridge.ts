@@ -1,5 +1,6 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 
 const ArbStacked = ["```chart",
@@ -182,9 +183,10 @@ const CircleCharts = ["```container",
 
 
 
-const arbitrumHyperliquidBridge: QuickBiteData = {
+const arbitrumHyperliquidBridge: QuickBiteData = createQuickBite({
   title: "Arbitrum Hyperliquid Bridge",
   subtitle: "The Critical Infrastructure Connecting Arbitrum One to Hyperliquid's Trading Ecosystem",
+  shortTitle: "Hyperliquid Bridge",
   content: [
 
     "The Arbitrum Hyperliquid bridge serves as the primary infrastructure connecting USDC on Arbitrum One to Hyperliquid's Layer 1 perpetual trading platform. This bridge has become the most significant driver of stablecoin activity on Arbitrum One, with over $5.4B in USDC locked in the bridge contract at time of writing. The bridge enables seamless USDC transfers from Arbitrum One to Hyperliquid, where the stablecoin serves as the primary settlement currency for perpetual trading.",
@@ -244,8 +246,8 @@ const arbitrumHyperliquidBridge: QuickBiteData = {
     ...ArbPercentage,
 
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/hyperliquid.png",
-  og_image: "",
+  image: "/quick-bites/hyperliquid.webp",
+  og_image: "/quick-bites/hyperliquid.webp",
   date: "2025-09-10",
   related: [],
   author: [{
@@ -274,6 +276,6 @@ const arbitrumHyperliquidBridge: QuickBiteData = {
 ],
   icon: "arbitrum-logo-monochrome",
   showInMenu: true
-};
+});
 
 export default arbitrumHyperliquidBridge;

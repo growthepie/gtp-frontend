@@ -22,8 +22,10 @@ Quick Bites are data-driven content pieces that combine text, charts, and intera
 
 ### Alternative: From Scratch
 1. **Create a new file** in the `lib/quick-bites/` folder
-2. **Import the type**: `import { QuickBiteData } from '@/lib/types/quickBites';`
-3. **Create your Quick Bite object** with all required properties
+2. **Import the type + helper**:  
+   `import { QuickBiteData } from '@/lib/types/quickBites';`  
+   `import { createQuickBite } from '@/lib/quick-bites/createQuickBite';`
+3. **Wrap your data object** with `createQuickBite({ ... })` to enforce required props (like `shortTitle`)
 4. **Export as default**: `export default myQuickBite;`
 
 ## File Structure
@@ -46,6 +48,7 @@ All properties are required unless marked as optional:
 |----------|------|-------------|---------|
 | `title` | `string` | Main headline | `"Arbitrum Timeboost Revenue Analysis"` |
 | `subtitle` | `string` | Supporting description | `"How the new fee mechanism is performing"` |
+| `shortTitle` | `string` | ≤20 char label for cards, menus, SEO | `"Arbitrum Fees"` |
 | `summary` | `string` | Short 1-2 sentence summary for SEO | `"xxx"` |
 | `content` | `string[]` | Array of content blocks | `["# Header", "Text content", "```chart"]` |
 | `image` | `string` | Banner image URL | `"https://api.growthepie.com/v1/quick-bites/banners/timeboost.png"` |
@@ -54,6 +57,8 @@ All properties are required unless marked as optional:
 | `related` | `string[]` | URLs to related content | `["/chains/arbitrum"]` |
 | `author` | `Author[]` | *Optional* Author information | `[{name: "John Doe", xUsername: "johndoe"}]` |
 | `topics` | `Topic[]` | *Optional* Related topics/tags | `[{icon: "base-logo", color: "#2151F5", name: "Base", url: "/chains/base"}]` |
+
+> `shortTitle` is **required** and capped at 20 characters. The `createQuickBite` helper will throw during build if it’s missing or too long.
 
 For detailed type definitions, see `@/lib/types/quickBites.ts`.
 

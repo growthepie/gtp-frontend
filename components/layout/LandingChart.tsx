@@ -1,44 +1,29 @@
 "use client";
 
-import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
-import HighchartsColumnSeries from "highcharts/es-modules/Series/Column/ColumnSeries"
 import Highcharts, {
   AxisLabelsFormatterContextObject,
   Tick,
-  chart,
-  color,
 } from "highcharts/highstock";
-import { motion, useAnimation, AnimatePresence } from "framer-motion";
-import Heading from "@/components/layout/Heading";
 import {
   useState,
   useEffect,
   useMemo,
   useRef,
   useCallback,
-  useLayoutEffect,
 } from "react";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { debounce, fill, merge } from "lodash";
+import { merge } from "lodash";
 import { Switch } from "../Switch";
-import {
-  // AllChainsByKeys,
-  // EnabledChainsByKeys,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
-import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import Link from "next/link";
-import { Sources } from "@/lib/datasources";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
-import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
 import {
@@ -46,15 +31,12 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
-import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
-import { transparent } from "tailwindcss/colors";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
-import { DynamicLabel } from "../home/LandingHeaders";
 
 
 const COLORS = {
@@ -304,18 +286,10 @@ export default function LandingChart({
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
   }) {
-  const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
-
-  const  textToggles = {
-    "toggle": {
-      "total": "Total Ethereum Ecosystem",
-      "l2": "Layer 2 Ecosystem"
-      }
-  }
 
 
   // useEffect(() => {
@@ -328,9 +302,6 @@ export default function LandingChart({
   // }, [embedData]);
 
   useHighchartsWrappers();
-
-  const [maskIds, setMaskIds] = useState<{ rightMaskId: string; leftMaskId: string } | null>(null);
-
 
 
   useEffect(() => {
@@ -391,9 +362,6 @@ export default function LandingChart({
     selectedMetric === "Composition Split" ? "percentage" : "absolute",
   );
 
-  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
   const [zoomMax, setZoomMax] = useState(0);
@@ -409,8 +377,6 @@ export default function LandingChart({
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(
     embed_show_mainnet ?? false,
   );
-
-  const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
   // 2xl breakpoint
@@ -428,8 +394,6 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-
-  const [daysShown, setDaysShown] = useState(900);
 
   const chartConfig = useMemo(() => {
     if (!data) return null;
@@ -571,9 +535,25 @@ export default function LandingChart({
     return maxDate;
   }, [embed_end_timestamp, filteredData]);
 
+  const minDate = useMemo(() => {
+    if (embed_start_timestamp) return new Date(embed_start_timestamp);
+
+    let minDate = new Date();
+    if (filteredData && filteredData[0].name !== "") {
+      minDate = new Date(
+        filteredData.length > 0 &&
+          filteredData[0].data[0][0]
+          ? filteredData[0].data[0][0]
+          : 0,
+      );
+    }
+    return minDate;
+  }, [embed_start_timestamp, filteredData]);
+
   const timespans = useMemo(() => {
-    const buffer = selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000;
+    const buffer = selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000 / 2;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
+    const minMinusBuffer = minDate.valueOf() - buffer;
 
     return {
       // "30d": {
@@ -586,7 +566,7 @@ export default function LandingChart({
         label: "90 days",
         labelShort: "90d",
         value: 90,
-        xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer.valueOf() - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
@@ -659,7 +639,6 @@ export default function LandingChart({
     embedData.timeframe,
     maxDate,
     selectedScale,
-    selectedTimeInterval,
     selectedTimespan,
     showEthereumMainnet,
     showUsd,
@@ -721,7 +700,9 @@ export default function LandingChart({
 
   // const containerRef = useRef<HTMLDivElement>(null);
 
-  const [containerRef, { width, height }] = useElementSizeObserver();
+  const [containerRef, { width, height }] = useElementSizeObserver({
+    enabled: is_embed,
+  });
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
@@ -1233,12 +1214,6 @@ export default function LandingChart({
                 setSelectedScale("absolute");
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
-              onMouseEnter={() => {
-                setHoveredMetric("Total Ethereum Ecosystem");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
-              }}
             >
               <div className="flex items-center justify-center gap-x-[5px]  ">
                 <div className="flex items-center gap-x-[5px]">
@@ -1264,12 +1239,6 @@ export default function LandingChart({
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
                 setSelectedMetric("Composition");
-              }}
-              onMouseEnter={() => {
-                setHoveredMetric("Composition");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
               }}
             >
               {/*Title Area */}
@@ -1308,12 +1277,6 @@ export default function LandingChart({
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
-              }}
-              onMouseEnter={() => {
-                setHoveredMetric("Composition Split");
-              }}
-              onMouseLeave={() => {
-                setHoveredMetric(null);
               }}
             >
               {/*Title Area */}

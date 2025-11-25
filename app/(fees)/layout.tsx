@@ -7,7 +7,6 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import BottomBanner from "@/components/BottomBanner";
 import Backgrounds from "@/components/layout/Backgrounds";
-import "../background.css";
 import Share from "@/components/Share";
 import Icon from "@/components/layout/Icon";
 import FeesContainer from "@/components/layout/FeesContainer";

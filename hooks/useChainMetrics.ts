@@ -1,6 +1,6 @@
 import useSWR, { useSWRConfig } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
-import { getChainMetricURL, MetricURLKeyToAPIKey } from "@/lib/urls";
+import { getChainMetricURL, getDALayerMetricURL, MetricURLKeyToAPIKey, DAMetricURLKeyToAPIKey } from "@/lib/urls";
 import { useMemo, useCallback } from "react";
 import { ChainData } from "@/types/api/MetricsResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -27,38 +27,50 @@ type UseChainMetricsResult = {
 
 
 /**
- * Hook to fetch metrics for multiple chains in parallel
+ * Unified hook to fetch metrics for multiple chains or DA layers in parallel
  * and aggregate them into a structure compatible with the old MetricsResponse
+ * 
+ * @param metricURLKey - The metric URL key
+ * @param chainKeys - Array of chain/DA layer keys to fetch
+ * @param master - Master response data
+ * @param metricType - Either "fundamentals" for chain metrics or "data-availability" for DA metrics
  */
 export function useChainMetrics(
   metricURLKey: string,
   chainKeys: string[],
-  master: MasterResponse
+  master: MasterResponse,
+  metricType: "fundamentals" | "data-availability" = "fundamentals"
 ): UseChainMetricsResult {
   const { fetcher } = useSWRConfig();
-  console.log("metricURLKey", metricURLKey);
-  const metricKey = MetricURLKeyToAPIKey[metricURLKey];
-  if (!master.metrics[metricKey]) {
-    console.error("Metric not found", metricKey);
-    return {
-      data: undefined,
-      error: "Metric not found",
-      isLoading: false,
-      isValidating: false,
-    };
-  }
-  const supportedChainKeys = master.metrics[metricKey].supported_chains || Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
+  
+  // Choose the right mapping and metrics based on type
+  const metricKey = metricType === "fundamentals" 
+    ? MetricURLKeyToAPIKey[metricURLKey]
+    : DAMetricURLKeyToAPIKey[metricURLKey];
+  
+  const metricsDict = metricType === "fundamentals" ? master.metrics : master.da_metrics;
+  
+  const supportedChainKeys = useMemo(() => {
+    if (metricType === "data-availability") {
+      return metricsDict[metricKey]?.supported_chains || [];
+    }
+    return metricsDict[metricKey]?.supported_chains || Get_SupportedChainKeys(master).filter((key) => !["all_l2s", "multiple"].includes(key));
+  }, [metricType, metricsDict, metricKey, master]);
 
-  // Filter and prepare URLs
-  const validChainKeys = useMemo(() =>
-    chainKeys.filter((chainKey) => supportedChainKeys.includes(chainKey)),
-    [chainKeys, supportedChainKeys]
-  );
+  // For DA metrics, use supported chains directly; for fundamentals, filter provided chains
+  const validChainKeys = useMemo(() => {
+    if (metricType === "data-availability") {
+      // For DA, use all supported DA layers
+      return supportedChainKeys;
+    }
+    // For fundamentals, filter the provided chainKeys
+    return chainKeys.filter((chainKey) => supportedChainKeys.includes(chainKey));
+  }, [metricType, chainKeys, supportedChainKeys]);
 
-  const urls = useMemo(() =>
-    validChainKeys.map((chainKey) => getChainMetricURL(chainKey, metricURLKey)),
-    [validChainKeys, metricURLKey]
-  );
+  const urls = useMemo(() => {
+    const urlFunction = metricType === "fundamentals" ? getChainMetricURL : getDALayerMetricURL;
+    return validChainKeys.map((chainKey) => urlFunction(chainKey, metricURLKey));
+  }, [validChainKeys, metricURLKey, metricType]);
 
   // Custom fetcher that fetches all URLs in parallel and returns a map
   const parallelFetcher = useCallback(async () => {
@@ -91,10 +103,11 @@ export function useChainMetrics(
   }, [urls, validChainKeys, fetcher]);
 
   // Create a stable key for SWR
-  const swrKey = useMemo(() =>
-    urls.length > 0 ? `chain-metrics-${metricURLKey}-${validChainKeys.join(',')}` : null,
-    [metricURLKey, validChainKeys]
-  );
+  const swrKey = useMemo(() => {
+    if (urls.length === 0) return null;
+    const prefix = metricType === "fundamentals" ? "chain-metrics" : "da-layer-metrics";
+    return `${prefix}-${metricURLKey}-${validChainKeys.join(',')}`;
+  }, [metricType, metricURLKey, validChainKeys, urls.length]);
 
   // Use a single SWR hook to fetch all chains in parallel
   const { data: chainDataMap, error, isLoading, isValidating } = useSWR<{ [key: string]: ChainMetricResponse | null }>(
@@ -110,6 +123,9 @@ export function useChainMetrics(
 
   // Aggregate all the responses with progressive loading
   const aggregatedData = useMemo(() => {
+    // Return early if not a valid metric
+    if (!metricsDict[metricKey]) return undefined;
+    
     // Return early if no data yet
     if (!chainDataMap) return undefined;
 
@@ -151,11 +167,21 @@ export function useChainMetrics(
       metric_name: firstResponse.details.metric_name,
       description: "", // Not available in new API structure
       source: [], // Not available in new API structure
-      avg: master.metrics[metricKey].avg || false, // Default value, can be overridden
-      monthly_agg: master.metrics[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
+      avg: metricsDict[metricKey].avg || false, // Default value, can be overridden
+      monthly_agg: metricsDict[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
       chains,
     };
-  }, [chainDataMap, validChainKeys, isLoading, metricKey, master]);
+  }, [chainDataMap, validChainKeys, isLoading, metricKey, metricsDict]);
+
+  if (!metricsDict[metricKey]) {
+    console.error(`Metric not found in ${metricType}`, metricKey);
+    return {
+      data: undefined,
+      error: "Metric not found",
+      isLoading: false,
+      isValidating: false,
+    };
+  }
 
   return {
     data: aggregatedData,
@@ -176,15 +202,7 @@ function transformToChainData(
 
   return {
     chain_name: chainKey, // Will be enriched with actual name from Master context
-    changes: {
-      types: changes.daily.types as string[],
-      "1d": changes.daily["1d"],
-      "7d": changes.daily["7d"],
-      "30d": changes.daily["30d"],
-      "90d": changes.daily["90d"],
-      "180d": changes.daily["180d"],
-      "365d": changes.daily["365d"],
-    },
+    changes: changes,
     daily: {
       types: timeseries.daily.types as string[],
       data: timeseries.daily.data,
@@ -193,13 +211,13 @@ function transformToChainData(
       types: timeseries.daily_7d_rolling.types as string[],
       data: timeseries.daily_7d_rolling.data,
     } : undefined,
-    changes_monthly: {
-      types: changes.monthly.types as string[],
-      "30d": changes.monthly["30d"],
-      "90d": changes.monthly["90d"],
-      "180d": changes.monthly["180d"],
-      "365d": changes.monthly["365d"],
-    },
+    // changes_monthly: {
+    //   types: changes.monthly.types as string[],
+    //   "30d": changes.monthly["30d"],
+    //   "90d": changes.monthly["90d"],
+    //   "180d": changes.monthly["180d"],
+    //   "365d": changes.monthly["365d"],
+    // },
     monthly: {
       types: timeseries.monthly.types as string[],
       data: timeseries.monthly.data,
@@ -208,9 +226,10 @@ function transformToChainData(
       types: timeseries.weekly.types as string[],
       data: timeseries.weekly.data,
     } : undefined,
-    last_30d: {
-      types: summary.last_30d.types as string[],
-      data: summary.last_30d.data,
-    },
+    summary: summary
+    // last_30d: {
+    //   types: summary.last_30d.types as string[],
+    //   data: summary.last_30d.data,
+    // },
   };
 }

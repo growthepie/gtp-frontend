@@ -747,9 +747,11 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
 
 ApplicationTooltip.displayName = 'ApplicationTooltip';
 
-export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
+export const TopGainersAndLosersTooltip = ({ metric, scopeLabel }: { metric: string; scopeLabel?: string }) => {
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
+  const scopeText = scopeLabel ? ` on ${scopeLabel}` : "";
+  const medianScopeText = scopeLabel ? "within this chain view" : "across all applications";
   return (
     <div
       className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
@@ -760,19 +762,13 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
         e.stopPropagation();
       }}
     >
-      <div className="heading-small-xs">Top Gainers and Losers</div>
+      <div className="heading-small-xs">Top Gainers</div>
       <div className="text-xs">
-        This section shows applications that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
-      </div>
-      <div className="text-xs">
-        <ul className="list-disc list-inside">
-          <li>3 &quot;Top Gainers&quot;</li>
-          <li>3 &quot;Top Losers&quot;</li>
-        </ul>
+        This section shows applications{scopeText} that have experienced the most significant positive change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
       </div>
 
       <div className="text-xxs">
-        This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+        Calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} {medianScopeText}.
       </div>
 
       {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.

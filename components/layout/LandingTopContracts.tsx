@@ -1,22 +1,15 @@
 "use client";
 import { useState, useMemo, useEffect, memo } from "react";
 import useSWR from "swr";
-import ChainComponent from "@/components/charts/ChainComponent";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { useMediaQuery } from "usehooks-ts";
-import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
-import { useUIContext } from "@/contexts/UIContext";
-import ContractCard from "@/components/layout/ContractCard";
 import { useLocalStorage } from "usehooks-ts";
 import { LandingURL } from "@/lib/urls";
 import { ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, formatNumber } from "@/app/(layout)/applications/_components/Components";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
-import Container from "./Container";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
@@ -28,10 +21,6 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   } = useSWR<any>(LandingURL);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
-  const [selectedTimespan, setSelectedTimespan] = useState("1d");
-  const [selectedMetric, setSelectedMetric] = useState("gas_fees");
-
 
   // Convert the data into the expected format for AggregatedDataRow
   const transformDataToAggregatedRow = (item) => {
@@ -129,12 +118,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   }, []);
 
 
-  const rank = useMemo(() => {
-    if (!application) return null;
-
-    return application[`rank_${medianMetricKey}`];
-
-  }, [application, medianMetricKey]);
 
   const value = useMemo(() => {
     if (!application) return null;

@@ -22,19 +22,19 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/contributors",
-    "Title Template": "growthepie Contributors | growthepie",
+    "Title Template": "Contributors | growthepie",
     "Description Template": "Meet the contributors and builders behind growthepie — the open analytics platform for the Ethereum ecosystem.",
     "Status": "Published"
   },
   {
     "Path": "/economics",
-    "Title Template": "Ethereum Onchain Economics | Revenue, Costs, Profits | growthepie",
+    "Title Template": "Ethereum Onchain Economics | growthepie",
     "Description Template": "Explore protocol revenue, fees, and profit across Ethereum and its scaling layers. Analyze network health through economic metrics and profit margins.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability",
-    "Title Template": "Data Availability Comparison | Ethereum Blobs & Alt DA Layers | growthepie",
+    "Title Template": "Data Availability Comparison | growthepie",
     "Description Template": "Compare how Ethereum layer 2s use Data Availability layers like Ethereum Blobs, EigenDA, Celestia. Analyze blob usage, posting costs, and scalability trends.",
     "Status": "Published"
   },
@@ -112,37 +112,37 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/data-availability/blob-count",
-    "Title Template": "Blob Count | Ethereum Ecosystem | growthepie",
+    "Title Template": "Blob Count | DA Layers | growthepie",
     "Description Template": "Monitor blob posting activity across Ethereum and DA providers — key insight into rollup scalability.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/da-consumers",
-    "Title Template": "Data Availability Consumers | Ethereum Ecosystem | growthepie",
+    "Title Template": "Data Availability Consumers | DA Layers | growthepie",
     "Description Template": "See how many users different DA providers serve for rollups and layer 2s over time.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/data-posted",
-    "Title Template": "Data Posted by L2s | Ethereum Ecosystem | growthepie",
+    "Title Template": "Data Posted by L2s | DA Layers | growthepie",
     "Description Template": "Compare the data posted by layer 2s to different data availability layers like Ethereum Blobs and EigenDA.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/fees-paid",
-    "Title Template": "Data Availability Fees | Ethereum Ecosystem | growthepie",
+    "Title Template": "Data Availability Fees | DA Layers | growthepie",
     "Description Template": "Explore how much DA providers charge layer 2s for data posting and availability services.",
     "Status": "Published"
   },
   {
     "Path": "/data-availability/fees-paid-per-megabyte",
-    "Title Template": "Cost per Megabyte | Ethereum Ecosystem | growthepie",
+    "Title Template": "Cost per Megabyte | DA Layers | growthepie",
     "Description Template": "Compare how much different DA providers charge layer 2s per megabyte of data posted.",
     "Status": "Published"
   },
   {
     "Path": "/trackers/glodollar",
-    "Title Template": "Glo Dollar (GLO) Stablecoin Analytics | growthepie",
+    "Title Template": "Glo Dollar (GLO) Analytics | growthepie",
     "Description Template": "Track the growth of the Glo Dollar stablecoin across Ethereum and Layer 2s.",
     "Status": "Published"
   },
@@ -154,7 +154,7 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/trackers/optimism-retropgf-3",
-    "Title Template": "Optimism RetroPGF 3 Dashboard | Project Insights | growthepie",
+    "Title Template": "Optimism RetroPGF 3 Dashboard | growthepie",
     "Description Template": "Track the Optimism RetroPGF 3 project funding round.",
     "Status": "Published"
   },
@@ -172,7 +172,7 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/donate",
-    "Title Template": "Support growthepie | Fund Open Ethereum Analytics | growthepie",
+    "Title Template": "Support growthepie | Fund Open Ethereum Analytics",
     "Description Template": "Help growthepie remain open and independent. Your support funds transparent analytics for the Ethereum community.",
     "Status": "Published"
   },
@@ -196,13 +196,13 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/applications/[slug]",
-    "Title Template": "{{name}} | Ethereum Application Analytics | growthepie",
+    "Title Template": "{{name}} Analytics | growthepie",
     "Description Template": "Explore {{name}}’s onchain activity across Ethereum L1 and L2s — including transactions, users, and fees paid.",
     "Status": "Published"
   },
   {
     "Path": "/chains/[slug]",
-    "Title Template": "{{chainName}} Metrics | Ethereum Layer 2 Analytics | growthepie",
+    "Title Template": "{{chainName}} Analytics | growthepie",
     "Description Template": "Analyze {{chainName}}’s realtime TPS, onchain metrics, application usage, and many more insights.",
     "Status": "Published"
   },

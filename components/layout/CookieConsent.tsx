@@ -75,12 +75,12 @@ export default function CookieConsent() {
               className="w-8 h-8 md:w-[36px] md:h-[36px] lg:w-[36px] lg:h-[36px]"
             />
           </div>
-          <div className="flex items-center space-x-8 text-xxs md:text-xxs">
+          <div className="flex items-center space-x-8 text-xs md:text-xs">
             <div>
               Our website uses cookies to analyze how the site is used and to ensure your experience is consistent between visits. Find our{" "}
-              <Link href="/privacy-policy" className="underline relative md:text-xxs text-nowrap">
-                Privacy Policy here.
-              </Link>
+              <Link href="/privacy-policy" className="underline relative md:text-xs text-nowrap">
+                privacy policy
+              </Link> here.
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export default function CookieConsent() {
           </div>
         </div>
       </div>
-      <div className="flex md:flex-row flex-col md:gap-x-[5px] lg:gap-x-[30px] lg:gap-y-[0px] gap-y-[10px] items-center justify-between w-full text-xs md:text-xxs md:pt-[15px] pr-[30px] pl-[10px]">
+      {/* <div className="flex md:flex-row flex-col md:gap-x-[5px] lg:gap-x-[30px] lg:gap-y-[0px] gap-y-[10px] items-center justify-between w-full text-xs md:text-xxs md:pt-[15px] pr-[30px] pl-[10px]">
         <div className="flex-col gap-y-[10px] lg:max-w-[250px]">
           <div className="heading-large-xs pb-[10px]">Do you enjoy using growthepie?</div>
           <p className=" text-xxs md:text-xs ">Help us stay free for everyone, keeping data open and accessible! Also check out our impact&nbsp;   
@@ -164,7 +164,7 @@ export default function CookieConsent() {
             </div>
         </div>
         
-      </div>
+      </div> */}
       {/* <button
           className="self-start"
           onClick={(e) => {

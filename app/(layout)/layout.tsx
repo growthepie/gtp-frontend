@@ -8,11 +8,9 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
 import Share from "@/components/Share";
-import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 
 import { generateJsonLd } from "@/utils/json-ld";

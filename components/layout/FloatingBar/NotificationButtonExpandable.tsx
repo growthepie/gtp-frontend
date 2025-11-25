@@ -5,7 +5,6 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import NotificationContent from './NotificationContent';
 import { GTPIcon } from '../GTPIcon';
-import "@/app/scrollcontainer.css";
 import { useUIContext } from '@/contexts/UIContext';
 
 interface NotificationButtonExpandableProps {
