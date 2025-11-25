@@ -41,7 +41,7 @@ export default async function Layout({
             height={36}
             width={36}
           />
-          <Heading className="text-[36px] leading-snug " as="h1">
+          <Heading className="heading-large-xl leading-snug " as="h1">
             {"Onchain Economics"}
           </Heading>
         </div>

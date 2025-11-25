@@ -118,14 +118,17 @@ export default function EthAgg() {
       )} */}
 
       <ShowLoading dataLoading={[isEcosystemLoading, isHistoryLoading]} dataValidating={[isEcosystemValidating, isHistoryValidating]} />
-      <Container className="flex items-center h-[43px] gap-x-[8px] pt-[65px] md:pt-[30px]  pb-[30px]">
-        <GTPIcon icon="gtp-ethereumlogo" size="lg" />
-        <Heading
-          className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
-          as="h2"
-        >
-              Fundamental Metrics
-        </Heading>
+      <Container
+        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] pb-[15px]"
+        isPageRoot
+      >
+        <div className="flex items-center h-[43px] gap-x-[8px] ">
+          <GTPIcon icon="gtp-ethereumlogo" size="lg" />
+          <Heading className="heading-large-xl leading-snug " as="h1">
+            {"Ethereum Ecosystem Metrics"}
+          </Heading>
+        </div>
+
       </Container>
       <div className="flex flex-col pt-[15px]">
         <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${selectedBreakdownGroup === "Metrics" ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'}`}>
