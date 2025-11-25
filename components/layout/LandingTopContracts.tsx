@@ -82,10 +82,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
     <ProjectsMetadataProvider>  
       {landing ? (
         <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
-            {landing.data.top_applications.gainers.data.map((application, index) => (
-              <ApplicationCard key={index} application={transformDataToAggregatedRow(application)} />
-            ))}
-            {landing.data.top_applications.losers.data.map((application, index) => (
+            {landing.data.top_applications.gainers.data.slice(0, 6).map((application, index) => (
               <ApplicationCard key={index} application={transformDataToAggregatedRow(application)} />
             ))}
             
