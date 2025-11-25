@@ -1,10 +1,8 @@
 import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
 import { Chain } from "@/lib/chains";
-import { DAMetricsURLs } from "@/lib/urls";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
+import { ChainData, MetricData } from "@/types/api/MetricsResponse";
 import { intersection } from "lodash";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 
 type Timespans = {
@@ -85,22 +83,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         SupportedChainKeys.includes(chain.key),
       ).map((chain) => chain.key);
     }
-    // For DA metrics, load all DA layers
-    return AllDALayers.map((layer) => layer.key);
-  }, [metric_type, AllChains, AllDALayers, SupportedChainKeys]);
+    // For DA metrics, the hook will use supported_chains from master
+    return [];
+  }, [metric_type, AllChains, SupportedChainKeys]);
 
-  // For fundamentals: use the hook to leverage SWR cache (data fetched at page level)
-  // For DA: fetch using old API
-  const newApiData = useChainMetrics(metric, metric_type === "fundamentals" ? chainsToFetch : [], master!);
-  const oldApiData = useSWR<MetricsResponse>(
-    metric_type === "data-availability" ? DAMetricsURLs[metric] : null
+  // Use unified hook for both fundamentals and DA metrics
+  const { data, error, isLoading, isValidating } = useChainMetrics(
+    metric, 
+    chainsToFetch, 
+    master!, 
+    metric_type
   );
-
-  // Use new API data for fundamentals, old API for DA
-  const data = metric_type === "fundamentals" ? newApiData.data : oldApiData.data?.data;
-  const error = metric_type === "fundamentals" ? newApiData.error : oldApiData.error;
-  const isLoading = metric_type === "fundamentals" ? newApiData.isLoading : oldApiData.isLoading;
-  const isValidating = metric_type === "fundamentals" ? newApiData.isValidating : oldApiData.isValidating;
 
   const chainKeys = useMemo(() => {
     if (metric_type === "fundamentals") {
@@ -157,104 +150,123 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         , 0) as number
 
   }, [data, selectedChains, selectedTimeInterval])
+  
+  const timeIntervals = useMemo(() => {
+    if (!data) return [];
+    return intersection(["daily", "weekly", "monthly", "quarterly"], Object.keys(Object.values(data.chains)[0]));
+  }, [data])
 
+  const minUnixByTimeInterval = useMemo(() => {
+    if (!data) return 0;
+    const values: { [key: string]: number } = {}
+    timeIntervals.forEach((interval) => {
+      // find the min unix value across all chains for the interval
+      const minUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[0][0]).reduce((acc, curr) => Math.min(acc, curr), Infinity);
+      values[interval] = minUnix;
+    });
+    return values;
+  }, [data, timeIntervals, selectedChains])
 
-
+  const maxUnixByTimeInterval = useMemo(() => {
+    if (!data) return 0;
+    const values: { [key: string]: number } = {}
+    timeIntervals.forEach((interval) => {
+      // find the max unix value across all chains for the interval
+      const maxUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[data.chains[chainKey][interval].data.length - 1][0]).reduce((acc, curr) => Math.max(acc, curr), 0);
+      values[interval] = maxUnix;
+    });
+    return values;
+  }, [data, timeIntervals, selectedChains])
 
   const timespans = useMemo(() => {
     if (!data) return {};
-    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
-    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
-    const maxPlusBuffer = new Date(maxDailyUnix).valueOf();
-    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
+    const [dailybuffer, weeklybuffer, monthlybuffer ] = [0, 0, 0];
+    const minUnix = minUnixByTimeInterval[selectedTimeInterval];
+    const maxUnix = maxUnixByTimeInterval[selectedTimeInterval];
 
-    // calculate how many days are 6 months ago from the max date
-    const sixMonthsAgo = new Date(maxDailyUnix);
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
-
-    return {
+    const ts = {
       "90d": {
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 90 * 24 * 60 * 60 * 1000 - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
       "180d": {
         label: "180 days",
         shortLabel: "180d",
         value: 180,
-        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 180 * 24 * 60 * 60 * 1000 - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
       "365d": {
         label: "1 year",
         shortLabel: "365d",
         value: 365,
-        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 365 * 24 * 60 * 60 * 1000 - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
       "12w": {
         label: "12 weeks",
         shortLabel: "12w",
         value: 12,
-        xMin: maxMinusBuffer + 100000000 - 11 * 7 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 12 * 7 * 24 * 60 * 60 * 1000 - weeklybuffer,
+        xMax: maxUnix + weeklybuffer,
       },
       "24w": {
         label: "24 weeks",
         shortLabel: "24w",
         value: 24,
-        xMin: maxMinusBuffer + 100000000 - 23 * 7 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 24 * 7 * 24 * 60 * 60 * 1000 - weeklybuffer,
+        xMax: maxUnix + weeklybuffer,
       },
       "52w": {
         label: "52 weeks",
         shortLabel: "52w",
         value: 52,
-        xMin: maxMinusBuffer + 100000000 - 51 * 7 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 52 * 7 * 24 * 60 * 60 * 1000 - weeklybuffer,
+        xMax: maxUnix + weeklybuffer,
       },
       "maxW": {
         label: "Max",
         shortLabel: "Max",
         value: 0,
-        xMin: minMinusBuffer,
-        xMax: maxPlusBuffer,
+        xMin: minUnix - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
       "6m": {
         label: "6 months",
-        shortLabel: "6M",
+        shortLabel: "6m",
         value: 6,
-        xMin: sixMonthsAgoPlusBuffer,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 6 * 30 * 24 * 60 * 60 * 1000 - monthlybuffer,
+        xMax: maxUnix + monthlybuffer,
       },
       "12m": {
         label: "1 year",
-        shortLabel: "1Y",
+        shortLabel: "1y",
         value: 12,
-        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
+        xMin: maxUnix - 12 * 30 * 24 * 60 * 60 * 1000 - monthlybuffer,
+        xMax: maxUnix + monthlybuffer,
       },
       maxM: {
         label: "Max",
         shortLabel: "Max",
         value: 0,
-        xMin: minMinusBuffer,
-
-        xMax: maxPlusBuffer,
+        xMin: minUnix - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
       max: {
         label: "Max",
         shortLabel: "Max",
         value: 0,
-        xMin: minMinusBuffer,
-
-        xMax: maxPlusBuffer,
+        xMin: minUnix - dailybuffer,
+        xMax: maxUnix + dailybuffer,
       },
     };
-  }, [data, maxDailyUnix, minDailyUnix]);
+
+    return ts;
+
+  }, [data, minUnixByTimeInterval, maxUnixByTimeInterval, selectedTimeInterval]);
 
   const metric_id = data?.metric_id || "";
 
@@ -276,10 +288,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         log_default: log_default,
         chainKeys,
         sources: data?.source || [],
-        timeIntervals: data ? intersection(
-          Object.keys(Object.values(data.chains)[0]),
-          ["daily", "weekly", "monthly"],
-        ) : [],
+        timeIntervals: timeIntervals,
         timespans: timespans,
         minDailyUnix,
         maxDailyUnix,

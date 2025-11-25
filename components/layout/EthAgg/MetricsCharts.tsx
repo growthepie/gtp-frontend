@@ -331,12 +331,13 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
 
 
 
+
   if (!meetL2sData || selectedBreakdownGroup !== "Metrics" || !ProjectData) return null;
 
 
 
   return (
-    <div className="flex flex-col gap-y-[15px] w-full overflow-hidden pt-[60px]">
+    <div className="flex flex-col gap-y-[15px] w-full overflow-hidden pt-[60px] h-full">
       <Container className='flex flex-col gap-y-[15px]'>
         <div className='flex gap-x-[8px] items-center'>
           <GTPIcon icon='gtp-multiple-chains' size='lg' />
@@ -372,6 +373,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
     // Optional: Add a loading skeleton here
     return null;
   }
+
 
   return (
     <SwiperComponent>

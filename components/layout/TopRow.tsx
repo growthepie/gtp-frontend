@@ -1,17 +1,7 @@
 "use client";
-import Container from "@/components/layout/Container";
+import { forwardRef } from "react";
 
-export function TopRowChild({
-  children,
-  isSelected,
-  className,
-  ref,
-  style,
-  roundedClassName = "rounded-full",
-  onClick,
-  onMouseEnter,
-  onMouseLeave,
-}: {
+type TopRowChildProps = {
   children: React.ReactNode;
   isSelected: boolean;
   className?: string;
@@ -21,7 +11,18 @@ export function TopRowChild({
   onClick?: () => void;
   onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
   onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
-}) {
+}
+
+export const TopRowChild = forwardRef<HTMLButtonElement, TopRowChildProps>(({
+  children,
+  isSelected,
+  className,
+  style,
+  roundedClassName = "rounded-full",
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}, ref) => {
   return (
     <button
       className={`select-none ${roundedClassName} px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
@@ -37,21 +38,28 @@ export function TopRowChild({
       {children}
     </button>
   );
+});
+
+TopRowChild.displayName = "TopRowChild";
+
+type TopRowContainerProps = {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  onClick?: () => void;
 }
 
-export function TopRowContainer({
+export const TopRowContainer = forwardRef<HTMLDivElement, TopRowContainerProps>(({
   children,
   className,
-  ref,
   style,
   onClick,
 }: {
   children: React.ReactNode;
   className?: string;
-  ref?: React.Ref<HTMLDivElement>;
   style?: React.CSSProperties;
   onClick?: () => void;
-}) {
+}, ref) => {
   return (
     <div
       className={`select-none flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full bg-color-bg-default
@@ -62,7 +70,10 @@ export function TopRowContainer({
       {children}
     </div>
   );
-}
+});
+
+TopRowContainer.displayName = "TopRowContainer";
+
 
 export function TopRowParent({
   children,

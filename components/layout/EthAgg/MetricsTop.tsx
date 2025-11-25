@@ -283,6 +283,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         </div>
       </div>
       <div className="heading-large-md pb-[15px]">Events</div>
+      
     </>
   }>
     {reversedEvents.map((event: any, index: number) => {

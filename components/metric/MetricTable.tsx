@@ -210,9 +210,6 @@ const MetricTable = ({
     const sampleChainDataTypes =
       data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
 
-    console.log("data", data);
-    console.log("sampleChainDataTypes", sampleChainDataTypes);
-
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
         return sampleChainDataTypes.indexOf("usd");
@@ -227,10 +224,7 @@ const MetricTable = ({
   const changesValueIndex = useMemo(() => {
     if (!data) return;
 
-    console.log("data", data, "lastValueTimeIntervalKey", lastValueTimeIntervalKey);
     const sampleChainChangesTypes = data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
-
-    console.log("changesValueIndex::sampleChainChangesTypes", sampleChainChangesTypes);
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -253,8 +247,6 @@ const MetricTable = ({
         let values =
           data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].data;
 
-        console.log("lastValues::types", types, "values", values);
-
         let valueIndex = 0;
 
         if(types.includes("usd")) {
@@ -266,8 +258,6 @@ const MetricTable = ({
         }
 
         let lastVal = values[valueIndex];
-
-        console.log("lastValues::data", data);
 
         // if (lastValueTimeIntervalKey === "monthly") {
         //   types = data.chains[chain].last_30d.types;
@@ -394,7 +384,6 @@ const MetricTable = ({
 
   // New function to create rows with placeholders
   const rowsWithPlaceholders = useCallback(() => {
-    console.log("sort.metric", sort.metric);
     const sortedRows = rows().sort((a, b) => {
       const aIsSelected = selectedChains.includes(a.chain.key);
       const bIsSelected = selectedChains.includes(b.chain.key);
@@ -422,7 +411,6 @@ const MetricTable = ({
       }
       // if sort.metric is a timespan, sort by the timespan value
       else if (Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric)) {
-        console.log("Object.keys(timespanLabels).includes(sort.metric)", Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric));
         const timespanIndex = Object.keys(timespanLabels[timeIntervalKey]).indexOf(sort.metric);
         const bVal = b.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
         const aVal = a.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
@@ -528,7 +516,6 @@ const MetricTable = ({
 
   const getDisplayValue = useCallback(
     (item: any) => {
-      console.log("getDisplayValue:item", item);
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
 
       if (!master)
@@ -568,8 +555,6 @@ const MetricTable = ({
       //   values = item.data.last_30d.data;
       //   // value = formatNumber(values[0]);
       // }
-
-      console.log("getDisplayValue:item", item, "types", types, "values", values);
 
       let value;
       if (!focusEnabled && item.chain.key !== "ethereum") {

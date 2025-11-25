@@ -284,7 +284,7 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   const { isSidebarOpen } = useUIContext();
 
   // Horizontal padding applied to the parent container (px-[30px] = 30px left + 30px right)
-  const CONTAINER_HORIZONTAL_PADDING = 30;
+  const CONTAINER_HORIZONTAL_PADDING = 60;
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -400,7 +400,7 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   }, [enrichedApps, masterData, selectedMainCategory]);
 
   const dimensions = useMemo(() => {
-    const MIN_HEIGHT = 245;
+    const MIN_HEIGHT = chainKey === "ethereum-ecosystem" ? 700 : 350;
     const MAX_HEIGHT = windowHeight - (chainKey === "ethereum-ecosystem" ? 600 : 300);
     const MAX_APPS = 20;
 
@@ -820,8 +820,8 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        // Subtract horizontal padding from the measured width
-        const width = entry.contentRect.width - CONTAINER_HORIZONTAL_PADDING;
+        // Measure the inner width (content box) directly
+        const width = entry.contentRect.width;
         setIsResizing(true);
 
         if (resizeTimeoutRef.current) {
@@ -1427,8 +1427,22 @@ function generateConstrainedTiles(
     }
   }
 
-  actualCols = Math.min(actualCols, maxCols);
-  actualRows = Math.min(actualRows, maxRows);
+  // 1. Clamp cols, expand rows
+  if (actualCols > maxCols) {
+    actualCols = maxCols;
+    actualRows = Math.ceil(estimatedYilesToShow / actualCols);
+  }
+  
+  // 2. Clamp rows, expand cols
+  if (actualRows > maxRows) {
+    actualRows = maxRows;
+    actualCols = Math.ceil(estimatedYilesToShow / actualRows);
+  }
+
+  // 3. Clamp cols again (in case step 2 expanded too much)
+  if (actualCols > maxCols) {
+    actualCols = maxCols;
+  }
 
   const totalTileWidth = actualCols * TILE + (actualCols - 1) * GAP;
   const totalTileHeight = actualRows * TILE + (actualRows - 1) * GAP;

@@ -155,41 +155,45 @@ const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: s
   }, [showContainer]);
 
   return (
-    <Container className={` overflow-hidden`}>
+    <Container className={`  overflow-hidden`}>
+      {isMounted && (
       <div ref={containerRef} className="py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
         <ProjectsMetadataProvider>
-          {isMounted && containerWidth > 0 && <ApplicationsGrid chainKey="ethereum-ecosystem" width={containerWidth} />}
+          <ApplicationsGrid chainKey="ethereum-ecosystem" width={containerWidth} />
         </ProjectsMetadataProvider>
       </div>
-      <div className="w-full flex items-start pt-[0px] -ml-[20px] md:-ml-[50px]">
-      <Container>
-        <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
-          <GTPIcon
-            icon="gtp-faq"
-            size="lg"
-          />
-          <Heading
-            id="layer-2-traction-title"
-            className="heading-large-lg"
-          >
-            <div>Frequently Asked Questions</div>
-          </Heading>
-        </div>
-        <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
-          <QuestionAnswer
-            question="What are applications in this context?"
-            answer={
-              <>
-                Applications are projects that are deployed onchain on
-                Ethereum Mainnet or any Layer 2. We map smart contracts to 
-                their respective applications to provide insights into their
-                usage and performance.
-              </>
-            }
-          />
+      )}
+      <div className="w-full flex items-start pt-[0px] -pl-[20px] md:-pl-[50px] ">
+      {isMounted && (
+        <div>
+          <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
+            <GTPIcon
+              icon="gtp-faq"
+              size="lg"
+            />
+            <Heading
+              id="layer-2-traction-title"
+              className="heading-large-lg"
+            >
+              <div>Frequently Asked Questions</div>
+            </Heading>
+          </div>
+          <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
+            <QuestionAnswer
+              question="What are applications in this context?"
+              answer={
+                <>
+                  Applications are projects that are deployed onchain on
+                  Ethereum Mainnet or any Layer 2. We map smart contracts to 
+                  their respective applications to provide insights into their
+                  usage and performance.
+                </>
+              }
+            />
 
           </div>
-          </Container>
+          </div>
+        )}
       </div>
     </Container>
   )

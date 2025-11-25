@@ -131,8 +131,8 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
 
     "All charts on this page are updated daily so you can track the adoption of the Pectra upgrades over time.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/pectra.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/pectra-upgrade.png",
+  image: "/quick-bites/pectra.webp",
+  og_image: "/quick-bites/pectra.webp",
   date: "2025-05-22",
   related: [],
   author: [{
