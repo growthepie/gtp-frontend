@@ -72,7 +72,7 @@ export default async function Page() {
           <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
         </div>
         <Subheading className="text-md px-[5px] lg:px-[45px]">
-          Top 6 gainers based on transaction count in the last 7 days.
+          Applications in the Ethereum ecosystem that grew the most in the past 7 days (based on transaction count metric).
         </Subheading>
       </Container>
       <Container className="">
