@@ -202,8 +202,8 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
   },
   {
     "Path": "/chains/[slug]",
-    "Title Template": "{{chainName}} Analytics | growthepie",
-    "Description Template": "Analyze {{chainName}}’s realtime TPS, onchain metrics, application usage, and many more insights.",
+    "Title Template": "{{chainName}} Metrics Dashboard | growthepie",
+    "Description Template": "Explore {{chainName}}’s network activity in realtime: TPS, fees, application activity, and historical trends. Open, fast, and transparent onchain analytics powered by growthepie.",
     "Status": "Published"
   },
   {
