@@ -65,32 +65,37 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
     setSelectedChains([chainKey]);
   }, [chainKey, setSelectedChains]);
 
-  const { topGainers, topLosers } = useMemo(() => {
-    const medianMetricValues = chainFilteredApplications.map((application) => application[medianMetricKey])
+  const { topGainers } = useMemo(() => {
+    if (!chainFilteredApplications.length) {
+      return { topGainers: [] as AggregatedDataRow[] };
+    }
+
+    const medianMetricValues = [...chainFilteredApplications]
+      .map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
     const convertToETH = showUsd ? true : false;
+    const changePctKey = `${medianMetricKey}_change_pct`;
 
-    // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = chainFilteredApplications
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
+      .filter(
+        (application) =>
+          application[medianMetricKey] > medianValue &&
+          application[`prev_${convertToETH ? "gas_fees_eth" : medianMetricKey}`] > 0,
+      );
 
-    
-    // top 3 applications with highest change_pct
-    return {
-      topGainers: [...filteredApplications]
-        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
-      topLosers: [...filteredApplications]
-        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
-    }
+    const gainers = filteredApplications
+      .filter((application) => application[changePctKey] > 0 && application[changePctKey] !== Infinity)
+      .sort((a, b) => b[changePctKey] - a[changePctKey])
+      .slice(0, 6);
+
+    return { topGainers: gainers };
   }, [chainFilteredApplications, medianMetricKey, showUsd]);
 
-  const hideTopGainersAndLosers = useMemo(() => {
-    return selectedTimespan === "max" || selectedStringFilters.length > 0;
-  }, [selectedTimespan, selectedStringFilters]);
+  const hideTopGainers = useMemo(() => {
+    return selectedTimespan === "max" || selectedStringFilters.length > 0 || topGainers.length === 0;
+  }, [selectedTimespan, selectedStringFilters, topGainers.length]);
 
   return (
     <div className="">
@@ -103,17 +108,17 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
         <div
           className={``}
           style={{
-            height: hideTopGainersAndLosers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
-            opacity: hideTopGainersAndLosers ? 0 : 1,
+            height: hideTopGainers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
+            opacity: hideTopGainers ? 0 : 1,
             transition: "height 0.3s ease, opacity 0.3s ease",
           }}
         >
           <div className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-large">Top Gainers and Losers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
+              <div className="heading-large">Top Gainers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
               <div className="flex justify-between items-center gap-x-[10px]">
                 <div className="text-xs">
-                  Projects on {chainInfo?.name} that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                  Projects on {chainInfo?.name} that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
                 </div>
                 <Tooltip placement="left">
                   <TooltipTrigger>
@@ -122,7 +127,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-[99]">
-                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
+                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} scopeLabel={chainInfo?.name} />
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -134,17 +139,14 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
               {topGainers.map((application, index) => (
                 <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
-              {topLosers.map((application, index) => (
-                <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
               {isLoading && new Array(6).fill(0).map((_, index) => (
-                <ApplicationCard key={index} application={undefined} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                <ApplicationCard key={`loading-${index}`} application={undefined} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
             </div>
           
             <div className={`block md:hidden`}>
               <div className="pt-[10px]">
-                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application } chainsPage={true} chainKey={chainKey} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} chainsPage={true}  chainKey={chainKey} />)]} />
+                <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application } chainsPage={true} chainKey={chainKey} />)} />
               </div>
             </div>
           </div>
