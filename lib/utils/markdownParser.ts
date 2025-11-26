@@ -1,5 +1,5 @@
 // File: lib/utils/markdownParser.ts
-import { ContentBlock, FaqBlock, generateBlockId } from '@/lib/types/blockTypes';
+import { ContentBlock, FaqBlock, generateBlockId, ChartBlock, ChartToggleBlock } from '@/lib/types/blockTypes';
 
 // Simple utility to convert markdown to raw HTML without remark
 // This is a placeholder - we'll use react-markdown for actual rendering at component level
@@ -91,6 +91,21 @@ export async function processMarkdownContent(content: string[]): Promise<Content
             const faqBlock = parseFaqBlock(jsonString);
             if (faqBlock) {
               blocks.push(faqBlock);
+              i += 2;
+              continue;
+            }
+          }
+        }
+      }
+      // Handle chart toggle blocks
+      else if (text.startsWith('```chart-toggle')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          if (closingMarker) {
+            const chartToggleBlock = parseChartToggleBlock(jsonString);
+            if (chartToggleBlock) {
+              blocks.push(chartToggleBlock);
               i += 2;
               continue;
             }
@@ -486,6 +501,85 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);
+    return null;
+  }
+}
+
+function parseChartToggleBlock(jsonString: string): ChartToggleBlock | null {
+  try {
+    const toggleConfig = JSON.parse(jsonString);
+
+    if (!Array.isArray(toggleConfig.charts) || toggleConfig.charts.length === 0) {
+      console.error('Error parsing chart toggle data: charts array is required.');
+      return null;
+    }
+
+    const charts = toggleConfig.charts
+      .map((chartConfig: any, index: number) => {
+        if (!chartConfig || typeof chartConfig !== 'object') {
+          return null;
+        }
+
+        const parsedChart = parseChartBlock(JSON.stringify(chartConfig));
+
+        if (parsedChart && parsedChart.type === 'chart') {
+          const toggleLabelSource =
+            typeof chartConfig.toggleLabel === 'string'
+              ? chartConfig.toggleLabel
+              : typeof chartConfig.label === 'string'
+                ? chartConfig.label
+                : parsedChart.title;
+
+          const toggleLabel =
+            typeof toggleLabelSource === 'string' && toggleLabelSource.trim().length > 0
+              ? toggleLabelSource.trim()
+              : `Chart ${index + 1}`;
+
+          const chart: ChartBlock = {
+            ...(parsedChart as ChartBlock),
+            toggleLabel,
+            suppressWrapperSpacing: true,
+            showInMenu: false,
+          };
+
+          return chart;
+        }
+
+        return null;
+      })
+      .filter((chart): chart is ChartBlock => chart !== null);
+
+    if (!charts.length) {
+      console.error('Error parsing chart toggle data: no valid charts provided.');
+      return null;
+    }
+
+    const defaultIndex =
+      typeof toggleConfig.defaultIndex === 'number'
+        ? Math.min(Math.max(0, toggleConfig.defaultIndex), charts.length - 1)
+        : 0;
+
+    const layout = toggleConfig.layout === 'segmented' ? 'segmented' : 'tabs';
+    const description =
+      typeof toggleConfig.description === 'string'
+        ? parseBoldText(toggleConfig.description)
+        : '';
+
+    const block: ChartToggleBlock = {
+      id: generateBlockId(),
+      type: 'chart-toggle',
+      title: toggleConfig.title || '',
+      description,
+      className: toggleConfig.className || '',
+      layout,
+      defaultIndex,
+      charts,
+      showInMenu: parseShowInMenu(toggleConfig),
+    };
+
+    return block;
+  } catch (error) {
+    console.error('Error parsing chart toggle data:', error);
     return null;
   }
 }

@@ -5,6 +5,7 @@ import { ParagraphBlock } from './blocks/ParagraphBlock';
 import { HeadingBlock } from './blocks/HeadingBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { ChartBlock } from './blocks/ChartBlock';
+import { ChartToggleBlock } from './blocks/ChartToggleBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
 import { IframeBlock } from './blocks/IframeBlock';
 import { ListBlock } from './blocks/ListBlock';
@@ -38,6 +39,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ImageBlock block={block} />;
     case 'chart':
       return <ChartBlock block={block} />;
+    case 'chart-toggle':
+      return <ChartToggleBlock block={block} />;
     case 'callout':
       return <CalloutBlock block={block} />;
     case 'iframe':
