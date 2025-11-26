@@ -958,33 +958,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout for desktop
+        // If measurements aren't available yet, skip this item for now;
+        // measurements will be filled by ResizeObserver and keyMapping will
+        // recompute when forceUpdate changes.
         if (!rect) {
-          // Simple fallback: assume items are in rows of 3
-          const itemsPerRow = 3;
-          const rowIndex = Math.floor(itemIndex / itemsPerRow);
-          const colIndex = itemIndex % itemsPerRow;
-          
-          if (rowIndex > 2 && !isShowMore) {
-            return;
-          }
-          
-          if (rowIndex >= dataMap.length) {
-            dataMap[rowIndex] = [];
-          }
-          dataMap[rowIndex].push(key);
-          
-          // Set "See more" for the last item in row 2 if there are more items
-          // Only set it for the last item in the row, not every item
-          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            // Check if this is the last item in row 2
-            const nextItemRowIndex = Math.floor((itemIndex + 1) / itemsPerRow);
-            if (nextItemRowIndex > 2) {
-              // Calculate the actual position in the row (rightmost position)
-              const actualRowLength = dataMap[rowIndex].length;
-              newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
-            }
-          }
           return;
         }
 
@@ -1035,32 +1012,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // If measurements aren't available yet, use a simple fallback layout for desktop
+            // If measurements aren't available yet, skip this item for now;
+            // measurements will be filled by ResizeObserver and keyMapping will
+            // recompute when forceUpdate changes.
             if (!rect) {
-              const itemsPerRow = 3;
-              const rowIndex = Math.floor(optionIndex / itemsPerRow);
-              const colIndex = optionIndex % itemsPerRow;
-              
-              if (rowIndex > 2 && !isStackShowMore) {
-                return;
-              }
-              
-              if (rowIndex >= dataMap.length) {
-                dataMap[rowIndex] = [];
-              }
-              dataMap[rowIndex].push(key);
-              
-              // Set "See more" for the last item in row 2 if there are more items
-              // Only set it for the last item in the row, not every item
-              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                // Check if this is the last item in row 2
-                const nextItemRowIndex = Math.floor((optionIndex + 1) / itemsPerRow);
-                if (nextItemRowIndex > 2) {
-                  // Calculate the actual position in the row (rightmost position)
-                  const actualRowLength = dataMap[rowIndex].length;
-                  newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
-                }
-              }
               return;
             }
 
@@ -1557,7 +1512,16 @@ export const BucketItem = ({
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-color-ui-hover"} hover:underline bg-color-ui-active text-xxs`}>
+        <div
+          className={`
+            absolute inset-[-1px] z-20 pl-[5px]
+            flex items-center justify-start rounded-full whitespace-nowrap
+            ${isSelected ? "underline" : "text-color-ui-hover"}
+            hover:underline
+            bg-color-bg-default md:bg-color-ui-active
+            text-xxs
+          `}
+        >
           <div>See more...</div>
         </div>
       )}

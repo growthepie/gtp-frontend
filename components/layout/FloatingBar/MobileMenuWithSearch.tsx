@@ -59,6 +59,195 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
   );
 };
 
+// Helper type for see-more positions
+type SeeMorePositionMap = { [key: string]: { x: number; y: number } };
+
+// Generic helper to compute \"See more\" positions for a given bucket
+function computeBucketSeeMorePositions(
+  bucketLabel: string,
+  bucket:
+    | {
+        filteredData: { label: string }[];
+      }
+    | undefined,
+  measurementsRef: { current: { [key: string]: DOMRect } },
+  getKey: (label: string, type: string) => string
+): SeeMorePositionMap {
+  const calculatedSeeMorePositions: SeeMorePositionMap = {};
+
+  if (!bucket || !bucket.filteredData.length) {
+    return calculatedSeeMorePositions;
+  }
+
+  // Currently mobile buckets don't use showMore; this stays false
+  const isShowMore = false;
+  let localYIndex = 0;
+  let currentRow: string[] = [];
+  let lastTop: number | null = null;
+
+  bucket.filteredData.forEach((item, itemIndex) => {
+    const itemKey = getKey(item.label, bucketLabel);
+    const rect = measurementsRef.current[itemKey];
+    const itemTop = rect?.top;
+
+    // If no measurement, skip marking this item directly but
+    // still mark the last item of the previous row when appropriate.
+    if (!rect) {
+      // If we're processing items and hit one without measurement,
+      // it means we've reached the limit, so mark previous row's last item
+      if (localYIndex === 2 && !isShowMore && currentRow.length > 0) {
+        const lastItemInRow = currentRow[currentRow.length - 1];
+        if (!calculatedSeeMorePositions[lastItemInRow]) {
+          calculatedSeeMorePositions[lastItemInRow] = {
+            x: currentRow.length - 1,
+            y: localYIndex,
+          };
+        }
+      }
+      return;
+    }
+
+    // Skip items beyond row 2 if not showing more
+    if (localYIndex > 2 && !isShowMore) {
+      return;
+    }
+
+    if (lastTop === null || itemTop === lastTop) {
+      // Same row - add to current row
+      currentRow.push(itemKey);
+
+      // Check if we're at the last visible row (localYIndex 2) and there are more items
+      // ONLY mark items that are actually in row 2 (localYIndex === 2)
+      if (localYIndex === 2 && !isShowMore) {
+        const nextItem = bucket.filteredData[itemIndex + 1];
+        if (nextItem) {
+          const nextItemKey = getKey(nextItem.label, bucketLabel);
+          const nextItemRect = measurementsRef.current[nextItemKey];
+
+          // If next item exists but has no measurement OR is on a different row, mark current as \"see more\"
+          if (!nextItemRect || (nextItemRect && nextItemRect.top !== itemTop)) {
+            // Only mark if we're actually in row 2, and use y: 2 to ensure correct row
+            calculatedSeeMorePositions[itemKey] = {
+              x: currentRow.length - 1,
+              y: 2,
+            };
+          }
+        }
+      }
+    } else {
+      // New row detected
+      localYIndex++;
+
+      if (localYIndex > 2 && !isShowMore) {
+        // We've moved beyond row 2, mark the last item of row 2 as \"see more\" if not already marked
+        // But only if we haven't already marked an item in row 2
+        if (currentRow.length > 0) {
+          const lastItemInRow2 = currentRow[currentRow.length - 1];
+          // Only mark if this is actually the last item in row 2 (localYIndex was 2 before increment)
+          // Verify we haven't already marked an item in row 2
+          const alreadyMarkedInRow2 = Object.values(
+            calculatedSeeMorePositions
+          ).some((pos) => pos.y === 2);
+          if (
+            localYIndex === 3 &&
+            !alreadyMarkedInRow2 &&
+            itemIndex < bucket.filteredData.length
+          ) {
+            calculatedSeeMorePositions[lastItemInRow2] = {
+              x: currentRow.length - 1,
+              y: 2,
+            };
+          }
+        }
+        return;
+      }
+
+      // Start new row with current item
+      currentRow = [itemKey];
+
+      // If we're now at localYIndex 2, check if we should mark this item as \"see more\"
+      // But we'll mark it later when we add more items to this row or when we move to the next row
+    }
+
+    lastTop = itemTop || lastTop;
+  });
+
+  // Final check: if we ended at localYIndex 2 and there are more items, mark the last item in row 2
+  // IMPORTANT: Only mark items that are actually in row 2 (localYIndex === 2)
+  if (localYIndex === 2 && !isShowMore && currentRow.length > 0) {
+    const lastItemInRow2 = currentRow[currentRow.length - 1];
+    // Verify this item is actually in row 2 by checking its measurement
+    const lastItemRect = measurementsRef.current[lastItemInRow2];
+    if (lastItemRect) {
+      // Check if there are more items in filteredData that weren't processed
+      const totalItems = bucket.filteredData.length;
+      const processedItems = bucket.filteredData.filter((item) => {
+        const key = getKey(item.label, bucketLabel);
+        return measurementsRef.current[key] !== undefined;
+      }).length;
+
+      // Only mark if there are more items and we haven't already marked an item in row 2
+      const hasMoreItems = totalItems > processedItems;
+      const alreadyMarkedInRow2 = Object.values(
+        calculatedSeeMorePositions
+      ).some((pos) => pos.y === 2);
+
+      if (hasMoreItems && !alreadyMarkedInRow2) {
+        // There are more items, so mark the last item in row 2 as \"see more\"
+        // Use y: 2 to ensure it's marked as being in row 2
+        calculatedSeeMorePositions[lastItemInRow2] = {
+          x: currentRow.length - 1,
+          y: 2,
+        };
+      }
+    }
+  }
+
+  // Clean up: Remove any incorrectly marked items (items not in row 2)
+  Object.keys(calculatedSeeMorePositions).forEach((key) => {
+    const pos = calculatedSeeMorePositions[key];
+    // If y is not 2, it shouldn't be marked (only row 2 items should be marked)
+    if (pos.y !== 2) {
+      delete calculatedSeeMorePositions[key];
+    }
+  });
+
+  // Debug: log computed positions for this bucket
+  console.log("Mobile see-more positions", {
+    bucketLabel,
+    positions: calculatedSeeMorePositions,
+    filteredCount: bucket.filteredData.length,
+  });
+
+  return calculatedSeeMorePositions;
+}
+
+// Wrapper for Applications bucket
+function computeApplicationsSeeMorePositions(
+  applicationsBucket:
+    | {
+        filteredData: { label: string }[];
+      }
+    | undefined,
+  measurementsRef: { current: { [key: string]: DOMRect } },
+  getKey: (label: string, type: string) => string
+): SeeMorePositionMap {
+  return computeBucketSeeMorePositions("Applications", applicationsBucket, measurementsRef, getKey);
+}
+
+// Wrapper for Quick Bites bucket
+function computeQuickBitesSeeMorePositions(
+  quickBitesBucket:
+    | {
+        filteredData: { label: string }[];
+      }
+    | undefined,
+  measurementsRef: { current: { [key: string]: DOMRect } },
+  getKey: (label: string, type: string) => string
+): SeeMorePositionMap {
+  return computeBucketSeeMorePositions("Quick Bites", quickBitesBucket, measurementsRef, getKey);
+}
+
 // Mobile search badge wrapper component
 const MobileSearchBadge = memo(({
   item,
@@ -322,8 +511,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, skip this item for now
-        // The measurement-based logic will handle positioning when measurements are available
+        // If measurements aren't available yet, skip this item for now;
+        // measurements will be filled by ResizeObserver and keyMapping will
+        // recompute when forceUpdate changes.
         if (!rect) {
           return;
         }
@@ -375,8 +565,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // If measurements aren't available yet, skip this item for now
-            // The measurement-based logic will handle positioning when measurements are available
+            // If measurements aren't available yet, skip this item for now;
+            // measurements will be filled by ResizeObserver and keyMapping will
+            // recompute when forceUpdate changes.
             if (!rect) {
               return;
             }
@@ -409,6 +600,34 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         });
       }
     });
+
+    // Ensure Applications bucket uses the same logic as the console logs
+    const applicationsBucket = allFilteredData.find(
+      (bucket) => bucket.type === "Applications"
+    );
+    const applicationsSeeMorePositions = computeApplicationsSeeMorePositions(
+      applicationsBucket
+        ? { filteredData: applicationsBucket.filteredData }
+        : undefined,
+      measurementsRef.current ? measurementsRef : { current: {} as any },
+      getKey
+    );
+
+    Object.assign(newLastBucketIndeces, applicationsSeeMorePositions);
+
+    // Ensure Quick Bites bucket also uses the same logic
+    const quickBitesBucket = allFilteredData.find(
+      (bucket) => bucket.type === "Quick Bites"
+    );
+    const quickBitesSeeMorePositions = computeQuickBitesSeeMorePositions(
+      quickBitesBucket
+        ? { filteredData: quickBitesBucket.filteredData }
+        : undefined,
+      measurementsRef.current ? measurementsRef : { current: {} as any },
+      getKey
+    );
+
+    Object.assign(newLastBucketIndeces, quickBitesSeeMorePositions);
 
     setLastBucketIndeces(newLastBucketIndeces);
     return dataMap.filter(arr => arr.length > 0);
@@ -497,6 +716,127 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Handle Shift key separately - doesn't require keyMapping
+      if (event.key === 'Shift') {
+        console.log("Shift key detected in handleKeyDown");
+        event.preventDefault();
+        
+        // Find Applications bucket
+        const applicationsBucket = allFilteredData.find(bucket => bucket.type === "Applications");
+        if (!applicationsBucket) {
+          console.log("No Applications bucket found. Available buckets:", allFilteredData.map(b => b.type));
+          return;
+        }
+
+        console.log("Shift pressed! Recalculating measurements and see more positions...");
+
+        // Step 1: Recalculate measurements for all Application badges
+        applicationsBucket.filteredData.forEach((item) => {
+          const itemKey = getKey(item.label, "Applications");
+          const element = childRefs.current[itemKey];
+          
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            measurementsRef.current[itemKey] = rect;
+          }
+        });
+
+        // Step 2: Manually recalculate \"see more\" positions for Applications
+        // This follows the same logic as keyMapping useMemo via the shared helper
+        const calculatedSeeMorePositions = computeApplicationsSeeMorePositions(
+          { filteredData: applicationsBucket.filteredData },
+          measurementsRef,
+          getKey
+        );
+
+        // Step 3: Get all Application badges and their coordinates
+        const applicationBadges: Array<{
+          label: string;
+          key: string;
+          coords: { x: number; y: number; width: number; height: number; top: number; left: number; right: number; bottom: number };
+          gridPosition?: { x: number; y: number };
+          isSeeMore?: boolean;
+          seeMorePosition?: { x: number; y: number };
+        }> = [];
+
+        // Get coordinates from measurementsRef or childRefs
+        applicationsBucket.filteredData.forEach((item) => {
+          const itemKey = getKey(item.label, "Applications");
+          const element = childRefs.current[itemKey];
+          const measurement = measurementsRef.current[itemKey];
+
+          if (element || measurement) {
+            // Prefer measurement if available, otherwise get from element
+            const rect = measurement || (element ? element.getBoundingClientRect() : null);
+            
+            if (rect) {
+              // Find grid position in keyMapping (if available)
+              let gridPos: { x: number; y: number } | undefined;
+              let isSeeMore = false;
+              let seeMorePos: { x: number; y: number } | undefined;
+              
+              if (keyMapping.length > 0) {
+                for (let y = 0; y < keyMapping.length; y++) {
+                  for (let x = 0; x < keyMapping[y].length; x++) {
+                    if (keyMapping[y][x] === itemKey) {
+                      gridPos = { x, y };
+                      break;
+                    }
+                  }
+                  if (gridPos) break;
+                }
+              }
+
+              // Check if this is a "see more" position (use calculated positions)
+              if (calculatedSeeMorePositions[itemKey]) {
+                isSeeMore = true;
+                seeMorePos = calculatedSeeMorePositions[itemKey];
+              }
+
+              applicationBadges.push({
+                label: item.label,
+                key: itemKey,
+                coords: {
+                  x: rect.left,
+                  y: rect.top,
+                  width: rect.width,
+                  height: rect.height,
+                  top: rect.top,
+                  left: rect.left,
+                  right: rect.right,
+                  bottom: rect.bottom,
+                },
+                gridPosition: gridPos,
+                isSeeMore,
+                seeMorePosition: seeMorePos,
+              });
+            }
+          }
+        });
+
+        console.log("Application Badges Coordinates (with See More positions):", applicationBadges);
+        console.log("Calculated See More Positions:", calculatedSeeMorePositions);
+        
+        if (applicationBadges.length > 0) {
+          console.table(applicationBadges.map(badge => ({
+            label: badge.label,
+            x: Math.round(badge.coords.x),
+            y: Math.round(badge.coords.y),
+            width: Math.round(badge.coords.width),
+            height: Math.round(badge.coords.height),
+            gridX: badge.gridPosition?.x ?? 'N/A',
+            gridY: badge.gridPosition?.y ?? 'N/A',
+            isSeeMore: badge.isSeeMore ? 'YES' : 'NO',
+            seeMoreX: badge.seeMorePosition?.x ?? 'N/A',
+            seeMoreY: badge.seeMorePosition?.y ?? 'N/A',
+          })));
+        } else {
+          console.log("No Application badges found with coordinates. Total filteredData items:", applicationsBucket.filteredData.length);
+        }
+        
+        return;
+      }
+
       if (!keyMapping.length) return;
 
       const isCoordsNull = keyCoords.y === null || keyCoords.x === null;
@@ -559,10 +899,14 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     };
 
     if (memoizedQuery && allFilteredData.length > 0) {
+      console.log("Attaching keyboard handler. Query:", memoizedQuery, "Buckets:", allFilteredData.map(b => b.type));
       window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+      return () => {
+        console.log("Removing keyboard handler");
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     }
-  }, [keyCoords, keyMapping, memoizedQuery, allFilteredData]);
+  }, [keyCoords, keyMapping, memoizedQuery, allFilteredData, getKey, showMore, lastBucketIndeces]);
 
   const [groupRef, { height: groupHeight }] =
     useElementSizeObserver<HTMLDivElement>();
