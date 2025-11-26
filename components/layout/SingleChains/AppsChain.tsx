@@ -107,11 +107,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
       <div>
         <div
           className={``}
-          style={{
-            height: hideTopGainers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
-            opacity: hideTopGainers ? 0 : 1,
-            transition: "height 0.3s ease, opacity 0.3s ease",
-          }}
+
         >
           <div className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
