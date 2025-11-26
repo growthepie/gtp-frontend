@@ -66,7 +66,7 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
       )}
       {renderDescription()}
       <div
-        className={`flex flex-wrap gap-2 ${block.layout === 'segmented' ? 'bg-color-bg-medium rounded-full p-1' : ''}`}
+        className={`flex flex-wrap gap-2 ${block.layout === 'segmented' ? 'bg-color-bg-default rounded-full p-1' : ''}`}
       >
         {charts.map((chart, index) => {
           const isActive = index === activeIndex;
@@ -78,7 +78,7 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
               className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
                 isActive
                   ? 'bg-color-ui-active'
-                  : 'bg-color-bg-medium hover:bg-color-ui-hover'
+                  : 'bg-color-bg-default hover:bg-color-ui-hover'
               }`}
               onClick={() => setActiveIndex(index)}
               aria-pressed={isActive}
