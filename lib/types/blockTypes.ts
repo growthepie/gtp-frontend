@@ -5,6 +5,7 @@ export type BlockType =
   | 'heading' 
   | 'image' 
   | 'chart' 
+  | 'chart-toggle'
   | 'callout'
   | 'quote'
   | 'divider'
@@ -145,6 +146,18 @@ export interface ChartBlock extends BaseBlock {
     stateKey: string;
     columnKey: string;
   };
+  toggleLabel?: string;
+  suppressWrapperSpacing?: boolean;
+}
+
+export interface ChartToggleBlock extends BaseBlock {
+  type: 'chart-toggle';
+  title?: string;
+  description?: string;
+  className?: string;
+  layout?: 'tabs' | 'segmented';
+  defaultIndex?: number;
+  charts: ChartBlock[];
 }
 
 export interface CalloutBlock extends BaseBlock {
@@ -259,6 +272,7 @@ export type ContentBlock =
   | TableBlock
   | DropdownBlock
   | ChartBlock
+  | ChartToggleBlock
   | CalloutBlock
   | QuoteBlock
   | DividerBlock

@@ -142,11 +142,7 @@ export default function Page() {
       <div>
         <div
           className={``}
-          style={{
-            height: hideTopGainersAndLosers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
-            opacity: hideTopGainersAndLosers ? 0 : 1,
-            transition: "height 0.3s ease, opacity 0.3s ease",
-          }}
+
         >
           <Container className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
