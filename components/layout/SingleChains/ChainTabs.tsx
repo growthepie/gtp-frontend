@@ -43,7 +43,8 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
                 onClick={() => {
                     if (!(chainInfo.tab_status[tab] === "locked" || chainInfo.tab_status[tab] === "soon")) {
                         track(`clicked chain tab ${tab}`, {
-                            page: `${chainInfo.name.toLowerCase()}: ${tab}`
+                            page: window.location.pathname,
+                            info: `${chainInfo.name.toLowerCase()}: ${tab}`
                         });
                         setSelectedTab(tab);
                     }
