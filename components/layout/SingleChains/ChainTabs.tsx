@@ -2,6 +2,7 @@
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import { useState } from "react";
+import { track } from "@vercel/analytics/react";
 
 const TAB_INFO = {
     "overview": {
@@ -39,7 +40,14 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
             .map((tab, index) => (
             <div
                 key={tab}
-                onClick={() =>  !(chainInfo.tab_status[tab] === "locked" || chainInfo.tab_status[tab] === "soon") ? setSelectedTab(tab) : undefined}
+                onClick={() => {
+                    if (!(chainInfo.tab_status[tab] === "locked" || chainInfo.tab_status[tab] === "soon")) {
+                        track(`clicked chain tab ${tab}`, {
+                            page: `${chainInfo.name.toLowerCase()}: ${tab}`
+                        });
+                        setSelectedTab(tab);
+                    }
+                }}
                 onMouseEnter={() => setHoveredTab(tab)}
                 onMouseLeave={() => setHoveredTab(null)}
             >
