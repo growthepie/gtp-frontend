@@ -22,6 +22,7 @@ import {
 import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { Category } from "@/app/(layout)/applications/_components/Components";
 
 export default function ContractRow({
   rowKey,
@@ -356,7 +357,7 @@ export default function ContractRow({
 
       <GridTableRow
         key={rowKey}
-        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),130px] relative"
+        gridDefinitionColumns="grid-cols-[20px,280px,150px,115px,minmax(195px,800px),130px] relative"
         className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
@@ -462,11 +463,13 @@ export default function ContractRow({
         
         {/* Main Category */}  
         <div className="truncate">
-          {
-            master.blockspace_categories.main_categories[
-            sortedContracts[rowKey].main_category_key
-            ]
-          }
+          <Category
+            category={
+              master.blockspace_categories.main_categories[
+                sortedContracts[rowKey].main_category_key
+              ]
+            }
+          />
         </div>
 
         {/* Sub Category */}
