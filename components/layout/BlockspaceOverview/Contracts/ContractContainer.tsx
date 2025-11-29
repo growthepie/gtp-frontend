@@ -302,14 +302,6 @@ export default function ContractContainer() {
         >
           <div></div>
           <GridTableHeaderCell
-            metric="project_name"
-            className="heading-small-xs"
-            sort={sort}
-            setSort={setSort}
-          >
-            Owner Project
-          </GridTableHeaderCell>
-          <GridTableHeaderCell
             metric="name"
             className="heading-small-xs"
             sort={sort}
@@ -317,6 +309,16 @@ export default function ContractContainer() {
           >
             Contract
           </GridTableHeaderCell>
+          
+          <GridTableHeaderCell
+            metric="project_name"
+            className="heading-small-xs"
+            sort={sort}
+            setSort={setSort}
+          >
+            Application
+          </GridTableHeaderCell>
+          
           <GridTableHeaderCell
             metric="main_category_key"
             className="heading-small-xs"
