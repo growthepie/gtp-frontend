@@ -3,6 +3,7 @@ import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import { useState } from "react";
 import { track } from "@vercel/analytics/react";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 const TAB_INFO = {
     "overview": {
@@ -24,18 +25,29 @@ const TAB_INFO = {
     "blockspace": {
         "header": "Blockspace",
         "icon": "gtp:gtp-blockspace",
+    },
+    "user_insights": {
+        "header": "User Insights",
+        "icon": "gtp:gtp-users",
     }
 }
 
 
 export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { chainInfo: ChainInfo, selectedTab: string, setSelectedTab: (tab: string) => void }){
     const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+
+    // add user_insights to chainInfo.tab_status if on DEV
+    const tabStatus = {
+        ...chainInfo.tab_status,
+        ...(IS_PRODUCTION ? {} : { user_insights: "active" })
+    }
+
     return(
         <SectionBar>
-        {Object.keys(chainInfo.tab_status)
+        {Object.keys(tabStatus)
             .sort((a, b) => {
             const statusOrder = { active: 0, soon: 1, locked: 2 };
-            return (statusOrder[chainInfo.tab_status[a]] ?? 3) - (statusOrder[chainInfo.tab_status[b]] ?? 3);
+            return (statusOrder[tabStatus[a]] ?? 3) - (statusOrder[tabStatus[b]] ?? 3);
             })
             .map((tab, index) => (
             <div

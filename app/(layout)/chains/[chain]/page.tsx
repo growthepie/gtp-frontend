@@ -31,6 +31,7 @@ import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
+import UserInsights from "@/components/layout/SingleChains/UserInsights";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -318,6 +319,15 @@ AppsContentInner.displayName = 'AppsContentInner';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
+const UserInsightsContent = memo(({ chainKey }: { chainKey: string }) => {
+  return (
+    <ProjectsMetadataProvider>
+      <UserInsights chainKey={chainKey} />
+    </ProjectsMetadataProvider>
+  );
+});
+UserInsightsContent.displayName = 'UserInsightsContent';
+
 const Chain = ({ params }: { params: any }) => {
     const { chain } = params;
     const master = useMaster();
@@ -374,6 +384,8 @@ const Chain = ({ params }: { params: any }) => {
           return <AppsContent chainKey={chainKey} master={master} />;
         case "blockspace":
           return <BlockspaceContent chainKey={chainKey} master={master} />;
+        case "user_insights":
+          return <UserInsightsContent chainKey={chainKey} />;
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
