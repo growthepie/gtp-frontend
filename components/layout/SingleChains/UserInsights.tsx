@@ -19,6 +19,7 @@ import { Category } from "@/app/(layout)/applications/_components/Components";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
 import router from "next/router";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -233,226 +234,228 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
           </div>
 
           <div className="flex flex-col w-full">
-            <GridTableHeader
-              gridDefinitionColumns="grid-cols-[3fr,2fr,1fr,1fr,1fr,1fr]"
-              className="!pl-[10px] !pr-[10px] pb-[4px] text-[12px] gap-x-[15px] z-[2]"
-              style={{ paddingTop: "15px" }}
-            >
-              <GridTableHeaderCell
-                metric="contract"
-                sort={sort}
-                setSort={setSort}
-                className="heading-small-xs pl-2"
+            <HorizontalScrollContainer includeMargin={false}>
+              <GridTableHeader
+                gridDefinitionColumns="grid-cols-[minmax(220px,1.5fr),minmax(150px,1fr),120px,120px,115px,130px]"
+                className="!pl-[10px] !pr-[10px] pb-[4px] text-[12px] gap-x-[15px] z-[2]"
+                style={{ paddingTop: "15px" }}
               >
-                Contract
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="application"
-                sort={sort}
-                setSort={setSort}
-                className="heading-small-xs"
-              >
-                Application
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="main_category_key"
-                sort={sort}
-                setSort={setSort}
-                className="heading-small-xs"
-              >
-                Category
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="sub_category_key"
-                sort={sort}
-                setSort={setSort}
-                className="heading-small-xs"
-              >
-                Subcategory
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="txcount"
-                sort={sort}
-                setSort={setSort}
-                justify="end"
-                className="heading-small-xs relative pl-[10px] mr-0"
-                extraRight={
-                  <Tooltip placement="top" allowInteract={false}>
-                    <TooltipTrigger className="pl-[2px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Number of unique addresses that interacted with this contract/application.</div>
+                <GridTableHeaderCell
+                  metric="contract"
+                  sort={sort}
+                  setSort={setSort}
+                  className="heading-small-xs pl-2 whitespace-nowrap"
+                >
+                  Contract
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="application"
+                  sort={sort}
+                  setSort={setSort}
+                  className="heading-small-xs whitespace-nowrap"
+                >
+                  Application
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="main_category_key"
+                  sort={sort}
+                  setSort={setSort}
+                  className="heading-small-xs whitespace-nowrap"
+                >
+                  Category
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="sub_category_key"
+                  sort={sort}
+                  setSort={setSort}
+                  className="heading-small-xs whitespace-nowrap"
+                >
+                  Subcategory
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="txcount"
+                  sort={sort}
+                  setSort={setSort}
+                  justify="end"
+                  className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
+                  extraRight={
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Number of unique addresses that interacted with this contract/application.</div>
+                          </div>
                         </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                # Users
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="fees"
-                sort={sort}
-                setSort={setSort}
-                justify="end"
-                className="heading-small-xs relative pl-[10px] mr-0 pr-2"
-                extraRight={
-                  <Tooltip placement="top" allowInteract={false}>
-                    <TooltipTrigger className="pl-[2px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Total gas fees spent by users on this contract/application.</div>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  # Users
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="fees"
+                  sort={sort}
+                  setSort={setSort}
+                  justify="end"
+                  className="heading-small-xs relative pl-[10px] mr-0 pr-2 whitespace-nowrap"
+                  extraRight={
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Total gas fees spent by users on this contract/application.</div>
+                          </div>
                         </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                Fees Spent
-              </GridTableHeaderCell>
-            </GridTableHeader>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  Fees Spent
+                </GridTableHeaderCell>
+              </GridTableHeader>
 
-            <div className="flex flex-col gap-y-[3px] mt-[5px]">
-              {sortedNewUserContracts.map((row, i) => {
-                const projectData = row.owner_project ? ownerProjectToProjectData[row.owner_project] : null;
-                const displayName = projectData?.display_name || row.owner_project || "Unknown";
-                const contractLabel = row.contract_name || row.address;
+              <div className="flex flex-col gap-y-[3px] mt-[5px]">
+                {sortedNewUserContracts.map((row, i) => {
+                  const projectData = row.owner_project ? ownerProjectToProjectData[row.owner_project] : null;
+                  const displayName = projectData?.display_name || row.owner_project || "Unknown";
+                  const contractLabel = row.contract_name || row.address;
 
-                return (
-                  <GridTableRow
-                    key={i}
-                    gridDefinitionColumns="grid-cols-[3fr,2fr,1fr,1fr,1fr,1fr]"
-                    className="!px-[10px] group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !py-0 hover:bg-forest-50 dark:hover:bg-forest-900/20 rounded-[10px]"
-                  >
-                    <div className="pl-[10px] pr-[10px] flex items-center gap-x-[15px] justify-between w-full truncate min-w-0">
-                      {row.contract_name ? (
-                        <div className="truncate font-medium text-xs" title={row.contract_name}>
-                          {row.contract_name}
-                        </div>
-                      ) : (
-                        <GTPTooltipNew
-                          placement="bottom-start"
-                          allowInteract={true}
-                          trigger={<div className="w-full h-[30px] flex items-center"><GridTableAddressCell address={row.address} showCopyIcon={false} /></div>}
-                        >
-                          <OLIContractTooltip
-                            icon="gtp-project-monochrome"
-                            iconClassName="text-[#5A6462]"
-                            project_name={displayName}
-                            message="Contract information not available."
-                            contractAddress={row.address}
-                            chain={chainKey}
-                          />
-                        </GTPTooltipNew>
-                      )}
-                      <div className="flex items-center gap-x-[5px]">
-                        <div
-                          className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
-                          onClick={() => {
-                            navigator.clipboard.writeText(row.address);
-                            setCopyContract(row.address);
-                            setTimeout(() => {
-                              setCopyContract(null);
-                            }, 1000);
-                          }}
-                        >
-                          <Icon
-                            icon={copyContract === row.address ? "feather:check" : "feather:copy"}
-                            className="w-[12px] h-[12px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                          />
-                        </div>
-                        {master?.chains[chainKey]?.block_explorer && (
-                          <Link
-                            href={`${master.chains[chainKey].block_explorer}address/${row.address}`}
-                            rel="noopener noreferrer"
-                            target="_blank"
+                  return (
+                    <GridTableRow
+                      key={i}
+                      gridDefinitionColumns="grid-cols-[minmax(220px,1.5fr),minmax(150px,1fr),120px,120px,115px,130px]"
+                      className="!px-[10px] group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !py-0 hover:bg-forest-50 dark:hover:bg-forest-900/20 rounded-[10px]"
+                    >
+                      <div className="pl-[10px] pr-[10px] flex items-center gap-x-[15px] justify-between w-full truncate min-w-0">
+                        {row.contract_name ? (
+                          <div className="truncate font-medium text-xs" title={row.contract_name}>
+                            {row.contract_name}
+                          </div>
+                        ) : (
+                          <GTPTooltipNew
+                            placement="bottom-start"
+                            allowInteract={true}
+                            trigger={<div className="w-full h-[30px] flex items-center"><GridTableAddressCell address={row.address} showCopyIcon={false} /></div>}
+                          >
+                            <OLIContractTooltip
+                              icon="gtp-project-monochrome"
+                              iconClassName="text-[#5A6462]"
+                              project_name={displayName}
+                              message="Contract information not available."
+                              contractAddress={row.address}
+                              chain={chainKey}
+                            />
+                          </GTPTooltipNew>
+                        )}
+                        <div className="flex items-center gap-x-[5px]">
+                          <div
+                            className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
+                            onClick={() => {
+                              navigator.clipboard.writeText(row.address);
+                              setCopyContract(row.address);
+                              setTimeout(() => {
+                                setCopyContract(null);
+                              }, 1000);
+                            }}
                           >
                             <Icon
-                              icon="gtp:gtp-block-explorer-alt"
+                              icon={copyContract === row.address ? "feather:check" : "feather:copy"}
                               className="w-[12px] h-[12px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                             />
-                          </Link>
+                          </div>
+                          {master?.chains[chainKey]?.block_explorer && (
+                            <Link
+                              href={`${master.chains[chainKey].block_explorer}address/${row.address}`}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                            >
+                              <Icon
+                                icon="gtp:gtp-block-explorer-alt"
+                                className="w-[12px] h-[12px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                              />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                      <div className="truncate flex items-center">
+                        {projectData ? (
+                          <GTPTooltipNew
+                            placement="bottom-start"
+                            allowInteract={true}
+                            trigger={
+                              <div className="flex items-center gap-x-[5px] cursor-pointer hover:underline">
+                                {projectData.logo_path && (
+                                  <Image
+                                    src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
+                                    width={15}
+                                    height={15}
+                                    className="rounded-full"
+                                    alt={displayName}
+                                  />
+                                )}
+                                <span className="truncate">{displayName}</span>
+                              </div>
+                            }
+                            containerClass="flex flex-col gap-y-[10px]"
+                            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                          >
+                            <GTPApplicationTooltip owner_project={row.owner_project} />
+                          </GTPTooltipNew>
+                        ) : (
+                          <GTPTooltipNew
+                            placement="bottom-start"
+                            allowInteract={true}
+                            trigger={
+                              <div className="pl-[20px] flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
+                                <span className="block w-full truncate">
+                                  Not Available
+                                </span>
+                              </div>
+                            }
+                            containerClass="flex flex-col gap-y-[10px]"
+                            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                          >
+                            <OLIContractTooltip
+                              icon="gtp-project-monochrome"
+                              iconClassName="text-[#5A6462]"
+                              project_name="Not Available"
+                              message="Project information not available."
+                              contractAddress={row.address}
+                              chain={chainKey}
+                            />
+                          </GTPTooltipNew>
                         )}
                       </div>
-                    </div>
-                    <div className="truncate flex items-center">
-                      {projectData ? (
-                        <GTPTooltipNew
-                          placement="bottom-start"
-                          allowInteract={true}
-                          trigger={
-                            <div className="flex items-center gap-x-[5px] cursor-pointer hover:underline">
-                              {projectData.logo_path && (
-                                <Image
-                                  src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
-                                  width={15}
-                                  height={15}
-                                  className="rounded-full"
-                                  alt={displayName}
-                                />
-                              )}
-                              <span className="truncate">{displayName}</span>
-                            </div>
-                          }
-                          containerClass="flex flex-col gap-y-[10px]"
-                          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                        >
-                          <GTPApplicationTooltip owner_project={row.owner_project} />
-                        </GTPTooltipNew>
-                      ) : (
-                        <GTPTooltipNew
-                          placement="bottom-start"
-                          allowInteract={true}
-                          trigger={
-                            <div className="pl-[20px] flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
-                              <span className="block w-full truncate">
-                                Not Available
-                              </span>
-                            </div>
-                          }
-                          containerClass="flex flex-col gap-y-[10px]"
-                          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                        >
-                          <OLIContractTooltip
-                            icon="gtp-project-monochrome"
-                            iconClassName="text-[#5A6462]"
-                            project_name="Not Available"
-                            message="Project information not available."
-                            contractAddress={row.address}
-                            chain={chainKey}
-                          />
-                        </GTPTooltipNew>
-                      )}
-                    </div>
-                    <div className="truncate flex items-center">
-                      <Category category={row.main_category_key && master?.blockspace_categories?.main_categories?.[row.main_category_key] ? master.blockspace_categories.main_categories[row.main_category_key] : ""} />
-                    </div>
-                    <div className="truncate flex items-center">
-                      {row.sub_category_key ? (
-                        master?.blockspace_categories?.sub_categories?.[row.sub_category_key]
-                          ? master.blockspace_categories.sub_categories[row.sub_category_key]
-                          : row.sub_category_key
-                      ) : (
-                        <span className="text-[#5A6462]">Unknown</span>
-                      )}
-                    </div>
-                    <div className="text-right numbers-xs flex items-center justify-end">{formatNum(row.txcount)}</div>
-                    <div className="text-right pr-2 numbers-xs flex items-center justify-end">
-                      {showUsd ? formatNum(row.gas_fees_usd, true) : `${formatNum(row.gas_fees_eth)} ETH`}
-                    </div>
-                  </GridTableRow>
-                )
-              })}
-              {newUserContracts.length === 0 && (
-                <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
-              )}
-            </div>
+                      <div className="truncate flex items-center">
+                        <Category category={row.main_category_key && master?.blockspace_categories?.main_categories?.[row.main_category_key] ? master.blockspace_categories.main_categories[row.main_category_key] : ""} />
+                      </div>
+                      <div className="truncate flex items-center">
+                        {row.sub_category_key ? (
+                          master?.blockspace_categories?.sub_categories?.[row.sub_category_key]
+                            ? master.blockspace_categories.sub_categories[row.sub_category_key]
+                            : row.sub_category_key
+                        ) : (
+                          <span className="text-[#5A6462]">Unknown</span>
+                        )}
+                      </div>
+                      <div className="text-right numbers-xs flex items-center justify-end">{formatNum(row.txcount)}</div>
+                      <div className="text-right pr-2 numbers-xs flex items-center justify-end">
+                        {showUsd ? formatNum(row.gas_fees_usd, true) : `${formatNum(row.gas_fees_eth)} ETH`}
+                      </div>
+                    </GridTableRow>
+                  )
+                })}
+                {newUserContracts.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
+                )}
+              </div>
+            </HorizontalScrollContainer>
           </div>
         </div>
 
@@ -488,137 +491,140 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
           </div>
 
           <div className="flex flex-col w-full">
-            <GridTableHeader
-              gridDefinitionColumns="grid-cols-[2fr,1fr,1fr,1fr]"
-              className="mt-[10px] group heading-small-xs gap-x-[15px] z-[2] !pl-[30px] !pr-[10px] select-none h-[34px] !pb-0 !pt-0"
-            >
-              <GridTableHeaderCell
-                metric="cross_chain"
-                sort={crossChainSort}
-                setSort={setCrossChainSort}
-                className="pl-2"
+            <HorizontalScrollContainer includeMargin={false}>
+              <GridTableHeader
+                gridDefinitionColumns="grid-cols-[20px,minmax(180px,1fr),120px,120px,100px]"
+                className="mt-[10px] group heading-small-xs gap-x-[15px] z-[2] !pl-[30px] !pr-[10px] select-none h-[34px] !pb-0 !pt-0"
               >
-                Chain
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="share_of_users"
-                sort={crossChainSort}
-                setSort={setCrossChainSort}
-                justify="end"
-                className="heading-small-xs relative pl-[10px] mr-0"
-                extraRight={
-                  <Tooltip placement="top" allowInteract={false}>
-                    <TooltipTrigger className="pl-[2px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Percentage of users on this chain that also transacted on the destination chain.</div>
+                <div className=""></div>
+                <GridTableHeaderCell
+                  metric="cross_chain"
+                  sort={crossChainSort}
+                  setSort={setCrossChainSort}
+                  className="pl-2"
+                >
+                  Chain
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="share_of_users"
+                  sort={crossChainSort}
+                  setSort={setCrossChainSort}
+                  justify="end"
+                  className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
+                  extraRight={
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Percentage of users on this chain that also transacted on the destination chain.</div>
+                          </div>
                         </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                % of Users
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="current"
-                sort={crossChainSort}
-                setSort={setCrossChainSort}
-                justify="end"
-                className="heading-small-xs relative pl-[10px] mr-0"
-                extraRight={
-                  <Tooltip placement="top" allowInteract={false}>
-                    <TooltipTrigger className="pl-[2px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Number of users on this chain that also transacted on the destination chain.</div>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  % of Users
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="current"
+                  sort={crossChainSort}
+                  setSort={setCrossChainSort}
+                  justify="end"
+                  className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
+                  extraRight={
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Number of users on this chain that also transacted on the destination chain.</div>
+                          </div>
                         </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                # of Users
-              </GridTableHeaderCell>
-              <GridTableHeaderCell
-                metric="change_percent"
-                sort={crossChainSort}
-                setSort={setCrossChainSort}
-                justify="end"
-                className="heading-small-xs relative pl-[10px] mr-0 pr-2"
-                extraRight={
-                  <Tooltip placement="top" allowInteract={false}>
-                    <TooltipTrigger className="pl-[2px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Change in the number of cross-chain users compared to the previous period.</div>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  # of Users
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="change_percent"
+                  sort={crossChainSort}
+                  setSort={setCrossChainSort}
+                  justify="end"
+                  className="heading-small-xs relative pl-[10px] mr-0 pr-2"
+                  extraRight={
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Change in the number of cross-chain users compared to the previous period.</div>
+                          </div>
                         </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  Growth
+                </GridTableHeaderCell>
+              </GridTableHeader>
+
+              <div className="flex flex-col gap-y-[5px] mt-[5px] w-full relative">
+                {sortedCrossChainUsage.filter((row) => !["total", "exclusive"].includes(row.cross_chain)).map((row, i) => {
+                  const chain = AllChainsByKeys[row.cross_chain];
+
+                  return (
+                    <GridTableRow
+                      key={i}
+                      gridDefinitionColumns="grid-cols-[20px,minmax(180px,1fr),120px,120px,100px]"
+                      className="relative group text-[14px] gap-x-[10px] z-[2] !pl-[10px] !pr-[10px] select-none h-[34px] !pb-0 !pt-0"
+                      bar={{
+                        origin_key: chain?.key,
+                        width: maxCrossChainValue > 0 ? row.share_of_users / maxCrossChainValue : 0,
+                        containerStyle: {
+                          left: 1,
+                          right: 1,
+                          top: 0,
+                          bottom: 0,
+                          borderRadius: "9999px 9999px 9999px 9999px",
+                          zIndex: -1,
+                          overflow: "hidden",
+                          opacity: 1,
+                        },
+                      }}
+                      onClick={() => {
+                        router.push(`/chains/${chain?.urlKey}`);
+                      }}
+                    >
+                      <div className="w-[15px] h-[15px] flex items-center justify-center">
+                        {chain ? (
+                          <GridTableChainIcon origin_key={chain.key} />
+                        ) : (
+                          <div className="w-[15px] h-[15px] rounded-full bg-gray-300"></div>
+                        )}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                Growth
-              </GridTableHeaderCell>
-            </GridTableHeader>
+                      <div className="truncate font-medium text-xs group-hover:underline">{chain?.label || row.cross_chain}</div>
 
-            <div className="flex flex-col gap-y-[5px] mt-[5px] w-full relative">
-              {sortedCrossChainUsage.filter((row) => !["total", "exclusive"].includes(row.cross_chain)).map((row, i) => {
-                const chain = AllChainsByKeys[row.cross_chain];
-
-                return (
-                  <GridTableRow
-                    key={i}
-                    gridDefinitionColumns="grid-cols-[20px,2fr,1fr,1fr,1fr]"
-                    className="relative group text-[14px] gap-x-[10px] z-[2] !pl-[10px] !pr-[10px] select-none h-[34px] !pb-0 !pt-0"
-                    bar={{
-                      origin_key: chain?.key,
-                      width: maxCrossChainValue > 0 ? row.share_of_users / maxCrossChainValue : 0,
-                      containerStyle: {
-                        left: 1,
-                        right: 1,
-                        top: 0,
-                        bottom: 0,
-                        borderRadius: "9999px 9999px 9999px 9999px",
-                        zIndex: -1,
-                        overflow: "hidden",
-                        opacity: 1,
-                      },
-                    }}
-                    onClick={() => {
-                      router.push(`/chains/${chain?.urlKey}`);
-                    }}
-                  >
-                    <div className="w-[15px] h-[15px] flex items-center justify-center">
-                      {chain ? (
-                        <GridTableChainIcon origin_key={chain.key} />
-                      ) : (
-                        <div className="w-[15px] h-[15px] rounded-full bg-gray-300"></div>
-                      )}
-                    </div>
-                    <div className="truncate font-medium text-xs group-hover:underline">{chain?.label || row.cross_chain}</div>
-
-                    <div className="text-right numbers-xs flex items-center justify-end">{(row.share_of_users * 100).toFixed(2)}%</div>
-                    <div className="text-right numbers-xs flex items-center justify-end">{formatNum(row.current)}</div>
-                    <div className={`text-right pr-2 numbers-xs flex items-center justify-end ${row.change_percent >= 0 ? "text-green-500" : "text-red-500"}`}>
-                      {row.change_percent > 0 ? "+" : ""}{(row.change_percent * 100).toFixed(1)}%
-                    </div>
-                  </GridTableRow>
-                );
-              })}
-              {crossChainUsage.length === 0 && (
-                <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
-              )}
-            </div>
+                      <div className="text-right numbers-xs flex items-center justify-end">{(row.share_of_users * 100).toFixed(2)}%</div>
+                      <div className="text-right numbers-xs flex items-center justify-end">{formatNum(row.current)}</div>
+                      <div className={`text-right pr-2 numbers-xs flex items-center justify-end ${row.change_percent >= 0 ? "text-green-500" : "text-red-500"}`}>
+                        {row.change_percent > 0 ? "+" : ""}{(row.change_percent * 100).toFixed(1)}%
+                      </div>
+                    </GridTableRow>
+                  );
+                })}
+                {crossChainUsage.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 text-sm">No data available</div>
+                )}
+              </div>
+            </HorizontalScrollContainer>
           </div>
         </div>
       </div>
