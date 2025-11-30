@@ -195,11 +195,11 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
           </Heading>
         </div>
       </div>
-      <div className="flex items-center mb-[30px]">
+      {/* <div className="flex items-center mb-[30px]">
         <div className="text-sm">
           Understand how new users discover this chain and where existing users are also active across the ecosystem.
         </div>
-      </div>
+      </div> */}
 
       <div className="flex flex-col gap-y-[30px]">
         {/* New User Contracts Section */}
@@ -236,7 +236,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
           <div className="flex flex-col w-full">
             <HorizontalScrollContainer includeMargin={false}>
               <GridTableHeader
-                gridDefinitionColumns="grid-cols-[minmax(220px,1.5fr),minmax(150px,1fr),120px,120px,115px,130px]"
+                gridDefinitionColumns="grid-cols-[minmax(200px,1.5fr),minmax(150px,1fr),120px,140px,115px,130px]"
                 className="!pl-[10px] !pr-[10px] pb-[4px] text-[12px] gap-x-[15px] z-[2]"
                 style={{ paddingTop: "15px" }}
               >
@@ -329,7 +329,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   return (
                     <GridTableRow
                       key={i}
-                      gridDefinitionColumns="grid-cols-[minmax(220px,1.5fr),minmax(150px,1fr),120px,120px,115px,130px]"
+                      gridDefinitionColumns="grid-cols-[minmax(200px,1.5fr),minmax(150px,1fr),120px,140px,115px,130px]"
                       className="!px-[10px] group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !py-0 hover:bg-forest-50 dark:hover:bg-forest-900/20 rounded-[10px]"
                     >
                       <div className="pl-[10px] pr-[10px] flex items-center gap-x-[15px] justify-between w-full truncate min-w-0">
