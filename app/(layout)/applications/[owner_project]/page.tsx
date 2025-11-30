@@ -140,7 +140,7 @@ export default function Page({ params: { owner_project } }: Props) {
         {/* <div className="rounded-md bg-color-ui-active/60 h-[152px] w-full"></div> */}
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
-            <div className="heading-large">Similar Applications</div>
+            <div className="heading-lg">Similar Applications</div>
             <div className="text-xs">
               See other applications similar to {ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : ""} sorted by their performance in terms of gas fees.
             </div>

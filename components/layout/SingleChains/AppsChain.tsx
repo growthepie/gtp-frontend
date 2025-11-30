@@ -111,7 +111,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
         >
           <div className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-large">Top Gainers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
+              <div className="heading-lg">Top Gainers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
               <div className="flex justify-between items-center gap-x-[10px]">
                 <div className="text-xs">
                   Projects on {chainInfo?.name} that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
@@ -150,7 +150,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
       </div>
       <div className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Top Ranked Apps on {chainInfo?.name}</div>
+          <div className="heading-lg">Top Ranked Apps on {chainInfo?.name}</div>
           <div className="text-xs">
             Applications on {chainInfo?.name} ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by using the search bar.
           </div>

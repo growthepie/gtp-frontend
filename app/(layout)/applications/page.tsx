@@ -146,7 +146,7 @@ export default function Page() {
         >
           <Container className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-large">Top Gainers by {metricsDef[medianMetric].name}</div>
+              <div className="heading-lg">Top Gainers by {metricsDef[medianMetric].name}</div>
               <div className="flex justify-between items-center gap-x-[10px]">
                 <div className="text-xs">
                   Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
@@ -184,7 +184,7 @@ export default function Page() {
       </div>
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Top Ranked</div>
+          <div className="heading-lg">Top Ranked</div>
           <div className="text-xs">
             Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
           </div>
