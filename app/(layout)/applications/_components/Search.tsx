@@ -28,14 +28,12 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
       return "gtp-utilities";
     case "Token Transfers":
       return "gtp-tokentransfers";
-    case "DeFi":
+    case "Finance":
       return "gtp-defi";
     case "Social":
       return "gtp-socials";
     case "Collectibles":
       return "gtp-nft";
-    case "Finance":
-      return "gtp-cefi";
     default:
       return "";
   }

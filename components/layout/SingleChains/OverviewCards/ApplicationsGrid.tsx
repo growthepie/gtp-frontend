@@ -1156,8 +1156,7 @@ const CategorySection = ({
     'social': 'gtp-socials',
     'collectibles': 'gtp-nft',
     'cross_chain': 'gtp-crosschain',
-    'defi': 'gtp-defi',
-    'finance': 'gtp-cefi',
+    'finance': 'gtp-defi',
     'utility': 'gtp-utilities',
     'token_transfers': 'gtp-tokentransfers',
   }
