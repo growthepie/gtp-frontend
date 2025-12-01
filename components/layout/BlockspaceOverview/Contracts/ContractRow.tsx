@@ -42,7 +42,7 @@ export default function ContractRow({
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
     string | null
-  >("nft");
+  >("collectibles");
   const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
     useState(false);
 

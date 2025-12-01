@@ -1161,9 +1161,9 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
       return "gtp-defi";
     case "Social":
       return "gtp-socials";
-    case "NFT":
+    case "Collectibles":
       return "gtp-nft";
-    case "CeFi":
+    case "Finance":
       return "gtp-cefi";
     default:
       return "";

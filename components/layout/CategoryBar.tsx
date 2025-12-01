@@ -56,9 +56,9 @@ const CategoryBar = ({
     return {
       native_transfers: false,
       token_transfers: false,
-      nft_fi: false,
+      collectibles: false,
       defi: false,
-      cefi: false,
+      finance: false,
       utility: false,
       scaling: false,
       gaming: false,

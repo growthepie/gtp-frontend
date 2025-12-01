@@ -60,22 +60,22 @@ const COLORS = {
 };
 
 const categoryOrder = [
-  "nft",
+  "collectibles",
   "token_transfers",
   "defi",
   "social",
-  "cefi",
+  "finance",
   "utility",
   "cross_chain",
   "unlabeled",
 ];
 
 const keyToColor = {
-  nft: "rgba(0, 0, 0, 0)",
+  collectibles: "rgba(0, 0, 0, 0)",
   token_transfers: "rgba(0, 0, 0, 0.196)",
   defi: "rgba(0, 0, 0, 0.33)",
   social: "rgba(0, 0, 0, 0.463)",
-  cefi: "rgba(0, 0, 0, 0.596)",
+  finance: "rgba(0, 0, 0, 0.596)",
   utility: "rgba(0, 0, 0, 0.733)",
   cross_chain: "rgba(0, 0, 0, 0.867)",
   unlabeled: "rgba(0, 0, 0, 0.99)",

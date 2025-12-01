@@ -1111,7 +1111,7 @@ const ShortMainCategoryNames = {}
 
 const ShortSubCategoryNames = {
   'Cross-Chain Communication': 'Cross Chain Comms',
-  'Non-Fungible Tokens': 'NFTs',
+  'Collectibles': 'Collectibles',
   'Centralized Exchange': 'CEX',
   'Decentralized Exchange': 'DEX',
   'Real World Assets': 'RWA',
@@ -1154,10 +1154,10 @@ const CategorySection = ({
   const tiles = generateConstrainedTiles(node.width, node.height, node.apps.length);
   const categoryIcon = {
     'social': 'gtp-socials',
-    'nft': 'gtp-nft',
+    'collectibles': 'gtp-nft',
     'cross_chain': 'gtp-crosschain',
     'defi': 'gtp-defi',
-    'cefi': 'gtp-cefi',
+    'finance': 'gtp-cefi',
     'utility': 'gtp-utilities',
     'token_transfers': 'gtp-tokentransfers',
   }
