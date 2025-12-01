@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
 import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
-import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
@@ -30,6 +30,8 @@ import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { Switch } from "@/components/Switch";
+import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 
 
 // Preload data for the overview page
@@ -107,6 +109,8 @@ export default function Page() {
   // }, []);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showGrid, setShowGrid] = useLocalStorage("showGrid", true);
+
   const { topGainers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
@@ -184,14 +188,49 @@ export default function Page() {
       </div>
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-lg">Top Ranked</div>
+          <div className="w-full flex justify-between items-center">
+            <div className="heading-lg">Top Ranked</div>
+            <button className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full  p-[2px]"
+              onClick={() => setShowGrid(!showGrid)}
+            >
+              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+                <GTPIcon icon={`gtp:gtp-table` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <div className="text-sm">Table</div>
+              </div>
+              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+                <GTPIcon icon={`gtp:base-logo-monochrome` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <div className="text-sm">Map</div>
+              </div>
+              <div
+                className="absolute top-[49%] transition-all duration-300 left-0 w-fit h-fit flex items-center gap-x-[10px] px-[15px] py-[5px] bg-color-ui-active rounded-full"
+                style={{
+                  transform: `translateY(-50%) translateX(${showGrid ? "3%" : "100%"})`,
+                }}
+              >
+                <GTPIcon icon={`gtp:ethereum-logo-monochrome` as GTPIconName} size="sm" className="text-color-text-primary opacity-0" />
+                <div className="text-sm opacity-0">Table</div>
+              </div>
+
+            </button>
+          </div>
           <div className="text-xs">
             Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
           </div>
         </div>
       </Container>
       <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
-        <ApplicationsTable />
+        <div style={{ display: showGrid ? "block" : "none" }}>
+          <ApplicationsTable />
+        </div>
+        <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}
+        
+        style={{ display: showGrid ? "none" : "flex" }}>
+
+          <ProjectsMetadataProvider>
+            <ApplicationsGrid chainKey="all" />
+          </ProjectsMetadataProvider>
+        </div>
+
       </HorizontalScrollContainer>
     </>
   )
