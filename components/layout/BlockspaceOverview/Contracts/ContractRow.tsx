@@ -387,7 +387,7 @@ export default function ContractRow({
               >
                 <Icon
                   icon={copyContract ? "feather:check" : "feather:copy"}
-                  className="w-[15px] h-[15px]"
+                  className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 />
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function ContractRow({
             >
               <Icon
                 icon="gtp:gtp-block-explorer-alt"
-                className="w-[15px] h-[15px]"
+                className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               />
             </Link>
           </div>
