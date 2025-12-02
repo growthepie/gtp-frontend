@@ -82,7 +82,7 @@ export default function CategoryMetrics({
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("txcount_");
   const [selectedCategory, setSelectedCategory] = useState(
-    queryCategory ?? "defi",
+    queryCategory ?? "finance",
   );
 
   const [animationFinished, setAnimationFinished] = useState(true);
@@ -550,9 +550,9 @@ export default function CategoryMetrics({
     return {
       native_transfers: false,
       token_transfers: false,
-      nft_fi: false,
+      collectibles: false,
       defi: false,
-      cefi: false,
+      finance: false,
       utility: false,
       scaling: false,
       gaming: false,
