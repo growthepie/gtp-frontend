@@ -149,17 +149,21 @@ const gtpLabels = {
 const gtpProtected = {
   siteUrl: "https://" + AUTH_SUBDOMAIN + ".growthepie.com",
   generateRobotsTxt: true,
+  exclude: [
+    "/_next/*",
+    "/_next/image*",
+    "/api/*",
+  ],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: "*",
-        disallow: "*",
+        allow: "/",  // Allow crawling so Google can see your noindex tags
+        disallow: ["/_next/image", "/api/"],
       },
     ],
   },
 };
-
-
 
 let exportOjb = gtpMain;
 
