@@ -140,7 +140,7 @@ export default function ClientQuickBitePage({ params }: Props) {
 
           {/* Topics */}
           <div className="h-[34px] px-[15px] py-[5px] bg-color-bg-default rounded-full flex items-center gap-x-[10px]">
-            <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
+            <span className="text-xxs text-color-text-secondary">Topics Discussed</span>
             <div className="flex items-center gap-x-[5px]">
               {QuickBite && QuickBite.topics && QuickBite.topics.map((topic) => {
                 let resolvedIcon: GTPIconName | undefined = topic.icon;

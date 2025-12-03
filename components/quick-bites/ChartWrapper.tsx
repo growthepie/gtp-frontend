@@ -407,7 +407,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 style: {
                   fontFamily: "Fira Sans",
                   fontSize: "10px",
-                  color: "#CDD8D3",
+                  color: theme === 'dark' ? '#CDD8D3' : '#293332',
                 },
                 distance: 20,
                 enabled: showXAsDate,
@@ -854,13 +854,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               <div className="text-[10px]"><span className="font-bold">Aggregation:</span>{` 7-Day Rolling Average`}</div> */}
             </div>
             {seeMetricURL && (
-              <a className="bg-[#263130] md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+              <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
                 border: `1px solid transparent`,
-              backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, #263130), var(--Gradient-Red-Yellow, #263130)), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
+              backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box'
             }}>
-              <div className="heading-small-xs">See metric page</div>
+              <div className="heading-small-xs text-color-text-primary">See metric page</div>
               <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
             </a>
             )}
