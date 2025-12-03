@@ -189,12 +189,12 @@ export default function Page() {
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">
-            <div className="heading-lg">Top Ranked</div>
+            <div className="heading-lg">{showGrid ? "Top Ranked" : "Top Applications"}</div>
             <button className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full  p-[2px]"
               onClick={() => setShowGrid(!showGrid)}
             >
               <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
-                <GTPIcon icon={`gtp:gtp-table` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <GTPIcon icon={`gtp-table` as GTPIconName} size="sm" className="text-color-text-primary" />
                 <div className="text-sm">Table</div>
               </div>
               <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
@@ -214,7 +214,15 @@ export default function Page() {
             </button>
           </div>
           <div className="text-xs">
-            Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
+            {showGrid ? ( 
+              <div>
+                Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
+              </div>
+            ) : (
+              <div>
+                Applications ranked by Transaction Count
+              </div>
+            )}
           </div>
         </div>
       </Container>
@@ -222,12 +230,12 @@ export default function Page() {
         <div style={{ display: showGrid ? "block" : "none" }}>
           <ApplicationsTable />
         </div>
-        <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}
+        <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default relative`}
         
         style={{ display: showGrid ? "none" : "flex" }}>
 
           <ProjectsMetadataProvider>
-            <ApplicationsGrid chainKey="all" />
+            <ApplicationsGrid chainKey="all" appsPage={true} />
           </ProjectsMetadataProvider>
         </div>
 

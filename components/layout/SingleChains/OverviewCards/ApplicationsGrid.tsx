@@ -264,9 +264,10 @@ function buildCategoryNodes(
 interface DensePackedTreeMapProps {
   chainKey: string;
   width?: number;
+  appsPage?: boolean;
 }
 
-const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, width, appsPage = false }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
@@ -982,9 +983,10 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
+      <div className={`group flex flex-col w-full gap-y-[30px] h-full `}>
         {/* Header with category filters */}
         <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} hideScrollbar={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
+          {!appsPage && (
           <div className={`@container flex px-[30px] gap-x-[15px] items-center ${disableCategoryControls ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon
@@ -1029,9 +1031,10 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               ))}
             </div>
           </div>
+          )}
         </HorizontalScrollContainer>
         {/* Animated Treemap visualization */}
-        <div ref={containerRef} className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+        <div ref={containerRef} className={`relative flex-1 w-full h-full ${appsPage ? 'px-[15px] -my-[10px]' : 'px-[30px]'}`} onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -1149,7 +1152,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
       </div>
       <div className="flex items-center justify-end pt-[10px] px-[15px] w-full h-[24px] gap-x-[10px]">
         {!layoutIsEmpty && (
-          <div className='w-[15px] h-fit z-30'>
+          <div className='w-[15px] h-fit z-30 pb-[15px]'>
             <GTPTooltipNew
               placement="top-end"
               size="md"
