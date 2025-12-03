@@ -72,6 +72,7 @@ export type CountLayer2s = {
     daily: {
         types: string[];
         l2s_launched: Object[];
+        l2s_archived: Object[];
         values: number[][];
     }
 }

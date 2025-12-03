@@ -126,7 +126,8 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
       count: {
         unix: countTypes.indexOf("unix"),
         value: countTypes.indexOf("value"),
-        launched: countTypes.indexOf("l2s_launched")
+        launched: countTypes.indexOf("l2s_launched"),
+        archived: countTypes.indexOf("l2s_archived"),
       },
       tps: {
         unix: tpsTypes.indexOf("unix"),
@@ -229,6 +230,12 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
             key: "l2s_launched",
             type: 'column' as const,
             dataExtractor: ((data) => (data as CountLayer2s).daily.values.map(v => [v[count.unix], v[count.launched]] as [number, number])) as (data: ChartDataSource, showUsd: boolean) => [number, number][],
+          },
+          {
+            name: "L2s Shutdown",
+            key: "l2s_archived",
+            type: 'column' as const,
+            dataExtractor: ((data) => (data as CountLayer2s).daily.values.map(v => [v[count.unix], v[count.archived]] as [number, number])) as (data: ChartDataSource, showUsd: boolean) => [number, number][],
           }
         ],
         totalValueExtractor: (data) => formatNumber((data as CountLayer2s).daily.values.slice(-1)[0][count.value], 0),
