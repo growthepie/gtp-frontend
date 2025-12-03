@@ -11,7 +11,6 @@ import {
   useMemo,
   useRef,
   useCallback,
-  useLayoutEffect,
 } from "react";
 import {
   useLocalStorage,
@@ -20,26 +19,22 @@ import {
   useMediaQuery,
 } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
 import d3 from "d3";
 import Link from "next/link";
 import {
   Get_AllChainsNavigationItems,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
-import { debounce, forEach } from "lodash";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
-import { ChainsBaseURL, MasterURL } from "@/lib/urls";
+import { ChainsBaseURL, MasterURL, getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
-import { ChainsData } from "@/types/api/ChainResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import { ChainsData, MetricData, Changes, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import {
   TopRowContainer,
@@ -59,6 +54,10 @@ import {
   getFundamentalsByKey,
   metricCategories,
 } from "@/lib/metrics";
+import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import Heading from "@/components/layout/Heading";
+import moment from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -70,6 +69,32 @@ const COLORS = {
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const transformMetricDetails = (details: MetricDetails): MetricData => {
+  return {
+    metric_name: details.metric_name,
+    unit: "", // unit might be missing or needs to be derived
+    source: [], // source missing in new API
+    changes: details.changes.daily as unknown as Changes, // mismatch in Changes type?
+    daily: {
+      types: details.timeseries.daily.types,
+      data: details.timeseries.daily.data as [number, number][]
+    },
+    weekly: details.timeseries.weekly ? {
+      types: details.timeseries.weekly.types,
+      data: details.timeseries.weekly.data as [number, number][]
+    } : undefined,
+    monthly: details.timeseries.monthly ? {
+      types: details.timeseries.monthly.types,
+      data: details.timeseries.monthly.data as [number, number][]
+    } : undefined,
+    quarterly: details.timeseries.quarterly ? {
+      types: details.timeseries.quarterly.types,
+      data: details.timeseries.quarterly.data as [number, number][]
+    } : undefined,
+    avg: false // default
+  };
+};
 
 export default function ChainChart({
   chainData,
@@ -113,11 +138,10 @@ export default function ChainChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [compareTo, setCompareTo] = useState(false);
-  // const [compChain, setCompChain] = useState<string | null>(null);
-  // const [compChainIndex, setCompChainIndex] = useState<number>(-1);
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
   const [zoomMax, setZoomMax] = useState<number | null>(null);
+  const dayMs = 24 * 60 * 60 * 1000;
 
   const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
@@ -128,8 +152,6 @@ export default function ChainChart({
 
   const CompChains = useMemo(() => {
     if (!master) return [];
-
-    // const chainGroups = {};
 
     const chainItemsByKey = Get_AllChainsNavigationItems(master)
       .options.filter((option) => option.hide !== true)
@@ -166,9 +188,40 @@ export default function ChainChart({
       acc.push(...chainsByBucket[bucket]);
       return acc;
     }, []);
-  }, [master]);
+  }, [master, chainKey]);
 
   const { cache, mutate } = useSWRConfig();
+
+  const enabledFundamentalsKeys = useMemo<string[]>(() => {
+    return metricItems.map((item) => item.key ?? "");
+  }, []);
+
+  // Determine which intervals are available in the data
+  const availableIntervals = useMemo(() => {
+    const intervals: string[] = [];
+
+    if (data.length === 0 || !data[0].metrics) return ["daily"];
+    
+    // Check first metric to see which intervals exist
+    const firstMetricKey = Object.keys(data[0].metrics)[0];
+    if (!firstMetricKey) return ["daily"];
+    
+    const firstMetric = data[0].metrics[firstMetricKey];
+    
+    if (firstMetric.daily) intervals.push("daily");
+    if (firstMetric.weekly) intervals.push("weekly");
+    if (firstMetric.monthly) intervals.push("monthly");
+    if (firstMetric.quarterly) intervals.push("quarterly");
+    
+    return intervals.length > 0 ? intervals : ["daily"];
+  }, [data]);
+
+  // Ensure selectedTimeInterval is valid
+  useEffect(() => {
+    if (!availableIntervals.includes(selectedTimeInterval)) {
+      setSelectedTimeInterval(availableIntervals[0] || "daily");
+    }
+  }, [availableIntervals, selectedTimeInterval]);
 
   const fetchChainData = useCallback(async () => {
     if (chainKey.length === 0) {
@@ -177,31 +230,59 @@ export default function ChainChart({
 
     try {
       const fetchPromises = chainKey.map(async (key) => {
-        // check if the chain is in the cache
-        const cachedData = cache.get(`${ChainsBaseURL}${key}.json`);
-
-        if (cachedData) {
-          return cachedData.data;
-        }
-
-        // if not, fetch the data
-        const response = await fetch(
-          `${ChainsBaseURL}${key}.json`.replace("/v1/", `/${apiRoot}/`),
+        // Get supported metrics for this chain from master.json
+        const supportedMetrics = master.chains[key]?.supported_metrics || [];
+        
+        // Filter to only fetch metrics that are both enabled and supported by this chain
+        const metricsToFetch = enabledFundamentalsKeys.filter((mKey) => 
+          supportedMetrics.includes(mKey)
         );
-        const responseData = await response.json();
+        
+        // Fetch all supported metrics for the chain in parallel
+        const metricPromises = metricsToFetch.map(async (mKey) => {
+          // Find the URL key for this metric key
+          const metricItem = metricItems.find((item) => item.key === mKey);
+          if (!metricItem) return { key: mKey, data: null };
+          
+          const url = getChainMetricURL(key, metricItem.urlKey);
 
-        // store the data in the cache
-        mutate(`${ChainsBaseURL}${key}.json`, responseData, false);
+          // SWR cache check
+          const cachedData = cache.get(url);
+          if (cachedData) return { key: mKey, data: cachedData.data };
 
-        return responseData;
+          const response = await fetch(url);
+          if (!response.ok) return { key: mKey, data: null };
+          const responseData = await response.json();
+          mutate(url, responseData, false);
+          return { key: mKey, data: responseData };
+        });
+
+        const metricsResults = await Promise.all(metricPromises);
+        
+        const metrics: { [key: string]: MetricData } = {};
+        metricsResults.forEach((res) => {
+          if (res.data && res.data.details) {
+            metrics[res.key] = transformMetricDetails(res.data.details);
+          }
+        });
+
+        return {
+          chain_id: key,
+          chain_name: master.chains[key].name,
+          metrics: metrics,
+          // Mock other required fields for ChainsData
+          description: "",
+          symbol: "",
+          website: "",
+          explorer: "",
+          ranking: {},
+          hottest_contract: { data: [], types: [] }
+        } as ChainsData;
       });
 
       const responseData = await Promise.all(fetchPromises);
 
-      // Flatten the structure by removing the "data" layer
-      const flattenedData = responseData.map((item) => item.data);
-
-      setData(flattenedData);
+      setData(responseData);
       setError(null);
     } catch (error) {
       setData([]);
@@ -210,7 +291,7 @@ export default function ChainChart({
       setValidating(false);
       setLoading(false);
     }
-  }, [chainKey, cache, apiRoot, mutate]);
+  }, [chainKey, cache, mutate, enabledFundamentalsKeys, master]);
 
   useEffect(() => {
     if (data.length === 0) {
@@ -221,30 +302,132 @@ export default function ChainChart({
   }, [data.length, chainKey, fetchChainData]);
 
   const timespans = useMemo(() => {
-    let max = 0;
-    let min = Infinity;
+    const timestampSet = new Set<number>();
     const now = Date.now();
 
     data.forEach((item) => {
-      Object.keys(item.metrics).forEach((key) => {
-        max = Math.max(
-          max,
-          ...item.metrics[key].daily.data.map((d: any) => d[0]),
-        );
-
-        min = Math.min(
-          min,
-          ...item.metrics[key].daily.data.map((d: any) => d[0]),
-        );
+      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
+        const metricData = item.metrics[key];
+        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+        if (intervalData && intervalData.data && intervalData.data.length > 0) {
+          intervalData.data.forEach((d) => timestampSet.add(d[0]));
+        }
       });
     });
+
+    const timestamps = Array.from(timestampSet);
+    const max = timestamps.length ? Math.max(...timestamps) : now;
+    const min = timestamps.length ? Math.min(...timestamps) : max - 180 * dayMs;
+    const clampMin = (windowMs: number) => Math.max(min, max - windowMs);
+    const dayDiff = Math.max(1, Math.round((max - min) / dayMs));
+
+    if (selectedTimeInterval === "weekly") {
+      return {
+        "12w": {
+          label: "12 weeks",
+          shortLabel: "12w",
+          value: 12,
+          xMin: clampMin(12 * 7 * dayMs),
+          xMax: max,
+          daysDiff: Math.round((max - clampMin(12 * 7 * dayMs)) / dayMs),
+        },
+        "24w": {
+          label: "24 weeks",
+          shortLabel: "24w",
+          value: 24,
+          xMin: clampMin(24 * 7 * dayMs),
+          xMax: max,
+          daysDiff: Math.round((max - clampMin(24 * 7 * dayMs)) / dayMs),
+        },
+        "52w": {
+          label: "52 weeks",
+          shortLabel: "52w",
+          value: 52,
+          xMin: clampMin(52 * 7 * dayMs),
+          xMax: max,
+          daysDiff: Math.round((max - clampMin(52 * 7 * dayMs)) / dayMs),
+        },
+        maxW: {
+          label: "Max",
+          shortLabel: "Max",
+          value: 0,
+          xMin: min,
+          xMax: max,
+          daysDiff: dayDiff,
+        },
+      };
+    }
+
+    if (selectedTimeInterval === "monthly") {
+      const monthMs = 30 * dayMs;
+      return {
+        "6m": {
+          label: "6 months",
+          shortLabel: "6m",
+          value: 6,
+          xMin: clampMin(6 * monthMs),
+          xMax: max,
+          daysDiff: Math.round((max - clampMin(6 * monthMs)) / dayMs),
+        },
+        "12m": {
+          label: "1 year",
+          shortLabel: "12m",
+          value: 12,
+          xMin: clampMin(12 * monthMs),
+          xMax: max,
+          daysDiff: Math.round((max - clampMin(12 * monthMs)) / dayMs),
+        },
+        maxM: {
+          label: "Max",
+          shortLabel: "Max",
+          value: 0,
+          xMin: min,
+          xMax: max,
+          daysDiff: dayDiff,
+        },
+      };
+    }
+
+    if (selectedTimeInterval === "quarterly") {
+      const sorted = [...timestamps].sort((a, b) => a - b);
+      const windowFromQuarters = (count: number) => {
+        if (!sorted.length) {
+          return {
+            xMin: max - count * 90 * dayMs,
+            xMax: max,
+            daysDiff: count * 90,
+          };
+        }
+        const startIndex = Math.max(0, sorted.length - count);
+        const start = sorted[startIndex];
+        const end = sorted[sorted.length - 1];
+        return {
+          xMin: start,
+          xMax: end,
+          daysDiff: Math.max(1, Math.round((end - start) / dayMs)),
+        };
+      };
+
+      return {
+        "4q": { label: "4 quarters", shortLabel: "4q", value: 4, ...windowFromQuarters(4) },
+        "8q": { label: "8 quarters", shortLabel: "8q", value: 8, ...windowFromQuarters(8) },
+        maxQ: {
+          label: "Max",
+          shortLabel: "Max",
+          value: 0,
+          xMin: min,
+          xMax: max,
+          daysDiff: dayDiff,
+        },
+      };
+    }
 
     return {
       "90d": {
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: max - 90 * 24 * 60 * 60 * 1000,
+        xMin: clampMin(90 * dayMs),
         xMax: max,
         daysDiff: 90,
       },
@@ -252,7 +435,7 @@ export default function ChainChart({
         label: "180 days",
         shortLabel: "180d",
         value: 180,
-        xMin: max - 180 * 24 * 60 * 60 * 1000,
+        xMin: clampMin(180 * dayMs),
         xMax: max,
         daysDiff: 180,
       },
@@ -260,7 +443,7 @@ export default function ChainChart({
         label: "1 year",
         shortLabel: "365d",
         value: 365,
-        xMin: max - 365 * 24 * 60 * 60 * 1000,
+        xMin: clampMin(365 * dayMs),
         xMax: max,
         daysDiff: 365,
       },
@@ -270,38 +453,85 @@ export default function ChainChart({
         value: 0,
         xMin: min,
         xMax: max,
-        daysDiff: Math.round((now - min) / (1000 * 60 * 60 * 24)),
+        daysDiff: dayDiff,
       },
     };
-  }, [data]);
+  }, [data, selectedTimeInterval]);
+
+  const activeTimespan = useMemo(() => {
+    const keys = Object.keys(timespans);
+    if (!keys.length) return null;
+    return timespans[selectedTimespan] ?? timespans[keys[0]];
+  }, [timespans, selectedTimespan]);
+
+  const timespanMap = useMemo(
+    () => ({
+      daily: ["90d", "180d", "365d", "max"],
+      weekly: ["12w", "24w", "52w", "maxW"],
+      monthly: ["6m", "12m", "maxM"],
+      quarterly: ["4q", "8q", "maxQ"],
+    }),
+    [],
+  );
+
+  const prevIntervalRef = useRef(selectedTimeInterval);
+
+  useEffect(() => {
+    const prevInterval = prevIntervalRef.current;
+    if (prevInterval === selectedTimeInterval) return;
+
+    const prevList = timespanMap[prevInterval] || [];
+    const newList = timespanMap[selectedTimeInterval] || [];
+    const prevIndex = prevList.indexOf(selectedTimespan);
+
+    let nextTimespan =
+      (prevIndex >= 0 && newList[prevIndex]) || newList[0] || selectedTimespan;
+
+    if (nextTimespan && timespans[nextTimespan]) {
+      if (nextTimespan !== selectedTimespan) setSelectedTimespan(nextTimespan);
+    } else {
+      const availableKeys = Object.keys(timespans);
+      if (availableKeys.length && !availableKeys.includes(selectedTimespan)) {
+        setSelectedTimespan(availableKeys[0]);
+      }
+    }
+
+    prevIntervalRef.current = selectedTimeInterval;
+  }, [selectedTimeInterval, selectedTimespan, timespanMap, timespans, setSelectedTimespan]);
 
   const minUnixAll = useMemo(() => {
     const minUnixtimes: number[] = [];
 
     data.forEach((item) => {
-      Object.keys(item.metrics).forEach((key) => {
-        minUnixtimes.push(item.metrics[key].daily.data[0][0]);
+      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
+        const metricData = item.metrics[key];
+        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+        if (intervalData && intervalData.data && intervalData.data.length > 0) {
+          minUnixtimes.push(intervalData.data[0][0]);
+        }
       });
     });
 
+    if (!minUnixtimes.length) return Date.now() - 180 * 24 * 60 * 60 * 1000;
     return Math.min(...minUnixtimes);
-  }, [data]);
+  }, [data, selectedTimeInterval]);
 
   const maxUnixAll = useMemo(() => {
     const maxUnixtimes: number[] = [];
 
     data.forEach((item) => {
-      Object.keys(item.metrics).forEach((key) => {
-        maxUnixtimes.push(
-          item.metrics[key].daily.data[
-          item.metrics[key].daily.data.length - 1
-          ][0],
-        );
+      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
+        const metricData = item.metrics[key];
+        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+        if (intervalData && intervalData.data && intervalData.data.length > 0) {
+          maxUnixtimes.push(intervalData.data[intervalData.data.length - 1][0]);
+        }
       });
     });
 
+    if (!maxUnixtimes.length) return Date.now();
     return Math.max(...maxUnixtimes);
-  }, [data]);
+  }, [data, selectedTimeInterval]);
 
   function hexToRgba(hex, alpha) {
     const hexWithoutHash = hex.replace("#", "");
@@ -334,8 +564,6 @@ export default function ChainChart({
     return item?.page?.showGwei;
   }, []);
 
-  //const [prefixes, setPrefixes] = useState<string[]>([]);
-
   const prefixes = useMemo(() => {
     if (!data) return [];
 
@@ -345,17 +573,22 @@ export default function ChainChart({
 
     data.forEach((item) => {
       Object.keys(item.metrics).forEach((key) => {
-        const types = item.metrics[key].daily.types;
-        if (types.length > 2) {
-          if (showUsd && types.includes("usd")) p[key] = "$";
-          else p[key] = "Ξ";
-        } else {
-          p[key] = "";
+        const metricData = item.metrics[key];
+        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+        
+        if (intervalData && intervalData.types) {
+          const types = intervalData.types;
+          if (types.length > 2) {
+            if (showUsd && types.includes("usd")) p[key] = "$";
+            else p[key] = "Ξ";
+          } else {
+            p[key] = "";
+          }
         }
       });
     });
     return p;
-  }, [data, showUsd]);
+  }, [data, showUsd, selectedTimeInterval]);
 
   const formatNumber = useCallback(
     (key: string, value: number | string, isAxis = false) => {
@@ -384,7 +617,6 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
-            // console.log(val + " " + suffix);
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
@@ -408,7 +640,7 @@ export default function ChainChart({
 
       return number;
     },
-    [data, prefixes, selectedScale, showGwei, showUsd],
+    [selectedScale, showGwei, showUsd, master],
   );
 
   const getTickPositions = useCallback(
@@ -421,20 +653,6 @@ export default function ChainChart({
 
       const xMinYear = xMinDate.getUTCFullYear();
       const xMaxYear = xMaxDate.getUTCFullYear();
-
-      // // find first day of month greater than or equal to xMin
-      // if (xMinDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMinYear, xMinMonth + 1, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMinDate.getTime());
-      // }
-
-      // // find last day of month less than or equal to xMax
-      // if (xMaxDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMaxYear, xMaxMonth, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMaxDate.getTime());
-      // }
 
       tickPositions.push(xMinDate.getTime());
       tickPositions.push(xMaxDate.getTime());
@@ -475,8 +693,6 @@ export default function ChainChart({
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
       function (e: Highcharts.AxisSetExtremesEventObject) {
-        // if (e.trigger === "pan") return;
-
         const { min, max } = e;
 
         // set to nearest day at 08:00 UTC
@@ -580,20 +796,27 @@ export default function ChainChart({
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
 
-        let dateIndex = item.metrics[key].daily.data.length - 1;
+        const metricData = item.metrics[key];
+        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+
+        if (!intervalData || !intervalData.data) return;
+
+        let dateIndex = intervalData.data.length - 1;
 
         const latestUnix =
-          item.metrics[key].daily.data[item.metrics[key].daily.data.length - 1];
+          intervalData.data[intervalData.data.length - 1];
 
         if (intervalShown) {
-          const intervalMaxIndex = item.metrics[key].daily.data.findIndex(
+          const intervalMaxIndex = intervalData.data.findIndex(
             (d) => d[0] >= intervalShown?.max,
           );
           if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
         }
 
+        if (!intervalData.data[dateIndex]) return;
+
         let value = valueFormat.format(
-          item.metrics[key].daily.data[dateIndex][
+          intervalData.data[dateIndex][
           master.metrics[key].units[unitKey].currency ? valueIndex : 1
           ] * valueMultiplier,
         );
@@ -608,94 +831,171 @@ export default function ChainChart({
       });
     });
     return p;
-  }, [data, master, showUsd, intervalShown]);
+  }, [data, master, showUsd, intervalShown, selectedTimeInterval, showGwei]);
+
+  const formatTooltipDate = useCallback(
+    (date: Date) => {
+      switch (selectedTimeInterval) {
+        case "weekly":
+          {
+            const start = new Date(date);
+            const end = new Date(date);
+            end.setUTCDate(start.getUTCDate() + 6);
+
+            const sameMonth = start.getUTCMonth() === end.getUTCMonth();
+            const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+
+            const startStr = start.toLocaleDateString("en-GB", {
+              timeZone: "UTC",
+              month: "short",
+              day: "numeric",
+              year: sameYear ? undefined : "numeric",
+            });
+            const endStr = end.toLocaleDateString("en-GB", {
+              timeZone: "UTC",
+              month: "short",
+              day: "numeric",
+              year: sameYear ? undefined : "numeric",
+            });
+
+            const yearStr = sameYear ? `, ${start.getUTCFullYear()}` : "";
+            return `${startStr} - ${endStr}${yearStr}`;
+          }
+        case "monthly":
+          return date.toLocaleDateString("en-GB", {
+            timeZone: "UTC",
+            month: "short",
+            year: "numeric",
+          });
+        case "quarterly": {
+          const quarter = Math.floor(date.getUTCMonth() / 3) + 1;
+          return `Q${quarter} ${date.getUTCFullYear()}`;
+        }
+        default:
+          return date.toLocaleDateString("en-GB", {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+      }
+    },
+    [selectedTimeInterval],
+  );
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
       if (!master) return;
       const { x, points } = this;
-
       if (!points || !x) return;
 
-      // const series = points[0].series;
-
       const date = new Date(x);
+      const dateString = formatTooltipDate(date);
 
-      // const prefix = prefixes[series.name] ?? "";
+      const sortedPoints = [...points].sort((a: any, b: any) => b.y - a.y);
+      const metricKey = sortedPoints[0]?.series?.options?.custom?.metric ?? "";
+      const metricLabel =
+        metricKey && getFundamentalsByKey[metricKey]
+          ? getFundamentalsByKey[metricKey].label
+          : metricKey;
 
-      const dateString = date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+      const pointsSum = sortedPoints.reduce(
+        (acc, p: any) => acc + (p.y ?? 0),
+        0,
+      );
+      const maxPoint = sortedPoints.reduce(
+        (max: number, p: any) => Math.max(max, Number(p.y) || 0),
+        0,
+      );
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 text-xs font-raleway"><div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
-      const tooltipEnd = `</div>`;
-
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
-
-      let num = 0;
-      const tooltipData = points
-        .sort((a: any, b: any) => b.y - a.y)
+      const rows = sortedPoints
         .map((point: any) => {
-          num = num += 1;
-
           const { series, y } = point;
-          const { name } = series;
-
-          const dataTypes = series.options.custom.types;
-          const metricKey = series.options.custom.metric;
-          const units = Object.keys(master.metrics[metricKey].units);
+          if (y === null || y === undefined || Number.isNaN(y)) return "";
+          const name = series.name;
+          const mKey = series.options.custom.metric;
           const unitKey =
-            units.find((unit) => unit !== "usd" && unit !== "eth") ||
-            (showUsd ? "usd" : "eth");
-
-          const prefix =
-            showGwei(metricKey) && !showUsd
-              ? ""
-              : master.metrics[metricKey].units[unitKey].prefix;
-          const suffix =
-            showGwei(metricKey) && !showUsd
-              ? "Gwei"
-              : master.metrics[metricKey].units[unitKey].suffix;
-          let value = y;
-
+            Object.keys(master.metrics[mKey].units).find(
+              (u) => u !== "usd" && u !== "eth",
+            ) || (showUsd ? "usd" : "eth");
           const decimals =
-            master.metrics[metricKey].units[unitKey].decimals_tooltip;
+            master.metrics[mKey].units[unitKey].decimals_tooltip ?? 2;
+          let prefix = master.metrics[mKey].units[unitKey].prefix || "";
+          let suffix = master.metrics[mKey].units[unitKey].suffix || "";
 
-          // if (series.name === item.chain_name) {
+          const types = series.options.custom.types as string[];
+          if (!showUsd && types?.includes("eth")) {
+            if (showGwei(mKey)) {
+              prefix = "";
+              suffix = " Gwei";
+            }
+          }
+
+          const valueStr = Number(y).toLocaleString("en-GB", {
+            minimumFractionDigits:
+              showGwei(mKey) && !showUsd ? 2 : decimals,
+            maximumFractionDigits:
+              showGwei(mKey) && !showUsd ? 2 : decimals,
+          });
+
+          const label =
+            name === "ethereum"
+              ? AllChainsByKeys[name]?.name_short ?? master.chains[name]?.name
+              : AllChainsByKeys[name]?.label ??
+                AllChainsByKeys[name]?.name_short ??
+                master.chains[name]?.name ??
+                name.toUpperCase();
+
+          let colors = AllChainsByKeys[name]?.colors[theme ?? "dark"];
+          if (name === "all_l2s") {
+            colors = ["#FFDF27", "#FE5468"];
+          }
+          if (name === "ethereum") {
+            colors = ["#94ABD3", "#596780"];
+          }
+          if (!colors) {
+            colors = ["#94ABD3", "#596780"];
+          }
+          const gradient = `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+          const barWidth =
+            maxPoint > 0 && chainKey.length > 1
+              ? Math.min(100, (Number(y) / maxPoint) * 100)
+              : 0;
+
+          const reversePerformer = false;
+          const showBar = !reversePerformer && chainKey.length > 1;
+          const valueText = reversePerformer
+            ? `up to ${prefix}${valueStr}${suffix ? " " + suffix : ""}`
+            : `${prefix}${valueStr}${suffix ? " " + suffix : ""}`;
+
           return `
-                <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }"></div>
-                 <div class="flex-1 text-left justify-end flex numbers-xs">
-                      <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                      ${parseFloat(value).toLocaleString("en-GB", {
-              minimumFractionDigits:
-                showGwei(metricKey) && !showUsd ? 2 : decimals,
-              maximumFractionDigits:
-                showGwei(metricKey) && !showUsd ? 2 : decimals,
-            })}
-                      <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-                  </div>
-                </div>`;
-          // } else {
-          //   return "";
-          // }
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background: ${gradient};"></div>
+              <div class="tooltip-point-name text-xs">${label || name}</div>
+              <div class="flex-1 text-right numbers-xs">${valueText}</div>
+            </div>
+            ${
+              showBar
+                ? `<div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                  <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                  <div class="h-[2px] rounded-none absolute right-0 -top-[2px]" 
+                    style="width: ${barWidth}%; background: ${gradient};"></div>
+                </div>`
+                : ""
+            }
+          `;
         })
         .join("");
 
-      return tooltip + tooltipData + tooltipEnd;
+      return `<div class="mt-3 mr-3 mb-3 min-w-[240px] md:min-w-[260px] text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]">
+          <div>${dateString}</div>
+          <div class="text-xs">${metricLabel}</div>
+        </div>
+        ${rows}
+      </div>`;
     },
-    [displayValues, selectedScale, showGwei, showUsd, theme],
+    [selectedScale, showGwei, showUsd, theme, AllChainsByKeys, master, formatTooltipDate],
   );
 
   const tooltipPositioner =
@@ -708,17 +1008,13 @@ export default function ChainChart({
         const distance = 20;
         const pointX = point.plotX + plotLeft;
         const pointY = point.plotY + plotTop;
-        let tooltipX =
-          pointX - distance - tooltipWidth < plotLeft - 120
-            ? pointX + distance
-            : pointX - tooltipWidth - distance;
+        const anchorRight = pointX - distance; // keep tooltip's right edge anchored to the point
+        let tooltipX = anchorRight - tooltipWidth;
 
         const tooltipY = pointY - tooltipHeight / 2;
 
         if (isMobile) {
-          if (tooltipX < plotLeft) {
-            tooltipX = pointX + distance;
-          }
+          if (tooltipX < plotLeft) tooltipX = plotLeft;
           return {
             x: tooltipX,
             y: 50,
@@ -748,7 +1044,6 @@ export default function ChainChart({
         chartComponents.current.forEach((chart) => {
           if (!chart || chart.index === hoveredChart.index) return;
 
-          // set series state
           if (event.type === "mouseOver") {
             if (chart.series[hoveredSeriesIndex]) {
               chart.series[hoveredSeriesIndex].setState("hover");
@@ -780,8 +1075,6 @@ export default function ChainChart({
           const chartSeries = chart.series;
           chartSeries.forEach((series, seriesIndex) => {
             if (event.type === "mouseOver" || event.type === "mouseMove") {
-              // if (chart.series[hoveredSeries.index]) {
-
               if (event.target !== null) {
                 const pointerEvent =
                   event.target as unknown as Highcharts.PointerEventObject;
@@ -805,7 +1098,6 @@ export default function ChainChart({
                 }
                 return;
               }
-              // }
             }
             if (chart && chart.xAxis[0]) {
               if (seriesIndex === hoveredSeries.index)
@@ -953,10 +1245,6 @@ export default function ChainChart({
           fontFamily: "Fira Sans",
         },
       },
-      // gridLineColor:
-      //   theme === "dark"
-      //     ? "rgba(215, 223, 222, 0.33)"
-      //     : "rgba(41, 51, 50, 0.33)",
     },
     xAxis: {
       events: {
@@ -969,13 +1257,9 @@ export default function ChainChart({
         color: COLORS.PLOT_LINE,
         snap: false,
       },
-      // min: zoomed
-      //   ? zoomMin
-      //   : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      // max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax,
+        activeTimespan?.xMin ?? Date.now() - 180 * dayMs,
+        activeTimespan?.xMax ?? Date.now(),
       ),
       tickmarkPlacement: "on",
       tickWidth: 1,
@@ -1002,8 +1286,6 @@ export default function ChainChart({
           }
         },
       },
-      // minPadding: 0.04,
-      // maxPadding: 0.04,
       gridLineWidth: 0,
     },
     legend: {
@@ -1043,10 +1325,6 @@ export default function ChainChart({
       },
       area: {
         lineWidth: 2,
-        // marker: {
-        //   radius: 12,
-        //   lineWidth: 4,
-        // },
         fillOpacity: 1,
         fillColor: {
           linearGradient: {
@@ -1083,13 +1361,9 @@ export default function ChainChart({
           },
           stops: [
             [0, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][0]],
-            // [0.33, AllChainsByKeys[series.name].colors[1]],
             [1, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1]],
           ],
         },
-        // borderColor:
-        //   AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0],
-        // borderWidth: 1,
       },
       series: {
         zIndex: 10,
@@ -1115,10 +1389,6 @@ export default function ChainChart({
 
   const getNavIcon = useCallback(
     (key: string) => {
-      // const navItem = navigationItems[1].options.find(
-      //   (item) => item.key === key,
-      // );
-
       const metricItem = metricItems.find((item) => item.key === key);
       if (!metricItem || !metricItem.category) return null;
 
@@ -1126,7 +1396,7 @@ export default function ChainChart({
         ? metricCategories[metricItem.category].icon
         : null;
     },
-    [metricItems],
+    [],
   );
 
   const lastPointLines = useMemo<{
@@ -1143,28 +1413,20 @@ export default function ChainChart({
         if (!chart) return;
 
         const pixelsPerDay =
-          chart.plotWidth / timespans[selectedTimespan].daysDiff;
+          chart.plotWidth /
+          (activeTimespan?.daysDiff || 180);
 
         // 15px padding on each side
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
-        // if (!zoomed) {
         chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin - paddingMilliseconds,
-          timespans[selectedTimespan].xMax,
+          (activeTimespan?.xMin ?? 0) - paddingMilliseconds,
+          activeTimespan?.xMax ?? 0,
           isAnimate,
         );
-        // } else {
-        // const currentXMin = chart.xAxis[0].getExtremes().min;
-        // const currentXMax = chart.xAxis[0].getExtremes().max;
-
-        // chart.xAxis[0].setExtremes(currentXMin, currentXMax, isAnimate);
-        // }
       });
     }
-  }, [isAnimate, selectedTimespan, timespans, zoomed]);
-
-  const resituateChartDebounceRef = useRef(null);
+  }, [activeTimespan, isAnimate, zoomed]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -1174,7 +1436,6 @@ export default function ChainChart({
         await delay(0)
           .then(() => {
             chart?.setSize(null, null, isAnimate);
-            // chart.reflow();
           })
           .then(() => {
             delay(0).then(() => chart.reflow());
@@ -1184,24 +1445,6 @@ export default function ChainChart({
     }
   }, [isAnimate, resetXAxisExtremes]);
 
-  // useEffect(() => {
-  //   // if (resituateChartDebounceRef.current)
-  //   //   resituateChartDebounceRef.current.cancel();
-  //   // resituateChartDebounceRef.current = debounce(resituateChart, 50);
-  //   // // cancel the debounced function on component unmount
-  //   // return () => {
-  //   //   if (resituateChartDebounceRef.current)
-  //   //     resituateChartDebounceRef.current.cancel();
-  //   // };
-  // }, [
-  //   chartComponents,
-  //   selectedTimespan,
-  //   timespans,
-  //   resituateChart,
-  //   isSidebarOpen,
-  //   zoomed,
-  // ]);
-
   useEffect(() => {
     resetXAxisExtremes();
   }, [resetXAxisExtremes, selectedTimespan]);
@@ -1210,21 +1453,12 @@ export default function ChainChart({
     handleResize();
   }, [isSidebarOpen]);
 
-  const enabledFundamentalsKeys = useMemo<string[]>(() => {
-    // return navigationItems[1].options.map((option) => option.key ?? "");
-    return metricItems.map((item) => item.key ?? "");
-  }, []);
-
   useEffect(() => {
     enabledFundamentalsKeys.forEach(async (key, i) => {
       if (chartComponents.current[i]) {
-        // show loading
-        // chartComponents.current[i].showLoading();
-
         // get current series displayed on this chart
         const currentSeries = chartComponents.current[i].series;
 
-        // ["ethereum", "bsc", "polygon"]
         const seriesToAdd = data.map((item) => item.chain_id);
 
         // find the series to remove
@@ -1243,29 +1477,33 @@ export default function ChainChart({
         data.forEach((item) => {
           // calculate series name
           const seriesName = item.chain_id;
-          // const id = [key, item.chain_name].join("_");
 
           // find the series we need to update
           const series = currentSeries.find((s) => s.name === seriesName);
 
+          const metricData = item.metrics[key];
+          const intervalData = metricData ? (metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData) : null;
+
+          if (!intervalData || !intervalData.data) return;
+
           // if series exists, update it
           if (series) {
-            const seriesData = item.metrics[key]?.daily.types.includes("eth")
+            const seriesData = intervalData.types.includes("eth")
               ? showUsd
-                ? item.metrics[key].daily.data.map((d) => [
+                ? intervalData.data.map((d) => [
                   d[0],
-                  d[item.metrics[key].daily.types.indexOf("usd")],
+                  d[intervalData.types.indexOf("usd")],
                 ])
-                : item.metrics[key].daily.data.map((d) => [
+                : intervalData.data.map((d) => [
                   d[0],
                   showGwei(key)
-                    ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                    ? d[intervalData.types.indexOf("eth")] *
                     1000000000
-                    : d[item.metrics[key].daily.types.indexOf("eth")],
+                    : d[intervalData.types.indexOf("eth")],
                 ])
-              : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
+              : intervalData.data.map((d) => [d[0], d[1]]);
 
-            const seriesTypes = item.metrics[key]?.daily.types;
+            const seriesTypes = intervalData.types;
             // update series
             series.update(
               {
@@ -1281,25 +1519,25 @@ export default function ChainChart({
               {
                 name: seriesName,
                 crisp: false,
-                custom: { types: item.metrics[key]?.daily.types, metric: key },
-                data: item.metrics[key]?.daily.types.includes("eth")
+                custom: { types: intervalData.types, metric: key },
+                data: intervalData.types.includes("eth")
                   ? showUsd
-                    ? item.metrics[key].daily.data.map((d) => [
+                    ? intervalData.data.map((d) => [
                       d[0],
-                      d[item.metrics[key].daily.types.indexOf("usd")],
+                      d[intervalData.types.indexOf("usd")],
                     ])
-                    : item.metrics[key].daily.data.map((d) => [
+                    : intervalData.data.map((d) => [
                       d[0],
                       showGwei(key)
-                        ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                        ? d[intervalData.types.indexOf("eth")] *
                         1000000000
-                        : d[item.metrics[key].daily.types.indexOf("eth")],
+                        : d[intervalData.types.indexOf("eth")],
                     ])
-                  : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
+                  : intervalData.data.map((d) => [d[0], d[1]]),
                 showInLegend: false,
                 marker: {
                   enabled: false,
-                },
+                  },
                 point: {
                   events: {
                     mouseOver: pointHover,
@@ -1337,9 +1575,6 @@ export default function ChainChart({
                     "33",
                   width: 10,
                 },
-                // borderColor:
-                //   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
-                // borderWidth: 1,
               },
               false,
             );
@@ -1350,18 +1585,7 @@ export default function ChainChart({
         chartComponents.current[i].redraw();
       }
     });
-  }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
-
-  // const CompChains = useMemo(() => {
-  //   if (!master) return [];
-
-  //   return AllChains.filter(
-  //     (chain) =>
-  //       Get_SupportedChainKeys(master).includes(chain.key) &&
-  //       !["all_l2s", chainKey[0]].includes(chain.key) &&
-  //       Object.keys(master.chains).includes(chain.key),
-  //   );
-  // }, [chainKey, master]);
+  }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme, selectedTimeInterval, AllChainsByKeys]);
 
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
@@ -1481,15 +1705,20 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <TopRowContainer
-        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-color-bg-default lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
-          "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
-          } `}
-      >
-        <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
+      
+      {/* Title and Compare Section */}
+      <div className="flex items-center justify-between mb-[15px]">
+        <div className="flex gap-x-[8px] items-center scroll-mt-8" id="fundamentals">
+          <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
+          <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
+            Fundamental Metrics
+          </Heading>
+        </div>
+
+        {/* Chain Compare Dropdown */}
+        <div className="flex flex-col relative h-[54px] w-[271px]">
           <div
-            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"
-              }`}
+            className={`relative flex rounded-full h-full w-full z-30 p-[5px] cursor-pointer`}
             style={{
               backgroundColor: compChain
                 ? AllChainsByKeys[compChain].colors[theme ?? "dark"][0]
@@ -1506,13 +1735,13 @@ export default function ChainChart({
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
             <div
-              className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]"
+              className="flex flex-1 flex-col items-center justify-self-center gap-y-[1px]"
               onClick={() => {
                 setCompareTo(!compareTo);
               }}
             >
               <div
-                className={` font-[500] leading-[150%] text-[12px] ${compChain
+                className={`font-[500] leading-[150%] text-[12px] ${compChain
                   ? AllChainsByKeys[compChain].darkTextOnBackground
                     ? textColors.darkTextOnBackground
                     : textColors.default
@@ -1551,9 +1780,8 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${compareTo
-              ? `max-h-[${CompChains.length * 30 + 40
-              }px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+            className={`flex flex-col absolute top-[27px] left-0 right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 border-b border-l border-r transition-all ease-in-out duration-300 ${compareTo
+              ? `max-h-[${CompChains.length * 30 + 40}px] z-[25] border-transparent border-forest-200 dark:border-forest-500 rounded-b-2xl shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
               : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
               } `}
           >
@@ -1643,47 +1871,74 @@ export default function ChainChart({
           </div>
           {compareTo && (
             <div
-              className={`hidden lg:block lg:fixed inset-0 z-20`}
+              className={`fixed inset-0 z-20`}
               onClick={() => {
                 setCompareTo(false);
               }}
             />
           )}
         </div>
+      </div>
+
+      <TopRowContainer
+        className={`relative mb-[15px]`}
+      >
+        <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-fit -mt-[1px]">
+          <TopRowParent>
+            {availableIntervals.map((interval) => (
+              <TopRowChild
+                key={interval}
+                isSelected={selectedTimeInterval === interval}
+                onClick={() => {
+                  setSelectedTimeInterval(interval);
+                }}
+                className={"capitalize relative"}
+              >
+                <span className="">{interval}</span>
+              </TopRowChild>
+            ))}
+          </TopRowParent>
+        </div>
 
         <TopRowParent>
           {!zoomed ? (
-            Object.keys(timespans).map((timespan) => (
-              <TopRowChild
-                key={timespan}
-                isSelected={selectedTimespan === timespan}
-                onClick={() => {
-                  setSelectedTimespan(timespan);
-                }}
-                style={{
-                  fontSize: isMobile ? "16px" : "",
-                  paddingTop: isMobile ? "6px" : "",
-                  paddingBottom: isMobile ? "6px" : "",
-                }}
-                className={`py-[4px] xl:py-[13px]`}
-              >
-                <span className="hidden sm:block">
-                  {timespans[timespan].label}
-                </span>
-                <span className="block text-xs sm:hidden">
-                  {timespans[timespan].shortLabel}
-                </span>
-              </TopRowChild>
-            ))
+            Object.keys(timespans)
+              .filter((timespan) =>
+                selectedTimeInterval === "daily"
+                  ? ["90d", "180d", "365d", "max"].includes(timespan)
+                : selectedTimeInterval === "weekly"
+                  ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                : selectedTimeInterval === "monthly"
+                  ? ["6m", "12m", "maxM"].includes(timespan)
+                  : ["4q", "8q", "12q", "maxQ"].includes(timespan),
+              )
+              .map((timespan) => (
+                <TopRowChild
+                  key={timespan}
+                  isSelected={selectedTimespan === timespan}
+                  onClick={() => {
+                    setSelectedTimespan(timespan);
+                  }}
+                  style={{
+                    fontSize: isMobile ? "16px" : "",
+                    paddingTop: isMobile ? "6px" : "",
+                    paddingBottom: isMobile ? "6px" : "",
+                  }}
+                  className={`py-[4px] xl:py-[13px]`}
+                >
+                  <span className="hidden sm:block">
+                    {timespans[timespan].label}
+                  </span>
+                  <span className="block text-xs sm:hidden">
+                    {timespans[timespan].shortLabel}
+                  </span>
+                </TopRowChild>
+              ))
           ) : (
             <div className="flex w-full gap-x-1">
               <button
                 className={`rounded-full flex items-center justify-center space-x-1 md:space-x-3 px-[16px] py-[3px] md:px-[15px] md:py-[6px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[11px] w-full lg:w-auto text-xs md:text-base font-medium border-[0.5px] border-forest-400`}
                 onClick={() => {
-                  //chartComponent?.current?.xAxis[0].setExtremes(
-                  //timespans[selectedTimespan].xMin,
-                  //</div>timespans[selectedTimespan].xMax,
-                  //);
                   setZoomed(false);
                   resituateChart();
                 }}
@@ -1764,8 +2019,11 @@ export default function ChainChart({
                       return getFundamentalsByKey[key].category === categoryKey;
                     })
                     .map((key, i) => {
-                      const isAllZeroValues = data[0].metrics[key]
-                        ? data[0].metrics[key].daily.data.every(
+                      const metricData = data[0].metrics[key];
+                      const intervalData = metricData ? (metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData) : null;
+                      
+                      const isAllZeroValues = intervalData
+                        ? intervalData.data.every(
                           (d) => d[1] === 0,
                         )
                         : false;
@@ -1775,6 +2033,17 @@ export default function ChainChart({
 
                       return (
                         <div key={key}>
+                          {/* <div>
+                            <div>Debug (dates of last 4 datapoints in current interval):</div>
+                            <div>
+                              {intervalData ? data.map((item) => (
+                                <div key={item.chain_id}>
+                                  {item.chain_id}: {intervalData?.data.slice(-4).map((d) => moment(d[0]).utc().format("YYYY-MM-DD")).join(", ")}
+                                </div>
+                                )) : null
+                              }
+                            </div>
+                          </div> */}
                           <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative">
                             {!Object.keys(data[0].metrics).includes(key) ? (
                               <div key={key} className="w-full relative">
@@ -1894,11 +2163,6 @@ export default function ChainChart({
                             )}
 
                             <HighchartsReact
-                              // containerProps={{
-                              //   className: isVisible
-                              //     ? "w-full h-[127px]"
-                              //     : "w-full h-[127px] hidden",
-                              // }}
                               highcharts={Highcharts}
                               options={{
                                 ...options,
@@ -1915,10 +2179,6 @@ export default function ChainChart({
                                   index: enabledFundamentalsKeys.indexOf(key),
                                   margin: zoomed ? zoomedMargin : defaultMargin,
                                   events: {
-                                    load: function () {
-                                      const chart = this;
-                                      // chart.reflow();
-                                    },
                                     render: function () {
                                       const chart: Highcharts.Chart = this;
 
@@ -2025,19 +2285,13 @@ export default function ChainChart({
                                               .path(
                                                 chart.renderer.crispLine(
                                                   [
-                                                    //@ts-ignore
-                                                    "M",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    primaryLineStartPos,
-                                                    //@ts-ignore
-                                                    "L",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    chart.plotTop,
-                                                  ],
+                                                    "M" as any,
+                                                    linesXPos as any,
+                                                    primaryLineStartPos as any,
+                                                    "L" as any,
+                                                    linesXPos as any,
+                                                    chart.plotTop as any,
+                                                  ] as any,
                                                   1,
                                                 ),
                                               )
@@ -2069,21 +2323,15 @@ export default function ChainChart({
                                               .path(
                                                 chart.renderer.crispLine(
                                                   [
-                                                    //@ts-ignore
-                                                    "M",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    secondaryLineStartPos,
-                                                    //@ts-ignore
-                                                    "L",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    lastPointYDiff > 0
+                                                    "M" as any,
+                                                    linesXPos as any,
+                                                    secondaryLineStartPos as any,
+                                                    "L" as any,
+                                                    linesXPos as any,
+                                                    (lastPointYDiff > 0
                                                       ? secondaryLineEndPos
-                                                      : primaryLineEndPos,
-                                                  ],
+                                                      : primaryLineEndPos) as any,
+                                                  ] as any,
                                                   1,
                                                 ),
                                               )
@@ -2115,19 +2363,13 @@ export default function ChainChart({
                                                 .path(
                                                   chart.renderer.crispLine(
                                                     [
-                                                      //@ts-ignore
-                                                      "M",
-                                                      //@ts-ignore
-                                                      linesXPos,
-                                                      //@ts-ignore
-                                                      secondaryLineEndPos,
-                                                      //@ts-ignore
-                                                      "L",
-                                                      //@ts-ignore
-                                                      linesXPos,
-                                                      //@ts-ignore
-                                                      primaryLineEndPos,
-                                                    ],
+                                                      "M" as any,
+                                                      linesXPos as any,
+                                                      secondaryLineEndPos as any,
+                                                      "L" as any,
+                                                      linesXPos as any,
+                                                      primaryLineEndPos as any,
+                                                    ] as any,
                                                     1,
                                                   ),
                                                 )
@@ -2162,23 +2404,17 @@ export default function ChainChart({
                                               .path(
                                                 chart.renderer.crispLine(
                                                   [
-                                                    //@ts-ignore
-                                                    "M",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    seriesIndex === 0
+                                                    "M" as any,
+                                                    linesXPos as any,
+                                                    (seriesIndex === 0
                                                       ? primaryLineStartPos
-                                                      : secondaryLineStartPos,
-                                                    //@ts-ignore
-                                                    "L",
-                                                    //@ts-ignore
-                                                    linesXPos,
-                                                    //@ts-ignore
-                                                    seriesIndex === 0
+                                                      : secondaryLineStartPos) as any,
+                                                    "L" as any,
+                                                    linesXPos as any,
+                                                    (seriesIndex === 0
                                                       ? primaryLineEndPos
-                                                      : secondaryLineEndPos,
-                                                  ],
+                                                      : secondaryLineEndPos) as any,
+                                                  ] as any,
                                                   1,
                                                 ),
                                               )
@@ -2205,7 +2441,7 @@ export default function ChainChart({
                                               chart.plotTop -
                                               (seriesIndex === 0 ? 24 : 0),
                                               3,
-                                            )
+                                              )
                                             .attr({
                                               fill: AllChainsByKeys[series.name]
                                                 .colors[theme ?? "dark"][0],
@@ -2251,10 +2487,10 @@ export default function ChainChart({
                                   ...options.xAxis,
                                   min: zoomed
                                     ? zoomMin
-                                    : timespans[selectedTimespan].xMin,
+                                    : activeTimespan?.xMin,
                                   max: zoomed
                                     ? zoomMax
-                                    : timespans[selectedTimespan].xMax,
+                                    : activeTimespan?.xMax,
                                 },
                               }}
                               ref={(chart) => {
@@ -2287,7 +2523,7 @@ export default function ChainChart({
                                 <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {selectedTimespan &&
                                     new Date(
-                                      timespans[selectedTimespan].xMin,
+                                      activeTimespan?.xMin ?? 0,
                                     ).toLocaleDateString("en-GB", {
                                       timeZone: "UTC",
                                       month: "short",
@@ -2314,7 +2550,7 @@ export default function ChainChart({
                               {!zoomed && (
                                 <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
                                   {new Date(
-                                    timespans[selectedTimespan].xMax,
+                                    activeTimespan?.xMax ?? 0,
                                   ).toLocaleDateString("en-GB", {
                                     timeZone: "UTC",
                                     month: "short",
