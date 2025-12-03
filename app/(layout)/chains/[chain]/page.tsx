@@ -115,19 +115,6 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <div
-        className="flex gap-x-[8px] items-center scroll-mt-8"
-        id="fundamentals"
-      >
-        <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
-        <Heading
-          className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
-          as="h2"
-        >
-              Fundamental Metrics
-        </Heading>
-        </div>
-
         {chainData && (
           <ChainChart
             chain={chain}
@@ -389,7 +376,7 @@ const Chain = ({ params }: { params: any }) => {
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
-    }, [selectedTab, chainKey, chain, master, showUsd]);
+    }, [selectedTab, chainKey, chain, master]);
 
 
 

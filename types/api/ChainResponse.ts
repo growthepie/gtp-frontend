@@ -30,11 +30,14 @@ export interface MetricData {
   unit: string;
   source: string[];
   changes: Changes;
-  daily: Daily;
+  daily: IntervalData;
+  weekly?: IntervalData;
+  monthly?: IntervalData;
+  quarterly?: IntervalData;
   avg: boolean;
 }
 
-export interface Daily {
+export interface IntervalData {
   types: string[];
   data: [number, number][];
 }
