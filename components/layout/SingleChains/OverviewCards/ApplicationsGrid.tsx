@@ -265,9 +265,13 @@ interface DensePackedTreeMapProps {
   chainKey: string;
   width?: number;
   appsPage?: boolean;
+  selectedCategory?: string | null;
+  setSelectedCategory?: (category: string | null) => void;
+  clearSelectedCategory?: boolean;
+  setClearSelectedCategory?: (clear: boolean) => void;
 }
 
-const DensePackedTreeMap = ({ chainKey, width, appsPage = false }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategory, setSelectedCategory, clearSelectedCategory, setClearSelectedCategory }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
@@ -295,6 +299,22 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false }: DensePackedTr
 
   // Horizontal padding applied to the parent container (px-[30px] = 30px left + 30px right)
   const CONTAINER_HORIZONTAL_PADDING = 60;
+
+  useEffect(() => {
+    if (selectedMainCategory && setSelectedCategory) {
+      setSelectedCategory(selectedMainCategory);
+    }
+  }, [selectedMainCategory]);
+
+  useEffect(() => {
+    if (clearSelectedCategory && setClearSelectedCategory) {
+      setClearSelectedCategory(false);
+      setSelectedMainCategory(null);
+      if (setSelectedCategory) {
+        setSelectedCategory(null);
+      }
+    }
+  }, [clearSelectedCategory]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;

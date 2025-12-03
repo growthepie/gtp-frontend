@@ -110,6 +110,8 @@ export default function Page() {
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showGrid, setShowGrid] = useLocalStorage("showGrid", true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
 
   const { topGainers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
@@ -189,7 +191,17 @@ export default function Page() {
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">
-            <div className="heading-lg">{showGrid ? "Top Ranked" : "Top Applications"}</div>
+            <div className="heading-lg flex items-center gap-x-[5px]">
+              {showGrid ? "Top Ranked" : `Top Applications ${selectedCategory ? `> ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}` : ""}`}
+              {selectedCategory && (
+                <button className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center" onClick={() => setClearSelectedCategory(true)}>
+                  <div className="size-[15px] flex items-center justify-center rounded-full bg-[#FE5468]">
+                    <GTPIcon icon={"feather:x" as GTPIconName} size="sm" className="text-color-bg-default" />
+                  </div>
+
+                </button>
+              )}
+            </div>
             <button className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full  p-[2px]"
               onClick={() => setShowGrid(!showGrid)}
             >
@@ -235,7 +247,7 @@ export default function Page() {
         style={{ display: showGrid ? "none" : "flex" }}>
 
           <ProjectsMetadataProvider>
-            <ApplicationsGrid chainKey="all" appsPage={true} />
+            <ApplicationsGrid chainKey="all" appsPage={true} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} clearSelectedCategory={clearSelectedCategory} setClearSelectedCategory={setClearSelectedCategory} />
           </ProjectsMetadataProvider>
         </div>
 
