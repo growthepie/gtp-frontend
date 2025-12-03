@@ -325,6 +325,21 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, [debouncedUpdateSearch]);
 
+    // on mount, add an event listener for keystrokes. If a alphanumeric key is pressed, focus the input and write the key to the input.
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        const input = document.getElementById('global-search-input') as HTMLInputElement;
+        const isInputFocused = input.contains(document.activeElement);
+        if (event.key.match(/[a-zA-Z0-9]/) && !isInputFocused) {
+          input.focus();
+          input.value = event.key;
+        }
+      };
+      
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     if(!showSearchContainer){
       return (
         <div className={`flex w-full flex-col-reverse md:flex-col`}>
@@ -339,6 +354,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               )}
               <input
                 ref={localInputRef}
+                id="global-search-input"
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
@@ -403,6 +419,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               )}
               <input
                 ref={localInputRef}
+                id="global-search-input"
                 autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
