@@ -1,26 +1,34 @@
 // lib/figma.ts
-const fs = require("fs").promises;
-const path = require("path");
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import { promisify } from "util";
+import { gunzip, gzip } from "zlib";
+import dotenv from "dotenv";
+// @ts-ignore
+import { CLI, COLORS } from "./cli.mjs";
 
-// use env.local
-require("dotenv").config({ path: ".env.local" });
+// Load environment variables
+dotenv.config({ path: ".env.local" });
 
+// --- ESM COMPATIBILITY SETUP ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ui = new CLI();
+
+// --- CONFIGURATION ---
 const outputDir = path.resolve(__dirname, "../icons/small");
+const cacheFilePath = path.resolve(__dirname, "figma-file-cache.json.gz");
+const logFilePath = path.resolve(__dirname, "figma-export.log");
+const CACHE_DURATION_MS = 30 * 60 * 1000;
 
 // Access environment variables directly from process.env
 const FIGMA_ACCESS_TOKEN = process.env.FIGMA_ACCESS_TOKEN as string;
 const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY as string;
+const ARGS = process.argv.slice(2);
 
-if (!FIGMA_ACCESS_TOKEN || !FIGMA_FILE_KEY) {
-  console.error(
-    "Missing FIGMA_ACCESS_TOKEN or FIGMA_FILE_KEY in environment variables.",
-  );
-  process.exit(1);
-}
-
-/**
- * Represents a node in the Figma document.
- */
+// --- TYPES ---
 interface FigmaNode {
   id: string;
   name: string;
@@ -28,211 +36,323 @@ interface FigmaNode {
   children?: FigmaNode[];
 }
 
-/**
- * Represents the response structure from Figma API's /files endpoint.
- */
 interface FigmaFileResponse {
   document: FigmaNode;
-  components: { [key: string]: any };
-  componentSets: { [key: string]: any };
 }
 
-/**
- * Fetches the Figma file data.
- * @param fileKey The key of the Figma file.
- * @param accessToken Your Figma access token.
- * @returns The Figma file data.
- */
+// --- LOGIC ---
+
+if (!FIGMA_ACCESS_TOKEN || !FIGMA_FILE_KEY) {
+  ui.error("Missing FIGMA_ACCESS_TOKEN or FIGMA_FILE_KEY in env.");
+  process.exit(1);
+}
+
+const gzipAsync = promisify(gzip);
+const gunzipAsync = promisify(gunzip);
+
 async function fetchFigmaFile(
   fileKey: string,
   accessToken: string,
 ): Promise<FigmaFileResponse> {
   const url = `https://api.figma.com/v1/files/${fileKey}`;
+  ui.debug(`Sending request to ${url}`);
+  const response = await fetch(url, {
+    headers: { "X-Figma-Token": accessToken },
+  });
+  if (!response.ok)
+    throw new Error(`Status ${response.status}: ${response.statusText}`);
+  return await response.json();
+}
 
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "X-Figma-Token": accessToken,
-      },
-    });
+async function fetchFigmaFileWithCache(
+  fileKey: string,
+  accessToken: string,
+  forceRefresh: boolean = false,
+): Promise<FigmaFileResponse> {
+  let shouldUseCache = false;
 
-    if (!response.ok) {
-      throw new Error(
-        `Figma API responded with status ${response.status}: ${response.statusText}`,
-      );
+  // Check Cache existence and age
+  if (!forceRefresh) {
+    try {
+      const stats = await fs.stat(cacheFilePath);
+      const cacheAge = Date.now() - stats.mtimeMs;
+
+      if (cacheAge <= CACHE_DURATION_MS) {
+        const pressed = await ui.waitForKeyWithTimeout(
+          3000,
+          "Cache found. Press any key to force refresh",
+        );
+        if (pressed) {
+          ui.info("Key pressed. Forcing API refresh.");
+          forceRefresh = true;
+        } else {
+          shouldUseCache = true;
+        }
+      } else {
+        ui.warn(
+          `Cache expired (${Math.round(cacheAge / 1000 / 60)} mins old).`,
+        );
+      }
+    } catch (error) {
+      ui.debug("No cache found at " + cacheFilePath);
     }
+  }
 
-    const data: FigmaFileResponse = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching Figma file:", error);
-    throw error;
+  // Load from Cache
+  if (shouldUseCache) {
+    ui.startSpinner("Loading data from local compressed cache...");
+    try {
+      const compressedData = await fs.readFile(cacheFilePath);
+      const decompressed = await gunzipAsync(compressedData);
+      const data = JSON.parse(decompressed.toString("utf-8"));
+      ui.stopSpinner(true, "Loaded data from cache.");
+      return data;
+    } catch (e) {
+      ui.stopSpinner(false);
+      ui.error("Corrupt cache, falling back to API.");
+    }
+  }
+
+  // Fetch from API
+  ui.startSpinner(
+    `Downloading full file structure from Figma API (${fileKey})...`,
+  );
+  const data = await fetchFigmaFile(fileKey, accessToken);
+  ui.stopSpinner(true, "Document structure downloaded.");
+
+  // Save Cache
+  ui.startSpinner("Compressing and saving cache...");
+  const compressed = await gzipAsync(JSON.stringify(data));
+  await fs.writeFile(cacheFilePath, compressed);
+  ui.stopSpinner(true, "Cache saved to disk.");
+
+  return data;
+}
+
+function traverseDocument(node: FigmaNode, foundNodes: FigmaNode[]) {
+  // Logic: We are looking for top-level containers that start with "GTP-"
+  if (node.name.startsWith("GTP-")) {
+    if (node.type === "COMPONENT_SET" || node.type === "COMPONENT") {
+      foundNodes.push(node);
+    }
+  }
+
+  if (node.children) {
+    node.children.forEach((child) => traverseDocument(child, foundNodes));
   }
 }
 
-/**
- * Recursively traverses the Figma document tree to find component sets.
- * @param node The current node in the traversal.
- * @param componentSets An array to collect found component sets.
- */
-function traverseDocument(node: FigmaNode, componentSets: FigmaNode[]) {
-  if (node.type === "COMPONENT_SET" && node.name.startsWith("GTP-")) {
-    console.log("Found component set:", node.name);
-    componentSets.push(node);
-  }
+function getIconNodeIds(
+  foundNodes: FigmaNode[],
+): { id: string; name: string }[] {
+  const iconNodes: { id: string; name: string }[] = [];
 
-  if (node.children && node.children.length > 0) {
-    node.children.forEach((child) => traverseDocument(child, componentSets));
-  }
-}
+  ui.subHeader(`Analyze logic:`);
+  ui.info(`  1. Scanning ${foundNodes.length} 'GTP-' candidates.`);
+  ui.info(`  2. If type is COMPONENT -> Use directly.`);
+  ui.info(
+    `  3. If type is COMPONENT_SET -> Look for child named 'Size=medium' or 'Size=md'.`,
+  );
 
-/**
- * Retrieves the node IDs of "small" variants within "GTP-" component sets.
- * @param componentSets Array of component sets starting with "GTP-".
- * @returns Array of node IDs for "small" variants.
- */
-function getSmallVariantNodeIds(componentSets: FigmaNode[]): string[] {
-  const smallVariantIds: string[] = [];
+  foundNodes.forEach((node) => {
+    if (node.type === "COMPONENT") {
+      ui.debug(`   Found COMPONENT: ${node.name}`);
+      iconNodes.push({ id: node.id, name: node.name });
+    } else if (node.type === "COMPONENT_SET" && node.children) {
+      // Logic: Variants are children of Component Sets.
+      // We only want the "medium" size variant for the export.
+      let smallVariant = node.children.find((c) => c.name === "Size=medium");
 
-  componentSets.forEach((set) => {
-    if (!set.children) return;
+      if (!smallVariant) {
+        smallVariant = node.children.find((c) => c.name === "Size=md");
+      }
 
-    console.log("set.children", set.name, set.children);
-
-    // the "small" variant is the first child in the component set and has the property "size" set to "small"
-    const smallVariant = set.children.find(
-      (child) => child.name === "Size=small",
-    );
-
-    if (smallVariant) {
-      smallVariantIds.push(smallVariant.id);
+      if (smallVariant) {
+        ui.info(`   Found COMPONENT_SET: ${node.name} with 'medium' variant.`);
+        iconNodes.push({ id: smallVariant.id, name: node.name }); // Use Set name, not variant name
+      } else {
+        ui.debug(`Skipping ${node.name}: No 'medium' variant found.`);
+      }
     } else {
-      console.warn(
-        `No "small" variant found for component set "${set.name}" (ID: ${set.id})`,
-      );
+      ui.debug(`   Skipping node: ${node.name} (type: ${node.type})`);
     }
   });
 
-  return smallVariantIds;
+  return iconNodes;
 }
 
-/**
- * Fetches SVG URLs for the given node IDs.
- * @param fileKey The key of the Figma file.
- * @param accessToken Your Figma access token.
- * @param nodeIds Array of node IDs to export.
- * @returns Object mapping node IDs to their SVG URLs.
- */
 async function fetchSVGUrls(
   fileKey: string,
   accessToken: string,
   nodeIds: string[],
-): Promise<{ [id: string]: string }> {
-  const url = `https://api.figma.com/v1/images/${fileKey}?ids=${nodeIds.join(
-    ",",
-  )}&format=svg`;
+) {
+  const batchSize = 100;
+  let allImages: { [id: string]: string } = {};
+  const totalBatches = Math.ceil(nodeIds.length / batchSize);
 
-  try {
+  ui.startSpinner(
+    `Requesting SVG download URLs from Figma (0/${totalBatches} batches)...`,
+  );
+
+  for (let i = 0; i < nodeIds.length; i += batchSize) {
+    const batch = nodeIds.slice(i, i + batchSize);
+    // Figma API requires comma-separated IDs
+    const url = `https://api.figma.com/v1/images/${fileKey}?ids=${batch.join(
+      ",",
+    )}&format=svg`;
+
+    ui.debug(
+      `Batch ${Math.floor(i / batchSize) + 1}: Fetching ${batch.length} URLs...`,
+    );
+
     const response = await fetch(url, {
-      headers: {
-        "X-Figma-Token": accessToken,
-      },
+      headers: { "X-Figma-Token": accessToken },
     });
-
-    if (!response.ok) {
-      throw new Error(
-        `Figma Images API responded with status ${response.status}: ${response.statusText}`,
-      );
-    }
-
+    if (!response.ok)
+      throw new Error(`Figma Image API Error: ${response.status}`);
     const data = await response.json();
 
-    return data.images; // { "nodeId": "imageUrl", ... }
-  } catch (error) {
-    console.error("Error fetching SVG URLs:", error);
-    throw error;
+    // Merge results
+    Object.assign(allImages, data.images);
   }
+
+  ui.stopSpinner(
+    true,
+    `Received download URLs for ${Object.keys(allImages).length} icons.`,
+  );
+  return allImages;
 }
 
-/**
- * Downloads an SVG from a given URL and saves it to the specified path.
- * @param url The URL of the SVG.
- * @param savePath The file system path where the SVG should be saved.
- */
-async function downloadSVG(url: string, savePath: string) {
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to download SVG from ${url}: ${response.statusText}`,
-      );
-    }
-
-    const svgContent = await response.text();
-    await fs.writeFile(savePath, svgContent, "utf-8");
-    console.log(`Saved SVG to ${savePath}`);
-  } catch (error) {
-    console.error(`Error downloading SVG from ${url}:`, error);
-  }
-}
-
-/**
- * Main function to orchestrate fetching and saving SVGs for "small" variants.
- */
 async function main() {
+  ui.initLog(logFilePath);
+  ui.header("Figma Icon Extractor");
+
+  const searchArgIndex = ARGS.indexOf("--search");
+  const forceRefresh = ARGS.includes("--refresh");
+
   try {
-    console.log("Fetching Figma file data...", FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
-    const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
+    // 1. Get File Data
+    const figmaData = await fetchFigmaFileWithCache(
+      FIGMA_FILE_KEY,
+      FIGMA_ACCESS_TOKEN,
+      forceRefresh,
+    );
 
-    console.log('Traversing document to find "GTP-" component sets...');
-    const componentSets: FigmaNode[] = [];
-    traverseDocument(figmaData.document, componentSets);
-    console.log(`Found ${componentSets.length} "GTP-" component sets.`);
+    // --- Search Mode ---
+    if (searchArgIndex !== -1 && ARGS[searchArgIndex + 1]) {
+      const query = ARGS[searchArgIndex + 1];
+      ui.info(`Searching for nodes matching "${query}"...`);
+      const results: FigmaNode[] = [];
+      
+      const searchNodes = (node: FigmaNode, query: string, results: FigmaNode[]) => {
+        if (node.name.toLowerCase().includes(query.toLowerCase())) {
+          results.push(node);
+        }
+        if (node.children) {
+            node.children.forEach(child => searchNodes(child, query, results));
+        }
+      };
 
-    console.log('Extracting node IDs for "small" variants...');
-    const smallVariantIds = getSmallVariantNodeIds(componentSets);
+      searchNodes(figmaData.document, query, results);
 
-    if (smallVariantIds.length === 0) {
-      console.log('No "small" variants found.');
+      if (results.length === 0) {
+        ui.warn("No results found.");
+      } else {
+        ui.success(`Found ${results.length} matches:`);
+        results.forEach(node => {
+            console.log(`- [${node.type}] ${node.name} (ID: ${node.id})`);
+            if (node.children) {
+                console.log(`  Children: ${node.children.length}`);
+            }
+        });
+      }
       return;
     }
 
-    console.log(
-      `Fetching SVG URLs for ${smallVariantIds.length} "small" variants...`,
-    );
+    // 2. Traverse
+    ui.info("Traversing document tree...");
+    ui.subHeader("Looking for nodes starting with 'GTP-'...");
+
+    const foundNodes: FigmaNode[] = [];
+    traverseDocument(figmaData.document, foundNodes);
+
+    // 3. Filter IDs
+    ui.info("Filtering valid icon variants...");
+    // Returns array of objects { id, name }
+    const validIcons = getIconNodeIds(foundNodes);
+
+    if (validIcons.length === 0) return ui.warn("No icons found.");
+    ui.success(`Identified ${validIcons.length} icons to process.`);
+
+    // 4. Get URLs
     const svgUrls = await fetchSVGUrls(
       FIGMA_FILE_KEY,
       FIGMA_ACCESS_TOKEN,
-      smallVariantIds,
+      validIcons.map((i) => i.id),
     );
 
-    console.log("Downloading SVGs...");
-
-    // Ensure the output directory exists
+    // 5. Download Files
     await fs.mkdir(outputDir, { recursive: true });
 
-    for (const nodeId of smallVariantIds) {
-      const svgUrl = svgUrls[nodeId];
-      if (svgUrl) {
-        const svgName =
-          componentSets
-            .find((set) =>
-              set.children?.some((variant) => variant.id === nodeId),
-            )
-            ?.name.toLowerCase() || nodeId;
-        const savePath = path.join(outputDir, `${svgName}.svg`);
-        await downloadSVG(svgUrl, savePath);
+    let successCount = 0;
+    let failCount = 0;
+
+    ui.header("Downloading SVGs");
+    console.log(""); // Spacer
+
+    for (let i = 0; i < validIcons.length; i++) {
+      const { id, name } = validIcons[i];
+      const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+      const fileName = `${safeName}.svg`;
+      const url = svgUrls[id];
+
+      // Update bar with the specific filename being downloaded
+      ui.progressBar(i, validIcons.length, "Downloading", fileName);
+
+      if (url) {
+        try {
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const content = await resp.text();
+            await fs.writeFile(path.join(outputDir, fileName), content, "utf-8");
+            successCount++;
+          } else {
+            failCount++;
+            ui.error(
+              `Failed to download ${fileName}`,
+              new Error(resp.statusText),
+            );
+          }
+        } catch (e) {
+          failCount++;
+          ui.error(`Network error for ${fileName}`, e);
+        }
       } else {
-        console.warn(`No SVG URL found for node ID: ${nodeId}`);
+        failCount++;
+        ui.debug(`No URL returned for ${name} (${id})`);
       }
     }
 
-    console.log("All SVGs downloaded successfully.");
+    // Complete bar
+    ui.progressBar(
+      validIcons.length,
+      validIcons.length,
+      "Downloading",
+      "Done",
+    );
+
+    ui.header("Summary");
+    console.log(`  Target Dir : ${outputDir}`);
+    console.log(`  Log File   : ${logFilePath}`);
+    console.log(
+      `  ${COLORS.green}Success    : ${successCount}${COLORS.reset}`,
+    );
+    if (failCount > 0)
+      console.log(`  ${COLORS.red}Failed     : ${failCount}${COLORS.reset}`);
+    console.log("");
   } catch (error) {
-    console.error("An error occurred:", error);
+    ui.error("Execution failed", error);
   }
 }
 
-// Execute the main function
 main();
