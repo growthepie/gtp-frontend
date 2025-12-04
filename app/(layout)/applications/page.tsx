@@ -190,7 +190,7 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
+      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true} enableDragScroll={true}>
         <ApplicationsTable />
       </HorizontalScrollContainer>
     </>
