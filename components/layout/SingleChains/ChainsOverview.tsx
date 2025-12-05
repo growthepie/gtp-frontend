@@ -289,6 +289,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                       <div className="text-xs text-center px-[30px]">
                         Usage breakdown metrics are a paid add-on for each specific chain.<br/>
                         Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
+                        You can explore this feature on <Link href="/chains/ethereum?tab=blockspace" className="underline">Ethereum Mainnets</Link> page.
                         <br/><br/>
                         Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
                       </div>
