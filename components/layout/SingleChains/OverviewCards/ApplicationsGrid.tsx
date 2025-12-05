@@ -1073,6 +1073,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               <div className="text-xs text-center px-[30px]">
                 Application metrics are a paid add-on for each specific chain.<br />
                 Unfortunately, this chain has not yet added application metrics to growthepie.
+                You can explore this feature on <Link href="/chains/ethereum?tab=apps" className="underline">Ethereum Mainnets</Link> page.
                 <br /><br />
                 Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
               </div>

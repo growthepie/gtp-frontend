@@ -393,6 +393,25 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
         };
     };
 
+    const buildLifetimeTooltipText = (metricKey: string, chainName: string, metricName: string, formattedValue: string) => {
+        const metricTextMap: Record<string, string> = {
+            txcount: `${formattedValue} transactions were processed on this chain`,
+            daa: `${formattedValue} addresses were active on this chain XX`,
+            fees: `${formattedValue} was collected in revenue on this chain (gas fees paid by users and potentially other sources)`,
+            rent_paid: `${formattedValue} was paid towards Ethereum Mainnet for settlement and/or data availability`,
+            profit: `${formattedValue} was earned by the chain in onchain profit (revenue minus costs)`,
+
+        };
+
+        const metricText = metricTextMap[metricKey];
+
+        if (metricText) {
+            return `Since ${chainName}'s genesis, ${metricText}.`;
+        }
+
+        return `Since ${chainName}'s genesis, a total of ${formattedValue} was processed in ${metricName}.`;
+    };
+
 
 
     return (
@@ -431,6 +450,8 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
                     const prefix = master.metrics[key].units[valueType].prefix;
                     const suffix = master.metrics[key].units[valueType].suffix;
+                    const formattedValue = `${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value, 2)}${suffix || ""}`;
+                    const tooltipText = buildLifetimeTooltipText(key, master.chains[chainKey].name, master.metrics[key].name, formattedValue);
 
                     return (
                         <div className="flex flex-col flex-1 xs:flex-none items-center overflow-visible" key={key + "lifetime"}>
@@ -485,7 +506,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                             >
                                 <div>
                                     <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                        {`Since ${master.chains[chainKey].name}'s genesis, a total of ${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value, 2)}${suffix || ""} was achieved in ${master.metrics[key].name}.`}
+                                        {tooltipText}
                                     </TooltipBody>
                                 </div>
                             </GTPTooltipNew>

@@ -197,10 +197,11 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
         
         >
           <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
-          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px] "
-          >
-            <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
-            <div className="flex flex-col w-full gap-y-[15px]">
+          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px] items-stretch">
+            <div className="flex flex-col h-full">
+              <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
+            </div>
+            <div className="flex flex-col w-full gap-y-[15px] h-full min-h-0">
             
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
                 <div className="heading-large-md">Achievements</div>
@@ -222,35 +223,37 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.data.length > 0 ? (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
+                  <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] min-h-[218px] flex-1 relative">
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                    <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                      <div className="w-full min-w-[954px] pr-[20px]">
-                        <RowProvider
-                          value={{
-                            master: oldMaster,
-                            data: chainDataOverview.data.blockspace,
-                            selectedMode: "txcount_share",
-                            forceSelectedChain: "",
-                            isCategoryHovered: isCategoryHovered,
-                            selectedCategory: selectedCategory,
-                            selectedChain: chainKey,
-                            selectedTimespan: "max",
-                            selectedValue: "share",
-                            categories: categories,
-                            allCats: false,
-                            setSelectedChain: () => { },
-                            setSelectedCategory: setSelectedCategory,
-                            setAllCats: () => { },
-                            hoverCategory: hoverCategory,
-                            unhoverCategory: unhoverCategory,
-                            includeMarginBottom: false,
-                          }}
-                        >
-                          <SingleRowContainer />
-                        </RowProvider>
-                      </div>
-                    </HorizontalScrollContainer>
+                    <div className="flex-1 min-h-0">
+                      <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                        <div className="w-full min-w-[954px] pr-[20px] h-full">
+                          <RowProvider
+                            value={{
+                              master: oldMaster,
+                              data: chainDataOverview.data.blockspace,
+                              selectedMode: "txcount_share",
+                              forceSelectedChain: "",
+                              isCategoryHovered: isCategoryHovered,
+                              selectedCategory: selectedCategory,
+                              selectedChain: chainKey,
+                              selectedTimespan: "max",
+                              selectedValue: "share",
+                              categories: categories,
+                              allCats: false,
+                              setSelectedChain: () => { },
+                              setSelectedCategory: setSelectedCategory,
+                              setAllCats: () => { },
+                              hoverCategory: hoverCategory,
+                              unhoverCategory: unhoverCategory,
+                              includeMarginBottom: false,
+                            }}
+                          >
+                            <SingleRowContainer />
+                          </RowProvider>
+                        </div>
+                      </HorizontalScrollContainer>
+                    </div>
                     <div className="flex items-center justify-end pr-[15px] w-full absolute bottom-[15px] right-[0px]">
                       <div className='w-[15px] h-fit z-30'>
                         <GTPTooltipNew
@@ -279,9 +282,9 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                     </div>
                   </div>
                 ) : (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                  <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[15px] py-[15px] min-h-[218px] flex-1">
                     <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
-                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2]`}>
+                    <div className="w-full flex flex-col gap-y-[10px] items-center justify-center flex-1 inset-0 z-[2]">
                       <GTPIcon icon="gtp-lock" size="md" className="" />
                       <div className="heading-large-md">
                         Usage Breakdown Not Available
@@ -289,6 +292,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                       <div className="text-xs text-center px-[30px]">
                         Usage breakdown metrics are a paid add-on for each specific chain.<br/>
                         Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
+                        You can explore this feature on <Link href="/chains/ethereum?tab=blockspace" className="underline">Ethereum Mainnets</Link> page.
                         <br/><br/>
                         Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
                       </div>

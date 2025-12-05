@@ -43,6 +43,7 @@ import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/App
 
 export default function Page() {
   const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
+  const { data } = useMaster();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
@@ -113,6 +114,7 @@ export default function Page() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
 
+
   const { topGainers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
@@ -142,6 +144,8 @@ export default function Page() {
   const hideTopGainersAndLosers = useMemo(() => {
     return selectedTimespan === "max" || selectedStringFilters.length > 0 || topGainers.length === 0;
   }, [selectedTimespan, selectedStringFilters, topGainers.length]);
+
+
 
   return (
     <>
@@ -192,13 +196,10 @@ export default function Page() {
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">
             <div className="heading-lg flex items-center gap-x-[5px]">
-              {showGrid ? "Top Ranked" : `Top Applications ${selectedCategory ? `> ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}` : ""}`}
+              {showGrid ? "Top Ranked" : `Top Applications ${selectedCategory ? `> ${data?.blockspace_categories.main_categories[selectedCategory]}` : ""}`}
               {selectedCategory && (
                 <button className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center" onClick={() => setClearSelectedCategory(true)}>
-                  <div className="size-[15px] flex items-center justify-center rounded-full bg-[#FE5468]">
-                    <GTPIcon icon={"feather:x" as GTPIconName} size="sm" className="text-color-bg-default" />
-                  </div>
-
+                  <Image src="/In-Button-Close.svg" alt="Close" className="relative left-[0.5px] bottom-[0.5px]"  width={16} height={16} />
                 </button>
               )}
             </div>
@@ -210,7 +211,7 @@ export default function Page() {
                 <div className="text-sm">Table</div>
               </div>
               <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
-                <GTPIcon icon={`gtp:base-logo-monochrome` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <GTPIcon icon={`gtp-map` as GTPIconName} size="sm" className="text-color-text-primary" />
                 <div className="text-sm">Map</div>
               </div>
               <div

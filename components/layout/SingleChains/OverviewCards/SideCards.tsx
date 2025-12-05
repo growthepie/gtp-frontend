@@ -172,7 +172,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
 
    
     return (
-        <div  className="flex flex-col w-full gap-y-[10px]">
+        <div  className="flex flex-col w-full gap-y-[10px] h-full">
             {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).length > 0 && <PartitionLine title="Highlights" infoContent="Notable growth highlights and all-time highs from the past week." leftIcon={"gtp-megaphone"} />}
             {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).map((metric, index) => (
                 <HighlightCards key={chainDataOverview.data.highlights[metric].metric_id} metric={chainDataOverview.data.highlights[metric].metric_name} icon={chainDataOverview.data.highlights[metric].icon} chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={chainDataOverview.data.highlights[metric].metric_id} index={index} />
