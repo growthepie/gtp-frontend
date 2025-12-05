@@ -2,7 +2,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { promisify } from "util";
+import { inspect, promisify } from "util";
 import { gunzip, gzip } from "zlib";
 import dotenv from "dotenv";
 // @ts-ignore
@@ -129,16 +129,25 @@ async function fetchFigmaFileWithCache(
   return data;
 }
 
-function traverseDocument(node: FigmaNode, foundNodes: FigmaNode[]) {
+function traverseDocument(node: FigmaNode, foundNodes: FigmaNode[], socialNodes: string[]) {
   // Logic: We are looking for top-level containers that start with "GTP-"
-  if (node.name.startsWith("GTP-")) {
+
+  if(node.name.includes("Social Media icons") && node.children) {
+    node.children.forEach(child => {
+      if(child.type === "COMPONENT") {
+        socialNodes.push(child.name);
+      }
+    });
+  }
+
+  if (node.name.startsWith("GTP-") || socialNodes.includes(node.name)) {
     if (node.type === "COMPONENT_SET" || node.type === "COMPONENT") {
       foundNodes.push(node);
     }
   }
 
   if (node.children) {
-    node.children.forEach((child) => traverseDocument(child, foundNodes));
+    node.children.forEach((child) => traverseDocument(child, foundNodes, socialNodes));
   }
 }
 
@@ -153,6 +162,8 @@ function getIconNodeIds(
   ui.info(
     `  3. If type is COMPONENT_SET -> Look for child named 'Size=medium' or 'Size=md'.`,
   );
+
+
 
   foundNodes.forEach((node) => {
     if (node.type === "COMPONENT") {
@@ -274,7 +285,8 @@ async function main() {
     ui.subHeader("Looking for nodes starting with 'GTP-'...");
 
     const foundNodes: FigmaNode[] = [];
-    traverseDocument(figmaData.document, foundNodes);
+    const socialNodes: string[] = [];
+    traverseDocument(figmaData.document, foundNodes, socialNodes);
 
     // 3. Filter IDs
     ui.info("Filtering valid icon variants...");

@@ -130,7 +130,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             <>
               <TitleButtonLink
                 label="Don’t see your app? Label here."
-                icon={"gtp-oli-logo" as GTPIconName}
+                icon={"oli-open-labels-initiative" as GTPIconName}
                 iconSize="md"
                 iconBackground="bg-transparent"
                 rightIcon={"feather:arrow-right" as GTPIconName}
@@ -156,7 +156,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
             <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">
-              <GTPIcon icon={"gtp-oli-logo" as GTPIconName} size="md" />
+              <GTPIcon icon={"oli-open-labels-initiative" as GTPIconName} size="md" />
             </div>
           </Link>
         </div>

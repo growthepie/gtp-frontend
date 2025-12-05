@@ -1245,7 +1245,7 @@ export default function LandingChart({
               <div className="flex items-center justify-center gap-x-[5px]  ">
                 {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
                   <div className="flex items-center justify-center  gap-x-[5px]">
-                    <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                    <GTPIcon icon="gtp-metrics-chaincomposition" size={isLessThan2xl ? "sm" : "md"}/>
                     <div className="">Composition</div>
                   </div>
 
@@ -1253,7 +1253,7 @@ export default function LandingChart({
               {/*Tooltip area: */}
               <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px] shadow-standard">
                 <div className="flex items-center gap-x-[10px]">
-                  <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
+                  <GTPIcon icon="gtp-metrics-chaincomposition" size={"sm"} />
                   <div className="heading-small-xs">Composition</div>
                 </div>
                 <div className="text-xs text-left mt-[5px] ">

@@ -8,6 +8,7 @@ import {
 import { Icon } from "@iconify/react";
 import { SidebarMenuGroup, SidebarMenuLink } from "../SidebarMenuGroup";
 import { usePathname, useSearchParams } from "next/navigation";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../../VerticalScrollContainer";
 import { track } from "@vercel/analytics";
@@ -257,7 +258,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
             });
           }}
         >
-          <GTPIcon icon="github" size="md" />
+          <GTPIcon icon={"github" as GTPIconName} size="md" />
         </Link>
         <Link
           href="https://discord.gg/fxjJFe7QyN"
@@ -272,7 +273,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
           }}
         >
           {/* <Icon icon="cib:discord" className="h-[19px] w-[19px]" /> */}
-          <GTPIcon icon="discord" size="md" />
+          <GTPIcon icon={"discord" as GTPIconName} size="md" />
         </Link>
         <Link
           href="https://twitter.com/growthepie_eth"

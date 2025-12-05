@@ -105,7 +105,7 @@ export default function Page({ params: { owner_project } }: Props) {
               <div className="hidden md:block">
                 <TitleButtonLink
                   label="Label more using OLI"
-                  icon={"gtp-oli-logo" as GTPIconName}
+                  icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
@@ -118,7 +118,7 @@ export default function Page({ params: { owner_project } }: Props) {
               <div className="block md:hidden">
                 <TitleButtonLink
                   label={<div className="heading-small-xxs">Label here.</div>}
-                  icon={"gtp-oli-logo" as GTPIconName}
+                  icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
                   href="https://www.openlabelsinitiative.org/?gtp.applications"
