@@ -21,49 +21,61 @@ type ProvidersProps = {
   forcedTheme?: string;
 };
 
-// bypass AWS rate limiting in development
-const headers = new Headers();
-headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-headers.set("Pragma", "no-cache");
-headers.set("Expires", "0");
 
-if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN)
-  headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
+function createFetchHeaders(url: string): Headers {
+  const headers = new Headers();
+  
+  // Standard cache control headers
+  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  headers.set("Pragma", "no-cache");
+  headers.set("Expires", "0");
 
-const requestOptions = {
-  method: "GET",
-  headers: headers,
-};
+  // Add developer token only for external AWS API calls
+  const isExternalApi = url.includes('api.growthepie.com');
+  const hasDeveloperToken = !!process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN;
+  
+  if (isExternalApi && hasDeveloperToken) {
+    headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN as string);
+  }
 
-const singleOrMultiFetcher = async (urlOrUrls) => {
-  const fetchWithErrorHandling = async (url) => {
-    const response = await fetch(url, requestOptions);
+  return headers;
+}
 
-    // For 404/403 errors on chain metrics, return null instead of throwing
+const singleOrMultiFetcher = async (urlOrUrls: string | string[]) => {
+  const fetchWithErrorHandling = async (url: string) => {
+    const headers = createFetchHeaders(url);
+    
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+    });
+
+    // Handle expected missing data from chain metrics
     if (!response.ok && url.includes('/metrics/chains/')) {
       if (response.status === 404 || response.status === 403) {
-        // Return null for expected missing data
-        return null;
+        return null; // Expected missing data
       }
     }
 
-    // For successful responses, parse JSON
+    // Parse successful responses
     if (response.ok) {
       return response.json();
     }
 
-    // For other errors, throw with status information
+    // Throw detailed error for other failures
     const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
     error.status = response.status;
     error.response = response;
     throw error;
   };
 
+  // Handle single URL or array of URLs
   if (Array.isArray(urlOrUrls)) {
     return Promise.all(urlOrUrls.map(fetchWithErrorHandling));
   }
   return fetchWithErrorHandling(urlOrUrls);
 };
+
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -73,16 +85,16 @@ const devMiddleware = (useSWRNext) => {
         if (Array.isArray(urlOrUrls)) {
           return Promise.all(urlOrUrls.map(url => {
             if (url.includes("api.growthepie.com")) {
-              // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
-              let newUrl = url.replace("/v1/", "/dev/");
+              // Replace /v1/ with /dev/ to get JSON files from the dev folder in S3
+              const newUrl = url.replace("/v1/", "/dev/");
               return fetcher(newUrl);
             }
             return fetcher(url);
           }));
         } else {
           if (urlOrUrls.includes("api.growthepie.com")) {
-            // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
-            let newUrl = urlOrUrls.replace("/v1/", "/dev/");
+            // Replace /v1/ with /dev/ to get JSON files from the dev folder in S3
+            const newUrl = urlOrUrls.replace("/v1/", "/dev/");
             return fetcher(newUrl);
           }
           return fetcher(urlOrUrls);

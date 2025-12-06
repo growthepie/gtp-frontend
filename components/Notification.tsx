@@ -27,7 +27,7 @@ const Notification = () => {
   >("seenNotifications", []);
 
   const { data, isLoading, isValidating, error } = useSWR(
-    BASE_URL + "/api/notifications",
+    "/api/notifications",
     {
       refreshInterval: 1000 * 60 * 5,
     },

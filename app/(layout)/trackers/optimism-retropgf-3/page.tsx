@@ -103,15 +103,14 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(BASE_URL + "/api/optimism-retropgf-3/projects");
+  } = useSWR<ProjectsResponse>("/api/optimism-retropgf-3/projects");
 
   const {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
   } = useSWR<ListAmountsByProjectIdResponse>(
-    BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId",
-
+    "/api/optimism-retropgf-3/listAmountsByProjectId",
   );
 
   const [projects, setProjects] = useState<Project[]>([]);
