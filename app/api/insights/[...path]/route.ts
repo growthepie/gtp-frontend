@@ -1,35 +1,44 @@
 // app/api/insights/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
-  return proxyToGoogle(request, params.path)
+  return proxyRequest(request, params.path)
 }
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
-  return proxyToGoogle(request, params.path)
+  return proxyRequest(request, params.path)
 }
 
-async function proxyToGoogle(request: NextRequest, pathParts: string[]) {
+async function proxyRequest(request: NextRequest, pathParts: string[]) {
   const path = pathParts.join('/')
   const { searchParams } = new URL(request.url)
   
-  // Determine the correct Google domain
-  let googleDomain = 'www.googletagmanager.com'
+  let targetDomain = 'www.googletagmanager.com'
+  let targetPath = path
+  
+  // Route to appropriate service
   if (path.includes('collect')) {
-    googleDomain = 'www.google-analytics.com'
+    // GA4 collection endpoint
+    targetDomain = 'www.google-analytics.com'
+  } else if (path.startsWith('c/')) {
+    // Clarity endpoints (c/ prefix)
+    targetDomain = 'www.clarity.ms'
+    // Remove 'c/' prefix and add 'tag/' for Clarity
+    targetPath = 'tag/' + path.substring(2)
   }
   
-  // Build the Google URL
+  // Build target URL
   const queryString = searchParams.toString()
-  const googleUrl = queryString 
-    ? `https://${googleDomain}/${path}?${queryString}`
-    : `https://${googleDomain}/${path}`
+  const targetUrl = queryString 
+    ? `https://${targetDomain}/${targetPath}?${queryString}`
+    : `https://${targetDomain}/${targetPath}`
 
   try {
     const options: RequestInit = {
@@ -40,7 +49,7 @@ async function proxyToGoogle(request: NextRequest, pathParts: string[]) {
       },
     }
 
-    // Forward body for POST requests (analytics beacons)
+    // Forward body for POST requests
     if (request.method === 'POST') {
       const body = await request.text()
       if (body) {
@@ -48,9 +57,9 @@ async function proxyToGoogle(request: NextRequest, pathParts: string[]) {
       }
     }
 
-    const response = await fetch(googleUrl, options)
+    const response = await fetch(targetUrl, options)
 
-    // For tracking pixels/beacons, return minimal response
+    // For tracking beacons, return minimal response
     if (path.includes('collect')) {
       return new NextResponse(null, {
         status: 204,
@@ -61,10 +70,29 @@ async function proxyToGoogle(request: NextRequest, pathParts: string[]) {
       })
     }
 
-    // For other responses (like gtag.js), forward content
+    // For scripts, get content and rewrite URLs
     const contentType = response.headers.get('content-type') || 'text/plain'
-    const data = await response.text()
     
+    if (contentType.includes('javascript') || contentType.includes('text/html')) {
+      let content = await response.text()
+      
+      // Use centralized URL rewrites from config
+      ANALYTICS_CONFIG.urlRewrites.forEach(({ from, to }) => {
+        const escapedFrom = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        content = content.replace(new RegExp(escapedFrom, 'g'), to)
+      })
+      
+      return new NextResponse(content, {
+        status: response.status,
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=3600',
+        },
+      })
+    }
+    
+    // For other content types, pass through
+    const data = await response.text()
     return new NextResponse(data, {
       status: response.status,
       headers: {
@@ -73,7 +101,7 @@ async function proxyToGoogle(request: NextRequest, pathParts: string[]) {
       },
     })
   } catch (error) {
-    console.error('Analytics proxy error:', error, 'Path:', path)
+    console.error('Proxy error:', error, 'Path:', path)
     
     // Return 204 for beacons, 500 for scripts
     if (path.includes('collect')) {

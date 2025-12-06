@@ -1,9 +1,9 @@
 // app/api/insights/n.html/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const gtpGtmId = ANALYTICS_CONFIG.gtmId;
   
   const html = `<!DOCTYPE html>
 <html>
