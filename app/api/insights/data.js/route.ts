@@ -5,24 +5,44 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
   
+  if (!gtpGtmId) {
+    console.error('GTM ID not configured')
+    return new NextResponse('// GTM not configured', { 
+      status: 500,
+      headers: { 'Content-Type': 'text/javascript' }
+    })
+  }
+  
   try {
-    // Fetch GTM script from Google
-    const containerId = searchParams.get('id') || process.env.NEXT_PUBLIC_GTM_ID;
-    const gtmUrl = `https://www.googletagmanager.com/gtm.js?id=${containerId}`;
-    const queryString = searchParams.toString()
+    // Build GTM URL with container ID
+    const gtmUrl = new URL('https://www.googletagmanager.com/gtm.js')
+    gtmUrl.searchParams.set('id', gtpGtmId)
     
-    const response = await fetch(
-      queryString ? `${gtmUrl}&${queryString}` : gtmUrl,
-      {
-        headers: {
-          'User-Agent': request.headers.get('user-agent') || '',
-        },
+    // Forward custom dataLayer name if provided
+    const dataLayerName = searchParams.get('l')
+    if (dataLayerName && dataLayerName !== 'dataLayer') {
+      gtmUrl.searchParams.set('l', dataLayerName)
+    }
+    
+    // Forward any other query parameters (for GTM preview mode, etc.)
+    searchParams.forEach((value, key) => {
+      if (key !== 'l') {  // We already handled 'l' above
+        gtmUrl.searchParams.set(key, value)
       }
-    )
+    })
+    
+    const response = await fetch(gtmUrl.toString(), {
+      headers: {
+        'User-Agent': request.headers.get('user-agent') || '',
+      },
+    })
 
     if (!response.ok) {
-      console.error('GTM fetch failed:', response.status)
-      return new NextResponse('Failed to load analytics', { status: response.status })
+      console.error('GTM fetch failed:', response.status, response.statusText)
+      return new NextResponse('// Failed to load analytics', { 
+        status: response.status,
+        headers: { 'Content-Type': 'text/javascript' }
+      })
     }
 
     const script = await response.text()
