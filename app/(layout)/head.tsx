@@ -2,12 +2,11 @@ import { getCookie } from "cookies-next";
 import Script from "next/script";
 import { BASE_URL } from "@/lib/helpers";
 import { MasterURL } from "@/lib/urls";
+import { Analytics } from "@/components/Analytics";
 
 export default function Head() {
   const consent = getCookie("gtpCookieConsent");
-
-  const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
-  const gtpGtmUrl = process.env.NEXT_PUBLIC_GTM_URL;
+  const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID || '';
 
   return (
     <>
@@ -61,26 +60,7 @@ export default function Head() {
 
       {/* {IS_PRODUCTION && ( */}
       <>
-        <Script
-          id="gtag"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-
-            gtag('consent', 'default', {
-              'ad_storage': 'denied',
-              'analytics_storage': 'denied'
-            });
-
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              '${gtpGtmUrl}/bundle.js'; f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','${gtpGtmId}');`,
-          }}
-        />
+        <Analytics gtmId={gtpGtmId} />
         {consent === true && (
           <Script
             id="consupd"
