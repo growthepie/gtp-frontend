@@ -39,7 +39,7 @@ export default function Donations() {
     isLoading: PFGIsLoading,
     isValidating: PFGIsValidating,
     error: PFGError,
-  } = useSWR<DonationPGFRow[]>(BASE_URL + "/api/donations/pgf", {
+  } = useSWR<DonationPGFRow[]>("/api/donations/pgf", {
     refreshInterval: 1000 * 60 * 5,
   });
 
@@ -48,7 +48,7 @@ export default function Donations() {
     isLoading: impactIsLoading,
     isValidating: impactIsValidating,
     error: impactError,
-  } = useSWR<DonationImpactRow[]>(BASE_URL + "/api/donations/impactusers", {
+  } = useSWR<DonationImpactRow[]>("/api/donations/impactusers", {
     refreshInterval: 1000 * 60 * 5,
   });
 
@@ -57,7 +57,7 @@ export default function Donations() {
     isLoading: updateLoading,
     isValidating: updateValidating,
     error: updateError,
-  } = useSWR<DonationUpdateRow[]>(BASE_URL + "/api/donations/updates", {
+  } = useSWR<DonationUpdateRow[]>("/api/donations/updates", {
     refreshInterval: 1000 * 60 * 5,
   });
 

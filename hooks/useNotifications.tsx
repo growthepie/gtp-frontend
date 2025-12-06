@@ -21,7 +21,7 @@ export function useNotifications() {
 
   // Only fetch from API when in API mode
   const { data, isLoading, isValidating, error } = useSWR<NotificationType[]>(
-    notificationMode === "api" ? BASE_URL + "/api/notifications" : null, // Only fetch when in API mode
+    notificationMode === "api" ? "/api/notifications" : null, // Only fetch when in API mode
     {
       refreshInterval: 1000 * 60 * 5, // Refresh every 5 minutes
     },

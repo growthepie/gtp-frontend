@@ -227,7 +227,7 @@ export default function Page() {
             </button>
           </div>
           <div className="text-xs">
-            {showGrid ? ( 
+            {showGrid ? (
               <div>
                 Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
               </div>
@@ -239,12 +239,12 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
+      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true} enableDragScroll={true}>
         <div style={{ display: showGrid ? "block" : "none" }}>
           <ApplicationsTable />
         </div>
         <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default relative`}
-        
+
         style={{ display: showGrid ? "none" : "flex" }}>
 
           <ProjectsMetadataProvider>

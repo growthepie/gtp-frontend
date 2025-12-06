@@ -127,6 +127,8 @@ const sourceCodePro = Source_Code_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
 export default function RootLayout({
   children,
 }: {
@@ -152,6 +154,15 @@ export default function RootLayout({
     >
       <Head />
       <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
+        {/* GTM noscript fallback */}
+        <noscript>
+          <iframe 
+            src={`/api/insights/n.html?id=${gtpGtmId}`}
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html: script,

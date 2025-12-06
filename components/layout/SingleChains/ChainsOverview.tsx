@@ -223,37 +223,35 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 </ProjectsMetadataProvider>
               </div>
               {chainDataOverview.data.blockspace.data.length > 0 ? (
-                  <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] min-h-[218px] flex-1 relative">
+                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
-                    <div className="flex-1 min-h-0">
-                      <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
-                        <div className="w-full min-w-[954px] pr-[20px] h-full">
-                          <RowProvider
-                            value={{
-                              master: oldMaster,
-                              data: chainDataOverview.data.blockspace,
-                              selectedMode: "txcount_share",
-                              forceSelectedChain: "",
-                              isCategoryHovered: isCategoryHovered,
-                              selectedCategory: selectedCategory,
-                              selectedChain: chainKey,
-                              selectedTimespan: "max",
-                              selectedValue: "share",
-                              categories: categories,
-                              allCats: false,
-                              setSelectedChain: () => { },
-                              setSelectedCategory: setSelectedCategory,
-                              setAllCats: () => { },
-                              hoverCategory: hoverCategory,
-                              unhoverCategory: unhoverCategory,
-                              includeMarginBottom: false,
-                            }}
-                          >
-                            <SingleRowContainer />
-                          </RowProvider>
-                        </div>
-                      </HorizontalScrollContainer>
-                    </div>
+                    <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
+                      <div className="w-full min-w-[954px] pr-[20px]">
+                        <RowProvider
+                          value={{
+                            master: oldMaster,
+                            data: chainDataOverview.data.blockspace,
+                            selectedMode: "txcount_share",
+                            forceSelectedChain: "",
+                            isCategoryHovered: isCategoryHovered,
+                            selectedCategory: selectedCategory,
+                            selectedChain: chainKey,
+                            selectedTimespan: "max",
+                            selectedValue: "share",
+                            categories: categories,
+                            allCats: false,
+                            setSelectedChain: () => { },
+                            setSelectedCategory: setSelectedCategory,
+                            setAllCats: () => { },
+                            hoverCategory: hoverCategory,
+                            unhoverCategory: unhoverCategory,
+                            includeMarginBottom: false,
+                          }}
+                        >
+                          <SingleRowContainer />
+                        </RowProvider>
+                      </div>
+                    </HorizontalScrollContainer>
                     <div className="flex items-center justify-end pr-[15px] w-full absolute bottom-[15px] right-[0px]">
                       <div className='w-[15px] h-fit z-30'>
                         <GTPTooltipNew
