@@ -1168,20 +1168,30 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   }
 }
 
+const UnknownCategoryIcon = () => {
+  return (
+    <div className="!size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+  )
+}
+
 export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data: masterData } = useMaster();
-
-  console.log(ownerProjectToProjectData[application.owner_project], ownerProjectToProjectData[application.owner_project].main_category, ownerProjectToProjectData[application.owner_project].sub_categories);
 
   if(!masterData){
     return null;
   }
 
+  const isMissingCategory = !ownerProjectToProjectData[application.owner_project] || ownerProjectToProjectData[application.owner_project]?.main_category === undefined;
+
+  const Icon = isMissingCategory ? UnknownCategoryIcon : <GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />;
+
   return (
     <>
-      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />} />
+      <TooltipHeader title={`Category`} icon={Icon as React.ReactNode} />
       <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
+      {isMissingCategory ? <div className="text-xs text-color-ui-hover">This application has not been categorized yet.</div> : (
+        <>
         <div className="heading-small-xs">Subcategories</div>
         <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
           <div className="flex flex-col gap-[5px]">
@@ -1190,6 +1200,8 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
             ))}
           </div>
         </div>
+        </>
+      )}
       </TooltipBody>
     </>
   )
@@ -1201,7 +1213,7 @@ export const Category = ({ category }: { category: string }) => {
   return (
     <>
       {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
-      {category ? (
+      {category && category.toLocaleLowerCase() !== "unknown" ? (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
           <div className="text-xs">{category}</div>
