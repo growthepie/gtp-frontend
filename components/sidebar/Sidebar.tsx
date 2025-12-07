@@ -73,7 +73,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   // Include chains like in the original implementation
   const navigationItemsWithChains = useMemo(() => {
-    console.log(navigationItems);
     if (ChainsNavigationItems) {
       const newNavigationItems = [...navigationItems];
       newNavigationItems.splice(3, 0, ChainsNavigationItems);
