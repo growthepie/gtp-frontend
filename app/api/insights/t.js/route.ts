@@ -67,6 +67,13 @@ export async function GET(request: NextRequest) {
     // Note: GA4 appends /g/collect to transport_url, so we only need /p/
     script = script.replace(/\/g\/collect/g, '/p/')
 
+    // Rename param literals that get concatenated at runtime to build URLs
+    script = script.replace(/&cx=c/g, '&_c=c')
+    script = script.replace(/&cx=/g, '&_c=')
+    script = script.replace(/\?cx=/g, '?_c=')
+    script = script.replace(/&gtm=/g, '&_g=')
+    script = script.replace(/\?gtm=/g, '?_g=')
+
     return new NextResponse(script, {
       status: 200,
       headers: {

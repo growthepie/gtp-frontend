@@ -94,6 +94,13 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       content = content.replace(/\/g\/collect/g, '/p/')
       content = content.replace(/["']\/a\?/g, '"/api/insights/a?')
 
+      // Rename param literals that get concatenated at runtime to build URLs
+      content = content.replace(/&cx=c/g, '&_c=c')
+      content = content.replace(/&cx=/g, '&_c=')
+      content = content.replace(/\?cx=/g, '?_c=')
+      content = content.replace(/&gtm=/g, '&_g=')
+      content = content.replace(/\?gtm=/g, '?_g=')
+
       return new NextResponse(content, {
         status: response.status,
         headers: {
