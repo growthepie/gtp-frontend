@@ -539,7 +539,7 @@ export const useSearchBuckets = () => {
                     label: project.display_name,
                     url: `/applications/${project.owner_project}`,
                     icon: project.logo_path 
-                      ? `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`
+                      ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
                       : "gtp-project-monochrome",
                     color: undefined
                   }))

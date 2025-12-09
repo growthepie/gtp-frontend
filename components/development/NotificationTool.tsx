@@ -119,7 +119,7 @@ export const pastNotifications = convertApiDataToNotifications([
       Head: "New Data Availability Page",
       Body: "Understand Data Availability better using our Data Availability Overview.",
       "Display Page": ["all"],
-      URL: "https://www.growthepie.xyz/data-availability",
+      URL: "https://www.growthepie.com/data-availability",
       Icon: "bi:megaphone",
       Branch: "Production",
       Status: "Enabled"

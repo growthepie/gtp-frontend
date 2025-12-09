@@ -274,7 +274,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   };
 
   const handleGoToIconsPage = () => {
-    window.open("https://icons.growthepie.xyz", "_blank");
+    window.open("https://icons.growthepie.com", "_blank");
   };
 
   // CMD icon: material-symbols:keyboard-command-key

@@ -95,7 +95,7 @@ export const ContractsURL = "https://api.growthepie.com/v1/contracts.json";
 
 export const GloHolderURL = "https://api.growthepie.com/v1/glo_dollar.json";
 
-export const EthAggURL = "https://api.growthepie.xyz/v1/ecosystem/overview.json";
+export const EthAggURL = "https://api.growthepie.com/v1/ecosystem/overview.json";
 
 export const LabelsURLS = {
   quick: "https://api.growthepie.com/v1/labels/quick.json",

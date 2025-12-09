@@ -39,7 +39,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 // Memoized tab content components
 const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, chain: string, master: any }) => {
   const chainData = master.chains[chainKey];
-  const { data: chainDataOverview, isLoading: chainDataOverviewLoading, isValidating: chainDataOverviewValidating } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+  const { data: chainDataOverview, isLoading: chainDataOverviewLoading, isValidating: chainDataOverviewValidating } = useSWR<ChainOverview>(`https://api.growthepie.com/v1/chains/${chainKey}/overview.json`);
 
   if(!master || !chainData || !chainDataOverview) return (
   <div className="w-full h-[60vh] overflow-hidden">
