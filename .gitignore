@@ -55,3 +55,6 @@ certificates
 /lib/icons-process.log
 /lib/figma-export.log
 /lib/figma-file-cache.json.gz
+
+# analytics testing
+test-analytics.mjs

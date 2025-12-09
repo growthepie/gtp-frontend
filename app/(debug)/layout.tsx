@@ -12,7 +12,7 @@ export default function RootLayout({
       {/* <Head /> */}
       <body className="sbg-white sdark:bg-color-bg-default bg-transparent text-forest-900 dark:text-color-text-primary font-raleway">
         <Providers>{children}</Providers>
-        <Analytics />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );
