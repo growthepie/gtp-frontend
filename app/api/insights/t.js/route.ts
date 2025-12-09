@@ -57,7 +57,8 @@ export async function GET(request: NextRequest) {
 
     // Rewrite paths to use obfuscated proxy endpoints
     script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
-    script = script.replace(/\/g\/collect/g, '/api/insights/p/')
+    // Note: GA4 appends /g/collect to transport_url, so we only need /p/
+    script = script.replace(/\/g\/collect/g, '/p/')
 
     return new NextResponse(script, {
       status: 200,
