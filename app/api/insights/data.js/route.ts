@@ -62,15 +62,18 @@ export async function GET(request: NextRequest) {
     script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
     script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
 
-    // Rewrite gtag/js and collect paths to use obfuscated proxy paths
-    // Using non-obvious names to avoid ad blocker filter lists
+    // Rewrite gtag/js and collect paths
+    script = script.replace(/\/gtag\/js\?([^"'\s]*)/g, (match, params) => {
+      const renamed = params
+        .replace(/\bcx=/g, '_c=')
+        .replace(/\bgtm=/g, '_g=')
+        .replace(/\bid=G-/g, '_i=G-');
+      return '/api/insights/t.js?' + renamed;
+    });
     script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
     // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
-    // We rewrite /g/collect to /p/ for the obfuscated path
+    // We rewrite /g/collect to /p/
     script = script.replace(/\/g\/collect/g, '/p/')
-
-    // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
-    script = script.replace(/\?id=G-[A-Z0-9]+/g, '')
 
     return new NextResponse(script, {
       status: 200,

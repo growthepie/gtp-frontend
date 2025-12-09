@@ -80,16 +80,19 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       content = content.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
       content = content.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
 
-      // Rewrite paths to use obfuscated proxy endpoints
-      // Using non-obvious names to avoid ad blocker filter lists
+      // Rewrite paths, vars
+      content = content.replace(/\/gtag\/js\?([^"'\s]*)/g, (match, params) => {
+        const renamed = params
+          .replace(/\bcx=/g, '_c=')
+          .replace(/\bgtm=/g, '_g=')
+          .replace(/\bid=G-/g, '_i=G-');
+        return '/api/insights/t.js?' + renamed;
+      });
       content = content.replace(/\/gtag\/js/g, '/api/insights/t.js')
       // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
-      // We rewrite /g/collect to /p/ for the obfuscated path
+      // We rewrite /g/collect to /p/
       content = content.replace(/\/g\/collect/g, '/p/')
       content = content.replace(/["']\/a\?/g, '"/api/insights/a?')
-
-      // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
-      content = content.replace(/\?id=G-[A-Z0-9]+/g, '')
 
       return new NextResponse(content, {
         status: response.status,

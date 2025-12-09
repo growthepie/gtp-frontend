@@ -5,7 +5,9 @@ import { applyUrlRewrites } from '@/lib/analyticsConfig'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || searchParams.get('id') || ''
+
+  // Rename params back (_c -> cx, _g -> gtm, _i -> id)
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || searchParams.get('_i') || searchParams.get('id') || ''
 
   if (!ga4Id) {
     console.error('GA4 ID not configured')
@@ -20,9 +22,14 @@ export async function GET(request: NextRequest) {
     const gtagUrl = new URL('https://www.googletagmanager.com/gtag/js')
     gtagUrl.searchParams.set('id', ga4Id)
 
-    // Forward additional params (cx, gtm, etc.)
+    // Forward additional params
+    // _c -> cx, _g -> gtm
     searchParams.forEach((value, key) => {
-      if (key !== 'id') {
+      if (key === '_c') {
+        gtagUrl.searchParams.set('cx', value)
+      } else if (key === '_g') {
+        gtagUrl.searchParams.set('gtm', value)
+      } else if (key !== 'id' && key !== '_i') {
         gtagUrl.searchParams.set(key, value)
       }
     })
@@ -55,7 +62,7 @@ export async function GET(request: NextRequest) {
     script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
     script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
 
-    // Rewrite paths to use obfuscated proxy endpoints
+    // Rewrite paths
     script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
     // Note: GA4 appends /g/collect to transport_url, so we only need /p/
     script = script.replace(/\/g\/collect/g, '/p/')
