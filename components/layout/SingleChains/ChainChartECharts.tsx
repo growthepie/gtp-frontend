@@ -332,13 +332,17 @@ const MetricChart = memo(
           name: item.chain_id,
           type: chartType === "bar" ? "bar" : "line",
           data: processedData,
-          animation: false,
+          animation: true,
+          animationDuration: 200,
+          animationDurationUpdate: 200,
+          animationEasing: "sinusoidalOut",
+          animationEasingUpdate: "sinusoidalOut",
           // Large mode optimization for line charts (bars handle this separately)
           large: chartType !== "bar",
           largeThreshold: 100,
           progressive: chartType !== "bar" ? 200 : 0,
           emphasis: {
-            focus: "series",
+            disabled: true,
           },
           z: 10 - index,
         };
@@ -368,6 +372,7 @@ const MetricChart = memo(
             color: chainColors[0],
           };
           baseSeries.showSymbol = false;
+          baseSeries.symbol = "none";
           baseSeries.smooth = false;
         } else if (chartType === "line" && isComparing) {
           // Line chart without fill for comparison
@@ -379,6 +384,7 @@ const MetricChart = memo(
             color: chainColors[0],
           };
           baseSeries.showSymbol = false;
+          baseSeries.symbol = "none";
           baseSeries.smooth = false;
 
           // Dotted line for incomplete data
@@ -560,7 +566,11 @@ const MetricChart = memo(
       }).flat();
 
       return {
-        animation: false,
+        animation: true,
+        animationDuration: 200,
+        animationDurationUpdate: 200,
+        animationEasing: "sinusoidalOut",
+        animationEasingUpdate: "sinusoidalOut",
         backgroundColor: "transparent",
         graphic: placeholderGraphics,
         grid: {
