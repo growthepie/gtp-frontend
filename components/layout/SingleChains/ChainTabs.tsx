@@ -18,7 +18,7 @@ const TAB_INFO = {
         "header": "Economics",
         "icon": "gtp:gtp-metrics-economics",
     },
-    "apps": {       
+    "apps": {
         "header": "Apps",
         "icon": "gtp:gtp-project",
     },

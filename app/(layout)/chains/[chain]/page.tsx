@@ -9,7 +9,7 @@ import { useState, useMemo, memo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
-import ChainChart from "@/components/layout/SingleChains/ChainChart";
+import ChainChartECharts from "@/components/layout/SingleChains/ChainChartECharts";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
 import AppsChain from "@/components/layout/SingleChains/AppsChain";
 import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
@@ -106,26 +106,24 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
         dataLoading={[chainLoading, !chainData]}
         dataValidating={[chainValidating]}
         section={true}
-        
+
       />
     </div>
   )
- 
+
 
 
   return (
     <div className="flex flex-col gap-y-[15px]">
         {chainData && (
-          <ChainChart
+          <ChainChartECharts
             chain={chain}
             master={master}
             chainData={chainData}
             defaultChainKey={chainKey}
           />
         )}
-
     </div>
-  
   );
 });
 

@@ -3,6 +3,7 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import Share from "@/components/Share";
 
 import {
@@ -128,6 +129,7 @@ export default function ChainChart({
       },
     });
     highchartsAnnotations(Highcharts);
+    highchartsPatternFill(Highcharts);
     fullScreen(Highcharts);
   }, []);
 
@@ -201,18 +203,18 @@ export default function ChainChart({
     const intervals: string[] = [];
 
     if (data.length === 0 || !data[0].metrics) return ["daily"];
-    
+
     // Check first metric to see which intervals exist
     const firstMetricKey = Object.keys(data[0].metrics)[0];
     if (!firstMetricKey) return ["daily"];
-    
+
     const firstMetric = data[0].metrics[firstMetricKey];
-    
+
     if (firstMetric.daily) intervals.push("daily");
     if (firstMetric.weekly) intervals.push("weekly");
     if (firstMetric.monthly) intervals.push("monthly");
-    if (firstMetric.quarterly) intervals.push("quarterly");
-    
+    // Note: quarterly is intentionally disabled for chains/fundamentals page
+
     return intervals.length > 0 ? intervals : ["daily"];
   }, [data]);
 
@@ -301,162 +303,106 @@ export default function ChainChart({
     fetchChainData();
   }, [data.length, chainKey, fetchChainData]);
 
-  const timespans = useMemo(() => {
-    const timestampSet = new Set<number>();
+  // Combined computation to avoid multiple data iterations
+  const derivedDataMetrics = useMemo(() => {
     const now = Date.now();
+    const timestampSet = new Set<number>();
+    let minUnix = Infinity;
+    let maxUnix = -Infinity;
+    const prefixMap: { [key: string]: string } = {};
 
+    // Single pass through all data
     data.forEach((item) => {
-      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
+      Object.keys(item.metrics).forEach((key) => {
         const metricData = item.metrics[key];
         const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
+
         if (intervalData && intervalData.data && intervalData.data.length > 0) {
-          intervalData.data.forEach((d) => timestampSet.add(d[0]));
+          // For timespans (skip daa)
+          if (key !== "daa") {
+            intervalData.data.forEach((d) => timestampSet.add(d[0]));
+            // Track min/max
+            const firstTs = intervalData.data[0][0];
+            const lastTs = intervalData.data[intervalData.data.length - 1][0];
+            if (firstTs < minUnix) minUnix = firstTs;
+            if (lastTs > maxUnix) maxUnix = lastTs;
+          }
+
+          // For prefixes
+          if (intervalData.types) {
+            const types = intervalData.types;
+            if (types.length > 2) {
+              if (showUsd && types.includes("usd")) prefixMap[key] = "$";
+              else prefixMap[key] = "Ξ";
+            } else {
+              prefixMap[key] = "";
+            }
+          }
         }
       });
     });
 
+    // Normalize min/max
+    if (minUnix === Infinity) minUnix = now - 180 * dayMs;
+    if (maxUnix === -Infinity) maxUnix = now;
+
     const timestamps = Array.from(timestampSet);
-    const max = timestamps.length ? Math.max(...timestamps) : now;
-    const min = timestamps.length ? Math.min(...timestamps) : max - 180 * dayMs;
-    const clampMin = (windowMs: number) => Math.max(min, max - windowMs);
-    const dayDiff = Math.max(1, Math.round((max - min) / dayMs));
+    const clampMin = (windowMs: number) => Math.max(minUnix, maxUnix - windowMs);
+    const dayDiff = Math.max(1, Math.round((maxUnix - minUnix) / dayMs));
+
+    // Build timespans based on interval
+    let timespansResult: any;
 
     if (selectedTimeInterval === "weekly") {
-      return {
-        "12w": {
-          label: "12 weeks",
-          shortLabel: "12w",
-          value: 12,
-          xMin: clampMin(12 * 7 * dayMs),
-          xMax: max,
-          daysDiff: Math.round((max - clampMin(12 * 7 * dayMs)) / dayMs),
-        },
-        "24w": {
-          label: "24 weeks",
-          shortLabel: "24w",
-          value: 24,
-          xMin: clampMin(24 * 7 * dayMs),
-          xMax: max,
-          daysDiff: Math.round((max - clampMin(24 * 7 * dayMs)) / dayMs),
-        },
-        "52w": {
-          label: "52 weeks",
-          shortLabel: "52w",
-          value: 52,
-          xMin: clampMin(52 * 7 * dayMs),
-          xMax: max,
-          daysDiff: Math.round((max - clampMin(52 * 7 * dayMs)) / dayMs),
-        },
-        maxW: {
-          label: "Max",
-          shortLabel: "Max",
-          value: 0,
-          xMin: min,
-          xMax: max,
-          daysDiff: dayDiff,
-        },
+      timespansResult = {
+        "12w": { label: "12 weeks", shortLabel: "12w", value: 12, xMin: clampMin(12 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * 7 * dayMs)) / dayMs) },
+        "24w": { label: "24 weeks", shortLabel: "24w", value: 24, xMin: clampMin(24 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(24 * 7 * dayMs)) / dayMs) },
+        "52w": { label: "52 weeks", shortLabel: "52w", value: 52, xMin: clampMin(52 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(52 * 7 * dayMs)) / dayMs) },
+        maxW: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
-    }
-
-    if (selectedTimeInterval === "monthly") {
+    } else if (selectedTimeInterval === "monthly") {
       const monthMs = 30 * dayMs;
-      return {
-        "6m": {
-          label: "6 months",
-          shortLabel: "6m",
-          value: 6,
-          xMin: clampMin(6 * monthMs),
-          xMax: max,
-          daysDiff: Math.round((max - clampMin(6 * monthMs)) / dayMs),
-        },
-        "12m": {
-          label: "1 year",
-          shortLabel: "12m",
-          value: 12,
-          xMin: clampMin(12 * monthMs),
-          xMax: max,
-          daysDiff: Math.round((max - clampMin(12 * monthMs)) / dayMs),
-        },
-        maxM: {
-          label: "Max",
-          shortLabel: "Max",
-          value: 0,
-          xMin: min,
-          xMax: max,
-          daysDiff: dayDiff,
-        },
+      timespansResult = {
+        "6m": { label: "6 months", shortLabel: "6m", value: 6, xMin: clampMin(6 * monthMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(6 * monthMs)) / dayMs) },
+        "12m": { label: "1 year", shortLabel: "12m", value: 12, xMin: clampMin(12 * monthMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * monthMs)) / dayMs) },
+        maxM: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
-    }
-
-    if (selectedTimeInterval === "quarterly") {
+    } else if (selectedTimeInterval === "quarterly") {
       const sorted = [...timestamps].sort((a, b) => a - b);
       const windowFromQuarters = (count: number) => {
-        if (!sorted.length) {
-          return {
-            xMin: max - count * 90 * dayMs,
-            xMax: max,
-            daysDiff: count * 90,
-          };
-        }
+        if (!sorted.length) return { xMin: maxUnix - count * 90 * dayMs, xMax: maxUnix, daysDiff: count * 90 };
         const startIndex = Math.max(0, sorted.length - count);
         const start = sorted[startIndex];
         const end = sorted[sorted.length - 1];
-        return {
-          xMin: start,
-          xMax: end,
-          daysDiff: Math.max(1, Math.round((end - start) / dayMs)),
-        };
+        return { xMin: start, xMax: end, daysDiff: Math.max(1, Math.round((end - start) / dayMs)) };
       };
-
-      return {
+      timespansResult = {
         "4q": { label: "4 quarters", shortLabel: "4q", value: 4, ...windowFromQuarters(4) },
         "8q": { label: "8 quarters", shortLabel: "8q", value: 8, ...windowFromQuarters(8) },
-        maxQ: {
-          label: "Max",
-          shortLabel: "Max",
-          value: 0,
-          xMin: min,
-          xMax: max,
-          daysDiff: dayDiff,
-        },
+        maxQ: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
+      };
+    } else {
+      timespansResult = {
+        "90d": { label: "90 days", shortLabel: "90d", value: 90, xMin: clampMin(90 * dayMs), xMax: maxUnix, daysDiff: 90 },
+        "180d": { label: "180 days", shortLabel: "180d", value: 180, xMin: clampMin(180 * dayMs), xMax: maxUnix, daysDiff: 180 },
+        "365d": { label: "1 year", shortLabel: "365d", value: 365, xMin: clampMin(365 * dayMs), xMax: maxUnix, daysDiff: 365 },
+        max: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
     }
 
     return {
-      "90d": {
-        label: "90 days",
-        shortLabel: "90d",
-        value: 90,
-        xMin: clampMin(90 * dayMs),
-        xMax: max,
-        daysDiff: 90,
-      },
-      "180d": {
-        label: "180 days",
-        shortLabel: "180d",
-        value: 180,
-        xMin: clampMin(180 * dayMs),
-        xMax: max,
-        daysDiff: 180,
-      },
-      "365d": {
-        label: "1 year",
-        shortLabel: "365d",
-        value: 365,
-        xMin: clampMin(365 * dayMs),
-        xMax: max,
-        daysDiff: 365,
-      },
-      max: {
-        label: "Max",
-        shortLabel: "Max",
-        value: 0,
-        xMin: min,
-        xMax: max,
-        daysDiff: dayDiff,
-      },
+      timespans: timespansResult,
+      minUnixAll: minUnix,
+      maxUnixAll: maxUnix,
+      prefixes: prefixMap,
     };
-  }, [data, selectedTimeInterval]);
+  }, [data, selectedTimeInterval, showUsd, dayMs]);
+
+  // Extract individual values for backwards compatibility
+  const timespans = derivedDataMetrics.timespans;
+  const minUnixAll = derivedDataMetrics.minUnixAll;
+  const maxUnixAll = derivedDataMetrics.maxUnixAll;
+  const prefixes = derivedDataMetrics.prefixes;
 
   const activeTimespan = useMemo(() => {
     const keys = Object.keys(timespans);
@@ -476,6 +422,7 @@ export default function ChainChart({
 
   const prevIntervalRef = useRef(selectedTimeInterval);
 
+  // Synchronize timespan when interval changes - use layout effect to batch with render
   useEffect(() => {
     const prevInterval = prevIntervalRef.current;
     if (prevInterval === selectedTimeInterval) return;
@@ -487,51 +434,20 @@ export default function ChainChart({
     let nextTimespan =
       (prevIndex >= 0 && newList[prevIndex]) || newList[0] || selectedTimespan;
 
-    if (nextTimespan && timespans[nextTimespan]) {
-      if (nextTimespan !== selectedTimespan) setSelectedTimespan(nextTimespan);
-    } else {
-      const availableKeys = Object.keys(timespans);
-      if (availableKeys.length && !availableKeys.includes(selectedTimespan)) {
-        setSelectedTimespan(availableKeys[0]);
+    // Use requestAnimationFrame to batch this update with other state changes
+    requestAnimationFrame(() => {
+      if (nextTimespan && timespans[nextTimespan]) {
+        if (nextTimespan !== selectedTimespan) setSelectedTimespan(nextTimespan);
+      } else {
+        const availableKeys = Object.keys(timespans);
+        if (availableKeys.length && !availableKeys.includes(selectedTimespan)) {
+          setSelectedTimespan(availableKeys[0]);
+        }
       }
-    }
+    });
 
     prevIntervalRef.current = selectedTimeInterval;
   }, [selectedTimeInterval, selectedTimespan, timespanMap, timespans, setSelectedTimespan]);
-
-  const minUnixAll = useMemo(() => {
-    const minUnixtimes: number[] = [];
-
-    data.forEach((item) => {
-      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
-        const metricData = item.metrics[key];
-        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
-        if (intervalData && intervalData.data && intervalData.data.length > 0) {
-          minUnixtimes.push(intervalData.data[0][0]);
-        }
-      });
-    });
-
-    if (!minUnixtimes.length) return Date.now() - 180 * 24 * 60 * 60 * 1000;
-    return Math.min(...minUnixtimes);
-  }, [data, selectedTimeInterval]);
-
-  const maxUnixAll = useMemo(() => {
-    const maxUnixtimes: number[] = [];
-
-    data.forEach((item) => {
-      Object.keys(item.metrics).filter((key) => key !== "daa").forEach((key) => {
-        const metricData = item.metrics[key];
-        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
-        if (intervalData && intervalData.data && intervalData.data.length > 0) {
-          maxUnixtimes.push(intervalData.data[intervalData.data.length - 1][0]);
-        }
-      });
-    });
-
-    if (!maxUnixtimes.length) return Date.now();
-    return Math.max(...maxUnixtimes);
-  }, [data, selectedTimeInterval]);
 
   function hexToRgba(hex, alpha) {
     const hexWithoutHash = hex.replace("#", "");
@@ -563,32 +479,6 @@ export default function ChainChart({
 
     return item?.page?.showGwei;
   }, []);
-
-  const prefixes = useMemo(() => {
-    if (!data) return [];
-
-    const p: {
-      [key: string]: string;
-    } = {};
-
-    data.forEach((item) => {
-      Object.keys(item.metrics).forEach((key) => {
-        const metricData = item.metrics[key];
-        const intervalData = metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData;
-        
-        if (intervalData && intervalData.types) {
-          const types = intervalData.types;
-          if (types.length > 2) {
-            if (showUsd && types.includes("usd")) p[key] = "$";
-            else p[key] = "Ξ";
-          } else {
-            p[key] = "";
-          }
-        }
-      });
-    });
-    return p;
-  }, [data, showUsd, selectedTimeInterval]);
 
   const formatNumber = useCallback(
     (key: string, value: number | string, isAxis = false) => {
@@ -1166,12 +1056,12 @@ export default function ChainChart({
     };
   }, []);
 
-  const options: Highcharts.Options = {
+  const options: Highcharts.Options = useMemo(() => ({
     accessibility: { enabled: false },
     exporting: { enabled: false },
     chart: {
       type: "area",
-      animation: isAnimate,
+      animation: false, // Disable animation for better performance
       height: 224,
       backgroundColor: undefined,
       margin: [1, 0, 40, 0],
@@ -1323,6 +1213,14 @@ export default function ChainChart({
       line: {
         lineWidth: 2,
       },
+      column: {
+        crisp: false,
+        stacking: undefined,
+        groupPadding: 0.1,
+        pointPadding: 0.05,
+        borderWidth: 0,
+        borderRadius: 2,
+      },
       area: {
         lineWidth: 2,
         fillOpacity: 1,
@@ -1385,7 +1283,7 @@ export default function ChainChart({
     credits: {
       enabled: false,
     },
-  };
+  }), [theme, activeTimespan, dayMs, onXAxisSetExtremes, getTickPositions, tooltipFormatter, tooltipPositioner, AllChainsByKeys, data]);
 
   const getNavIcon = useCallback(
     (key: string) => {
@@ -1399,13 +1297,403 @@ export default function ChainChart({
     [],
   );
 
-  const lastPointLines = useMemo<{
-    [key: string]: Highcharts.SVGElement[];
-  }>(() => ({}), []);
+  // Determine chart type based on time interval and comparison state
+  const getChartSeriesType = useCallback((): "area" | "column" | "line" => {
+    const isComparing = chainKey.length > 1;
 
-  const lastPointCircles = useMemo<{
-    [key: string]: Highcharts.SVGElement[];
-  }>(() => ({}), []);
+    // When comparing chains, use line chart without fill
+    if (isComparing) {
+      return "line";
+    }
+
+    // For weekly/monthly without comparison, use column chart
+    if (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly") {
+      return "column";
+    }
+
+    // Default: daily uses area chart
+    return "area";
+  }, [chainKey.length, selectedTimeInterval]);
+
+  // Get series styling based on chart type and incomplete data status
+  const getSeriesStyling = useCallback(
+    (chainId: string, seriesData: [number, number][]) => {
+      const chartType = getChartSeriesType();
+      const chainColors = AllChainsByKeys[chainId]?.colors[theme ?? "dark"] || ["#FF0000", "#FF0000"];
+
+      // Calculate if last data point is incomplete
+      let zones: any[] | undefined = undefined;
+      let zoneAxis: string | undefined = undefined;
+
+      if (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly") {
+        const todaysDateUTC = new Date().getTime();
+        const lastDataPointTime = seriesData.length > 0 ? seriesData[seriesData.length - 1][0] : 0;
+
+        // For weekly: check if less than 7 days since last data point's week started
+        // For monthly: check if we're not on the 1st of the month
+        let isIncomplete = false;
+
+        if (selectedTimeInterval === "weekly") {
+          const daysSinceLastDataPoint = Math.floor((todaysDateUTC - lastDataPointTime) / (1000 * 60 * 60 * 24));
+          isIncomplete = daysSinceLastDataPoint < 7;
+        } else if (selectedTimeInterval === "monthly") {
+          const todaysDayOfMonth = new Date().getUTCDate();
+          isIncomplete = todaysDayOfMonth !== 1;
+        }
+
+        if (isIncomplete && seriesData.length > 1) {
+          zoneAxis = "x";
+
+          if (chartType === "column") {
+            // Dashed pattern for incomplete column
+            const dottedColumnColor = {
+              pattern: {
+                path: {
+                  d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+                  strokeWidth: 3,
+                },
+                width: 10,
+                height: 10,
+                opacity: 1,
+                color: chainColors[0] + "CC",
+              },
+            };
+
+            zones = [
+              {
+                value: seriesData[seriesData.length - 2][0] + 1,
+                color: {
+                  linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                  stops: [
+                    [0, chainColors[0] + "FF"],
+                    [1, chainColors[0] + "00"],
+                  ],
+                },
+              },
+              {
+                color: dottedColumnColor,
+              },
+            ];
+          } else {
+            // Dotted line for incomplete line chart
+            zones = [
+              {
+                value: seriesData[seriesData.length - 2][0] + 1,
+                dashStyle: "Solid",
+              },
+              {
+                dashStyle: "Dot",
+              },
+            ];
+          }
+        }
+      }
+
+      // Base styling by chart type
+      if (chartType === "line") {
+        // Line chart without fill (for comparison mode)
+        return {
+          type: "line" as const,
+          lineColor: chainColors[0],
+          lineWidth: 2,
+          fillColor: undefined,
+          color: chainColors[0],
+          shadow: {
+            color: chainColors[1] + "66",
+            width: 9,
+          },
+          zones,
+          zoneAxis,
+        };
+      } else if (chartType === "column") {
+        // Column chart for weekly/monthly
+        return {
+          type: "column" as const,
+          color: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, chainColors[0] + "FF"],
+              [1, chainColors[0] + "00"],
+            ],
+          },
+          borderColor: chainColors[0],
+          borderWidth: 0,
+          shadow: undefined,
+          zones,
+          zoneAxis,
+        };
+      } else {
+        // Area chart (default for daily) - matches original plotOptions.area styling
+        return {
+          type: "area" as const,
+          lineColor: chainColors[0],
+          color: {
+            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
+            stops: [
+              [0, chainColors[0]],
+              [1, chainColors[1]],
+            ],
+          },
+          fillColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, chainColors[0] + "33"],
+              [1, chainColors[1] + "33"],
+            ],
+          },
+          shadow: {
+            color: chainColors[1] + "33",
+            width: 10,
+          },
+          zones,
+          zoneAxis,
+        };
+      }
+    },
+    [getChartSeriesType, AllChainsByKeys, theme, selectedTimeInterval],
+  );
+
+  // Use a ref to store the latest styling function to avoid it triggering re-renders
+  const getSeriesStylingRef = useRef(getSeriesStyling);
+  useEffect(() => {
+    getSeriesStylingRef.current = getSeriesStyling;
+  }, [getSeriesStyling]);
+
+  // Pre-compute all series data to avoid recalculating inside the chart update loop
+  const precomputedSeriesData = useMemo(() => {
+    const result: {
+      [metricKey: string]: {
+        [chainId: string]: {
+          seriesData: (number | null)[][];
+          types: string[];
+        } | null;
+      };
+    } = {};
+
+    enabledFundamentalsKeys.forEach((metricKey) => {
+      result[metricKey] = {};
+      data.forEach((item) => {
+        const metricData = item.metrics[metricKey];
+        const intervalData = metricData
+          ? (metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData)
+          : null;
+
+        if (!intervalData || !intervalData.data) {
+          result[metricKey][item.chain_id] = null;
+          return;
+        }
+
+        const seriesData = intervalData.types.includes("eth")
+          ? showUsd
+            ? intervalData.data.map((d) => [
+                d[0],
+                d[intervalData.types.indexOf("usd")],
+              ])
+            : intervalData.data.map((d) => [
+                d[0],
+                showGwei(metricKey)
+                  ? d[intervalData.types.indexOf("eth")] * 1000000000
+                  : d[intervalData.types.indexOf("eth")],
+              ])
+          : intervalData.data.map((d) => [d[0], d[1]]);
+
+        result[metricKey][item.chain_id] = {
+          seriesData,
+          types: intervalData.types,
+        };
+      });
+    });
+
+    return result;
+  }, [data, enabledFundamentalsKeys, selectedTimeInterval, showUsd, showGwei]);
+
+  const lastPointLines = useRef<{
+    [key: number]: Highcharts.SVGElement[];
+  }>({});
+
+  const lastPointCircles = useRef<{
+    [key: number]: Highcharts.SVGElement[];
+  }>({});
+
+  // Stable render callback to avoid recreating on every render
+  const createRenderCallback = useCallback((chartIndex: number) => {
+    return function (this: Highcharts.Chart) {
+      const chart = this;
+
+      // destroy the last point lines and circles
+      if (lastPointLines.current[chartIndex]?.length > 0) {
+        lastPointLines.current[chartIndex].forEach((line) => line.destroy());
+      }
+      if (lastPointCircles.current[chartIndex]?.length > 0) {
+        lastPointCircles.current[chartIndex].forEach((circle) => circle.destroy());
+      }
+
+      lastPointLines.current[chartIndex] = [];
+      lastPointCircles.current[chartIndex] = [];
+
+      const linesXPos = chart.chartWidth * (1 - 15 / chart.chartWidth);
+      let primaryLineStartPos = chart.plotTop - 24;
+      let primaryLineEndPos: number | null = null;
+      let secondaryLineStartPos = chart.plotTop;
+      let secondaryLineEndPos: number | null = null;
+      let lastPointYDiff = 0;
+
+      if (chart.series.length > 0) {
+        const lastPoint = chart.series[0].points[chart.series[0].points.length - 1];
+        if (lastPoint && lastPoint.plotY) {
+          primaryLineEndPos = chart.plotTop + lastPoint.plotY;
+        }
+
+        if (chart.series.length > 1) {
+          const lastPoint2 = chart.series[1].points[chart.series[1].points.length - 1];
+          if (lastPoint2 && lastPoint2.plotY && primaryLineEndPos) {
+            secondaryLineEndPos = chart.plotTop + lastPoint2.plotY;
+            lastPointYDiff = primaryLineEndPos - secondaryLineEndPos;
+          }
+        }
+      }
+
+      chart.series.forEach((series, seriesIndex) => {
+        const lastPoint = series.points[series.points.length - 1];
+        if (!lastPoint || !lastPoint.plotY) return;
+
+        const seriesColor = AllChainsByKeys[series.name]?.colors[theme ?? "dark"]?.[0] || "#CDD8D3";
+
+        if (seriesIndex === 0 && secondaryLineEndPos !== null) {
+          // Primary series with comparison - dashed line to top
+          lastPointLines.current[chartIndex].push(
+            chart.renderer
+              .path(chart.renderer.crispLine(
+                ["M", linesXPos, primaryLineStartPos, "L", linesXPos, chart.plotTop] as any,
+                1
+              ))
+              .attr({
+                stroke: seriesColor,
+                "stroke-width": 1,
+                "stroke-dasharray": 2,
+                zIndex: 9997,
+              })
+              .add()
+          );
+
+          // Solid line portion
+          lastPointLines.current[chartIndex].push(
+            chart.renderer
+              .path(chart.renderer.crispLine(
+                ["M", linesXPos, secondaryLineStartPos, "L", linesXPos,
+                  (lastPointYDiff > 0 ? secondaryLineEndPos : primaryLineEndPos)] as any,
+                1
+              ))
+              .attr({
+                stroke: seriesColor,
+                "stroke-width": 1,
+                zIndex: 9997,
+              })
+              .add()
+          );
+
+          if (lastPointYDiff > 0) {
+            lastPointLines.current[chartIndex].push(
+              chart.renderer
+                .path(chart.renderer.crispLine(
+                  ["M", linesXPos, secondaryLineEndPos, "L", linesXPos, primaryLineEndPos] as any,
+                  1
+                ))
+                .attr({
+                  stroke: seriesColor,
+                  "stroke-width": 1,
+                  "stroke-dasharray": 2,
+                  zIndex: 9997,
+                })
+                .add()
+            );
+          }
+        } else {
+          // Single series or secondary series
+          lastPointLines.current[chartIndex].push(
+            chart.renderer
+              .path(chart.renderer.crispLine(
+                ["M", linesXPos,
+                  seriesIndex === 0 ? primaryLineStartPos : secondaryLineStartPos,
+                  "L", linesXPos,
+                  seriesIndex === 0 ? primaryLineEndPos : secondaryLineEndPos] as any,
+                1
+              ))
+              .attr({
+                stroke: seriesColor,
+                "stroke-width": 1,
+                "stroke-dasharray": 2,
+                zIndex: seriesIndex === 0 ? 9997 : 9998,
+              })
+              .add()
+          );
+        }
+
+        // Circle at top
+        lastPointCircles.current[chartIndex].push(
+          chart.renderer
+            .circle(linesXPos, chart.plotTop - (seriesIndex === 0 ? 24 : 0), seriesIndex === 0 ? 4.5 : 4.5)
+            .attr({
+              fill: seriesColor,
+              zIndex: 9999,
+            })
+            .add()
+        );
+      });
+    };
+  }, [AllChainsByKeys, theme]);
+
+  // Memoize per-chart options to prevent recreating objects on every render
+  const chartOptionsMap = useMemo(() => {
+    const map: { [key: string]: Highcharts.Options } = {};
+
+    enabledFundamentalsKeys.forEach((key, i) => {
+      const metricData = data[0]?.metrics[key];
+      const intervalData = metricData ? (metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData) : null;
+      const isAllZeroValues = intervalData ? intervalData.data.every((d) => d[1] === 0) : false;
+
+      map[key] = {
+        ...options,
+        chart: {
+          ...options.chart,
+          className: "zoom-chart",
+          animation: isAnimate ? { duration: 500, easing: "easeOutQuint" } : false,
+          index: i,
+          margin: zoomed ? zoomedMargin : defaultMargin,
+          events: {
+            render: createRenderCallback(i),
+          },
+        },
+        yAxis: {
+          ...(options.yAxis as Highcharts.YAxisOptions),
+          min: isAllZeroValues && data.length === 1 ? 0 : undefined,
+          max: isAllZeroValues && data.length === 1 ? 1 : undefined,
+          labels: {
+            ...((options.yAxis as Highcharts.YAxisOptions).labels),
+            formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
+              return formatNumber(key, t.value, true);
+            },
+          },
+        },
+        xAxis: {
+          ...(options.xAxis as Highcharts.XAxisOptions),
+          min: zoomed ? zoomMin : activeTimespan?.xMin,
+          max: zoomed ? zoomMax : activeTimespan?.xMax,
+        },
+      };
+    });
+
+    return map;
+  }, [options, enabledFundamentalsKeys, data, selectedTimeInterval, isAnimate, zoomed, zoomedMargin, defaultMargin, zoomMin, zoomMax, activeTimespan, formatNumber, createRenderCallback]);
+
+  // Stable ref callbacks to avoid recreating on every render
+  const chartRefCallbacks = useMemo(() => {
+    return enabledFundamentalsKeys.map((_, i) => (chart: HighchartsReact.RefObject | null) => {
+      if (chart) {
+        chartComponents.current[i] = chart.chart;
+      }
+    });
+  }, [enabledFundamentalsKeys]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponents.current && !zoomed) {
@@ -1454,138 +1742,182 @@ export default function ChainChart({
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    enabledFundamentalsKeys.forEach(async (key, i) => {
-      if (chartComponents.current[i]) {
-        // get current series displayed on this chart
-        const currentSeries = chartComponents.current[i].series;
+    // Batch all chart updates together to prevent multiple redraws
+    const updateCharts = () => {
+      // Pre-calculate whether we need custom styling (same for all series)
+      const needsCustomStyling = selectedTimeInterval !== "daily" || chainKey.length > 1;
+      const chainIds = data.map((item) => item.chain_id);
 
-        const seriesToAdd = data.map((item) => item.chain_id);
+      enabledFundamentalsKeys.forEach((key, i) => {
+        if (chartComponents.current[i]) {
+          // get current series displayed on this chart
+          const currentSeries = chartComponents.current[i].series;
 
-        // find the series to remove
-        const seriesToRemove = currentSeries.filter(
-          (s: Highcharts.Series) => !seriesToAdd.includes(s.name),
-        );
+          // find the series to remove
+          const seriesToRemove = currentSeries.filter(
+            (s: Highcharts.Series) => !chainIds.includes(s.name),
+          );
 
-        // remove the series we don't need
-        chartComponents.current[i].series.forEach((s) => {
-          if (seriesToRemove.includes(s)) {
-            s.remove(false);
-          }
-        });
+          // remove the series we don't need
+          chartComponents.current[i].series.forEach((s) => {
+            if (seriesToRemove.includes(s)) {
+              s.remove(false);
+            }
+          });
 
-        // loop through the series we need to add/update
-        data.forEach((item) => {
-          // calculate series name
-          const seriesName = item.chain_id;
+          // loop through the series we need to add/update
+          data.forEach((item) => {
+            const seriesName = item.chain_id;
 
-          // find the series we need to update
-          const series = currentSeries.find((s) => s.name === seriesName);
+            // Use precomputed series data
+            const precomputed = precomputedSeriesData[key]?.[item.chain_id];
+            if (!precomputed) return;
 
-          const metricData = item.metrics[key];
-          const intervalData = metricData ? (metricData[selectedTimeInterval as keyof typeof metricData] as IntervalData) : null;
+            const { seriesData, types: seriesTypes } = precomputed;
 
-          if (!intervalData || !intervalData.data) return;
+            // find the series we need to update
+            const series = currentSeries.find((s) => s.name === seriesName);
 
-          // if series exists, update it
-          if (series) {
-            const seriesData = intervalData.types.includes("eth")
-              ? showUsd
-                ? intervalData.data.map((d) => [
-                  d[0],
-                  d[intervalData.types.indexOf("usd")],
-                ])
-                : intervalData.data.map((d) => [
-                  d[0],
-                  showGwei(key)
-                    ? d[intervalData.types.indexOf("eth")] *
-                    1000000000
-                    : d[intervalData.types.indexOf("eth")],
-                ])
-              : intervalData.data.map((d) => [d[0], d[1]]);
+            // Get styling (using ref to avoid dependency issues)
+            const styling = needsCustomStyling ? getSeriesStylingRef.current(item.chain_id, seriesData as [number, number][]) : null;
 
-            const seriesTypes = intervalData.types;
-            // update series
-            series.update(
-              {
-                ...series.options,
-                custom: { types: seriesTypes, metric: key },
-              },
-              false,
-            );
-            series.setData(seriesData, false);
-          } else {
-            // if series does not exist, add it
-            chartComponents.current[i].addSeries(
-              {
-                name: seriesName,
-                crisp: false,
-                custom: { types: intervalData.types, metric: key },
-                data: intervalData.types.includes("eth")
-                  ? showUsd
-                    ? intervalData.data.map((d) => [
-                      d[0],
-                      d[intervalData.types.indexOf("usd")],
-                    ])
-                    : intervalData.data.map((d) => [
-                      d[0],
-                      showGwei(key)
-                        ? d[intervalData.types.indexOf("eth")] *
-                        1000000000
-                        : d[intervalData.types.indexOf("eth")],
-                    ])
-                  : intervalData.data.map((d) => [d[0], d[1]]),
-                showInLegend: false,
-                marker: {
-                  enabled: false,
+            // if series exists, update it
+            if (series) {
+              if (styling) {
+                // update series with new styling for weekly/monthly/comparison
+                series.update(
+                  {
+                    ...series.options,
+                    custom: { types: seriesTypes, metric: key },
+                    type: styling.type,
+                    color: styling.color,
+                    lineColor: styling.lineColor,
+                    fillColor: styling.fillColor,
+                    shadow: styling.shadow,
+                    zones: styling.zones,
+                    zoneAxis: styling.zoneAxis,
+                    borderColor: styling.borderColor,
+                    borderWidth: styling.borderWidth,
+                    lineWidth: styling.lineWidth,
+                  } as Highcharts.SeriesOptionsType,
+                  false,
+                );
+              } else {
+                // For daily without comparison, fully reset to original area styling
+                series.update(
+                  {
+                    ...series.options,
+                    custom: { types: seriesTypes, metric: key },
+                    type: "area",
+                    lineColor: AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
+                    color: undefined, // Let plotOptions.area.color handle the gradient
+                    fillColor: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [0, AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0] + "33"],
+                        [1, AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][1] + "33"],
+                      ],
+                    },
+                    shadow: {
+                      color: AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                      width: 10,
+                    },
+                    zones: undefined,
+                    zoneAxis: undefined,
+                    borderColor: undefined,
+                    borderWidth: undefined,
+                    lineWidth: 2,
+                  } as unknown as Highcharts.SeriesOptionsType,
+                  false,
+                );
+              }
+              series.setData(seriesData, false, false); // redraw=false, animation=false
+            } else {
+              // if series does not exist, add it
+              if (styling) {
+                // Custom styling for weekly/monthly/comparison
+                const seriesOptions: Highcharts.SeriesOptionsType = {
+                  name: seriesName,
+                  crisp: false,
+                  custom: { types: seriesTypes, metric: key },
+                  data: seriesData,
+                  showInLegend: false,
+                  animation: false,
+                  marker: {
+                    enabled: false,
                   },
-                point: {
-                  events: {
-                    mouseOver: pointHover,
-                    mouseOut: pointHover,
+                  point: {
+                    events: {
+                      mouseOver: pointHover,
+                      mouseOut: pointHover,
+                    },
                   },
-                },
-                type: "area",
-                lineColor:
-                  AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0], // Set line color
-                fillColor: {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
+                  ...styling,
+                } as Highcharts.SeriesOptionsType;
+                chartComponents.current[i].addSeries(seriesOptions, false);
+              } else {
+                // Original area chart styling for daily without comparison
+                chartComponents.current[i].addSeries(
+                  {
+                    name: seriesName,
+                    crisp: false,
+                    custom: { types: seriesTypes, metric: key },
+                    data: seriesData,
+                    showInLegend: false,
+                    animation: false,
+                    marker: {
+                      enabled: false,
+                    },
+                    point: {
+                      events: {
+                        mouseOver: pointHover,
+                        mouseOut: pointHover,
+                      },
+                    },
+                    type: "area",
+                    lineColor: AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
+                    fillColor: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [0, AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0] + "33"],
+                        [1, AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][1] + "33"],
+                      ],
+                    },
+                    shadow: {
+                      color: AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                      width: 10,
+                    },
                   },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
-                      ][0] + "33",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
-                      ][1] + "33",
-                    ],
-                  ],
-                },
-                shadow: {
-                  color:
-                    AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] +
-                    "33",
-                  width: 10,
-                },
-              },
-              false,
-            );
-          }
-        });
+                  false,
+                );
+              }
+            }
+          });
 
-        // redraw the chart
-        chartComponents.current[i].redraw();
-      }
-    });
-  }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme, selectedTimeInterval, AllChainsByKeys]);
+          // redraw the chart without animation
+          chartComponents.current[i].redraw(false);
+        }
+      });
+    };
+
+    // Debounce chart updates to prevent rapid successive updates
+    // 100ms gives React time to batch state changes before we update charts
+    const timeoutId = setTimeout(() => {
+      requestAnimationFrame(updateCharts);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme, selectedTimeInterval, AllChainsByKeys, chainKey.length]);
 
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
@@ -2164,342 +2496,8 @@ export default function ChainChart({
 
                             <HighchartsReact
                               highcharts={Highcharts}
-                              options={{
-                                ...options,
-                                chart: {
-                                  ...options.chart,
-                                  className: "zoom-chart",
-                                  animation: isAnimate
-                                    ? {
-                                      duration: 500,
-                                      delay: 0,
-                                      easing: "easeOutQuint",
-                                    }
-                                    : false,
-                                  index: enabledFundamentalsKeys.indexOf(key),
-                                  margin: zoomed ? zoomedMargin : defaultMargin,
-                                  events: {
-                                    render: function () {
-                                      const chart: Highcharts.Chart = this;
-
-                                      // destroy the last point lines and circles
-                                      lastPointLines[
-                                        enabledFundamentalsKeys.indexOf(key)
-                                      ]?.length > 0 &&
-                                        lastPointLines[
-                                          enabledFundamentalsKeys.indexOf(key)
-                                        ].forEach((line) => {
-                                          line.destroy();
-                                        });
-
-                                      // destroy the last point lines and circles
-                                      lastPointCircles[
-                                        enabledFundamentalsKeys.indexOf(key)
-                                      ]?.length > 0 &&
-                                        lastPointCircles[
-                                          enabledFundamentalsKeys.indexOf(key)
-                                        ].forEach((circle) => {
-                                          circle.destroy();
-                                        });
-
-                                      lastPointLines[
-                                        enabledFundamentalsKeys.indexOf(key)
-                                      ] = [];
-                                      lastPointCircles[
-                                        enabledFundamentalsKeys.indexOf(key)
-                                      ] = [];
-
-                                      // calculate the fraction that 15px is in relation to the pixel width of the chart
-                                      const linesXPos =
-                                        chart.chartWidth *
-                                        (1 - 15 / chart.chartWidth);
-
-                                      let primaryLineStartPos =
-                                        chart.plotTop - 24;
-                                      let primaryLineEndPos: number | null =
-                                        null;
-
-                                      let secondaryLineStartPos = chart.plotTop;
-                                      let secondaryLineEndPos: number | null =
-                                        null;
-
-                                      let lastPointYDiff = 0;
-
-                                      if (chart.series.length > 0) {
-                                        const lastPoint =
-                                          chart.series[0].points[
-                                          chart.series[0].points.length - 1
-                                          ];
-                                        if (lastPoint && lastPoint.plotY) {
-                                          primaryLineEndPos =
-                                            chart.plotTop + lastPoint.plotY;
-                                        }
-
-                                        if (chart.series.length > 1) {
-                                          const lastPoint =
-                                            chart.series[1].points[
-                                            chart.series[1].points.length - 1
-                                            ];
-                                          if (
-                                            lastPoint &&
-                                            lastPoint.plotY &&
-                                            primaryLineEndPos
-                                          ) {
-                                            secondaryLineEndPos =
-                                              chart.plotTop + lastPoint.plotY;
-
-                                            lastPointYDiff =
-                                              primaryLineEndPos -
-                                              secondaryLineEndPos;
-                                          }
-                                        }
-                                      }
-
-                                      // loop through the series and create the last point lines and circles
-                                      chart.series.forEach(
-                                        (series, seriesIndex) => {
-                                          const lastPoint =
-                                            series.points[
-                                            series.points.length - 1
-                                            ];
-
-                                          if (!lastPoint || !lastPoint.plotY)
-                                            return;
-
-                                          // create a bordered line from the last point to the top of the chart's container
-                                          if (
-                                            seriesIndex === 0 &&
-                                            secondaryLineEndPos !== null
-                                          ) {
-                                            lastPointLines[
-                                              enabledFundamentalsKeys.indexOf(
-                                                key,
-                                              )
-                                            ][
-                                              lastPointLines[
-                                                enabledFundamentalsKeys.indexOf(
-                                                  key,
-                                                )
-                                              ].length
-                                            ] = chart.renderer
-                                              .path(
-                                                chart.renderer.crispLine(
-                                                  [
-                                                    "M" as any,
-                                                    linesXPos as any,
-                                                    primaryLineStartPos as any,
-                                                    "L" as any,
-                                                    linesXPos as any,
-                                                    chart.plotTop as any,
-                                                  ] as any,
-                                                  1,
-                                                ),
-                                              )
-                                              .attr({
-                                                stroke:
-                                                  AllChainsByKeys[series.name]
-                                                    .colors[theme ?? "dark"][0],
-                                                "stroke-width": 1,
-                                                "stroke-dasharray": 2,
-                                                zIndex:
-                                                  seriesIndex === 0
-                                                    ? 9997
-                                                    : 9998,
-                                                rendering: "crispEdges",
-                                              })
-                                              .add();
-
-                                            lastPointLines[
-                                              enabledFundamentalsKeys.indexOf(
-                                                key,
-                                              )
-                                            ][
-                                              lastPointLines[
-                                                enabledFundamentalsKeys.indexOf(
-                                                  key,
-                                                )
-                                              ].length
-                                            ] = chart.renderer
-                                              .path(
-                                                chart.renderer.crispLine(
-                                                  [
-                                                    "M" as any,
-                                                    linesXPos as any,
-                                                    secondaryLineStartPos as any,
-                                                    "L" as any,
-                                                    linesXPos as any,
-                                                    (lastPointYDiff > 0
-                                                      ? secondaryLineEndPos
-                                                      : primaryLineEndPos) as any,
-                                                  ] as any,
-                                                  1,
-                                                ),
-                                              )
-                                              .attr({
-                                                stroke:
-                                                  AllChainsByKeys[series.name]
-                                                    .colors[theme ?? "dark"][0],
-                                                "stroke-width": 1,
-                                                zIndex:
-                                                  seriesIndex === 0
-                                                    ? 9997
-                                                    : 9998,
-                                                rendering: "crispEdges",
-                                              })
-                                              .add();
-
-                                            if (lastPointYDiff > 0) {
-                                              lastPointLines[
-                                                enabledFundamentalsKeys.indexOf(
-                                                  key,
-                                                )
-                                              ][
-                                                lastPointLines[
-                                                  enabledFundamentalsKeys.indexOf(
-                                                    key,
-                                                  )
-                                                ].length
-                                              ] = chart.renderer
-                                                .path(
-                                                  chart.renderer.crispLine(
-                                                    [
-                                                      "M" as any,
-                                                      linesXPos as any,
-                                                      secondaryLineEndPos as any,
-                                                      "L" as any,
-                                                      linesXPos as any,
-                                                      primaryLineEndPos as any,
-                                                    ] as any,
-                                                    1,
-                                                  ),
-                                                )
-                                                .attr({
-                                                  stroke:
-                                                    AllChainsByKeys[series.name]
-                                                      .colors[
-                                                    theme ?? "dark"
-                                                    ][0],
-                                                  "stroke-width": 1,
-                                                  "stroke-dasharray": 2,
-                                                  zIndex:
-                                                    seriesIndex === 0
-                                                      ? 9997
-                                                      : 9998,
-                                                  rendering: "crispEdges",
-                                                })
-                                                .add();
-                                            }
-                                          } else {
-                                            lastPointLines[
-                                              enabledFundamentalsKeys.indexOf(
-                                                key,
-                                              )
-                                            ][
-                                              lastPointLines[
-                                                enabledFundamentalsKeys.indexOf(
-                                                  key,
-                                                )
-                                              ].length
-                                            ] = chart.renderer
-                                              .path(
-                                                chart.renderer.crispLine(
-                                                  [
-                                                    "M" as any,
-                                                    linesXPos as any,
-                                                    (seriesIndex === 0
-                                                      ? primaryLineStartPos
-                                                      : secondaryLineStartPos) as any,
-                                                    "L" as any,
-                                                    linesXPos as any,
-                                                    (seriesIndex === 0
-                                                      ? primaryLineEndPos
-                                                      : secondaryLineEndPos) as any,
-                                                  ] as any,
-                                                  1,
-                                                ),
-                                              )
-                                              .attr({
-                                                stroke:
-                                                  AllChainsByKeys[series.name]
-                                                    .colors[theme ?? "dark"][0],
-                                                "stroke-width": 1,
-                                                "stroke-dasharray": 2,
-                                                zIndex:
-                                                  seriesIndex === 0
-                                                    ? 9997
-                                                    : 9998,
-                                                rendering: "crispEdges",
-                                              })
-                                              .add();
-                                          }
-
-                                          lastPointCircles[
-                                            enabledFundamentalsKeys.indexOf(key)
-                                          ][seriesIndex] = chart.renderer
-                                            .circle(
-                                              linesXPos,
-                                              chart.plotTop -
-                                              (seriesIndex === 0 ? 24 : 0),
-                                              3,
-                                              )
-                                            .attr({
-                                              fill: AllChainsByKeys[series.name]
-                                                .colors[theme ?? "dark"][0],
-
-                                              r: seriesIndex === 0 ? 4.5 : 4.5,
-                                              zIndex: 9999,
-                                              rendering: "crispEdges",
-                                            })
-                                            .add();
-                                        },
-                                      );
-
-                                      // lastPointCircles[i] =
-                                    },
-                                  },
-                                },
-                                yAxis: {
-                                  ...options.yAxis,
-                                  // if all values are 0, set the min to 0
-                                  min:
-                                    isAllZeroValues && data.length === 1
-                                      ? 0
-                                      : undefined,
-                                  max:
-                                    isAllZeroValues && data.length === 1
-                                      ? 1
-                                      : undefined,
-
-                                  labels: {
-                                    ...(
-                                      options.yAxis as Highcharts.YAxisOptions
-                                    ).labels,
-
-                                    formatter: function (
-                                      t: Highcharts.AxisLabelsFormatterContextObject,
-                                    ) {
-
-                                      return formatNumber(key, t.value, true);
-                                    },
-                                  },
-                                },
-                                xAxis: {
-                                  ...options.xAxis,
-                                  min: zoomed
-                                    ? zoomMin
-                                    : activeTimespan?.xMin,
-                                  max: zoomed
-                                    ? zoomMax
-                                    : activeTimespan?.xMax,
-                                },
-                              }}
-                              ref={(chart) => {
-                                if (chart) {
-                                  chartComponents.current[
-                                    enabledFundamentalsKeys.indexOf(key)
-                                  ] = chart.chart;
-                                }
-                              }}
+                              options={chartOptionsMap[key]}
+                              ref={chartRefCallbacks[enabledFundamentalsKeys.indexOf(key)]}
                             />
                             <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                               <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
