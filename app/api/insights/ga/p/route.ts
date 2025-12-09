@@ -5,9 +5,30 @@ import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
 const GA_COLLECT_URL = 'https://www.google-analytics.com/g/collect'
 
+const PARAM_DECODE_MAP: Record<string, string> = {
+  '_d': 'tid',
+  '_x': 'cid',
+  '_z': 'sid',
+  '_g': 'gtm',
+  '_c': 'cx',
+}
+
+function decodeParams(searchParams: URLSearchParams): URLSearchParams {
+  const decoded = new URLSearchParams()
+  
+  searchParams.forEach((value, key) => {
+    const originalKey = PARAM_DECODE_MAP[key] || key
+    decoded.set(originalKey, value)
+  })
+  
+  return decoded
+}
+
 async function handleCollect(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
+
+    const decodedParams = decodeParams(searchParams)
 
     // Get address for geo accuracy
     const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -15,11 +36,11 @@ async function handleCollect(request: NextRequest) {
       || ''
 
     // Add uip param for GA4 IP override (more reliable than X-Forwarded-For for GA)
-    if (address && !searchParams.has('uip')) {
-      searchParams.set('uip', address)
+    if (address && !decodedParams.has('uip')) {
+      decodedParams.set('uip', address)
     }
 
-    const queryString = searchParams.toString()
+    const queryString = decodedParams.toString()
     const targetUrl = queryString ? `${GA_COLLECT_URL}?${queryString}` : GA_COLLECT_URL
 
     const options: RequestInit = {

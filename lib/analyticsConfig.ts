@@ -166,7 +166,7 @@ export function rewriteScriptContent(script: string, host: string): string {
   // Rewrite collect path
   script = script.replace(/\/g\/collect/g, '/p/')
 
-  // Rewrite /a? endpoint (advertising/audience features)
+  // Rewrite /a? endpoint
   script = script.replace(/["']\/a\?/g, '"/api/insights/a?')
 
   // Rename param literals that get concatenated at runtime
@@ -175,6 +175,13 @@ export function rewriteScriptContent(script: string, host: string): string {
   script = script.replace(/\?cx=/g, '?_c=')
   script = script.replace(/&gtm=/g, '&_g=')
   script = script.replace(/\?gtm=/g, '?_g=')
+
+  // Rename GA4 collect params
+  script = script.replace(/"tid"/g, '"_d"')
+  script = script.replace(/&tid=/g, '&_d=')
+  script = script.replace(/\?tid=/g, '?_d=')
+  script = script.replace(/"cid"/g, '"_x"')
+  script = script.replace(/"sid"/g, '"_z"')
 
   return script
 }
