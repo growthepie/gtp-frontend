@@ -25,6 +25,14 @@ export function validateAnalyticsRequest(request: NextRequest): boolean {
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
 
+  // Dev bypass: allow direct access in development or from localhost
+  if (process.env.NODE_ENV === 'development') {
+    const host = request.headers.get('host') || ''
+    if (host.startsWith('local.growthepie.com:')) {
+      return true
+    }
+  }
+
   try {
     // Check origin header (fetch, XHR, beacon)
     if (origin) {

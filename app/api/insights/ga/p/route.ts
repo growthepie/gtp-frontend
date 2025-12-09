@@ -7,6 +7,7 @@ const GA_COLLECT_URL = 'https://www.google-analytics.com/g/collect'
 
 const PARAM_DECODE_MAP: Record<string, string> = {
   '_d': 'tid',
+  '_v': 'v',
   '_x': 'cid',
   '_z': 'sid',
   '_g': 'gtm',

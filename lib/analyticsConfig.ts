@@ -177,11 +177,17 @@ export function rewriteScriptContent(script: string, host: string): string {
   script = script.replace(/\?gtm=/g, '?_g=')
 
   // Rename GA4 collect params
-  script = script.replace(/"tid"/g, '"_d"')
+  script = script.replace(/\.tid=/g, '._d=')
+  script = script.replace(/\.v="2"/g, '._v="2"')
+  script = script.replace(/\.gtm=/g, '._g=')
+  script = script.replace(/\.cid=/g, '._x=')
+  script = script.replace(/\.sid=/g, '._z=')
+
+  // Also handle the URL param patterns
   script = script.replace(/&tid=/g, '&_d=')
   script = script.replace(/\?tid=/g, '?_d=')
-  script = script.replace(/"cid"/g, '"_x"')
-  script = script.replace(/"sid"/g, '"_z"')
+  script = script.replace(/&v=/g, '&_v=')
+  script = script.replace(/\?v=/g, '?_v=')
 
   return script
 }
