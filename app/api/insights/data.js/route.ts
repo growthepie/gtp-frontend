@@ -1,6 +1,6 @@
 // app/api/insights/data.js/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
+import { ANALYTICS_CONFIG, applyUrlRewrites } from '@/lib/analyticsConfig'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -44,12 +44,33 @@ export async function GET(request: NextRequest) {
     }
 
     let script = await response.text()
-    
-    // Use centralized URL rewrites
-    ANALYTICS_CONFIG.urlRewrites.forEach(({ from, to }) => {
-      const escapedFrom = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      script = script.replace(new RegExp(escapedFrom, 'g'), to)
-    })
+
+    // Get the host from the request for dynamic proxy URLs
+    const host = request.headers.get('host') || 'localhost:3000'
+    const protocol = host.includes('localhost') ? 'https://' : 'https://'
+    const baseUrl = `${protocol}${host}`
+
+    // Apply URL rewrites from config (handles wildcards)
+    script = applyUrlRewrites(script)
+
+    // Additional rewrites for blob-encoded domain references in GTM script
+    // These handle cases like "21":"www.googletagmanager.com" in the blob
+    script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
+    script = script.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
+
+    // Also handle the full URL format (protocol + domain)
+    script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
+    script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
+
+    // Rewrite gtag/js and collect paths to use obfuscated proxy paths
+    // Using non-obvious names to avoid ad blocker filter lists
+    script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
+    // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
+    // We rewrite /g/collect to /p/ for the obfuscated path
+    script = script.replace(/\/g\/collect/g, '/p/')
+
+    // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
+    script = script.replace(/\?id=G-[A-Z0-9]+/g, '')
 
     return new NextResponse(script, {
       status: 200,

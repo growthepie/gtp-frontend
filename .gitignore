@@ -50,3 +50,11 @@ certificates
 
 # figma styles
 /lib/figma-styles/output
+
+# icons logs, figma cache, etc.
+/lib/icons-process.log
+/lib/figma-export.log
+/lib/figma-file-cache.json.gz
+
+# analytics testing
+test-analytics.mjs

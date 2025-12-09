@@ -104,7 +104,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>{children}</Providers>
-        <Analytics />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );
