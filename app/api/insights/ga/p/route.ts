@@ -1,12 +1,24 @@
 // app/api/insights/ga/p/route.ts
 // Obfuscated GA4 collect endpoint proxy (via transport_url path)
 import { NextRequest, NextResponse } from 'next/server'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
 const GA_COLLECT_URL = 'https://www.google-analytics.com/g/collect'
 
 async function handleCollect(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
+
+    // Get address for geo accuracy
+    const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || ''
+
+    // Add uip param for GA4 IP override (more reliable than X-Forwarded-For for GA)
+    if (address && !searchParams.has('uip')) {
+      searchParams.set('uip', address)
+    }
+
     const queryString = searchParams.toString()
     const targetUrl = queryString ? `${GA_COLLECT_URL}?${queryString}` : GA_COLLECT_URL
 
@@ -15,6 +27,8 @@ async function handleCollect(request: NextRequest) {
       headers: {
         'User-Agent': request.headers.get('user-agent') || '',
         'Content-Type': request.headers.get('content-type') || 'application/x-www-form-urlencoded',
+        // Also forward address via header as backup
+        ...(address && { 'X-Forwarded-For': address }),
       },
     }
 
@@ -41,12 +55,19 @@ async function handleCollect(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  return handleCollect(request)
-}
+export const GET = withAnalyticsValidation(handleCollect)
+export const POST = withAnalyticsValidation(handleCollect)
 
-export async function POST(request: NextRequest) {
-  return handleCollect(request)
+// Handle preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 export const runtime = 'edge'

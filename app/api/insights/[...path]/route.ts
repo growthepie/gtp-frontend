@@ -1,20 +1,24 @@
 // app/api/insights/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { applyUrlRewrites, resolveProxyDomain } from '@/lib/analyticsConfig'
+import { resolveProxyDomain, rewriteScriptContent } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(
+async function handleGet(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   return proxyRequest(request, params.path)
 }
 
-export async function POST(
+async function handlePost(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   return proxyRequest(request, params.path)
 }
+
+export const GET = withAnalyticsValidation(handleGet)
+export const POST = withAnalyticsValidation(handlePost)
 
 async function proxyRequest(request: NextRequest, pathParts: string[]) {
   const path = pathParts.join('/')
@@ -22,10 +26,15 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
   // Use the helper to resolve domain from path
   const { domain: targetDomain, targetPath } = resolveProxyDomain(path)
-  
+
+  // Get address for geo accuracy
+  const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || ''
+
   // Build target URL
   const queryString = searchParams.toString()
-  const targetUrl = queryString 
+  const targetUrl = queryString
     ? `https://${targetDomain}/${targetPath}?${queryString}`
     : `https://${targetDomain}/${targetPath}`
 
@@ -35,6 +44,8 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       headers: {
         'User-Agent': request.headers.get('user-agent') || '',
         'Content-Type': request.headers.get('content-type') || 'application/x-www-form-urlencoded',
+        // Forward address for geolocation accuracy
+        ...(address && { 'X-Forwarded-For': address }),
       },
     }
 
@@ -65,41 +76,10 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
     if (contentType.includes('javascript') || contentType.includes('text/html')) {
       let content = await response.text()
-
-      // Get the host from the request for dynamic proxy URLs
       const host = request.headers.get('host') || 'localhost:3000'
 
-      // Apply URL rewrites from config (handles wildcards)
-      content = applyUrlRewrites(content)
-
-      // Additional rewrites for blob-encoded domain references
-      content = content.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
-      content = content.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
-
-      // Also handle the full URL format in gtag.js (protocol + domain)
-      content = content.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
-      content = content.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
-
-      // Rewrite paths, vars
-      content = content.replace(/\/gtag\/js\?([^"'\s]*)/g, (match, params) => {
-        const renamed = params
-          .replace(/\bcx=/g, '_c=')
-          .replace(/\bgtm=/g, '_g=')
-          .replace(/\bid=G-/g, '_i=G-');
-        return '/api/insights/t.js?' + renamed;
-      });
-      content = content.replace(/\/gtag\/js/g, '/api/insights/t.js')
-      // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
-      // We rewrite /g/collect to /p/
-      content = content.replace(/\/g\/collect/g, '/p/')
-      content = content.replace(/["']\/a\?/g, '"/api/insights/a?')
-
-      // Rename param literals that get concatenated at runtime to build URLs
-      content = content.replace(/&cx=c/g, '&_c=c')
-      content = content.replace(/&cx=/g, '&_c=')
-      content = content.replace(/\?cx=/g, '?_c=')
-      content = content.replace(/&gtm=/g, '&_g=')
-      content = content.replace(/\?gtm=/g, '?_g=')
+      // Apply all URL rewrites
+      content = rewriteScriptContent(content, host)
 
       return new NextResponse(content, {
         status: response.status,
@@ -109,7 +89,7 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
         },
       })
     }
-    
+
     // For other content types, pass through
     const data = await response.text()
     return new NextResponse(data, {
@@ -133,6 +113,18 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       headers: { 'Content-Type': 'text/javascript' }
     })
   }
+}
+
+// Handle preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 export const runtime = 'edge'

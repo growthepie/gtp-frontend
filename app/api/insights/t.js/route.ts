@@ -1,9 +1,10 @@
 // app/api/insights/t.js/route.ts
-// Obfuscated gtag.js proxy to avoid ad blocker filter lists
+// gtag.js proxy
 import { NextRequest, NextResponse } from 'next/server'
-import { applyUrlRewrites } from '@/lib/analyticsConfig'
+import { rewriteScriptContent } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
   // Rename params back (_c -> cx, _g -> gtm, _i -> id)
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     const gtagUrl = new URL('https://www.googletagmanager.com/gtag/js')
     gtagUrl.searchParams.set('id', ga4Id)
 
-    // Forward additional params
+    // Forward additional params, renaming vars
     // _c -> cx, _g -> gtm
     searchParams.forEach((value, key) => {
       if (key === '_c') {
@@ -49,30 +50,10 @@ export async function GET(request: NextRequest) {
     }
 
     let script = await response.text()
-
-    // Get the host from the request for dynamic proxy URLs
     const host = request.headers.get('host') || 'localhost:3000'
 
-    // Apply URL rewrites from config
-    script = applyUrlRewrites(script)
-
-    // Rewrite domain references
-    script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
-    script = script.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
-    script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
-    script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
-
-    // Rewrite paths
-    script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
-    // Note: GA4 appends /g/collect to transport_url, so we only need /p/
-    script = script.replace(/\/g\/collect/g, '/p/')
-
-    // Rename param literals that get concatenated at runtime to build URLs
-    script = script.replace(/&cx=c/g, '&_c=c')
-    script = script.replace(/&cx=/g, '&_c=')
-    script = script.replace(/\?cx=/g, '?_c=')
-    script = script.replace(/&gtm=/g, '&_g=')
-    script = script.replace(/\?gtm=/g, '?_g=')
+    // Apply all URL rewrites
+    script = rewriteScriptContent(script, host)
 
     return new NextResponse(script, {
       status: 200,
@@ -90,5 +71,7 @@ export async function GET(request: NextRequest) {
     })
   }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'

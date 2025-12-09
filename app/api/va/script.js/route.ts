@@ -1,10 +1,11 @@
 // app/api/va/script.js/route.ts
-// Proxy for Vercel Analytics script to avoid ad blockers
+// Proxy for Vercel Analytics script
 import { NextRequest, NextResponse } from 'next/server'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
 const VERCEL_ANALYTICS_SCRIPT_URL = 'https://cdn.vercel-insights.com/v1/script.js'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   try {
     const response = await fetch(VERCEL_ANALYTICS_SCRIPT_URL, {
       headers: {
@@ -52,5 +53,7 @@ export async function GET(request: NextRequest) {
     })
   }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'

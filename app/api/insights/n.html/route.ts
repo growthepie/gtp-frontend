@@ -2,8 +2,9 @@
 // Proxy for GTM noscript iframe
 import { NextRequest, NextResponse } from 'next/server'
 import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const gtpGtmId = ANALYTICS_CONFIG.gtmId;
 
   if (!gtpGtmId) {
@@ -45,5 +46,7 @@ export async function GET(request: NextRequest) {
     })
   }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'
