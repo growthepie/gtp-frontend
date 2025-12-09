@@ -1100,9 +1100,8 @@ export default function ChainChart({
       },
 
       style: {
-        //@ts-ignore
         borderRadius: "0 0 15px 15px",
-      },
+      } as any,
     },
 
     title: undefined,
@@ -1663,7 +1662,7 @@ export default function ChainChart({
           events: {
             render: createRenderCallback(i),
           },
-        },
+        } as any,
         yAxis: {
           ...(options.yAxis as Highcharts.YAxisOptions),
           min: isAllZeroValues && data.length === 1 ? 0 : undefined,
