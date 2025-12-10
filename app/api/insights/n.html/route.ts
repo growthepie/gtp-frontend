@@ -39,7 +39,8 @@ async function handleGet(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('GTM noscript proxy error:', error)
+    // Avoid logging anything that could contain PII
+    console.error('GTM noscript proxy error:', error instanceof Error ? error.message : 'Unknown error')
     return new NextResponse('<!-- GTM error -->', {
       status: 500,
       headers: { 'Content-Type': 'text/html' },

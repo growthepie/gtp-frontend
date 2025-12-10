@@ -59,7 +59,8 @@ async function handleGet(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('GTM proxy error:', error)
+    // Avoid logging anything that could contain PII
+    console.error('GTM proxy error:', error instanceof Error ? error.message : 'Unknown error')
     return new NextResponse('// Error loading analytics', {
       status: 500,
       headers: { 'Content-Type': 'text/javascript' }

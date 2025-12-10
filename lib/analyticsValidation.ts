@@ -59,6 +59,7 @@ export function withAnalyticsValidation(
 ) {
   return async (request: NextRequest, ...args: any[]): Promise<NextResponse> => {
     if (!validateAnalyticsRequest(request)) {
+      console.log('Validation failed:', request.url.split('?')[0]) // Log the path only
       // Return 204 for beacons (they ignore errors), 403 for scripts
       const isBeacon = request.url.includes('/p') || request.url.includes('collect')
       return new NextResponse(null, { status: isBeacon ? 204 : 403 })

@@ -72,7 +72,8 @@ async function handleCollect(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('GA collect proxy error:', error)
+    // Avoid logging anything that could contain PII
+    console.error('GA collect proxy error:', error instanceof Error ? error.message : 'Unknown error')
     return new NextResponse(null, { status: 204 })
   }
 }

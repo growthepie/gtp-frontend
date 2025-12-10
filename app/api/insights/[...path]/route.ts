@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveProxyDomain, rewriteScriptContent } from '@/lib/analyticsConfig'
 import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
+const CLARITY_BEACON_DOMAINS = ['a.clarity.ms', 'k.clarity.ms', 'j.clarity.ms']
+
 async function handleGet(
   request: NextRequest,
   { params }: { params: { path: string[] } }
@@ -60,7 +62,8 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
     const response = await fetch(targetUrl, options)
 
     // For tracking beacons (collect endpoints), return minimal response
-    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)
+
     if (isBeacon) {
       return new NextResponse(null, {
         status: 204,
@@ -100,10 +103,11 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       },
     })
   } catch (error) {
-    console.error('Proxy error:', error, 'Path:', path, 'Target:', targetDomain)
+    // Avoid logging anything that could contain PII
+    console.error('Proxy error:', error instanceof Error ? error.message : 'Unknown error', 'Path:', path)
 
     // Return 204 for beacons, 500 for scripts
-    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)
     if (isBeacon) {
       return new NextResponse(null, { status: 204 })
     }
