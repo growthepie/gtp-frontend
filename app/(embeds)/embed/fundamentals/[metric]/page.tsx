@@ -17,6 +17,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
+import { useChainMetrics } from "@/hooks/useChainMetrics";
 
 const Chain = ({ params }: { params: any }) => {
   const searchParams = useSearchParams();
@@ -51,7 +52,7 @@ const Chain = ({ params }: { params: any }) => {
 
   const [showUsd, setShowUsd] = useState(true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
-  const { AllChains } = useMaster();
+  const { AllChains, SupportedChainKeys } = useMaster();
   const {
     data: master,
     error: masterError,
@@ -59,27 +60,23 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  // Determine which chains to fetch
+  const chainsToFetch = useMemo(() => {
+    return AllChains.filter((chain) =>
+      SupportedChainKeys.includes(chain.key),
+    ).map((chain) => chain.key);
+  }, [AllChains, SupportedChainKeys]);
+
+  // Fetch metric data at page level for SWR caching
   const {
     data: metricData,
     error: metricError,
     isLoading: metricLoading,
-    isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
+  } = useChainMetrics(params.metric, chainsToFetch, master!);
 
   const chainKeys = useMemo(() => {
-    if (!metricData)
-      return AllChains.filter(
-        (chain) =>
-          chain.ecosystem.includes("all-chains") || chain.key === "ethereum",
-      ).map((chain) => chain.key);
-
-    return AllChains.filter(
-      (chain) =>
-        (Object.keys(metricData.data.chains).includes(chain.key) &&
-          chain.ecosystem.includes("all-chains")) ||
-        chain.key === "ethereum",
-    ).map((chain) => chain.key);
-  }, [metricData]);
+    return chainsToFetch;
+  }, [chainsToFetch]);
 
   const pageData = navigationItems[1]?.options.find(
     (item) => item.urlKey === params.metric,
@@ -137,7 +134,7 @@ const Chain = ({ params }: { params: any }) => {
 
   const timeIntervalKey = useMemo(() => {
     if (
-      metricData?.data.avg === true &&
+      metricData && metricData.avg === true &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
@@ -159,19 +156,19 @@ const Chain = ({ params }: { params: any }) => {
     <>
       {metricData && (
         <ComparisonChart
-          data={Object.keys(metricData.data.chains)
+          data={Object.keys(metricData.chains)
             .filter((chain) => selectedChains.includes(chain))
             .map((chain) => {
               return {
                 name: chain,
                 // type: 'spline',
-                types: metricData.data.chains[chain][timeIntervalKey]?.types || [],
-                data: metricData.data.chains[chain][timeIntervalKey]?.data || [],
+                types: metricData.chains[chain][timeIntervalKey]?.types || [],
+                data: metricData.chains[chain][timeIntervalKey]?.data || [],
               };
             })}
-          metric_id={metricData.data.metric_id}
+          metric_id={metricData.metric_id}
           minDailyUnix={
-            Object.values(metricData.data.chains).reduce(
+            Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
                 if (!chain["daily"].data[0][0]) return acc;
                 return Math.min(
@@ -182,7 +179,7 @@ const Chain = ({ params }: { params: any }) => {
               , Infinity) as number
           }
           maxDailyUnix={
-            Object.values(metricData.data.chains).reduce(
+            Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
                 return Math.max(
                   acc,
@@ -192,7 +189,7 @@ const Chain = ({ params }: { params: any }) => {
               , 0) as number
           }
           timeIntervals={intersection(
-            Object.keys(metricData.data.chains.arbitrum),
+            Object.keys(metricData.chains.arbitrum),
             ["daily", "weekly", "monthly"],
           )}
           // onTimeIntervalChange={(timeInterval) =>
@@ -201,8 +198,8 @@ const Chain = ({ params }: { params: any }) => {
           selectedTimeInterval={selectedTimeInterval}
           setSelectedTimeInterval={setSelectedTimeInterval}
           showTimeIntervals={true}
-          sources={metricData.data.source}
-          avg={metricData.data.avg}
+          sources={metricData.source}
+          avg={metricData.avg}
           focusEnabled={focusEnabled}
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
@@ -210,7 +207,7 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedTimespan={setSelectedTimespan}
           selectedScale={selectedScale}
           setSelectedScale={setSelectedScale}
-          monthly_agg={metricData.data.monthly_agg}
+          monthly_agg={metricData.monthly_agg}
           is_embed={true}
           embed_start_timestamp={
             queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined
@@ -221,12 +218,12 @@ const Chain = ({ params }: { params: any }) => {
           embed_zoomed={queryZoomed === "true"}
         >
           <MetricsTable
-            data={metricData.data.chains}
+            data={metricData.chains}
             master={master}
             selectedChains={selectedChains}
             setSelectedChains={() => { }}
             chainKeys={chainKeys}
-            metric_id={metricData.data.metric_id}
+            metric_id={metricData.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
             timeIntervalKey={timeIntervalKey}
