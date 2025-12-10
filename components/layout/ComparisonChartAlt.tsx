@@ -1830,7 +1830,7 @@ export default function ComparisonChart({
       <EmbedContainer
         title={navItem?.label || ""}
         icon="gtp:gtp-pie"
-        url="https://www.growthepie.xyz"
+        url="https://www.growthepie.com"
         time_frame={timespans[selectedTimespan].label}
         chart_type={selectedScale}
         aggregation={embedAggregation}

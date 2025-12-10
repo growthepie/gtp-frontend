@@ -106,7 +106,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
   } = useSWR<MasterResponse>(MasterURL);
 
 
-  const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.xyz/v1/chains/all/streaks_today.json`);
+  const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.com/v1/chains/all/streaks_today.json`);
 
 
   const isMobile = useMediaQuery("(max-width: 767px)");

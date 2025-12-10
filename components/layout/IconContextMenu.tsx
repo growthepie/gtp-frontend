@@ -32,7 +32,7 @@ export const IconContextMenu = ({
   children,
   getSvgData,
   itemName,
-  iconPageUrl = "https://icons.growthepie.xyz", // Default URL
+  iconPageUrl = "https://icons.growthepie.com", // Default URL
   wrapperClassName,
   isLogo = false, // Default to false
   contextMenuOptions = { isLink: false },

@@ -1,6 +1,6 @@
 // app/api/insights/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
+import { applyUrlRewrites, resolveProxyDomain } from '@/lib/analyticsConfig'
 
 export async function GET(
   request: NextRequest,
@@ -19,20 +19,9 @@ export async function POST(
 async function proxyRequest(request: NextRequest, pathParts: string[]) {
   const path = pathParts.join('/')
   const { searchParams } = new URL(request.url)
-  
-  let targetDomain = 'www.googletagmanager.com'
-  let targetPath = path
-  
-  // Route to appropriate service
-  if (path.includes('collect')) {
-    // GA4 collection endpoint
-    targetDomain = 'www.google-analytics.com'
-  } else if (path.startsWith('c/')) {
-    // Clarity endpoints (c/ prefix)
-    targetDomain = 'www.clarity.ms'
-    // Remove 'c/' prefix and add 'tag/' for Clarity
-    targetPath = 'tag/' + path.substring(2)
-  }
+
+  // Use the helper to resolve domain from path
+  const { domain: targetDomain, targetPath } = resolveProxyDomain(path)
   
   // Build target URL
   const queryString = searchParams.toString()
@@ -59,8 +48,9 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
     const response = await fetch(targetUrl, options)
 
-    // For tracking beacons, return minimal response
-    if (path.includes('collect')) {
+    // For tracking beacons (collect endpoints), return minimal response
+    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    if (isBeacon) {
       return new NextResponse(null, {
         status: 204,
         headers: {
@@ -72,16 +62,35 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
     // For scripts, get content and rewrite URLs
     const contentType = response.headers.get('content-type') || 'text/plain'
-    
+
     if (contentType.includes('javascript') || contentType.includes('text/html')) {
       let content = await response.text()
-      
-      // Use centralized URL rewrites from config
-      ANALYTICS_CONFIG.urlRewrites.forEach(({ from, to }) => {
-        const escapedFrom = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        content = content.replace(new RegExp(escapedFrom, 'g'), to)
-      })
-      
+
+      // Get the host from the request for dynamic proxy URLs
+      const host = request.headers.get('host') || 'localhost:3000'
+
+      // Apply URL rewrites from config (handles wildcards)
+      content = applyUrlRewrites(content)
+
+      // Additional rewrites for blob-encoded domain references
+      content = content.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
+      content = content.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
+
+      // Also handle the full URL format in gtag.js (protocol + domain)
+      content = content.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
+      content = content.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
+
+      // Rewrite paths to use obfuscated proxy endpoints
+      // Using non-obvious names to avoid ad blocker filter lists
+      content = content.replace(/\/gtag\/js/g, '/api/insights/t.js')
+      // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
+      // We rewrite /g/collect to /p/ for the obfuscated path
+      content = content.replace(/\/g\/collect/g, '/p/')
+      content = content.replace(/["']\/a\?/g, '"/api/insights/a?')
+
+      // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
+      content = content.replace(/\?id=G-[A-Z0-9]+/g, '')
+
       return new NextResponse(content, {
         status: response.status,
         headers: {
@@ -101,14 +110,15 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       },
     })
   } catch (error) {
-    console.error('Proxy error:', error, 'Path:', path)
-    
+    console.error('Proxy error:', error, 'Path:', path, 'Target:', targetDomain)
+
     // Return 204 for beacons, 500 for scripts
-    if (path.includes('collect')) {
+    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    if (isBeacon) {
       return new NextResponse(null, { status: 204 })
     }
-    
-    return new NextResponse('// Proxy error', { 
+
+    return new NextResponse('// Proxy error', {
       status: 500,
       headers: { 'Content-Type': 'text/javascript' }
     })

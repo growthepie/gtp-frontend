@@ -392,7 +392,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                               <div className="flex items-center gap-x-[5px] cursor-pointer hover:underline">
                                 {projectData.logo_path && (
                                   <Image
-                                    src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
+                                    src={`https://api.growthepie.com/v1/apps/logos/${projectData.logo_path}`}
                                     width={15}
                                     height={15}
                                     className="rounded-full"

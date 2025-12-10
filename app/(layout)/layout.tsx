@@ -212,7 +212,7 @@ export default function RootLayout({
           <DeveloperTools />
           <CookieConsent />
         </Providers>
-        <Analytics />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );

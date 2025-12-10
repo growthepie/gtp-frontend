@@ -431,7 +431,7 @@ export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPA
         icon={
           projectData.logo_path ? (
             <Image
-              src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
+              src={`https://api.growthepie.com/v1/apps/logos/${projectData.logo_path}`}
               width={15}
               height={15}
               className="select-none rounded-full"
