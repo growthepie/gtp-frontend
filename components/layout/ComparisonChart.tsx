@@ -800,6 +800,7 @@ export default function ComparisonChart({
     const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
 
     return {
+      // Daily timespans
       "90d": {
         label: "90 days",
         shortLabel: "90d",
@@ -821,6 +822,43 @@ export default function ComparisonChart({
         xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
+      max: {
+        label: "Maximum",
+        shortLabel: "Max",
+        value: 0,
+        xMin: minMinusBuffer,
+        xMax: maxPlusBuffer,
+      },
+      // Weekly timespans
+      "12w": {
+        label: "12 weeks",
+        shortLabel: "12w",
+        value: 12,
+        xMin: maxMinusBuffer - 12 * 7 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "24w": {
+        label: "24 weeks",
+        shortLabel: "24w",
+        value: 24,
+        xMin: maxMinusBuffer - 24 * 7 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "52w": {
+        label: "52 weeks",
+        shortLabel: "52w",
+        value: 52,
+        xMin: maxMinusBuffer - 52 * 7 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "maxW": {
+        label: "Maximum",
+        shortLabel: "Max",
+        value: 0,
+        xMin: minMinusBuffer,
+        xMax: maxPlusBuffer,
+      },
+      // Monthly timespans
       "6m": {
         label: "6 months",
         shortLabel: "6M",
@@ -840,15 +878,6 @@ export default function ComparisonChart({
         shortLabel: "Max",
         value: 0,
         xMin: minMinusBuffer,
-
-        xMax: maxPlusBuffer,
-      },
-      max: {
-        label: "Maximum",
-        shortLabel: "Max",
-        value: 0,
-        xMin: minMinusBuffer,
-
         xMax: maxPlusBuffer,
       },
     };

@@ -98,7 +98,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       {/* <Head /> */}
-      <body className="sbg-white sdark:bg-color-bg-default bg-transparent text-forest-900 dark:text-color-text-primary font-raleway">
+      <body className="bg-transparent text-color-text-primary font-raleway">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
