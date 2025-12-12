@@ -276,8 +276,8 @@ const robinhoodStock: QuickBiteData = createQuickBite({
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token. It does not consider your objectives, financial situation, or needs. Data may be incomplete, delayed, or inaccurate. Do your own research.",
     
   ],
-  image: "/quick-bites/robinhood.webp",
-  og_image: "/quick-bites/robinhood.webp",
+  image: "/quick-bites/robinhood-stock.webp",
+  og_image: "/quick-bites/robinhood-stock.webp",
   date: "2025-08-11",
   related: [],
   author: [{

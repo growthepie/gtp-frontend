@@ -180,8 +180,8 @@ const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
     "```",
     "Further implementation documentation can be seen here: [https://shopify.engineering/commerce-payments-protocol](https://shopify.engineering/commerce-payments-protocol).",
   ],
-  image: "/quick-bites/shopify.webp",
-  og_image: "/quick-bites/shopify.webp",
+  image: "/quick-bites/base-commerce.webp",
+  og_image: "/quick-bites/base-commerce.webp",
   date: "2025-06-26",
   related: [],
   author: [{
