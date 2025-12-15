@@ -72,6 +72,13 @@ function dataAvailToArray(x: string) {
       });
     }
 
+    if (x.includes("EigenDA")) {
+      retObject.push({
+        icon: "da-eigenda-logo-monochrome",
+        label: "EigenDA",
+      });
+    }
+
     if (x.includes("DAC")) {
       retObject.push({
         icon: "committee",
