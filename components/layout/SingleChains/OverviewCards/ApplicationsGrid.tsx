@@ -995,6 +995,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     : chainKey === "all" || chainKey === "all-chains"
       ? "all_l2s"
       : chainKey;
+  const isMegaeth = computedChainKey === "megaeth";
   const categoryOptions = layoutIsEmpty ? allMainCategories : mainCategories;
   const showUnavailableState = !isAllChainsView && layoutIsEmpty;
   const showAggregateLoadingState = isAllChainsView && layoutIsEmpty && isAggregateLoading;
@@ -1068,14 +1069,27 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
               <GTPIcon icon="gtp-lock" size="md" className="" />
               <div className="heading-large-md">
-                Applications Not Available
+                {isMegaeth ? (
+                  <>Applications Not Yet Available</>
+                ) : (
+                  <>Applications Not Available</>
+                )}
               </div>
               <div className="text-xs text-center px-[30px]">
-                Application metrics are a paid add-on for each specific chain.<br />
-                Unfortunately, this chain has not yet added application metrics to growthepie.
-                You can explore this feature on <Link href="/chains/ethereum?tab=apps" className="underline">Ethereum Mainnets</Link> page.
-                <br /><br />
-                Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
+                {isMegaeth ? (
+                  <>
+                    Application data is not available yet.<br />
+                    We are actively labeling contracts for MegaETH, and the application view will be live soon.
+                  </>
+                ) : (
+                  <>
+                    Application metrics are a paid add-on for each specific chain.<br />
+                    Unfortunately, this chain has not yet added application metrics to growthepie.
+                    You can explore this feature on <Link href="/chains/ethereum?tab=apps" className="underline">Ethereum Mainnets</Link> page.
+                    <br /><br />
+                    Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
+                  </>
+                )}
               </div>
             </div>
           ) : showAggregateLoadingState ? (

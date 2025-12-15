@@ -185,6 +185,17 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
     return {};
   }, [master]);
 
+  const achievementsData = chainDataOverview?.data?.achievements;
+  const hasLifetimeAchievements = Boolean(
+    achievementsData?.lifetime && Object.keys(achievementsData.lifetime).length > 0,
+  );
+  const hasStreaksAchievements = Boolean(
+    achievementsData?.streaks &&
+    Object.keys(achievementsData.streaks).length > 0 &&
+    streaksData?.data?.[chainKey],
+  );
+  const shouldShowAchievements = hasLifetimeAchievements || hasStreaksAchievements;
+  const isMegaeth = chainKey === "megaeth";
 
 
 
@@ -203,20 +214,24 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
             </div>
             <div className="flex flex-col w-full gap-y-[15px] h-full min-h-0">
             
-              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
-                <div className="heading-large-md">Achievements</div>
-                <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
-                <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
-                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
-                  </div>
-                  {streaksData?.data[chainKey] && (
-                    <div className="w-full xs:flex-1">
-                      <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />
-                    </div>
-                  )}
+              {shouldShowAchievements && (
+                <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
+                  <div className="heading-large-md">Achievements</div>
+                  <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
+                    {hasLifetimeAchievements && (
+                      <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
+                        <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
+                      </div>
+                    )}
+                    {hasStreaksAchievements && (
+                      <div className="w-full xs:flex-1">
+                        <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData!} chainKey={chainKey} />
+                      </div>
+                    )}
 
+                  </div>
                 </div>
-              </div>
+              )}
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}>
                 <ProjectsMetadataProvider>
                   <ApplicationsGrid chainKey={chainKey} />
@@ -282,20 +297,33 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                 ) : (
                   <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[15px] py-[15px] min-h-[218px] flex-1">
                     <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
-                    <div className="w-full flex flex-col gap-y-[10px] items-center justify-center flex-1 inset-0 z-[2]">
-                      <GTPIcon icon="gtp-lock" size="md" className="" />
-                      <div className="heading-large-md">
-                        Usage Breakdown Not Available
-                      </div>
-                      <div className="text-xs text-center px-[30px]">
-                        Usage breakdown metrics are a paid add-on for each specific chain.<br/>
-                        Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
-                        You can explore this feature on <Link href="/chains/ethereum?tab=blockspace" className="underline">Ethereum Mainnets</Link> page.
-                        <br/><br/>
-                        Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
-                      </div>
+                  <div className="w-full flex flex-col gap-y-[10px] items-center justify-center flex-1 inset-0 z-[2]">
+                    <GTPIcon icon="gtp-lock" size="md" className="" />
+                    <div className="heading-large-md">
+                      {isMegaeth ? (
+                        <>Usage Breakdown Not Yet Available</>
+                        ) : (
+                        <>Usage Breakdown Not Available</>
+                      )}
+                    </div>
+                    <div className="text-xs text-center px-[30px]">
+                        {isMegaeth ? (
+                          <>
+                            Usage breakdown data is not available yet.<br/>
+                            We are actively labeling contracts for MegaETH, and this view will be live soon.
+                          </>
+                        ) : (
+                          <>
+                            Usage breakdown metrics are a paid add-on for each specific chain.<br/>
+                            Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
+                            You can explore this feature on <Link href="/chains/ethereum?tab=blockspace" className="underline">Ethereum Mainnets</Link> page.
+                            <br/><br/>
+                            Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+                          </>
+                        )}
                     </div>
                   </div>
+                </div>
                 )}
             </div>
           </div>

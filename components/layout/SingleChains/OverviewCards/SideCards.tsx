@@ -194,7 +194,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             )}
             {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}
 
-            {chainDataOverview && <PartitionLine title="Yesterday" infoContent="Sparklines display the last 60 days. The KPI shows yesterday’s value, with the week-over-week change below." />}
+            {chainDataOverview  && Object.keys(chainDataOverview.data.kpi_cards || {}).length > 0 && <PartitionLine title="Yesterday" infoContent="Sparklines display the last 60 days. The KPI shows yesterday’s value, with the week-over-week change below." />}
             {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv"].includes(metric)).map((metric) => (
                 <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
             ))}
