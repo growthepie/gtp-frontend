@@ -47,9 +47,9 @@ const EmbedContainer = ({
   }, [time_frame, queryZoomed, queryStartTimestamp, queryEndTimestamp]);
 
   return (
-    <div className="h-screen max-h-screen flex flex-col p-[3px] md:p-[15px] bg-white dark:bg-color-ui-active rounded-[18px] md:rounded-[40px] overflow-hidden">
+    <div className="h-screen max-h-screen flex flex-col p-[3px] md:p-[15px] bg-color-ui-active rounded-[18px] md:rounded-[40px] overflow-hidden">
       {title && (
-        <div className="flex items-center gap-x-2 justify-center md:justify-between font-semibold bg-forest-50 dark:bg-color-bg-default rounded-full md:px-[5px]">
+        <div className="flex items-center gap-x-2 justify-center md:justify-between font-semibold bg-color-bg-default rounded-full md:px-[5px]">
           <div className="flex items-center px-[11px] py-[3px] md:px-[21px] md:py-[10px] gap-x-[8px]">
             <div className="flex items-center w-[24px] h-[24px] md:w-[40px] md:h-[40px]">
               <Icon
@@ -62,7 +62,7 @@ const EmbedContainer = ({
             </div>
           </div>
           <div className="hidden md:flex justify-end items-center p-[3px]">
-            <div className="font-normal bg-white dark:bg-color-ui-active px-[8px] py-[6px] md:px-[16px] md:py-[12px] rounded-full flex items-end gap-x-[5px] leading-snug">
+            <div className="font-normal bg-color-ui-active px-[8px] py-[6px] md:px-[16px] md:py-[12px] rounded-full flex items-end gap-x-[5px] leading-snug">
               <div className="md:leading-[1.3] text-[10px] md:text-xs text-forest-400">
                 Timeframe
               </div>
@@ -91,7 +91,7 @@ const EmbedContainer = ({
           href={url}
           target="_blank"
           rel="noopener"
-          className="flex pl-[12px] pr-[2px] py-[3px] md:px-[20px] md:py-[12px] gap-x-[0px] md:gap-x-[5px] items-center font-normal border md:border-2 border-[#1F2726] dark:border-[#EAECEB] bg-white dark:bg-color-bg-default text-[12px] md:text-[16px] leading-[150%] rounded-full"
+          className="flex pl-[12px] pr-[2px] py-[3px] md:px-[20px] md:py-[12px] gap-x-[0px] md:gap-x-[5px] items-center font-normal border md:border-2 border-[#EAECEB] bg-color-bg-default text-[12px] md:text-[16px] leading-[150%] rounded-full"
         >
           <div className="hidden md:block">Latest data on</div>
           <div className="block md:hidden text-[0.6rem] md:text-inherit">

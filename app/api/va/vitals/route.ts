@@ -1,10 +1,11 @@
 // app/api/va/vitals/route.ts
 // Proxy for Vercel Analytics vitals endpoint
 import { NextRequest, NextResponse } from 'next/server'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
 const VERCEL_VITALS_URL = 'https://vitals.vercel-analytics.com/v1/vitals'
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   try {
     const body = await request.text()
 
@@ -30,6 +31,8 @@ export async function POST(request: NextRequest) {
     return new NextResponse(null, { status: 204 })
   }
 }
+
+export const POST = withAnalyticsValidation(handlePost)
 
 // Handle preflight requests
 export async function OPTIONS() {

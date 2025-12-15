@@ -1,32 +1,53 @@
 // app/api/insights/n.html/route.ts
+// Proxy for GTM noscript iframe
 import { NextRequest, NextResponse } from 'next/server'
 import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const gtpGtmId = ANALYTICS_CONFIG.gtmId;
-  
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Analytics</title>
-</head>
-<body>
-  <iframe src="https://www.googletagmanager.com/ns.html?id=${gtpGtmId}" 
-          height="0" 
-          width="0" 
-          style="display:none;visibility:hidden"
-          title="Google Tag Manager"></iframe>
-</body>
-</html>`
 
-  return new NextResponse(html, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
-    },
-  })
+  if (!gtpGtmId) {
+    return new NextResponse('<!-- GTM not configured -->', {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+    })
+  }
+
+  try {
+    // Fetch the actual noscript content from GTM
+    const response = await fetch(`https://www.googletagmanager.com/ns.html?id=${gtpGtmId}`, {
+      headers: {
+        'User-Agent': request.headers.get('user-agent') || '',
+      },
+    })
+
+    if (!response.ok) {
+      return new NextResponse('<!-- GTM load failed -->', {
+        status: response.status,
+        headers: { 'Content-Type': 'text/html' },
+      })
+    }
+
+    const html = await response.text()
+
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    })
+  } catch (error) {
+    // Avoid logging anything that could contain PII
+    console.error('GTM noscript proxy error:', error instanceof Error ? error.message : 'Unknown error')
+    return new NextResponse('<!-- GTM error -->', {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+    })
+  }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'

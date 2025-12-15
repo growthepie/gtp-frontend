@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.com/v1/og_images/blockspace/category-comparison.png?date=${dateString}`,
+            url: `https://api.growthepie.com/v1/og_images/blockspace/category-comparison.png`,
             width: 1200,
             height: 627,
             alt: "growthepie.com",

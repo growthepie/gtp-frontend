@@ -246,8 +246,8 @@ const arbitrumHyperliquidBridge: QuickBiteData = createQuickBite({
     ...ArbPercentage,
 
   ],
-  image: "/quick-bites/hyperliquid.webp",
-  og_image: "/quick-bites/hyperliquid.webp",
+  image: "/quick-bites/arbitrum-hyperliquid-bridge.webp",
+  og_image: "/quick-bites/arbitrum-hyperliquid-bridge.webp",
   date: "2025-09-10",
   related: [],
   author: [{

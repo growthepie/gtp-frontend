@@ -1,34 +1,35 @@
 // app/api/insights/data.js/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { ANALYTICS_CONFIG, applyUrlRewrites } from '@/lib/analyticsConfig'
+import { ANALYTICS_CONFIG, rewriteScriptContent } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
-  
+  const gtpGtmId = ANALYTICS_CONFIG.gtmId
+
   if (!gtpGtmId) {
     console.error('GTM ID not configured')
-    return new NextResponse('// GTM not configured', { 
+    return new NextResponse('// GTM not configured', {
       status: 500,
       headers: { 'Content-Type': 'text/javascript' }
     })
   }
-  
+
   try {
     const gtmUrl = new URL('https://www.googletagmanager.com/gtm.js')
     gtmUrl.searchParams.set('id', gtpGtmId)
-    
+
     const dataLayerName = searchParams.get('l')
     if (dataLayerName && dataLayerName !== 'dataLayer') {
       gtmUrl.searchParams.set('l', dataLayerName)
     }
-    
+
     searchParams.forEach((value, key) => {
       if (key !== 'l') {
         gtmUrl.searchParams.set(key, value)
       }
     })
-    
+
     const response = await fetch(gtmUrl.toString(), {
       headers: {
         'User-Agent': request.headers.get('user-agent') || '',
@@ -37,40 +38,17 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       console.error('GTM fetch failed:', response.status, response.statusText)
-      return new NextResponse('// Failed to load analytics', { 
+      return new NextResponse('// Failed to load analytics', {
         status: response.status,
         headers: { 'Content-Type': 'text/javascript' }
       })
     }
 
     let script = await response.text()
-
-    // Get the host from the request for dynamic proxy URLs
     const host = request.headers.get('host') || 'localhost:3000'
-    const protocol = host.includes('localhost') ? 'https://' : 'https://'
-    const baseUrl = `${protocol}${host}`
 
-    // Apply URL rewrites from config (handles wildcards)
-    script = applyUrlRewrites(script)
-
-    // Additional rewrites for blob-encoded domain references in GTM script
-    // These handle cases like "21":"www.googletagmanager.com" in the blob
-    script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
-    script = script.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
-
-    // Also handle the full URL format (protocol + domain)
-    script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
-    script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
-
-    // Rewrite gtag/js and collect paths to use obfuscated proxy paths
-    // Using non-obvious names to avoid ad blocker filter lists
-    script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
-    // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
-    // We rewrite /g/collect to /p/ for the obfuscated path
-    script = script.replace(/\/g\/collect/g, '/p/')
-
-    // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
-    script = script.replace(/\?id=G-[A-Z0-9]+/g, '')
+    // Apply all URL rewrites
+    script = rewriteScriptContent(script, host)
 
     return new NextResponse(script, {
       status: 200,
@@ -81,12 +59,15 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('GTM proxy error:', error)
-    return new NextResponse('// Error loading analytics', { 
+    // Avoid logging anything that could contain PII
+    console.error('GTM proxy error:', error instanceof Error ? error.message : 'Unknown error')
+    return new NextResponse('// Error loading analytics', {
       status: 500,
       headers: { 'Content-Type': 'text/javascript' }
     })
   }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'

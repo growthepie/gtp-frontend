@@ -1,20 +1,26 @@
 // app/api/insights/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { applyUrlRewrites, resolveProxyDomain } from '@/lib/analyticsConfig'
+import { resolveProxyDomain, rewriteScriptContent } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(
+const CLARITY_BEACON_DOMAINS = ['a.clarity.ms', 'k.clarity.ms', 'j.clarity.ms']
+
+async function handleGet(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   return proxyRequest(request, params.path)
 }
 
-export async function POST(
+async function handlePost(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   return proxyRequest(request, params.path)
 }
+
+export const GET = withAnalyticsValidation(handleGet)
+export const POST = withAnalyticsValidation(handlePost)
 
 async function proxyRequest(request: NextRequest, pathParts: string[]) {
   const path = pathParts.join('/')
@@ -22,10 +28,15 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
   // Use the helper to resolve domain from path
   const { domain: targetDomain, targetPath } = resolveProxyDomain(path)
-  
+
+  // Get address for geo accuracy
+  const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || ''
+
   // Build target URL
   const queryString = searchParams.toString()
-  const targetUrl = queryString 
+  const targetUrl = queryString
     ? `https://${targetDomain}/${targetPath}?${queryString}`
     : `https://${targetDomain}/${targetPath}`
 
@@ -35,6 +46,8 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       headers: {
         'User-Agent': request.headers.get('user-agent') || '',
         'Content-Type': request.headers.get('content-type') || 'application/x-www-form-urlencoded',
+        // Forward address for geolocation accuracy
+        ...(address && { 'X-Forwarded-For': address }),
       },
     }
 
@@ -49,7 +62,8 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
     const response = await fetch(targetUrl, options)
 
     // For tracking beacons (collect endpoints), return minimal response
-    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)
+
     if (isBeacon) {
       return new NextResponse(null, {
         status: 204,
@@ -65,31 +79,10 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
 
     if (contentType.includes('javascript') || contentType.includes('text/html')) {
       let content = await response.text()
-
-      // Get the host from the request for dynamic proxy URLs
       const host = request.headers.get('host') || 'localhost:3000'
 
-      // Apply URL rewrites from config (handles wildcards)
-      content = applyUrlRewrites(content)
-
-      // Additional rewrites for blob-encoded domain references
-      content = content.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
-      content = content.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
-
-      // Also handle the full URL format in gtag.js (protocol + domain)
-      content = content.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
-      content = content.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
-
-      // Rewrite paths to use obfuscated proxy endpoints
-      // Using non-obvious names to avoid ad blocker filter lists
-      content = content.replace(/\/gtag\/js/g, '/api/insights/t.js')
-      // Note: GA4 collect goes through transport_url (configured in GTM) + /g/collect
-      // We rewrite /g/collect to /p/ for the obfuscated path
-      content = content.replace(/\/g\/collect/g, '/p/')
-      content = content.replace(/["']\/a\?/g, '"/api/insights/a?')
-
-      // Strip the id=G-... parameter pattern from URLs (we inject it server-side)
-      content = content.replace(/\?id=G-[A-Z0-9]+/g, '')
+      // Apply all URL rewrites
+      content = rewriteScriptContent(content, host)
 
       return new NextResponse(content, {
         status: response.status,
@@ -99,7 +92,7 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
         },
       })
     }
-    
+
     // For other content types, pass through
     const data = await response.text()
     return new NextResponse(data, {
@@ -110,10 +103,11 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       },
     })
   } catch (error) {
-    console.error('Proxy error:', error, 'Path:', path, 'Target:', targetDomain)
+    // Avoid logging anything that could contain PII
+    console.error('Proxy error:', error instanceof Error ? error.message : 'Unknown error', 'Path:', path)
 
     // Return 204 for beacons, 500 for scripts
-    const isBeacon = path.includes('collect') || targetDomain.endsWith('.clarity.ms')
+    const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)
     if (isBeacon) {
       return new NextResponse(null, { status: 204 })
     }
@@ -123,6 +117,18 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       headers: { 'Content-Type': 'text/javascript' }
     })
   }
+}
+
+// Handle preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 export const runtime = 'edge'

@@ -30,6 +30,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: metadata.title,
     description: metadata.description,
+    openGraph: {
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/ecosystem.png`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+    },
   };
 }
 

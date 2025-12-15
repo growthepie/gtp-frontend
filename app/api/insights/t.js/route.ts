@@ -1,11 +1,14 @@
 // app/api/insights/t.js/route.ts
-// Obfuscated gtag.js proxy to avoid ad blocker filter lists
+// gtag.js proxy
 import { NextRequest, NextResponse } from 'next/server'
-import { applyUrlRewrites } from '@/lib/analyticsConfig'
+import { rewriteScriptContent } from '@/lib/analyticsConfig'
+import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || searchParams.get('id') || ''
+
+  // Rename params back (_c -> cx, _g -> gtm, _i -> id)
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || searchParams.get('_i') || searchParams.get('id') || ''
 
   if (!ga4Id) {
     console.error('GA4 ID not configured')
@@ -20,9 +23,14 @@ export async function GET(request: NextRequest) {
     const gtagUrl = new URL('https://www.googletagmanager.com/gtag/js')
     gtagUrl.searchParams.set('id', ga4Id)
 
-    // Forward additional params (cx, gtm, etc.)
+    // Forward additional params, renaming vars
+    // _c -> cx, _g -> gtm
     searchParams.forEach((value, key) => {
-      if (key !== 'id') {
+      if (key === '_c') {
+        gtagUrl.searchParams.set('cx', value)
+      } else if (key === '_g') {
+        gtagUrl.searchParams.set('gtm', value)
+      } else if (key !== 'id' && key !== '_i') {
         gtagUrl.searchParams.set(key, value)
       }
     })
@@ -42,22 +50,10 @@ export async function GET(request: NextRequest) {
     }
 
     let script = await response.text()
-
-    // Get the host from the request for dynamic proxy URLs
     const host = request.headers.get('host') || 'localhost:3000'
 
-    // Apply URL rewrites from config
-    script = applyUrlRewrites(script)
-
-    // Rewrite domain references
-    script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
-    script = script.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
-    script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
-    script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
-
-    // Rewrite paths to use obfuscated proxy endpoints
-    script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
-    script = script.replace(/\/g\/collect/g, '/api/insights/p/')
+    // Apply all URL rewrites
+    script = rewriteScriptContent(script, host)
 
     return new NextResponse(script, {
       status: 200,
@@ -68,12 +64,15 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('gtag.js proxy error:', error)
+    // Avoid logging anything that could contain PII
+    console.error('gtag.js proxy error:', error instanceof Error ? error.message : 'Unknown error')
     return new NextResponse('// Error loading analytics', {
       status: 500,
       headers: { 'Content-Type': 'text/javascript' },
     })
   }
 }
+
+export const GET = withAnalyticsValidation(handleGet)
 
 export const runtime = 'edge'

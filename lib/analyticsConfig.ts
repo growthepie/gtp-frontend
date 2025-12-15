@@ -105,7 +105,7 @@ export function resolveProxyDomain(path: string): { domain: string; targetPath: 
     };
   }
 
-  // Obfuscated gtag.js path (t.js -> gtag/js)
+  // gtag.js path (t.js -> gtag/js)
   // Note: gtag.js is hosted on googletagmanager.com, not google-analytics.com
   if (path === 't.js' || path.startsWith('t.js?')) {
     const ga4Id = process.env.NEXT_PUBLIC_GA4_ID || '';
@@ -115,7 +115,7 @@ export function resolveProxyDomain(path: string): { domain: string; targetPath: 
     };
   }
 
-  // Obfuscated collect path (p/ -> g/collect)
+  // collect path (p/ -> g/collect)
   if (path.startsWith('p/') || path === 'p') {
     return {
       domain: 'www.google-analytics.com',
@@ -136,3 +136,58 @@ export const getConsentUpdate = (granted: boolean) => {
   }
   return ANALYTICS_CONFIG.defaultConsent;
 };
+
+/**
+ * Rewrite script content for proxy routing
+ * - Replaces domain references with proxy host
+ * - Rewrites paths
+ * - Renames query params
+ */
+export function rewriteScriptContent(script: string, host: string): string {
+  // Apply URL rewrites from config (handles wildcards)
+  script = applyUrlRewrites(script)
+
+  // Rewrite domain references (both quoted strings and full URLs)
+  script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
+  script = script.replace(/"www\.google-analytics\.com"/g, `"${host}"`)
+  script = script.replace(/https:\/\/www\.google-analytics\.com/g, `https://${host}`)
+  script = script.replace(/https:\/\/www\.googletagmanager\.com/g, `https://${host}`)
+
+  // Rewrite gtag/js paths with param renaming
+  script = script.replace(/\/gtag\/js\?([^"'\s]*)/g, (match, params) => {
+    const renamed = params
+      .replace(/\bcx=/g, '_c=')
+      .replace(/\bgtm=/g, '_g=')
+      .replace(/\bid=G-/g, '_i=G-')
+    return '/api/insights/t.js?' + renamed
+  })
+  script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
+
+  // Rewrite collect path
+  script = script.replace(/\/g\/collect/g, '/p/')
+
+  // Rewrite /a? endpoint
+  script = script.replace(/["']\/a\?/g, '"/api/insights/a?')
+
+  // Rename param literals that get concatenated at runtime
+  script = script.replace(/&cx=c/g, '&_c=c')
+  script = script.replace(/&cx=/g, '&_c=')
+  script = script.replace(/\?cx=/g, '?_c=')
+  script = script.replace(/&gtm=/g, '&_g=')
+  script = script.replace(/\?gtm=/g, '?_g=')
+
+  // Rename GA4 collect params
+  script = script.replace(/\.tid=/g, '._d=')
+  script = script.replace(/\.v="2"/g, '._v="2"')
+  script = script.replace(/\.gtm=/g, '._g=')
+  script = script.replace(/\.cid=/g, '._x=')
+  script = script.replace(/\.sid=/g, '._z=')
+
+  // Also handle the URL param patterns
+  script = script.replace(/&tid=/g, '&_d=')
+  script = script.replace(/\?tid=/g, '?_d=')
+  script = script.replace(/&v=/g, '&_v=')
+  script = script.replace(/\?v=/g, '?_v=')
+
+  return script
+}

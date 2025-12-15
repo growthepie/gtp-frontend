@@ -570,7 +570,6 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "chainOverview",
         urlKey: "chain-overview",
         url: "/blockspace/chain-overview",
-        excludeFromSitemap: true,
       },
       {
         label: "Category Comparison",

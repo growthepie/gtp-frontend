@@ -1,19 +1,14 @@
 "use client";
-import { use, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
-import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { ChainData } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
-import { MetricsURLs } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
-import { format } from "date-fns";
 import ComparisonChart from "@/components/layout/ComparisonChart";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { intersection } from "lodash";
-import { Icon } from "@iconify/react";
-import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
@@ -39,16 +34,14 @@ const Chain = ({ params }: { params: any }) => {
   // chains query is an array of chains to display
   const queryChains = searchParams ? searchParams.get("chains") : null;
 
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (queryTheme == "light") {
-        setTheme("light");
-      } else {
-        setTheme("dark");
-      }
-    }, 1000);
-  }, []);
+    if (queryTheme === "light") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  }, [queryTheme, setTheme]);
 
   const [showUsd, setShowUsd] = useState(true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
@@ -60,14 +53,14 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  // Determine which chains to fetch
+  // Determine which chains to fetch (same as normal page)
   const chainsToFetch = useMemo(() => {
     return AllChains.filter((chain) =>
       SupportedChainKeys.includes(chain.key),
     ).map((chain) => chain.key);
   }, [AllChains, SupportedChainKeys]);
 
-  // Fetch metric data at page level for SWR caching
+  // Fetch metric data using the same hook as the normal page
   const {
     data: metricData,
     error: metricError,
@@ -75,8 +68,19 @@ const Chain = ({ params }: { params: any }) => {
   } = useChainMetrics(params.metric, chainsToFetch, master!);
 
   const chainKeys = useMemo(() => {
-    return chainsToFetch;
-  }, [chainsToFetch]);
+    if (!metricData)
+      return AllChains.filter(
+        (chain) =>
+          chain.ecosystem.includes("all-chains") || chain.key === "ethereum",
+      ).map((chain) => chain.key);
+
+    return AllChains.filter(
+      (chain) =>
+        (Object.keys(metricData.chains).includes(chain.key) &&
+          chain.ecosystem.includes("all-chains")) ||
+        chain.key === "ethereum",
+    ).map((chain) => chain.key);
+  }, [metricData]);
 
   const pageData = navigationItems[1]?.options.find(
     (item) => item.urlKey === params.metric,
@@ -134,10 +138,14 @@ const Chain = ({ params }: { params: any }) => {
 
   const timeIntervalKey = useMemo(() => {
     if (
-      metricData && metricData.avg === true &&
+      metricData?.avg === true &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
+    }
+
+    if (selectedTimeInterval === "weekly") {
+      return "weekly";
     }
 
     if (selectedTimeInterval === "monthly") {
@@ -170,10 +178,11 @@ const Chain = ({ params }: { params: any }) => {
           minDailyUnix={
             Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
-                if (!chain["daily"].data[0][0]) return acc;
+                const intervalData = chain[timeIntervalKey] || chain["daily"];
+                if (!intervalData?.data?.[0]?.[0]) return acc;
                 return Math.min(
                   acc,
-                  chain["daily"].data[0][0],
+                  intervalData.data[0][0],
                 );
               }
               , Infinity) as number
@@ -181,15 +190,17 @@ const Chain = ({ params }: { params: any }) => {
           maxDailyUnix={
             Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
+                const intervalData = chain[timeIntervalKey] || chain["daily"];
+                if (!intervalData?.data?.length) return acc;
                 return Math.max(
                   acc,
-                  chain["daily"].data[chain["daily"].data.length - 1][0],
+                  intervalData.data[intervalData.data.length - 1][0],
                 );
               }
               , 0) as number
           }
           timeIntervals={intersection(
-            Object.keys(metricData.chains.arbitrum),
+            Object.keys(metricData.chains.arbitrum || metricData.chains[Object.keys(metricData.chains)[0]] || {}),
             ["daily", "weekly", "monthly"],
           )}
           // onTimeIntervalChange={(timeInterval) =>
