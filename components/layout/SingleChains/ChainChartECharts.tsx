@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback, memo, useTransition } from "react";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
@@ -136,6 +136,93 @@ function formatNumberWithSI(num: number, decimals = 2): string {
   return sign + formattedValue + tier.symbol;
 }
 
+// Lazy loading wrapper for charts - only renders when visible
+const LazyChart = memo(({ children, height = 224 }: { children: React.ReactNode; height?: number }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const visible = entry.isIntersecting;
+        setIsVisible(visible);
+        if (visible && !hasBeenVisible) {
+          setHasBeenVisible(true);
+        }
+      },
+      {
+        rootMargin: "100px", // Start loading 100px before entering viewport
+        threshold: 0,
+      }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [hasBeenVisible]);
+
+  return (
+    <div ref={containerRef} style={{ minHeight: height }}>
+      {hasBeenVisible ? children : (
+        <div
+          className="w-full rounded-2xl bg-color-bg-default animate-pulse"
+          style={{ height }}
+        />
+      )}
+    </div>
+  );
+});
+
+// Helper to create a diagonal hash pattern
+const createDiagonalPattern = (color: string) => {
+  // Ensure we are in the browser
+  if (typeof document === 'undefined') return color;
+
+  const canvas = document.createElement('canvas');
+  const size = 10; // Size of the pattern tile
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  
+  if (!ctx) return color;
+
+  // 1. Optional: Draw a faint background of the same color
+  // This makes the bar look "filled" but hatched. Remove if you want transparent gaps.
+  ctx.fillStyle = color + '00'; // 10% opacity hex
+  ctx.fillRect(0, 0, size, size);
+
+  // 2. Draw the diagonal lines
+  ctx.strokeStyle = color + '99';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
+  
+  ctx.beginPath();
+  // Main diagonal
+  ctx.moveTo(0, size);
+  ctx.lineTo(size, 0);
+  // Top-left corner (for seamless tiling)
+  ctx.moveTo(-size / 2, size / 2);
+  ctx.lineTo(size / 2, -size / 2);
+  // Bottom-right corner (for seamless tiling)
+  ctx.moveTo(size / 2, size * 1.5);
+  ctx.lineTo(size * 1.5, size / 2);
+  
+  ctx.stroke();
+
+  // Return ECharts Pattern Object
+  return {
+    type: 'pattern',
+    image: canvas,
+    repeat: 'repeat'
+  };
+};
+
+
+LazyChart.displayName = "LazyChart";
+
 // Single chart component
 const MetricChart = memo(
   ({
@@ -243,7 +330,7 @@ const MetricChart = memo(
         // When showing Gwei, don't show prefix (no $ sign)
         const prefix = showGwei(metricKey) ? "" : (unitInfo?.prefix || "");
         const suffix = showGwei(metricKey) ? " Gwei" : (unitInfo?.suffix || "");
-        return `${prefix}${formatNumberWithSI(value)}${suffix}`;
+        return `${prefix}${formatNumberWithSI(value)} ${suffix}`;
       },
       [master, metricKey, showUsd, showGwei]
     );
@@ -284,34 +371,47 @@ const MetricChart = memo(
       [selectedTimeInterval]
     );
 
+    // Pre-compute filtered data and max value to avoid duplicate filtering in option
+    const { filteredDataMap, maxDataValue, xMin, xMax } = useMemo(() => {
+      const xMinRaw = zoomed ? zoomMin : activeTimespan?.xMin;
+      const xMaxVal = zoomed ? zoomMax : activeTimespan?.xMax;
+
+      // Calculate left padding in time units (like Highcharts does with 15px)
+      const timeRange = (xMaxVal && xMinRaw) ? (xMaxVal - xMinRaw) : 0;
+      const leftPaddingMs = timeRange * 0.0375; // ~15px worth of time
+      const xMinVal = xMinRaw ? xMinRaw - leftPaddingMs : xMinRaw;
+
+      const filtered: { [chainId: string]: [number, number][] } = {};
+      let maxVal = 0;
+
+      data.forEach((item) => {
+        const seriesDataObj = seriesDataMap[item.chain_id];
+        if (!seriesDataObj) {
+          filtered[item.chain_id] = [];
+          return;
+        }
+
+        // Filter once per chain
+        const chainFiltered = xMinVal && xMaxVal
+          ? seriesDataObj.data.filter((d) => d[0] >= xMinVal && d[0] <= xMaxVal)
+          : seriesDataObj.data;
+
+        filtered[item.chain_id] = chainFiltered;
+
+        // Calculate max in same pass
+        for (let i = 0; i < chainFiltered.length; i++) {
+          if (chainFiltered[i][1] > maxVal) maxVal = chainFiltered[i][1];
+        }
+      });
+
+      return { filteredDataMap: filtered, maxDataValue: maxVal, xMin: xMinVal, xMax: xMaxVal };
+    }, [data, seriesDataMap, zoomed, zoomMin, zoomMax, activeTimespan?.xMin, activeTimespan?.xMax]);
+
     // Build ECharts option
     const option = useMemo(() => {
       const series: any[] = [];
       const isComparing = chainKey.length > 1;
 
-      // Get visible time range
-      const xMinRaw = zoomed ? zoomMin : activeTimespan?.xMin;
-      const xMax = zoomed ? zoomMax : activeTimespan?.xMax;
-
-      // Calculate left padding in time units (like Highcharts does with 15px)
-      // We estimate chart width ~400px (actual width varies but this gives consistent padding)
-      // 15px padding / 400px chart width = 3.75% of the time range
-      const timeRange = (xMax && xMinRaw) ? (xMax - xMinRaw) : 0;
-      const leftPaddingMs = timeRange * 0.0375; // ~15px worth of time
-      const xMin = xMinRaw ? xMinRaw - leftPaddingMs : xMinRaw;
-
-      // Calculate max value across all visible data for nice Y-axis max
-      let maxDataValue = 0;
-      data.forEach((item) => {
-        const seriesDataObj = seriesDataMap[item.chain_id];
-        if (!seriesDataObj) return;
-        const filteredData = xMin && xMax
-          ? seriesDataObj.data.filter((d) => d[0] >= xMin && d[0] <= xMax)
-          : seriesDataObj.data;
-        filteredData.forEach((d) => {
-          if (d[1] > maxDataValue) maxDataValue = d[1];
-        });
-      });
       const { max: niceYMax, interval: niceYInterval } = calculateNiceYAxis(maxDataValue, 4);
 
       data.forEach((item, index) => {
@@ -319,11 +419,8 @@ const MetricChart = memo(
         const seriesDataObj = seriesDataMap[item.chain_id];
         if (!seriesDataObj) return;
 
-        // Filter data to visible timespan for correct Y-axis scaling
-        const filteredData = xMin && xMax
-          ? seriesDataObj.data.filter((d) => d[0] >= xMin && d[0] <= xMax)
-          : seriesDataObj.data;
-
+        // Use pre-filtered data
+        const filteredData = filteredDataMap[item.chain_id] || [];
         const isIncomplete = getIncompleteStatus(filteredData);
         const processedData = filteredData;
 
@@ -404,6 +501,7 @@ const MetricChart = memo(
               lineStyle: {
                 ...baseSeries.lineStyle,
                 type: "dotted",
+                color: chainColors[0] + '66',
               },
               z: 9 - index,
             });
@@ -415,61 +513,64 @@ const MetricChart = memo(
           const LARGE_DATASET_THRESHOLD = 100;
           const isLargeDataset = processedData.length > LARGE_DATASET_THRESHOLD;
 
-          if (isLargeDataset) {
-            // For large datasets, use bucketed gradients - bars with similar heights share the same gradient object
-            // This reduces the number of unique gradient objects while still having per-bar gradients
+          // if (isLargeDataset) {
+          //   // For large datasets, use bucketed gradients - bars with similar heights share the same gradient object
+          //   // This reduces the number of unique gradient objects while still having per-bar gradients
 
-            const NUM_BUCKETS = 15;
-            // Use niceYMax (Y-axis max) to determine rendered height proportion
-            const yAxisMax = niceYMax || 1;
+          //   const NUM_BUCKETS = 15;
+          //   // Use niceYMax (Y-axis max) to determine rendered height proportion
+          //   const yAxisMax = niceYMax || 1;
 
-            // Pre-create gradient objects for each bucket
-            // Each gradient goes from transparent (bottom) to a specific opacity (top)
-            // The top opacity varies by bucket to simulate height-based gradient intensity
-            const bucketGradients: any[] = [];
-            for (let b = 0; b < NUM_BUCKETS; b++) {
-              // Map bucket to top opacity: shorter bars = less opaque top, taller = more opaque top
-              const topOpacity = Math.round(80 + (b / (NUM_BUCKETS - 1)) * 175); // 80-255 range (31%-100%)
-              const topHex = topOpacity.toString(16).padStart(2, '0');
-              bucketGradients.push(
-                new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-                  { offset: 0, color: chainColors[0] + "00" },
-                  { offset: 1, color: chainColors[0] + topHex },
-                ], false)
-              );
-            }
+          //   // Pre-create gradient objects for each bucket
+          //   // Each gradient goes from transparent (bottom) to a specific opacity (top)
+          //   // The top opacity varies by bucket to simulate height-based gradient intensity
+          //   const bucketGradients: any[] = [];
+          //   for (let b = 0; b < NUM_BUCKETS; b++) {
+          //     // Map bucket to top opacity: shorter bars = less opaque top, taller = more opaque top
+          //     const topOpacity = Math.round(80 + (b / (NUM_BUCKETS - 1)) * 175); // 80-255 range (31%-100%)
+          //     const topHex = topOpacity.toString(16).padStart(2, '0');
+          //     bucketGradients.push(
+          //       new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+          //         { offset: 0, color: chainColors[0] + "00" },
+          //         { offset: 1, color: chainColors[0] + topHex },
+          //       ], false)
+          //     );
+          //   }
 
-            // Incomplete bar gradient (lighter)
-            const incompleteGradient = new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-              { offset: 0, color: chainColors[0] + "00" },
-              { offset: 1, color: chainColors[0] + "66" },
-            ], false);
+          //   // Incomplete bar gradient (lighter)
+          //   const incompleteGradient = new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+          //     { offset: 0, color: chainColors[0] + "00" },
+          //     { offset: 1, color: chainColors[0] + "66" },
+          //   ], false);
 
-            // Assign each bar a gradient based on its rendered height bucket
-            const lastIndex = processedData.length - 1;
-            baseSeries.data = processedData.map((d, i) => {
-              const val = d[1];
-              // Height proportion: 0 = bottom of chart, 1 = top of chart
-              const heightProportion = Math.max(0, Math.min(1, val / yAxisMax));
-              const bucketIndex = Math.min(NUM_BUCKETS - 1, Math.floor(heightProportion * NUM_BUCKETS));
-              const isLastAndIncomplete = isIncomplete && i === lastIndex;
+          //   // Generate the pattern using the primary chain color
+          //   const incompletePattern = createDiagonalPattern(chainColors[0]);
 
-              return {
-                value: d,
-                itemStyle: {
-                  color: isLastAndIncomplete ? incompleteGradient : bucketGradients[bucketIndex],
-                },
-              };
-            });
+          //   // Assign each bar a gradient based on its rendered height bucket
+          //   const lastIndex = processedData.length - 1;
+          //   baseSeries.data = processedData.map((d, i) => {
+          //     const val = d[1];
+          //     // Height proportion: 0 = bottom of chart, 1 = top of chart
+          //     const heightProportion = Math.max(0, Math.min(1, val / yAxisMax));
+          //     const bucketIndex = Math.min(NUM_BUCKETS - 1, Math.floor(heightProportion * NUM_BUCKETS));
+          //     const isLastAndIncomplete = isIncomplete && i === lastIndex;
 
-            // Base item style
-            baseSeries.itemStyle = {
-              borderRadius: [2, 2, 0, 0],
-              shadowColor: chainColors[0] + "22",
-              shadowBlur: 4,
-              shadowOffsetY: 2,
-            };
-          } else {
+          //     return {
+          //       value: d,
+          //       itemStyle: {
+          //         color: isLastAndIncomplete ? incompletePattern : bucketGradients[bucketIndex],
+          //       },
+          //     };
+          //   });
+
+          //   // Base item style
+          //   baseSeries.itemStyle = {
+          //     borderRadius: [2, 2, 0, 0],
+          //     shadowColor: chainColors[0] + "22",
+          //     shadowBlur: 4,
+          //     shadowOffsetY: 2,
+          //   };
+          // } else {
             // For small datasets, use per-bar gradients (better visual quality)
             baseSeries.itemStyle = {
               // global: false makes gradient relative to each bar, not the whole chart
@@ -485,6 +586,9 @@ const MetricChart = memo(
               shadowOffsetY: 4,
             };
 
+            // Generate the pattern using the primary chain color
+            const incompletePattern = createDiagonalPattern(chainColors[0]);
+
             // Pattern for incomplete data
             if (isIncomplete && processedData.length > 1) {
               const lastIndex = processedData.length - 1;
@@ -495,10 +599,7 @@ const MetricChart = memo(
                     itemStyle: {
                       // Lighter gradient for incomplete bar (global: false)
                       // Gradient: bottom (transparent) to top (semi-opaque)
-                      color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-                        { offset: 0, color: chainColors[0] + "00" },
-                        { offset: 1, color: chainColors[0] + "66" },
-                      ], false),
+                      color: incompletePattern,
                       borderRadius: [2, 2, 0, 0],
                     },
                   };
@@ -506,7 +607,7 @@ const MetricChart = memo(
                 return d;
               });
             }
-          }
+          // }
         }
 
         series.push(baseSeries);
@@ -518,7 +619,7 @@ const MetricChart = memo(
       const xPos = lastXPos.current ?? 500;
       const placeholderGraphics = data.map((item, index) => {
         const chainColors = AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"] || ["#CDD8D3", "#CDD8D3"];
-        const topY = index === 0 ? 25 : 52; // Match drawLastPointLines
+        const topY = index === 0 ? 25 : 50; // Match drawLastPointLines
         const turnY = topY + 28; // Match drawLastPointLines
         const lastY = lastYPositions.current[item.chain_id] ?? topY;
         const lineStyle = { stroke: chainColors[0], lineWidth: 1, lineDash: [2, 2] };
@@ -605,17 +706,19 @@ const MetricChart = memo(
           type: "value",
           min: 0, // Always start from 0 like Highcharts
           max: isAllZeroValues && data.length === 1 ? 1 : niceYMax, // Use "nice" max like Highcharts
+          z: 1000,
           position: "left",
           axisLine: { show: false },
           axisTick: { show: false },
           axisLabel: {
+            showMinLabel: false,
             show: true,
             inside: true,
             margin: 0,
-            padding: [0, 0, 4, 2],
+            padding: [0, 0, 1, 2],
             verticalAlign: "bottom",
-            fontSize: 8,
-            fontWeight: "300",
+            fontSize: 10,
+            fontWeight: "600",
             fontFamily: "'Fira Sans', sans-serif",
             color: "#CDD8D3",
             formatter: (value: number) => formatAxisLabel(value),
@@ -780,7 +883,7 @@ const MetricChart = memo(
                   </div>
                   ${
                     showBar
-                      ? `<div style="display: flex; margin-left: 24px; width: calc(100% - 16px); position: relative; margin-bottom: 2px;">
+                      ? `<div style="display: flex; margin-left: 24px; width: calc(100% - 24px); position: relative; margin-bottom: 2px;">
                         <div style="height: 2px; border-radius: 0; position: absolute; right: 0; top: -2px; width: 100%; background: transparent;"></div>
                         <div style="height: 2px; border-radius: 0; position: absolute; right: 0; top: -2px; width: ${barWidth}%; background: ${gradient};"></div>
                       </div>`
@@ -791,10 +894,10 @@ const MetricChart = memo(
               .join("");
 
             // increased min width to 280 if weekly, 240 if monthly, 200 if daily
-            const minWidth = selectedTimeInterval === "weekly" ? 280 : selectedTimeInterval === "monthly" ? 240 : 200;
+            const minWidth = selectedTimeInterval === "weekly" ? 280 : selectedTimeInterval === "monthly" ? 240 : 240;
 
             return `
-              <div style="margin: 12px 12px 12px 0; min-width: ${minWidth}px; font-size: 12px; font-family: var(--font-raleway);">
+              <div style="padding: 12px 12px 12px 0; min-width: ${minWidth}px; font-size: 12px; font-family: var(--font-raleway);">
                 <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; margin-left: 24px; margin-bottom: 8px; gap: 15px;">
                   <div>${dateString}</div>
                   <div style="font-size: 12px;">${metricLabel}</div>
@@ -808,11 +911,7 @@ const MetricChart = memo(
           {
             type: "inside",
             xAxisIndex: 0,
-            filterMode: "none",
-            zoomOnMouseWheel: false,
-            moveOnMouseMove: false,
-            moveOnMouseWheel: false,
-            preventDefaultMouseMove: false,
+            disabled: true, // Disable to prevent mousewheel capture during page scroll
           },
         ],
         series,
@@ -821,6 +920,8 @@ const MetricChart = memo(
       data,
       chainKey,
       seriesDataMap,
+      filteredDataMap,
+      maxDataValue,
       chartType,
       theme,
       AllChainsByKeys,
@@ -869,7 +970,7 @@ const MetricChart = memo(
 
         const lastPointX = pointPixel[0]; // X position of the last bar's center
         const lastPointY = pointPixel[1];
-        const topY = seriesIndex === 0 ? 25 : 52; // Primary at top, secondary below
+        const topY = seriesIndex === 0 ? 25 : 50; // Primary at top, secondary below
         hasValidElements = true;
 
         // Save Y position for placeholder graphics
@@ -1080,6 +1181,27 @@ const MetricChart = memo(
       };
     }, [seriesDataMap, data, master, metricKey, showUsd, showGwei]);
 
+    // Determine if we should show the accumulation badge
+    const accumulationBadge = useMemo(() => {
+      if (selectedTimeInterval !== "weekly" && selectedTimeInterval !== "monthly" && selectedTimeInterval !== "quarterly") {
+        return null;
+      }
+
+      const firstChainData = seriesDataMap[data[0]?.chain_id];
+      if (!firstChainData || firstChainData.data.length === 0) return null;
+
+      const isIncomplete = getIncompleteStatus(firstChainData.data);
+      if (!isIncomplete) return null;
+
+      const labels: Record<string, string> = {
+        weekly: "acc. this week",
+        monthly: "acc. this month",
+        quarterly: "acc. this quarter",
+      };
+
+      return labels[selectedTimeInterval];
+    }, [selectedTimeInterval, seriesDataMap, data, getIncompleteStatus]);
+
     // Second chain display value
     const displayValue2 = useMemo(() => {
       if (data.length < 2) return null;
@@ -1109,29 +1231,36 @@ const MetricChart = memo(
     if (!seriesDataMap[data[0]?.chain_id]) return null;
 
     return (
-      <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative">
+      <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative @container">
         {/* Header */}
-        <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-full z-10">
+        <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-[calc(100%-15px)] z-10 pr-[25px]">
           <Link
             href={`/fundamentals/${getFundamentalsByKey[metricKey]?.urlKey}`}
-            className="relative z-10 -top-[3px] text-[16px] font-bold flex gap-x-2 items-center cursor-pointer"
+            className="relative z-10 -top-[3px] text-[16px] font-bold flex gap-x-2 items-center cursor-pointer min-w-0 flex-shrink"
           >
-            <div>{getFundamentalsByKey[metricKey]?.label}</div>
-            <div className="rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10">
+            <div className="truncate">{getFundamentalsByKey[metricKey]?.label}</div>
+            <div className="rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10 flex-shrink-0">
               <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
             </div>
           </Link>
-          <div className="relative numbers-lg -top-[2px] flex right-[40px]">
-            <div>{displayValue.prefix}</div>
-            <div>{displayValue.value}</div>
-            <div className="pl-0.5">{displayValue.suffix}</div>
+          <div className="relative numbers-lg -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
+            {accumulationBadge && (
+              <div className="hidden @[340px]:flex px-[5px] h-[13px] items-center justify-center bg-color-bg-medium rounded-full">
+                <span className="text-xxxs whitespace-nowrap">{accumulationBadge}</span>
+              </div>
+            )}
+            <div className="flex">
+              <div>{displayValue.prefix}</div>
+              <div>{displayValue.value}</div>
+              {displayValue.suffix && <div className="pl-0.5">{displayValue.suffix}</div>}
+            </div>
           </div>
           {displayValue2 && (
-            <div className="absolute top-[27px] right-[17px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
-              <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
+            <div className="absolute top-[28px] w-full flex justify-end items-center pl-[23px] pr-[25px] text-[#5A6462]">
+              <div className="numbers-sm flex gap-x-[2px]">
                 <div>{displayValue2.prefix}</div>
                 <div>{displayValue2.value}</div>
-                <div className="text-base pl-0.5">{displayValue2.suffix}</div>
+                {displayValue2.suffix && <div className="numbers-sm pl-0.5">{displayValue2.suffix}</div>}
               </div>
             </div>
           )}
@@ -1139,7 +1268,7 @@ const MetricChart = memo(
 
         {/* Chart */}
         <div
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", borderRadius: "0 0 15px 15px", overflow: "hidden" }}
           onMouseEnter={() => { isHovered.current = true; }}
           onMouseLeave={() => { isHovered.current = false; }}
         >
@@ -1211,6 +1340,7 @@ export default function ChainChartECharts({
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [isPending, startTransition] = useTransition();
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
   const [zoomMax, setZoomMax] = useState<number | null>(null);
@@ -1323,23 +1453,23 @@ export default function ChainChartECharts({
 
     if (selectedTimeInterval === "weekly") {
       timespansResult = {
-        "12w": { label: "12 weeks", shortLabel: "12w", value: 12, xMin: clampMin(12 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * 7 * dayMs)) / dayMs) },
-        "24w": { label: "24 weeks", shortLabel: "24w", value: 24, xMin: clampMin(24 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(24 * 7 * dayMs)) / dayMs) },
-        "52w": { label: "52 weeks", shortLabel: "52w", value: 52, xMin: clampMin(52 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(52 * 7 * dayMs)) / dayMs) },
+        "12w": { label: "3 months", shortLabel: "3m", value: 12, xMin: clampMin(12 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * 7 * dayMs)) / dayMs) },
+        "24w": { label: "6 months", shortLabel: "6m", value: 24, xMin: clampMin(24 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(24 * 7 * dayMs)) / dayMs) },
+        "52w": { label: "1 year", shortLabel: "1y", value: 52, xMin: clampMin(52 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(52 * 7 * dayMs)) / dayMs) },
         maxW: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
     } else if (selectedTimeInterval === "monthly") {
       const monthMs = 30 * dayMs;
       timespansResult = {
         "6m": { label: "6 months", shortLabel: "6m", value: 6, xMin: clampMin(6 * monthMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(6 * monthMs)) / dayMs) },
-        "12m": { label: "1 year", shortLabel: "12m", value: 12, xMin: clampMin(12 * monthMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * monthMs)) / dayMs) },
+        "12m": { label: "1 year", shortLabel: "1y", value: 12, xMin: clampMin(12 * monthMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * monthMs)) / dayMs) },
         maxM: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
     } else if (selectedTimeInterval === "quarterly") {
       const quarterMs = 91 * dayMs; // ~3 months
       timespansResult = {
-        "4q": { label: "4 quarters", shortLabel: "4q", value: 4, xMin: clampMin(4 * quarterMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(4 * quarterMs)) / dayMs) },
-        "8q": { label: "8 quarters", shortLabel: "8q", value: 8, xMin: clampMin(8 * quarterMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(8 * quarterMs)) / dayMs) },
+        "4q": { label: "1 year", shortLabel: "1y", value: 4, xMin: clampMin(4 * quarterMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(4 * quarterMs)) / dayMs) },
+        "8q": { label: "2 years", shortLabel: "2y", value: 8, xMin: clampMin(8 * quarterMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(8 * quarterMs)) / dayMs) },
         maxQ: { label: "Max", shortLabel: "Max", value: 0, xMin: minUnix, xMax: maxUnix, daysDiff: dayDiff },
       };
     } else {
@@ -1484,7 +1614,7 @@ export default function ChainChartECharts({
         <div className="flex gap-x-[8px] items-center scroll-mt-8" id="fundamentals">
           <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
           <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
-            Fundamental Metrics (ECharts)
+            Fundamental Metrics
           </Heading>
         </div>
 
@@ -1600,7 +1730,12 @@ export default function ChainChartECharts({
         <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-fit -mt-[1px]">
           <TopRowParent>
             {availableIntervals.map((interval) => (
-              <TopRowChild key={interval} isSelected={selectedTimeInterval === interval} onClick={() => setSelectedTimeInterval(interval)} className="capitalize relative">
+              <TopRowChild
+                key={interval}
+                isSelected={selectedTimeInterval === interval}
+                onClick={() => startTransition(() => setSelectedTimeInterval(interval))}
+                className="capitalize relative"
+              >
                 <span>{interval}</span>
               </TopRowChild>
             ))}
@@ -1651,7 +1786,7 @@ export default function ChainChartECharts({
       </TopRowContainer>
 
       {/* Charts Grid */}
-      <div className="flex flex-col gap-y-[15px]">
+      <div className={`flex flex-col gap-y-[15px] transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>
         {Object.keys(metricCategories)
           .filter((group) => group !== "gtpmetrics" && group !== "public-goods-funding" && group !== "developer")
           .map((categoryKey) => (
@@ -1675,24 +1810,25 @@ export default function ChainChartECharts({
                       if (!Object.keys(data[0]?.metrics || {}).includes(key)) return null;
 
                       return (
-                        <MetricChart
-                          key={key}
-                          metricKey={key}
-                          data={data}
-                          chainKey={chainKey}
-                          selectedTimeInterval={selectedTimeInterval}
-                          selectedTimespan={selectedTimespan}
-                          showUsd={showUsd}
-                          theme={theme}
-                          master={master}
-                          AllChainsByKeys={AllChainsByKeys}
-                          activeTimespan={activeTimespan}
-                          zoomed={zoomed}
-                          zoomMin={zoomMin}
-                          zoomMax={zoomMax}
-                          onZoomChange={handleZoomChange}
-                          groupId="fundamentals-charts"
-                        />
+                        <LazyChart key={key} height={224}>
+                          <MetricChart
+                            metricKey={key}
+                            data={data}
+                            chainKey={chainKey}
+                            selectedTimeInterval={selectedTimeInterval}
+                            selectedTimespan={selectedTimespan}
+                            showUsd={showUsd}
+                            theme={theme}
+                            master={master}
+                            AllChainsByKeys={AllChainsByKeys}
+                            activeTimespan={activeTimespan}
+                            zoomed={zoomed}
+                            zoomMin={zoomMin}
+                            zoomMax={zoomMax}
+                            onZoomChange={handleZoomChange}
+                            groupId="fundamentals-charts"
+                          />
+                        </LazyChart>
                       );
                     })}
                 </div>
