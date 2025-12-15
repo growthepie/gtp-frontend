@@ -31,6 +31,50 @@ function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
 }
 
+function isTypingInTextField(active: Element | null) {
+  if (!active) return false;
+
+  // Native text inputs
+  if (active instanceof HTMLInputElement) {
+    const type = (active.type || "text").toLowerCase();
+    // Treat these as text-like; ignore things like checkbox, radio, button, etc.
+    const textLikeTypes = [
+      "text",
+      "search",
+      "email",
+      "number",
+      "password",
+      "tel",
+      "url",
+    ];
+    return textLikeTypes.includes(type);
+  }
+
+  if (active instanceof HTMLTextAreaElement) {
+    return true;
+  }
+
+  const el = active as HTMLElement;
+
+  // Contenteditable regions
+  if (el.isContentEditable) {
+    return true;
+  }
+
+  // ARIA text-like roles
+  const role = el.getAttribute("role");
+  if (role === "textbox" || role === "searchbox") {
+    return true;
+  }
+
+  return false;
+}
+
+function isGlobalSearchInputElement(active: Element | null) {
+  if (!active) return false;
+  return (active as HTMLElement).id === "global-search-input";
+}
+
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
     document.body.classList.add("overflow-y-scroll");
@@ -91,6 +135,12 @@ export const HeaderSearchButton = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      // If the user is typing into any other text-like field, ignore global search shortcuts
+      if (isTypingInTextField(activeElement) && !isGlobalSearchInputElement(activeElement)) {
+        return;
+      }
+
       // on '/' press, open search if not already open, otherwise close it
       if (e.key === "/") {
         e.preventDefault();
@@ -328,8 +378,18 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     // on mount, add an event listener for keystrokes. If a alphanumeric key is pressed, focus the input and write the key to the input.
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
-        const input = document.getElementById('global-search-input') as HTMLInputElement;
-        const isInputFocused = input.contains(document.activeElement);
+        const input = document.getElementById('global-search-input') as HTMLInputElement | null;
+        if (!input) return;
+
+        const activeElement = document.activeElement;
+        const isGlobalSearchFocused = isGlobalSearchInputElement(activeElement);
+
+        // If the user is currently typing in any other text-like field, don't steal focus
+        if (isTypingInTextField(activeElement) && !isGlobalSearchFocused) {
+          return;
+        }
+
+        const isInputFocused = input.contains(activeElement);
         if (event.key.match(/[a-zA-Z0-9]/) && !isInputFocused) {
           input.focus();
           input.value = event.key;
