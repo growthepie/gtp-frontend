@@ -158,6 +158,29 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     );
   }, [processedSeriesData, filteredNames]);
 
+  const minTimestampDelta = useMemo(() => {
+    const seriesToInspect = filteredSeries.length ? filteredSeries : processedSeriesData;
+    let smallestDelta = Number.POSITIVE_INFINITY;
+
+    seriesToInspect.forEach((series: any) => {
+      const points = series?.processedData || [];
+      for (let i = 1; i < points.length; i++) {
+        const current = points[i]?.[0];
+        const previous = points[i - 1]?.[0];
+
+        if (typeof current === "number" && typeof previous === "number") {
+          const delta = Math.abs(current - previous);
+          if (delta > 0 && delta < smallestDelta) {
+            smallestDelta = delta;
+          }
+        }
+      }
+    });
+
+    return smallestDelta === Number.POSITIVE_INFINITY ? null : smallestDelta;
+  }, [filteredSeries, processedSeriesData]);
+
+  const shouldShowTimeInTooltip = showXAsDate && !!minTimestampDelta && minTimestampDelta < 24 * 60 * 60 * 1000;
   
   // Add timespans and selectedTimespan
   const timespans = {
@@ -220,7 +243,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
-      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
+      let dateString = moment.utc(x).utc().locale("en-GB").format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
@@ -284,7 +308,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [jsonMeta],
+    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
