@@ -66,7 +66,7 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
       )}
       {renderDescription()}
       <div
-        className={`flex flex-wrap gap-2 ${block.layout === 'segmented' ? 'bg-color-bg-default rounded-full p-1' : ''}`}
+        className={`flex flex-wrap md:items-start items-center w-full md:justify-normal justify-evenly gap-2 ${block.layout === 'segmented' ? 'bg-color-bg-default rounded-2xl md:rounded-full p-1' : ''}`}
       >
         {charts.map((chart, index) => {
           const isActive = index === activeIndex;
