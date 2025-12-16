@@ -1106,7 +1106,7 @@ export const ChainsTooltip = ({
               const areChainsSelected = selectedChains.length > 0;
               const isChainSelected = selectedChains.includes(chain);
 
-              const rightIcon = isChainSelected ? "heroicons-solid:x-circle" : undefined;
+              const rightIcon = isChainSelected ? "gtp:in-button-close-monochrome" : undefined;
               const rightIconColor = isChainSelected ? "rgb(var(--accent-red))" : undefined;
               const altColoring = areChainsSelected && !isChainSelected;
 

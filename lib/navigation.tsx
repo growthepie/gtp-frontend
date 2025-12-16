@@ -638,9 +638,9 @@ const dataAvailabilityGroup: NavigationItem = {
         urlKey: "quick-bites",
         url: "/quick-bites",
       },
-      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data]) => ({  
+      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data]) => ({
         label: data.shortTitle,
-        icon: "gtp-chevronright" as GTPIconName,
+        icon: "in-button-right-monochrome" as GTPIconName,
         category: "latest",
         key: slug,
         rootKey: slug,

@@ -85,7 +85,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
                 className="flex items-center justify-center w-[24px] h-[24px] focus:outline-none"
                 onClick={clearQuery}
               >
-                <GTPIcon icon={"heroicons-solid:x-circle" as GTPIconName} size="sm" />
+                <GTPIcon icon={"in-button-close-monochrome" as GTPIconName} size="sm" />
               </button>
             </div>
           )}

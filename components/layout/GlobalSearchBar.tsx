@@ -364,7 +364,7 @@ export default function GlobalFloatingBar() {
       key={filter}
       label={filter}
       leftIcon="feather:tag"
-      rightIcon="heroicons-solid:x-circle"
+      rightIcon="gtp:in-button-close-monochrome"
       rightIconColor="#FE5468"
       onClick={() => removeFilter(filter)}
     />

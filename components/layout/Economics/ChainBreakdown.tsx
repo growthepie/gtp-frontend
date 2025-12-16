@@ -589,7 +589,7 @@ export default function ChainBreakdown({
                   <div>{allChainsDA[DAIndex]}</div>
 
                   <Icon
-                    icon={"feather:x-circle"}
+                    icon={"gtp:in-button-close-monochrome"}
                     className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
                       }`}
                     onClick={(e) => {

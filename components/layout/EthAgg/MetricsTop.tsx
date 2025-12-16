@@ -109,7 +109,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-          <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-color-ui-hover" />
+          <GTPIcon icon="in-button-down-monochrome" size="md" className="text-color-ui-hover" />
         </div>
 
         {/* Default info icon can be overridden by the infoSlot prop */}

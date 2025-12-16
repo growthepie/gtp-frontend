@@ -1230,8 +1230,8 @@ export default function LabelsPage() {
                                     filteredLabelsData[item.index]
                                       .owner_project,
                                 )
-                                  ? "heroicons-solid:x-circle"
-                                  : "heroicons-solid:plus-circle"
+                                  ? "gtp:in-button-close-monochrome"
+                                  : "gtp:in-button-plus-monochrome"
                               }
                               rightIconColor={
                                 labelsFilters.owner_project.find(
@@ -1372,8 +1372,8 @@ export default function LabelsPage() {
                                   filteredLabelsData[item.index].usage_category
                                   ],
                                 )
-                                  ? "heroicons-solid:x-circle"
-                                  : "heroicons-solid:plus-circle"
+                                  ? "gtp:in-button-close-monochrome"
+                                  : "gtp:in-button-plus-monochrome"
                               }
                               rightIconColor={
                                 labelsFilters.category.includes(
@@ -1412,8 +1412,8 @@ export default function LabelsPage() {
                                 labelsFilters.subcategory.includes(
                                   filteredLabelsData[item.index].usage_category,
                                 )
-                                  ? "heroicons-solid:x-circle"
-                                  : "heroicons-solid:plus-circle"
+                                  ? "gtp:in-button-close-monochrome"
+                                  : "gtp:in-button-plus-monochrome"
                               }
                               rightIconColor={
                                 labelsFilters.subcategory.includes(
@@ -1431,7 +1431,7 @@ export default function LabelsPage() {
                             />
                           )}
                         </div>
-                        {/* {filteredLabelsData[item.index].usage_category && <Badge size="sm" label={master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]} leftIcon={null} leftIconColor="#FFFFFF" rightIcon="heroicons-solid:plus-circle" />} */}
+                        {/* {filteredLabelsData[item.index].usage_category && <Badge size="sm" label={master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]} leftIcon={null} leftIconColor="#FFFFFF" rightIcon="in-button-plus-monochrome" />} */}
                       </div>
 
                       <div className="flex h-full items-center justify-end gap-x-[3px]">

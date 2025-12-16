@@ -263,10 +263,10 @@ const Dropdown: React.FC<DropdownProps> = ({
             <div className="flex-1 min-w-0 flex items-center gap-[10px]">
               {selectedOption && (
                 <div className="flex items-center gap-x-[10px]">
-                  <Badge 
+                  <Badge
                     label={selectedOption.label.split('|')[0]}
                     leftIcon="feather:tag"
-                    rightIcon="heroicons-solid:x-circle"
+                    rightIcon="in-button-close-monochrome"
                     rightIconColor="#FE5468"
                     onClick={() => handleSelect(null)}
                    />
@@ -290,8 +290,8 @@ const Dropdown: React.FC<DropdownProps> = ({
             </div>
 
             {/* Right Icon */}
-              <GTPIcon  
-                icon="gtp-chevrondown-monochrome"
+              <GTPIcon
+                icon="in-button-down-monochrome"
                 className={`!size-[12px] transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
                 containerClassName='!size-[12px]'
                 size="sm"

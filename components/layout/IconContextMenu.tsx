@@ -172,7 +172,7 @@ export const IconContextMenu = ({
   };
 
   const options = [
-    ...(isLogo || contextMenuOptions.isLink ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
+    ...(isLogo || contextMenuOptions.isLink ? [{ icon: "in-button-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
      { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
      { icon: "gtp-download", label: "Download", onClick: handleDownload },
      ...(isLogo ? [{ icon: "gtp-growthepie-logo", label: "Brand Guide", onClick: handleBrandGuide }] : []),
