@@ -381,6 +381,24 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         const input = document.getElementById('global-search-input') as HTMLInputElement | null;
         if (!input) return;
 
+        // Don't trigger search if modifier keys are pressed (Ctrl, Cmd, Alt, Shift)
+        // This prevents interfering with shortcuts like Ctrl+C, Ctrl+V, etc.
+        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+          return;
+        }
+
+        // Don't trigger search for special keys that are used for navigation or other purposes
+        const specialKeys = [
+          'Tab', 'Escape', 'Enter', 'Backspace', 'Delete',
+          'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+          'Home', 'End', 'PageUp', 'PageDown',
+          'Insert', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+          'CapsLock', 'NumLock', 'ScrollLock', 'Pause', 'PrintScreen'
+        ];
+        if (specialKeys.includes(event.key)) {
+          return;
+        }
+
         const activeElement = document.activeElement;
         const isGlobalSearchFocused = isGlobalSearchInputElement(activeElement);
 
