@@ -16,10 +16,22 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
+import ViewToggle from "../ViewToggle";
+import ChainTypeFilter from "../ChainTypeFilter";
+import { GTPIcon } from "../layout/GTPIcon";
+import Subheading from "../layout/Subheading";
+import Heading from "../layout/Heading";
+import { TopRowContainer, TopRowParent } from "../layout/TopRow";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
-export default function LandingUserBaseChart({isLoading = false}: {isLoading?: boolean}) {
+export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const [isSidebarOpen] = useState(false);
-  const [focusEnabled] = useLocalStorage("focusEnabled", false)
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
+  const [selectedChainTypes, setSelectedChainTypes] = useLocalStorage<string[]>(
+    "landingChainTypeFilter",
+    ["l1", "rollup", "others"]
+  );
+  const [showTable, setShowTable] = useLocalStorage("landingShowTable", true);
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -45,16 +57,16 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
 
   const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
 
-  
+
   useEffect(() => {
     if (landing) {
       setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  
 
-  
+
+
   return (
     <>
       <ShowLoading
@@ -83,17 +95,53 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
+          <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
+                <GTPIcon
+                  icon="gtp-multiple-chains"
+                  size="lg"
+                />
+                <Heading
+                  id="layer-2-traction-title"
+                  className="heading-large-lg"
+                  as="h2"
+                >
+                  Chains in the Ecosystem
+                </Heading>
+              </div>
+            </div>
+            <Subheading className="text-md px-[5px]">
+              Overview of the chains being part of the (wider) Ethereum ecosystem.
+            </Subheading>
+          </Container>
+          <Container className="pt-[15px]">
+            <TopRowContainer className="gap-y-[10px] rounded-t-[15px] rounded-b-[24px] !p-[2px] !pl-[10px] flex-col-reverse">
+              <TopRowParent className="text-md">
+                <ChainTypeFilter
+                  selectedTypes={selectedChainTypes}
+                  onChange={setSelectedChainTypes}
+                />
+              </TopRowParent>
+              {!IS_PRODUCTION && (
+                <TopRowParent className="">
+                  <ViewToggle showTable={showTable} setShowTable={setShowTable} />
+                </TopRowParent>
+              )}
+            </TopRowContainer>
+          </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
               <div className="flex flex-col gap-y-[5px]">
-              <LandingMetricsTable
-                data={{ chains: landing.data.metrics.table_visual }}
-                master={master}
-                // interactable={selectedMetric !== "Total Users"}
-                interactable={false}
-                sort={sort}
-                setSort={setSort}
-              />
+                <LandingMetricsTable
+                  data={{ chains: landing.data.metrics.table_visual }}
+                  master={master}
+                  // interactable={selectedMetric !== "Total Users"}
+                  interactable={false}
+                  sort={sort}
+                  setSort={setSort}
+                  selectedChainTypes={selectedChainTypes}
+                />
               </div>
             </TableRankingProvider>
           </HorizontalScrollContainer>

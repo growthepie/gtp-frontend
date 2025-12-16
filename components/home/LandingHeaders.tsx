@@ -136,7 +136,7 @@ export const LandingFirstHeaders = () => {
         subheaderValues={textTogglesFirst.subheaderValues}
         selectedSubheaderValue={isFocusEnabled ? "l2" : "total"}
         headingClassName={"heading-large-lg"}
-        subheadingClassName={"text-md px-[5px] lg:px-[45px]"}
+        subheadingClassName={"text-md px-[5px]"}
       />
     </>
   );
@@ -154,7 +154,7 @@ export const LandingSecondHeaders = () => {
       subheaderValues={textTogglesSecond.subheaderValues}
       selectedSubheaderValue={isFocusEnabled ? "l2" : "total"}
       headingClassName={"heading-large-lg"}
-      subheadingClassName={"text-md px-[5px] lg:px-[45px]"}
+      subheadingClassName={"text-md px-[5px]"}
     />
   );
 }
