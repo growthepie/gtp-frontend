@@ -82,7 +82,7 @@ export default function CategoryMetrics({
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("txcount_");
   const [selectedCategory, setSelectedCategory] = useState(
-    queryCategory ?? "defi",
+    queryCategory ?? "finance",
   );
 
   const [animationFinished, setAnimationFinished] = useState(true);
@@ -550,9 +550,9 @@ export default function CategoryMetrics({
     return {
       native_transfers: false,
       token_transfers: false,
-      nft_fi: false,
+      collectibles: false,
       defi: false,
-      cefi: false,
+      finance: false,
       utility: false,
       scaling: false,
       gaming: false,
@@ -1298,7 +1298,7 @@ export default function CategoryMetrics({
                 <div className="hidden md:block">
                 <TitleButtonLink
                   label="Don’t see your app? Label here."
-                  icon="gtp-oli-logo"
+                  icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
@@ -1311,7 +1311,7 @@ export default function CategoryMetrics({
                 <div className="block md:hidden">
                   <TitleButtonLink
                     label={<div className="heading-small-xxs">Label here.</div>}
-                    icon="gtp-oli-logo"
+                    icon={"oli-open-labels-initiative" as GTPIconName}
                     iconSize="md"
                     iconBackground="bg-transparent"
                     href="https://www.openlabelsinitiative.org/?gtp.applications"

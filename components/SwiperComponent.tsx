@@ -128,4 +128,3 @@ export default function SwiperComponent({ children }: { children: React.ReactNod
         </Container>
     );
 }
-

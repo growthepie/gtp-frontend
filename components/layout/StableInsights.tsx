@@ -479,7 +479,7 @@ export default function StableInsights({ }: {}) {
               height={36}
               width={36}
             />
-            <Heading className="text-[36px] leading-[120%]" as="h1">
+            <Heading className="heading-large-xl leading-[120%]" as="h1">
               Glo Dollar Holders
             </Heading>
           </div>

@@ -105,7 +105,7 @@ export default function Page({ params: { owner_project } }: Props) {
               <div className="hidden md:block">
                 <TitleButtonLink
                   label="Label more using OLI"
-                  icon="gtp-oli-logo"
+                  icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
@@ -118,7 +118,7 @@ export default function Page({ params: { owner_project } }: Props) {
               <div className="block md:hidden">
                 <TitleButtonLink
                   label={<div className="heading-small-xxs">Label here.</div>}
-                  icon="gtp-oli-logo"
+                  icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
                   href="https://www.openlabelsinitiative.org/?gtp.applications"
@@ -140,7 +140,7 @@ export default function Page({ params: { owner_project } }: Props) {
         {/* <div className="rounded-md bg-color-ui-active/60 h-[152px] w-full"></div> */}
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
-            <div className="heading-large">Similar Applications</div>
+            <div className="heading-lg">Similar Applications</div>
             <div className="text-xs">
               See other applications similar to {ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : ""} sorted by their performance in terms of gas fees.
             </div>
@@ -276,7 +276,7 @@ const ContractsTable = () => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
@@ -438,7 +438,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
@@ -491,7 +491,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
             >
               <Icon
                 icon={copiedAddress ? "feather:check" : "feather:copy"}
-                className="w-[15px] h-[15px]"
+                className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               />
             </div>
           </div>
@@ -503,7 +503,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
           >
             <Icon
               icon="gtp:gtp-block-explorer-alt"
-              className="w-[15px] h-[15px]"
+              className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             />
           </Link>
         </div>

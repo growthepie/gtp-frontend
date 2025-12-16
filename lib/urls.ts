@@ -42,6 +42,25 @@ export const getChainMetricURL = (chain: string, metricURLKey: string): string =
   return `https://api.growthepie.com/v1/metrics/chains/${chain}/${metricApiKey}.json`;
 };
 
+// Map DA metric URL keys to API metric IDs
+export const DAMetricURLKeyToAPIKey: { [key: string]: string } = {
+  "blob-count": "blob_count",
+  "da-consumers": "blob_producers",
+  "data-posted": "data_posted",
+  "fees-paid": "fees_paid",
+  "fees-paid-per-megabyte": "fees_per_mbyte",
+};
+
+// New per-DA-layer metric URL builder
+export const getDALayerMetricURL = (daLayer: string, metricURLKey: string): string => {
+  const metricApiKey = DAMetricURLKeyToAPIKey[metricURLKey];
+  if (!metricApiKey) {
+    throw new Error(`Unknown DA metric URL key: ${metricURLKey}`);
+  }
+  return `https://api.growthepie.com/v1/metrics/data_availability/${daLayer}/${metricApiKey}.json`;
+};
+
+// Legacy DA Metrics URLs - kept for backwards compatibility during migration
 export const DAMetricsURLs = {
   "blob-count": "https://api.growthepie.com/v1/da_metrics/blob_count.json",
   "blob-producers":
@@ -76,7 +95,7 @@ export const ContractsURL = "https://api.growthepie.com/v1/contracts.json";
 
 export const GloHolderURL = "https://api.growthepie.com/v1/glo_dollar.json";
 
-export const EthAggURL = "https://api.growthepie.xyz/v1/ecosystem/overview.json";
+export const EthAggURL = "https://api.growthepie.com/v1/ecosystem/overview.json";
 
 export const LabelsURLS = {
   quick: "https://api.growthepie.com/v1/labels/quick.json",

@@ -294,21 +294,13 @@ export default function ContractContainer() {
       <div className="flex flex-col w-[100%] mx-auto min-w-[880px] mb-[15px]">
         {/* Grid Table Header */}
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(135px,800px),130px]"
+          gridDefinitionColumns="grid-cols-[20px,280px,150px,115px,minmax(115px,800px),130px]"
           className="pb-[4px] text-[12px] gap-x-[15px] z-[2]"
           style={{
             paddingTop: "15px",
           }}
         >
           <div></div>
-          <GridTableHeaderCell
-            metric="project_name"
-            className="heading-small-xs"
-            sort={sort}
-            setSort={setSort}
-          >
-            Owner Project
-          </GridTableHeaderCell>
           <GridTableHeaderCell
             metric="name"
             className="heading-small-xs"
@@ -317,6 +309,16 @@ export default function ContractContainer() {
           >
             Contract
           </GridTableHeaderCell>
+
+          <GridTableHeaderCell
+            metric="project_name"
+            className="heading-small-xs"
+            sort={sort}
+            setSort={setSort}
+          >
+            Application
+          </GridTableHeaderCell>
+          
           <GridTableHeaderCell
             metric="main_category_key"
             className="heading-small-xs"

@@ -1,22 +1,18 @@
 "use client";
-import { use, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
-import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { ChainData } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
-import { MetricsURLs } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
-import { format } from "date-fns";
 import ComparisonChart from "@/components/layout/ComparisonChart";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { intersection } from "lodash";
-import { Icon } from "@iconify/react";
-import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
+import { useChainMetrics } from "@/hooks/useChainMetrics";
 
 const Chain = ({ params }: { params: any }) => {
   const searchParams = useSearchParams();
@@ -38,20 +34,18 @@ const Chain = ({ params }: { params: any }) => {
   // chains query is an array of chains to display
   const queryChains = searchParams ? searchParams.get("chains") : null;
 
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (queryTheme == "light") {
-        setTheme("light");
-      } else {
-        setTheme("dark");
-      }
-    }, 1000);
-  }, []);
+    if (queryTheme === "light") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  }, [queryTheme, setTheme]);
 
   const [showUsd, setShowUsd] = useState(true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
-  const { AllChains } = useMaster();
+  const { AllChains, SupportedChainKeys } = useMaster();
   const {
     data: master,
     error: masterError,
@@ -59,12 +53,19 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  // Determine which chains to fetch (same as normal page)
+  const chainsToFetch = useMemo(() => {
+    return AllChains.filter((chain) =>
+      SupportedChainKeys.includes(chain.key),
+    ).map((chain) => chain.key);
+  }, [AllChains, SupportedChainKeys]);
+
+  // Fetch metric data using the same hook as the normal page
   const {
     data: metricData,
     error: metricError,
     isLoading: metricLoading,
-    isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
+  } = useChainMetrics(params.metric, chainsToFetch, master!);
 
   const chainKeys = useMemo(() => {
     if (!metricData)
@@ -75,7 +76,7 @@ const Chain = ({ params }: { params: any }) => {
 
     return AllChains.filter(
       (chain) =>
-        (Object.keys(metricData.data.chains).includes(chain.key) &&
+        (Object.keys(metricData.chains).includes(chain.key) &&
           chain.ecosystem.includes("all-chains")) ||
         chain.key === "ethereum",
     ).map((chain) => chain.key);
@@ -137,10 +138,14 @@ const Chain = ({ params }: { params: any }) => {
 
   const timeIntervalKey = useMemo(() => {
     if (
-      metricData?.data.avg === true &&
+      metricData?.avg === true &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
+    }
+
+    if (selectedTimeInterval === "weekly") {
+      return "weekly";
     }
 
     if (selectedTimeInterval === "monthly") {
@@ -159,40 +164,43 @@ const Chain = ({ params }: { params: any }) => {
     <>
       {metricData && (
         <ComparisonChart
-          data={Object.keys(metricData.data.chains)
+          data={Object.keys(metricData.chains)
             .filter((chain) => selectedChains.includes(chain))
             .map((chain) => {
               return {
                 name: chain,
                 // type: 'spline',
-                types: metricData.data.chains[chain][timeIntervalKey]?.types || [],
-                data: metricData.data.chains[chain][timeIntervalKey]?.data || [],
+                types: metricData.chains[chain][timeIntervalKey]?.types || [],
+                data: metricData.chains[chain][timeIntervalKey]?.data || [],
               };
             })}
-          metric_id={metricData.data.metric_id}
+          metric_id={metricData.metric_id}
           minDailyUnix={
-            Object.values(metricData.data.chains).reduce(
+            Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
-                if (!chain["daily"].data[0][0]) return acc;
+                const intervalData = chain[timeIntervalKey] || chain["daily"];
+                if (!intervalData?.data?.[0]?.[0]) return acc;
                 return Math.min(
                   acc,
-                  chain["daily"].data[0][0],
+                  intervalData.data[0][0],
                 );
               }
               , Infinity) as number
           }
           maxDailyUnix={
-            Object.values(metricData.data.chains).reduce(
+            Object.values(metricData.chains).reduce(
               (acc: number, chain: ChainData) => {
+                const intervalData = chain[timeIntervalKey] || chain["daily"];
+                if (!intervalData?.data?.length) return acc;
                 return Math.max(
                   acc,
-                  chain["daily"].data[chain["daily"].data.length - 1][0],
+                  intervalData.data[intervalData.data.length - 1][0],
                 );
               }
               , 0) as number
           }
           timeIntervals={intersection(
-            Object.keys(metricData.data.chains.arbitrum),
+            Object.keys(metricData.chains.arbitrum || metricData.chains[Object.keys(metricData.chains)[0]] || {}),
             ["daily", "weekly", "monthly"],
           )}
           // onTimeIntervalChange={(timeInterval) =>
@@ -201,8 +209,8 @@ const Chain = ({ params }: { params: any }) => {
           selectedTimeInterval={selectedTimeInterval}
           setSelectedTimeInterval={setSelectedTimeInterval}
           showTimeIntervals={true}
-          sources={metricData.data.source}
-          avg={metricData.data.avg}
+          sources={metricData.source}
+          avg={metricData.avg}
           focusEnabled={focusEnabled}
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
@@ -210,7 +218,7 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedTimespan={setSelectedTimespan}
           selectedScale={selectedScale}
           setSelectedScale={setSelectedScale}
-          monthly_agg={metricData.data.monthly_agg}
+          monthly_agg={metricData.monthly_agg}
           is_embed={true}
           embed_start_timestamp={
             queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined
@@ -221,12 +229,12 @@ const Chain = ({ params }: { params: any }) => {
           embed_zoomed={queryZoomed === "true"}
         >
           <MetricsTable
-            data={metricData.data.chains}
+            data={metricData.chains}
             master={master}
             selectedChains={selectedChains}
             setSelectedChains={() => { }}
             chainKeys={chainKeys}
-            metric_id={metricData.data.metric_id}
+            metric_id={metricData.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
             timeIntervalKey={timeIntervalKey}

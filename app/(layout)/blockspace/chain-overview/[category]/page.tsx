@@ -22,6 +22,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from "next/router";
 import { notFound } from "next/navigation";
 import { useMaster } from "@/contexts/MasterContext";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 const ChainOverview = ({ params }: { params: any }) => {
   const forceCategory = params.category;
@@ -127,19 +128,8 @@ const ChainOverview = ({ params }: { params: any }) => {
           <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
               <div className="flex gap-x-[8px] items-center">
-                <Image
-                  src="/GTP-Package.svg"
-                  alt="GTP Chain"
-                  className="object-contain w-[32px] h-[32px]"
-                  height={36}
-                  width={36}
-                />
-                <Heading
-                  className="text-[26px] leading-snug lg:text-[36px]"
-                  as="h1"
-                >
-                  Chain Overview
-                </Heading>
+                <Title title="Chain Overview" icon="gtp-chain" as="h1"  />
+         
               </div>
               <EcosystemDropdown />
             </div>

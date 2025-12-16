@@ -33,7 +33,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-book-open" size="md" />}
               label="Knowledge"
-              href="https://docs.growthepie.xyz/"
+              href="https://docs.growthepie.com/"
             />
             {/* <FooterLink
               leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
@@ -43,17 +43,17 @@ export default function Footer() {
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-growthepie-fees" size="md" />}
               label="Fees"
-              href="https://fees.growthepie.xyz/"
+              href="https://fees.growthepie.com/"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-growthepie-labels" size="md" />}
               label="Labels"
-              href="https://labels.growthepie.xyz/"
+              href="https://labels.growthepie.com/"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-growthepie-icons" size="md" />}
               label="Icons"
-              href="https://icons.growthepie.xyz/"
+              href="https://icons.growthepie.com/"
             />
           </div>
           <div className="flex flex-col w-[176px]">
@@ -63,7 +63,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<Image src={APIIcon} alt="API" width={24} height={24} />}
               label="API"
-              href="https://docs.growthepie.xyz/api"
+              href="https://docs.growthepie.com/api"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="github-monochrome" size="md" className="text-color-text-primary" />}

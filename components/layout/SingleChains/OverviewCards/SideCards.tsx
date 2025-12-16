@@ -172,7 +172,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
 
    
     return (
-        <div  className="flex flex-col w-full gap-y-[10px]">
+        <div  className="flex flex-col w-full gap-y-[10px] h-full">
             {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).length > 0 && <PartitionLine title="Highlights" infoContent="Notable growth highlights and all-time highs from the past week." leftIcon={"gtp-megaphone"} />}
             {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).map((metric, index) => (
                 <HighlightCards key={chainDataOverview.data.highlights[metric].metric_id} metric={chainDataOverview.data.highlights[metric].metric_name} icon={chainDataOverview.data.highlights[metric].icon} chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={chainDataOverview.data.highlights[metric].metric_id} index={index} />
@@ -194,13 +194,14 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             )}
             {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}
 
-            {chainDataOverview && <PartitionLine title="Yesterday" infoContent="Sparklines display the last 60 days. The KPI shows yesterday’s value, with the week-over-week change below." />}
+            {chainDataOverview  && Object.keys(chainDataOverview.data.kpi_cards || {}).length > 0 && <PartitionLine title="Yesterday" infoContent="Sparklines display the last 60 days. The KPI shows yesterday’s value, with the week-over-week change below." />}
             {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv"].includes(metric)).map((metric) => (
                 <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
             ))}
             <PartitionLine />
             {chainDataOverview && (
-                <EventsCard totalHeight={500}>
+                <EventsCard totalHeight={500} tooltipContent="This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details.">
+                    <div className="heading-large-md pb-[30px]">Events</div>
                     {[...chainDataOverview.data.events]
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .map((event, index) => (

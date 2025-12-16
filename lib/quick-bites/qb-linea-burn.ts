@@ -4,6 +4,7 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 const lineaTokenBurn: QuickBiteData = {
   title: "Linea Token Burn Tracker",
   subtitle: "Tracking Linea's token burn mechanism and network economics",
+  shortTitle: "Linea Token Burn Tracker",
   content: [
     "# Introduction:",
     " Linea has introduced a dual-token burn mechanism that burns both ETH and LINEA by using all the profits the Linea chain generates after operating expenses. We will also be exploring the economic data Linea is publishing onchain." ,
@@ -236,8 +237,8 @@ const lineaTokenBurn: QuickBiteData = {
     "```",    
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/linea.png",
-  og_image: "",
+  image: "/quick-bites/linea-burn.webp",
+  og_image: "/quick-bites/linea-burn.webp",
   date: "2025-11-13",
   related: [],
   author: [{
@@ -265,7 +266,7 @@ const lineaTokenBurn: QuickBiteData = {
     },
   ],
   icon: "linea-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default lineaTokenBurn;

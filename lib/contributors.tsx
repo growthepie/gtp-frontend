@@ -71,7 +71,7 @@ export const Datasources = [
     image: "/contributors/logo-full-monochrome.svg",
     width: 258,
     height: 45,
-    url: "https://www.growthepie.xyz/",
+    url: "https://www.growthepie.com/",
   },
   {
     name: "Dune",

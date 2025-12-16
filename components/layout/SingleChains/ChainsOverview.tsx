@@ -72,6 +72,13 @@ function dataAvailToArray(x: string) {
       });
     }
 
+    if (x.includes("EigenDA")) {
+      retObject.push({
+        icon: "da-eigenda-logo-monochrome",
+        label: "EigenDA",
+      });
+    }
+
     if (x.includes("DAC")) {
       retObject.push({
         icon: "committee",
@@ -106,7 +113,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
   } = useSWR<MasterResponse>(MasterURL);
 
 
-  const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.xyz/v1/chains/all/streaks_today.json`);
+  const { data: streaksData } = useSWR<StreaksData>(`https://api.growthepie.com/v1/chains/all/streaks_today.json`);
 
 
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -185,37 +192,59 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
     return {};
   }, [master]);
 
+  const achievementsData = chainDataOverview?.data?.achievements;
+  const hasLifetimeAchievements = Boolean(
+    achievementsData?.lifetime && Object.keys(achievementsData.lifetime).length > 0,
+  );
+  const hasStreaksAchievements = Boolean(
+    achievementsData?.streaks &&
+    Object.keys(achievementsData.streaks).length > 0 &&
+    streaksData?.data?.[chainKey],
+  );
+  const shouldShowAchievements = hasLifetimeAchievements || hasStreaksAchievements;
+  const isMegaeth = chainKey === "megaeth";
 
 
 
   return (
     <>
       {oldMaster && chainDataOverview && (
-        <div className="@container flex flex-col w-full gap-[15px]">
+        <div 
+          id="content-container"
+          className="@container flex flex-col w-full gap-[15px]"
+        
+        >
           <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
-          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
-            <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
-            <div className="flex flex-col w-full gap-y-[15px]">
+          <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px] items-stretch">
+            <div className="flex flex-col h-full">
+              <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
+            </div>
+            <div className="flex flex-col w-full gap-y-[15px] h-full min-h-0">
             
-              <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
-                <div className="heading-large-md">Achievements</div>
-                <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
-                  {streaksData?.data[chainKey] && (
-                    <div className="w-full xs:flex-1">
-                      <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData} chainKey={chainKey} />
-                    </div>
-                  )}
-                  <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
-                    <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
+              {shouldShowAchievements && (
+                <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] h-fit`}>
+                  <div className="heading-large-md">Achievements</div>
+                  <div className="flex justify-between flex-wrap gap-x-[30px] pt-[10px] overflow-wrap">
+                    {hasLifetimeAchievements && (
+                      <div className="flex-1 w-full md:flex-[1_1_420px] lg:flex-[1_1_460px] md:min-w-[420px] lg:min-w-[460px]">
+                        <LifetimeAchievments data={chainDataOverview.data.achievements} master={oldMaster} chainKey={chainKey} />
+                      </div>
+                    )}
+                    {hasStreaksAchievements && (
+                      <div className="w-full xs:flex-1">
+                        <StreaksAchievments data={chainDataOverview.data.achievements} master={oldMaster} streaksData={streaksData!} chainKey={chainKey} />
+                      </div>
+                    )}
+
                   </div>
                 </div>
-              </div>
+              )}
               <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] relative`}>
                 <ProjectsMetadataProvider>
                   <ApplicationsGrid chainKey={chainKey} />
                 </ProjectsMetadataProvider>
               </div>
-              {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
+              {chainDataOverview.data.blockspace.data.length > 0 ? (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
                     <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
@@ -223,7 +252,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                         <RowProvider
                           value={{
                             master: oldMaster,
-                            data: chainDataOverview.data.blockspace.blockspace,
+                            data: chainDataOverview.data.blockspace,
                             selectedMode: "txcount_share",
                             forceSelectedChain: "",
                             isCategoryHovered: isCategoryHovered,
@@ -273,21 +302,35 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                     </div>
                   </div>
                 ) : (
-                  <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default pr-[15px] py-[15px] h-[218px]`}>
+                  <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[15px] py-[15px] min-h-[218px] flex-1">
                     <div className="px-[30px] heading-large-md opacity-50">Usage Breakdown</div>
-                    <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2]`}>
-                      <GTPIcon icon="gtp-lock" size="md" className="" />
-                      <div className="heading-large-md">
-                        Usage Breakdown Not Available
-                      </div>
-                      <div className="text-xs text-center px-[30px]">
-                        Usage breakdown metrics are a paid add-on for each specific chain.<br/>
-                        Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
-                        <br/><br/>
-                        Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
-                      </div>
+                  <div className="w-full flex flex-col gap-y-[10px] items-center justify-center flex-1 inset-0 z-[2]">
+                    <GTPIcon icon="gtp-lock" size="md" className="" />
+                    <div className="heading-large-md">
+                      {isMegaeth ? (
+                        <>Usage Breakdown Not Yet Available</>
+                        ) : (
+                        <>Usage Breakdown Not Available</>
+                      )}
+                    </div>
+                    <div className="text-xs text-center px-[30px]">
+                        {isMegaeth ? (
+                          <>
+                            Usage breakdown data is not available yet.<br/>
+                            We are actively labeling contracts for MegaETH, and this view will be live soon.
+                          </>
+                        ) : (
+                          <>
+                            Usage breakdown metrics are a paid add-on for each specific chain.<br/>
+                            Unfortunately, this chain has not yet added usage breakdown metrics to growthepie. 
+                            You can explore this feature on <Link href="/chains/ethereum?tab=blockspace" className="underline">Ethereum Mainnets</Link> page.
+                            <br/><br/>
+                            Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>. 
+                          </>
+                        )}
                     </div>
                   </div>
+                </div>
                 )}
             </div>
           </div>
@@ -462,11 +505,11 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
           {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
           {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
-          {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />}
-          {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />}
+          {/* {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />} */}
           {Object.keys(master.chains[chainKey].links.block_explorers).length > 0 && <LinkDropdown label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />}
           {Object.keys(master.chains[chainKey].links.bridges).length > 0 && <LinkDropdown label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />}
-
+          {Object.keys(master.chains[chainKey].links.others).length > 0 && <LinkDropdown label="Others" links={Object.keys(master.chains[chainKey].links.others).map((other) => ({ icon: socials[other]?.icon, label: other, href: master.chains[chainKey].links.others[other] }))} />}
+          {/* {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />} */}
         </div>
         {/* </HorizontalScrollContainer> */}
       </div>
@@ -547,10 +590,11 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
                         {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
                         {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
-                        {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />}
-                        {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />}
+                        {/* {master.chains[chainKey].links.others.Governance && <LinkButton icon={null} label="Governance" href={master.chains[chainKey].links.others.Governance} />} */}
                         {Object.keys(master.chains[chainKey].links.block_explorers).length > 0 && <LinkDropdown label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />}
                         {Object.keys(master.chains[chainKey].links.bridges).length > 0 && <LinkDropdown label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />}
+                        {Object.keys(master.chains[chainKey].links.others).length > 0 && <LinkDropdown label="Others" links={Object.keys(master.chains[chainKey].links.others).map((other) => ({ icon: socials[other]?.icon, label: other, href: master.chains[chainKey].links.others[other] }))} />}
+                        {/* {Object.keys(master.chains[chainKey].links.rpcs).length > 0 && <LinkDropdown label="RPCs" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />} */}
 
                   </div>
                 </MetricTab>

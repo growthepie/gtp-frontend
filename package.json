@@ -9,7 +9,8 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
-    "figma-icons": "dotenv -e .env.local -- ts-node ./lib/figma.ts && node ./lib/icons.mjs"
+    "icons:update": "dotenv -e .env.local -- tsx ./lib/figma.ts && node ./lib/icons.mjs",
+    "figma-icons": "npm run icons:update"
   },
   "dependencies": {
     "@download/blockies": "^1.0.3",

@@ -1,5 +1,6 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 const highlightsBlock = [
   "## Key Highlights",
@@ -40,9 +41,10 @@ const downloadButtonBlock = [
   "```",
 ];
 
-const anniversaryReport: QuickBiteData = {
+const anniversaryReport: QuickBiteData = createQuickBite({
   title: "Building the World Ledger",
   subtitle: "This report celebrates the 10th anniversary of Ethereum, highlighting its evolution and impact.",
+  shortTitle: "Report: World Ledger",
   content: [
     "By growthepie and Onchain Foundation. Written and published in August 2025.",
     "```container",
@@ -79,6 +81,6 @@ const anniversaryReport: QuickBiteData = {
     url: "/chains/ethereum"
   }],
   icon: "arbitrum-logo-monochrome"
-};
+});
 
 export default anniversaryReport;

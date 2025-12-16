@@ -1,9 +1,11 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const robinhoodStock: QuickBiteData = {
+const robinhoodStock: QuickBiteData = createQuickBite({
   title: "Robinhood Tokenized Stock Tracker",
   subtitle: "Tracking the adoption of Robinhood's tokenized stocks on Arbitrum One",
+  shortTitle: "Robinhood Stocks",
   content: [
     "# Phase 1 (of 3):",
     "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 204 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
@@ -274,8 +276,8 @@ const robinhoodStock: QuickBiteData = {
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token. It does not consider your objectives, financial situation, or needs. Data may be incomplete, delayed, or inaccurate. Do your own research.",
     
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
-  og_image: "",
+  image: "/quick-bites/robinhood-stock.webp",
+  og_image: "/quick-bites/robinhood-stock.webp",
   date: "2025-08-11",
   related: [],
   author: [{
@@ -303,6 +305,6 @@ const robinhoodStock: QuickBiteData = {
   },
 ],
   icon: "arbitrum-logo-monochrome"
-};
+});
 
 export default robinhoodStock;

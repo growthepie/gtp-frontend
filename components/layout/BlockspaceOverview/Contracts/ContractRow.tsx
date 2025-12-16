@@ -22,6 +22,7 @@ import {
 import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { Category } from "@/app/(layout)/applications/_components/Components";
 
 export default function ContractRow({
   rowKey,
@@ -42,7 +43,7 @@ export default function ContractRow({
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
     string | null
-  >("nft");
+  >("collectibles");
   const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
     useState(false);
 
@@ -356,10 +357,55 @@ export default function ContractRow({
 
       <GridTableRow
         key={rowKey}
-        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),130px] relative"
+        gridDefinitionColumns="grid-cols-[20px,280px,150px,115px,minmax(195px,800px),130px] relative"
         className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
+
+        {/* Contract Name and Address */}
+        <div className="flex justify-between gap-x-[10px]">
+          {sortedContracts[rowKey].name ? (
+            <div className="truncate">{sortedContracts[rowKey].name}</div>
+          ) : (
+            <div className="truncate font-mono">
+              {sortedContracts[rowKey].address}
+            </div>
+          )}
+          <div className="flex items-center gap-x-[5px]">
+            <div className="h-[15px] w-[15px]">
+              <div
+                className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    sortedContracts[rowKey].address,
+                  );
+                  setCopyContract(true);
+                  setTimeout(() => {
+                    setCopyContract(false);
+                  }, 1000);
+                }}
+              >
+                <Icon
+                  icon={copyContract ? "feather:check" : "feather:copy"}
+                  className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                />
+              </div>
+            </div>
+            <Link
+              href={`${master.chains[sortedContracts[rowKey].chain].block_explorer
+                }address/${sortedContracts[rowKey].address}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon
+                icon="gtp:gtp-block-explorer-alt"
+                className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              />
+            </Link>
+          </div>
+        </div>
+
+        {/* Application Name */}
         <div className="flex justify-between min-w-0 items-center h-full">
           {sortedContracts[rowKey].project_name ? (
             <GTPTooltipNew
@@ -414,55 +460,19 @@ export default function ContractRow({
             </GTPTooltipNew>
           )}
         </div>
-        <div className="flex justify-between gap-x-[10px]">
-          {sortedContracts[rowKey].name ? (
-            <div className="truncate">{sortedContracts[rowKey].name}</div>
-          ) : (
-            <div className="truncate font-mono">
-              {sortedContracts[rowKey].address}
-            </div>
-          )}
-          <div className="flex items-center gap-x-[5px]">
-            <div className="h-[15px] w-[15px]">
-              <div
-                className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    sortedContracts[rowKey].address,
-                  );
-                  setCopyContract(true);
-                  setTimeout(() => {
-                    setCopyContract(false);
-                  }, 1000);
-                }}
-              >
-                <Icon
-                  icon={copyContract ? "feather:check" : "feather:copy"}
-                  className="w-[15px] h-[15px]"
-                />
-              </div>
-            </div>
-            <Link
-              href={`${master.chains[sortedContracts[rowKey].chain].block_explorer
-                }address/${sortedContracts[rowKey].address}`}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Icon
-                icon="gtp:gtp-block-explorer-alt"
-                className="w-[15px] h-[15px]"
-              />
-            </Link>
-          </div>
+        
+        {/* Main Category */}  
+        <div className="truncate">
+          <Category
+            category={
+              master.blockspace_categories.main_categories[
+                sortedContracts[rowKey].main_category_key
+              ]
+            }
+          />
         </div>
 
-        <div className="truncate">
-          {
-            master.blockspace_categories.main_categories[
-            sortedContracts[rowKey].main_category_key
-            ]
-          }
-        </div>
+        {/* Sub Category */}
         <div className="truncate">
           {
             master.blockspace_categories.sub_categories[
@@ -470,6 +480,8 @@ export default function ContractRow({
             ]
           }
         </div>
+
+        {/* Metric Value */}
         <div className="flex items-center justify-end numbers-xs">
           {selectedMode.includes("gas_fees_")
             ? showUsd

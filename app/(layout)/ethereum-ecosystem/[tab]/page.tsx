@@ -29,6 +29,9 @@ import { useBirthdayAnimation } from "@/components/animations/useBirthdayAnimati
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "../../applications/_contexts/ProjectsMetadataContext";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import Link from "next/link";
+import { Title } from "@/components/layout/TextHeadingComponents";
 // import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
@@ -116,7 +119,15 @@ export default function EthAgg() {
       )} */}
 
       <ShowLoading dataLoading={[isEcosystemLoading, isHistoryLoading]} dataValidating={[isEcosystemValidating, isHistoryValidating]} />
-      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
+      <Container
+        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] pb-[15px]"
+        isPageRoot
+      >
+        <div className="flex items-center h-[43px] gap-x-[8px] ">
+          <Title title="Ethereum Ecosystem" icon="gtp-ethereumlogo" as="h1"  />
+        </div>
+
+      </Container>
       <div className="flex flex-col pt-[15px]">
         <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${selectedBreakdownGroup === "Metrics" ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'}`}>
           <div className="overflow-hidden">
@@ -132,36 +143,69 @@ export default function EthAgg() {
         </div>
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
-        <BuildersAndApps selectedBreakdownGroup={selectedBreakdownGroup} />
         <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
       </div>
     </>
   );
 }
 
-const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
-  const showContainer = selectedBreakdownGroup === "Builders & Apps";
-  const [isMounted, setIsMounted] = useState(false);
-  const [containerRef, { width: containerWidth }] = useElementSizeObserver<HTMLDivElement>();
+// const BuildersAndApps = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
+//   const showContainer = selectedBreakdownGroup === "Builders & Apps";
+//   const [isMounted, setIsMounted] = useState(false);
+//   const [containerRef, { width: containerWidth }] = useElementSizeObserver<HTMLDivElement>();
 
-  useEffect(() => {
-    if (!showContainer) {
-      setIsMounted(false);
-      return;
-    }
-    setIsMounted(true);
-  }, [showContainer]);
+//   useEffect(() => {
+//     if (!showContainer) {
+//       setIsMounted(false);
+//       return;
+//     }
+//     setIsMounted(true);
+//   }, [showContainer]);
 
-  return (
-    <Container className={`${showContainer ? 'max-h-[calc(100vh-300px)]' : 'max-h-0'} overflow-hidden`}>
-      <div ref={containerRef} className="py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
-        <ProjectsMetadataProvider>
-          {isMounted && containerWidth > 0 && <ApplicationsGrid chainKey="ethereum-ecosystem" width={containerWidth} />}
-        </ProjectsMetadataProvider>
-      </div>
-    </Container>
-  )
-}
+//   return (
+//     <Container className={`  overflow-hidden`}>
+//       {isMounted && (
+//       <div ref={containerRef} className="py-[15px] rounded-[15px] bg-color-bg-default flex flex-col gap-y-[15px]">
+//         <ProjectsMetadataProvider>
+//           <ApplicationsGrid chainKey="ethereum-ecosystem" width={containerWidth} />
+//         </ProjectsMetadataProvider>
+//       </div>
+//       )}
+//       <div className="w-full flex items-start pt-[0px] -pl-[20px] md:-pl-[50px] ">
+//       {isMounted && (
+//         <div>
+//           <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
+//             <GTPIcon
+//               icon="gtp-faq"
+//               size="lg"
+//             />
+//             <Heading
+//               id="layer-2-traction-title"
+//               className="heading-large-lg"
+//             >
+//               <div>Frequently Asked Questions</div>
+//             </Heading>
+//           </div>
+//           <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
+//             <QuestionAnswer
+//               question="What are applications in this context?"
+//               answer={
+//                 <>
+//                   Applications are projects that are deployed onchain on
+//                   Ethereum Mainnet or any Layer 2. We map smart contracts to 
+//                   their respective applications to provide insights into their
+//                   usage and performance.
+//                 </>
+//               }
+//             />
+
+//           </div>
+//           </div>
+//         )}
+//       </div>
+//     </Container>
+//   )
+// }
 
 
 

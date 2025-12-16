@@ -137,9 +137,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   return (
     <div className={`select-none flex flex-col bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
       <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
-        {sidebarNavigation.map((item, index) => (
-          <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
-        ))}
+        {sidebarNavigation.map((item, index) => {
+        
+          return <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+        })}
       </nav>
     </div>
   );

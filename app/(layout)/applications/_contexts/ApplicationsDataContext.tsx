@@ -100,7 +100,7 @@ function aggregateProjectData(
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
   // Convert chain filter to Set for O(1) lookups
-  const chainFilter = new Set(filters.origin_key); // Assuming these are consistently cased or case-insensitive elsewhere
+  const chainFilter = new Set(filters.origin_key);
   const stringFilters = filters.owner_project.map(f => f.toLowerCase()); // Ensure string filters are lowercase
   const mainCategoryFilter = new Set(filters.main_category.map(c => c.toLowerCase())); // Ensure main_category filters are lowercase
 
@@ -206,7 +206,11 @@ function aggregateProjectData(
     let originKeys: string[] = [];
 
     if(ownerProjectToOriginKeys[owner]){
-      originKeys = focusEnabled ? ownerProjectToOriginKeys[owner].filter(key => key !== "ethereum").sort() : ownerProjectToOriginKeys[owner].sort();
+      let keys = ownerProjectToOriginKeys[owner].filter(key => supportedChainsKeys.includes(key));
+      if (focusEnabled) {
+        keys = keys.filter(key => key !== "ethereum");
+      }
+      originKeys = keys.sort();
     }
 
     return {

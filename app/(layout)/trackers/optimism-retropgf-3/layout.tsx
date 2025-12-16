@@ -39,7 +39,7 @@ export default async function Layout({
                   width={36}
                 /> */}
                 <Icon icon="gtp:optimism-logo-monochrome" className="w-9 h-9 mr-2 fill-[#FF0420] text-[#FF0420]" />
-                <Heading className="text-[24px] md:text-[28px] lg:text-[36px] leading-snug" as="h1">
+                <Heading className="heading-large-xl leading-snug" as="h1">
                   RetroPGF 3 Tracker
                 </Heading>
               </div>

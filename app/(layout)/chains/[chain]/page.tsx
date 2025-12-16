@@ -9,7 +9,7 @@ import { useState, useMemo, memo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
-import ChainChart from "@/components/layout/SingleChains/ChainChart";
+import ChainChartECharts from "@/components/layout/SingleChains/ChainChartECharts";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
 import AppsChain from "@/components/layout/SingleChains/AppsChain";
 import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
@@ -31,6 +31,7 @@ import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
+import UserInsights from "@/components/layout/SingleChains/UserInsights";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -38,7 +39,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 // Memoized tab content components
 const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, chain: string, master: any }) => {
   const chainData = master.chains[chainKey];
-  const { data: chainDataOverview, isLoading: chainDataOverviewLoading, isValidating: chainDataOverviewValidating } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+  const { data: chainDataOverview, isLoading: chainDataOverviewLoading, isValidating: chainDataOverviewValidating } = useSWR<ChainOverview>(`https://api.growthepie.com/v1/chains/${chainKey}/overview.json`);
 
   if(!master || !chainData || !chainDataOverview) return (
   <div className="w-full h-[60vh] overflow-hidden">
@@ -105,39 +106,24 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
         dataLoading={[chainLoading, !chainData]}
         dataValidating={[chainValidating]}
         section={true}
-        
+
       />
     </div>
   )
- 
+
 
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <div
-        className="flex gap-x-[8px] items-center scroll-mt-8"
-        id="fundamentals"
-      >
-        <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
-        <Heading
-          className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
-          as="h2"
-        >
-              Fundamental Metrics
-        </Heading>
-        </div>
-
         {chainData && (
-          <ChainChart
+          <ChainChartECharts
             chain={chain}
             master={master}
             chainData={chainData}
             defaultChainKey={chainKey}
           />
         )}
-
     </div>
-  
   );
 });
 
@@ -318,6 +304,15 @@ AppsContentInner.displayName = 'AppsContentInner';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
+const UserInsightsContent = memo(({ chainKey }: { chainKey: string }) => {
+  return (
+    <ProjectsMetadataProvider>
+      <UserInsights chainKey={chainKey} />
+    </ProjectsMetadataProvider>
+  );
+});
+UserInsightsContent.displayName = 'UserInsightsContent';
+
 const Chain = ({ params }: { params: any }) => {
     const { chain } = params;
     const master = useMaster();
@@ -374,21 +369,26 @@ const Chain = ({ params }: { params: any }) => {
           return <AppsContent chainKey={chainKey} master={master} />;
         case "blockspace":
           return <BlockspaceContent chainKey={chainKey} master={master} />;
+        case "user_insights":
+          return <UserInsightsContent chainKey={chainKey} />;
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
-    }, [selectedTab, chainKey, chain, master, showUsd]);
+    }, [selectedTab, chainKey, chain, master]);
 
 
 
     return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
+        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none"
+     
+        >
             <ChainTabs 
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
+              
             />
-            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}>
+            <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}
             </div>
             <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />

@@ -495,7 +495,7 @@ export default function OverviewMetrics({
                 <div className="hidden md:block">
                 <TitleButtonLink
                   label="Don’t see your app? Label here."
-                  icon="gtp-oli-logo"
+                  icon="oli-open-labels-initiative"
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
@@ -508,7 +508,7 @@ export default function OverviewMetrics({
                 <div className="block md:hidden">
                   <TitleButtonLink
                     label={<div className="heading-small-xxs">Label here.</div>}
-                    icon="gtp-oli-logo"
+                    icon="oli-open-labels-initiative"
                     iconSize="md"
                     iconBackground="bg-transparent"
                     href="https://www.openlabelsinitiative.org/?gtp.applications"

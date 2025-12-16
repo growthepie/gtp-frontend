@@ -11,6 +11,7 @@ import { AggChartProps } from './MetricsCharts';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
+import Link from 'next/link';
 
 
 export function formatNumberWithSI(num: number): string {
@@ -121,6 +122,7 @@ export function AggChart({
   title,
   tooltipContent,
   prefix,
+  urlKey,
   dataSource,
   seriesConfigs,
   totalValueExtractor,
@@ -355,8 +357,13 @@ export function AggChart({
       ? dataSource.daily.values[layer2Index][dataSource.daily.types.indexOf("l2s_launched")]
       : null;
 
+    const layer2DataArchived = hasDaily && layer2Index >= 0
+      ? dataSource.daily.values[layer2Index][dataSource.daily.types.indexOf("l2s_archived")]
+      : null;
+
     const totalL2sItem = sortedData.find(item => item.seriesName === "Layer 2s Live");
     const showL2List = totalL2sItem && layer2Data && Array.isArray(layer2Data) && layer2Data.length > 0;
+    const showL2ArchivedList = totalL2sItem && layer2DataArchived && Array.isArray(layer2DataArchived) && layer2DataArchived.length > 0;
 
     let tooltipWidth = 256; // max-w-64 = 256px
     if (metricName === "# Layer 2s Live") {
@@ -484,6 +491,35 @@ export function AggChart({
           <div className="heading-small-xxs mt-3">Launched this Month</div>
           <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit mt-2 mb-1">
             {layer2Data && typeof layer2Data === 'object' && (layer2Data as any[]).length > 0 && (layer2Data as any[]).map((l2Item: any, index: number) => {
+              const chainInfo = AllChainsByKeys[l2Item.origin_key];
+              const chainIcon = chainInfo ? `${chainInfo.urlKey}-logo-monochrome` : "chain-dark";
+              const chainColor = chainInfo?.colors.dark[0] || UNLISTED_CHAIN_COLORS[index % UNLISTED_CHAIN_COLORS.length];
+
+              return (
+                <div key={index} className="flex items-center bg-color-bg-medium text-[10px] rounded-full pl-[3px] pr-[6px] py-[3px] gap-x-[4px] max-w-full">
+                  <div className="flex items-center justify-center w-[12px] h-[12px]">
+                    <GTPIcon
+                      icon={chainIcon as any}
+                      style={{ color: chainColor }}
+                      size="sm"
+                      className="w-[10px] h-[10px]"
+                    />
+                  </div>
+                  <div className="text-color-text-primary leading-[120%] text-[10px] truncate">
+                    {l2Item.l2beat_name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {/* )} */}
+
+        {/* {showL2ArchivedList && ( */}
+        <div className={`pl-3 transition-all duration-50 ${showL2ArchivedList ? 'max-h-[120px]' : 'max-h-0 overflow-y-hidden'}`}>
+          <div className="heading-small-xxs mt-3">Shutdown this Month</div>
+          <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit mt-2 mb-1">
+            {layer2DataArchived && typeof layer2DataArchived === 'object' && (layer2DataArchived as any[]).length > 0 && (layer2DataArchived as any[]).map((l2Item: any, index: number) => {
               const chainInfo = AllChainsByKeys[l2Item.origin_key];
               const chainIcon = chainInfo ? `${chainInfo.urlKey}-logo-monochrome` : "chain-dark";
               const chainColor = chainInfo?.colors.dark[0] || UNLISTED_CHAIN_COLORS[index % UNLISTED_CHAIN_COLORS.length];
@@ -641,7 +677,11 @@ export function AggChart({
       {/* Header */}
       <div className={`flex h-[56px] pl-[24px] sm:pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
         <div className='flex gap-x-[5px] sm:gap-x-[10px] items-center z-[10] flex-1 sm:pt-0 pt-[5px]'>
-          <div className='heading-large-xs sm:heading-large-sm md:heading-large-md'>{title}</div>
+          {urlKey ? (
+            <Link href={`/fundamentals/${urlKey}`} className='heading-large-xs sm:heading-large-sm hover:underline md:heading-large-md'>{title}</Link>
+          ) : (
+            <div className='heading-large-xs sm:heading-large-sm md:heading-large-md'>{title}</div>
+          )}
           <GTPTooltipNew
             placement="top-start"
             trigger={

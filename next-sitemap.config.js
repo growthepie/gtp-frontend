@@ -60,6 +60,7 @@ const gtpMain = {
         allow: "/",
         disallow: [
           "/_next/image",     // the image optimizer endpoint
+          "/_next/static",
           "/embed/",          
           "/refactor",
         ],

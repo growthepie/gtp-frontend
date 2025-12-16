@@ -31,6 +31,8 @@ import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
 import { useMaster } from "@/contexts/MasterContext";
+import moment from "moment";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -217,115 +219,92 @@ export default function FeesChart({
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      let dateString = date.toLocaleDateString("en-GB", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
+      
+      // Sort points first
+      points.sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
+        return b.y - a.y;
       });
-
+  
+      const showOthers = points.length > 10;
+      
+      // Use moment format like the good example
+      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+  
       // check if data steps are less than 1 day
-      // if so, add the time to the tooltip
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
       if (timeDiff < 1000 * 60 * 60 * 24) {
-        dateString +=
-          " " +
-          date.toLocaleTimeString("en-GB", {
-            hour: "numeric",
-            minute: "2-digit",
-          });
+        dateString += " " + moment.utc(x).utc().format("HH:mm");
       }
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[16px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
-        <div class="w-full font-semibold text-[9px] md:text-[12px] ml-6 mb-2">${dateString}</div>`;
+  
+      // Match the header structure from the good example
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[220px] md:min-w-[250px] text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]">
+          <div>${dateString}</div>
+          <div class="text-xs">${master.fee_metrics[selectedMetric].name}</div>
+        </div>`;
       const tooltipEnd = `</div>`;
-
-      // let pointsSum = 0;
-      // if (selectedScale !== "percentage")
+  
       let pointsSum = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
       }, 0);
-
-      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
-        if (point.y > 0) acc += point.y;
-        return acc;
-      }, 0);
-
+  
       const maxPoint = points.reduce((max: number, point: any) => {
         if (point.y > max) max = point.y;
         return max;
       }, 0);
-
+  
       const maxPercentage = points.reduce((max: number, point: any) => {
         if (point.percentage > max) max = point.percentage;
         return max;
       }, 0);
-
-      const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
-
-          return b.y - a.y;
-        })
+  
+      const firstTenPoints = points.slice(0, 10);
+      const afterTenPoints = points.slice(10);
+  
+      const tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
           if (!data) return;
-
+  
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]}"></div>
+                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label}</div>
+                <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
               </div>
-              
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-    
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-                style="
-                  width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
-                "></div>
+                style="width: ${(percentage / maxPercentage) * 100}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]}99;"></div>
               </div>`;
+              
           let valueIndex = 1;
           if (master.fee_metrics[selectedMetric].currency === true) {
             valueIndex = showUsd ? 2 : 1;
           }
           const typeString =
-            data.chain_data[name][selectedMetric][selectedTimeframe].types[
-            valueIndex
-            ];
+            data.chain_data[name][selectedMetric][selectedTimeframe].types[valueIndex];
           const unitKey = typeString.replace("value_", "");
-
+  
           let decimals = master.fee_metrics[selectedMetric].currency
             ? showGwei && !showUsd
               ? 2
               : master.fee_metrics[selectedMetric].units[unitKey].decimals
             : master.fee_metrics[selectedMetric].units[unitKey].decimals;
-
-          if (
-            master.fee_metrics[selectedMetric].currency &&
-            showUsd &&
-            showCents
-          ) {
-            decimals =
-              master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+  
+          if (master.fee_metrics[selectedMetric].currency && showUsd && showCents) {
+            decimals = master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
           }
-
-          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix;
-          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix;
+  
+          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix || "";
+          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix || "";
           let value = y;
           let displayValue = y;
-
+  
           if (master.fee_metrics[selectedMetric].currency) {
             if (!showUsd) {
               if (showGwei) {
@@ -350,68 +329,161 @@ export default function FeesChart({
           } else {
             displayValue = y;
           }
-
+  
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
-            }</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]}"></div>
+              <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label}</div>
+              <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"}">${prefix}</div>
                 ${selectedMetric === "fdv" || selectedMetric === "market_cap"
-              ? shortenNumber(displayValue).toString()
-              : parseFloat(displayValue).toLocaleString("en-GB", {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals,
-              })
-            }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  ? shortenNumber(displayValue).toString()
+                  : parseFloat(displayValue).toLocaleString("en-GB", {
+                      minimumFractionDigits: decimals,
+                      maximumFractionDigits: decimals,
+                    })
+                }
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
             </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            };
-            "></div>
-          </div>`;
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+              style="width: ${(Math.max(0, value) / maxPoint) * 100}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]}99;"></div>
+            </div>`;
         })
         .join("");
-
-      let prefix = valuePrefix;
+  
+      // Add "Others" row if there are more than 10 points
+      let othersRow = "";
+      if (showOthers && afterTenPoints.length > 0) {
+        const restSum = afterTenPoints.reduce((acc: number, point: any) => acc + point.y, 0);
+        const restPercentage = afterTenPoints.reduce((acc: number, point: any) => acc + point.percentage, 0);
+  
+        if (selectedScale === "percentage") {
+          othersRow = `
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+              <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+              <div class="flex-1 text-right numbers-xs">${restPercentage.toFixed(2)}%</div>
+            </div>
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+              style="width: ${(restPercentage / maxPercentage) * 100}%; background-color: #E0E7E699;"></div>
+            </div>`;
+        } else {
+          // Get the same unit formatting as the points above
+          let valueIndex = 1;
+          if (master.fee_metrics[selectedMetric].currency === true) {
+            valueIndex = showUsd ? 2 : 1;
+          }
+          const firstPointName = afterTenPoints[0].series.name;
+          const typeString = data?.chain_data[firstPointName][selectedMetric][selectedTimeframe].types[valueIndex];
+          const unitKey = typeString.replace("value_", "");
+  
+          let decimals = master.fee_metrics[selectedMetric].currency
+            ? showGwei && !showUsd
+              ? 2
+              : master.fee_metrics[selectedMetric].units[unitKey].decimals
+            : master.fee_metrics[selectedMetric].units[unitKey].decimals;
+  
+          if (master.fee_metrics[selectedMetric].currency && showUsd && showCents) {
+            decimals = master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+          }
+  
+          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix || "";
+          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix || "";
+  
+          if (master.fee_metrics[selectedMetric].currency) {
+            if (!showUsd && showGwei) {
+              prefix = "";
+              suffix = " gwei";
+            } else if (showUsd && showCents) {
+              prefix = "";
+              suffix = " cents";
+            }
+          }
+  
+          // Calculate display values
+          let displayRestSum = restSum;
+          let displayRestRange = afterTenPoints[afterTenPoints.length - 1].y;
+  
+          if (master.fee_metrics[selectedMetric].currency) {
+            if (!showUsd && showGwei) {
+              displayRestSum = restSum * 1e9;
+              displayRestRange = displayRestRange * 1e9;
+            } else if (showUsd && showCents) {
+              displayRestSum = restSum * 100;
+              displayRestRange = displayRestRange * 100;
+            }
+          }
+  
+          const formattedSum = selectedMetric === "fdv" || selectedMetric === "market_cap"
+            ? shortenNumber(displayRestSum)
+            : displayRestSum.toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              });
+  
+          const formattedRange = displayRestRange.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+          });
+  
+          const restText = reversePerformer === true ? formattedRange : formattedSum;
+          const showBar = reversePerformer === true ? false : true;
+  
+          othersRow = `
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+              <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+              <div class="flex-1 text-right justify-end numbers-xs flex">
+                ${reversePerformer === true ? "<div class='opacity-70 pr-1'>up to</div>" : ""}
+                <div class="${!prefix && "hidden"}">${prefix}</div>
+                ${restText}
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
+            </div>
+            ${showBar ? `
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+              style="width: ${(restSum / maxPoint) * 100}%; background-color: #E0E7E699;"></div>
+            </div>` : ""}
+          `;
+        }
+      }
+  
+      let prefix = valuePrefix || "";
       let suffix = "";
       let value = pointsSum;
-
+  
       const sumRow =
         selectedScale === "stacked"
           ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
-          <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-md">Total</div>
-           <div class="flex-1 text-right justify-end flex numbers-xs">
-
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
-              ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
-          </div>
-        </div>
-        <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-          <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
-        </div>`
+            <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full"></div>
+              <div class="tooltip-point-name text-xs">Total</div>
+              <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"}">${prefix}</div>
+                ${parseFloat(value).toLocaleString("en-GB", {
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
+            </div>
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+            </div>`
           : "";
-
-      return tooltip + tooltipPoints + sumRow + tooltipEnd;
+  
+      const tooltipTop = `<div class="rounded-[15px] bg-color-bg-default shadow-standard pl-[0px] pr-[5px] py-[5px] text-color-text-primary">`
+      const tooltipBody = tooltip + tooltipPoints + othersRow + sumRow + tooltipEnd;
+      const tooltipBottom = `</div>`
+  
+      return tooltipTop + tooltipBody + tooltipBottom;
     },
     [
       valuePrefix,
@@ -421,56 +493,64 @@ export default function FeesChart({
       selectedMetric,
       showGwei,
       showCents,
+      master,
+      selectedScale,
+      data,
+      selectedTimeframe,
     ],
   );
 
   const tooltipPositioner =
-    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
-      function (this, width, height, point) {
-        const chart = this.chart;
-        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-        const tooltipWidth = width;
-        const tooltipHeight = height;
+  useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+    function (this, width, height, point) {
+      const chart = this.chart;
+      const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+      const tooltipWidth = width;
+      const tooltipHeight = height;
 
-        const distance = 40;
-        const pointX = point.plotX + plotLeft;
-        const pointY = point.plotY + plotTop;
-        let tooltipX =
-          pointX - distance - tooltipWidth < plotLeft
-            ? pointX + distance
-            : pointX - tooltipWidth - distance;
+      const distance = 20;
+      const pointX = point.plotX + plotLeft;
+      const pointY = point.plotY + plotTop;
 
-        const tooltipY =
-          pointY - tooltipHeight / 2 < plotTop
-            ? pointY + distance
-            : pointY - tooltipHeight / 2;
-
-        if (isMobile) {
-          if (pointX - tooltipWidth / 2 < plotLeft) {
-            return {
-              x: plotLeft,
-              y: (15 * selectedChains.length - 7) * -1,
-            };
-          }
-          if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
-            return {
-              x: plotLeft + plotWidth - tooltipWidth,
-              y: (15 * selectedChains.length - 7) * -1,
-            };
-          }
-          return {
-            x: pointX - tooltipWidth / 2,
-            y: (15 * selectedChains.length - 7) * -1,
-          };
+      if (isMobile) {
+        // Position tooltip above the chart on mobile
+        let tooltipX = pointX - tooltipWidth / 2;
+        
+        // Keep tooltip within chart bounds horizontally
+        if (tooltipX < plotLeft) {
+          tooltipX = plotLeft;
+        } else if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
+          tooltipX = plotLeft + plotWidth - tooltipWidth;
         }
 
         return {
           x: tooltipX,
-          y: tooltipY - 250,
+          y: -tooltipHeight - 10, // Position above chart with 10px gap
         };
-      },
-      [isMobile, selectedChains],
-    );
+      }
+
+      // Desktop positioning - tooltip to the left or right of point
+      let tooltipX =
+        pointX - distance - tooltipWidth < plotLeft
+          ? pointX + distance
+          : pointX - tooltipWidth - distance;
+
+      // Vertically center on the point, but keep within plot area
+      let tooltipY = pointY - tooltipHeight / 2;
+      
+      if (tooltipY < plotTop) {
+        tooltipY = pointY + distance;
+      } else if (tooltipY + tooltipHeight > plotTop + plotHeight) {
+        tooltipY = plotTop + plotHeight - tooltipHeight - distance;
+      }
+
+      return {
+        x: tooltipX,
+        y: tooltipY,
+      };
+    },
+    [isMobile],
+  );
 
   const dataIndex = useMemo(() => {
     if (!data) return;
@@ -539,13 +619,16 @@ export default function FeesChart({
     }, {});
   }, [data, selectedTimeframe, selectedChains, selectedMetric, dataIndex]);
 
+  const [containerRef, { width: containerWidth, height: containerHeight }] = useElementSizeObserver<HTMLDivElement>();
+
   return (
+    <div ref={containerRef} className="relative w-full h-full">
     <HighchartsProvider Highcharts={Highcharts}>
       <HighchartsChart
         plotOptions={plotOptions}
-        containerProps={{ style: { height: "100%", width: "100%" } }}
       >
         <Chart
+          height={containerHeight}
           backgroundColor={"transparent"}
           type="line"
           panning={{
@@ -575,23 +658,12 @@ export default function FeesChart({
           split={false}
           followPointer={true}
           followTouchMove={true}
-          backgroundColor={"#2A3433EE"}
+          backgroundColor={"transparent"}
           padding={0}
           hideDelay={300}
           stickOnContact={true}
           shape="rect"
-          borderRadius={17}
-          borderWidth={0}
           outside={true}
-          shadow={{
-            color: "black",
-            opacity: 0.015,
-            offsetX: 2,
-            offsetY: 2,
-          }}
-          style={{
-            color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-          }}
           formatter={tooltipFormatter}
           // ensure tooltip is always above the chart
           positioner={tooltipPositioner}
@@ -667,7 +739,7 @@ export default function FeesChart({
               return formatNumber(t.value, true);
             },
           }}
-          min={0}
+          // min={-1}
         >
           {data &&
             Object.keys(data.chain_data)
@@ -696,7 +768,7 @@ export default function FeesChart({
                           AllChainsByKeys[chainKey]?.colors[
                           theme ?? "dark"
                           ][1] + "66",
-                        width: 6,
+                        width: 9,
                       }}
                       states={{
                         hover: {
@@ -735,5 +807,6 @@ export default function FeesChart({
       </HighchartsChart>
       {chartWidth}
     </HighchartsProvider>
+    </div>
   );
 }

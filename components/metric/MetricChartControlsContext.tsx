@@ -67,6 +67,7 @@ type MetricChartControlsContextType = {
   setChartComponent: (chart: RefObject<Highcharts.Chart>) => void;
   setIntervalShown: (interval: { min: number; max: number; num: number; label: string } | null) => void;
   showRollingAverage: boolean;
+  metric_type: "fundamentals" | "data-availability";
 };
 
 const MetricChartControlsContext = createContext<MetricChartControlsContextType>({
@@ -106,6 +107,7 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
   intervalShown: null,
   setIntervalShown: () => { },
   showRollingAverage: true,
+  metric_type: "fundamentals",
 });
 
 type MetricChartControlsProviderProps = {
@@ -263,6 +265,10 @@ export const MetricChartControlsProvider = ({
       return "daily_7d_rolling";
     }
 
+    if (selectedTimeInterval === "weekly") {
+      return "weekly";
+    }
+
     if (selectedTimeInterval === "monthly") {
       return "monthly";
     }
@@ -333,6 +339,7 @@ export const MetricChartControlsProvider = ({
         intervalShown: intervalShown,
         setIntervalShown: setIntervalShown,
         showRollingAverage: showRollingAverage,
+        metric_type: metric_type,
       }}
     >
       {children}

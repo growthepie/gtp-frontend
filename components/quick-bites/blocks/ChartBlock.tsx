@@ -119,9 +119,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     );
   }
 
+  const wrapperClassName = `${block.suppressWrapperSpacing ? '' : 'my-8'} ${block.className || ''}`.trim();
+
   return (
     <>
-    <div className={`my-8 ${block.className || ''}`}>
+    <div className={wrapperClassName}>
       {passChartData && (
         <ChartWrapper
           chartType={block.chartType}

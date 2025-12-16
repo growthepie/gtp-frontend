@@ -32,12 +32,12 @@ const QuickBitesSection: React.FC = () => {
             Quick Bites
           </Heading>
         </div>
-        <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More bites" />
+        <SectionButtonLink href="/quick-bites" label="See all Quick Bites" shortLabel="More Bites" />
       </div>
       
       <div className="text-md px-[5px] lg:px-[45px]">
         <p className="mb-2">
-          Short and focused analyses of specific topics or trends in the Ethereum ecosystem
+          Short data-driven articles on specific topics or trends in the Ethereum ecosystem.
         </p>
       </div>
       

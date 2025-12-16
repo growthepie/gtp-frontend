@@ -863,7 +863,7 @@ function MetricChart({
   
       const tooltipPoints = processPointsInMainThread();
       
-      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[220px] md:min-w-60 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[220px] md:min-w-[250px] text-xs font-raleway">
         <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
@@ -883,8 +883,12 @@ function MetricChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
           </div>`
         : "";
-  
-      return tooltip + tooltipPoints + sumRow + "</div>";
+
+      const tooltipTop = `<div class="rounded-[15px] bg-color-bg-default shadow-standard pl-[0px] pr-[5px] py-[5px] text-color-text-primary">`
+      const tooltipBody = tooltip + tooltipPoints + sumRow + "</div>";
+      const tooltipBottom = `</div>`
+      
+      return tooltipTop + tooltipBody + tooltipBottom;
     },
     [
       metric_id,
@@ -1006,34 +1010,7 @@ function MetricChart({
 
   const { selectedYAxisScale } = useMetricChartControls();
 
-  // const tickInterval = useMemo(() => {
-  //   const timespanDays = (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin) / (24 * 3600 * 1000);
-
-  //   if (timespanDays <= 40) {
-  //     return 7 * 3600 * 1000;
-  //   }
-
-  //   if (timespanDays <= 90) {
-  //     return 1 * 24 * 3600 * 1000;
-  //   }
-
-  //   if (timespanDays <= 120) {
-  //     return 3 * 24 * 3600 * 1000;
-  //   }
-
-  //   if (timespanDays <= 160) {
-  //     return 4 * 24 * 3600 * 1000;
-  //   }
-
-  //   return 6 * 24 * 3600 * 1000;
-
-  // }, [timespans, selectedTimespan]);
-
-
-
-
   if (!master) return null;
-
 
   return (
     <div className="relative w-full h-full">
@@ -1103,18 +1080,24 @@ function MetricChart({
               split={false}
               followPointer={true}
               followTouchMove={true}
-              backgroundColor={"rgb(var(--bg-default) / 0.95)"}
+              // backgroundColor={"rgb(var(--bg-default) / 0.95)"}
+              backgroundColor={"transparent"}
               padding={0}
               hideDelay={300}
               stickOnContact={true}
               shape="rect"
-              borderRadius={17}
-              borderWidth={0}
+              // borderRadius={17}
+              // borderWidth={0}
               outside={true}
-
-              style={{
-                color: "rgb(var(--text-primary))",
-              }}
+              // shadow={{
+              //   color: "rgb(var(--ui-shadow))",
+              //   opacity: 0.5,
+              //   offsetX: 0,
+              //   offsetY: 0,
+              // }}
+              // style={{
+              //   color: "rgb(var(--text-primary))",
+              // }}
               formatter={tooltipFormatter}
               // ensure tooltip is always above the chart
               positioner={tooltipPositioner}

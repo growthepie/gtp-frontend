@@ -2,6 +2,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "./helpers";
 import { MasterURL } from "./urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Icon from "@/components/layout/Icon";
+import QUICK_BITES_DATA from "@/lib/quick-bites/index";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type NavigationItem = {
@@ -101,6 +102,17 @@ export const navigationCategories = {
     icon: "gtp-pie-monochrome",
     group: "trackers",
   },
+  latest: {
+    label: "Latest",
+    icon: "feather:clock",
+    group: "quick-bites",
+  },
+  "public-funding": {
+    label: "Public Funding",
+    icon: "feather:sun",
+    group: "quick-bites",
+  }
+
 };
 
 const dataAvailabilityGroup: NavigationItem = {
@@ -558,7 +570,6 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "chainOverview",
         urlKey: "chain-overview",
         url: "/blockspace/chain-overview",
-        excludeFromSitemap: true,
       },
       {
         label: "Category Comparison",
@@ -608,11 +619,35 @@ const dataAvailabilityGroup: NavigationItem = {
     // href: "",
   },
   ...[dataAvailabilityGroup],
+
   {
-    name: "Trackers",
-    label: "Public Goods",
-    icon: "tracker",
-    options: [
+    name: "Quick Bites",
+    label: "Quick Bites",
+    icon: "gtp-quick-bites",
+    options: [       
+      {
+        label: "Overview",
+        page: {
+          title: "Overview",
+          description: `Our Onchain Economics page breaks down how profitable L2s operate.`,
+          icon: "gtp-overview",
+        },
+        icon: "gtp-overview",
+        key: "quick-bites-overview",
+        rootKey: "quick-bites",
+        urlKey: "quick-bites",
+        url: "/quick-bites",
+      },
+      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data]) => ({  
+        label: data.shortTitle,
+        icon: "gtp-chevronright" as GTPIconName,
+        category: "latest",
+        key: slug,
+        rootKey: slug,
+        urlKey: slug,
+        url: `/quick-bites/${slug}`,
+        group: "latest",
+      })),
       {
         label: "OP RetroPGF 3",
         icon: "optimism-logo-monochrome",
@@ -643,6 +678,7 @@ const dataAvailabilityGroup: NavigationItem = {
       },
     ],
   },
+  
 
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW

@@ -54,34 +54,20 @@ export type ProjectsMetadataContextType = {
 
 type ProjectsMetadataProviderProps = {
   children: React.ReactNode;
-  useFilteredProjects?: boolean;
 }
 
 export const ProjectsMetadataContext = createContext<ProjectsMetadataContextType | undefined>(undefined);
 
-export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false }: ProjectsMetadataProviderProps) => {
+export const ProjectsMetadataProvider = ({ children }: ProjectsMetadataProviderProps) => {
   const {
     data: projectsData,
     error: projectsError,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<any>(useFilteredProjects ? LabelsURLS.projectsFiltered : LabelsURLS.projects);
-
-  const {
-    data: filteredProjectsData,
-    error: filteredProjectsError,
-    isLoading: filteredProjectsLoading,
-    isValidating: filteredProjectsValidating,
-  } = useSWR<any>(!useFilteredProjects ? LabelsURLS.projectsFiltered : null);
-
-  const ownerProjectsInAppsPage = useMemo(() => {
-    if(!filteredProjectsData) return new Set<string>();
-    // 
-    return new Set(filteredProjectsData.data.data.map((project: any) => project[filteredProjectsData.data.types.indexOf("owner_project")]));
-  }, [filteredProjectsData]);
+  } = useSWR<any>(LabelsURLS.projectsFiltered);
 
   const createDisplayNameToProjectData = useCallback((projectsData: any) => {
-    return projectsData.data.data.reduce((acc, project) => {
+    return projectsData.data.data.reduce((acc: any, project: any) => {
       acc[project[projectsData.data.types.indexOf("display_name")]] = {
         owner_project: project[projectsData.data.types.indexOf("owner_project")],
         display_name: project[projectsData.data.types.indexOf("display_name")],
@@ -93,14 +79,14 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
         main_category: project[projectsData.data.types.indexOf("main_category")],
         sub_category: project[projectsData.data.types.indexOf("sub_category")],
         sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
-        on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
+        on_apps_page: true,
       }
       return acc;
     }, {});
-  }, [ownerProjectsInAppsPage, useFilteredProjects]);
+  }, []);
 
   const createOwnerProjectToProjectData = useCallback((projectsData: any) => {
-    return projectsData.data.data.reduce((acc, project) => {
+    return projectsData.data.data.reduce((acc: any, project: any) => {
       acc[project[projectsData.data.types.indexOf("owner_project")]] = {
         owner_project: project[projectsData.data.types.indexOf("owner_project")],
         display_name: project[projectsData.data.types.indexOf("display_name")],
@@ -112,11 +98,11 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
         main_category: project[projectsData.data.types.indexOf("main_category")],
         sub_category: project[projectsData.data.types.indexOf("sub_category")],
         sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
-        on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
+        on_apps_page: true,
       }
       return acc;
     }, {});
-  }, [ownerProjectsInAppsPage, useFilteredProjects]);
+  }, []);
 
 
   const ownerProjectToProjectData = useMemo(() => {
@@ -152,11 +138,11 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
 
   return (
     <ProjectsMetadataContext.Provider value={{
-      isLoading: projectsLoading || filteredProjectsLoading,
+      isLoading: projectsLoading,
       ownerProjectToProjectData,
       projectNameToProjectData,
       availableMainCategories,
-      filteredProjectsData: projectsData ? projectsData.data : filteredProjectsData ? filteredProjectsData.data : null,
+      filteredProjectsData: projectsData ? projectsData.data : null,
     }}>
       {projectsData && children}
     </ProjectsMetadataContext.Provider>

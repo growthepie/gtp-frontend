@@ -5,7 +5,6 @@ import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
-import "../../background.css";
 import "../../globals.css";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { getPageMetadata } from "@/lib/metadata";

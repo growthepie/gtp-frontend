@@ -1,9 +1,11 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const arbitrumTimeboost: QuickBiteData = {
+const arbitrumTimeboost: QuickBiteData = createQuickBite({
   title: "Timeboost: An Express Lane for Arbitrum",
   subtitle: "Timeboost allows to better capitalize on MEV by providing express lane access for users",
+  shortTitle: "Arbitrum Timeboost",
   content: [
 
     "# Timeboost Usage",
@@ -135,8 +137,8 @@ const arbitrumTimeboost: QuickBiteData = {
 
     "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
+  image: "/quick-bites/arbitrum-timeboost.webp",
+  og_image: "/quick-bites/arbitrum-timeboost.webp",
   date: "2025-05-29",
   related: [],
   author: [{
@@ -153,6 +155,6 @@ const arbitrumTimeboost: QuickBiteData = {
     url: "/fundamentals/fees-paid-by-users"
   }],
   icon: "arbitrum-logo-monochrome"
-};
+});
 
 export default arbitrumTimeboost;

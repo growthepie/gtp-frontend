@@ -1,4 +1,5 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 /**
  * Quick Bite Template
@@ -9,9 +10,10 @@ import { QuickBiteData } from '@/lib/types/quickBites';
  * 📖 Full documentation: ./README.md
  */
 
-const myQuickBite: QuickBiteData = {
+const myQuickBite: QuickBiteData = createQuickBite({
   title: "Your Quick Bite Title",
   subtitle: "Brief description of what this analysis covers",
+  shortTitle: "Short Title",
   content: [
     "# Main Heading",
     "Your introduction text goes here. You can use **bold text** and reference dynamic values like {{dynamicValue}}.",
@@ -73,6 +75,6 @@ const myQuickBite: QuickBiteData = {
     name: "Topic Name",
     url: "/relevant/path"
   }]
-};
+});
 
-export default myQuickBite; 
+export default myQuickBite;

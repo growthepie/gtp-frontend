@@ -4,7 +4,6 @@ import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import { Metadata } from "next";
 import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
-import "../../background.css";
 import "../../globals.css";
 import { MasterProvider } from "@/contexts/MasterContext";
 

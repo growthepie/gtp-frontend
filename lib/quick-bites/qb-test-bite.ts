@@ -1,4 +1,5 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 /**
  * Test Quick Bite - Example implementation showcasing all available content blocks
@@ -12,9 +13,10 @@ import { QuickBiteData } from '@/lib/types/quickBites';
  * - Text formatting (headers, bold, callouts, lists)
  */
 
-const testBite: QuickBiteData = {
+const testBite: QuickBiteData = createQuickBite({
   title: "This is a Test Quick Bite",
   subtitle: "Trying out different types of blocks",
+  shortTitle: "Test Quick Bite",
   content: [
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
     "```kpi-cards",JSON.stringify(
@@ -41,6 +43,130 @@ const testBite: QuickBiteData = {
             info: "Test"
           }
       ]),
+    "```",
+
+    "## Toggleable Chart Group",
+    "This example bundles multiple chart configurations into a single block with a toggle so readers can explore different views.",
+    "```chart-toggle",
+    JSON.stringify({
+      title: "Toggle Between Metrics",
+      description: "Switch between blob throughput and Type 4 transaction activity.",
+      layout: "segmented",
+      defaultIndex: 0,
+      charts: [
+        {
+          toggleLabel: "Blobs per Block",
+          type: "line",
+          title: "Submitted Blobs per Block",
+          subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [{
+              name: "Blob Count",
+              color: "#FFC300",
+              stacking: "normal",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: null,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_count.daily.values",
+              dashStyle: "solid" 
+            },
+            {
+              name: "Target",
+              color: "#19D9D6",
+              stacking: "normal",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: null,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_target.daily.values",
+              dashStyle: "Dash" 
+            }
+            ],
+          },
+          yAxisLine: [{
+            xValue: 1755388800000,
+            annotationPositionY: 50,
+            annotationPositionX: 30,
+            annotationText: "Target",
+            lineStyle: "Dash",
+            lineColor: "#19D9D6",
+            textColor: "#19D9D6",
+            textFontSize: "9px",
+            backgroundColor: "#19D9D6",
+            lineWidth: 1,
+          }],
+          height: 400,
+          caption: "Blobs submitted per block contrasted with the target cadence.",
+          seeMetricURL: "https://www.growthepie.com/data-availability"
+        },
+        {
+          toggleLabel: "Type 4 Transactions",
+          type: "column",
+          title: "Transactions that trigger smart wallet upgrades and downgrades",
+          subtitle: "The number of Set Code transactions on EVM chains (aka Type 4 transactions)",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [{
+              name: "Ethereum",
+              color: "#94ABD3",
+              stacking: "normal",
+              xIndex: 1,
+              yIndex: 0,
+              suffix: null,
+              prefix: null,
+              tooltipDecimals: 0,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.type4_tx_count.ethereum.daily.values",
+            },
+            {
+              name: "Base",
+              color: "#2151F5",
+              stacking: "normal",
+              oppositeYAxis: true,
+              type: "line",
+              xIndex: 1,
+              yIndex: 0,
+              suffix: null,
+              prefix: null,
+              tooltipDecimals: 0,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.type4_tx_count.base.daily.values",
+            },
+            {
+              name: "OP Mainnet",
+              color: "#FE5468",
+              stacking: "normal",
+              xIndex: 1,
+              yIndex: 0,
+              suffix: null,
+              prefix: null,
+              tooltipDecimals: 0,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.type4_tx_count.optimism.daily.values",
+            },
+            {
+              name: "Unichain",
+              color: "#FF47BB",
+              stacking: "normal",
+              xIndex: 1,
+              yIndex: 0,
+              suffix: null,
+              prefix: null,
+              tooltipDecimals: 0,
+              url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.type4_tx_count.unichain.daily.values",
+            },
+            ],
+          },
+          height: 400,
+          caption: "Compare Type 4 transaction activity across networks in one click.",
+        }
+      ]
+    }),
     "```",
 
     "## Dropdown Examples ",
@@ -451,6 +577,6 @@ const testBite: QuickBiteData = {
     url: "/chains/base"
   }],
   showInMenu: false
-};
+});
 
-export default testBite; 
+export default testBite;

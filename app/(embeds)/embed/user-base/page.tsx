@@ -39,16 +39,14 @@ export default function Page() {
   const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
   const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
 
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (queryTheme == "light") {
-        setTheme("light");
-      } else {
-        setTheme("dark");
-      }
-    }, 1000);
-  }, []);
+    if (queryTheme === "light") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  }, [queryTheme, setTheme]);
 
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 

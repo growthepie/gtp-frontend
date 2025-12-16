@@ -50,7 +50,7 @@ export const MetricContextWrapper = ({
     <MetricDataProvider
       metric={metric}
       metric_type={metric_type}
-      selectedTimeInterval={defaultTimeInterval || selectedTimeInterval}
+      selectedTimeInterval={selectedTimeInterval}
     >
       <div>{defaultChains?.join(", ")}</div>
       <MetricChartControlsProvider

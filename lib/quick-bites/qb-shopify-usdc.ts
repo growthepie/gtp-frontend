@@ -1,8 +1,10 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const BaseCommercePaymentProtocol: QuickBiteData = {
+const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
   title: "Base: Commerce Payment Protocol (+Shopify)",
   subtitle: "A game changer for E-commerce, stablecoins are going mainstream",
+  shortTitle: "Base Commerce",
   content: [
 
     'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world". ([1])[https://www.shopify.com/news/stablecoins-on-shopify] This marked the birth of the Commerce Payment Protocol on Base (Layer 2) bringing tradtional E-commerce onchain.',
@@ -178,8 +180,8 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
     "```",
     "Further implementation documentation can be seen here: [https://shopify.engineering/commerce-payments-protocol](https://shopify.engineering/commerce-payments-protocol).",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
-  og_image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
+  image: "/quick-bites/base-commerce.webp",
+  og_image: "/quick-bites/base-commerce.webp",
   date: "2025-06-26",
   related: [],
   author: [{
@@ -210,7 +212,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
   }
 ],
 icon: "base-logo-monochrome"
-};
+});
 
 
 export default BaseCommercePaymentProtocol;

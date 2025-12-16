@@ -23,6 +23,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { filter } from "lodash";
 import { PageContainer } from "@/components/layout/Container";
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 const ChainOverview = () => {
   const { AllChainsByKeys } = useMaster();
@@ -124,18 +125,10 @@ const ChainOverview = () => {
           >
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] relative">
               <div className="flex gap-x-[8px] items-center">
-                <Icon
-                  icon={"gtp:gtp-chain"}
-                  className="object-contain w-[32px] h-[32px]"
-                  height={36}
-                  width={36}
-                />
-                <Heading
-                  className="text-[26px] leading-snug lg:text-[36px]"
-                  as="h1"
-                >
-                  Chain Overview
-                </Heading>
+              <div className="flex items-center h-[43px] gap-x-[8px] ">
+                <Title title="Chain Overview" icon="gtp-chain" as="h1"  />
+              </div>
+
               </div>
               <EcosystemDropdown />
             </div>

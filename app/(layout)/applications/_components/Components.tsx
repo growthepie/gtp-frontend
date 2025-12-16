@@ -130,7 +130,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             <>
               <TitleButtonLink
                 label="Don’t see your app? Label here."
-                icon="gtp-oli-logo"
+                icon={"oli-open-labels-initiative" as GTPIconName}
                 iconSize="md"
                 iconBackground="bg-transparent"
                 rightIcon={"feather:arrow-right" as GTPIconName}
@@ -156,7 +156,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
             <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">
-              <GTPIcon icon="gtp-oli-logo" size="md" />
+              <GTPIcon icon={"oli-open-labels-initiative" as GTPIconName} size="md" />
             </div>
           </Link>
         </div>
@@ -747,9 +747,11 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
 
 ApplicationTooltip.displayName = 'ApplicationTooltip';
 
-export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
+export const TopGainersAndLosersTooltip = ({ metric, scopeLabel }: { metric: string; scopeLabel?: string }) => {
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
+  const scopeText = scopeLabel ? ` on ${scopeLabel}` : "";
+  const medianScopeText = scopeLabel ? "within this chain view" : "across all applications";
   return (
     <div
       className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
@@ -760,19 +762,13 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
         e.stopPropagation();
       }}
     >
-      <div className="heading-small-xs">Top Gainers and Losers</div>
+      <div className="heading-small-xs">Top Gainers</div>
       <div className="text-xs">
-        This section shows applications that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
-      </div>
-      <div className="text-xs">
-        <ul className="list-disc list-inside">
-          <li>3 &quot;Top Gainers&quot;</li>
-          <li>3 &quot;Top Losers&quot;</li>
-        </ul>
+        This section shows applications{scopeText} that have experienced the most significant positive change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
       </div>
 
       <div className="text-xxs">
-        This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+        Calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} {medianScopeText}.
       </div>
 
       {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
@@ -1161,33 +1157,41 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
       return "gtp-utilities";
     case "Token Transfers":
       return "gtp-tokentransfers";
-    case "DeFi":
+    case "Finance":
       return "gtp-defi";
     case "Social":
       return "gtp-socials";
-    case "NFT":
+    case "Collectibles":
       return "gtp-nft";
-    case "CeFi":
-      return "gtp-cefi";
     default:
       return "";
   }
+}
+
+const UnknownCategoryIcon = () => {
+  return (
+    <div className="!size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+  )
 }
 
 export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data: masterData } = useMaster();
 
-  console.log(ownerProjectToProjectData[application.owner_project], ownerProjectToProjectData[application.owner_project].main_category, ownerProjectToProjectData[application.owner_project].sub_categories);
-
   if(!masterData){
     return null;
   }
 
+  const isMissingCategory = !ownerProjectToProjectData[application.owner_project] || ownerProjectToProjectData[application.owner_project]?.main_category === undefined;
+
+  const Icon = isMissingCategory ? UnknownCategoryIcon : <GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />;
+
   return (
     <>
-      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />} />
+      <TooltipHeader title={`Category`} icon={Icon as React.ReactNode} />
       <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
+      {isMissingCategory ? <div className="text-xs text-color-ui-hover">This application has not been categorized yet.</div> : (
+        <>
         <div className="heading-small-xs">Subcategories</div>
         <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
           <div className="flex flex-col gap-[5px]">
@@ -1196,6 +1200,8 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
             ))}
           </div>
         </div>
+        </>
+      )}
       </TooltipBody>
     </>
   )
@@ -1207,7 +1213,7 @@ export const Category = ({ category }: { category: string }) => {
   return (
     <>
       {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
-      {category ? (
+      {category && category.toLocaleLowerCase() !== "unknown" ? (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
           <div className="text-xs">{category}</div>

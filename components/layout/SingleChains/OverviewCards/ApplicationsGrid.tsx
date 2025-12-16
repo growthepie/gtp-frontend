@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useContext } from 'react';
 import Image from 'next/image';
 import * as d3 from 'd3-hierarchy';
 import useSWR from 'swr';
@@ -7,6 +7,7 @@ import { ChainOverview, Ecosystem } from '@/lib/chains';
 import { MasterResponse } from '@/types/api/MasterResponse';
 import { useMaster } from '@/contexts/MasterContext';
 import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/ProjectsMetadataContext';
+import { ApplicationsDataContext, AggregatedDataRow } from '@/app/(layout)/applications/_contexts/ApplicationsDataContext';
 import { ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import Link from 'next/link';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
@@ -263,9 +264,14 @@ function buildCategoryNodes(
 interface DensePackedTreeMapProps {
   chainKey: string;
   width?: number;
+  appsPage?: boolean;
+  selectedCategory?: string | null;
+  setSelectedCategory?: (category: string | null) => void;
+  clearSelectedCategory?: boolean;
+  setClearSelectedCategory?: (clear: boolean) => void;
 }
 
-const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategory, setSelectedCategory, clearSelectedCategory, setClearSelectedCategory }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
@@ -275,6 +281,14 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   const [containerWidth, setContainerWidth] = useState(width || DEFAULT_CONTAINER_WIDTH);
   const [showHint, setShowHint] = useState(false);
   const { AllChainsByKeys } = useMaster();
+  const applicationsDataContext = useContext(ApplicationsDataContext);
+  const isAllChainsView = ['all_l2s', 'all', 'all-chains'].includes(chainKey);
+  const aggregatedApps: AggregatedDataRow[] = isAllChainsView
+    ? applicationsDataContext?.applicationDataAggregatedAndFiltered ?? []
+    : [];
+  const isAggregateLoading = isAllChainsView
+    ? applicationsDataContext?.getIsLoading?.() ?? false
+    : false;
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -284,7 +298,23 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   const { isSidebarOpen } = useUIContext();
 
   // Horizontal padding applied to the parent container (px-[30px] = 30px left + 30px right)
-  const CONTAINER_HORIZONTAL_PADDING = 30;
+  const CONTAINER_HORIZONTAL_PADDING = 60;
+
+  useEffect(() => {
+    if (selectedMainCategory && setSelectedCategory) {
+      setSelectedCategory(selectedMainCategory);
+    }
+  }, [selectedMainCategory]);
+
+  useEffect(() => {
+    if (clearSelectedCategory && setClearSelectedCategory) {
+      setClearSelectedCategory(false);
+      setSelectedMainCategory(null);
+      if (setSelectedCategory) {
+        setSelectedCategory(null);
+      }
+    }
+  }, [clearSelectedCategory]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -307,10 +337,16 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   // ============================================================================
   // Data Fetching
   // ============================================================================
+  const chainOverviewKey = !isAllChainsView
+    ? (
+      chainKey === "ethereum-ecosystem"
+        ? "https://api.growthepie.com/v1/ecosystem/builders.json"
+        : `https://api.growthepie.com/v1/chains/${chainKey}/overview.json`
+    )
+    : null;
+
   const { data: chainDataOverview } = useSWR<ChainOverview | EthereumEcosystemBuildersResponse>(
-    chainKey === "ethereum-ecosystem" ? 
-      "https://api.growthepie.com/v1/ecosystem/builders.json"
-       : `https://api.growthepie.com/v1/chains/${chainKey}/overview.json`
+    chainOverviewKey
   );
 
   const { data: masterData } = useMaster();
@@ -339,6 +375,9 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   }, [filteredProjectsData]);
 
   const appDataSource = useMemo(() => {
+    if (isAllChainsView) {
+      return null;
+    }
     let overviewApps: { data: [][]; types: string[] } | null = null;
     if (chainKey === "ethereum-ecosystem") {
       overviewApps = ((chainDataOverview as EthereumEcosystemBuildersResponse)?.data?.ecosystem  as Ecosystem)?.apps;
@@ -358,9 +397,35 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
       : overviewApps.data.map(app => [...app, chainKey]);
 
     return { data, types };
-  }, [chainDataOverview, chainKey]);
+  }, [chainDataOverview, chainKey, isAllChainsView]);
 
   const enrichedApps = useMemo(() => {
+    if (isAllChainsView) {
+      if (!aggregatedApps.length) {
+        return [];
+      }
+
+      return aggregatedApps
+        .map((aggregatedApp) => {
+          const projectMeta = ownerProjectMap[aggregatedApp.owner_project];
+
+          if (!projectMeta) {
+            return null;
+          }
+
+          return {
+            ownerProject: aggregatedApp.owner_project,
+            displayName: projectMeta.display_name || aggregatedApp.owner_project,
+            logoPath: projectMeta.logo_path,
+            txcount: aggregatedApp.txcount || 0,
+            mainCategory: projectMeta.main_category,
+            subCategory: projectMeta.sub_category,
+          } as EnrichedApp;
+        })
+        .filter((app): app is EnrichedApp => app !== null)
+        .sort((a, b) => b.txcount - a.txcount);
+    }
+
     if (!appDataSource) {
       return [];
     }
@@ -371,7 +436,7 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
       filteredProjectsData,
       ownerProjectMap
     );
-  }, [appDataSource, filteredProjectsData, ownerProjectMap]);
+  }, [aggregatedApps, appDataSource, filteredProjectsData, isAllChainsView, ownerProjectMap]);
 
   const categoryNodes = useMemo(() => {
     const allNodes = buildCategoryNodes(
@@ -400,7 +465,7 @@ const DensePackedTreeMap = ({ chainKey, width }: DensePackedTreeMapProps) => {
   }, [enrichedApps, masterData, selectedMainCategory]);
 
   const dimensions = useMemo(() => {
-    const MIN_HEIGHT = 245;
+    const MIN_HEIGHT = chainKey === "ethereum-ecosystem" ? 700 : 350;
     const MAX_HEIGHT = windowHeight - (chainKey === "ethereum-ecosystem" ? 600 : 300);
     const MAX_APPS = 20;
 
@@ -820,8 +885,8 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        // Subtract horizontal padding from the measured width
-        const width = entry.contentRect.width - CONTAINER_HORIZONTAL_PADDING;
+        // Measure the inner width (content box) directly
+        const width = entry.contentRect.width;
         setIsResizing(true);
 
         if (resizeTimeoutRef.current) {
@@ -923,19 +988,30 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
   const { theme } = useTheme();
 
-  const hideApplications = layout.length === 0;
+  const layoutIsEmpty = layout.length === 0;
+  const disableCategoryControls = !isAllChainsView && layoutIsEmpty;
+  const computedChainKey = chainKey === "ethereum-ecosystem"
+    ? "ethereum"
+    : chainKey === "all" || chainKey === "all-chains"
+      ? "all_l2s"
+      : chainKey;
+  const isMegaeth = computedChainKey === "megaeth";
+  const categoryOptions = layoutIsEmpty ? allMainCategories : mainCategories;
+  const showUnavailableState = !isAllChainsView && layoutIsEmpty;
+  const showAggregateLoadingState = isAllChainsView && layoutIsEmpty && isAggregateLoading;
+  const showAggregateEmptyState = isAllChainsView && layoutIsEmpty && !isAggregateLoading;
 
-  const computedChainKey = chainKey === "ethereum-ecosystem" ? "ethereum" : chainKey;
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={`group flex flex-col w-full gap-y-[30px] h-full`}>
+      <div className={`group flex flex-col w-full gap-y-[30px] h-full `}>
         {/* Header with category filters */}
         <HorizontalScrollContainer includeMargin={false} enableDragScroll={true} hideScrollbar={true} scrollToId={selectedMainCategory === null ? 'main-category-button-all' : `main-category-button-${selectedMainCategory}`}>
-          <div className={`@container flex px-[30px] gap-x-[15px] items-center ${hideApplications ? 'opacity-50' : 'opacity-100'}`}>
+          {!appsPage && (
+          <div className={`@container flex px-[30px] gap-x-[15px] items-center ${disableCategoryControls ? 'opacity-50' : 'opacity-100'}`}>
             <div className="flex items-center gap-x-[5px]">
               <GTPIcon
-                icon={`gtp:${AllChainsByKeys[computedChainKey].urlKey}-logo-monochrome` as GTPIconName}
+                icon={computedChainKey === "all_l2s" ? `gtp:gtp-metrics-ethereum-ecosystem` as GTPIconName : `gtp:${AllChainsByKeys[computedChainKey].urlKey}-logo-monochrome` as GTPIconName}
                 size="sm"
                 style={{ color: AllChainsByKeys[computedChainKey].colors[theme ?? "dark"][0] }}
               />
@@ -945,28 +1021,28 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             </div>
 
             {/* Category buttons */}
-            <div className='flex flex-1 pr-[30px]' style={{ minWidth: ((hideApplications ? allMainCategories.length : mainCategories.length) + 1) * 120 + 30 }}>
+            <div className='flex flex-1 pr-[30px]' style={{ minWidth: (categoryOptions.length + 1) * 120 + 30 }}>
               <button
                 id="main-category-button-all"
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                   border-color-text-primary/30 border-dotted border-r-[0.5px]
                   rounded-l-[15px]
                   ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
-                  ${hideApplications && 'pointer-events-none'}
+                  ${disableCategoryControls && 'pointer-events-none'}
                   `}
                 onClick={() => setSelectedMainCategory(null)}
               >
                 All
               </button>
-              {(hideApplications ? allMainCategories : mainCategories).map((category, index) => (
+              {categoryOptions.map((category, index) => (
                 <button
                   id={`main-category-button-${category.id}`}
                   key={category.id}
                   className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
                     border-color-text-primary/30 border-dotted
-                    ${index < (hideApplications ? allMainCategories : mainCategories).length - 1 ? 'border-r-[0.5px] border-dotted' : 'rounded-r-[15px]'}
+                    ${index < categoryOptions.length - 1 ? 'border-r-[0.5px] border-dotted' : 'rounded-r-[15px]'}
                     ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
-                    ${hideApplications && 'pointer-events-none'}
+                    ${disableCategoryControls && 'pointer-events-none'}
                     `}
 
                   onClick={() => setSelectedMainCategory(category.id)}
@@ -976,9 +1052,10 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               ))}
             </div>
           </div>
+          )}
         </HorizontalScrollContainer>
         {/* Animated Treemap visualization */}
-        <div ref={containerRef} className="relative flex-1 w-full h-full px-[30px]" onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
+        <div ref={containerRef} className={`relative flex-1 w-full h-full ${appsPage ? 'px-[15px] -my-[10px]' : 'px-[30px]'}`} onClick={selectedMainCategory !== null ? handleBackToOverview : undefined}>
           {/* <div className="absolute inset-0 z-[0] flex flex-col items-center justify-center pointer-events-none">
             <GTPIcon 
               icon={`${chainKey}-logo-monochrome` as GTPIconName} 
@@ -988,23 +1065,56 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               style={{ color: AllChainsByKeys[chainKey].colors.dark[0] }} 
             />
           </div> */}
-          {hideApplications ? (
-            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-start h-full inset-0 z-[2] min-h-[192px]`}>
+          {showUnavailableState ? (
+            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
               <GTPIcon icon="gtp-lock" size="md" className="" />
               <div className="heading-large-md">
-                Applications Not Available
+                {isMegaeth ? (
+                  <>Applications Not Yet Available</>
+                ) : (
+                  <>Applications Not Available</>
+                )}
               </div>
               <div className="text-xs text-center px-[30px]">
-                Application metrics are a paid add-on for each specific chain.<br />
-                Unfortunately, this chain has not yet added application metrics to growthepie.
-                <br /><br />
-                Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
+                {isMegaeth ? (
+                  <>
+                    Application data is not available yet.<br />
+                    We are actively labeling contracts for MegaETH, and the application view will be live soon.
+                  </>
+                ) : (
+                  <>
+                    Application metrics are a paid add-on for each specific chain.<br />
+                    Unfortunately, this chain has not yet added application metrics to growthepie.
+                    You can explore this feature on <Link href="/chains/ethereum?tab=apps" className="underline">Ethereum Mainnets</Link> page.
+                    <br /><br />
+                    Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
+                  </>
+                )}
               </div>
             </div>
-
+          ) : showAggregateLoadingState ? (
+            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
+              <GTPIcon icon="gtp-info-monochrome" size="md" className="animate-pulse" />
+              <div className="heading-large-md">
+                Loading Applications
+              </div>
+              <div className="text-xs text-center px-[30px]">
+                Fetching the latest application data across chains.
+              </div>
+            </div>
+          ) : showAggregateEmptyState ? (
+            <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
+              <GTPIcon icon="gtp-info-monochrome" size="md" className="" />
+              <div className="heading-large-md">
+                No Applications Found
+              </div>
+              <div className="text-xs text-center px-[30px]">
+                Try adjusting your filters or selecting different chains to discover more applications.
+              </div>
+            </div>
           ) : (
             <>
-              {/* <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${hideApplications ? 'opacity-0' : 'opacity-100'}`}>
+              {/* <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none ${layoutIsEmpty ? 'opacity-0' : 'opacity-100'}`}>
                 <ChartWatermarkWithMetricName className='w-[128.67px] md:w-[192.87px] text-color-text-primary/10 z-[2] pointer-events-none' metricName={`${masterData?.chains[chainKey].name} Applications`} />
               </div> */}
             <motion.div
@@ -1076,8 +1186,8 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
         </div>
       </div>
       <div className="flex items-center justify-end pt-[10px] px-[15px] w-full h-[24px] gap-x-[10px]">
-        {!hideApplications && (
-          <div className='w-[15px] h-fit z-30'>
+        {!layoutIsEmpty && (
+          <div className='w-[15px] h-fit z-30 pb-[15px]'>
             <GTPTooltipNew
               placement="top-end"
               size="md"
@@ -1111,7 +1221,7 @@ const ShortMainCategoryNames = {}
 
 const ShortSubCategoryNames = {
   'Cross-Chain Communication': 'Cross Chain Comms',
-  'Non-Fungible Tokens': 'NFTs',
+  'Collectibles': 'Collectibles',
   'Centralized Exchange': 'CEX',
   'Decentralized Exchange': 'DEX',
   'Real World Assets': 'RWA',
@@ -1154,10 +1264,9 @@ const CategorySection = ({
   const tiles = generateConstrainedTiles(node.width, node.height, node.apps.length);
   const categoryIcon = {
     'social': 'gtp-socials',
-    'nft': 'gtp-nft',
+    'collectibles': 'gtp-nft',
     'cross_chain': 'gtp-crosschain',
-    'defi': 'gtp-defi',
-    'cefi': 'gtp-cefi',
+    'finance': 'gtp-defi',
     'utility': 'gtp-utilities',
     'token_transfers': 'gtp-tokentransfers',
   }
@@ -1427,8 +1536,22 @@ function generateConstrainedTiles(
     }
   }
 
-  actualCols = Math.min(actualCols, maxCols);
-  actualRows = Math.min(actualRows, maxRows);
+  // 1. Clamp cols, expand rows
+  if (actualCols > maxCols) {
+    actualCols = maxCols;
+    actualRows = Math.ceil(estimatedYilesToShow / actualCols);
+  }
+  
+  // 2. Clamp rows, expand cols
+  if (actualRows > maxRows) {
+    actualRows = maxRows;
+    actualCols = Math.ceil(estimatedYilesToShow / actualRows);
+  }
+
+  // 3. Clamp cols again (in case step 2 expanded too much)
+  if (actualCols > maxCols) {
+    actualCols = maxCols;
+  }
 
   const totalTileWidth = actualCols * TILE + (actualCols - 1) * GAP;
   const totalTileHeight = actualRows * TILE + (actualRows - 1) * GAP;

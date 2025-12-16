@@ -21,7 +21,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';
 import { Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -29,6 +29,50 @@ import { track } from "@vercel/analytics/react";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
+}
+
+function isTypingInTextField(active: Element | null) {
+  if (!active) return false;
+
+  // Native text inputs
+  if (active instanceof HTMLInputElement) {
+    const type = (active.type || "text").toLowerCase();
+    // Treat these as text-like; ignore things like checkbox, radio, button, etc.
+    const textLikeTypes = [
+      "text",
+      "search",
+      "email",
+      "number",
+      "password",
+      "tel",
+      "url",
+    ];
+    return textLikeTypes.includes(type);
+  }
+
+  if (active instanceof HTMLTextAreaElement) {
+    return true;
+  }
+
+  const el = active as HTMLElement;
+
+  // Contenteditable regions
+  if (el.isContentEditable) {
+    return true;
+  }
+
+  // ARIA text-like roles
+  const role = el.getAttribute("role");
+  if (role === "textbox" || role === "searchbox") {
+    return true;
+  }
+
+  return false;
+}
+
+function isGlobalSearchInputElement(active: Element | null) {
+  if (!active) return false;
+  return (active as HTMLElement).id === "global-search-input";
 }
 
 const setDocumentScroll = (showScroll: boolean) => {
@@ -91,6 +135,12 @@ export const HeaderSearchButton = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      // If the user is typing into any other text-like field, ignore global search shortcuts
+      if (isTypingInTextField(activeElement) && !isGlobalSearchInputElement(activeElement)) {
+        return;
+      }
+
       // on '/' press, open search if not already open, otherwise close it
       if (e.key === "/") {
         e.preventDefault();
@@ -325,6 +375,31 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, [debouncedUpdateSearch]);
 
+    // on mount, add an event listener for keystrokes. If a alphanumeric key is pressed, focus the input and write the key to the input.
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        const input = document.getElementById('global-search-input') as HTMLInputElement | null;
+        if (!input) return;
+
+        const activeElement = document.activeElement;
+        const isGlobalSearchFocused = isGlobalSearchInputElement(activeElement);
+
+        // If the user is currently typing in any other text-like field, don't steal focus
+        if (isTypingInTextField(activeElement) && !isGlobalSearchFocused) {
+          return;
+        }
+
+        const isInputFocused = input.contains(activeElement);
+        if (event.key.match(/[a-zA-Z0-9]/) && !isInputFocused) {
+          input.focus();
+          input.value = event.key;
+        }
+      };
+      
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     if(!showSearchContainer){
       return (
         <div className={`flex w-full flex-col-reverse md:flex-col`}>
@@ -339,6 +414,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               )}
               <input
                 ref={localInputRef}
+                id="global-search-input"
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
@@ -403,6 +479,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               )}
               <input
                 ref={localInputRef}
+                id="global-search-input"
                 autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
@@ -483,10 +560,12 @@ export const useSearchBuckets = () => {
     
     // Get all quick bites for the Quick Bites bucket
     const allQuickBites = getAllQuickBites()
-      .filter(quickBite => quickBite.slug !== "test-bite"); // Filter out test quick bite
+      .filter(quickBite => quickBite.slug !== "test-bite") // Filter out test quick bite
+      .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false); // Hide non-live bites in production
     
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
+      .filter(navItem => navItem.name !== "Quick Bites")
       .reduce((acc, navItem) => {
         // If this is Blockspace, insert Quick Bites first
         if (navItem.name === "Blockspace") {
@@ -520,7 +599,7 @@ export const useSearchBuckets = () => {
                     label: project.display_name,
                     url: `/applications/${project.owner_project}`,
                     icon: project.logo_path 
-                      ? `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`
+                      ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
                       : "gtp-project-monochrome",
                     color: undefined
                   }))
@@ -956,33 +1035,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout for desktop
+        // If measurements aren't available yet, skip this item for now;
+        // measurements will be filled by ResizeObserver and keyMapping will
+        // recompute when forceUpdate changes.
         if (!rect) {
-          // Simple fallback: assume items are in rows of 3
-          const itemsPerRow = 3;
-          const rowIndex = Math.floor(itemIndex / itemsPerRow);
-          const colIndex = itemIndex % itemsPerRow;
-          
-          if (rowIndex > 2 && !isShowMore) {
-            return;
-          }
-          
-          if (rowIndex >= dataMap.length) {
-            dataMap[rowIndex] = [];
-          }
-          dataMap[rowIndex].push(key);
-          
-          // Set "See more" for the last item in row 2 if there are more items
-          // Only set it for the last item in the row, not every item
-          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            // Check if this is the last item in row 2
-            const nextItemRowIndex = Math.floor((itemIndex + 1) / itemsPerRow);
-            if (nextItemRowIndex > 2) {
-              // Calculate the actual position in the row (rightmost position)
-              const actualRowLength = dataMap[rowIndex].length;
-              newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
-            }
-          }
           return;
         }
 
@@ -1033,32 +1089,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // If measurements aren't available yet, use a simple fallback layout for desktop
+            // If measurements aren't available yet, skip this item for now;
+            // measurements will be filled by ResizeObserver and keyMapping will
+            // recompute when forceUpdate changes.
             if (!rect) {
-              const itemsPerRow = 3;
-              const rowIndex = Math.floor(optionIndex / itemsPerRow);
-              const colIndex = optionIndex % itemsPerRow;
-              
-              if (rowIndex > 2 && !isStackShowMore) {
-                return;
-              }
-              
-              if (rowIndex >= dataMap.length) {
-                dataMap[rowIndex] = [];
-              }
-              dataMap[rowIndex].push(key);
-              
-              // Set "See more" for the last item in row 2 if there are more items
-              // Only set it for the last item in the row, not every item
-              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                // Check if this is the last item in row 2
-                const nextItemRowIndex = Math.floor((optionIndex + 1) / itemsPerRow);
-                if (nextItemRowIndex > 2) {
-                  // Calculate the actual position in the row (rightmost position)
-                  const actualRowLength = dataMap[rowIndex].length;
-                  newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
-                }
-              }
               return;
             }
 
@@ -1175,6 +1209,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     }
   }, [memoizedQuery, allFilteredData, keyboardExpandedStacks, keyMapping, getKey, setKeyCoords]);
 
+  const [hasEnteredKeyboardNav, setHasEnteredKeyboardNav] = useState(false);
+
   // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1185,20 +1221,28 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       const currentX = keyCoords.x ?? 0;
 
       if (event.key === 'ArrowUp') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== 0) {
           setKeyCoords({ y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1) });
+        }else if (currentY === 0) {
+          setHasEnteredKeyboardNav(false);
+          setKeyCoords({ y: null, x: null });
         }
       } else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        setHasEnteredKeyboardNav(true);
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
         } else if (currentY !== keyMapping.length - 1) {
           setKeyCoords({ y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1) });
         }
       } else if (event.key === 'ArrowLeft') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: 0, x: 0 });
@@ -1206,6 +1250,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           setKeyCoords({ y: currentY, x: currentX - 1 });
         }
       } else if (event.key === 'ArrowRight') {
+        if (!hasEnteredKeyboardNav)
+          return;
         event.preventDefault();
         if (isCoordsNull) {
           setKeyCoords({ y: currentY, x: currentX + 1 });
@@ -1226,6 +1272,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           }, 0);
         }
       } else if (event.key === 'Escape') {
+        if(hasEnteredKeyboardNav){
+          setHasEnteredKeyboardNav(false);
+        }
         event.preventDefault();
         event.stopPropagation();
         
@@ -1540,7 +1589,16 @@ export const BucketItem = ({
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-color-ui-hover"} hover:underline bg-color-ui-active text-xxs`}>
+        <div
+          className={`
+            absolute inset-[-1px] z-20 pl-[5px]
+            flex items-center justify-start rounded-full whitespace-nowrap
+            ${isSelected ? "underline" : "text-color-ui-hover"}
+            hover:underline
+            bg-color-bg-default md:bg-color-ui-active
+            text-xxs
+          `}
+        >
           <div>See more...</div>
         </div>
       )}

@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
 import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
-import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
@@ -30,6 +30,8 @@ import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { Switch } from "@/components/Switch";
+import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 
 
 // Preload data for the overview page
@@ -41,6 +43,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 export default function Page() {
   const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
+  const { data } = useMaster();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
@@ -107,7 +110,12 @@ export default function Page() {
   // }, []);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { topGainers, topLosers } = useMemo(() => {
+  const [showGrid, setShowGrid] = useLocalStorage("showGrid", true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
+
+
+  const { topGainers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
@@ -118,40 +126,40 @@ export default function Page() {
     const filteredApplications = applicationDataAggregatedAndFiltered
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
 
-    // top 3 applications with highest change_pct
+    const changePctKey = medianMetricKey + "_change_pct";
+
+    // top 6 applications with highest positive change_pct only
+    const gainers = [...filteredApplications]
+      .filter((application) => application[changePctKey] > 0 && application[changePctKey] !== Infinity)
+      .sort((a, b) => b[changePctKey] - a[changePctKey])
+      .slice(0, 6);
+
     return {
-      topGainers: [...filteredApplications]
-        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
-      topLosers: [...filteredApplications]
-        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
+      topGainers: gainers,
     }
   }, [applicationDataAggregatedAndFiltered, medianMetricKey, showUsd]);
 
 
 
   const hideTopGainersAndLosers = useMemo(() => {
-    return selectedTimespan === "max" || selectedStringFilters.length > 0;
-  }, [selectedTimespan, selectedStringFilters]);
+    return selectedTimespan === "max" || selectedStringFilters.length > 0 || topGainers.length === 0;
+  }, [selectedTimespan, selectedStringFilters, topGainers.length]);
+
+
 
   return (
     <>
       <div>
         <div
           className={``}
-          style={{
-            height: hideTopGainersAndLosers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
-            opacity: hideTopGainersAndLosers ? 0 : 1,
-            transition: "height 0.3s ease, opacity 0.3s ease",
-          }}
+
         >
           <Container className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
+              <div className="heading-lg">Top Gainers by {metricsDef[medianMetric].name}</div>
               <div className="flex justify-between items-center gap-x-[10px]">
                 <div className="text-xs">
-                  Projects that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                  Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
                 </div>
                 <Tooltip placement="left">
                   <TooltipTrigger>
@@ -171,9 +179,6 @@ export default function Page() {
               {topGainers.map((application, index) => (
                 <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
-              {topLosers.map((application, index) => (
-                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
               {isLoading && new Array(6).fill(0).map((_, index) => (
                 <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
@@ -181,7 +186,7 @@ export default function Page() {
           
             <div className={`block md:hidden`}>
               <div className="pt-[10px]">
-                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+                <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application} />)} />
               </div>
             </div>
           </div>
@@ -189,14 +194,64 @@ export default function Page() {
       </div>
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Top Ranked</div>
+          <div className="w-full flex justify-between items-center">
+            <div className="heading-lg flex items-center gap-x-[5px]">
+              {showGrid ? "Top Ranked" : `Top Applications ${selectedCategory ? `> ${data?.blockspace_categories.main_categories[selectedCategory]}` : ""}`}
+              {selectedCategory && (
+                <button className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center" onClick={() => setClearSelectedCategory(true)}>
+                  <Image src="/In-Button-Close.svg" alt="Close" className="relative left-[0.5px] bottom-[0.5px]"  width={16} height={16} />
+                </button>
+              )}
+            </div>
+            <button className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full  p-[2px]"
+              onClick={() => setShowGrid(!showGrid)}
+            >
+              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+                <GTPIcon icon={`gtp-table` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <div className="text-sm">Table</div>
+              </div>
+              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+                <GTPIcon icon={`gtp-map` as GTPIconName} size="sm" className="text-color-text-primary" />
+                <div className="text-sm">Map</div>
+              </div>
+              <div
+                className="absolute top-[49%] transition-all duration-300 left-0 w-fit h-fit flex items-center gap-x-[10px] px-[15px] py-[5px] bg-color-ui-active rounded-full"
+                style={{
+                  transform: `translateY(-50%) translateX(${showGrid ? "3%" : "100%"})`,
+                }}
+              >
+                <GTPIcon icon={`gtp:ethereum-logo-monochrome` as GTPIconName} size="sm" className="text-color-text-primary opacity-0" />
+                <div className="text-sm opacity-0">Table</div>
+              </div>
+
+            </button>
+          </div>
           <div className="text-xs">
-            Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
+            {showGrid ? (
+              <div>
+                Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
+              </div>
+            ) : (
+              <div>
+                Applications ranked by Transaction Count
+              </div>
+            )}
           </div>
         </div>
       </Container>
-      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
-        <ApplicationsTable />
+      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true} enableDragScroll={true}>
+        <div style={{ display: showGrid ? "block" : "none" }}>
+          <ApplicationsTable />
+        </div>
+        <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default relative`}
+
+        style={{ display: showGrid ? "none" : "flex" }}>
+
+          <ProjectsMetadataProvider>
+            <ApplicationsGrid chainKey="all" appsPage={true} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} clearSelectedCategory={clearSelectedCategory} setClearSelectedCategory={setClearSelectedCategory} />
+          </ProjectsMetadataProvider>
+        </div>
+
       </HorizontalScrollContainer>
     </>
   )
@@ -713,7 +768,10 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             trigger={
               <div className="flex-1 min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
                 <div className="truncate w-full">
-                  <Category category={ownerProjectToProjectData[application.owner_project].main_category || ""} />
+                  {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project]?.main_category ? 
+                  <Category category={ownerProjectToProjectData[application.owner_project]?.main_category || ""} /> : 
+                  <Category category={"unknown"} />
+                  }
                 </div>
               </div>
             }

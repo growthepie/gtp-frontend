@@ -8,11 +8,9 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
 import Share from "@/components/Share";
-import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 
 import { generateJsonLd } from "@/utils/json-ld";
@@ -58,7 +56,7 @@ export const metadata: Metadata = {
     url: "https://www.growthepie.com",
     images: [
       {
-        url: `https://www.growthepie.com/gtp_og.png?date=${current_date}`,
+        url: `https://api.growthepie.com/v1/og_images/landing.png?date=${current_date}`,
         width: 1200,
         height: 627,
         alt: "growthepie.com",
@@ -129,6 +127,8 @@ const sourceCodePro = Source_Code_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
 export default function RootLayout({
   children,
 }: {
@@ -154,6 +154,15 @@ export default function RootLayout({
     >
       <Head />
       <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
+        {/* GTM noscript fallback */}
+        <noscript>
+          <iframe 
+            src={`/api/insights/n.html?id=${gtpGtmId}`}
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html: script,
@@ -203,7 +212,7 @@ export default function RootLayout({
           <DeveloperTools />
           <CookieConsent />
         </Providers>
-        <Analytics />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );

@@ -26,9 +26,7 @@ export type ChainOverview = {
     kpi_cards: ChainKpiCard;
     ecosystem: Ecosystem;
     achievements: AchievmentsData;
-    blockspace: {
-      blockspace: BlockspaceCO;
-    };
+    blockspace: BlockspaceCO;
     highlights: Highlights;
   }
 };

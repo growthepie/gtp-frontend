@@ -13,10 +13,11 @@ import { LinkButton } from '@/components/layout/LinkButton';
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 
-export default function EventsCard({ children, totalHeight }: { children: React.ReactNode, totalHeight: number }) {
+export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent, isHidden }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number, tooltipContent?: string, isHidden?: boolean }) {
     const [expanded, setExpanded] = useState(false);
     const [measuredContentHeight, setMeasuredContentHeight] = useState<number>(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
+    const customTitleRef = useRef<HTMLDivElement | null>(null);
     const toggleRef = useRef<HTMLDivElement | null>(null);
     const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
     const [lockedEvent, setLockedEvent] = useState<string | null>(null);
@@ -30,7 +31,8 @@ export default function EventsCard({ children, totalHeight }: { children: React.
         const updateMeasuredHeight = () => {
             const contentHeight = contentElement.scrollHeight || 0;
             const toggleHeight = toggleRef.current?.offsetHeight || 0;
-            setMeasuredContentHeight(contentHeight + toggleHeight);
+            const customTitleHeight = customTitleRef.current?.offsetHeight || 0;
+            setMeasuredContentHeight(contentHeight + toggleHeight + customTitleHeight);
         };
 
         updateMeasuredHeight();
@@ -39,8 +41,12 @@ export default function EventsCard({ children, totalHeight }: { children: React.
             updateMeasuredHeight();
         });
 
-        resizeObserver.observe(contentElement);
-        if (toggleRef.current) resizeObserver.observe(toggleRef.current);
+        const elementsToObserve: Element[] = [];
+        if (contentElement) elementsToObserve.push(contentElement);
+        if (toggleRef.current) elementsToObserve.push(toggleRef.current);
+        if (customTitleRef.current) elementsToObserve.push(customTitleRef.current);
+
+        elementsToObserve.forEach((element) => resizeObserver.observe(element));
 
         window.addEventListener('resize', updateMeasuredHeight);
         return () => {
@@ -63,17 +69,22 @@ export default function EventsCard({ children, totalHeight }: { children: React.
       )}
       <div
         // className={`rounded-[15px] px-[30px] py-[15px] bg-color-bg-default w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
-        className={`w-full relative transition-height duration-300 flex-1`}
+        className={`w-full h-full relative transition-height duration-300 flex-1 ${isHidden ? "hidden" : ""}`}
        
       >
             {/* <div className="heading-large-md ">Events</div> */}
 
-            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
+            <div className={`relative z-10 flex flex-col bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
                  style={{
-                    height: expanded ? (measuredContentHeight + 110 || totalHeight) : 245
+                    height: isHidden ? 0 : (expanded ? (measuredContentHeight + 110 || totalHeight) : 245),
+                    minHeight: isHidden ? 0 : (minHeight || "100%"),
                  }}
             >
-                <div className="heading-large-md">Events</div>
+                
+                <div ref={customTitleRef} className="w-full">
+                    {customTitleArea}
+                </div>
+                
                 <div ref={contentRef}>
                     {Children.map(children, (child) => {
                         if (isValidElement(child)) {
@@ -95,7 +106,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                 >
                     <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className={`text-[#5A6462] transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
                  
-              
+                    {tooltipContent && (    
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">
                         <div className='w-[15px] h-fit z-30'>
                             <GTPTooltipNew
@@ -116,13 +127,13 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                             >
                                 <div>
                                 <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                                    {"This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details."}
+                                {tooltipContent}
                                 </TooltipBody>
                                 </div>
                             </GTPTooltipNew>
                         </div>
                     </div>
-
+                    )}
 
                 </div>
             </div>

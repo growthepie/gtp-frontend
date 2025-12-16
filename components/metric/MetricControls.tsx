@@ -1,11 +1,11 @@
 "use client";
-import { useMemo, useState, useEffect, createContext, useContext, RefObject, ReactNode } from "react";
+import { useMemo, useState, useEffect, createContext, useContext, RefObject, ReactNode, useRef } from "react";
 import Error from "next/error";
 import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import ComparisonChart from "@/components/layout/ComparisonChart";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
@@ -39,7 +39,7 @@ import MetricChart from "./MetricChart";
 import MetricTable from "./MetricTable";
 import Page from "@/app/(embeds)/embed/user-base/page";
 
-const monthly_agg_labels = {
+const weekly_monthly_agg_labels = {
   avg: "Average",
   sum: "Total",
   unique: "Distinct",
@@ -84,20 +84,77 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
     setZoomed,
     chartComponent,
     intervalShown,
+    metric_type,
   } = useMetricChartControls();
 
   const {
     timespans,
+    timeIntervals,
   } = useMetricData();
 
   const { theme } = useTheme()
 
+  const isCompactMode = useMediaQuery("(max-width: 1023px)");
   const navItem = useMemo(() => {
     return metricItems.find((item) => item.key === metric);
   }, [metric]);
 
+  // ref object for the container of the timespan buttons
+  const timespanContainerRef = useRef<HTMLDivElement>(null);
+  // ref object for each timespan button in order to get the positions of the buttons
+  const timespanRefs = useRef<{ [key: string]: RefObject<HTMLButtonElement> }>({});
+
+  const [left365d, setLeft365d] = useState<number | null>(null);
+  const [rightMax, setRightMax] = useState<number | null>(null);
+
+  useEffect(() => {
+    const calculatePositions = () => {
+      // get the positions of the timespan buttons
+      const timespanButtons = Object.entries(timespanRefs.current);
+      const timespanButtonPositions = timespanButtons.reduce((acc, [key, button]) => {
+        acc[key] = button.current?.getBoundingClientRect();
+        return acc;
+      }, {} as { [key: string]: DOMRect | undefined });
+  
+      const timespanContainerPosition = timespanContainerRef.current?.getBoundingClientRect();
+      
+      if (timespanButtonPositions && timespanContainerPosition && 
+          timespanButtonPositions["365d"] && timespanButtonPositions["max"]) {
+        // Calculate left offset: distance from container left to 365d button left
+        const left = timespanButtonPositions["365d"].left - timespanContainerPosition.left;
+        
+        // Calculate right offset: distance from container right to max button right
+        const right = timespanContainerPosition.right - timespanButtonPositions["max"].right;
+        
+        setLeft365d(left);
+        setRightMax(right);
+      }
+    };
+  
+    // Calculate on mount and when dependencies change
+    calculatePositions();
+  
+    // Add window resize listener
+    window.addEventListener('resize', calculatePositions);
+  
+    // Optional: Use ResizeObserver for more accurate tracking
+    const resizeObserver = new ResizeObserver(() => {
+      calculatePositions();
+    });
+  
+    if (timespanContainerRef.current) {
+      resizeObserver.observe(timespanContainerRef.current);
+    }
+  
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', calculatePositions);
+      resizeObserver.disconnect();
+    };
+  }, [selectedTimeInterval, selectedTimespan]); // Add dependencies that affect button rendering
+
   return (
-    <TopRowContainer className="relative">
+    <TopRowContainer className="relative" ref={timespanContainerRef}>
       {is_embed ? (
         <div className="hidden md:flex justify-center items-center">
           <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
@@ -115,27 +172,22 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
         </div>
       ) : (
         <TopRowParent>
-          <div
-            className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
-              ? "translate-y-[calc(-70%)]"
-              : "translate-y-0 "
-              }`}
-          >
-            <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
-              {monthly_agg_labels[monthly_agg]}
-            </div>
-          </div>
-          {["daily", "monthly"].map((interval) => (
+          
+          {timeIntervals.map((interval) => (
             <TopRowChild
               key={interval}
-              className={"capitalize"}
+              className={"capitalize relative"}
               isSelected={selectedTimeInterval === interval}
               onClick={() => {
                 if (selectedTimeInterval === interval) return;
                 if (interval === "daily") {
-                  if ("12m" === selectedTimespan) {
+                  if(["12w"].includes(selectedTimespan)) {
+                    setSelectedTimespan("90d");
+                  } else if (["6m", "24m"].includes(selectedTimespan)) {
+                    setSelectedTimespan("180d");
+                  }else if (["12m", "52w"].includes(selectedTimespan)) {
                     setSelectedTimespan("365d");
-                  } else if ("maxM" === selectedTimespan) {
+                  } else if (["maxM", "maxW"].includes(selectedTimespan)) {
                     setSelectedTimespan("max");
                   } else {
                     // find closest timespan
@@ -158,10 +210,42 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
 
                     setSelectedTimespan(closestTimespan);
                   }
+                } else if (interval === "weekly") {
+                  if(["90d"].includes(selectedTimespan)) {
+                    setSelectedTimespan("12w");
+                  } else if(["365d", "12m"].includes(selectedTimespan)) {
+                    setSelectedTimespan("52w");
+                  } else if (["180d", "6m"].includes(selectedTimespan)) {
+                    setSelectedTimespan("24w");
+                  } else if (["max", "maxM"].includes(selectedTimespan)) {
+                    setSelectedTimespan("maxW");
+                  } else {
+                    // find closest timespan
+                    const closestTimespan = Object.keys(timespans)
+                      .filter((timespan) =>
+                        ["12w", "24w", "52w", "maxW"].includes(timespan),
+                      )
+                      .reduce((prev, curr) =>
+                        Math.abs(
+                          timespans[curr].xMax -
+                          timespans[selectedTimespan].xMax,
+                        ) <
+                          Math.abs(
+                            timespans[prev].xMax -
+                            timespans[selectedTimespan].xMax,
+                          )
+                          ? curr
+                          : prev,
+                      );
+
+                    setSelectedTimespan(closestTimespan);
+                  }
                 } else {
-                  if ("365d" === selectedTimespan) {
+                  if (["365d", "52w"].includes(selectedTimespan)) {
                     setSelectedTimespan("12m");
-                  } else if ("max" === selectedTimespan) {
+                  } else if ("180d" === selectedTimespan || "24w" === selectedTimespan) {
+                    setSelectedTimespan("6m");
+                  } else if ("max" === selectedTimespan || "maxW" === selectedTimespan) {
                     setSelectedTimespan("maxM");
                   } else {
                     // find closest timespan
@@ -189,6 +273,18 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                 setZoomed(false);
               }}
             >
+              {["monthly", "weekly"].includes(interval) && (
+                <div
+                  className={`absolute transition-[transform] block duration-300 ease-in-out -z-10 top-0 left-[10px] right-[10px] ${selectedTimeInterval === interval && monthly_agg && ["monthly", "weekly"].includes(selectedTimeInterval)
+                    ? "translate-y-[calc(-90%)]"
+                    : "translate-y-0 "
+                    }`}
+                >
+                  <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0">
+                    {weekly_monthly_agg_labels[monthly_agg]}
+                  </div>
+                </div>
+              )}
               <span className="hidden md:block">{interval}</span>
               <span className="block md:hidden">{interval[0]}</span>
             </TopRowChild>
@@ -216,10 +312,17 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
             .filter((timespan) =>
               selectedTimeInterval === "daily"
                 ? ["90d", "180d", "365d", "max"].includes(timespan)
-                : ["6m", "12m", "maxM"].includes(timespan),
+                : selectedTimeInterval === "weekly"
+                  ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                  : ["6m", "12m", "maxM"].includes(timespan),
             )
             .map((timespan) => (
               <TopRowChild
+                ref={(el) => {
+                  if (el) {
+                    timespanRefs.current[timespan] = { current: el };
+                  }
+                }}
                 key={timespan}
                 isSelected={selectedTimespan === timespan}
                 onClick={() => {
@@ -261,18 +364,23 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
             </button>
           </>
         )}
-      </TopRowParent>
-      <div
-        className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
-          ? "translate-y-[calc(-80%)]"
-          : "translate-y-0 "
-          }`}
-      >
-        <div className="text-[0.65rem] md:text-xs font-medium bg-color-bg-default dark:bg-color-ui-active rounded-t-2xl border-t border-l border-r border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
-          <span className="hidden md:block">7-day rolling average</span>
-          <span className="block md:hidden">7-day average</span>
+        <div
+          className={`absolute transition-[transform,opacity] block duration-300 ease-in-out -z-10 bottom-0 md:top-0 left-[10px] right-[10px] ${avg && showRollingAverage && ["365d", "max"].includes(selectedTimespan)
+            ? "translate-y-[calc(100%)] lg:translate-y-[-18px]"
+            : "translate-y-0 lg:translate-y-0"
+            } ${left365d !== null && rightMax !== null ? "opacity-100" : "opacity-0"}`}
+            style={{
+              left: left365d ? left365d + (isCompactMode ? 5 : 15) : 0,
+              right: rightMax ? rightMax + (isCompactMode ? 5 : 15) : 0,
+
+            }}
+        >
+          <div className="text-[0.65rem] md:text-xs font-medium transition-[colors] bg-color-bg-default dark:bg-color-ui-active rounded-b-2xl lg:rounded-b-none lg:rounded-t-2xl border border-t-0 lg:border-t lg:border-b-0 border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
+            <span className="hidden md:block">7-day rolling average</span>
+            <span className="block md:hidden">7-day average</span>  
+          </div>
         </div>
-      </div>
+      </TopRowParent>
     </TopRowContainer>
   );
 }

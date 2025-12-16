@@ -78,7 +78,7 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   currentDate.setHours(2, 0, 0, 0);
   // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
   const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
-  const ogImageUrl = `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png?date=${dateString}`;
+  const ogImageUrl = `https://api.growthepie.com/v1/og_images/fundamentals/${metric}.png`;
   const title = metadata.title || `${pageTitle} | growthepie`;
 
   return {

@@ -37,7 +37,7 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metri
                     as="h1"
                     titleSize="md"
                 />
-                <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More bites" />
+                <SectionButtonLink href="/quick-bites" label="See all Quick Bites" shortLabel="More Bites" />
             </div>
             
             <div className="text-md">

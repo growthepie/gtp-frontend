@@ -1,23 +1,18 @@
-import Home from "@/components/home/Home";
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import Icon from "@/components/layout/ServerIcon";
 import Subheading from "@/components/layout/Subheading";
 import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { LinkButton } from "@/components/layout/LinkButton";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -74,10 +69,10 @@ export default async function Page() {
               Top Applications
             </Heading>
           </div>
-          <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
+          <SectionButtonLink href="/applications" label="See more Applications" shortLabel="More Apps" />
         </div>
         <Subheading className="text-md px-[5px] lg:px-[45px]">
-          Top 6 gainers and losers based on transaction count in the last 7 days.
+          Applications in the Ethereum ecosystem that showed the strongest growth in the past 7 days.
         </Subheading>
       </Container>
       <Container className="">
@@ -249,7 +244,7 @@ export default async function Page() {
           />
         </div>
       </Container>
-      <Home />
+     
     </>
   );
 }

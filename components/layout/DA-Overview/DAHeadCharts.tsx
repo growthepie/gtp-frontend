@@ -374,7 +374,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                             />
                         </div>
                     </Link>
-                    <div className="absolute text-[18px] top-[17px] right-[30px] numbers">
+                    <div className="absolute numbers-lg top-[17px] right-[30px] numbers">
                         {prefix + Intl.NumberFormat("en-GB", {                          
                               notation: "standard",
                               maximumFractionDigits: is_fees ? 0 : 2,

@@ -27,6 +27,7 @@ import moment from 'moment';
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../ChartWatermark';
+import EventsCard, { EventItem } from '../SingleChains/OverviewCards/EventsCard';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -255,6 +256,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
 
   const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [height, setHeight] = useState<number[]>([]);
 
   if (!masterData) {
     return null;
@@ -267,8 +269,9 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
-  // Define the main content to pass to the container
-  const mainContent = (
+
+  return (
+  <EventsCard totalHeight={EXPANDED_LIST_HEIGHT } isHidden={isHidden} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
     <>
       <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
       <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
@@ -279,68 +282,18 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           <div className={`numbers-sm text-color-ui-hover ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
         </div>
       </div>
+      <div className="heading-large-md pb-[15px]">Events</div>
+      
     </>
-  );
+  }>
+    {reversedEvents.map((event: any, index: number) => {
+      return (
 
-  // Define the expanded content to pass to the container
-  const expandedContent = (
-    <div 
-      className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-[max-height] duration-500 -mx-[15px] bg-color-bg-default rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'}`}
-      style={{
-        maxHeight: showEvents ? `${EXPANDED_LIST_HEIGHT+10}px` : `${UNEXPANDED_LIST_HEIGHT+10}px`,
-      }}
-    >
-      <div
-        className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-300 overflow-y-hidden ${!showEvents && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
-        style={{
-          height: !showEvents ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px`
-        }}
-      >
-        <div className={`heading-large-md text-color-ui-hover mb-2 ${isCompact ? 'opacity-0' : 'opacity-100'} transition-[opacity] duration-500`}>Network Upgrades</div>
-        <div ref={listRef} className={`relative ${isCompact ? 'h-0 overflow-hidden' : 'h-auto'} transition-[height] duration-500`}>
-          {reversedEvents.map((event: any, index: number) => {
-            return (
-              <div key={event.date}>
-                <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div
-      ref={containerRef}
-      className={`@container w-full transition-height duration-300
-        ${isCompact ? 'h-[150px]'
-          : isHidden ? 'h-[0px] overflow-hidden'
-            : '@[1040px]:h-[306px] min-h-[306px]'
-        }`}
-      onMouseEnter={() => setIsEventsHovered(true)}
-      onMouseLeave={() => setIsEventsHovered(false)}
-    >
-      <ExpandableCardContainer
-        isExpanded={showEvents}
-        onToggleExpand={handleToggleEvents}
-        isCompact={isCompact}
-        // this expandable card should have a higher z-index than the rest
-        // infoSlot could be used here to add a tooltip if needed
-        infoSlot={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."}
-      >
-        {mainContent}
-
-        {expandedContent}
-        
-        {/* Watermark */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[156px] flex flex-col items-start w-[147px] -space-y-[3.811px]">
-          <div className="w-[147px]">
-            <ChartWatermark className="opacity-20 w-full h-auto" />
-          </div>
-        </div>
-      </ExpandableCardContainer>
-    </div>
+          <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} finalIndex={Object.keys(reversedEvents).length - 1} />
+       
+      )
+    })}
+  </EventsCard>
   );
 });
 
@@ -775,50 +728,50 @@ interface EventItemProps {
   nextEvent?: EthereumEvents;
 }
 
-const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
-  const isExpanded = eventExpanded === eventKey;
-  return (
-    <div className={`relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
-      onMouseEnter={() => setEventHover(eventKey)}
-      onMouseLeave={() => setEventHover(null)}
-      onClick={(e) => {
-        e.stopPropagation();
-        handleToggleEventExpansion(eventKey);
-      }}
-    >
-      <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
-      <div
-        className={`event-item flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-color-ui-hover'} w-fit`}
+// const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
+//   const isExpanded = eventExpanded === eventKey;
+//   return (
+//     <div className={`relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
+//       onMouseEnter={() => setEventHover(eventKey)}
+//       onMouseLeave={() => setEventHover(null)}
+//       onClick={(e) => {
+//         e.stopPropagation();
+//         handleToggleEventExpansion(eventKey);
+//       }}
+//     >
+//       <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
+//       <div
+//         className={`event-item flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-color-ui-hover'} w-fit`}
 
-      >
-        <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <div className={`relative h-full flex items-start pt-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-color-text-primary' : 'heading-small-xxxs text-color-ui-hover'} `}>{event.title}</div>
-      </div>
+//       >
+//         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
+//         <div className={`relative h-full flex items-start pt-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-color-text-primary' : 'heading-small-xxxs text-color-ui-hover'} `}>{event.title}</div>
+//       </div>
 
 
-      <div className={`flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
-        <div className={`flex flex-col pl-[30px] text-xs items-center w-full mt-[5px]`}>
-          <div className="leading-relaxed overflow-y-hidden pb-[15px] flex flex-col w-full gap-y-[5px]">
-            <div>{event.description || event.title}</div>
-            {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
-          </div>
-        </div>
-      </div>
-      {/* Dots on the left side */}
-      <div className={`absolute left-0 top-[38px] bottom-[-10px] flex flex-col justify-between gap-y-[4px] overflow-y-hidden min-w-[24px] max-w-[24px] items-center ${isExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
-        <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i + "event-item-description"} className='bg-color-ui-hover w-[2px] h-[2px] rounded-full flex-shrink-0' />
-          ))}
-        </div>
-        <div className='rounded-full text-xxxs text-color-ui-hover'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
+//       <div className={`flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
+//         <div className={`flex flex-col pl-[30px] text-xs items-center w-full mt-[5px]`}>
+//           <div className="leading-relaxed overflow-y-hidden pb-[15px] flex flex-col w-full gap-y-[5px]">
+//             <div>{event.description || event.title}</div>
+//             {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
+//           </div>
+//         </div>
+//       </div>
+//       {/* Dots on the left side */}
+//       <div className={`absolute left-0 top-[38px] bottom-[-10px] flex flex-col justify-between gap-y-[4px] overflow-y-hidden min-w-[24px] max-w-[24px] items-center ${isExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+//         <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
+//           {Array.from({ length: 20 }).map((_, i) => (
+//             <div key={i + "event-item-description"} className='bg-color-ui-hover w-[2px] h-[2px] rounded-full flex-shrink-0' />
+//           ))}
+//         </div>
+//         <div className='rounded-full text-xxxs text-color-ui-hover'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         
-      </div>
-    </div>
-  );
-});
+//       </div>
+//     </div>
+//   );
+// });
 
-EventItem.displayName = "EventItem";
+// EventItem.displayName = "EventItem";
 
 interface TPSChartProps {
   totalTPSLive: number[];

@@ -12,6 +12,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { useTimespan } from "./TimespanContext";
 import { useChartSync } from "./GTPChartSyncContext";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
@@ -189,6 +190,48 @@ export const ApplicationDetailsDataProvider = ({
 
     // Create a deep clone of the data to avoid mutation issues
     const filteredData = JSON.parse(JSON.stringify(applicationDetailsData)) as ApplicationDetailsResponse;
+    const supportedChainKeys = Get_SupportedChainKeys(master);
+
+    // Filter out unsupported chains from metrics
+    if (filteredData.metrics) {
+      Object.keys(filteredData.metrics).forEach(metricKey => {
+        const metric = filteredData.metrics[metricKey];
+
+        // Filter over_time
+        if (metric.over_time) {
+          Object.keys(metric.over_time).forEach(chain => {
+            if (!supportedChainKeys.includes(chain)) {
+              delete metric.over_time[chain];
+            }
+          });
+        }
+
+        // Filter aggregated.data
+        if (metric.aggregated && metric.aggregated.data) {
+          Object.keys(metric.aggregated.data).forEach(chain => {
+            if (!supportedChainKeys.includes(chain)) {
+              delete metric.aggregated.data[chain];
+            }
+          });
+        }
+      });
+    }
+
+    // Filter out unsupported chains from contracts_table
+    if (filteredData.contracts_table) {
+      Object.keys(filteredData.contracts_table).forEach(timespan => {
+        const contractsTable = filteredData.contracts_table[timespan];
+        if (contractsTable && contractsTable.data) {
+          const originKeyIndex = contractsTable.types.indexOf('origin_key');
+          if (originKeyIndex !== -1) {
+            contractsTable.data = contractsTable.data.filter(row => {
+              const originKey = String(row[originKeyIndex]);
+              return supportedChainKeys.includes(originKey);
+            });
+          }
+        }
+      });
+    }
   
     if (focusEnabled) {
       // Filter out Ethereum from metrics

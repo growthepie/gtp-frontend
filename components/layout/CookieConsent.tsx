@@ -3,17 +3,22 @@ import React, { useEffect, useState } from "react";
 import { setCookie, hasCookie } from "cookies-next";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import { GTPIcon } from "@/components/layout/GTPIcon";
-import { track } from "@vercel/analytics/react";
-import EthereumSVG from "@/public/donate/ethereum.svg";
-import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { ANALYTICS_CONFIG, getConsentUpdate } from '@/lib/analyticsConfig';
 
 export default function CookieConsent() {
+  const searchParams = useSearchParams();
+  const isOgMode = searchParams?.get("is_og") === "true";
   const [consent, setConsent] = useState(true);
-  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
+    if (isOgMode) {
+      setConsent(true);
+      return;
+    }
+
     setConsent(hasCookie("gtpCookieConsent"));
-  }, []);
+  }, [isOgMode]);
 
   const acceptCookie = () => {
     setConsent(true);
@@ -21,17 +26,9 @@ export default function CookieConsent() {
       maxAge: 60 * 60 * 24 * 365,
     });
 
-    gtag("consent", "update", {
-      ad_storage: "granted",
-      analytics_storage: "granted",
-    });
+    gtag("consent", "update", getConsentUpdate(true));
 
     console.log("accepting cookies");
-  };
-
-  const closeP = () => {
-    setConsent(true);
-    console.log("closing");
   };
 
   const denyCookie = () => {
@@ -39,18 +36,14 @@ export default function CookieConsent() {
     setCookie("gtpCookieConsent", "false", {
       maxAge: 60 * 60 * 24 * 365,
     });
+    
+    gtag("consent", "update", getConsentUpdate(false));
+    
     console.log("denying cookies");
   };
 
   if (consent === true) {
     return null;
-  }
-
-  function triggerCopy() {
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1500); // 3000 milliseconds (3 seconds)
   }
 
   return (
@@ -67,12 +60,12 @@ export default function CookieConsent() {
               className="w-8 h-8 md:w-[36px] md:h-[36px] lg:w-[36px] lg:h-[36px]"
             />
           </div>
-          <div className="flex items-center space-x-8 text-xxs md:text-xxs">
+          <div className="flex items-center space-x-8 text-xs md:text-xs">
             <div>
               Our website uses cookies to analyze how the site is used and to ensure your experience is consistent between visits. Find our{" "}
-              <Link href="/privacy-policy" className="underline relative md:text-xxs text-nowrap">
-                Privacy Policy here.
-              </Link>
+              <Link href="/privacy-policy" className="underline relative md:text-xs text-nowrap">
+                privacy policy
+              </Link> here.
             </div>
           </div>
 
@@ -97,74 +90,6 @@ export default function CookieConsent() {
           </div>
         </div>
       </div>
-      <div className="flex md:flex-row flex-col md:gap-x-[5px] lg:gap-x-[30px] lg:gap-y-[0px] gap-y-[10px] items-center justify-between w-full text-xs md:text-xxs md:pt-[15px] pr-[30px] pl-[10px]">
-        <div className="flex-col gap-y-[10px] lg:max-w-[250px]">
-          <div className="heading-large-xs pb-[10px]">Do you enjoy using growthepie?</div>
-          <p className=" text-xxs md:text-xs ">Help us stay free for everyone, keeping data open and accessible! Also check out our impact&nbsp;   
-          <Link href="/donate" className="underline">
-            
-            here
-          </Link>.</p>
-        </div>
-        <div className="w-full group/qr flex border-[#CDD8D3] border-[2px] items-center gap-x-[15px] rounded-[20px] p-[5px] sm:p-[10px] max-w-[500px]"
-          onClick={(e) => {
-            window.open("https://etherscan.io/address/0x9438b8B447179740cD97869997a2FCc9b4AA63a2", "_blank");
-            track("clicked Donate QR Code", {
-              location: "Ethereum",
-              page: window.location.pathname,
-            });
-            e.stopPropagation();
-          }}
-        >
-            <div className="min-w-[65px] sm:min-w-[100px] aspect-square relative ">
-              <Image src={EthereumSVG} alt="Ethereum" fill className="object-contain" />
-            </div>
-            <div className="flex flex-col  sm:pt-[1px] sm:pb-[4px] sm:min-h-[98px] sm:justify-between cursor-pointer ">
-              <div>
-                <div className="heading-small-xxxs sm:heading-small-xxs lg:heading-small-xs group-hover/qr:underline">Donate to our wallet on any Ethereum compatible wallet.</div>
-                <div className=" text-xxs md:text-xs sm:mt-[10px] pb-[2px]">Scan it with your wallet app!</div>
-              </div>
-              <div className="flex gap-x-[5px] items-center group " onClick={(e) => {
-
-                    const text = "0x9438b8B447179740cD97869997a2FCc9b4AA63a2";
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                      navigator.clipboard.writeText(text).catch((err) => console.error("Copy failed:", err));
-                    } else {
-                      const tempInput = document.createElement("input");
-                      tempInput.value = text;
-                      document.body.appendChild(tempInput);
-                      tempInput.select();
-                      document.execCommand("copy");
-                      document.body.removeChild(tempInput);
-                     
-                    }
-                    triggerCopy();
-                    e.stopPropagation();
-                  }}
-                >
-                <div className=" numbers-xxs md:numbers-xs  "><TruncatedAddress address="0x9438b8B447179740cD97869997a2FCc9b4AA63a2" /></div>
-                <div>
-                    <Icon
-                      className="w-[12px] h-[12px] sm:w-[15px] sm:h-[15px] hover:cursor-pointer group-hover:visible invisible"
-                      icon={copied ? "feather:check-circle" : "feather:copy"}
-
-                    />
-                      
-                 
-                </div>
-              </div>
-            </div>
-        </div>
-        
-      </div>
-      {/* <button
-          className="self-start"
-          onClick={(e) => {
-            closeP();
-          }}
-        >
-          <Icon icon="feather:x" className="w-8 h-8" />
-        </button> */}
     </div>
   );
 }

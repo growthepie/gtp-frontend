@@ -1,9 +1,10 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
-import { truncate } from 'fs';
+import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
-const ethSupply: QuickBiteData = {
+const ethSupply: QuickBiteData = createQuickBite({
   title: "ETH Supply & Issuance Tracker",
   subtitle: "Track Ethereum's total supply and issuance over time",
+  shortTitle: "ETH Supply",
   content: [
     "Ethereum's monetary policy has evolved significantly since its inception, particularly after the transition to Proof of Stake (The Merge) and the implementation of EIP-1559 (The Burn). These changes have fundamentally altered how new ETH enters circulation and how the total supply changes over time.",
 
@@ -117,8 +118,8 @@ const ethSupply: QuickBiteData = {
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/eth-supply.png",
-  og_image: "",
+  image: "/quick-bites/eth-supply.webp",
+  og_image: "/quick-bites/eth-supply.webp",
   date: "2025-10-28",
   related: [],
   author: [{
@@ -143,6 +144,6 @@ const ethSupply: QuickBiteData = {
   ],
   icon: "ethereum-logo-monochrome",
   showInMenu: true
-};
+});
 
 export default ethSupply;
