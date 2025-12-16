@@ -4,10 +4,12 @@
 
 @layer base {
   :root {
-    --bg-default: 252 253 253; /* #fcfdfd | rgb(252, 253, 253) */
-    --bg-medium: 236 243 243; /* #ecf3f3 | rgb(236, 243, 243) */
-    --ui-hover: 200 218 218; /* #c8dada | rgb(200, 218, 218) */
-    --ui-active: 229 240 240; /* #e5f0f0 | rgb(229, 240, 240) */
+    --bg-default: 240 244 244; /* #f0f4f4 | rgb(240, 244, 244) */
+    --bg-default-0: 240 244 244; /* #f0f4f4 | rgb(240, 244, 244) */
+    --bg-medium: 236 239 239; /* #ecefef | rgb(236, 239, 239) */
+    --bg-medium-50: 236 239 239; /* #ecefef | rgb(236, 239, 239) */
+    --ui-hover: 233 237 237; /* #e9eded | rgb(233, 237, 237) */
+    --ui-active: 253 253 253; /* #fdfdfd | rgb(253, 253, 253) */
     --ui-shadow: 215 218 218; /* #d7dada | rgb(215, 218, 218) */
     --text-primary: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
     --text-secondary: 121 139 137; /* #798b89 | rgb(121, 139, 137) */
@@ -49,6 +51,7 @@
     --chains-polygon-zkevm: 173 13 197; /* #ad0dc5 | rgb(173, 13, 197) */
     --chains-real: 77 103 236; /* #4d67ec | rgb(77, 103, 236) */
     --chains-redstone: 168 0 1; /* #a80001 | rgb(168, 0, 1) */
+    --chains-megaeth: 223 217 217; /* #dfd9d9 | rgb(223, 217, 217) */
     --chains-rhino: 141 79 6; /* #8d4f06 | rgb(141, 79, 6) */
     --chains-scroll: 85 72 0; /* #554800 | rgb(85, 72, 0) */
     --chains-soneium: 56 55 53; /* #383735 | rgb(56, 55, 53) */
@@ -78,12 +81,13 @@
     --chains-custom-cool-3: 8 77 78; /* #084d4e | rgb(8, 77, 78) */
     --chains-custom-cool-4: 11 112 110; /* #0b706e | rgb(11, 112, 110) */
     --chains-custom-cool-5: 3 73 70; /* #034946 | rgb(3, 73, 70) */
-    --fade-height: 40px;
   }
 
   .dark {
     --bg-default: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
+    --bg-default-0: 31 39 38; /* #1f2726 | rgb(31, 39, 38) */
     --bg-medium: 52 66 64; /* #344240 | rgb(52, 66, 64) */
+    --bg-medium-50: 52 66 64; /* #344240 | rgb(52, 66, 64) */
     --ui-hover: 90 100 98; /* #5a6462 | rgb(90, 100, 98) */
     --ui-active: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
     --ui-shadow: 21 26 25; /* #151a19 | rgb(21, 26, 25) */
@@ -127,14 +131,15 @@
     --chains-polygon-zkevm: 243 192 251; /* #f3c0fb | rgb(243, 192, 251) */
     --chains-real: 183 191 227; /* #b7bfe3 | rgb(183, 191, 227) */
     --chains-redstone: 255 198 198; /* #ffc6c6 | rgb(255, 198, 198) */
+    --chains-megaeth: 223 217 217; /* #dfd9d9 | rgb(223, 217, 217) */
     --chains-rhino: 240 193 137; /* #f0c189 | rgb(240, 193, 137) */
     --chains-scroll: 255 227 64; /* #ffe340 | rgb(255, 227, 64) */
-    --chains-soneium: 215 226 220; /* #d7e2dc | rgb(215, 226, 220) */
+    --chains-soneium: 180 199 189; /* #b4c7bd | rgb(180, 199, 189) */
     --chains-starknet: 241 155 145; /* #f19b91 | rgb(241, 155, 145) */
     --chains-swell: 148 188 255; /* #94bcff | rgb(148, 188, 255) */
     --chains-taiko: 232 24 153; /* #e81899 | rgb(232, 24, 153) */
     --chains-unichain: 255 149 215; /* #ff95d7 | rgb(255, 149, 215) */
-    --chains-world: 217 208 193; /* #d9d0c1 | rgb(217, 208, 193) */
+    --chains-world: 180 164 135; /* #b4a487 | rgb(180, 164, 135) */
     --chains-zircuit: 1 203 154; /* #01cb9a | rgb(1, 203, 154) */
     --chains-zksync-era: 198 203 242; /* #c6cbf2 | rgb(198, 203, 242) */
     --chains-zora: 82 197 246; /* #52c5f6 | rgb(82, 197, 246) */
