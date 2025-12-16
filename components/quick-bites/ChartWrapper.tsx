@@ -478,6 +478,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             />
             <YAxis
               id="0"
+              type={options?.yAxis?.[0]?.type}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -547,6 +548,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </YAxis>
             <YAxis
               id="1"
+              type={options?.yAxis?.[1]?.type || options?.yAxis?.[0]?.type}
               opposite={true}
               labels={{
                 style: {
