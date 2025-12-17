@@ -28,6 +28,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
+import { GTPIcon } from "../GTPIcon";
 
 const regularMetrics = ["profit", "revenue", "costs", "size", "profit_margin"];
 interface DAvailability {
@@ -977,17 +978,11 @@ export default function ChainBreakdown({
                                 AllChainsByKeys[item.key].colors["dark"][0],
                             }}
                           />
-                          <Icon
-                            icon={"gtp:circle-arrow"}
-                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
-                            style={{
-                              transform: `rotate(${openChain[item.key] && selectedTimespan !== "1d"
-                                ? "90deg"
-                                : "0deg"
-                                })`,
-                              transformOrigin: "-9px 4px",
-                              transition: "transform 0.5s",
-                            }}
+                          <GTPIcon
+                            icon="gtp-chevronright-monochrome"
+                            className={` !w-[9px] !h-[6px] text-color-text-primary ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
+                            size={"sm"}
+                            containerClassName={`w-[15px] !overflow-visible h-[15px] flex items-center justify-center absolute top-[6px] text-color-text-primary -right-[5px] transition-transform duration-500 origin-[-2px_7px] ${openChain[item.key] && selectedTimespan !== "1d" ? "rotate-90" : "rotate-0"}`}
                           />
                         </div>
 

@@ -696,7 +696,7 @@ function BreakdownCharts({
               labels={{
                 useHTML: true,
                 style: {
-                  color: COLORS.LABEL,
+                  color: "rgb(var(--text-primary))",
                   fontSize: "10px",
                   fontFamily: "var(--font-raleway), sans-serif",
                   zIndex: 1000,
@@ -1001,7 +1001,7 @@ function BreakdownCharts({
                 useHTML: true,
                 distance: -14,
                 style: {
-                  color: COLORS.LABEL,
+                  color: "rgb(var(--text-primary))",
                   fontSize: "10px",
                   fontWeight: "550",
                   fontVariant: "small-caps",

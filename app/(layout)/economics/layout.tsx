@@ -5,6 +5,7 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Image from "next/image";
 import Link from "next/link";
 import DesktopEconomicsExplanationSVG from "@/public/economics/explanation.svg";
+import DesktopEconomicsExplanationSVGLight from "@/public/economics/explanationlight.svg";
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
 
@@ -34,9 +35,6 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  // <Container className="flex flex-col w-full pt-[65px] md:pt-[45px]" isPageRoot>
-
-  // </Container>
   return (
     <>
       <Container
@@ -91,8 +89,12 @@ export default async function Layout({
                 </ul>
               </div>
               <HorizontalScrollContainer className="rounded-[30px]" includeMargin={false} forcedMinWidth={700}>
-                <div className="relative w-full min-w-[700px] max-w-[960px] aspect-[1245/425]">
-                  <Image src={DesktopEconomicsExplanationSVG.src} alt="Economics Explanation" fill className="object-contain" />
+                <div className="relative w-full min-w-[700px] max-w-[960px] aspect-[1245/425] hidden dark:block">
+                  <Image src={DesktopEconomicsExplanationSVG.src} alt="Economics Explanation" fill className="object-contain hidden dark:block" />
+                  
+                </div>
+                <div className="relative w-full min-w-[700px] max-w-[960px] aspect-[1245/425] dark:hidden block">
+                  <Image src={DesktopEconomicsExplanationSVGLight.src} alt="Economics Explanation" fill className="object-contain block dark:hidden" />
                 </div>
               </HorizontalScrollContainer>
             </>
