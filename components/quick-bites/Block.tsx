@@ -15,6 +15,7 @@ import { DropdownBlock } from './blocks/DropdownBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
 import { TitleButtonBlock } from './blocks/TitleButtonBlock';
 import FaqBlock from './blocks/FaqBlock';
+import { SpacerBlock } from './blocks/SpacerBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -57,6 +58,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <TitleButtonBlock block={block} />;
     case 'faq':
       return <FaqBlock block={block} />;
+    case 'spacer':
+      return <SpacerBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;
