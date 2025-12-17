@@ -193,3 +193,5 @@ export const Supporters = [
     url: "https://octant.app",
   }
 ];
+
+export { EthereumFoundationLogo };
