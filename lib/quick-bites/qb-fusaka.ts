@@ -704,7 +704,7 @@ const Fusaka: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default Fusaka;
