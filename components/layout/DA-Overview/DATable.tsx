@@ -436,8 +436,8 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
     // )
   }, []);
 
-  console.log("listIcons", listIcons(undefined, "gtp"));
-  console.log("getIcon", getIcon("gtp:da-eigenda-logo-monochrome"));
+  // console.log("listIcons", listIcons(undefined, "gtp"));
+  // console.log("getIcon", getIcon("gtp:da-eigenda-logo-monochrome"));
 
   //daconsumers breakdown_data[item.key][selectedTimespan].da_consumers
   return (

@@ -274,7 +274,7 @@ export default function ContractContainer() {
     const currentMetricType = selectedMode.includes("gas_fees") ? "gas_fees" : "txcount";
     // If the sort metric doesn't match the current mode's type, reset it
     if (sort.metric !== currentMetricType) {
-      console.log(`Resetting sort metric from ${sort.metric} to ${currentMetricType} due to selectedMode change`);
+      // console.log(`Resetting sort metric from ${sort.metric} to ${currentMetricType} due to selectedMode change`);
       setSort({
         metric: currentMetricType,
         sortOrder: "desc", // Reset to default direction for the new metric
