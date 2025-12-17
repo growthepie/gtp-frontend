@@ -213,11 +213,11 @@ function computeBucketSeeMorePositions(
   });
 
   // Debug: log computed positions for this bucket
-  console.log("Mobile see-more positions", {
-    bucketLabel,
-    positions: calculatedSeeMorePositions,
-    filteredCount: bucket.filteredData.length,
-  });
+  // console.log("Mobile see-more positions", {
+  //   bucketLabel,
+  //   positions: calculatedSeeMorePositions,
+  //   filteredCount: bucket.filteredData.length,
+  // });
 
   return calculatedSeeMorePositions;
 }
@@ -629,6 +629,21 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
     Object.assign(newLastBucketIndeces, quickBitesSeeMorePositions);
 
+    // Calculate see more positions for bucket matches (they have trailing space in type)
+    allFilteredData.forEach(({ type, filteredData, isBucketMatch }) => {
+      if (isBucketMatch && filteredData.length > 0) {
+        // Bucket matches have trailing space, so we need to use the trimmed version for calculation
+        const bucketLabel = type.trim();
+        const bucketSeeMorePositions = computeBucketSeeMorePositions(
+          bucketLabel, // First argument: bucketLabel
+          { filteredData }, // Second argument: bucket
+          measurementsRef.current ? measurementsRef : { current: {} as any }, // Third argument: measurementsRef
+          (label, bucketType) => getKey(label, type) // Fourth argument: getKey function (use original type with trailing space for key)
+        );
+        Object.assign(newLastBucketIndeces, bucketSeeMorePositions);
+      }
+    });
+
     setLastBucketIndeces(newLastBucketIndeces);
     return dataMap.filter(arr => arr.length > 0);
   }, [allFilteredData, showMore, measurementsRef, forceUpdate, getKey]);
@@ -718,17 +733,17 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     const handleKeyDown = (event: KeyboardEvent) => {
       // Handle Shift key separately - doesn't require keyMapping
       if (event.key === 'Shift') {
-        console.log("Shift key detected in handleKeyDown");
+        // console.log("Shift key detected in handleKeyDown");
         event.preventDefault();
         
         // Find Applications bucket
         const applicationsBucket = allFilteredData.find(bucket => bucket.type === "Applications");
         if (!applicationsBucket) {
-          console.log("No Applications bucket found. Available buckets:", allFilteredData.map(b => b.type));
+          // console.log("No Applications bucket found. Available buckets:", allFilteredData.map(b => b.type));
           return;
         }
 
-        console.log("Shift pressed! Recalculating measurements and see more positions...");
+        // console.log("Shift pressed! Recalculating measurements and see more positions...");
 
         // Step 1: Recalculate measurements for all Application badges
         applicationsBucket.filteredData.forEach((item) => {
@@ -814,24 +829,24 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           }
         });
 
-        console.log("Application Badges Coordinates (with See More positions):", applicationBadges);
-        console.log("Calculated See More Positions:", calculatedSeeMorePositions);
+        // console.log("Application Badges Coordinates (with See More positions):", applicationBadges);
+        // console.log("Calculated See More Positions:", calculatedSeeMorePositions);
         
         if (applicationBadges.length > 0) {
-          console.table(applicationBadges.map(badge => ({
-            label: badge.label,
-            x: Math.round(badge.coords.x),
-            y: Math.round(badge.coords.y),
-            width: Math.round(badge.coords.width),
-            height: Math.round(badge.coords.height),
-            gridX: badge.gridPosition?.x ?? 'N/A',
-            gridY: badge.gridPosition?.y ?? 'N/A',
-            isSeeMore: badge.isSeeMore ? 'YES' : 'NO',
-            seeMoreX: badge.seeMorePosition?.x ?? 'N/A',
-            seeMoreY: badge.seeMorePosition?.y ?? 'N/A',
-          })));
+          // console.table(applicationBadges.map(badge => ({
+          //   label: badge.label,
+          //   x: Math.round(badge.coords.x),
+          //   y: Math.round(badge.coords.y),
+          //   width: Math.round(badge.coords.width),
+          //   height: Math.round(badge.coords.height),
+          //   gridX: badge.gridPosition?.x ?? 'N/A',
+          //   gridY: badge.gridPosition?.y ?? 'N/A',
+          //   isSeeMore: badge.isSeeMore ? 'YES' : 'NO',
+          //   seeMoreX: badge.seeMorePosition?.x ?? 'N/A',
+          //   seeMoreY: badge.seeMorePosition?.y ?? 'N/A',
+          // })));
         } else {
-          console.log("No Application badges found with coordinates. Total filteredData items:", applicationsBucket.filteredData.length);
+          // console.log("No Application badges found with coordinates. Total filteredData items:", applicationsBucket.filteredData.length);
         }
         
         return;
@@ -899,10 +914,10 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     };
 
     if (memoizedQuery && allFilteredData.length > 0) {
-      console.log("Attaching keyboard handler. Query:", memoizedQuery, "Buckets:", allFilteredData.map(b => b.type));
+      // console.log("Attaching keyboard handler. Query:", memoizedQuery, "Buckets:", allFilteredData.map(b => b.type));
       window.addEventListener('keydown', handleKeyDown);
       return () => {
-        console.log("Removing keyboard handler");
+        // console.log("Removing keyboard handler");
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
@@ -1046,19 +1061,26 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
     // Show search results organized by sections (like the original menu structure)
     return allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
-      const isShowMore = showMore[type] && type !== "Applications";
+      // Handle bucket matches: they have trailing space in type, so check both with and without space
+      const cleanType = type.trim();
+      const isShowMore = (showMore[type] || showMore[cleanType]) && type !== "Applications";
 
       // Limit chain results when stack results are present and "See more" is not expanded
       const hasStackResults = filteredGroupData && filteredGroupData.length > 0;
       const shouldLimitChains = hasStackResults && !isShowMore && type === "Chains";
 
       // Limit Applications bucket to 20 results unless showMore is true
+      // For bucket matches, respect showMore state to limit/expand results
       const resultsToRender =
-        type === "Applications" && !isShowMore
-          ? filteredData.slice(0, 20)
-          : shouldLimitChains
-            ? filteredData.slice(0, 6) // Show fewer chains when stack results are present
-            : filteredData;
+        isBucketMatch && !isShowMore
+          ? filteredData // Show all results initially for bucket matches (will be limited by height)
+          : isBucketMatch && isShowMore
+            ? filteredData // Show all results when expanded
+            : type === "Applications" && !isShowMore
+              ? filteredData.slice(0, 20)
+              : shouldLimitChains
+                ? filteredData.slice(0, 6) // Show fewer chains when stack results are present
+                : filteredData;
 
       return (
         <div
@@ -1084,13 +1106,13 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
           <div className="flex flex-col gap-[5px]">
             {/* Chain results in separate container */}
-            {filteredData.length > 0 && (
+            {resultsToRender.length > 0 && (
               <div className={`overflow-y-hidden ${isShowMore
                   ? "max-h-full"
                   : "max-h-[87px]"
                 }`}>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {filteredData.map((item) => {
+                  {resultsToRender.map((item) => {
                     const itemKey = getKey(item.label, type);
                     const isSelected = keyCoords.y !== null &&
                       keyCoords.x !== null &&
@@ -1110,6 +1132,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                         setShowMore={setShowMore}
                         setKeyboardExpandedStacks={setKeyboardExpandedStacks}
                         keyboardClickItemKeyRef={keyboardClickItemKeyRef}
+                        onClose={onClose}
                       />
                     )
                   })}
@@ -1156,6 +1179,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                                 setShowMore={setShowMore}
                                 setKeyboardExpandedStacks={setKeyboardExpandedStacks}
                                 keyboardClickItemKeyRef={keyboardClickItemKeyRef}
+                                onClose={onClose}
                               />
                             );
                           })}

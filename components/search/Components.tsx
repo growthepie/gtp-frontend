@@ -581,6 +581,17 @@ export const useSearchBuckets = () => {
       .filter(quickBite => quickBite.slug !== "test-bite") // Filter out test quick bite
       .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false); // Hide non-live bites in production
     
+    // Get public goods trackers from Quick Bites navigation
+    const quickBitesNavItem = navigationItems.find(navItem => navItem.name === "Quick Bites");
+    const publicGoodsTrackers = quickBitesNavItem?.options
+      .filter(option => option.url?.startsWith("/trackers/"))
+      .map(option => ({
+        label: option.label,
+        url: option.url || "",
+        icon: `gtp:${option.icon}`,
+        color: undefined
+      })) || [];
+    
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
       .filter(navItem => navItem.name !== "Quick Bites")
@@ -590,12 +601,15 @@ export const useSearchBuckets = () => {
           acc.push({
             label: "Quick Bites",
             icon: "gtp-quick-bites",
-            options: allQuickBites.map(quickBite => ({
-              label: quickBite.title,
-              url: `/quick-bites/${quickBite.slug}`,
-              icon: "gtp-quick-bites",
-              color: undefined
-            }))
+            options: [
+              ...allQuickBites.map(quickBite => ({
+                label: quickBite.title,
+                url: `/quick-bites/${quickBite.slug}`,
+                icon: "gtp-quick-bites",
+                color: undefined
+              })),
+              ...publicGoodsTrackers
+            ]
           });
         }
         
@@ -1488,7 +1502,8 @@ export const BucketItem = ({
   showMore,
   setShowMore,
   setKeyboardExpandedStacks,
-  keyboardClickItemKeyRef
+  keyboardClickItemKeyRef,
+  onClose
 }: {
   item: any,
   itemKey: string,
@@ -1500,7 +1515,8 @@ export const BucketItem = ({
   showMore: { [key: string]: boolean },
   setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
   setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>,
-  keyboardClickItemKeyRef: React.MutableRefObject<string | null>
+  keyboardClickItemKeyRef: React.MutableRefObject<string | null>,
+  onClose?: () => void
 }) => {
   // Handle bucket match with trailing space
   const cleanBucket = bucket.trim();
@@ -1538,21 +1554,33 @@ export const BucketItem = ({
       onClick={(e) => {
         // Stop event propagation to prevent parent click handlers from firing
         e.stopPropagation();
-        console.log("Search Badge Clicked", { location: "Search", page: `${query}::${targetUrl}` });
+        // console.log("Search Badge Clicked", { location: "Search", page: `${query}::${targetUrl}` });
         
         // Check if this is a keyboard-triggered click or a new tab open (Ctrl/Cmd+Click)
         const isKeyboardClick = keyboardClickItemKeyRef.current === itemKey;
         const isNewTabClick = e.ctrlKey || e.metaKey;
         
-        if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
-          console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
+        // Handle bucket matches: check both with and without trailing space
+        const cleanBucket = bucket.trim();
+        const bucketShowMore = showMore[bucket] || showMore[cleanBucket];
+        
+        if (lastBucketIndeces[itemKey] && !bucketShowMore) {
+          // console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {
             track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+            // Close the menu if onClose callback is provided (mobile menu)
+            if (onClose) {
+              onClose();
+            }
             return; // Don't prevent default, let Link handle navigation
           }
-          // For other buckets, expand the results
-          setShowMore(prev => ({ ...prev, [bucket]: true }));
+          // For other buckets, expand the results (set both with and without trailing space)
+          setShowMore(prev => ({ 
+            ...prev, 
+            [bucket]: true,
+            [cleanBucket]: true 
+          }));
           // Track the show more event
           track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
 
@@ -1581,14 +1609,26 @@ export const BucketItem = ({
 
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
-          if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+          // Handle bucket matches: check both with and without trailing space
+          const cleanBucket = bucket.trim();
+          const bucketShowMore = showMore[bucket] || showMore[cleanBucket];
+          
+          if (lastBucketIndeces[itemKey] && !bucketShowMore) {
             // For Quick Bites and Applications, let the Link navigate naturally
             if (isQuickBites || isApps) {
               track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+              // Close the menu if onClose callback is provided (mobile menu)
+              if (onClose) {
+                onClose();
+              }
               return; // Don't prevent default, let Link handle navigation
             }
-            // For other buckets, expand the results
-            setShowMore(prev => ({ ...prev, [bucket]: true }));
+            // For other buckets, expand the results (set both with and without trailing space)
+            setShowMore(prev => ({ 
+              ...prev, 
+              [bucket]: true,
+              [cleanBucket]: true 
+            }));
             // Track the show more event
             track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
 
@@ -1606,7 +1646,7 @@ export const BucketItem = ({
       }}
       className="relative"
     >
-      {lastBucketIndeces[itemKey] && !showMore[bucket] && (
+      {lastBucketIndeces[itemKey] && !(showMore[bucket] || showMore[bucket.trim()]) && (
         <div
           className={`
             absolute inset-[-1px] z-20 pl-[5px]
