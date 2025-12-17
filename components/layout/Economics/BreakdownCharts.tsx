@@ -566,11 +566,11 @@ function BreakdownCharts({
         className="w-full h-full min-h-[210px] max-h-[210px] relative "
         ref={chartRef}
       >
-        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#1DF7EF] rounded-full"></div>
           <div className="text-xxxs">Revenue</div>
         </div>
-        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
           <div className="text-xxxs">Cost</div>
         </div>
@@ -755,7 +755,7 @@ function BreakdownCharts({
                 style: {
                   textAlign: "right",
                   width: 45,
-                  color: "rgb(215, 223, 222)",
+                  color: "rgb(var(--text-primary))",
                   fontSize: "10px",
                   fontWeight: "700",
                   fontFamily: "Fira Sans",
@@ -879,11 +879,11 @@ function BreakdownCharts({
         className="h-[175px] w-full flex justify-center items-center relative  overflow-visible"
         ref={profitChartRef}
       >
-        <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+        <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#EEFF97] rounded-full"></div>
           <div className="text-xxxs">Profit</div>
         </div>
-        <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 rounded-full flex items-center z-20  gap-x-[2px] px-[3px]">
+        <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 rounded-full flex items-center z-20  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
           <div className="text-xxxs">Loss</div>
         </div>
@@ -1094,7 +1094,7 @@ function BreakdownCharts({
                 style: {
                   textAlign: "right",
                   width: 45,
-                  color: "rgb(215, 223, 222)",
+                  color: "rgb(var(--text-primary))",
                   fontSize: "10px",
                   fontWeight: "700",
                   fontFamily: "Fira Sans",

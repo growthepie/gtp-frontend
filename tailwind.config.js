@@ -100,7 +100,7 @@ module.exports = {
         "color-bg-default": "rgb(var(--bg-default) / <alpha-value>)",
         "color-bg-default-0": "rgb(var(--bg-default-0) / <alpha-value>)",
         "color-bg-medium": "rgb(var(--bg-medium) / <alpha-value>)",
-        "color-bg-medium-50": "rgb(var(--bg-medium-50) / <alpha-value>)",
+        "color-bg-medium-50": "var(--bg-medium-50)",
         "color-ui-hover": "rgb(var(--ui-hover) / <alpha-value>)",
         "color-ui-active": "rgb(var(--ui-active) / <alpha-value>)",
         "color-ui-shadow": "rgb(var(--ui-shadow) / <alpha-value>)",

@@ -11,6 +11,7 @@ import {
   PlotBand,
   AreaSeries,
 } from "react-jsx-highcharts";
+import { useTheme } from "next-themes";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import "@splidejs/splide/css";
 import { l2_data } from "@/types/api/EconomicsResponse";
@@ -85,6 +86,8 @@ export default function EconHeadCharts({
     return "Ξ";
   }, [showUsd]);
 
+  const { theme } = useTheme();
+
   const { isSidebarOpen, isSafariBrowser } = useUIContext();
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
@@ -149,7 +152,7 @@ export default function EconHeadCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway text-color-text-primary">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -194,7 +197,7 @@ export default function EconHeadCharts({
           let displayValue = y;
 
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 text-color-text-primary">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
             <div class="tooltip-point-name text-xs">${nameString}</div>
             <div class="flex-1 text-right justify-end flex numbers-xs">
@@ -648,7 +651,7 @@ export default function EconHeadCharts({
                       </div>
 
                       <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/70 pointer-events-none">
-                        <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                        <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
                         <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                           {!isMultipleSeries
                             ? new Date(
@@ -696,7 +699,7 @@ export default function EconHeadCharts({
                               year: "numeric",
                             })}
                         </div>
-                        <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                        <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
                       </div>
                       <div className="relative w-full h-[197px] flex justify-center items-end overflow-visible">
                         <HighchartsProvider Highcharts={Highcharts}>
@@ -860,9 +863,9 @@ export default function EconHeadCharts({
                                       document.getElementById("stop1");
                                     const stop2 =
                                       document.getElementById("stop2");
-                                    stop1?.setAttribute("stop-color", "#CDD8D3");
+                                    stop1?.setAttribute("stop-color", "rgb(var(--text-primary))");
                                     stop1?.setAttribute("stop-opacity", "1");
-                                    stop2?.setAttribute("stop-color", "#CDD8D3");
+                                    stop2?.setAttribute("stop-color", "rgb(var(--text-primary))");
                                     stop2?.setAttribute("stop-opacity", "0.33");
                                   }
                                   const lastPoint: Highcharts.Point =
@@ -904,7 +907,7 @@ export default function EconHeadCharts({
                                       y2: chart.plotTop - 5,
 
                                       stroke: isSafariBrowser
-                                        ? "#CDD8D3"
+                                        ? "rgb(var(--text-primary))"
                                         : "url('#gradient0')",
                                       "stroke-dasharray":
                                         key === "costs" ? null : "2",
@@ -922,7 +925,7 @@ export default function EconHeadCharts({
                                       3,
                                     )
                                     .attr({
-                                      fill: "#CDD8D3",
+                                      fill: "rgb(var(--text-primary))",
                                       r: 4.5,
                                       zIndex: 9999,
                                       rendering: "crispEdges",
@@ -937,7 +940,7 @@ export default function EconHeadCharts({
                               split={false}
                               followPointer={true}
                               followTouchMove={true}
-                              backgroundColor={"#2A3433EE"}
+                              backgroundColor={"rgb(var(--bg-default) / 0.95)"}
                               padding={0}
                               hideDelay={300}
                               stickOnContact={true}
@@ -1021,7 +1024,7 @@ export default function EconHeadCharts({
                                 style: {
                                   backgroundColor: "#1F2726",
                                   whiteSpace: "nowrap",
-                                  color: "rgb(215, 223, 222)",
+                                  color: "rgb(var(--text-primary))",
                                   fontSize: "10px",
                                   fontWeight: "300",
                                   fontFamily: "Fira Sans",
