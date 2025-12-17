@@ -58,3 +58,7 @@ certificates
 
 # analytics testing
 test-analytics.mjs
+
+# Screenshots
+*.png
+
