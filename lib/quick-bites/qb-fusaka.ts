@@ -675,7 +675,7 @@ const Fusaka: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/fusaka.png",
   og_image: "",
-  date: "2025-12-16",
+  date: "2025-12-17",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
