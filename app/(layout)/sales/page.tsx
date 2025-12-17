@@ -5,7 +5,7 @@ import Heading from "@/components/layout/Heading";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Subheading from "@/components/layout/Subheading";
-import { SectionDescription, SectionTitle } from "@/components/layout/TextHeadingComponents";
+import { SectionButtonLink, SectionDescription, SectionTitle, Title } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EthereumFoundationLogo, Supporters } from "@/lib/contributors";
 import Link from "next/link";
@@ -92,21 +92,17 @@ export default function SalesPage() {
   ];
 
   return (
-    <Container className="mt-[45px] md:mt-[30px] flex flex-col gap-y-[45px]">
-      <section className="flex flex-col gap-y-[20px]">
+    <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] pb-[15px] gap-y-[45px]">
+      <section className="flex flex-col gap-y-[15px]">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-y-[15px] md:gap-x-[20px]">
-          <Heading className="heading-large-xl leading-[110%]" as="h1">
-            Work with us
-          </Heading>
-          <Link
-            href="#data-tiers"
-            className="inline-flex items-center gap-x-[10px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[14px] py-[10px] heading-small-sm hover:bg-color-ui-hover transition-colors self-start md:self-auto"
-          >
-            <span>See pricing tiers for listing</span>
-            <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
-          </Link>
+          <div className="flex items-center h-[43px] gap-x-[8px]">
+            <Title title="Work with us" icon="gtp-socials" as="h1" iconSize="lg" />
+          </div>
+          <div className="self-start md:self-auto">
+            <SectionButtonLink href="#data-tiers" label="See pricing tiers" shortLabel="Pricing tiers" />
+          </div>
         </div>
-        <Subheading className="text-md md:text-lg leading-normal max-w-[1100px] text-color-text-primary">
+        <Subheading className="text-md leading-normal w-full text-color-text-primary">
           growthepie.com started with an initial grant from the Ethereum Foundation back in February 2023. We decided
           to build the platform as a public good, because we want everyone to have free access to transparent data and
           visualizations that everyone understands, not just the few.
@@ -115,11 +111,6 @@ export default function SalesPage() {
 
       <section className="flex flex-col gap-y-[16px]">
         <SectionTitle icon="gtp-support" title="Trusted Partners and Community Members" />
-        <SectionDescription className="text-md md:text-lg max-w-[1100px] text-color-text-primary">
-          growthepie data and visualizations are used across many different sites, publishers and media. Our main focus
-          is to cater towards end users and builders wanting to get the best overview of the entire Ethereum ecosystem.
-          Therefore we support everyone who helps us achieve this mission.
-        </SectionDescription>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[16px]">
           {partners.map((partner) => {
             const Logo = partner.svg;
@@ -144,9 +135,124 @@ export default function SalesPage() {
         </div>
       </section>
 
+      <section id="data-tiers" className="flex flex-col gap-y-[16px]">
+        <SectionTitle icon="gtp-categories" title="Data Tiers" />
+        <SectionDescription className="w-full text-color-text-primary">
+          Our goal is, however, to also suit the needs of chains and more professional users. For this reason we have
+          paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
+          part in the ecosystem. See for yourself what suits you best:
+        </SectionDescription>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[12px] md:gap-[16px]">
+          {tiers.map((tier) => {
+            const isExpanded = expandedTier === tier.name;
+            const card = (
+              <ExpandableCardContainer
+                isExpanded={isExpanded}
+                onToggleExpand={() => setExpandedTier(isExpanded ? null : tier.name)}
+                className={`!border-none overflow-visible ${isExpanded ? "!z-[1002]" : "z-0"}`}
+                minHeightClass="min-h-[190px]"
+                fullHeight={false}
+                overlayOnExpand={false}
+                infoSlot={
+                  <div className="flex flex-col gap-y-[6px] text-xs">
+                    <div className="font-semibold">{tier.name} tier</div>
+                    <div className="text-color-text-secondary">Includes starter reports and tailored insights.</div>
+                  </div>
+                }
+              >
+                <div className={`relative flex flex-col gap-y-[10px] pb-[32px] ${isExpanded ? "" : "max-h-[140px] overflow-hidden"}`}>
+                  <div className="flex items-center justify-between gap-x-[8px]">
+                    <div className="heading-small-md">{tier.name}</div>
+                    <span className="text-xs uppercase tracking-wide text-color-text-primary whitespace-nowrap">
+                      {tier.status}
+                    </span>
+                  </div>
+                  <p className="text-xs leading-snug">{tier.description}</p>
+                  <ul className="flex flex-col gap-y-[6px] text-xs text-color-text-secondary">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-x-[6px]">
+                        <GTPIcon icon="gtp-checkmark-checked" size="sm" className="!size-[16px]" />
+                        <span className="leading-snug">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div
+                    className={`transition-[max-height,opacity] duration-300 overflow-hidden text-xs text-color-text-secondary ${
+                      isExpanded ? "max-h-[200px] opacity-100 mt-[6px]" : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    <ul className="flex flex-col gap-y-[6px]">
+                      {[
+                        "Dedicated onboarding session",
+                        "Custom alerts & reporting options",
+                        "Access to future beta dashboards",
+                      ].map((extra) => (
+                        <li key={extra} className="flex items-center gap-x-[6px]">
+                          <GTPIcon icon="gtp-checkmark-checked" size="sm" className="!size-[16px]" />
+                          <span className="leading-snug">{extra}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {!isExpanded && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[40px] bg-gradient-to-b from-transparent to-color-bg-default" />
+                  )}
+                </div>
+              </ExpandableCardContainer>
+            );
+
+            const baseWrapper = "rounded-[16px] overflow-visible";
+            const wrapperStateClass = isExpanded ? "absolute left-0 right-0 top-0 z-[1002]" : "relative z-0";
+            if (tier.highlight) {
+              return (
+                <div key={tier.name} className="relative min-h-[190px]">
+                  <div
+                    className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]`}
+                  >
+                    <div className="rounded-[15px] bg-color-bg-default">
+                      {card}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={tier.name} className="relative min-h-[190px]">
+                <div className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-color-bg-medium`}>
+                  <div className="rounded-[15px] bg-color-bg-default">
+                    {card}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-[12px] mt-0">
+          <Link
+            href="https://forms.office.com/e/wWzMs6Zc3A"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-medium px-[16px] py-[12px] heading-small-sm hover:bg-color-ui-hover transition-colors"
+          >
+            <span>Request a free listing</span>
+            <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
+          </Link>
+          <div className="rounded-full p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]">
+            <Link
+              href="mailto:contact@growthepie.com"
+              className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-default px-[16px] py-[12px] heading-small-sm hover:bg-color-ui-hover transition-colors"
+            >
+              <span>Get in touch</span>
+              <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="flex flex-col gap-y-[16px]">
         <SectionTitle icon="gtp-feedback" title="Feedback we receive" />
-        <SectionDescription className="text-md md:text-lg max-w-[1100px] text-color-text-primary">
+        <SectionDescription className="w-full text-color-text-primary">
           growthepie data and visualizations are used across many different sites, publishers and media. Our main focus
           is to cater towards end users and builders wanting to get the best overview of the entire Ethereum ecosystem.
           Therefore we support everyone who helps us achieve this mission.
@@ -158,94 +264,13 @@ export default function SalesPage() {
               className="flex flex-col gap-y-[16px] rounded-[22px] border border-color-ui-shadow bg-color-bg-default px-[18px] md:px-[26px] py-[22px] md:py-[28px] text-center h-full justify-between"
             >
               <div className="flex justify-center">{slide.logo}</div>
-              <p className="text-md md:text-lg leading-normal max-w-[900px] mx-auto">
-                “{slide.quote}”
+              <p className="text-md leading-normal max-w-[900px] mx-auto">
+                "{slide.quote}"
               </p>
               <div className="heading-small-sm text-color-text-secondary">{slide.author}</div>
             </div>
           ))}
         </SwiperComponent>
-      </section>
-
-      <section id="data-tiers" className="flex flex-col gap-y-[16px]">
-        <SectionTitle icon="gtp-categories" title="Data Tiers" />
-        <SectionDescription className="text-md md:text-lg max-w-[1100px] text-color-text-primary">
-          Our goal is, however, to also suit the needs of chains and more professional users. For this reason we have
-          paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
-          part in the ecosystem. See for yourself what suits you best:
-        </SectionDescription>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[16px]">
-          {tiers.map((tier) => {
-            const isExpanded = expandedTier === tier.name;
-            return (
-              <ExpandableCardContainer
-                key={tier.name}
-                isExpanded={isExpanded}
-                onToggleExpand={() => setExpandedTier(isExpanded ? null : tier.name)}
-                className={`${tier.highlight ? "border border-color-accent-yellow" : "border border-color-ui-shadow"}`}
-                infoSlot={
-                  <div className="flex flex-col gap-y-[6px] text-sm">
-                    <div className="font-semibold">{tier.name} tier</div>
-                    <div className="text-color-text-secondary">Includes starter reports and tailored insights.</div>
-                  </div>
-                }
-              >
-                <div className="flex flex-col gap-y-[10px]">
-                  <div className="flex items-center justify-between">
-                    <div className="heading-small-md">{tier.name}</div>
-                    <span
-                      className={`px-[10px] py-[6px] rounded-full border text-xxs uppercase tracking-wide ${
-                        tier.status === "Free"
-                          ? "border-color-text-secondary text-color-text-secondary"
-                          : "border-color-accent-yellow text-color-accent-yellow"
-                      }`}
-                    >
-                      {tier.status}
-                    </span>
-                  </div>
-                  <p className="text-md leading-snug">{tier.description}</p>
-                  <ul className="flex flex-col gap-y-[6px] text-sm text-color-text-secondary">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-x-[6px]">
-                        <span className="size-[8px] rounded-full bg-color-ui-shadow inline-block" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div
-                    className={`transition-[max-height,opacity] duration-300 overflow-hidden text-sm text-color-text-secondary ${
-                      isExpanded ? "max-h-[200px] opacity-100 mt-[6px]" : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <div className="flex flex-col gap-y-[6px]">
-                      <div>• Dedicated onboarding session</div>
-                      <div>• Custom alerts & reporting options</div>
-                      <div>• Access to future beta dashboards</div>
-                    </div>
-                  </div>
-                </div>
-              </ExpandableCardContainer>
-            );
-          })}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-[12px] mt-[8px]">
-          <Link
-            href="https://forms.office.com/e/wWzMs6Zc3A"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[14px] py-[10px] heading-small-sm hover:bg-color-ui-hover transition-colors"
-          >
-            <span>Request a free listing</span>
-            <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
-          </Link>
-          <Link
-            href="mailto:contact@growthepie.com"
-            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[14px] py-[10px] heading-small-sm hover:bg-color-ui-hover transition-colors"
-          >
-            <span>Get in touch</span>
-            <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
-          </Link>
-        </div>
       </section>
 
       <section className="flex flex-col gap-y-[16px] mb-[20px]">
