@@ -145,6 +145,13 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             fusaka_total_blob_fee_usd_without7918,
           } = fusakaEip7918.data;
 
+          const fusaka_total_blob_fee_eth_multiplier =
+            typeof fusaka_total_blob_fee_eth_with7918 === 'number' &&
+            typeof fusaka_total_blob_fee_eth_without7918 === 'number' &&
+            fusaka_total_blob_fee_eth_without7918 !== 0
+              ? fusaka_total_blob_fee_eth_with7918 / fusaka_total_blob_fee_eth_without7918
+              : null;
+
           const formatNumber = (val: number | undefined, decimals: number = 2) =>
             typeof val === 'number'
               ? val.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
@@ -154,7 +161,8 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             .replace('{{fusaka_total_blob_fee_eth_with7918}}', formatNumber(fusaka_total_blob_fee_eth_with7918, 2))
             .replace('{{fusaka_total_blob_fee_eth_without7918}}', formatNumber(fusaka_total_blob_fee_eth_without7918, 9))
             .replace('{{fusaka_total_blob_fee_usd_with7918}}', formatNumber(fusaka_total_blob_fee_usd_with7918, 2))
-            .replace('{{fusaka_total_blob_fee_usd_without7918}}', formatNumber(fusaka_total_blob_fee_usd_without7918, 2));
+            .replace('{{fusaka_total_blob_fee_usd_without7918}}', formatNumber(fusaka_total_blob_fee_usd_without7918, 2))
+            .replace('{{fusaka_total_blob_fee_eth_multiplier}}', formatNumber(fusaka_total_blob_fee_eth_multiplier ?? undefined, 0));
         }
       }
 
