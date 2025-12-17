@@ -301,10 +301,12 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
   const CONTAINER_HORIZONTAL_PADDING = 60;
 
   useEffect(() => {
-    if (selectedMainCategory && setSelectedCategory) {
+    if (setSelectedCategory) {
+      // Sync selectedMainCategory to parent state
+      // When null (e.g., clicking empty space), clear parent state too
       setSelectedCategory(selectedMainCategory);
     }
-  }, [selectedMainCategory]);
+  }, [selectedMainCategory, setSelectedCategory]);
 
   useEffect(() => {
     if (clearSelectedCategory && setClearSelectedCategory) {
