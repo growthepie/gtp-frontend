@@ -28,7 +28,7 @@ export default function CookieConsent() {
 
     gtag("consent", "update", getConsentUpdate(true));
 
-    console.log("accepting cookies");
+    console.log("[CookieConsent] Accepting cookies");
   };
 
   const denyCookie = () => {
@@ -39,7 +39,7 @@ export default function CookieConsent() {
     
     gtag("consent", "update", getConsentUpdate(false));
     
-    console.log("denying cookies");
+    console.log("[CookieConsent] Denying cookies");
   };
 
   if (consent === true) {

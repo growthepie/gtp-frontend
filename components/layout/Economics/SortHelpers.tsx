@@ -72,7 +72,7 @@ export function sortByDataAvailability(
   availType: string,
   sortedKeys: string[], // Pass the already sorted keys as an argument
 ) {
-  console.log(availType);
+  // console.log(availType);
   // Sort the already sorted keys based on availability
   const sortedKeysWithAvailability = sortedKeys.sort((a, b) => {
     const aContainsAvail =
@@ -88,7 +88,7 @@ export function sortByDataAvailability(
     return 0;
   });
 
-  console.log(sortedKeysWithAvailability);
+  // console.log(sortedKeysWithAvailability);
 
   return sortedKeysWithAvailability;
 }

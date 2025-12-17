@@ -465,7 +465,7 @@ export const useHighchartsWrappers = () => {
               try {
                 this.chart[element].attr("visibility", "hidden");
               } catch (e) {
-                console.log(e);
+                console.log(`[UIContext] Error hiding chart element: ${element}`, e);
               }
             }
           });

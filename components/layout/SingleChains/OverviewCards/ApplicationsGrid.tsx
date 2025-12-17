@@ -301,10 +301,12 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
   const CONTAINER_HORIZONTAL_PADDING = 60;
 
   useEffect(() => {
-    if (selectedMainCategory && setSelectedCategory) {
+    if (setSelectedCategory) {
+      // Sync selectedMainCategory to parent state
+      // When null (e.g., clicking empty space), clear parent state too
       setSelectedCategory(selectedMainCategory);
     }
-  }, [selectedMainCategory]);
+  }, [selectedMainCategory, setSelectedCategory]);
 
   useEffect(() => {
     if (clearSelectedCategory && setClearSelectedCategory) {
@@ -830,7 +832,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
   // ============================================================================
 
   const handleCategoryClick = (categoryId: string) => {
-    console.log('handleCategoryClick', categoryId);
+    // console.log('handleCategoryClick', categoryId);
     if (selectedMainCategory === null) {
       setSelectedMainCategory(categoryId);
       setShowHint(true);
@@ -1289,7 +1291,7 @@ const CategorySection = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={viewMode === 'main' ? (e) => {
-        console.log('clicked');
+        // console.log('clicked');
         onCategoryClick(e);
       } : undefined}
     >
