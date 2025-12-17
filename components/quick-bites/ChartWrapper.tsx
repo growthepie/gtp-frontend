@@ -158,6 +158,29 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     );
   }, [processedSeriesData, filteredNames]);
 
+  const minTimestampDelta = useMemo(() => {
+    const seriesToInspect = filteredSeries.length ? filteredSeries : processedSeriesData;
+    let smallestDelta = Number.POSITIVE_INFINITY;
+
+    seriesToInspect.forEach((series: any) => {
+      const points = series?.processedData || [];
+      for (let i = 1; i < points.length; i++) {
+        const current = points[i]?.[0];
+        const previous = points[i - 1]?.[0];
+
+        if (typeof current === "number" && typeof previous === "number") {
+          const delta = Math.abs(current - previous);
+          if (delta > 0 && delta < smallestDelta) {
+            smallestDelta = delta;
+          }
+        }
+      }
+    });
+
+    return smallestDelta === Number.POSITIVE_INFINITY ? null : smallestDelta;
+  }, [filteredSeries, processedSeriesData]);
+
+  const shouldShowTimeInTooltip = showXAsDate && !!minTimestampDelta && minTimestampDelta < 24 * 60 * 60 * 1000;
   
   // Add timespans and selectedTimespan
   const timespans = {
@@ -220,7 +243,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
-      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
+      let dateString = moment.utc(x).utc().locale("en-GB").format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
@@ -247,10 +271,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
           
-
-          const currentPrefix = jsonMeta?.meta[index].prefix || '';
-          const currentSuffix = jsonMeta?.meta[index].suffix || '';
-          const currentDecimals = jsonMeta?.meta[index].tooltipDecimals ?? 2;
+          // Match meta by series name instead of the sorted index so suffix/prefix follow the right series
+          const metaEntry = jsonMeta?.meta.find((meta) => meta.name === name);
+          const currentPrefix = metaEntry?.prefix || '';
+          const currentSuffix = metaEntry?.suffix || '';
+          const currentDecimals = metaEntry?.tooltipDecimals ?? 2;
+          const stackingMode = metaEntry?.stacking;
 
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {
@@ -260,7 +286,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           let displayText;
           /* this might be wrong */
-          if (jsonMeta?.meta[index].stacking === "percent") {
+          if (stackingMode === "percent") {
             const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
@@ -282,7 +308,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [jsonMeta],
+    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
@@ -478,6 +504,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             />
             <YAxis
               id="0"
+              type={options?.yAxis?.[0]?.type}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -547,6 +574,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </YAxis>
             <YAxis
               id="1"
+              type={options?.yAxis?.[1]?.type || options?.yAxis?.[0]?.type}
               opposite={true}
               labels={{
                 style: {

@@ -20,7 +20,7 @@ type Props = {
 
 const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
   const { href, icon, label } = item;
-  console.log('item', item);
+  // console.log('item', item);
   const isChain = item.type === 'chain-link';
   const chainKey = isChain ? item.key : undefined;
 

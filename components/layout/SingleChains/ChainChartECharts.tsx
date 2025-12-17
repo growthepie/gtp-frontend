@@ -1243,13 +1243,13 @@ const MetricChart = memo(
               <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
             </div>
           </Link>
-          <div className="relative numbers-lg -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
+          <div className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
             {accumulationBadge && (
               <div className="hidden @[340px]:flex px-[5px] h-[13px] items-center justify-center bg-color-bg-medium rounded-full">
                 <span className="text-xxxs whitespace-nowrap">{accumulationBadge}</span>
               </div>
             )}
-            <div className="flex">
+            <div className="flex numbers-lg">
               <div>{displayValue.prefix}</div>
               <div>{displayValue.value}</div>
               {displayValue.suffix && <div className="pl-0.5">{displayValue.suffix}</div>}

@@ -83,7 +83,7 @@ export const createTooltipFormatter = (prefix: string) => {
           maximumFractionDigits: 2,
         }).format(y || 0);
 
-        console.log("series.color", series.color);
+        // console.log("series.color", series.color);
 
         const color = typeof series.color === "string" ? series.color : (series.color as Highcharts.GradientColorObject).stops[0][1];
 

@@ -1,8 +1,8 @@
 // lib/utils/dynamicContent.ts - Extended version
 export const processDynamicContent = async (content: any[]): Promise<any[]> => {
-  const dynamicDataCache = new Map();
+  const dynamicDataCache = new Map<string, any>();
 
-  const fetchData = async (key: string, url: string) => {
+  const fetchData = async (key: string, url: string): Promise<any> => {
     if (!dynamicDataCache.has(key)) {
       try {
         const response = await fetch(url);
@@ -91,7 +91,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       // Handle Robinhood stock data placeholders
       if (processedItem.includes('{{robinhood')) {
         
-        const robinhoodkpi = await fetchData('robinhood', "https://api.growthepie.com/v1/quick-bites/robinhood/kpi.json");
+        const robinhoodkpi: any = await fetchData('robinhood', "https://api.growthepie.com/v1/quick-bites/robinhood/kpi.json");
         
         const perc_change_market_value_usd_7d = robinhoodkpi?.data?.perc_change_market_value_usd_7d?.toFixed(2);
         const stockCount = robinhoodkpi?.data?.stockCount?.toString();
@@ -106,6 +106,64 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           .replace('{{robinhood_total_market_value_sum_usd}}', total_market_value_sum_usd || 'N/A')
           .replace('{{robinhood_perc_change_market_value_usd_7d}}', perc_change_market_value_usd_7d || 'N/A')
           .replace('{{robinhood_stockCount}}', stockCount || 'N/A');
+      }
+
+      // Handle Fusaka totals placeholders
+      if (processedItem.includes('{{fusaka_')) {
+        const fusakaTotals: any = await fetchData('fusaka_totals', "https://api.growthepie.com/v1/quick-bites/fusaka/totals.json");
+        let fusakaEip7918: any = null;
+        if (processedItem.includes('{{fusaka_total_blob_fee_') || processedItem.includes('{{fusaka_total_blob_fee_usd_')) {
+          fusakaEip7918 = await fetchData('fusaka_eip7918', "https://api.growthepie.com/v1/quick-bites/fusaka/eip7918_kpis.json");
+        }
+
+        if (fusakaTotals?.data) {
+          const { fusaka_total_blobs, fusaka_total_blob_fees_eth, fusaka_total_blocks } = fusakaTotals.data;
+
+          const formattedBlobs = typeof fusaka_total_blobs === 'number'
+            ? fusaka_total_blobs.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+            : 'N/A';
+
+          const formattedFees = typeof fusaka_total_blob_fees_eth === 'number'
+            ? fusaka_total_blob_fees_eth.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : 'N/A';
+
+          const formattedBlocks = typeof fusaka_total_blocks === 'number'
+            ? fusaka_total_blocks.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+            : 'N/A';
+
+          processedItem = processedItem
+            .replace('{{fusaka_total_blobs}}', formattedBlobs)
+            .replace('{{fusaka_total_blob_fees_eth}}', formattedFees)
+            .replace('{{fusaka_total_blocks}}', formattedBlocks);
+        }
+
+        if (fusakaEip7918?.data) {
+          const {
+            fusaka_total_blob_fee_eth_with7918,
+            fusaka_total_blob_fee_eth_without7918,
+            fusaka_total_blob_fee_usd_with7918,
+            fusaka_total_blob_fee_usd_without7918,
+          } = fusakaEip7918.data;
+
+          const fusaka_total_blob_fee_eth_multiplier =
+            typeof fusaka_total_blob_fee_eth_with7918 === 'number' &&
+            typeof fusaka_total_blob_fee_eth_without7918 === 'number' &&
+            fusaka_total_blob_fee_eth_without7918 !== 0
+              ? fusaka_total_blob_fee_eth_with7918 / fusaka_total_blob_fee_eth_without7918
+              : null;
+
+          const formatNumber = (val: number | undefined, decimals: number = 2) =>
+            typeof val === 'number'
+              ? val.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+              : 'N/A';
+
+          processedItem = processedItem
+            .replace('{{fusaka_total_blob_fee_eth_with7918}}', formatNumber(fusaka_total_blob_fee_eth_with7918, 2))
+            .replace('{{fusaka_total_blob_fee_eth_without7918}}', formatNumber(fusaka_total_blob_fee_eth_without7918, 9))
+            .replace('{{fusaka_total_blob_fee_usd_with7918}}', formatNumber(fusaka_total_blob_fee_usd_with7918, 2))
+            .replace('{{fusaka_total_blob_fee_usd_without7918}}', formatNumber(fusaka_total_blob_fee_usd_without7918, 2))
+            .replace('{{fusaka_total_blob_fee_eth_multiplier}}', formatNumber(fusaka_total_blob_fee_eth_multiplier ?? undefined, 0));
+        }
       }
 
       // Handle ethereum scaling data placeholders
