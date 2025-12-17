@@ -73,7 +73,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["linea-burn"];
+const quickBiteIds = ["fusaka"];
 const quickBiteItems: { slug: string; quickBite: QuickBiteData }[] = quickBiteIds
   .map((quickBiteId) => ({
     slug: quickBiteId,
