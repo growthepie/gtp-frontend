@@ -12,7 +12,7 @@ const Fusaka: QuickBiteData = {
 
     "# Scaling Blobs",
     "Fusaka scales blob capacity through Blob-Parameter-Only (BPO) upgrades, specifically BPO1 and BPO2. BPO upgrades are lightweight protocol updates that adjust only blob-related parameters without introducing broader execution or consensus changes. These upgrades increase Ethereum’s data availability capacity, supporting rollups and other L2 systems that rely on blobs for data availability.",
-    "BPO1 activated on Tuesday, 9th September 2025 at 03:10 UTC (timestamp: 1757387400), increasing the target blob count per block from 6 to 10 (with a maximum of 15). BPO2 will follow on Friday, 2nd January 2026 at 21:03:04 UTC (timestamp: 1767387784), further raising the target from 10 to 14 blobs per block (with a maximum of 21).",
+    "BPO1 activated on Tuesday, 9th December 2025 at 03:10 UTC (timestamp: 1757387400), increasing the target blob count per block from 6 to 10 (with a maximum of 15). BPO2 will follow on Friday, 2nd January 2026 at 21:03:04 UTC (timestamp: 1767387784), further raising the target from 10 to 14 blobs per block (with a maximum of 21).",
     
     "```chart-toggle",
     JSON.stringify({
