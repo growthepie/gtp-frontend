@@ -9,7 +9,7 @@ import { SectionButtonLink, SectionDescription, SectionTitle, Title } from "@/co
 import { EthereumFoundationLogo, Supporters } from "@/lib/contributors";
 import Link from "next/link";
 import { ExpandableCardContainer } from "@/components/layout/EthAgg/MetricsTop";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 
 const partners = [
@@ -128,6 +128,16 @@ export default function SalesPage() {
     event.preventDefault();
     scrollTiersIntoView();
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#data-tiers") {
+      // Delay to ensure layout is ready before scrolling
+      requestAnimationFrame(() => {
+        scrollTiersIntoView();
+      });
+    }
+  }, []);
 
   const handleToggleTier = (tierName: string, isExpanded: boolean, event: MouseEvent<HTMLDivElement>) => {
     const next = isExpanded ? null : tierName;
