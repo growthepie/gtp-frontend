@@ -11,7 +11,8 @@ import { EthereumFoundationLogo, Supporters } from "@/lib/contributors";
 import Link from "next/link";
 import SwiperComponent from "@/components/SwiperComponent";
 import { ExpandableCardContainer } from "@/components/layout/EthAgg/MetricsTop";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { MouseEvent } from "react";
 
 const partners = [
   {
@@ -30,28 +31,60 @@ const tiers = [
     status: "Free",
     description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
     highlight: false,
-    features: ["Indexing basics", "Starter dashboards", "Community support"],
+    features: [
+      "Ecosystem page listing in a neutral color",
+      "Aggregation of 2 fundamentals metrics",
+      "Exposure to growthepie's community",
+      "Free for rollups using the OP Stack, Arbitrum Nitro, or ZKsync Stack",
+    ],
   },
   {
     name: "Basic",
     status: "Paid",
     description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
     highlight: false,
-    features: ["Extended metrics", "Labels assistance", "Email support"],
+    features: [
+      "All in Ecosystem",
+      "Support open Ethereum analytics",
+      "Full landing page listing",
+      "Dedicated chain overview page",
+      "Listing on all feasible fundamental metrics pages",
+      "Color inspired by your branding",
+      "Inclusion in social posts and other content",
+    ],
   },
   {
     name: "Advanced",
     status: "Paid",
     description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
     highlight: true,
-    features: ["Deep indexing", "Custom visualizations", "Shared success reporting"],
+    features: [
+      "All in Basic",
+      "OLI integration & contract labeling",
+      "Blockspace usage section enabled",
+      "Labels page & API access",
+      "Economics dashboard & metrics",
+      "Application metrics",
+      "More frequent updates on socials",
+      "Early access to new features",
+    ],
   },
   {
     name: "Strategic",
     status: "Paid",
     description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
     highlight: false,
-    features: ["Priority ingestion", "Dedicated success manager", "Co-marketing"],
+    features: [
+      "All in Advanced",
+      "Quarterly insights calls",
+      "\"Ask an analyst\"",
+      "2 Quick Bites per year",
+      "Alerts-as-a-service",
+      "Default selection on metrics pages",
+      "Permanent spot in \"Meet L2s\" section",
+      "Soon: User insights",
+      "Soon: Quarterly report as easy export (PDF)",
+    ],
   },
 ];
 
@@ -82,6 +115,25 @@ const ctaArrow = "feather:arrow-right" as GTPIconName;
 
 export default function SalesPage() {
   const [expandedTier, setExpandedTier] = useState<string | null>(null);
+  const dataTiersRef = useRef<HTMLElement | null>(null);
+  const scrollTiersIntoView = () => {
+    if (!dataTiersRef.current) return;
+    const top = dataTiersRef.current.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  const handlePricingButtonClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    scrollTiersIntoView();
+  };
+
+  const handleToggleTier = (tierName: string, isExpanded: boolean) => {
+    const next = isExpanded ? null : tierName;
+    setExpandedTier(next);
+    if (!isExpanded) {
+      scrollTiersIntoView();
+    }
+  };
   const feedbackSlides = [
     {
       logo: <EthereumFoundationLogo />,
@@ -94,12 +146,17 @@ export default function SalesPage() {
   return (
     <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] pb-[15px] gap-y-[45px]">
       <section className="flex flex-col gap-y-[15px]">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-y-[15px] md:gap-x-[20px]">
+        <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-y-[15px] md:gap-x-[20px]">
           <div className="flex items-center h-[43px] gap-x-[8px]">
             <Title title="Work with us" icon="gtp-socials" as="h1" iconSize="lg" />
           </div>
-          <div className="self-start md:self-auto">
-            <SectionButtonLink href="#data-tiers" label="See pricing tiers" shortLabel="Pricing tiers" />
+          <div className="self-start md:self-center">
+            <SectionButtonLink
+              href="#data-tiers"
+              label="See pricing tiers"
+              shortLabel="Pricing tiers"
+              onClick={handlePricingButtonClick}
+            />
           </div>
         </div>
         <Subheading className="text-md leading-normal w-full text-color-text-primary">
@@ -135,20 +192,21 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="data-tiers" className="flex flex-col gap-y-[15px]">
+      <section id="data-tiers" ref={dataTiersRef} className="flex flex-col gap-y-[15px]">
         <SectionTitle icon="gtp-categories" title="Data Tiers"  as="h2" iconSize="md" />
         <SectionDescription className="w-full text-color-text-primary">
           Our goal is, however, to also suit the needs of chains and more professional users. For this reason we have
           paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
           part in the ecosystem. See for yourself what suits you best:
         </SectionDescription>
+        {expandedTier && <div className="fixed inset-0 z-[1001]" onClick={() => setExpandedTier(null)} />}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[10px] md:gap-[10px]">
           {tiers.map((tier) => {
             const isExpanded = expandedTier === tier.name;
             const card = (
               <ExpandableCardContainer
                 isExpanded={isExpanded}
-                onToggleExpand={() => setExpandedTier(isExpanded ? null : tier.name)}
+                onToggleExpand={() => handleToggleTier(tier.name, isExpanded)}
                 className={`!border-none overflow-visible ${isExpanded ? "!z-[1002]" : "z-0"}`}
                 minHeightClass="min-h-[190px]"
                 fullHeight={false}
