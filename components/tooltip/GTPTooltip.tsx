@@ -420,7 +420,7 @@ export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPA
 
   }, [projectData]);
 
-  console.log(projectData, owner_project, project_name);
+  // console.log(projectData, owner_project, project_name);
 
   if (!projectData) return null;
 

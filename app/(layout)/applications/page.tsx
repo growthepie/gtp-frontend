@@ -32,6 +32,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { Switch } from "@/components/Switch";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
+import ViewToggle from "@/components/ViewToggle";
 
 
 // Preload data for the overview page
@@ -203,28 +204,10 @@ export default function Page() {
                 </button>
               )}
             </div>
-            <button className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full  p-[2px]"
-              onClick={() => setShowGrid(!showGrid)}
-            >
-              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
-                <GTPIcon icon={`gtp-table` as GTPIconName} size="sm" className="text-color-text-primary" />
-                <div className="text-sm">Table</div>
-              </div>
-              <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
-                <GTPIcon icon={`gtp-map` as GTPIconName} size="sm" className="text-color-text-primary" />
-                <div className="text-sm">Map</div>
-              </div>
-              <div
-                className="absolute top-[49%] transition-all duration-300 left-0 w-fit h-fit flex items-center gap-x-[10px] px-[15px] py-[5px] bg-color-ui-active rounded-full"
-                style={{
-                  transform: `translateY(-50%) translateX(${showGrid ? "3%" : "100%"})`,
-                }}
-              >
-                <GTPIcon icon={`gtp:ethereum-logo-monochrome` as GTPIconName} size="sm" className="text-color-text-primary opacity-0" />
-                <div className="text-sm opacity-0">Table</div>
-              </div>
-
-            </button>
+            <ViewToggle
+              showTable={showGrid}
+              setShowTable={setShowGrid}
+            />
           </div>
           <div className="text-xs">
             {showGrid ? (

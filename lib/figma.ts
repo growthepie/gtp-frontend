@@ -146,6 +146,14 @@ function traverseDocument(node: FigmaNode, foundNodes: FigmaNode[], socialNodes:
     }
   }
 
+  if(node.name.includes("Additional Control icons") && node.children) {
+    node.children.forEach(child => {
+      if(child.type === "COMPONENT" || child.type === "COMPONENT_SET") {
+        foundNodes.push(child);
+      }
+    });
+  }
+
   if (node.children) {
     node.children.forEach((child) => traverseDocument(child, foundNodes, socialNodes));
   }

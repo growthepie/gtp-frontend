@@ -151,7 +151,7 @@ export default function Search() {
         label={address}
         leftIcon="heroicons-solid:qrcode"
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -165,7 +165,7 @@ export default function Search() {
         label={master.chains[chainKey].name}
         leftIcon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
         leftIconColor={AllChainsByKeys[chainKey].colors["dark"][0]}
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={isOpen}
         altColoring={isOpen}
@@ -179,7 +179,7 @@ export default function Search() {
         label={master.blockspace_categories.main_categories[category]}
         leftIcon="feather:tag"
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -193,7 +193,7 @@ export default function Search() {
         label={master.blockspace_categories.sub_categories[subcategory]}
         leftIcon="feather:tag"
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -208,7 +208,7 @@ export default function Search() {
           label={row.owner_project_clear}
           leftIcon="feather:tag"
           leftIconColor="#CDD8D3"
-          rightIcon="heroicons-solid:x-circle"
+          rightIcon="gtp:in-button-close-monochrome"
           rightIconColor="#FE5468"
           showLabel={true}
           altColoring={isOpen}
@@ -223,7 +223,7 @@ export default function Search() {
         label={name}
         leftIcon={undefined}
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -510,7 +510,7 @@ export default function Search() {
                   </div>
                   <div className="flex items-center justify-center w-[15px] h-[15px]">
                     <Icon
-                      icon="heroicons-solid:plus-circle"
+                      icon="gtp:in-button-plus-monochrome"
                       className="text-[#5A6462] w-[15px] h-[15px]"
                     />
                   </div>
@@ -558,7 +558,7 @@ export default function Search() {
                           leftIconColor={
                             AllChainsByKeys[chainKey].colors["dark"][0]
                           }
-                          rightIcon="heroicons-solid:plus-circle"
+                          rightIcon="gtp:in-button-plus-monochrome"
                           className={`${search.length > 0
                             ? labelsAutocomplete.origin_key.includes(chainKey)
                               ? "opacity-100"
@@ -586,14 +586,14 @@ export default function Search() {
                       label={labelsAutocomplete.category.length > 0 ? boldSearch(master.blockspace_categories.main_categories[categoryKey]) : master.blockspace_categories.main_categories[categoryKey]}
                       leftIcon={undefined}
                       leftIconColor={'#CDD8D3'}
-                      rightIcon="heroicons-solid:plus-circle"
+                      rightIcon="gtp:in-button-plus-monochrome"
                       className={`w-fit justify-between ${search.length > 0 ? labelsAutocomplete.category.includes(categoryKey) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all`}
                     />
                   ))}
                 </div>
                 <div className="flex items-center bg-color-bg-medium rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
                   <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-color-text-primary w-[15px] h-[15px]' /></div>
-                  <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
+                  <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="gtp:in-button-plus-monochrome" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
                 </div>
               </div> */}
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
@@ -658,8 +658,8 @@ export default function Search() {
                                 }
                                 rightIcon={
                                   labelsFilters.category.includes(categoryKey)
-                                    ? "heroicons-solid:x-circle"
-                                    : "heroicons-solid:plus-circle"
+                                    ? "gtp:in-button-close-monochrome"
+                                    : "gtp:in-button-plus-monochrome"
                                 }
                                 className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${search.length > 0
                                   ? labelsAutocomplete.category.includes(
@@ -716,8 +716,8 @@ export default function Search() {
                                       labelsFilters.subcategory.includes(
                                         subcategory,
                                       )
-                                        ? "heroicons-solid:x-circle"
-                                        : "heroicons-solid:plus-circle"
+                                        ? "gtp:in-button-close-monochrome"
+                                        : "gtp:in-button-plus-monochrome"
                                     }
                                     className={`w-fit h-fit ${search.length > 0
                                       ? labelsAutocomplete.subcategory.includes(
@@ -772,8 +772,8 @@ export default function Search() {
                                 f.owner_project ===
                                 ownerProjectRow.owner_project,
                             )
-                              ? "heroicons-solid:x-circle"
-                              : "heroicons-solid:plus-circle"
+                              ? "gtp:in-button-close-monochrome"
+                              : "gtp:in-button-plus-monochrome"
                           }
                           rightIconColor={
                             labelsFilters.owner_project.find(
@@ -803,8 +803,8 @@ export default function Search() {
                               f.owner_project ===
                               ownerProjectRow.owner_project,
                           )
-                            ? "heroicons-solid:x-circle"
-                            : "heroicons-solid:plus-circle"
+                            ? "gtp:in-button-close-monochrome"
+                            : "gtp:in-button-plus-monochrome"
                         }
                         rightIconColor={
                           labelsFilters.owner_project.find(
@@ -1024,7 +1024,7 @@ export const AddIcon = ({ className, onClick }: IconProps) => (
     onClick={onClick}
   >
     <Icon
-      icon="heroicons-solid:plus-circle"
+      icon="gtp:in-button-plus-monochrome"
       className="w-[15px] h-[15px]"
       style={{ color: "rgb(var(--ui-hover))" }}
     />
@@ -1037,7 +1037,7 @@ export const RemoveIcon = ({ className, onClick }: IconProps) => (
     onClick={onClick}
   >
     <Icon
-      icon="heroicons-solid:x-circle"
+      icon="gtp:in-button-close-monochrome"
       className="w-[15px] h-[15px]"
       style={{ color: "rgb(var(--accent-red))" }}
     />

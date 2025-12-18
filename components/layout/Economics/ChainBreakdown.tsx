@@ -28,6 +28,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
+import { GTPIcon } from "../GTPIcon";
 
 const regularMetrics = ["profit", "revenue", "costs", "size", "profit_margin"];
 interface DAvailability {
@@ -589,7 +590,7 @@ export default function ChainBreakdown({
                   <div>{allChainsDA[DAIndex]}</div>
 
                   <Icon
-                    icon={"feather:x-circle"}
+                    icon={"gtp:in-button-close-monochrome"}
                     className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
                       }`}
                     onClick={(e) => {
@@ -977,17 +978,11 @@ export default function ChainBreakdown({
                                 AllChainsByKeys[item.key].colors["dark"][0],
                             }}
                           />
-                          <Icon
-                            icon={"gtp:circle-arrow"}
-                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
-                            style={{
-                              transform: `rotate(${openChain[item.key] && selectedTimespan !== "1d"
-                                ? "90deg"
-                                : "0deg"
-                                })`,
-                              transformOrigin: "-9px 4px",
-                              transition: "transform 0.5s",
-                            }}
+                          <GTPIcon
+                            icon="gtp-chevronright-monochrome"
+                            className={` !w-[9px] !h-[6px] text-color-text-primary ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
+                            size={"sm"}
+                            containerClassName={`w-[15px] !overflow-visible h-[15px] flex items-center justify-center absolute top-[6px] text-color-text-primary -right-[5px] transition-transform duration-500 origin-[-2px_7px] ${openChain[item.key] && selectedTimespan !== "1d" ? "rotate-90" : "rotate-0"}`}
                           />
                         </div>
 
@@ -1038,7 +1033,7 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`relative flex items-center  justify-start gap-x-[5px] h-full px-[10px] bg-[#34424044] ${columnBorder(
+                        className={`relative flex items-center  justify-start gap-x-[5px] h-full px-[10px] bg-color-bg-medium-50  ${columnBorder(
                           "revenue",
                           item.key,
                         )}`}
@@ -1153,7 +1148,7 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044]  h-full relative ${data[item.key][selectedTimespan].profit.total[
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-color-bg-medium-50  h-full relative ${data[item.key][selectedTimespan].profit.total[
                           dataIndex
                         ] > 0
                           ? "flex-row"
@@ -1179,7 +1174,7 @@ export default function ChainBreakdown({
                           </div>
                         </div>
                         <div
-                          className={`relative flex items-center px-[3px]  h-full w-[70px]  border-dashed border-forest-50  ${data[item.key][selectedTimespan].profit.total[
+                          className={`relative flex items-center px-[3px]  h-full w-[70px]  border-dashed border-color-text-primary ${data[item.key][selectedTimespan].profit.total[
                             dataIndex
                           ] > 0
                             ? "border-l-[1px] justify-start "
@@ -1238,7 +1233,7 @@ export default function ChainBreakdown({
                           <span>{"%"}</span>
                         </div>
                         <div
-                          className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${data[item.key][selectedTimespan].profit_margin
+                          className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-color-text-primary ${data[item.key][selectedTimespan].profit_margin
                             .total[0] > 0
                             ? "border-l-[1px] justify-start flex-row"
                             : "border-r-[1px] justify-start flex-row-reverse"
@@ -1345,7 +1340,7 @@ export default function ChainBreakdown({
                       </div>
 
                       <div
-                        className={`w-full flex items-center justify-end pr-[15px] gap-x-[5px] bg-[#34424044] rounded-r-full h-full relative ${columnBorder(
+                        className={`w-full flex items-center justify-end pr-[15px] gap-x-[5px] bg-color-bg-medium-50 rounded-r-full h-full relative ${columnBorder(
                           "size",
                           item.key,
                         )}`}
@@ -1374,7 +1369,7 @@ export default function ChainBreakdown({
                         : "h-[0px]"
                         }`}
                     >
-                      <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                      <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
                           dailyData={
@@ -1399,7 +1394,7 @@ export default function ChainBreakdown({
               >
                 <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].revenue.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
@@ -1409,7 +1404,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].profit.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
@@ -1550,7 +1545,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] bg-color-bg-medium-50 border-[1px] items-center justify-center numbers-xs bg-m">
                     {formatBytes(
                         totals[selectedTimespan].size.total[0],
                     )}

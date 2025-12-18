@@ -490,9 +490,9 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
       <div className="flex flex-col flex-wrap lg:flex-row justify-between items-start lg:items-start @container/header gap-y-[10px]">
         <div className="flex items-center gap-x-[15px] cursor-pointer xs:pl-[30px] pl-[15px] group/aboutchain whitespace-nowrap min-w-[200px] flex-1" onClick={() => setOpen(!open)}>
           <div className="w-[26px] h-[26px] flex items-center justify-center">
-          <GTPIcon 
-            icon="gtp-chevronright-monochrome" size="sm" 
-            className={`!size-[10.67px]`} 
+          <GTPIcon
+            icon="in-button-right-monochrome" size="sm"
+            className={`!size-[10.67px]`}
             containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
           />
           </div>
@@ -752,7 +752,7 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
             {icon && <GTPIcon icon={icon as GTPIconName} className=" !w-[12px] xs:!w-[15px] !h-[12px] xs:!h-[15px]" containerClassName="!w-[16px] xs:!w-[15px] !h-[16px] xs:!h-[15px] flex justify-center items-center" />}
             <div className=" text-xs xs:text-sm min-w-fit whitespace-nowrap z-20">{label}</div>
           </div>
-          <GTPIcon icon={"gtp-chevronright-monochrome"} className=" !w-[8px] xs:!w-[10.67px] !h-[8px] xs:!h-[10.67px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[11px] !h-[11px] flex justify-center items-center z-20" />
+          <GTPIcon icon={"in-button-right-monochrome"} className=" !w-[8px] xs:!w-[10.67px] !h-[8px] xs:!h-[10.67px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[11px] !h-[11px] flex justify-center items-center z-20" />
       </div>
     </div>
     </div>

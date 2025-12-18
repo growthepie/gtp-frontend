@@ -118,7 +118,7 @@ export default function RootLayout({
               </IconLibraryProvider>
             </ToastProvider>
           </MasterProvider>
-          <DeveloperTools />
+          {/* <DeveloperTools /> */}
           <CookieConsent />
         </Providers>
       </body>

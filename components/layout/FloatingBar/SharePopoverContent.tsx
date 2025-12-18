@@ -185,7 +185,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
         >
           <Icon
             className="w-[24px] h-[24px] font-semibold"
-            icon="feather:x-circle"
+            icon="gtp:in-button-close-monochrome"
           />
         </div>
       </div>

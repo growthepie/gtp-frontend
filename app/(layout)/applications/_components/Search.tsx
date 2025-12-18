@@ -241,7 +241,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
         label={master.chains[chainKey].name}
         leftIcon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
         leftIconColor={AllChainsByKeys[chainKey].colors["dark"][0]}
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -259,7 +259,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
         label={<>&quot;{boldSearch(string)}&quot;</>}
         leftIcon="feather:search"
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -283,7 +283,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
         label={displayName} // Display the original casing
         leftIcon={`gtp:${getGTPCategoryIcon(displayName)}`}
         leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
+        rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
         showLabel={true}
         altColoring={isOpen}
@@ -502,7 +502,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                             leftIconColor={
                               AllChainsByKeys[chainKey].colors["dark"][0]
                             }
-                            rightIcon="heroicons-solid:plus-circle"
+                            rightIcon="gtp:in-button-plus-monochrome"
                             className={`z-[100]${search.length > 0
                               ? applicationsAutocomplete.origin_key.includes(chainKey)
                                 ? "opacity-100"
@@ -553,7 +553,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                                   : displayName
                               }
                               leftIcon={`gtp:${getGTPCategoryIcon(categoryKey)}`} // Use the GTP icon or fallback to a generic tag icon
-                              rightIcon="heroicons-solid:plus-circle"
+                              rightIcon="gtp:in-button-plus-monochrome"
                               className={`z-[100]${search.length > 0 && applicationsAutocomplete.category.length > 0
                                 ? applicationsAutocomplete.category.includes(categoryKey)
                                   ? "opacity-100" // Matched by autocomplete
@@ -698,7 +698,7 @@ export const AddIcon = ({ className, onClick }: IconProps) => (
     onClick={onClick}
   >
     <Icon
-      icon="heroicons-solid:plus-circle"
+      icon="gtp:in-button-plus-monochrome"
       className="w-[15px] h-[15px]"
       style={{ color: "rgb(var(--ui-hover))" }}
     />
@@ -711,7 +711,7 @@ export const RemoveIcon = ({ className, onClick }: IconProps) => (
     onClick={onClick}
   >
     <Icon
-      icon="heroicons-solid:x-circle"
+      icon="gtp:in-button-close-monochrome"
       className="w-[15px] h-[15px]"
       style={{ color: "rgb(var(--accent-red))" }}
     />

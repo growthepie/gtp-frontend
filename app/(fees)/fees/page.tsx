@@ -1669,7 +1669,7 @@ export default function FeesPage() {
                               }}
                             />
                             <Icon
-                              icon={"feather:x-circle"}
+                              icon={"gtp:in-button-close-monochrome"}
                               className={`w-[10px] h-[10px]`}
                             />
                           </div>

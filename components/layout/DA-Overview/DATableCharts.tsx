@@ -1548,7 +1548,7 @@ const ChartLegend = (
                 key={index + "da_consumers"}
                 leftIcon={icon}
                 leftIconColor={color}
-                rightIcon={selectedChain === key ? "heroicons-solid:x-circle" : ""}
+                rightIcon={selectedChain === key ? "gtp:in-button-close-monochrome" : ""}
                 rightIconSize="md"
                 rightIconColor="#FE5468"
                 label={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}

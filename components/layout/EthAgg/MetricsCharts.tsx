@@ -410,7 +410,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                 <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
               </div>
               <div className='flex items-center justify-center w-[26px] h-[26px] rounded-full bg-color-bg-medium'>
-                <GTPIcon icon="gtp-chevronright-monochrome" size='sm' containerClassName='!w-[16px] !h-[16px] flex justify-center items-center' className='!w-[10.67px] !h-[10.67px] -mr-[2px]' />
+                <GTPIcon icon="in-button-right-monochrome" size='sm' containerClassName='!w-[16px] !h-[16px] flex justify-center items-center' className='!w-[10.67px] !h-[10.67px] -mr-[2px]' />
               </div>
             </div>
             <div className='flex gap-x-[10px] items-center justify-between'>

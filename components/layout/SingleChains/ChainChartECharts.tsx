@@ -1168,10 +1168,12 @@ const MetricChart = memo(
       const unitKey = units.find((u) => u !== "usd" && u !== "eth") || (showUsd ? "usd" : "eth");
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
+      const baseDecimals = unitInfo?.decimals ?? 2;
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
       const valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
+        maximumFractionDigits: decimals,
+        minimumFractionDigits: decimals,
       });
 
       return {
@@ -1194,9 +1196,9 @@ const MetricChart = memo(
       if (!isIncomplete) return null;
 
       const labels: Record<string, string> = {
-        weekly: "acc. this week",
-        monthly: "acc. this month",
-        quarterly: "acc. this quarter",
+        weekly: "this week",
+        monthly: "this month",
+        quarterly: "this quarter",
       };
 
       return labels[selectedTimeInterval];
@@ -1215,10 +1217,12 @@ const MetricChart = memo(
       const unitKey = units.find((u) => u !== "usd" && u !== "eth") || (showUsd ? "usd" : "eth");
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
+      const baseDecimals = unitInfo?.decimals ?? 2;
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
       const valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
+        maximumFractionDigits: decimals,
+        minimumFractionDigits: decimals,
       });
 
       return {

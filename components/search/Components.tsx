@@ -863,8 +863,8 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
   // If the match is hidden, use solid color for parent (and thus ellipsis)
   const parentColorClass =
     isTruncated && matchIsHidden
-      ? "text-[rgba(205,216,211)]"
-      : "text-[rgba(205,216,211,0.5)]";
+      ? "text-color-text-secondary"
+      : "text-color-text-secondary";
 
   return (
     <>
@@ -888,9 +888,9 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
         style={{ position: "relative" }}
       >
         {before && (
-          <span className="text-[rgba(205,216,211,0.5)]">{before}</span>
+          <span className="text-color-text-secondary">{before}</span>
         )}
-        <span ref={matchRef} className="text-[rgba(205,216,211)]">{match}</span>
+        <span ref={matchRef} className="text-color-text-primary">{match}</span>
         {after && <span>{after}</span>}
       </span>
     </>
@@ -961,7 +961,7 @@ export const SearchBadge = memo(({
             size="sm"
             className="!size-[12px]"
             style={{
-              color: "rgb(var(--ui-hover))", // Force the grey color for GTP icons
+              color: "rgb(var(--text-secondary))", // Force the grey color for GTP icons
             }}
           />
         </div>
@@ -1651,7 +1651,7 @@ export const BucketItem = ({
           className={`
             absolute inset-[-1px] z-20 pl-[5px]
             flex items-center justify-start rounded-full whitespace-nowrap
-            ${isSelected ? "underline" : "text-color-ui-hover"}
+            ${isSelected ? "underline" : "text-color-text-secondary"}
             hover:underline
             bg-color-bg-default md:bg-color-ui-active
             text-xxs

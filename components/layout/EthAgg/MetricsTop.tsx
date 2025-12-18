@@ -135,7 +135,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           style={!isExpanded ? { transform: `translateY(${collapsedChevronOffset}px)` } : undefined}
         >
           <GTPIcon
-            icon="gtp-chevrondown-monochrome"
+            icon="in-button-down-monochrome"
             size="md"
             className="text-color-text-primary group-hover/card:text-color-ui-hover transition-colors"
           />
@@ -320,7 +320,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
           </div>
-          <div className={`numbers-sm text-color-ui-hover ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
+          <div className={`numbers-sm text-color-text-secondary ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
         </div>
       </div>
       <div className="heading-large-md pb-[15px]">Events</div>
@@ -452,7 +452,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[1fr,1fr,1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
           {/* All-Time High */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
-            <div className='heading-small-xxxs text-color-ui-hover'>
+            <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>All-Time High</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
@@ -462,7 +462,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
           {/* 24h Peak */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
-            <div className='heading-small-xxxs text-color-ui-hover'>
+            <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>24h Peak</div>
               <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
@@ -490,7 +490,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showChainsTPS && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
           style={{ height: !showChainsTPS ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}
         >
-          <div className='heading-large-md text-color-ui-hover'>All Chains</div>
+          <div className='heading-large-md text-color-text-secondary'>All Chains</div>
           <div className="relative">
             {tpsTransitions((style, { chainId }) => (
               <animated.div key={chainId} style={style} className='absolute w-full'>
@@ -640,7 +640,7 @@ export const TokenTransferFeeCard = React.memo(({
       <div className={`relative flex flex-col gap-y-[5px] mt-[3px] -mx-[15px] bg-color-bg-default rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
         <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none' : ''}`}
           style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
-          <div className='heading-large-md text-color-ui-hover'>Layer 2 Chains</div>
+          <div className='heading-large-md text-color-text-secondary'>Layer 2 Chains</div>
           <div className="relative">
             {costTransitions((style, { chainId }) => (
               <animated.div key={`cost-${chainId}`} style={style} className='absolute w-full'>
