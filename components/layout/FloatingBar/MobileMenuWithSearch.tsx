@@ -326,6 +326,12 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // WorkWithUs menu items (same as in WorkWithUs.tsx)
   const workWithUsItems = [
     {
+      id: "data-tiers",
+      label: "See Data Tiers",
+      href: "/sales#data-tiers",
+      icon: "gtp-categories-monochrome" as GTPIconName
+    },
+    {
       id: "linkedin",
       label: "Connect on LinkedIn",
       href: "https://www.linkedin.com/company/growthepie/",
@@ -346,14 +352,6 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       label: "Send an email",
       href: "mailto:contact@growthepie.com",
       icon: "gtp-message-monochrome" as GTPIconName
-    },
-    {
-      id: "form",
-      label: "Want to get listed?",
-      href: "https://forms.office.com/e/wWzMs6Zc3A",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      icon: "gtp-backgroundinformation-monochrome" as GTPIconName
     },
   ];
 

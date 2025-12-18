@@ -53,6 +53,7 @@ export type ExpandableMenuProps = {
   triggerClassName?: string;
   panelClassName?: string;
   contentClassName?: string;
+  contentPadding?: string;
 };
 
 // ============= Helper Functions =============
@@ -283,11 +284,11 @@ function useHoverBehavior(
 }
 
 // ============= Sub-components =============
-function MenuItems({ 
-  items, 
+function MenuItems({
+  items,
   onItemSelect,
   closeOnSelect,
-  setOpen 
+  setOpen
 }: {
   items: ExpandableMenuItem[];
   onItemSelect: (item: ExpandableMenuItem) => void;
@@ -296,11 +297,13 @@ function MenuItems({
 }) {
   return (
     <>
-      {items.map((item) => {
-        const baseClasses = "flex items-center gap-x-[10px] justify-start text-sm font-semibold hover:bg-color-ui-hover px-[22px] py-[4px] -my-[2px] transition-colors duration-200";
+      {items.map((item, index) => {
+        const isLast = index === items.length - 1;
+        const baseClasses = "flex items-center gap-x-[10px] justify-start text-sm font-semibold hover:bg-color-ui-hover px-[22px] transition-colors duration-200";
+        const paddingYClass = isLast ? " pt-[5px] pb-[14px]" : " py-[5px]";
         const finalClasses = item.disabled
-          ? `${baseClasses} opacity-60 cursor-not-allowed`
-          : baseClasses;
+          ? `${baseClasses}${paddingYClass} opacity-60 cursor-not-allowed`
+          : `${baseClasses}${paddingYClass}`;
         return item.href ? (
           <Link
             key={item.id}
@@ -351,6 +354,7 @@ export default function ExpandableMenu({
   triggerClassName = "",
   panelClassName = "",
   contentClassName = "",
+  contentPadding,
 }: ExpandableMenuProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -429,6 +433,7 @@ export default function ExpandableMenu({
   
   // Get placement-specific styles
   const placementStyles = getPlacementStyles(placement, offset);
+  const appliedPadding = contentPadding ?? placementStyles.padding;
   
   // Collapsed panel dimensions
   const panelWidthCollapsed = wCollapsed;
@@ -491,7 +496,7 @@ export default function ExpandableMenu({
             minHeight: hExpanded,
             opacity: open ? 1 : 0,
             pointerEvents: open && !isTransitioning ? "auto" : "none",
-            padding: placementStyles.padding,
+            padding: appliedPadding,
           }}
         >
           {renderContent ? (

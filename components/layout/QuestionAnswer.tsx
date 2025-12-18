@@ -42,25 +42,29 @@ export default function QuestionAnswer({
   }, [startOpen]);
 
   return (
-    <div className={`rounded-[27px] bg-color-bg-default px-[30px] py-[23px] flex flex-col ${className}`}>
+    <div className={`rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col ${className}`}>
       <div
-        className={`flex items-center cursor-pointer space-x-[10px] ${questionClassName}`}
+        className={`group/question flex items-center cursor-pointer space-x-[10px] ${questionClassName}`}
         onClick={() => setOpen(!open)}
       >
-        <div className={`flex w-[26px] h-[26px] bg-color-bg-medium rounded-full items-center justify-center  transform rotate-0 transition-transform duration-300 ${open ? "rotate-90" : "rotate-0"
-          }`}>
-          <GTPIcon
-            icon="chevron-right"
-            size="sm"
-            className="!size-[16px]"
-            containerClassName="!size-[16px]"
-            
-          />
+        <div className="w-[26px] h-[26px] flex items-center justify-center">
+          <div
+            className={`w-[26px] h-[26px] flex items-center justify-center bg-color-bg-medium group-hover/question:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${open ? "rotate-90" : "rotate-0"}`}
+          >
+            <GTPIcon
+              icon="gtp-chevronright-monochrome"
+              size="sm"
+              className="!size-[10px] text-color-text-primary"
+              containerClassName="!size-[10px]"
+            />
+          </div>
         </div>
-        <div className={`font-semibold leading-[133%] heading-small-sm md:heading-small-md ${open ? "" : "select-none"}`}>{question}</div>
+        <h3 className={`font-semibold leading-[133%] heading-sm ${open ? "" : "select-none"}`}>
+          {question}
+        </h3>
       </div>
       <div
-        className={`transition-[height] duration-300 overflow-hidden text-md ${answerClassName}`}
+        className={`transition-[height] duration-300 overflow-hidden text-xs ${answerClassName}`}
         style={{
           height: open ? answerHeight : 0,
         }}
@@ -72,7 +76,7 @@ export default function QuestionAnswer({
       {
         note && (
           <div
-            className={`transition-height duration-300 overflow-hidden text-md ${answerClassName}`}
+            className={`transition-height duration-300 overflow-hidden text-xs ${answerClassName}`}
             style={{
               maxHeight: open ? 300 : 0,
             }

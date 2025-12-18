@@ -4,6 +4,7 @@ import { useState } from "react";
 import ExpandableMenu, { ExpandableMenuItem, Placement } from "@/components/layout/FloatingBar/ExpandableMenu";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useRouter } from "next/navigation";
 
 type WorkWithUsProps = {
   placement: Placement;
@@ -12,8 +13,15 @@ type WorkWithUsProps = {
 
 export default function WorkWithUs({ placement = "bottom-end", mobile = false }: WorkWithUsProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const items: ExpandableMenuItem[] = [
+    {
+      id: "data-tiers",
+      label: "See Data Tiers",
+      href: "/sales#data-tiers",
+      icon: <GTPIcon icon={"gtp-categories-monochrome" as GTPIconName} size="sm" />
+    },
     {
       id: "linkedin",
       label: "Connect on LinkedIn",
@@ -36,14 +44,6 @@ export default function WorkWithUs({ placement = "bottom-end", mobile = false }:
       href: "mailto:contact@growthepie.com",
       icon: <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
     },
-    {
-      id: "form",
-      label: "Want to get listed? Fill in the form.",
-      href: "https://forms.office.com/e/wWzMs6Zc3A",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      icon: <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
-    },
   ];
 
   return (
@@ -55,13 +55,26 @@ export default function WorkWithUs({ placement = "bottom-end", mobile = false }:
         openOn="both"
         placement={placement}
         collapsedSize={{ width: mobile ? 44 : 170, height: 44 }}
-        expandedSize={{ width: 286, height: 166 }}
+        expandedSize={{ width: 286, height: "auto" }}
         className="pointer-events-auto shrink-0"
         triggerClassName="!px-0 md:!px-[5px]"
+        contentPadding="30px 0 0 0"
         renderTrigger={({ open, props }) => (
           <button
             {...props}
             type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(false);
+              router.push("/sales");
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(false);
+              router.push("/sales");
+            }}
             className={`relative flex items-center w-full h-full rounded-full overflow-hidden ${open ? '' : ''}`}
             aria-label="Notifications"
           >

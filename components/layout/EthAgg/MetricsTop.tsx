@@ -70,12 +70,26 @@ interface ExpandableCardContainerProps {
   isExpanded: boolean;
   /** Callback function to toggle the expansion state. */
   onToggleExpand: (e: React.MouseEvent) => void;
+  /** Optional click handler for the entire card area. */
+  onCardClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   /** If true, the card is in a compact state, hiding the expansion button and content. */
   isCompact?: boolean;
   /** Optional className for the main container `div`. */
   className?: string;
   /** A slot for a component, like an icon with a tooltip, on the right side of the expand button. */
   infoSlot?: React.ReactNode;
+  /** Optional min-height utility class for the container when not compact. */
+  minHeightClass?: string;
+  /** Whether to force full height. Defaults to true for existing layouts. */
+  fullHeight?: boolean;
+  /** If true, expanded state will absolutely position the card to float above surrounding content. */
+  overlayOnExpand?: boolean;
+  /** Hide the info tooltip button in the expand bar. */
+  hideInfoButton?: boolean;
+  /** Optional vertical offset (px) to push the chevron down when collapsed. */
+  collapsedChevronOffset?: number;
+  /** Disable text selection inside the card. */
+  disableSelection?: boolean;
 }
 
 /**
@@ -87,17 +101,25 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   children,
   isExpanded,
   onToggleExpand,
+  onCardClick,
   isCompact = false,
   className = '',
   infoSlot,
+  minHeightClass = 'min-h-[306px]',
+  fullHeight = true,
+  overlayOnExpand = false,
+  hideInfoButton = false,
+  collapsedChevronOffset = 4,
+  disableSelection = false,
 }) => {
   const [isExpandButtonHovered, setIsExpandButtonHovered] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
     <div
-      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
+      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[10px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
       onClick={(e) => {
+        e.stopPropagation();
         // Don't expand if clicking on the tooltip trigger
         const target = e.target as HTMLElement;
         const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
@@ -108,53 +130,72 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
     >
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
-        <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-          <GTPIcon icon="in-button-down-monochrome" size="md" className="text-color-text-secondary" />
+        <div
+          className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+          style={!isExpanded ? { transform: `translateY(${collapsedChevronOffset}px)` } : undefined}
+        >
+          <GTPIcon
+            icon="in-button-down-monochrome"
+            size="md"
+            className="text-color-text-primary group-hover/card:text-color-ui-hover transition-colors"
+          />
         </div>
 
         {/* Default info icon can be overridden by the infoSlot prop */}
-        <div className='w-[15px] h-fit z-30'>
-          <GTPTooltipNew
-            placement="top-start"
-            size="md"
-            allowInteract={true}
-            trigger={
-              <div
-                className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
-                data-tooltip-trigger
-              >
-                <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
-              </div>
-            }
-            containerClass="flex flex-col gap-y-[10px]"
-            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+        {hideInfoButton ? (
+          <div className="w-[15px] h-fit" />
+        ) : (
+          <div className='w-[15px] h-fit z-30'>
+            <GTPTooltipNew
+              placement="top-start"
+              size="md"
+              allowInteract={true}
+              trigger={
+                <div
+                  className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                  data-tooltip-trigger
+                >
+                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
 
-          >
-            <div>
-              <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                {infoSlot}
-              </TooltipBody>
-            </div>
-          </GTPTooltipNew>
-        </div>
+            >
+              <div>
+                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                  {infoSlot}
+                </TooltipBody>
+              </div>
+            </GTPTooltipNew>
+          </div>
+        )}
       </div>
     </div>
   );
 
+  const expandedClass = isExpanded && !isCompact
+    ? `${overlayOnExpand ? 'absolute top-0 left-0 right-0 h-auto z-[1001] shadow-standard' : 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-standard'}`
+    : 'relative overflow-hidden duration-500';
+
   return (
-    <div className={`relative w-full z-0 ${isCompact ? '!h-[150px]' : 'h-full min-h-[306px]'}`}>
+    <div className={`relative w-full z-0 ${isCompact ? '!h-[150px]' : `${fullHeight ? 'h-full' : ''} ${minHeightClass}`}`}>
       <div
-        className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
-          ${isExpanded && !isCompact
-            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-standard'
-            : 'relative overflow-hidden duration-500'
-          }
+        className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px] group/card
+          ${expandedClass}
           ${isExpandButtonHovered && '!z-[1001]'}
           ${isCompact ? '!h-[150px]' : ''}
-          ${className}`
+          ${className}
+          ${disableSelection ? 'select-none' : ''}
+          ${onCardClick ? 'cursor-pointer' : ''}`
         }
         onMouseEnter={() => setIsExpandButtonHovered(true)}
         onMouseLeave={() => setIsExpandButtonHovered(false)}
+        onClick={(e) => {
+          if (onCardClick) {
+            onCardClick(e);
+          }
+        }}
       >
         {children}
         {!isCompact && ExpandButton}
