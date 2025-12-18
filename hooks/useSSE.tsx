@@ -41,7 +41,7 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
     if (!url || !onMessage || !isPageVisible) {
       // If we have a connection but shouldn't, close it.
       if (eventSourceRef.current) {
-        console.log(`Closing SSE connection to ${url} due to page visibility or config change.`);
+        // console.log(`[useSSE] Closing SSE connection to ${url} due to page visibility or config change.`);
         eventSourceRef.current.close();
         eventSourceRef.current = null;
         setReadyState(2); // Manually set to CLOSED
@@ -50,13 +50,13 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
     }
 
     // If we get here, it means we should have an active connection.
-    console.log(`Opening SSE connection to ${url}`);
+    // console.log(`[useSSE] Opening SSE connection to ${url}`);
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
     setReadyState(eventSource.readyState as ReadyState);
 
     eventSource.onopen = (event) => {
-      console.log(`SSE connection opened to ${url}`);
+      // console.log(`[useSSE] SSE connection opened to ${url}`);
       setReadyState(eventSource.readyState as ReadyState);
       onOpen?.(event);
     };
@@ -66,7 +66,7 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
     };
 
     eventSource.onerror = (error) => {
-      console.error(`SSE error on connection to ${url}:`, error);
+      console.error(`[useSSE] SSE error on connection to ${url}:`, error);
       setReadyState(eventSource.readyState as ReadyState);
       onError?.(error);
     };
@@ -74,7 +74,7 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
     return () => {
       // This cleanup runs when dependencies change or the component unmounts.
       if (eventSourceRef.current) {
-        console.log(`Closing SSE connection to ${url}`);
+        // console.log(`[useSSE] Closing SSE connection to ${url}`);
         eventSourceRef.current.close();
         eventSourceRef.current = null;
         setReadyState(2); // Manually set to CLOSED

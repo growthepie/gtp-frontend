@@ -48,11 +48,11 @@ export const IconContextMenu = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Add effect to log menu options when menu is open
-  useEffect(() => {
-    if (isOpen) {
-      console.log("Context menu options:", options.map(option => option.label));
-    }
-  }, [isOpen]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     console.log("Context menu options:", options.map(option => option.label));
+  //   }
+  // }, [isOpen]);
 
   // Close menu on outside click
   useOutsideAlerter(menuRef, () => {
@@ -84,13 +84,13 @@ export const IconContextMenu = ({
 
     // if 767px or less
     if (viewportWidth <= 767) {
-      console.log("Viewport width is less than or equal to 767px");
+      // console.log("Viewport width is less than or equal to 767px");
       // Use clientX/clientY for mobile devices
       const windowHeight = window.innerHeight;
       setPosition({ left: event.clientX, bottom: windowHeight - event.clientY, top: undefined, right: undefined });
     } else {
     
-      console.log("Viewport width is greater than 767px");
+      // console.log("Viewport width is greater than 767px");
       
       setPosition({ left: event.clientX, top: event.clientY, bottom: undefined, right: undefined });
     }

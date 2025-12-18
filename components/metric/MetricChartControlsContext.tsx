@@ -207,7 +207,7 @@ export const MetricChartControlsProvider = ({
       setInternalSelectedTimeInterval(providedSelectedTimeInterval);
     }
     if (providedDefaultScale) {
-      console.log("setting selected scale to", providedDefaultScale);
+      // console.log("setting selected scale to", providedDefaultScale);
       setSelectedScale(providedDefaultScale);
     }
   }, []);
