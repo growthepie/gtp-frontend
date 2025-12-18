@@ -208,9 +208,9 @@ export const SectionButtonLink = ({
       target={newTab ? "_blank" : ""}
       onClick={onClick}
     >
-      <div className="select-none flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full">
+      <div className="select-none flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full h-[34px]">
         <div
-          className="flex items-center py-[5px] pl-[15px] pr-[5px] gap-x-[8px] font-semibold bg-[#263130] hover:bg-color-ui-hover rounded-full transition-colors duration-300"
+          className="flex items-center justify-center gap-x-[8px] font-semibold bg-[#263130] hover:bg-color-ui-hover rounded-full transition-colors duration-300 h-full px-[12px]"
           style={{
             width: width,
           }}

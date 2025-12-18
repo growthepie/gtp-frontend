@@ -6,10 +6,8 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Subheading from "@/components/layout/Subheading";
 import { SectionButtonLink, SectionDescription, SectionTitle, Title } from "@/components/layout/TextHeadingComponents";
-import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EthereumFoundationLogo, Supporters } from "@/lib/contributors";
 import Link from "next/link";
-import SwiperComponent from "@/components/SwiperComponent";
 import { ExpandableCardContainer } from "@/components/layout/EthAgg/MetricsTop";
 import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
@@ -41,7 +39,7 @@ const tiers = [
   {
     name: "Basic",
     status: "Paid",
-    description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
+    description: "Full inclusion in realtime, landing page and fundamental metrics pages.",
     highlight: false,
     features: [
       "All in Ecosystem",
@@ -56,7 +54,7 @@ const tiers = [
   {
     name: "Advanced",
     status: "Paid",
-    description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
+    description: "Categorization of your chain's onchain activity and application metrics.",
     highlight: true,
     features: [
       "All in Basic",
@@ -72,7 +70,7 @@ const tiers = [
   {
     name: "Strategic",
     status: "Paid",
-    description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
+    description: "Granular showcasing of your unique data points, individual data analytics and more.",
     highlight: false,
     features: [
       "All in Advanced",
@@ -91,13 +89,7 @@ const tiers = [
 const faqs = [
   {
     question: "More offers on-demand",
-    answer: (
-      <ul className="list-disc list-inside space-y-[6px] text-md">
-        <li>Sponsored Quick Bites (custom research pages with live data)</li>
-        <li>Ad space</li>
-        <li>Custom reports example: “Ethereum — The World Ledger”</li>
-      </ul>
-    ),
+    answer: "Yes. We co-create dashboards, labels, and metrics with partners. Tell us what you need and we will scope it together.",
   },
   {
     question: "Can I request custom features and metrics?",
@@ -111,14 +103,24 @@ const faqs = [
   },
 ];
 
-const ctaArrow = "feather:arrow-right" as GTPIconName;
-
 export default function SalesPage() {
   const [expandedTier, setExpandedTier] = useState<string | null>(null);
   const dataTiersRef = useRef<HTMLElement | null>(null);
+  const [feedbackIndex, setFeedbackIndex] = useState(0);
+
+  const goToFeedback = (index: number) => {
+    const safeIndex = (index + feedbackSlides.length) % feedbackSlides.length;
+    setFeedbackIndex(safeIndex);
+  };
   const scrollTiersIntoView = () => {
     if (!dataTiersRef.current) return;
     const top = dataTiersRef.current.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  const scrollCardIntoViewMobile = (cardElement: HTMLElement | null) => {
+    if (!cardElement) return;
+    const top = cardElement.getBoundingClientRect().top + window.scrollY - 16;
     window.scrollTo({ top, behavior: "smooth" });
   };
 
@@ -127,11 +129,17 @@ export default function SalesPage() {
     scrollTiersIntoView();
   };
 
-  const handleToggleTier = (tierName: string, isExpanded: boolean) => {
+  const handleToggleTier = (tierName: string, isExpanded: boolean, event: MouseEvent<HTMLDivElement>) => {
     const next = isExpanded ? null : tierName;
     setExpandedTier(next);
     if (!isExpanded) {
-      scrollTiersIntoView();
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      if (isMobile) {
+        const cardElement = (event.target as HTMLElement).closest("[data-tier-card]") as HTMLElement | null;
+        scrollCardIntoViewMobile(cardElement);
+      } else {
+        scrollTiersIntoView();
+      }
     }
   };
   const feedbackSlides = [
@@ -141,10 +149,28 @@ export default function SalesPage() {
         "growthepie data and visualizations are used across many different sites, publishers and media. Our main focus is to cater towards end users and builders wanting to get the best overview of the entire Ethereum ecosystem. Therefore we support everyone who helps us achieve this mission.",
       author: "Ethereum Foundation",
     },
+    {
+      logo: null,
+      quote:
+        "The dashboards make it easy to brief our partners quickly. Having consistent labels and fundamentals saves us hours each week.",
+      author: "Ecosystem Contributor",
+    },
+    {
+      logo: null,
+      quote:
+        "The team is fast to ship and receptive to feedback. Advanced tier access gave us the metrics we needed for our quarterly review.",
+      author: "Layer 2 Team Lead",
+    },
+    {
+      logo: null,
+      quote:
+        "We rely on growthepie’s contract labeling and economics breakdowns for investor updates and product planning.",
+      author: "Protocol Operations",
+    },
   ];
 
   return (
-    <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] pb-[15px] gap-y-[45px]">
+    <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] pb-[15px] gap-y-[60px]">
       <section className="flex flex-col gap-y-[15px]">
         <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-y-[15px] md:gap-x-[20px]">
           <div className="flex items-center h-[43px] gap-x-[8px]">
@@ -177,7 +203,7 @@ export default function SalesPage() {
                 href={partner.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center rounded-[18px] border border-color-ui-shadow bg-color-bg-default px-[14px] py-[16px] hover:bg-color-ui-hover transition-colors"
+                className="flex items-center justify-center rounded-[18px] px-[14px] py-[16px]"
               >
                 {Logo ? (
                   <div className="flex items-center justify-center w-full">
@@ -195,30 +221,36 @@ export default function SalesPage() {
       <section id="data-tiers" ref={dataTiersRef} className="flex flex-col gap-y-[15px]">
         <SectionTitle icon="gtp-categories" title="Data Tiers"  as="h2" iconSize="md" />
         <SectionDescription className="w-full text-color-text-primary">
-          Our goal is, however, to also suit the needs of chains and more professional users. For this reason we have
+          Our goal is to also suit the needs of chains and more professional users. For this reason we have
           paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
           part in the ecosystem. See for yourself what suits you best:
         </SectionDescription>
-        {expandedTier && <div className="fixed inset-0 z-[1001]" onClick={() => setExpandedTier(null)} />}
+        {expandedTier && (
+          <div
+            className="fixed inset-0 z-[1001] bg-black/50 md:bg-transparent"
+            onClick={() => setExpandedTier(null)}
+          />
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[10px] md:gap-[10px]">
           {tiers.map((tier) => {
             const isExpanded = expandedTier === tier.name;
             const card = (
               <ExpandableCardContainer
                 isExpanded={isExpanded}
-                onToggleExpand={() => handleToggleTier(tier.name, isExpanded)}
+                onToggleExpand={(event) => handleToggleTier(tier.name, isExpanded, event)}
                 className={`!border-none overflow-visible ${isExpanded ? "!z-[1002]" : "z-0"}`}
                 minHeightClass="min-h-[190px]"
                 fullHeight={false}
                 overlayOnExpand={false}
+                collapsedChevronOffset={15}
+                hideInfoButton
                 infoSlot={
-                  <div className="flex flex-col gap-y-[6px] text-xs">
+                  <div className="flex flex-col gap-y-[10px] text-xs">
                     <div className="font-semibold">{tier.name} tier</div>
-                    <div className="text-color-text-secondary">Includes starter reports and tailored insights.</div>
                   </div>
                 }
               >
-                <div className={`relative flex flex-col gap-y-[10px] pb-[32px] ${isExpanded ? "" : "max-h-[140px] overflow-hidden"}`}>
+                <div className={`relative flex flex-col gap-y-[15px] pb-[32px] ${isExpanded ? "" : "max-h-[140px] overflow-hidden"}`}>
                   <div className="flex items-center justify-between gap-x-[8px]">
                     <div className="heading-md">{tier.name}</div>
                     <span className="text-xs uppercase tracking-wide text-color-text-primary whitespace-nowrap">
@@ -226,32 +258,15 @@ export default function SalesPage() {
                     </span>
                   </div>
                   <p className="text-xs leading-snug">{tier.description}</p>
-                  <ul className="flex flex-col gap-y-[6px] text-xs text-color-text-secondary">
+                  <ul className="flex flex-col gap-y-[10px] text-xs text-color-text-primary">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-x-[6px]">
-                        <GTPIcon icon="gtp-checkmark-checked" size="sm" className="!size-[16px]" />
+                      <li key={feature} className="flex items-center gap-x-[10px]">
+                        <GTPIcon icon="gtp-checkmark-checked-monochrome" size="sm" className="!size-[16px]" />
                         <span className="leading-snug">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <div
-                    className={`transition-[max-height,opacity] duration-300 overflow-hidden text-xs text-color-text-secondary ${
-                      isExpanded ? "max-h-[200px] opacity-100 mt-[6px]" : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <ul className="flex flex-col gap-y-[6px]">
-                      {[
-                        "Dedicated onboarding session",
-                        "Custom alerts & reporting options",
-                        "Access to future beta dashboards",
-                      ].map((extra) => (
-                        <li key={extra} className="flex items-center gap-x-[6px]">
-                          <GTPIcon icon="gtp-checkmark-checked" size="sm" className="!size-[16px]" />
-                          <span className="leading-snug">{extra}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  
                   {!isExpanded && (
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[40px] bg-gradient-to-b from-transparent to-color-bg-default" />
                   )}
@@ -263,7 +278,7 @@ export default function SalesPage() {
             const wrapperStateClass = isExpanded ? "absolute left-0 right-0 top-0 z-[1002]" : "relative z-0";
             if (tier.highlight) {
               return (
-                <div key={tier.name} className="relative min-h-[190px]">
+                <div key={tier.name} className="relative min-h-[190px]" data-tier-card>
                   <div
                     className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]`}
                   >
@@ -276,7 +291,7 @@ export default function SalesPage() {
             }
 
             return (
-              <div key={tier.name} className="relative min-h-[190px]">
+              <div key={tier.name} className="relative min-h-[190px]" data-tier-card>
                 <div className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-color-bg-medium`}>
                   <div className="rounded-[15px] bg-color-bg-default">
                     {card}
@@ -286,23 +301,23 @@ export default function SalesPage() {
             );
           })}
         </div>
-        <div className="flex flex-col sm:flex-row gap-[10px] mt-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[10px] mt-0 w-full">
           <Link
             href="https://forms.office.com/e/wWzMs6Zc3A"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-medium px-[16px] py-[12px] heading-sm hover:bg-color-ui-hover transition-colors"
+            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-medium px-[12px] h-[34px] text-md hover:bg-color-ui-hover transition-colors w-full col-span-1 md:col-span-2 lg:col-span-1"
           >
             <span>Request a free listing</span>
-            <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
           </Link>
-          <div className="rounded-full p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]">
+          <div className="rounded-full p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] w-full h-[34px] col-span-1 md:col-span-2 lg:col-span-3">
             <Link
               href="mailto:contact@growthepie.com"
-              className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-default px-[16px] py-[12px] heading-sm hover:bg-color-ui-hover transition-colors"
+              className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-default px-[12px] text-md hover:bg-color-ui-hover transition-colors w-full h-full"
             >
               <span>Get in touch</span>
-              <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
+              <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
             </Link>
           </div>
         </div>
@@ -315,20 +330,66 @@ export default function SalesPage() {
           is to cater towards end users and builders wanting to get the best overview of the entire Ethereum ecosystem.
           Therefore we support everyone who helps us achieve this mission.
         </SectionDescription>
-        <SwiperComponent>
-          {feedbackSlides.map((slide) => (
+        <div className="relative w-full">
+          <button
+            aria-label="Previous feedback"
+            onClick={() => goToFeedback(feedbackIndex - 1)}
+            className="absolute left-[-12px] top-1/2 -translate-y-1/2 z-10 hidden sm:flex w-[26px] h-[26px] items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover rounded-full transition-colors"
+          >
+            <GTPIcon icon="gtp-chevronleft-monochrome" size="sm" className="!size-[16px]" />
+          </button>
+          <button
+            aria-label="Previous feedback"
+            onClick={() => goToFeedback(feedbackIndex - 1)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex sm:hidden w-[26px] h-[26px] items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover rounded-full transition-colors"
+          >
+            <GTPIcon icon="gtp-chevronleft-monochrome" size="sm" className="!size-[16px]" />
+          </button>
+          <button
+            aria-label="Next feedback"
+            onClick={() => goToFeedback(feedbackIndex + 1)}
+            className="absolute right-[-12px] top-1/2 -translate-y-1/2 z-10 hidden sm:flex w-[26px] h-[26px] items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover rounded-full transition-colors"
+          >
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!size-[16px]" />
+          </button>
+          <button
+            aria-label="Next feedback"
+            onClick={() => goToFeedback(feedbackIndex + 1)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex sm:hidden w-[26px] h-[26px] items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover rounded-full transition-colors"
+          >
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!size-[16px]" />
+          </button>
+          <div className="overflow-hidden rounded-[15px]">
             <div
-              key={slide.author}
-              className="flex flex-col gap-y-[10px] rounded-[15px] border border-color-ui-shadow bg-color-bg-default px-[18px] md:px-[26px] py-[22px] md:py-[28px] text-center h-full justify-between"
+              className="flex transition-transform duration-300"
+              style={{ transform: `translateX(-${feedbackIndex * 100}%)` }}
             >
-              <div className="flex justify-center">{slide.logo}</div>
-              <p className="text-md leading-normal max-w-[900px] mx-auto">
-                "{slide.quote}"
-              </p>
-              <div className="heading-sm text-color-text-secondary">{slide.author}</div>
+              {feedbackSlides.map((slide) => (
+                <div key={slide.author} className="min-w-full px-[4px] sm:px-[16px]">
+                  <div className="flex flex-col gap-y-[10px] px-[18px] md:px-[26px] py-[22px] md:py-[28px] text-center h-full justify-between">
+                    <div className="flex justify-center">{slide.logo}</div>
+                    <p className="text-md leading-normal max-w-[900px] mx-auto">
+                      "{slide.quote}"
+                    </p>
+                    <div className="heading-sm text-color-text-secondary">{slide.author}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </SwiperComponent>
+          </div>
+          <div className="flex justify-center gap-[8px] mt-[12px]">
+            {feedbackSlides.map((_, idx) => (
+              <button
+                key={idx}
+                aria-label={`Go to feedback ${idx + 1}`}
+                onClick={() => goToFeedback(idx)}
+                className={`w-[8px] h-[8px] rounded-full transition-colors ${
+                  idx === feedbackIndex ? "bg-color-text-primary" : "bg-color-bg-medium"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="flex flex-col gap-y-[15px] mb-[20px]">

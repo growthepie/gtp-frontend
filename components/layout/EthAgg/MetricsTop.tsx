@@ -82,6 +82,10 @@ interface ExpandableCardContainerProps {
   fullHeight?: boolean;
   /** If true, expanded state will absolutely position the card to float above surrounding content. */
   overlayOnExpand?: boolean;
+  /** Hide the info tooltip button in the expand bar. */
+  hideInfoButton?: boolean;
+  /** Optional vertical offset (px) to push the chevron down when collapsed. */
+  collapsedChevronOffset?: number;
 }
 
 /**
@@ -99,6 +103,8 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   minHeightClass = 'min-h-[306px]',
   fullHeight = true,
   overlayOnExpand = false,
+  hideInfoButton = false,
+  collapsedChevronOffset = 4,
 }) => {
   const [isExpandButtonHovered, setIsExpandButtonHovered] = useState(false);
 
@@ -117,35 +123,42 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
     >
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
-        <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+        <div
+          className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+          style={!isExpanded ? { transform: `translateY(${collapsedChevronOffset}px)` } : undefined}
+        >
           <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-color-ui-hover" />
         </div>
 
         {/* Default info icon can be overridden by the infoSlot prop */}
-        <div className='w-[15px] h-fit z-30'>
-          <GTPTooltipNew
-            placement="top-start"
-            size="md"
-            allowInteract={true}
-            trigger={
-              <div
-                className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
-                data-tooltip-trigger
-              >
-                <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
-              </div>
-            }
-            containerClass="flex flex-col gap-y-[10px]"
-            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+        {hideInfoButton ? (
+          <div className="w-[15px] h-fit" />
+        ) : (
+          <div className='w-[15px] h-fit z-30'>
+            <GTPTooltipNew
+              placement="top-start"
+              size="md"
+              allowInteract={true}
+              trigger={
+                <div
+                  className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                  data-tooltip-trigger
+                >
+                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
 
-          >
-            <div>
-              <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                {infoSlot}
-              </TooltipBody>
-            </div>
-          </GTPTooltipNew>
-        </div>
+            >
+              <div>
+                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                  {infoSlot}
+                </TooltipBody>
+              </div>
+            </GTPTooltipNew>
+          </div>
+        )}
       </div>
     </div>
   );
