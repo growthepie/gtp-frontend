@@ -109,9 +109,9 @@ export default function SalesPage() {
         </Subheading>
       </section>
 
-      <section className="flex flex-col gap-y-[16px]">
-        <SectionTitle icon="gtp-support" title="Trusted Partners and Community Members" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[16px]">
+      <section className="flex flex-col gap-y-[15px]">
+        <SectionTitle icon="gtp-support" title="Trusted Partners and Community Members" as="h2" iconSize="md" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[10px] md:gap-[10px]">
           {partners.map((partner) => {
             const Logo = partner.svg;
             return (
@@ -127,7 +127,7 @@ export default function SalesPage() {
                     <Logo />
                   </div>
                 ) : (
-                  <div className="heading-small-sm">{partner.name}</div>
+                  <div className="heading-sm">{partner.name}</div>
                 )}
               </Link>
             );
@@ -135,14 +135,14 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section id="data-tiers" className="flex flex-col gap-y-[16px]">
-        <SectionTitle icon="gtp-categories" title="Data Tiers" />
+      <section id="data-tiers" className="flex flex-col gap-y-[15px]">
+        <SectionTitle icon="gtp-categories" title="Data Tiers"  as="h2" iconSize="md" />
         <SectionDescription className="w-full text-color-text-primary">
           Our goal is, however, to also suit the needs of chains and more professional users. For this reason we have
           paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
           part in the ecosystem. See for yourself what suits you best:
         </SectionDescription>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[12px] md:gap-[16px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[10px] md:gap-[10px]">
           {tiers.map((tier) => {
             const isExpanded = expandedTier === tier.name;
             const card = (
@@ -162,7 +162,7 @@ export default function SalesPage() {
               >
                 <div className={`relative flex flex-col gap-y-[10px] pb-[32px] ${isExpanded ? "" : "max-h-[140px] overflow-hidden"}`}>
                   <div className="flex items-center justify-between gap-x-[8px]">
-                    <div className="heading-small-md">{tier.name}</div>
+                    <div className="heading-md">{tier.name}</div>
                     <span className="text-xs uppercase tracking-wide text-color-text-primary whitespace-nowrap">
                       {tier.status}
                     </span>
@@ -201,7 +201,7 @@ export default function SalesPage() {
               </ExpandableCardContainer>
             );
 
-            const baseWrapper = "rounded-[16px] overflow-visible";
+            const baseWrapper = "rounded-[15px] overflow-visible";
             const wrapperStateClass = isExpanded ? "absolute left-0 right-0 top-0 z-[1002]" : "relative z-0";
             if (tier.highlight) {
               return (
@@ -228,12 +228,12 @@ export default function SalesPage() {
             );
           })}
         </div>
-        <div className="flex flex-col sm:flex-row gap-[12px] mt-0">
+        <div className="flex flex-col sm:flex-row gap-[10px] mt-0">
           <Link
             href="https://forms.office.com/e/wWzMs6Zc3A"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-medium px-[16px] py-[12px] heading-small-sm hover:bg-color-ui-hover transition-colors"
+            className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-medium px-[16px] py-[12px] heading-sm hover:bg-color-ui-hover transition-colors"
           >
             <span>Request a free listing</span>
             <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
@@ -241,7 +241,7 @@ export default function SalesPage() {
           <div className="rounded-full p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]">
             <Link
               href="mailto:contact@growthepie.com"
-              className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-default px-[16px] py-[12px] heading-small-sm hover:bg-color-ui-hover transition-colors"
+              className="inline-flex items-center justify-center gap-x-[10px] rounded-full border border-color-bg-medium bg-color-bg-default px-[16px] py-[12px] heading-sm hover:bg-color-ui-hover transition-colors"
             >
               <span>Get in touch</span>
               <GTPIcon icon={ctaArrow} size="sm" className="!size-[14px]" containerClassName="!size-[14px]" />
@@ -250,8 +250,8 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-y-[16px]">
-        <SectionTitle icon="gtp-feedback" title="Feedback we receive" />
+      <section className="flex flex-col gap-y-[15px]">
+        <SectionTitle icon="gtp-feedback" title="Feedback we receive"  as="h2" iconSize="md" />
         <SectionDescription className="w-full text-color-text-primary">
           growthepie data and visualizations are used across many different sites, publishers and media. Our main focus
           is to cater towards end users and builders wanting to get the best overview of the entire Ethereum ecosystem.
@@ -261,21 +261,21 @@ export default function SalesPage() {
           {feedbackSlides.map((slide) => (
             <div
               key={slide.author}
-              className="flex flex-col gap-y-[16px] rounded-[22px] border border-color-ui-shadow bg-color-bg-default px-[18px] md:px-[26px] py-[22px] md:py-[28px] text-center h-full justify-between"
+              className="flex flex-col gap-y-[10px] rounded-[15px] border border-color-ui-shadow bg-color-bg-default px-[18px] md:px-[26px] py-[22px] md:py-[28px] text-center h-full justify-between"
             >
               <div className="flex justify-center">{slide.logo}</div>
               <p className="text-md leading-normal max-w-[900px] mx-auto">
                 "{slide.quote}"
               </p>
-              <div className="heading-small-sm text-color-text-secondary">{slide.author}</div>
+              <div className="heading-sm text-color-text-secondary">{slide.author}</div>
             </div>
           ))}
         </SwiperComponent>
       </section>
 
-      <section className="flex flex-col gap-y-[16px] mb-[20px]">
-        <SectionTitle icon="gtp-faq" title="Frequently Asked Questions" />
-        <div className="flex flex-col gap-y-[12px]">
+      <section className="flex flex-col gap-y-[15px] mb-[20px]">
+        <SectionTitle icon="gtp-faq" title="Frequently Asked Questions" as="h2" iconSize="md"  />
+        <div className="flex flex-col gap-y-[10px]">
           {faqs.map((faq, index) => (
             <QuestionAnswer
               key={faq.question}
