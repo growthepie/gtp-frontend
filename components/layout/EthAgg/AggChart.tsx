@@ -12,6 +12,7 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 
 export function formatNumberWithSI(num: number): string {
@@ -548,7 +549,7 @@ export function AggChart({
   }, [dataSource, containerWidth, chartKey, prefix, AllChainsByKeys, isMobile]);
 
 
-
+  const { theme } = useTheme();
   // Memoized ECharts option configuration
   const option = useMemo(() => {
     const series = seriesConfigs.map((config, index) => {
@@ -606,6 +607,8 @@ export function AggChart({
     // ensure gradient stop is less than 1 and greater than 0
     const gradientStop = Math.min(Math.max(fortyPixelsToPercent, 0), 1);
 
+
+
     return {
       animation: false,
       backgroundColor: 'transparent',
@@ -640,7 +643,7 @@ export function AggChart({
           show: true,
           margin: -1,
           padding: [5, 0, 0, 6],
-          color: '#CDD8D3',
+          color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)',
           fontSize: isMobile ? 8 : 9,
           fontWeight: 500,
           fontFamily: 'var(--font-fira-sans), sans-serif !important;',
@@ -668,7 +671,7 @@ export function AggChart({
         }
       }
     };
-  }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, prefix, showUsd]);
+  }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, prefix, showUsd, theme]);
 
 
 

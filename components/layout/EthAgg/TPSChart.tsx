@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
 import { throttle } from 'lodash';
 import ChartWatermark, { ChartWatermarkWithMetricName } from '../ChartWatermark';
-
+import { useTheme } from 'next-themes';
 // It's good practice to define the shape of your data
 type HistoryItem = {
   tps: number;
@@ -51,6 +51,7 @@ function formatNumberWithSI(num: number): string {
 export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   // This layout effect for resizing is correct and does not need changes.
   useLayoutEffect(() => {
@@ -98,7 +99,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
         type: 'value',
         interval: yAxisMax,
         axisLabel: {
-          color: 'rgb(215, 223, 222)',
+          color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)',
           fontSize: 10,
           fontWeight: 700,
           fontFamily: 'var(--font-raleway), var(--font-fira-sans), sans-serif',
@@ -205,7 +206,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       ],
       animationDuration: 50,
     };
-  }, [data]); // The hook now depends on the `data` prop
+  }, [data, theme]); // The hook now depends on the `data` prop and theme
 
   return (
     <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">

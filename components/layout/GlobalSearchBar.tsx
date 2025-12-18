@@ -802,7 +802,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22"
               height="10"
               rx="2"
-              fill={pressedKey === 'ArrowUp' ? "#5A6462" : "#151A19"}
+              fill={pressedKey === 'ArrowUp' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
             <path
               d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z"
@@ -816,7 +816,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22"
               height="10"
               rx="2"
-              fill={pressedKey === 'ArrowLeft' ? "#5A6462" : "#151A19"}
+              fill={pressedKey === 'ArrowLeft' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
             <path
               d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z"
@@ -831,7 +831,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22"
               height="10"
               rx="2"
-              fill={pressedKey === 'ArrowRight' ? "#5A6462" : "#151A19"}
+              fill={pressedKey === 'ArrowRight' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
             <path
               d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z"
@@ -846,7 +846,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22"
               height="10"
               rx="2"
-              fill={pressedKey === 'ArrowDown' ? "#5A6462" : "#151A19"}
+              fill={pressedKey === 'ArrowDown' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
             <path
               d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z"
@@ -863,7 +863,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               width="22"
               height="20"
               rx="2"
-              fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"}
+              fill={pressedKey === 'Enter' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="rgb(var(--text-primary))" stroke-width="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="rgb(var(--text-primary))" stroke="rgb(var(--text-primary))" />
