@@ -104,7 +104,8 @@ const faqs = [
 ];
 
 export default function SalesPage() {
-  const [expandedTier, setExpandedTier] = useState<string | null>(null);
+  const [expandedTiers, setExpandedTiers] = useState<string[]>([]);
+  const [hoveredTier, setHoveredTier] = useState<string | null>(null);
   const dataTiersRef = useRef<HTMLElement | null>(null);
   const [feedbackIndex, setFeedbackIndex] = useState(0);
 
@@ -140,10 +141,18 @@ export default function SalesPage() {
   }, []);
 
   const handleToggleTier = (tierName: string, isExpanded: boolean, event: MouseEvent<HTMLDivElement>) => {
-    const next = isExpanded ? null : tierName;
-    setExpandedTier(next);
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    setExpandedTiers((prev) => {
+      if (isExpanded) {
+        return prev.filter((t) => t !== tierName);
+      }
+      if (isMobile) {
+        return [tierName];
+      }
+      return [...prev, tierName];
+    });
+
     if (!isExpanded) {
-      const isMobile = window.matchMedia("(max-width: 768px)").matches;
       if (isMobile) {
         const cardElement = (event.target as HTMLElement).closest("[data-tier-card]") as HTMLElement | null;
         scrollCardIntoViewMobile(cardElement);
@@ -189,8 +198,8 @@ export default function SalesPage() {
           <div className="self-start md:self-center">
             <SectionButtonLink
               href="#data-tiers"
-              label="See pricing tiers"
-              shortLabel="Pricing tiers"
+              label="See data tiers"
+              shortLabel="Data tiers"
               onClick={handlePricingButtonClick}
             />
           </div>
@@ -235,25 +244,33 @@ export default function SalesPage() {
           paid tiers to allow us to index and aggregate more data, and show a more complete picture of each chain and its
           part in the ecosystem. See for yourself what suits you best:
         </SectionDescription>
-        {expandedTier && (
+        {expandedTiers.length > 0 && (
           <div
-            className="fixed inset-0 z-[1001] bg-black/50 md:bg-transparent"
-            onClick={() => setExpandedTier(null)}
+            className="fixed inset-0 z-[1001] bg-black/50"
+            onClick={() => {
+              setExpandedTiers([]);
+              setHoveredTier(null);
+            }}
           />
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[10px] md:gap-[10px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-[10px] md:gap-[10px] relative z-[1002]">
           {tiers.map((tier) => {
-            const isExpanded = expandedTier === tier.name;
+            const isExpanded = expandedTiers.includes(tier.name);
+            const overlayActive = expandedTiers.length > 0;
+            const shouldDim = overlayActive && !isExpanded && hoveredTier !== tier.name;
+            const dimClass = shouldDim ? "opacity-40" : "opacity-100";
             const card = (
               <ExpandableCardContainer
                 isExpanded={isExpanded}
-                onToggleExpand={(event) => handleToggleTier(tier.name, isExpanded, event)}
+                onToggleExpand={(event: React.MouseEvent<HTMLDivElement>) => handleToggleTier(tier.name, isExpanded, event)}
+                onCardClick={(event: React.MouseEvent<HTMLDivElement>) => handleToggleTier(tier.name, isExpanded, event)}
                 className={`!border-none overflow-visible ${isExpanded ? "!z-[1002]" : "z-0"}`}
                 minHeightClass="min-h-[190px]"
                 fullHeight={false}
                 overlayOnExpand={false}
                 collapsedChevronOffset={15}
                 hideInfoButton
+                disableSelection
                 infoSlot={
                   <div className="flex flex-col gap-y-[10px] text-xs">
                     <div className="font-semibold">{tier.name} tier</div>
@@ -288,7 +305,13 @@ export default function SalesPage() {
             const wrapperStateClass = isExpanded ? "absolute left-0 right-0 top-0 z-[1002]" : "relative z-0";
             if (tier.highlight) {
               return (
-                <div key={tier.name} className="relative min-h-[190px]" data-tier-card>
+                <div
+                  key={tier.name}
+                  className={`relative min-h-[190px] transition-opacity duration-200 ${dimClass}`}
+                  data-tier-card
+                  onMouseEnter={() => setHoveredTier(tier.name)}
+                  onMouseLeave={() => setHoveredTier(null)}
+                >
                   <div
                     className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]`}
                   >
@@ -301,7 +324,13 @@ export default function SalesPage() {
             }
 
             return (
-              <div key={tier.name} className="relative min-h-[190px]" data-tier-card>
+              <div
+                key={tier.name}
+                className={`relative min-h-[190px] transition-opacity duration-200 ${dimClass}`}
+                data-tier-card
+                onMouseEnter={() => setHoveredTier(tier.name)}
+                onMouseLeave={() => setHoveredTier(null)}
+              >
                 <div className={`${baseWrapper} ${wrapperStateClass} p-[1px] bg-color-bg-medium`}>
                   <div className="rounded-[15px] bg-color-bg-default">
                     {card}

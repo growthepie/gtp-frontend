@@ -70,6 +70,8 @@ interface ExpandableCardContainerProps {
   isExpanded: boolean;
   /** Callback function to toggle the expansion state. */
   onToggleExpand: (e: React.MouseEvent) => void;
+  /** Optional click handler for the entire card area. */
+  onCardClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   /** If true, the card is in a compact state, hiding the expansion button and content. */
   isCompact?: boolean;
   /** Optional className for the main container `div`. */
@@ -86,6 +88,8 @@ interface ExpandableCardContainerProps {
   hideInfoButton?: boolean;
   /** Optional vertical offset (px) to push the chevron down when collapsed. */
   collapsedChevronOffset?: number;
+  /** Disable text selection inside the card. */
+  disableSelection?: boolean;
 }
 
 /**
@@ -97,6 +101,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   children,
   isExpanded,
   onToggleExpand,
+  onCardClick,
   isCompact = false,
   className = '',
   infoSlot,
@@ -105,6 +110,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   overlayOnExpand = false,
   hideInfoButton = false,
   collapsedChevronOffset = 4,
+  disableSelection = false,
 }) => {
   const [isExpandButtonHovered, setIsExpandButtonHovered] = useState(false);
 
@@ -113,6 +119,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
     <div
       className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[10px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
       onClick={(e) => {
+        e.stopPropagation();
         // Don't expand if clicking on the tooltip trigger
         const target = e.target as HTMLElement;
         const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
@@ -127,7 +134,11 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
           style={!isExpanded ? { transform: `translateY(${collapsedChevronOffset}px)` } : undefined}
         >
-          <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-color-ui-hover" />
+          <GTPIcon
+            icon="gtp-chevrondown-monochrome"
+            size="md"
+            className="text-color-text-primary group-hover/card:text-color-ui-hover transition-colors"
+          />
         </div>
 
         {/* Default info icon can be overridden by the infoSlot prop */}
@@ -170,14 +181,21 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   return (
     <div className={`relative w-full z-0 ${isCompact ? '!h-[150px]' : `${fullHeight ? 'h-full' : ''} ${minHeightClass}`}`}>
       <div
-        className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
+        className={`@container expandable-card-container w-full bg-color-bg-default rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px] group/card
           ${expandedClass}
           ${isExpandButtonHovered && '!z-[1001]'}
           ${isCompact ? '!h-[150px]' : ''}
-          ${className}`
+          ${className}
+          ${disableSelection ? 'select-none' : ''}
+          ${onCardClick ? 'cursor-pointer' : ''}`
         }
         onMouseEnter={() => setIsExpandButtonHovered(true)}
         onMouseLeave={() => setIsExpandButtonHovered(false)}
+        onClick={(e) => {
+          if (onCardClick) {
+            onCardClick(e);
+          }
+        }}
       >
         {children}
         {!isCompact && ExpandButton}
