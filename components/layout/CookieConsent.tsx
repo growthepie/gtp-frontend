@@ -25,15 +25,21 @@ export default function CookieConsent() {
     setCookie("gtpCookieConsent", "true", {
       maxAge: 60 * 60 * 24 * 365,
     });
-
+    setCookie("gtpConsentVersion", "2", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  
     gtag("consent", "update", getConsentUpdate(true));
-
+    
     console.log("[CookieConsent] Accepting cookies");
   };
-
+  
   const denyCookie = () => {
     setConsent(true);
     setCookie("gtpCookieConsent", "false", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+    setCookie("gtpConsentVersion", "2", {
       maxAge: 60 * 60 * 24 * 365,
     });
     
