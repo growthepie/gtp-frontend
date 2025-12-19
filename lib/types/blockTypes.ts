@@ -127,6 +127,7 @@ export interface ChartBlock extends BaseBlock {
       pathToData?: string;
       dashStyle?: Highcharts.DashStyleValue;
       makeNegative?: boolean;
+      aggregation?: "daily" | "weekly" | "monthly";
     }[];
   } | null;
   seeMetricURL?: string | null;
