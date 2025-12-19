@@ -5,11 +5,10 @@ export interface CategoryComparisonResponse {
 export interface CategoryComparisonResponseData {
   native_transfers: Cefi;
   token_transfers: Cefi;
-  nft_fi: Cefi;
-  defi: Cefi;
+  collectibles: Cefi;
   gaming: Cefi;
   scaling: Cefi;
-  cefi: Cefi;
+  finance: Cefi;
   utility: Cefi;
 }
 

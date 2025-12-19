@@ -27,12 +27,11 @@ export interface Daily {
   types: string[];
   utility: CategoryData;
   scaling: CategoryData;
-  defi: CategoryData;
   native_transfers: CategoryData;
   gaming: CategoryData;
   token_transfers: CategoryData;
-  nft_fi: CategoryData;
-  cefi: CategoryData;
+  collectibles: CategoryData;
+  finance: CategoryData;
   unlabeled: CategoryData;
 }
 
@@ -52,12 +51,11 @@ export interface Overviews {
 export interface Categories {
   utility: number[];
   scaling: number[];
-  defi: number[];
   native_transfers: number[];
   gaming: number[];
   token_transfers: number[];
-  nft_fi: number[];
-  cefi: number[];
+  collectibles: number[];
+  finance: number[];
 }
 
 

@@ -215,7 +215,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                   <ApplicationsGrid chainKey={chainKey} />
                 </ProjectsMetadataProvider>
               </div>
-              {chainDataOverview.data.blockspace.blockspace.data.length > 0 ? (
+              {chainDataOverview.data.blockspace.data.length > 0 ? (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
                     <div className="px-[30px] heading-large-md">Usage Breakdown</div>
                     <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
@@ -223,7 +223,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                         <RowProvider
                           value={{
                             master: oldMaster,
-                            data: chainDataOverview.data.blockspace.blockspace,
+                            data: chainDataOverview.data.blockspace,
                             selectedMode: "txcount_share",
                             forceSelectedChain: "",
                             isCategoryHovered: isCategoryHovered,
