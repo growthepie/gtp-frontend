@@ -37,7 +37,7 @@ export function ToggleSwitch({
   ariaLabel = "Toggle option",
   textColor = "text-color-text-primary",
   containerColor = "bg-color-bg-medium",
-  sliderColor = "bg-color-bg-default",
+  sliderColor = "bg-color-ui-active",
 }: ToggleProps) {
   const [mounted, setMounted] = useState(false);
   const [

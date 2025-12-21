@@ -135,7 +135,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
                 if (child.type === 'title') {
                   const section = child as SidebarSectionTitle;
                   return (
-                    <div key={`sec-${idx}`} className="p-[5px] whitespace-nowrap heading-caps-xs text-color-ui-hover">
+                    <div key={`sec-${idx}`} className="p-[5px] whitespace-nowrap heading-caps-xs text-color-text-secondary">
                       {isOpen ? section.label.toUpperCase() : <span>&nbsp;</span>}
                     </div>
                   );
@@ -170,7 +170,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
         className="md:pl-[5px] flex"
       >
         <div 
-          className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''} ${isActiveTopLink ? 'bg-color-ui-active text-white' : ''}`}
+          className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''} ${isActiveTopLink ? 'bg-color-ui-active text-color-text-primary' : ''}`}
         >
         {RowContent}
         </div>

@@ -1199,7 +1199,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                   className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                   data-tooltip-trigger
                 >
-                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
                 </div>
               }
               containerClass="flex flex-col gap-y-[10px]"

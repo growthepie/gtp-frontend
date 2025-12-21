@@ -1124,7 +1124,7 @@ export default function ChainChart({
         y: -4,
         x: 2,
         style: {
-          color: "#CDD8D3",
+          color: "rgb(var(--text-primary))",
           gridLineColor:
             theme === "dark"
               ? "rgba(215, 223, 222, 0.33)"
@@ -1160,7 +1160,7 @@ export default function ChainChart({
       minorGridLineWidth: 0,
       minorTickInterval: 1000 * 60 * 60 * 24 * 7,
       labels: {
-        style: { color: COLORS.LABEL },
+        style: { color: "rgb(var(--text-primary))" },
         enabled: false,
         formatter: (item) => {
           const date = new Date(item.value);
@@ -1193,7 +1193,7 @@ export default function ChainChart({
       split: false,
       followPointer: true,
       followTouchMove: true,
-      backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+      backgroundColor: "rgb(var(--bg-default))",
       borderRadius: 17,
       borderWidth: 0,
       padding: 0,

@@ -31,6 +31,9 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+const withOpacity = (color: string, opacity: number): string => {
+  return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
+};
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -406,6 +409,14 @@ const MetricChart = memo(
 
       return { filteredDataMap: filtered, maxDataValue: maxVal, xMin: xMinVal, xMax: xMaxVal };
     }, [data, seriesDataMap, zoomed, zoomMin, zoomMax, activeTimespan?.xMin, activeTimespan?.xMax]);
+    const echartsColors = useMemo(() => {
+      const colors = theme === 'dark' ? ECHARTS_COLORS.dark : ECHARTS_COLORS.light;
+      return {
+        ...colors,
+        bgDefaultTransparent: withOpacity(colors.bgDefault, 0.95),
+      };
+    }, [theme]);
+    
 
     // Build ECharts option
     const option = useMemo(() => {
@@ -720,7 +731,7 @@ const MetricChart = memo(
             fontSize: 10,
             fontWeight: "600",
             fontFamily: "'Fira Sans', sans-serif",
-            color: "#CDD8D3",
+            color: echartsColors.textPrimary,
             formatter: (value: number) => formatAxisLabel(value),
             hideOverlap: true,
           },
@@ -1300,7 +1311,7 @@ const MetricChart = memo(
 
         {/* Date labels */}
         <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/50 pointer-events-none">
-          <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+          <div className="w-[5px] h-[5px] text-color-text-primary rounded-full"></div>
           <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
             {new Date(zoomed ? zoomMin! : activeTimespan?.xMin ?? 0).toLocaleDateString("en-GB", {
               timeZone: "UTC",
@@ -1317,7 +1328,7 @@ const MetricChart = memo(
               year: "numeric",
             })}
           </div>
-          <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+          <div className="w-[5px] h-[5px] text-color-text-primary rounded-full"></div>
         </div>
       </div>
     );
@@ -1325,6 +1336,24 @@ const MetricChart = memo(
 );
 
 MetricChart.displayName = "MetricChart";
+const ECHARTS_COLORS = {
+  light: {
+    textPrimary: 'rgb(31, 39, 38)',           // --text-primary
+    textSecondary: 'rgb(121, 139, 137)',      // --text-secondary
+    bgDefault: 'rgb(240, 244, 244)',          // --bg-default
+    bgMedium: 'rgb(236, 239, 239)',           // --bg-medium
+    uiShadow: 'rgb(215, 218, 218)',           // --ui-shadow
+    uiHover: 'rgb(233, 237, 237)',            // --ui-hover
+  },
+  dark: {
+    textPrimary: 'rgb(205, 216, 211)',        // --text-primary
+    textSecondary: 'rgb(75, 83, 79)',         // --text-secondary
+    bgDefault: 'rgb(31, 39, 38)',             // --bg-default
+    bgMedium: 'rgb(52, 66, 64)',              // --bg-medium
+    uiShadow: 'rgb(21, 26, 25)',              // --ui-shadow
+    uiHover: 'rgb(90, 100, 98)',              // --ui-hover
+  },
+} as const;
 
 // Main component
 export default function ChainChartECharts({
@@ -1627,7 +1656,7 @@ export default function ChainChartECharts({
           <div
             className="relative flex rounded-full h-full w-full z-30 p-[5px] cursor-pointer"
             style={{
-              backgroundColor: compChain ? AllChainsByKeys[compChain]?.colors[theme ?? "dark"][0] : "#151A19",
+              backgroundColor: compChain ? AllChainsByKeys[compChain]?.colors[theme ?? "dark"][0] : "rgb(var(--ui-active))",
             }}
           >
             <div
@@ -1651,11 +1680,11 @@ export default function ChainChartECharts({
               </div>
               <div
                 className={`flex font-[550] ${
-                  compChain ? (AllChainsByKeys[compChain]?.darkTextOnBackground ? textColors.darkTextOnBackground : textColors.default) : textColors.default
+                  compChain ? (AllChainsByKeys[compChain]?.darkTextOnBackground ? textColors.darkTextOnBackground : textColors.default) : "text-color-text-primary"
                 } gap-x-[5px] justify-center items-center w-32`}
               >
                 {compChain && <Icon icon={`gtp:${AllChainsByKeys[compChain]?.urlKey}-logo-monochrome`} className="w-[22px] h-[22px]" />}
-                <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">{compChain ? master.chains[compChain].name : "None"}</div>
+                <div className="text-sm overflow-ellipsi truncate whitespace-nowrap">{compChain ? master.chains[compChain].name : "None"}</div>
               </div>
             </div>
             <div

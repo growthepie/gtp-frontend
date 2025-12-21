@@ -1158,7 +1158,7 @@ function MetricChart({
                 style: {
                   fontFamily: "Fira Sans",
                   fontSize: "10px",
-                  color: "#CDD8D3",
+                  color: "rgb(var(--text-primary))",
                 },
               }}
               crosshair={{
@@ -1206,7 +1206,7 @@ function MetricChart({
               plotLines={[
                 {
                   value: 0,
-                  color: "#CDD8D3A7",
+                  color: "rgb(var(--text-primary) / 0.67)",
                   className: "highcharts-zero-line",
                   // width: 2,
                 }
@@ -1223,7 +1223,7 @@ function MetricChart({
                 style: {
                   whiteSpace: "nowrap",
                   textAlign: "right",
-                  color: "rgb(215, 223, 222)",
+                  color: "rgb(var(--text-primary))",
                   fontSize: "10px",
                   fontWeight: "700",
                   fontFamily: "Fira Sans",

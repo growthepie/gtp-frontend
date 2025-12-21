@@ -379,7 +379,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
             </div>
             <input
               ref={inputRef}
-              className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+              className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip`}
               placeholder="Search & Filter"
               value={internalSearch}
               onChange={handleSearchChange}

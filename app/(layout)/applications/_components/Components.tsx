@@ -558,10 +558,10 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
           <div className="w-full flex justify-between items-end h-[20px]">
             <div className="h-[20px] flex items-center gap-x-[3px]">
               <div className="numbers-xs text-color-text-primary">{application.num_contracts.toLocaleString("en-GB")}</div>
-              <div className="text-xs text-color-ui-hover">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
+              <div className="text-xs text-color-text-secondary">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
             </div>
             <div className="h-[20px] flex items-center gap-x-[3px]">
-              <div className="numbers-xs text-color-ui-hover">Rank</div>
+              <div className="numbers-xs text-color-text-secondary">Rank</div>
               <div className="numbers-xs text-color-text-primary">{rank}</div>
               {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
                 <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-color-negative' : 'text-color-positive'}`}>
@@ -1222,7 +1222,7 @@ export const Category = ({ category }: { category: string }) => {
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-color-ui-hover/50" /> */}
           <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
-          <div className="text-xs text-color-ui-hover">Unknown</div>
+          <div className="text-xs text-color-text-secondary">Unknown</div>
         </div>
       )}
     </>
