@@ -28,6 +28,7 @@ import Link from "next/link";
 import { getIcon, listIcons } from "@iconify/react";
 import { TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPIcon } from "../GTPIcon";
 
 
 
@@ -711,7 +712,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   }}
                 >
                   <div
-                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-color-bg-default ${columnBorder(
+                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-transparent ${columnBorder(
                       "name",
                       item.key,
                     )} `}
@@ -724,23 +725,17 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                         }}
                       />
 
-                      <Icon
-                        icon={"gtp:circle-arrow"}
-                        className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
-                        style={{
-                          transform: `rotate(${openDA[item.key] && selectedTimespan !== "1d"
-                            ? "90deg"
-                            : "0deg"
-                            })`,
-                          transformOrigin: "-8px 4px",
-                          transition: "transform 0.5s",
-                        }}
+                      <GTPIcon
+                        icon="gtp-chevronright-monochrome"
+                        className={` !w-[9px] !h-[6px] text-color-text-primary ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
+                        size={"sm"}
+                        containerClassName={`w-[15px] !overflow-visible h-[15px] flex items-center justify-center absolute top-[6px] text-color-text-primary -right-[5px] transition-transform duration-500 origin-[-2px_7px] ${openDA[item.key] && selectedTimespan !== "1d" ? "rotate-90" : "rotate-0"}`}
                       />
                     </div>
                     <div className="text-xs">{AllDALayersByKeys[item.key].name}</div>
                   </div>
                   <div
-                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-color-bg-default ${columnBorder(
+                    className={`flex items-center gap-x-[10px] pl-[5px] h-full bg-transparent ${columnBorder(
                       "size",
                       item.key,
                     )} `}
@@ -776,7 +771,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </div>
                   </div>
                   <div
-                    className={`flex w-full px-[5px] items-center gap-x-[10px] h-full bg-[#344240C0]  ${columnBorder(
+                    className={`flex w-full px-[5px] items-center gap-x-[10px] h-full bg-color-bg-medium-50  ${columnBorder(
                       "fees",
                       item.key,
                     )} `}
@@ -809,7 +804,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </div>
                   </div>
                   <div
-                    className={`flex items-center numbers-xs justify-end w-full px-[5px] h-full bg-color-bg-default  ${columnBorder(
+                    className={`flex items-center numbers-xs justify-end w-full px-[5px] h-full bg-transparent  ${columnBorder(
                       "fees_per_mb",
                       item.key,
                     )} `}
@@ -822,7 +817,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}
                   </div>
                   <div
-                    className={`flex items-center justify-end h-full bg-[#34424090] ${columnBorder(
+                    className={`flex items-center justify-end h-full bg-color-bg-medium-50 ${columnBorder(
                       "da_consumers",
                       item.key,
                     )} `}
@@ -845,7 +840,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   </div>
 
                   <div
-                    className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-color-bg-default group/more ${columnBorder(
+                    className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-transparent group/more ${columnBorder(
                       "fixed_parameters",
                       item.key,
                     )} `}
@@ -867,7 +862,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     : "h-[0px]"
                     }`}
                 >
-                  <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                  <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-color-text-secondary">
                     {chart_data && master && (
                       <DATableCharts
                         data={chart_data.data.da_layers[item.key]}
@@ -902,7 +897,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </div>
             </div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+              <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                 {formatNumber(
                   breakdown_data["totals"][selectedTimespan].fees.total[
                   breakdown_data["totals"][selectedTimespan].fees.types.findIndex(
@@ -922,7 +917,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </div>
             </div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+              <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                 {totalDAConsumers}
               </div>
             </div>

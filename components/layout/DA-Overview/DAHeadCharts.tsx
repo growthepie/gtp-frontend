@@ -194,7 +194,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
               });
           }
     
-          const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
+          const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway text-color-text-primary ">
             <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
           const tooltipEnd = `</div>`;
     
@@ -385,11 +385,11 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                     <hr className="absolute w-full border-t-[2px] top-[64px] border-[#5A64624F] my-4" />
                     <hr className="absolute w-full border-t-[2px] top-[114px] border-[#5A64624F] my-4" />
                     <hr className="absolute w-full border-t-[2px] top-[166px] border-[#5A64624F] my-4" />
-                    <div className="absolute bottom-[40%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
-                        <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                    <div className="absolute w-full h-full flex top-[10px] justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
+                        <ChartWatermark className="w-[128.54px] h-[25.69px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
                     </div>
-                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/70 pointer-events-none">
-                          <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
+                          <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
                           <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                               {new Date(
                                 timespans[selectedTimespan].xMin,
@@ -402,7 +402,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
 
                           </div>
                     </div>
-                    <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/70 pointer-events-none">
+                    <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
                           <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                             {new Date(
                                 timespans[selectedTimespan].xMax,
@@ -414,7 +414,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                               })}
                               
                           </div>
-                          <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                          <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
                       </div>
 
                     <div className="h-[232px] pt-[15px]">
@@ -539,9 +539,9 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                           document.getElementById("stop1");
                                         const stop2 =
                                           document.getElementById("stop2");
-                                        stop1?.setAttribute("stop-color", "#CDD8D3");
+                                        stop1?.setAttribute("stop-color", "rgb(var(--text-primary))");
                                         stop1?.setAttribute("stop-opacity", "1");
-                                        stop2?.setAttribute("stop-color", "#CDD8D3");
+                                        stop2?.setAttribute("stop-color", "rgb(var(--text-primary))");
                                         stop2?.setAttribute("stop-opacity", "0.33");
                                       }
                                       const lastPoint: Highcharts.Point =
@@ -586,7 +586,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                             0.00005,
                                           y2: chart.plotTop - 6,
       
-                                          stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0')",
+                                          stroke: isSafariBrowser ? "rgb(var(--text-primary))" : "url('#gradient0')",
                                           "stroke-dasharray": null, // Remove or set to null for a solid line
                                           "stroke-width": 1,
                                           rendering: "crispEdges",
@@ -602,7 +602,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                           3,
                                         )
                                         .attr({
-                                          fill: "#CDD8D3",
+                                          fill: "rgb(var(--text-primary))",
                                           r: 4.5,
                                           zIndex: 9999,
                                           rendering: "crispEdges",
@@ -617,7 +617,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                 split={false}
                                 followPointer={true}
                                 followTouchMove={true}
-                                backgroundColor={"#2A3433EE"}
+                                backgroundColor={"rgb(var(--bg-default))"}
                                 padding={0}
                                 hideDelay={300}
                                 stickOnContact={true}
@@ -646,7 +646,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                 labels={{
                                     useHTML: true,
                                     style: {
-                                    color: COLORS.LABEL,
+                                    color: "rgb(var(--text-primary))",
                                     fontSize: "10px",
                                     fontFamily: "var(--font-raleway), sans-serif",
                                     zIndex: 1000,
@@ -702,7 +702,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                     style: {
                                       backgroundColor: "#1F2726",
                                       whiteSpace: "nowrap",
-                                      color: "rgb(215, 223, 222)",
+                                      color: "rgb(var(--text-primary))",
                                       fontSize: "8px",
                                       fontWeight: "600",
                                       fontFamily: "var(--font-raleway), sans-serif",

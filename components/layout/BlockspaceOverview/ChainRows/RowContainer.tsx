@@ -58,7 +58,7 @@ export default function RowContainer() {
                   unhoverCategory("all_chain");
                 }}
               >
-                {"All Categories"}
+                <div className="text-color-text-primary">{"All Categories"}</div>
               </button>
             </div>
             <div className="flex flex-1">
@@ -83,15 +83,15 @@ export default function RowContainer() {
                       style={{
                         backgroundColor:
                           selectedCategory === category && !allCats
-                            ? "#5A6462"
-                            : `#1F2726`,
+                            ? "rgb(var(--bg-ui-hover))"
+                            : `rgb(var(--bg-default))`,
                       }}
                     >
                       <button
                         key={category}
                         className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                     1px 
-                  ] border-forest-50 dark:border-forest-800
+                  ] border-color-ui-hover
                     ${
                       selectedCategory === category && !allCats
                         ? "bg-color-ui-active"
@@ -132,7 +132,7 @@ export default function RowContainer() {
                         }}
                       >
                         <div
-                          className={`${
+                          className={`text-color-text-primary ${
                             selectedCategory === category
                               ? "text-xs font-medium"
                               : "text-xs font-medium"

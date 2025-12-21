@@ -364,7 +364,7 @@ export default function ContractContainer() {
           {/* Show More Button */}
           <div className="w-full flex justify-center pb-6">
             <button
-              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full hover:bg-forest-700 transition-opacity ${Object.keys(sortedContracts).length > maxDisplayedContracts && maxDisplayedContracts < 50
+              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-color-ui-hover  border-[1px] rounded-full hover:bg-color-ui-hover transition-opacity ${Object.keys(sortedContracts).length > maxDisplayedContracts && maxDisplayedContracts < 50
                 ? "opacity-100 visible"
                 : "opacity-0 hidden"
                 }`}

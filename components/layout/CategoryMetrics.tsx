@@ -1256,8 +1256,8 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
@@ -1268,8 +1268,8 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
@@ -1280,8 +1280,8 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedChartType("percentage");

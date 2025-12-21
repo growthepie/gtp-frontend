@@ -12,6 +12,32 @@ import {
   ReactNode,
   memo,
 } from "react";
+
+// ECharts color tokens - mirrors globals.css values for canvas rendering
+// Canvas doesn't understand CSS variables, so we define them here matching globals.css
+const ECHARTS_COLORS = {
+  light: {
+    textPrimary: 'rgb(31, 39, 38)',           // --text-primary
+    textSecondary: 'rgb(121, 139, 137)',      // --text-secondary
+    bgDefault: 'rgb(240, 244, 244)',          // --bg-default
+    bgMedium: 'rgb(236, 239, 239)',           // --bg-medium
+    uiShadow: 'rgb(215, 218, 218)',           // --ui-shadow
+    uiHover: 'rgb(233, 237, 237)',            // --ui-hover
+  },
+  dark: {
+    textPrimary: 'rgb(205, 216, 211)',        // --text-primary
+    textSecondary: 'rgb(75, 83, 79)',         // --text-secondary
+    bgDefault: 'rgb(31, 39, 38)',             // --bg-default
+    bgMedium: 'rgb(52, 66, 64)',              // --bg-medium
+    uiShadow: 'rgb(21, 26, 25)',              // --ui-shadow
+    uiHover: 'rgb(90, 100, 98)',              // --ui-hover
+  },
+} as const;
+
+// Helper to get color with opacity
+const withOpacity = (color: string, opacity: number): string => {
+  return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
+};
 import { useLocalStorage, useWindowSize, useIsMounted, useResizeObserver } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
@@ -75,6 +101,15 @@ const ChainComponent = function ChainComponent({
   const { width, height } = useWindowSize();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  // Get ECharts colors based on current theme
+  const echartsColors = useMemo(() => {
+    const colors = theme === 'dark' ? ECHARTS_COLORS.dark : ECHARTS_COLORS.light;
+    return {
+      ...colors,
+      bgDefaultTransparent: withOpacity(colors.bgDefault, 0.95),
+    };
+  }, [theme]);
 
   const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<echarts.ECharts[]>([]);
@@ -909,7 +944,7 @@ const ChainComponent = function ChainComponent({
           show: true,
           margin: -1,
           padding: [3, 0, 0, 2],
-          color: '#CDD8D3',
+          color: echartsColors.textPrimary,
           fontSize: isMobile ? 7 : 8,
           fontWeight: 500,
           fontFamily: 'var(--font-fira-sans), sans-serif !important;',
@@ -924,9 +959,8 @@ const ChainComponent = function ChainComponent({
         show: true,
         trigger: 'axis',
         triggerOn: 'mousemove|click', // Add click for mobile support
-        // backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-        backgroundColor: "rgb(var(--bg-default) / 0.95)",
-        shadowColor: "rgb(var(--ui-shadow))",
+        backgroundColor: echartsColors.bgDefaultTransparent,
+        shadowColor: echartsColors.uiShadow,
         shadowBlur: 27,
         shadowOffsetX: 0,
         shadowOffsetY: 0,
@@ -934,7 +968,7 @@ const ChainComponent = function ChainComponent({
         borderRadius: 17,
         padding: 0,
         textStyle: {
-          color: "rgb(var(--text-primary))",
+          color: echartsColors.textPrimary,
         },
         formatter: tooltipFormatter,
         confine: isMobile ? true : false,
@@ -1016,6 +1050,7 @@ const ChainComponent = function ChainComponent({
     category,
     focusEnabled,
     ethData.chain_id,
+    echartsColors,
   ]);
 
   const getGraphicElements = useCallback(() => {

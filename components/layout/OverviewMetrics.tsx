@@ -443,8 +443,8 @@ export default function OverviewMetrics({
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "absolute"
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedValue("absolute");
@@ -466,8 +466,8 @@ export default function OverviewMetrics({
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "share"
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedValue("share");

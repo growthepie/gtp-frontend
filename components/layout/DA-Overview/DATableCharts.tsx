@@ -449,7 +449,7 @@ const DATableChartsComponent = ({
             }
     
             // Create a scrollable container using CSS
-            const tooltip = `<div class="mt-3 mr-3 w-[245px] md:w-52 text-xs font-raleway ">
+            const tooltip = `<div class="mt-3 mr-3 w-[245px] md:w-52 text-xs font-raleway text-color-text-primary ">
                 <div class="flex justify-between items-start max-w-[175px] heading-small-xs ml-6 mb-2"><div>${dateString}</div><div class="text-xs">Data Posted</div></div>
                 <div class="max-h-[200px] w-full overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling: touch; hover:!pointer-events-auto tooltip-scrollbar"
                     onwheel="(function(e) {
@@ -569,7 +569,7 @@ const DATableChartsComponent = ({
                 .join("");
             
             const totalString = `
-                <div class="flex items-center pl-[25px] pr-[20px] mb-1.5 w-full justify-between">
+                <div class="flex items-center pl-[25px] pr-[20px] mb-1.5 w-full justify-between text-color-text-primary ">
                     <div class="tooltip-point-name text-xs font bold">Total</div>
                     <div class="numbers-xs">${formatBytes(total)}</div>
                 </div>
@@ -590,14 +590,14 @@ const DATableChartsComponent = ({
                 minimumFractionDigits: 2,
             }).format(this.percentage);
 
-            return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
+            return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center text-color-text-primary ">
                 <div class="flex gap-x-[5px] items-center ">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
                     <div class="tooltip-point-name text-xs">${this.key}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs flex flex-col items-end">
+                <div class="tooltip-point-name numbers-xs flex flex-col items-end ">
                     <div class="text-right whitespace-pre">${absolute}</div>
-                    <div class="text-color-text-primary text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
+                    <div class="text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
                 </div>
             </div>`;
         },
@@ -922,7 +922,7 @@ const DATableChartsComponent = ({
                         split={false}
                         followPointer={true}
                         followTouchMove={true}
-                        backgroundColor={"#1F2726"}
+                        backgroundColor={"rgb(var(--bg-default))"}
                         padding={0}
                         hideDelay={300}
                         stickOnContact={true}
@@ -962,7 +962,7 @@ const DATableChartsComponent = ({
                             useHTML: true,
                             distance: -14,
                             style: {
-                                color: COLORS.LABEL,
+                                color: "rgb(var(--text-primary))",
                                 fontSize: "10px",
                                 fontWeight: "550",
                                 fontVariant: "small-caps",
@@ -1066,7 +1066,7 @@ const DATableChartsComponent = ({
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
-                            color: "rgb(215, 223, 222)",
+                            color: "rgb(var(--text-primary))",
                             fontSize: "9px",
                             fontWeight: "600",
                             fontFamily: "var(--font-raleway), sans-serif",
@@ -1288,7 +1288,7 @@ const DATableChartsComponent = ({
                             split={false}
                             followPointer={true}
                             followTouchMove={true}
-                            backgroundColor={"#2A3433EE"}
+                            backgroundColor={"rgb(var(--bg-default))"}
                             padding={0}
                             hideDelay={300}
                             stickOnContact={true}
@@ -1537,10 +1537,10 @@ const ChartLegend = (
           color="#b5c4c3";
         }
 
-        let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
+        let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-color-ui-hover hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
 
         if(selectedChain !== "all" && selectedChain !== key)
-            bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
+            bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-color-ui-hover hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
         
 
         return (
