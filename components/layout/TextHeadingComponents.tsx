@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type React from "react";
+import type { MouseEventHandler } from "react";
 import { GTPIcon } from "./GTPIcon";
 import Heading from "./Heading";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -134,6 +136,7 @@ export const SectionDescription = ({
     gradientClass?: string;
     className?: string;
     containerClassName?: string;
+    onClick?: MouseEventHandler<HTMLAnchorElement>;
   };
 
   export const TitleButtonLink = ({
@@ -148,7 +151,8 @@ export const SectionDescription = ({
     width,
     gradientClass="bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]",
     className,
-    containerClassName="pl-[38px] md:pl-0"
+    containerClassName="pl-[38px] md:pl-0",
+    onClick,
   }: TitleButtonProps) => {
     return (
       <div className={`${containerClassName} select-none`}>
@@ -156,6 +160,7 @@ export const SectionDescription = ({
           href={href}
           rel={newTab ? "noreferrer" : ""}
           target={newTab ? "_blank" : ""}
+          onClick={onClick}
         >
           <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
             <div
@@ -194,16 +199,18 @@ export const SectionButtonLink = ({
   label,
   shortLabel,
   width,
+  onClick,
 }: TitleButtonProps) => {
   return (
     <Link
       href={href}
       rel={newTab ? "noreferrer" : ""}
       target={newTab ? "_blank" : ""}
+      onClick={onClick}
     >
-      <div className="select-none flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full">
+      <div className="select-none flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full h-[34px]">
         <div
-          className="flex items-center py-[5px] pl-[15px] pr-[5px] gap-x-[8px] font-semibold bg-color-bg-default rounded-full transition-all duration-300"
+          className="flex items-center justify-center gap-x-[8px] font-semibold bg-[#263130] hover:bg-color-ui-hover rounded-full transition-colors duration-300 h-full px-[12px]"
           style={{
             width: width,
           }}
@@ -216,12 +223,13 @@ export const SectionButtonLink = ({
               <div className="block md:hidden heading-small-xs whitespace-nowrap overflow-hidden">
                 {shortLabel}
               </div>
-            </>) : <div className="heading-small-xs whitespace-nowrap overflow-hidden">
-            {label}
-          </div>}
-          <div className="w-[24px] h-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
-            <Icon icon="feather:arrow-right" className="w-[16px] h-[16px]" />
-          </div>
+            </>
+          ) : (
+            <div className="heading-small-xs whitespace-nowrap overflow-hidden">
+              {label}
+            </div>
+          )}
+          <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!w-[16px] !h-[16px]" />
         </div>
       </div>
     </Link>
