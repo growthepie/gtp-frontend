@@ -39,7 +39,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                         <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full
                             ${isLocked || comingSoon ? "" : "hover:bg-color-ui-hover h-[36px]"}
                             ${!isLocked &&  "cursor-pointer"}
-                            ${isSelected ? "bg-color-ui-active border-2 border-[#344240] h-[46px] heading-large-sm md:heading-large-md" : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium w-full  hover:border-2  hover:heading-large-md  hover:h-[42px]"} 
+                            ${isSelected ? "bg-color-ui-active border-2 border-color-bg-medium h-[46px] heading-large-sm md:heading-large-md" : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium w-full  hover:border-2  hover:heading-large-md  hover:h-[42px]"} 
                             ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
                             ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
                             ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
@@ -93,7 +93,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
             <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full
                 ${isLocked || comingSoon ? "" : "hover:bg-color-ui-hover h-[36px]"}
                 ${!isLocked &&  "cursor-pointer"}
-                ${isSelected ? "bg-color-ui-active border-2 border-[#344240] h-[46px] heading-large-sm md:heading-large-md" : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium w-full  hover:border-2  hover:heading-large-md  hover:h-[42px]"} 
+                ${isSelected ? "bg-color-ui-active border-2 border-color-bg-medium h-[46px] heading-large-sm md:heading-large-md" : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium w-full  hover:border-2  hover:heading-large-md  hover:h-[42px]"} 
                 ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
                 ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
                 ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}

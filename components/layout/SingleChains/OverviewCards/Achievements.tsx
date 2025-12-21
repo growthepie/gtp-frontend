@@ -10,7 +10,56 @@ import * as d3 from "d3";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { useMediaQuery } from "usehooks-ts";
 import { StreaksData } from "@/types/api/ChainOverviewResponse";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// Helper hook to get CSS variable colors for ECharts (which renders to canvas and can't read CSS vars)
+const useCssColors = () => {
+    const [colors, setColors] = useState({
+        bgMedium: '#344240',
+        textPrimary: '#cdd8d3',
+    });
+
+    useEffect(() => {
+        const updateColors = () => {
+            if (typeof window !== 'undefined') {
+                const computedStyle = getComputedStyle(document.documentElement);
+                const bgMediumRgb = computedStyle.getPropertyValue('--bg-medium').trim();
+                const textPrimaryRgb = computedStyle.getPropertyValue('--text-primary').trim();
+                
+                // Convert space-separated RGB values to rgb() format
+                const toRgb = (value: string) => {
+                    const parts = value.split(' ').filter(Boolean);
+                    if (parts.length === 3) {
+                        return `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})`;
+                    }
+                    return value;
+                };
+                
+                setColors({
+                    bgMedium: bgMediumRgb ? toRgb(bgMediumRgb) : '#344240',
+                    textPrimary: textPrimaryRgb ? toRgb(textPrimaryRgb) : '#cdd8d3',
+                });
+            }
+        };
+
+        updateColors();
+        
+        // Listen for theme changes (dark/light mode toggle)
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    updateColors();
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, { attributes: true });
+        
+        return () => observer.disconnect();
+    }, []);
+
+    return colors;
+};
 
 interface AchievmentsData {
     streaks: Object;
@@ -102,7 +151,7 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                             className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                             data-tooltip-trigger
                         >
-                            <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                            <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
                         </div>
                     }
                     containerClass="flex flex-col gap-y-[10px]"
@@ -234,6 +283,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
+    const cssColors = useCssColors();
 
     const transparentChartOptions = (progressValue: number, chartSize: number = 74): EChartsOption => {
         const remainingValue = 100 - progressValue;
@@ -300,7 +350,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     center: ['50%', '50%'],
                     showEmptyCircle: true,
                     emptyCircleStyle: {
-                        color: '#344240',
+                        color: cssColors.bgMedium,
                     },
                     silent: true,
                     emphasis: {
@@ -317,8 +367,8 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                         r: circleRadius
                     },
                     style: {
-                        fill: '#CBD8D3',
-                        stroke: '#CBD8D3',
+                        fill: cssColors.textPrimary,
+                        stroke: cssColors.textPrimary,
                         lineWidth: 0,
                         opacity: 0.9
                     },
@@ -366,7 +416,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                             name: 'Remaining',
                             value: remainingValue,
                             itemStyle: {
-                                color: '#344240',
+                                color: cssColors.bgMedium,
                             }
                         }
                     ],
@@ -427,7 +477,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                             className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                             data-tooltip-trigger
                         >
-                            <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                            <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
                         </div>
                     }
                     containerClass="flex flex-col gap-y-[10px]"
@@ -469,7 +519,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                                         style={{ width: '68px', height: '68px', }}
                                     />
                                 </div>
-                                <div className="absolute -top-[3px] -left-[7px] w-[34px] h-[34px] flex flex-col -gap-y-[2px] justify-center items-center bg-medium-background/90 rounded-full z-30">
+                                <div className="absolute -top-[3px] -left-[7px] w-[34px] h-[34px] flex flex-col -gap-y-[2px] justify-center items-center bg-color-bg-medium rounded-full z-30">
                                     <div className="text-xxxs">Level&nbsp;</div>
                                     <div className="numbers-xs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
 
@@ -716,12 +766,12 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
 
             {/* Gray unfilled portion */}
             <g clipPath={`url(#${uniqueId}-unfillClip)`}>
-                <path d="M0.305062 13.1511C0.227915 12.0746 0.521074 11.0862 1.15005 10.1278C1.57118 9.49066 2.16839 8.80269 2.82732 8.04483C4.52728 6.08711 6.63295 3.66378 7.14848 0.452637C8.26938 2.91409 7.72572 5.30747 6.48501 7.50843C5.92683 8.49773 5.30874 9.20839 4.71879 9.88638C4.02447 10.6842 3.37008 11.4366 2.89993 12.543C2.64126 13.1447 2.49423 13.7211 2.42525 14.2847L0.305062 13.1511Z" fill="rgb(var(--bg-medium))"></path>
-                <path d="M3.94336 15.0985C4.20203 14.1492 4.64948 13.2615 5.24397 12.4002C5.7359 11.6814 6.19697 11.1486 6.61084 10.6703C8.00312 9.05926 8.86717 8.05907 8.61394 2.65967C8.77641 3.00638 8.93705 3.34038 9.09316 3.66258L9.09407 3.6644C10.4519 6.48345 11.4049 8.46023 9.80382 11.1749C9.01238 12.5164 8.43514 13.1835 7.92506 13.7734C7.35054 14.4369 6.86043 15.0041 6.24416 16.3238L3.94336 15.0985Z" fill="rgb(var(--bg-medium))"></path>
-                <path d="M9.90482 14.248C9.28038 14.9877 8.26113 16.0078 8.21484 16.075L13.9827 12.8503C13.862 11.7756 13.0697 10.5095 12.0958 8.70972C12.2928 11.0822 11.367 12.5153 9.90482 14.248Z" fill="rgb(var(--bg-medium))"></path>
-                <path d="M13.9412 13.9224C13.786 14.6103 12.9365 16.0416 12.3121 16.785C10.3389 19.1321 9.31151 20.1332 7.62335 23.6647C7.52805 23.2826 7.42821 22.9223 7.33291 22.5783C6.86186 20.8792 6.57233 19.4643 7.13686 18.2444L13.9412 13.9224Z" fill="rgb(var(--bg-medium))"></path>
-                <path d="M6.32152 21.879C5.83867 20.4659 5.49196 19.2842 5.74427 17.7893L3.72755 16.4751C3.61592 18.6742 4.5553 21.2419 7.14926 24.5474C7.0113 23.7288 6.59743 22.6868 6.32152 21.879Z" fill="rgb(var(--bg-medium))"></path>
-                <path d="M2.38333 15.5991C2.41782 16.3143 2.85983 18.2048 3.25555 19.205C2.12648 17.7646 0.892125 15.5546 0.539062 14.3965L2.38333 15.5991Z" fill="rgb(var(--bg-medium))"></path>
+                <path d="M0.305062 13.1511C0.227915 12.0746 0.521074 11.0862 1.15005 10.1278C1.57118 9.49066 2.16839 8.80269 2.82732 8.04483C4.52728 6.08711 6.63295 3.66378 7.14848 0.452637C8.26938 2.91409 7.72572 5.30747 6.48501 7.50843C5.92683 8.49773 5.30874 9.20839 4.71879 9.88638C4.02447 10.6842 3.37008 11.4366 2.89993 12.543C2.64126 13.1447 2.49423 13.7211 2.42525 14.2847L0.305062 13.1511Z" fill="rgb(var(--text-secondary))"></path>
+                <path d="M3.94336 15.0985C4.20203 14.1492 4.64948 13.2615 5.24397 12.4002C5.7359 11.6814 6.19697 11.1486 6.61084 10.6703C8.00312 9.05926 8.86717 8.05907 8.61394 2.65967C8.77641 3.00638 8.93705 3.34038 9.09316 3.66258L9.09407 3.6644C10.4519 6.48345 11.4049 8.46023 9.80382 11.1749C9.01238 12.5164 8.43514 13.1835 7.92506 13.7734C7.35054 14.4369 6.86043 15.0041 6.24416 16.3238L3.94336 15.0985Z" fill="rgb(var(--text-secondary))"></path>
+                <path d="M9.90482 14.248C9.28038 14.9877 8.26113 16.0078 8.21484 16.075L13.9827 12.8503C13.862 11.7756 13.0697 10.5095 12.0958 8.70972C12.2928 11.0822 11.367 12.5153 9.90482 14.248Z" fill="rgb(var(--text-secondary))"></path>
+                <path d="M13.9412 13.9224C13.786 14.6103 12.9365 16.0416 12.3121 16.785C10.3389 19.1321 9.31151 20.1332 7.62335 23.6647C7.52805 23.2826 7.42821 22.9223 7.33291 22.5783C6.86186 20.8792 6.57233 19.4643 7.13686 18.2444L13.9412 13.9224Z" fill="rgb(var(--text-secondary))"></path>
+                <path d="M6.32152 21.879C5.83867 20.4659 5.49196 19.2842 5.74427 17.7893L3.72755 16.4751C3.61592 18.6742 4.5553 21.2419 7.14926 24.5474C7.0113 23.7288 6.59743 22.6868 6.32152 21.879Z" fill="rgb(var(--text-secondary))"></path>
+                <path d="M2.38333 15.5991C2.41782 16.3143 2.85983 18.2048 3.25555 19.205C2.12648 17.7646 0.892125 15.5546 0.539062 14.3965L2.38333 15.5991Z" fill="rgb(var(--text-secondary))"></path>
             </g>
 
             {/* Colored filled portion */}

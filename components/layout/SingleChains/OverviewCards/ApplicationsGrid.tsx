@@ -1027,7 +1027,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               <button
                 id="main-category-button-all"
                 className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
-                  border-color-text-primary/30 border-dotted border-r-[0.5px]
+                  border-color-text-primary border-dotted border-r-[0.5px]
                   rounded-l-[15px]
                   ${selectedMainCategory === null ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
                   ${disableCategoryControls && 'pointer-events-none'}
@@ -1041,7 +1041,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                   id={`main-category-button-${category.id}`}
                   key={category.id}
                   className={`flex !w-[120px] h-[24px] text-xs justify-center items-center
-                    border-color-text-primary/30 border-dotted
+                    border-color-text-primary border-dotted
                     ${index < categoryOptions.length - 1 ? 'border-r-[0.5px] border-dotted' : 'rounded-r-[15px]'}
                     ${selectedMainCategory === category.id ? 'bg-color-ui-active' : 'bg-color-bg-medium hover:bg-color-ui-hover'}
                     ${disableCategoryControls && 'pointer-events-none'}

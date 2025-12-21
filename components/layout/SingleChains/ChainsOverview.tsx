@@ -496,7 +496,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
             containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${!open ? "rotate-0" : "rotate-90"}`}
           />
           </div>
-          <div className="heading-large-md text-color-ui-hover whitespace-nowrap min-w-0 truncate">{chainData.name}</div>
+          <div className="heading-large-md text-color-text-secondary whitespace-nowrap min-w-0 truncate">{chainData.name}</div>
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
         <div className={`px-[30px] @[1155px]/header:pl-0 w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] ${!open ? "max-w-[1200px] max-h-[110px] opacity-100 transition-[opacity] duration-300  " : "max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
@@ -762,7 +762,7 @@ const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, li
 const MetricTab = ({ title, children, largerGap = false }: { title: string; children: React.ReactNode, largerGap?: boolean }) => {
   return (
     <div className={`flex flex-col ${largerGap ? "gap-y-[10px]" : "gap-y-[2px]"}`}>
-      <div className="heading-xxs text-[#5A6462] whitespace-nowrap">{title}</div>
+      <div className="heading-xxs text-color-text-secondary whitespace-nowrap">{title}</div>
       <div className="text-md">{children}</div>
     </div>
   )

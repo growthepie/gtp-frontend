@@ -274,7 +274,7 @@ function BreakdownCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-44 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-44 text-xs font-raleway text-color-text-primary bg-color-bg-default">
             <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -333,7 +333,7 @@ function BreakdownCharts({
                   <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                     <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
         
-                    <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                    <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-color-bg-default" 
                     style="
                       width: ${(percentage / maxPercentage) * 100}%;
                       background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
@@ -667,7 +667,7 @@ function BreakdownCharts({
               split={false}
               followPointer={true}
               followTouchMove={true}
-              backgroundColor={"#2A3433EE"}
+              backgroundColor={"rgb(var(--bg-default))"}
               padding={0}
               hideDelay={300}
               stickOnContact={true}
@@ -965,7 +965,7 @@ function BreakdownCharts({
               split={false}
               followPointer={true}
               followTouchMove={true}
-              backgroundColor={"#2A3433EE"}
+              backgroundColor={"rgb(var(--bg-default))"}
               padding={0}
               hideDelay={300}
               stickOnContact={true}
@@ -980,7 +980,7 @@ function BreakdownCharts({
                 offsetY: 2,
               }}
               style={{
-                color: "rgb(215, 223, 222)",
+                color: "rgb(var(--text-primary))",
               }}
               formatter={tooltipFormatter}
               // ensure tooltip is always above the chart

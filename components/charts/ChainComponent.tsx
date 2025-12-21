@@ -1076,11 +1076,11 @@ const ChainComponent = function ChainComponent({
             colorStops: [
               {
                 offset: 0,
-                color: '#CDD8D3FF', // Yellow at left
+                color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)', // Yellow at left
               },
               {
                 offset: 1,
-                color: '#CDD8D311', // Red/pink at right
+                color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)', // Red/pink at right
               },
             ],
           },
@@ -1098,7 +1098,7 @@ const ChainComponent = function ChainComponent({
           r: 4.5,
         },
         style: {
-          fill: '#CDD8D3', // Red to match the right side of the gradient
+          fill: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)', // Red to match the right side of the gradient
         },
         z: 11,
       },
@@ -1186,7 +1186,7 @@ const ChainComponent = function ChainComponent({
       suppressHydrationWarning={true}
     >
       <div className="w-full h-[146px] md:h-[176px] relative" ref={chartContainerRef}>
-        <div className="absolute w-full h-full bg-forest-50 dark:bg-color-bg-default rounded-[15px]"></div>
+        <div className="absolute w-full h-full bg-color-bg-default rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <ReactECharts
             ref={chartRef}
