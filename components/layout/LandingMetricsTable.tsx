@@ -128,12 +128,14 @@ export default memo(function LandingMetricsTable({
   interactable,
   sort,
   setSort,
+  selectedChainTypes,
 }: {
   data: any;
   master: MasterResponse;
   interactable: boolean;
   sort: { metric: string; sortOrder: "asc" | "desc" };
   setSort: (sort: { metric: string; sortOrder: "asc" | "desc" }) => void;
+  selectedChainTypes: string[];
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
@@ -176,7 +178,7 @@ export default memo(function LandingMetricsTable({
 
   const rows = useMemo(() => {
     if (!data || !landing) return [];
-    const filteredChains = Object.keys(data.chains)
+    const allChains = Object.keys(data.chains)
       .filter((chain) =>
         Object.keys(EnabledChainsByKeys).includes(chain) &&
         (!focusEnabled || chain !== "ethereum") &&
@@ -186,11 +188,16 @@ export default memo(function LandingMetricsTable({
         data: data.chains[chain],
         chain: EnabledChainsByKeys[chain],
         lastVal: data.chains[chain].users,
+        isSelected: selectedChainTypes.includes(EnabledChainsByKeys[chain].chainType ?? ""),
       }))
       .filter((row) => row.chain.chainType != null);
 
-    return landingDataSorter(filteredChains, sort.metric, sort.sortOrder as SortOrder);
-  }, [data, landing, EnabledChainsByKeys, focusEnabled, sort, landingDataSorter]);
+    // Filter to only selected chains
+    const selectedChains = allChains.filter((row) => row.isSelected);
+
+    // Sort and return only selected chains
+    return landingDataSorter(selectedChains, sort.metric, sort.sortOrder as SortOrder);
+  }, [data, landing, EnabledChainsByKeys, focusEnabled, sort, landingDataSorter, selectedChainTypes]);
 
   const monthsSinceLaunch = useMemo(() => {
     return Object.keys(master.chains).reduce((acc, chain) => {
