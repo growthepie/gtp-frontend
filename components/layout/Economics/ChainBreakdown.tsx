@@ -555,7 +555,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
                     Chain
                   </div>
                   <div>
@@ -568,8 +568,8 @@ export default function ChainBreakdown({
                             : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "chain"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        ? "text-color-text-secondary opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                         } `}
                     />
                   </div>
@@ -614,7 +614,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
                     Chain Revenue
                   </div>
 
@@ -628,8 +628,8 @@ export default function ChainBreakdown({
                             : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "revenue"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        ? "text-color-text-secondary opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                         } `}
                     />
                   </div>
@@ -656,7 +656,7 @@ export default function ChainBreakdown({
                 {" "}
                 <div className="flex items-center group gap-x-[1px]">
                   <div
-                    className="text-xs group-hover:text-forest-50/80 font-bold cursor-pointer"
+                    className="text-xs group-hover:text-color-text-secondary font-bold cursor-pointer"
                     onClick={() => {
                       if (metricSort !== "costs") {
                         setSortOrder(true);
@@ -678,8 +678,8 @@ export default function ChainBreakdown({
                             : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "costs"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        ? "text-color-text-secondary opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                         } `}
                     />
                   </div>
@@ -707,7 +707,7 @@ export default function ChainBreakdown({
                 <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
                   <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
                     <div
-                      className=" group-hover:text-forest-50/80 whitespace-nowrap"
+                      className=" group-hover:text-color-text-secondary whitespace-nowrap"
                       onClick={() => {
                         if (metricSort !== "costs_l1") {
                           setSortOrder(true);
@@ -729,8 +729,8 @@ export default function ChainBreakdown({
                               : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${metricSort === "costs_l1"
-                          ? "text-forest-50 opacity-100"
-                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                          ? "text-color-text-secondary opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                           } `}
                       />
                     </div>
@@ -746,7 +746,7 @@ export default function ChainBreakdown({
                       }
                     }}
                   >
-                    <div className=" group-hover:text-forest-50/80 ">Blobs</div>
+                    <div className=" group-hover:text-color-text-secondary ">Blobs</div>
                     <div>
                       <Icon
                         icon={
@@ -757,7 +757,7 @@ export default function ChainBreakdown({
                               : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${metricSort === "costs_blobs"
-                          ? "text-forest-50 opacity-100"
+                          ? "text-color-text-secondary opacity-100"
                           : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                           } `}
                       />
@@ -778,7 +778,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
                     Loss | Profit
                   </div>
                   <div>
@@ -791,8 +791,8 @@ export default function ChainBreakdown({
                             : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "profit"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        ? "text-color-text-secondary opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                         } `}
                     />
                   </div>
@@ -827,7 +827,7 @@ export default function ChainBreakdown({
               >
                 {" "}
                 <div className="flex items-center group gap-x-[1px] ">
-                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
                     Margin
                   </div>
                   <div>
@@ -840,8 +840,8 @@ export default function ChainBreakdown({
                             : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "profit_margin"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        ? "text-color-text-secondary opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                         } `}
                     />
                   </div>
@@ -875,7 +875,7 @@ export default function ChainBreakdown({
                   }
                 }}
               >
-                <div className="text-xs group-hover:text-forest-50/80 font-bold">
+                <div className="text-xs group-hover:text-color-text-secondary font-bold">
                   {"Blob Data"}
                 </div>
                 <div>
@@ -888,8 +888,8 @@ export default function ChainBreakdown({
                           : "formkit:arrowup"
                     }
                     className={` w-[10px] h-[10px] ${metricSort === "size"
-                      ? "text-forest-50 opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      ? "text-color-text-secondary opacity-100"
+                      : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
                       } `}
                   />
                 </div>

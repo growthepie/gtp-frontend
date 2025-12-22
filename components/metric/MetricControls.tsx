@@ -575,8 +575,8 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
               <div className="flex justify-between md:justify-center items-center gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                 <button
                   className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
-                    ? "bg-forest-500 dark:bg-color-ui-active"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "hover:bg-color-ui-hover"
                     }`}
                   onClick={() => {
                     setSelectedScale("absolute");
@@ -588,8 +588,8 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                   <>
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
-                        ? "bg-forest-500 dark:bg-color-ui-active"
-                        : "hover:bg-forest-500/10"
+                        ? "bg-color-ui-active"
+                        : "hover:bg-color-ui-hover"
                         }`}
                       onClick={() => {
                         setSelectedScale("stacked");
@@ -599,8 +599,8 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     </button>
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                        ? "bg-forest-500 dark:bg-color-ui-active"
-                        : "hover:bg-forest-500/10"
+                        ? "bg-color-ui-active"
+                        : "hover:bg-color-ui-hover"
                         }`}
                       onClick={() => {
                         setSelectedScale("percentage");

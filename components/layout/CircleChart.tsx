@@ -138,7 +138,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
       //     });
       // }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway text-color-text-primary">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-8 mb-2 ">${""}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -276,7 +276,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
             split={false}
             followPointer={true}
             followTouchMove={true}
-            backgroundColor={"#2A3433EE"}
+            backgroundColor={"rgb(var(--bg-default))"}
             padding={0}
             hideDelay={300}
             stickOnContact={true}

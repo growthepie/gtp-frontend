@@ -884,7 +884,7 @@ export default function LandingChart({
           y: 30,
           style: {
             fontSize: "10px",
-            color: "#CDD8D3",
+            color: "rgb(var(--text-primary))",
           },
         },
         events: {

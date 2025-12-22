@@ -504,7 +504,7 @@ export default function StableInsights({ }: {}) {
                 </p>
               </div>
               <a
-                className="select-none h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                className="select-none h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-color-bg-medium flex flex-col px-[15px] py-[5px] md:py-[10px]"
                 href="https://www.glodollar.org/"
                 target="_blank"
               >
