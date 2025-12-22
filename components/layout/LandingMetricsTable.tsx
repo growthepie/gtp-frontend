@@ -193,16 +193,11 @@ export default memo(function LandingMetricsTable({
       }))
       .filter((row) => row.chain.chainType != null);
 
-    // Separate selected and unselected chains
+    // Filter to only selected chains
     const selectedChains = allChains.filter((row) => row.isSelected);
-    const unselectedChains = allChains.filter((row) => !row.isSelected);
 
-    // Sort each group
-    const sortedSelected = landingDataSorter(selectedChains, sort.metric, sort.sortOrder as SortOrder);
-    const sortedUnselected = landingDataSorter(unselectedChains, sort.metric, sort.sortOrder as SortOrder);
-
-    // Return selected chains first, then unselected
-    return [...sortedSelected, ...sortedUnselected];
+    // Sort and return only selected chains
+    return landingDataSorter(selectedChains, sort.metric, sort.sortOrder as SortOrder);
   }, [data, landing, EnabledChainsByKeys, focusEnabled, sort, landingDataSorter, selectedChainTypes]);
 
   const monthsSinceLaunch = useMemo(() => {
@@ -363,7 +358,7 @@ export default memo(function LandingMetricsTable({
               <GridTableRow
                 key={index}
                 gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
-                className={`relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0 ${!item.isSelected ? 'opacity-30' : ''}`}
+                className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                 bar={{
                   origin_key: item.chain.key,
                   width: lastValsByChainKey[item.chain.key] / maxVal,
