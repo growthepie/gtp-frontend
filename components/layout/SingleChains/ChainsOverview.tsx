@@ -202,7 +202,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
     streaksData?.data?.[chainKey],
   );
   const shouldShowAchievements = hasLifetimeAchievements || hasStreaksAchievements;
-  const isMegaeth = chainKey === "megaeth";
+  const isSOON = chainKey === "megaeth" || chainKey === "polygon_pos";
 
 
 
@@ -307,17 +307,17 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                   <div className="w-full flex flex-col gap-y-[10px] items-center justify-center flex-1 inset-0 z-[2]">
                     <GTPIcon icon="gtp-lock" size="md" className="" />
                     <div className="heading-large-md">
-                      {isMegaeth ? (
+                      {isSOON ? (
                         <>Usage Breakdown Not Yet Available</>
                         ) : (
                         <>Usage Breakdown Not Available</>
                       )}
                     </div>
                     <div className="text-xs text-center px-[30px]">
-                        {isMegaeth ? (
+                        {isSOON ? (
                           <>
                             Usage breakdown data is not available yet.<br/>
-                            We are actively labeling contracts for MegaETH, and this view will be live soon.
+                            We are actively labeling contracts and this view will be live soon.
                           </>
                         ) : (
                           <>

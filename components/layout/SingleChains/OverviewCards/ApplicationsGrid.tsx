@@ -997,7 +997,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
     : chainKey === "all" || chainKey === "all-chains"
       ? "all_l2s"
       : chainKey;
-  const isMegaeth = computedChainKey === "megaeth";
+  const isSOON = computedChainKey === "megaeth" || computedChainKey === "polygon_pos";
   const categoryOptions = layoutIsEmpty ? allMainCategories : mainCategories;
   const showUnavailableState = !isAllChainsView && layoutIsEmpty;
   const showAggregateLoadingState = isAllChainsView && layoutIsEmpty && isAggregateLoading;
@@ -1071,17 +1071,17 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
               <GTPIcon icon="gtp-lock" size="md" className="" />
               <div className="heading-large-md">
-                {isMegaeth ? (
+                {isSOON ? (
                   <>Applications Not Yet Available</>
                 ) : (
                   <>Applications Not Available</>
                 )}
               </div>
               <div className="text-xs text-center px-[30px]">
-                {isMegaeth ? (
+                {isSOON ? (
                   <>
                     Application data is not available yet.<br />
-                    We are actively labeling contracts for MegaETH, and the application view will be live soon.
+                    We are actively labeling contracts and the application view will be live soon.
                   </>
                 ) : (
                   <>
