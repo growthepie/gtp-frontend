@@ -16,7 +16,6 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
-import ViewToggle from "../ViewToggle";
 import ChainTypeFilter from "../ChainTypeFilter";
 import { GTPIcon } from "../layout/GTPIcon";
 import Subheading from "../layout/Subheading";
@@ -30,7 +29,6 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
     "landingChainTypeFilter",
     ["l1", "rollup", "others"]
   );
-  const [showTable, setShowTable] = useLocalStorage("landingShowTable", true);
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -125,11 +123,6 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
-              {false && ( // hide for now
-                <TopRowParent className="">
-                  <ViewToggle showTable={showTable} setShowTable={setShowTable} />
-                </TopRowParent>
-              )}
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
