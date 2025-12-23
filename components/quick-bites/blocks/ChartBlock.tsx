@@ -61,35 +61,63 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.
+  // For scatter plots, we need to handle xUrl and yUrl separately
   const processedUrls = React.useMemo(() => {
     if (!block.dataAsJson?.meta) return [];
 
-    return block.dataAsJson.meta.map(meta => {
-      if (!meta.url) return null;
-
-      // If the URL is a mustache template
-      if (meta.url.includes('{{')) {
-        const requiredVars = (Mustache.parse(meta.url) || [])
-          .filter(tag => tag[0] === 'name')
-          .map(tag => tag[1]);
-        
-        // Ensure all required variables are present in sharedState
-        const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
-
-        if (allVarsAvailable) {
-          return Mustache.render(meta.url, sharedState);
+    const urls: string[] = [];
+    
+    block.dataAsJson.meta.forEach(meta => {
+      // For scatter plots with xUrl and yUrl, fetch both
+      if (meta.xUrl && meta.yUrl) {
+        // Process xUrl
+        let xUrl = meta.xUrl;
+        if (xUrl.includes('{{')) {
+          const requiredVars = (Mustache.parse(xUrl) || [])
+            .filter(tag => tag[0] === 'name')
+            .map(tag => tag[1]);
+          const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
+          if (allVarsAvailable) {
+            xUrl = Mustache.render(xUrl, sharedState);
+          } else {
+            return; // Skip if vars not available
+          }
         }
+        urls.push(xUrl);
         
-        // If vars are not available, return null to prevent fetching a broken URL.
-        if (meta.url && !meta.url.includes("{{")) {
-          return meta.url;
+        // Process yUrl
+        let yUrl = meta.yUrl;
+        if (yUrl.includes('{{')) {
+          const requiredVars = (Mustache.parse(yUrl) || [])
+            .filter(tag => tag[0] === 'name')
+            .map(tag => tag[1]);
+          const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
+          if (allVarsAvailable) {
+            yUrl = Mustache.render(yUrl, sharedState);
+          } else {
+            return; // Skip if vars not available
+          }
         }
-        return null;
+        urls.push(yUrl);
+      } else if (meta.url) {
+        // Standard single URL
+        let url = meta.url;
+        if (url.includes('{{')) {
+          const requiredVars = (Mustache.parse(url) || [])
+            .filter(tag => tag[0] === 'name')
+            .map(tag => tag[1]);
+          const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
+          if (allVarsAvailable) {
+            url = Mustache.render(url, sharedState);
+          } else {
+            return; // Skip if vars not available
+          }
+        }
+        urls.push(url);
       }
-      
-      // If it's not a template, just return the URL
-      return meta.url;
-    }).filter(Boolean) as string[];
+    });
+    
+    return urls.filter(Boolean);
   }, [block.dataAsJson, sharedState]);
 
   // The key for useSWR is now `processedUrls`, which is dynamic.
@@ -97,11 +125,62 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { data: unProcessedData, error } = useSWR(processedUrls.length > 0 ? processedUrls : null);
   
   // Get nested data for all meta entries
-  const nestedData = block.dataAsJson && unProcessedData 
-    ? block.dataAsJson.meta.map((meta, index) => 
-        meta.pathToData ? getNestedValue(unProcessedData[index], meta.pathToData) : unProcessedData[index]
-      )
-    : undefined;
+  // For scatter plots with xUrl/yUrl, combine the data
+  const nestedData = React.useMemo(() => {
+    if (!block.dataAsJson?.meta || !unProcessedData) return undefined;
+    
+    let urlIndex = 0;
+    return block.dataAsJson.meta.map((meta) => {
+      // For scatter plots with xUrl and yUrl, combine data from two endpoints
+      if (meta.xUrl && meta.yUrl && unProcessedData[urlIndex] && unProcessedData[urlIndex + 1]) {
+        const xData = meta.xPathToData 
+          ? getNestedValue(unProcessedData[urlIndex], meta.xPathToData)
+          : unProcessedData[urlIndex];
+        const yData = meta.yPathToData
+          ? getNestedValue(unProcessedData[urlIndex + 1], meta.yPathToData)
+          : unProcessedData[urlIndex + 1];
+        
+        urlIndex += 2;
+        
+        // Combine x and y data: get most recent day from each and create scatter points
+        if (Array.isArray(xData) && Array.isArray(yData) && xData.length > 0 && yData.length > 0) {
+          // Get the most recent day (last item in array)
+          const latestX = xData[xData.length - 1];
+          const latestY = yData[yData.length - 1];
+          
+          // Create scatter point: [xValue, yValue]
+          // xData format: [timestamp, value] or [value]
+          // yData format: [timestamp, value] or [value]
+          // For fundamentals API, format is typically [timestamp, value] where value is at index 1
+          let xValue: number;
+          let yValue: number;
+          
+          if (Array.isArray(latestX)) {
+            // If it's [timestamp, value], get the value (usually index 1, but could be last)
+            xValue = latestX.length > 1 ? latestX[1] : latestX[0];
+          } else {
+            xValue = latestX;
+          }
+          
+          if (Array.isArray(latestY)) {
+            // If it's [timestamp, value], get the value (usually index 1, but could be last)
+            yValue = latestY.length > 1 ? latestY[1] : latestY[0];
+          } else {
+            yValue = latestY;
+          }
+          
+          // Return as array with single point for scatter: [x, y]
+          return [[xValue, yValue]];
+        }
+        return [];
+      } else {
+        // Standard single URL
+        const data = unProcessedData[urlIndex];
+        urlIndex += 1;
+        return meta.pathToData ? getNestedValue(data, meta.pathToData) : data;
+      }
+    });
+  }, [block.dataAsJson, unProcessedData]);
 
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
 
@@ -124,7 +203,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   return (
     <>
     <div className={wrapperClassName}>
-      {passChartData && (
+      {(passChartData !== undefined && passChartData !== null) && (
         <ChartWrapper
           chartType={block.chartType}
           data={block.data}

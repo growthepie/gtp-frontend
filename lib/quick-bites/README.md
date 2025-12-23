@@ -223,6 +223,7 @@ JSON.stringify({
 - **`column`**: Best for discrete comparisons with limited timestamps (≤180)
 - **`area`**: Best for showing composition over time (90+ timestamps)
 - **`pie`**: Best for showing proportions at a single point in time
+- **`scatter`**: Best for showing relationships between two variables, correlation analysis, or distribution patterns
 
 ### Stacking Options
 

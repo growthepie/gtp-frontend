@@ -17,7 +17,10 @@ export type BlockType =
   | 'dropdown'   // For dropdown blocks
   | 'titleButton'   // For title button blocks
   | 'faq' // For FAQ blocks
-  | 'table'; // For table blocks
+  | 'table' // For table blocks
+  | 'chains-scatter-chart' // For chains scatter chart with active addresses vs transaction count
+  | 'chains-scatter-chart-daily' // For chains scatter chart using daily data × 30
+  | 'chains-scatter-comparison-table'; // For comparison table showing 30d vs daily × 30 data
 
 export interface BaseBlock {
   id: string;
@@ -96,7 +99,7 @@ export interface TableBlock extends BaseBlock {
 
 export interface ChartBlock extends BaseBlock {
   type: 'chart';
-  chartType: 'line' | 'area' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie' | 'scatter';
   data: any; // This would be the chart data structure
   margins?: "none" | "normal";
   options?: any; // Chart configuration options
@@ -125,6 +128,10 @@ export interface ChartBlock extends BaseBlock {
       prefix?: string;
       url?: string;
       pathToData?: string;
+      xUrl?: string; // For scatter plots: URL for x-axis data
+      xPathToData?: string; // For scatter plots: path to x-axis data
+      yUrl?: string; // For scatter plots: URL for y-axis data
+      yPathToData?: string; // For scatter plots: path to y-axis data
       dashStyle?: Highcharts.DashStyleValue;
       makeNegative?: boolean;
     }[];
@@ -264,6 +271,18 @@ export interface DropdownBlock extends BaseBlock {
   };
 }
 
+export interface ChainsScatterChartBlock extends BaseBlock {
+  type: 'chains-scatter-chart';
+}
+
+export interface ChainsScatterChartDailyBlock extends BaseBlock {
+  type: 'chains-scatter-chart-daily';
+}
+
+export interface ChainsScatterComparisonTableBlock extends BaseBlock {
+  type: 'chains-scatter-comparison-table';
+}
+
 export type ContentBlock = 
   | ContainerBlock
   | ParagraphBlock
@@ -281,7 +300,10 @@ export type ContentBlock =
   | ListBlock
   | KpiCardsBlock
   | TitleButtonBlock
-  | FaqBlock;
+  | FaqBlock
+  | ChainsScatterChartBlock
+  | ChainsScatterChartDailyBlock
+  | ChainsScatterComparisonTableBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {

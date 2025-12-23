@@ -39,7 +39,7 @@ const myQuickBite: QuickBiteData = createQuickBite({
     "## Chart Section",
     "```chart",
     JSON.stringify({
-      type: "line", // line, column, area, pie
+      type: "line", // line, column, area, pie, scatter
       title: "Chart Title",
       subtitle: "Chart subtitle",
       stacking: null, // null, "normal", "percent"

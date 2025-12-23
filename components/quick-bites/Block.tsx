@@ -14,6 +14,8 @@ import { TableBlock } from './blocks/TableBlock';
 import { DropdownBlock } from './blocks/DropdownBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
 import { TitleButtonBlock } from './blocks/TitleButtonBlock';
+import { ChainsScatterChartBlock } from './blocks/ChainsScatterChartBlock';
+import { ChainsScatterComparisonTableBlock } from './blocks/ChainsScatterComparisonTableBlock';
 import FaqBlock from './blocks/FaqBlock';
 
 interface BlockProps {
@@ -57,6 +59,12 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <TitleButtonBlock block={block} />;
     case 'faq':
       return <FaqBlock block={block} />;
+    case 'chains-scatter-chart':
+      return <ChainsScatterChartBlock key="scatter-30d" useDailyData={false} />;
+    case 'chains-scatter-chart-daily':
+      return <ChainsScatterChartBlock key="scatter-daily" useDailyData={true} />;
+    case 'chains-scatter-comparison-table':
+      return <ChainsScatterComparisonTableBlock />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

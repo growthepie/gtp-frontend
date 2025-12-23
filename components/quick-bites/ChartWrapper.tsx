@@ -30,7 +30,7 @@ import { format as d3Format } from "d3"
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
-  chartType: 'line' | 'area' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie' | 'scatter';
   data: any;
   margins?: "none" | "normal";
   options?: any;
@@ -71,6 +71,7 @@ interface ChartWrapperProps {
   }
   seeMetricURL?: string | null;
   showXAsDate?: boolean;
+  onFilterChange?: (visibleChains: string[]) => void;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -88,7 +89,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   yAxisLine,
   seeMetricURL,
   showXAsDate = false,
-  disableTooltipSort = false
+  disableTooltipSort = false,
+  onFilterChange
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -96,6 +98,37 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
+  
+  // Check if trendline exists in the data
+  const hasTrendline = useMemo(() => {
+    if (jsonMeta?.meta) {
+      return jsonMeta.meta.some((series: any) => series.name === 'Trendline');
+    }
+    if (Array.isArray(data)) {
+      return data.some((series: any) => series.name === 'Trendline');
+    }
+    return false;
+  }, [jsonMeta, data]);
+  
+  // Calculate visible chains and notify parent when filteredNames changes
+  useEffect(() => {
+    if (!onFilterChange) return;
+    
+    const allSeries = jsonMeta?.meta || (Array.isArray(data) ? data : []);
+    const allChainNames = allSeries
+      .filter((s: any) => s.name !== 'Trendline')
+      .map((s: any) => s.name);
+    
+    if (hasTrendline) {
+      // Inverted logic: filteredNames contains hidden chains
+      const visibleChains = allChainNames.filter((name: string) => !filteredNames.includes(name));
+      onFilterChange(visibleChains);
+    } else {
+      // Normal logic: filteredNames contains shown chains
+      const visibleChains = filteredNames.length === 0 ? allChainNames : filteredNames;
+      onFilterChange(visibleChains);
+    }
+  }, [filteredNames, hasTrendline, jsonMeta, data, onFilterChange]);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false, selectedScale = "normal") => {
@@ -153,10 +186,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   }, [jsonMeta, jsonData]);
 
   const filteredSeries = useMemo(() => {
-    return processedSeriesData.filter(series => 
-      filteredNames.length === 0 || filteredNames.includes(series.name)
-    );
-  }, [processedSeriesData, filteredNames]);
+    return processedSeriesData.filter(series => {
+      const isTrendline = series.name === 'Trendline';
+      // If trendline exists, invert the logic: filteredNames contains hidden chains
+      if (isTrendline) return true; // Always show trendline
+      return hasTrendline 
+        ? !filteredNames.includes(series.name) 
+        : (filteredNames.length === 0 || filteredNames.includes(series.name));
+    });
+  }, [processedSeriesData, filteredNames, hasTrendline]);
 
   
   // Add timespans and selectedTimespan
@@ -189,17 +227,18 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   useEffect(() => {
     // This effect now only handles data-specific logic
     try {
-      if (!Array.isArray(data)) {
-        throw new Error('Chart data must be an array');
+      // Allow array data (for direct data prop) or when jsonMeta is provided
+      if (!jsonMeta && !Array.isArray(data) && data !== null && data !== undefined) {
+        throw new Error('Chart data must be an array when jsonMeta is not provided');
       }
       setIsChartReady(true);
       setLoading(false);
       setError(null); // Clear previous error
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || 'Failed to initialize chart');
       setLoading(false);
     }
-  }, [data]); // Runs when data change
+  }, [data, jsonMeta]); // Runs when data change
   
   // Handle resize events
   useEffect(() => {
@@ -219,10 +258,49 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      const { x, points } = this;
+      const { x, points, point } = this;
+      
+      // Handle scatter charts differently - they use 'point' instead of 'points' array
+      if (chartType === "scatter" && point) {
+        const { series, y, x: xValue } = point;
+        const { name, color } = series;
+        const nameString = name?.slice(0, 20) || '';
+        const pointColor = color?.stops ? color.stops[0][1] : color || '#666666';
+        
+        const xFormatted = formatNumber(xValue, true, "normal");
+        const yFormatted = formatNumber(y, true, "normal");
+        
+        return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway rounded-full bg-opacity-60 min-w-[240px]">
+          <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${nameString}</div>
+          <div class="flex space-x-2 items-center font-medium mb-0.5">
+            <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${pointColor}"></div>
+            <div class="tooltip-point-name text-xs w-min truncate">Active Addresses:</div>
+            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+                <div>${xFormatted}</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex space-x-2 items-center font-medium mb-0.5">
+            <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${pointColor}"></div>
+            <div class="tooltip-point-name text-xs w-min truncate">Transaction Count:</div>
+            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+                <div>${yFormatted}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }
+      
+      // Handle other chart types with points array
+      if (!points || !Array.isArray(points)) {
+        return '';
+      }
+      
       let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
       const total = points.reduce((acc: number, point: any) => {
-        acc += point.y;
+        acc += point.y || 0;
         return acc;
       }, 0);
 
@@ -248,9 +326,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           
 
-          const currentPrefix = jsonMeta?.meta[index].prefix || '';
-          const currentSuffix = jsonMeta?.meta[index].suffix || '';
-          const currentDecimals = jsonMeta?.meta[index].tooltipDecimals ?? 2;
+          const currentPrefix = jsonMeta?.meta?.[index]?.prefix || '';
+          const currentSuffix = jsonMeta?.meta?.[index]?.suffix || '';
+          const currentDecimals = jsonMeta?.meta?.[index]?.tooltipDecimals ?? 2;
 
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {
@@ -260,7 +338,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           let displayText;
           /* this might be wrong */
-          if (jsonMeta?.meta[index].stacking === "percent") {
+          if (jsonMeta?.meta?.[index]?.stacking === "percent") {
             const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
@@ -282,7 +360,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [jsonMeta],
+    [jsonMeta, chartType, disableTooltipSort],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
@@ -335,19 +413,32 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               plotOptions={{
                 line: {
                   lineWidth: 3,
+                  animation: chartType === 'scatter' ? false : true,
                 },
                 area: {
                   lineWidth: 2,
+                  animation: chartType === 'scatter' ? false : true,
                 },
                 column: {
                   
                   borderColor: "transparent",
-                  animation: true,
+                  animation: chartType === 'scatter' ? false : true,
                   pointPlacement: "on",
+                },
+                scatter: {
+                  marker: {
+                    enabled: true,
+                    radius: 4,
+                    lineColor: "transparent",
+                    lineWidth: 0,
+                    symbol: "circle",
+                  },
+                  lineWidth: 0,
+                  animation: false,
                 },
                 series: {
                   zIndex: 10,
-                  animation: false,
+                  animation: chartType === 'scatter' ? false : false,
 
                   marker: {
                     lineColor: "white",
@@ -410,9 +501,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
                 },
                 distance: 20,
-                enabled: showXAsDate,
+                enabled: showXAsDate || chartType === "scatter",
                 useHTML: true,
-                formatter: showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
+                formatter: chartType === "scatter" ? function (this: AxisLabelsFormatterContextObject) {
+                  return formatNumber(this.value, true, "normal");
+                } : showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
                   if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
                     let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
                     let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
@@ -452,7 +545,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
               lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
-              type={showXAsDate ? "datetime" : undefined}
+              type={showXAsDate ? "datetime" : (chartType === "scatter" ? "linear" : undefined)}
               tickAmount={5}
               tickLength={15}
               plotLines={yAxisLine?.map((line) => ({
@@ -505,7 +598,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               {jsonMeta && jsonMeta.meta && jsonMeta.meta
               .map((series: any, index: number) => {
                 // filter out series that are not on the opposite y axis and not filtered out
-                const showSeries = !series.oppositeYAxis && (filteredNames.length === 0 || filteredNames.includes(series.name));
+                // If trendline exists, invert the logic: filteredNames contains hidden chains
+                const isTrendline = series.name === 'Trendline';
+                const showSeries = isTrendline || (!series.oppositeYAxis && (hasTrendline 
+                  ? !filteredNames.includes(series.name) 
+                  : (filteredNames.length === 0 || filteredNames.includes(series.name))));
                 if(!showSeries) return null;
 
                 // use the type from the jsonMeta if it exists, otherwise use the chartType
@@ -514,6 +611,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
 
                 const fillOpacity = type === "area" ? 0.3 : undefined;
+                const isScatter = type === "scatter";
 
                 return (
                   <Series 
@@ -528,7 +626,63 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     animation={true}
                     stacking={series.stacking ? series.stacking : undefined}
                     borderRadius={type === "column" ? "8%" : undefined}
-                    marker={{
+                    marker={isScatter ? {
+                      enabled: true,
+                      radius: 4,
+                      lineColor: "transparent",
+                      lineWidth: 0,
+                      symbol: "circle",
+                    } : {
+                      enabled: false,
+                    }}
+                    states={{
+                      hover: {
+                        enabled: true,
+                        brightness: 0.1,
+                      },
+                      inactive: {
+                        opacity: 0.6,
+                      },
+                    }}
+                    zIndex={type === "column" ? 0 : 1}
+                  />
+                )
+              })}
+              {/* Fallback for direct data prop when jsonMeta is not provided */}
+              {!jsonMeta && Array.isArray(data) && data
+              .map((series: any, index: number) => {
+                // Always show trendline if it exists (it controls its own visibility)
+                const isTrendline = series.name === 'Trendline';
+                // If trendline exists, invert the logic: filteredNames contains hidden chains
+                // If no trendline, normal logic: filteredNames contains shown chains
+                const showSeries = isTrendline || (hasTrendline 
+                  ? !filteredNames.includes(series.name) 
+                  : (filteredNames.length === 0 || filteredNames.includes(series.name)));
+                if(!showSeries) return null;
+
+                const type = series.type || chartType;
+                const isScatter = type === "scatter";
+                const fillOpacity = type === "area" ? 0.3 : undefined;
+
+                return (
+                  <Series 
+                    key={series.name || `series-${index}`}
+                    type={type}
+                    name={series.name}
+                    data={series.data || []}
+                    color={series.color}
+                    fillOpacity={fillOpacity}
+                    dashStyle={series.dashStyle ? series.dashStyle : undefined}
+                    animation={isScatter ? false : (series.name === 'Trendline' ? false : true)}
+                    stacking={series.stacking ? series.stacking : undefined}
+                    borderRadius={type === "column" ? "8%" : undefined}
+                    marker={isScatter ? {
+                      enabled: true,
+                      radius: 4,
+                      lineColor: "transparent",
+                      lineWidth: 0,
+                      symbol: "circle",
+                    } : {
                       enabled: false,
                     }}
                     states={{
@@ -576,7 +730,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               {jsonMeta && jsonMeta.meta && jsonMeta.meta
               .map((series: any, index: number) => {
                 // filter out series that are not on the opposite y axis and not filtered out
-                const showSeries = series.oppositeYAxis === true && (filteredNames.length === 0 || filteredNames.includes(series.name));
+                // If trendline exists, invert the logic: filteredNames contains hidden chains
+                const isTrendline = series.name === 'Trendline';
+                const showSeries = isTrendline || (series.oppositeYAxis === true && (hasTrendline 
+                  ? !filteredNames.includes(series.name) 
+                  : (filteredNames.length === 0 || filteredNames.includes(series.name))));
                 if(!showSeries) return null;
 
                 // use the type from the jsonMeta if it exists, otherwise use the chartType
@@ -584,6 +742,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 // use the yaxis from the jsonMeta if it exists, otherwise use 0
                 const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
                 const fillOpacity = type === "area" ? 0.3 : undefined;
+                const isScatter = type === "scatter";
                 
                 return (
                   <Series 
@@ -598,7 +757,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     animation={true}
                     stacking={series.stacking ? series.stacking : undefined}
                     borderRadius={type === "column" ? "8%" : undefined}
-                    marker={{
+                    marker={isScatter ? {
+                      enabled: true,
+                      radius: 4,
+                      lineColor: "transparent",
+                      lineWidth: 0,
+                      symbol: "circle",
+                    } : {
                       enabled: false,
                     }}
                     states={{
@@ -664,7 +829,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               
               {chartType === 'area' && (
                 (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
-                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const isTrendline = series.name === 'Trendline';
+                  // If trendline exists, invert the logic: filteredNames contains hidden chains
+                  if(!isTrendline && ((hasTrendline && filteredNames.includes(series.name)) || (!hasTrendline && filteredNames.length > 0 && !filteredNames.includes(series.name)))) return null;
                   const seriesData = jsonData ? jsonData[index].map((item: any) => [
                     item[series.xIndex], // x value
                     item[series.yIndex]  // y value
@@ -705,8 +872,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     item[series.yIndex]  // y value
                   ]) : series.data;
 
-              
-                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const isTrendline = series.name === 'Trendline';
+                  // If trendline exists, invert the logic: filteredNames contains hidden chains
+                  if(!isTrendline && ((hasTrendline && filteredNames.includes(series.name)) || (!hasTrendline && filteredNames.length > 0 && !filteredNames.includes(series.name)))) return null;
                   return(
                     <ColumnSeries
                       borderRadius="8%"
@@ -789,25 +957,40 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             {/*Categories*/}
             <div className="flex justify-between gap-x-[10px]">
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
-                {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
+                {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis && series.name !== 'Trendline').map((category) => {
+                  // If trendline exists, invert the logic: filteredNames contains hidden chains
+                  const isHidden = hasTrendline ? filteredNames.includes(category.name) : (filteredNames.length > 0 && !filteredNames.includes(category.name));
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
+                  if(isHidden) {
                     bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
                   
                   return (
                     <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                      if(!filteredNames.includes(category.name)) {
-                        setFilteredNames((prev) => {
-                          const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
-                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
-                            return []; // Reset to empty if all would be selected
-                          }
-                          return newFilteredNames;
-                        });
+                      if(hasTrendline) {
+                        // Inverted behavior: filteredNames contains hidden chains
+                        if(filteredNames.includes(category.name)) {
+                          // Remove from hidden list (show it)
+                          setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        } else {
+                          // Add to hidden list (hide it)
+                          setFilteredNames((prev) => [...prev, category.name]);
+                        }
                       } else {
-                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        // Normal behavior: filteredNames contains shown chains
+                        if(!filteredNames.includes(category.name)) {
+                          setFilteredNames((prev) => {
+                            const newFilteredNames = [...prev, category.name];
+                            // Check if we would have all categories selected
+                            const allSeries = (jsonMeta?.meta || data).filter((s: any) => s.name !== 'Trendline');
+                            if (newFilteredNames.length === allSeries.length) {
+                              return []; // Reset to empty if all would be selected
+                            }
+                            return newFilteredNames;
+                          });
+                        } else {
+                          setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        }
                       }
                     }}>
                       <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
@@ -818,27 +1001,53 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               </div>
               <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
                 {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
-                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+                  const isTrendline = category.name === 'Trendline';
+                  // If trendline exists, invert the logic: filteredNames contains hidden chains
+                  const isHidden = hasTrendline && !isTrendline ? filteredNames.includes(category.name) : (filteredNames.length > 0 && !filteredNames.includes(category.name));
+                  // Trendline should not have hover effects
+                  const hoverClasses = isTrendline ? '' : 'hover:border-[#5A6462] hover:bg-color-ui-hover';
+                  let bgBorderClass = `border-[1px] border-color-bg-medium bg-color-bg-medium ${hoverClasses} `;
+                  if(isHidden && !isTrendline) {
+                    bgBorderClass = `border-[1px] border-color-bg-medium bg-transparent ${hoverClasses}`;
                   }
                   
                   return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                      if(!filteredNames.includes(category.name)) {
-                        setFilteredNames((prev) => {
-                          const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
-                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
-                            return []; // Reset to empty if all would be selected
-                          }
-                          return newFilteredNames;
-                        });
+                    <div key={category.name} className={`bg-color-bg-medium ${isTrendline ? '' : 'hover:bg-color-ui-hover'} flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] ${isTrendline ? 'cursor-default opacity-100' : 'cursor-pointer'} ${bgBorderClass}`} onClick={() => {
+                      // Don't allow toggling trendline - it's always visible when 2+ chains are shown
+                      if (isTrendline) return;
+                      
+                      if(hasTrendline) {
+                        // Inverted behavior: filteredNames contains hidden chains
+                        if(filteredNames.includes(category.name)) {
+                          // Remove from hidden list (show it)
+                          setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        } else {
+                          // Add to hidden list (hide it)
+                          setFilteredNames((prev) => [...prev, category.name]);
+                        }
                       } else {
-                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        // Normal behavior: filteredNames contains shown chains
+                        if(!filteredNames.includes(category.name)) {
+                          setFilteredNames((prev) => {
+                            const newFilteredNames = [...prev, category.name];
+                            // Check if we would have all categories selected
+                            const allSeries = (jsonMeta?.meta || data).filter((s: any) => s.name !== 'Trendline');
+                            if (newFilteredNames.length === allSeries.length) {
+                              return []; // Reset to empty if all would be selected
+                            }
+                            return newFilteredNames;
+                          });
+                        } else {
+                          setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                        }
                       }
                     }}>
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                      {isTrendline ? (
+                        // For trendline, show a dashed line indicator instead of a dot
+                        <div className="w-[12px] h-[1px] border-t border-dashed" style={{ borderColor: category.color }}></div>
+                      ) : (
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                      )}
                       <div className="text-xxxs !leading-[9px]">{category.name}</div>
                     </div>
                   )

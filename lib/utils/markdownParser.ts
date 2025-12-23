@@ -193,6 +193,42 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // Handle chains-scatter-chart-daily blocks (MUST come before chains-scatter-chart to avoid false matches)
+      else if (text.startsWith('```chains-scatter-chart-daily')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-chart-daily',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
+      // Handle chains-scatter-comparison-table blocks (MUST come before chains-scatter-chart to avoid false matches)
+      else if (text.startsWith('```chains-scatter-comparison-table')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-comparison-table',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
+      // Handle chains-scatter-chart blocks (must come after more specific patterns)
+      else if (text.startsWith('```chains-scatter-chart')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-chart',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
         const match = text.match(/^(#{1,6})\s/);
