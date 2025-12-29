@@ -11,7 +11,9 @@ export default QUICK_BITES_DATA;
 
 // Helper functions for working with the mock data
 export const getQuickBiteBySlug = (slug: string): QuickBiteData | undefined => {
-  return QUICK_BITES_DATA[slug];
+  // Normalize slug to lowercase for case-insensitive lookup
+  const normalizedSlug = slug.toLowerCase();
+  return QUICK_BITES_DATA[normalizedSlug];
 };
 
 export const getAllQuickBites = (): (QuickBiteData & { slug: string })[] => {

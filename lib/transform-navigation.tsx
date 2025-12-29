@@ -65,7 +65,7 @@ export const transformNavigationToSidebar = (
     }
 
     // ---- Special bucketing for Chains → chain-link children
-    if ((item.key === 'chains') && master) {
+    if ((item.key === 'chains') && master && master.chains) {
       const children: (SidebarLink | SidebarChainLink | SidebarSectionTitle)[] = [];
 
       const chainsByBucket: { [bucket: string]: any[] } = Object.entries(master.chains).reduce(
@@ -119,7 +119,7 @@ export const transformNavigationToSidebar = (
 
     const categorized = new Map<string, typeof item.options>();
     const uncategorized: typeof item.options = [];
-    item.options.forEach(option => {
+    (item.options || []).forEach(option => {
       if (option.hide) return;
       if (option.category) {
         if (!categorized.has(option.category)) categorized.set(option.category, []);

@@ -11,7 +11,7 @@ interface ChainData {
   chainKey: string;
   chainName: string;
   activeAddresses: number;
-  txCount: number;
+  throughput: number;
   color: string;
   urlKey: string;
 }
@@ -67,14 +67,29 @@ const calculateTrendline = (points: Array<[number, number]>): Array<[number, num
   return [[minX, y1], [maxX, y2]];
 };
 
-interface ChainsScatterChartBlockProps {
-  useDailyData?: boolean; // If true, use last_1d * 30 instead of last_30d
+interface ChainsScatterThroughputChartBlockProps {
+  // No props needed - always uses last_30d data
 }
 
-export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = ({ useDailyData = false }) => {
+interface ChartSeriesData {
+  name: string;
+  type: string;
+  color: string;
+  data: number[][];
+  marker?: { enabled: boolean };
+  lineWidth?: number;
+  dashStyle?: string;
+  enableMouseTracking?: boolean;
+  zIndex?: number;
+  showInLegend?: boolean;
+  oppositeYAxis?: boolean;
+  visible?: boolean;
+}
+
+export const ChainsScatterThroughputChartBlock: React.FC<ChainsScatterThroughputChartBlockProps> = () => {
   const { theme } = useTheme();
   const [daaDataArray, setDaaDataArray] = useState<(MetricData | null)[]>([]);
-  const [txCountDataArray, setTxCountDataArray] = useState<(MetricData | null)[]>([]);
+  const [throughputDataArray, setThroughputDataArray] = useState<(MetricData | null)[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleChains, setVisibleChains] = useState<Set<string>>(new Set());
   const visibleChainsRef = useRef<Set<string>>(new Set());
@@ -92,12 +107,12 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
     if (!masterData?.chains) return [];
     return Object.keys(masterData.chains).filter(key => {
       const chain = masterData.chains[key];
-      // Only include chains that support both daa and txcount metrics
-      return chain.supported_metrics?.includes('daa') && chain.supported_metrics?.includes('txcount');
+      // Only include chains that support both daa and throughput metrics
+      return chain.supported_metrics?.includes('daa') && chain.supported_metrics?.includes('throughput');
     });
   }, [masterData]);
 
-  // Fetch active addresses (DAA) for all chains
+  // Fetch active addresses (DAA) and Throughput for all chains
   useEffect(() => {
     if (chainKeys.length === 0) {
       setIsLoading(false);
@@ -109,9 +124,9 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
       try {
         // Fetch DAA data
         const daaUrls = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/daa.json`);
-        const txCountUrls = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/txcount.json`);
+        const throughputUrls = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/throughput.json`);
         
-        const [daaResults, txCountResults] = await Promise.all([
+        const [daaResults, throughputResults] = await Promise.all([
           Promise.all(
             daaUrls.map(async (url) => {
               try {
@@ -126,7 +141,7 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
             })
           ),
           Promise.all(
-            txCountUrls.map(async (url) => {
+            throughputUrls.map(async (url) => {
               try {
                 const response = await fetch(url);
                 if (!response.ok) return null;
@@ -141,11 +156,11 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
         ]);
         
         setDaaDataArray(daaResults);
-        setTxCountDataArray(txCountResults);
+        setThroughputDataArray(throughputResults);
       } catch (error) {
         console.error('Error fetching data:', error);
         setDaaDataArray([]);
-        setTxCountDataArray([]);
+        setThroughputDataArray([]);
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +171,7 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
 
   // Process and format the data for scatter chart
   const scatterData = useMemo(() => {
-    if (!masterData?.chains || !daaDataArray.length || !txCountDataArray.length) return [];
+    if (!masterData?.chains || !daaDataArray.length || !throughputDataArray.length) return [];
     
     const chainsWithData: ChainData[] = [];
     
@@ -194,74 +209,51 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
     
     chainKeys.forEach((chainKey, index) => {
       const daaData = daaDataArray[index];
-      const txCountData = txCountDataArray[index];
+      const throughputData = throughputDataArray[index];
       
-      if (!daaData || !txCountData) return;
+      if (!daaData || !throughputData) return;
       
       const chain = masterData.chains[chainKey];
       if (!chain) return;
       
-      // Get active addresses (30d or 1d * 30)
-      let activeAddresses: number | null = null;
-      if (useDailyData) {
-        // Use last_1d * 30 - check details.summary first (correct API structure)
-        const daa1d = daaData.details?.summary?.last_1d?.data?.[0] ?? daaData.summary?.last_1d?.data?.[0];
-        if (daa1d !== undefined) {
-          activeAddresses = daa1d * 30;
-        }
-      } else {
-        // Use last_30d - check details.summary first (correct API structure)
-        const daa30d = daaData.details?.summary?.last_30d?.data?.[0] ?? daaData.summary?.last_30d?.data?.[0];
-        if (daa30d !== undefined) {
-          activeAddresses = daa30d;
-        }
-      }
+      // Get active addresses (last_30d)
+      const daa30d = daaData.details?.summary?.last_30d?.data?.[0] ?? daaData.summary?.last_30d?.data?.[0];
+      const activeAddresses = daa30d !== undefined ? daa30d : null;
       
-      // Get transaction count (30d or 1d * 30)
-      let txCount: number | null = null;
-      if (useDailyData) {
-        // Use last_1d * 30 - check details.summary first (correct API structure)
-        const tx1d = txCountData.details?.summary?.last_1d?.data?.[0] ?? txCountData.summary?.last_1d?.data?.[0];
-        if (tx1d !== undefined) {
-          txCount = tx1d * 30;
-        }
-      } else {
-        // Use last_30d - check details.summary first (correct API structure)
-        const tx30d = txCountData.details?.summary?.last_30d?.data?.[0] ?? txCountData.summary?.last_30d?.data?.[0];
-        if (tx30d !== undefined) {
-          txCount = tx30d;
-        }
-      }
+      // Get throughput (last_30d) - data array is just [value], we use index 0, then multiply by 1,000,000
+      const throughput30d = throughputData.details?.summary?.last_30d?.data?.[0] ?? throughputData.summary?.last_30d?.data?.[0];
+      const throughput = throughput30d !== undefined ? throughput30d * 1000000 : null;
       
-      if (activeAddresses === null || txCount === null) return;
+      if (activeAddresses === null || throughput === null) return;
       
       chainsWithData.push({
         chainKey,
         chainName: chain.name,
         activeAddresses,
-        txCount,
+        throughput,
         color: getChainColor(chainKey),
         urlKey: chain.url_key || chainKey.replace(/_/g, '-')
       });
     });
     
-    // Sort by transaction count descending and take top 10
+    // Sort by active addresses descending, take top 10, then reverse to show smallest to biggest
     const top10Chains = chainsWithData
-      .sort((a, b) => b.txCount - a.txCount)
-      .slice(0, 10);
+      .sort((a, b) => b.activeAddresses - a.activeAddresses)
+      .slice(0, 10)
+      .reverse();
     
     return top10Chains;
-  }, [masterData, daaDataArray, txCountDataArray, chainKeys, theme, useDailyData]);
+  }, [masterData, daaDataArray, throughputDataArray, chainKeys, theme]);
   
   // Initialize visible chains to all chains when data is ready
   useEffect(() => {
     if (scatterData.length > 0 && visibleChains.size === 0) {
       setVisibleChains(new Set(scatterData.map(chain => chain.chainName)));
     }
-  }, [scatterData.length, visibleChains.size]); // Use scatterData.length instead of scatterData to avoid re-renders
+  }, [scatterData, visibleChains.size]);
   
   // Create chart data (all chains, trendline will be added separately)
-  const chartData = useMemo(() => {
+  const chartData = useMemo((): ChartSeriesData[] => {
     if (scatterData.length === 0) return [];
     
     // Convert to scatter plot format: one series per chain with one data point
@@ -269,7 +261,7 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
       name: chain.chainName,
       type: 'scatter',
       color: chain.color,
-      data: [[chain.activeAddresses, chain.txCount]]
+      data: [[chain.activeAddresses, chain.throughput]]
     }));
   }, [scatterData]);
   
@@ -285,15 +277,15 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
     if (activeChains.length < 2) return [];
     
     // Calculate trendline from visible chains
-    const trendlinePoints = activeChains.map(chain => [chain.activeAddresses, chain.txCount] as [number, number]);
+    const trendlinePoints = activeChains.map(chain => [chain.activeAddresses, chain.throughput] as [number, number]);
     return calculateTrendline(trendlinePoints);
   }, [scatterData, visibleChains]);
   
   // Combine chart data with trendline
-  const chartDataWithTrendline = useMemo(() => {
+  const chartDataWithTrendline = useMemo((): ChartSeriesData[] => {
     if (chartData.length === 0) return [];
     
-    const result = [...chartData];
+    const result: ChartSeriesData[] = [...chartData];
     
     // Get visible chains count to determine if we should show trendline
     const activeChains = visibleChains.size > 0 
@@ -356,8 +348,24 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
               setVisibleChains(visible);
               visibleChainsRef.current = visible;
             }
+            
+            // Explicitly set x-axis extremes to ensure it starts at 0
+            if (this.xAxis && this.xAxis[0]) {
+              const currentMin = this.xAxis[0].min;
+              const currentMax = this.xAxis[0].max;
+              // Only set if current min is less than 0 or undefined
+              if (currentMin === null || currentMin === undefined || currentMin < 0) {
+                this.xAxis[0].setExtremes(0, currentMax || this.xAxis[0].max, false);
+              }
+            }
           }
         }
+      },
+      xAxis: {
+        min: 0,
+        minPadding: 0,
+        startOnTick: true,
+        endOnTick: true,
       },
       plotOptions: {
         scatter: {
@@ -430,15 +438,18 @@ export const ChainsScatterChartBlock: React.FC<ChainsScatterChartBlockProps> = (
         margins="normal"
         width="100%"
         height={400}
-        title={useDailyData ? "Active Addresses vs Transaction Count (Daily Projection)" : "Active Addresses vs Transaction Count (Last 30 Days)"}
-        subtitle={useDailyData ? "30-day projection for top 10 chains by transaction count (based on last 1 day data)" : "30-day comparison for top 10 chains by transaction count"}
+        title="Active Addresses vs Throughput (Last 30 Days)"
+        subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}
         options={chartOptions}
         onFilterChange={handleFilterChange}
+        ratioTitle="Throughput per Address"
+        xAxisLabel="Active Addresses"
+        yAxisLabel="Throughput"
       />
       <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
-        Scatter plot showing the relationship between active addresses (x-axis) and transaction count (y-axis) for the top 10 chains by transaction count {useDailyData ? "(daily data × 30)" : "(last 30 days)"}. Trendline shows the correlation for selected chains.
+        Scatter plot showing the relationship between active addresses (x-axis) and throughput (y-axis) for the top 10 chains by active addresses (last 30 days).<br />Trendline shows the correlation for selected chains.
       </figcaption>
     </div>
   );

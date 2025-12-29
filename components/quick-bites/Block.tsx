@@ -14,7 +14,10 @@ import { TableBlock } from './blocks/TableBlock';
 import { DropdownBlock } from './blocks/DropdownBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
 import { TitleButtonBlock } from './blocks/TitleButtonBlock';
-import { ChainsScatterChartBlock } from './blocks/ChainsScatterChartBlock';
+import { ChainsScatterTxCountChartBlock } from './blocks/ChainsScatterTxCountChartBlock';
+import { ChainsScatterStablesChartBlock } from './blocks/ChainsScatterStablesChartBlock';
+import { ChainsScatterThroughputChartBlock } from './blocks/ChainsScatterThroughputChartBlock';
+import { ChainsScatterTxCostsChartBlock } from './blocks/ChainsScatterTxCostsChartBlock';
 import { ChainsScatterComparisonTableBlock } from './blocks/ChainsScatterComparisonTableBlock';
 import FaqBlock from './blocks/FaqBlock';
 
@@ -60,9 +63,13 @@ const Block: React.FC<BlockProps> = ({ block }) => {
     case 'faq':
       return <FaqBlock block={block} />;
     case 'chains-scatter-chart':
-      return <ChainsScatterChartBlock key="scatter-30d" useDailyData={false} />;
-    case 'chains-scatter-chart-daily':
-      return <ChainsScatterChartBlock key="scatter-daily" useDailyData={true} />;
+      return <ChainsScatterTxCountChartBlock key="scatter-30d" />;
+    case 'chains-scatter-stables-chart':
+      return <ChainsScatterStablesChartBlock key="scatter-stables-30d" />;
+    case 'chains-scatter-throughput-chart':
+      return <ChainsScatterThroughputChartBlock key="scatter-throughput-30d" />;
+    case 'chains-scatter-txcosts-chart':
+      return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" />;
     case 'chains-scatter-comparison-table':
       return <ChainsScatterComparisonTableBlock />;
     default:

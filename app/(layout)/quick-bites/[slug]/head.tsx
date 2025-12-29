@@ -8,21 +8,23 @@ import {
 type Props = { params: { slug: string } };
 
 export default function Head({ params }: Props) {
-  const qb = getQuickBiteBySlug(params.slug);
+  // Normalize slug to lowercase for case-insensitive lookup
+  const normalizedSlug = params.slug.toLowerCase();
+  const qb = getQuickBiteBySlug(normalizedSlug);
   if (!qb) return null;
 
-  const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
+  const jsonLdArticle = generateJsonLdArticle(normalizedSlug, qb, {
     dateModified: qb.date,
     language: 'en',
   });
-  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
+  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(normalizedSlug, qb);
 
   // Try optional per-QB exports
   let jsonLdFaq: any | undefined;
   let jsonLdDatasets: any[] = [];
   try {
     // This import must also be server-safe
-    const mod = require(`@/lib/quick-bites/${params.slug}.ts`);
+    const mod = require(`@/lib/quick-bites/qb-${normalizedSlug}.ts`);
     if (mod.jsonLdFaq) jsonLdFaq = mod.jsonLdFaq;
     if (mod.jsonLdDatasets) jsonLdDatasets = mod.jsonLdDatasets;
   } catch {}

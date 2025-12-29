@@ -13,22 +13,29 @@ const averageAddress: QuickBiteData = createQuickBite({
     "## Active Addresses vs Transaction Count",
     
     "The relationship between active addresses and transaction count reveals how engaged users are on each network. A scatter plot comparing these metrics shows whether networks have high activity per address or many addresses with lower individual activity.",
-    
+
     "```chains-scatter-chart",
     "```",
     
-    "## Daily Data Projection (Last 1 Day × 30)",
+    "## Active Addresses vs Throughput",
+    
+    "The relationship between active addresses and throughput shows how efficiently each network processes transactions relative to its user base. This comparison reveals whether networks have high throughput per address or many addresses with lower individual throughput.",
 
-    "This chart projects 30-day activity based on the last 24 hours of data, providing an alternative view of network engagement. It helps to identify recent shifts in activity that might be obscured by longer-term averages.",
-
-    "```chains-scatter-chart-daily",
+    "```chains-scatter-throughput-chart",
     "```",
+    
+    "## Active Addresses vs Stablecoin Supply",
+    
+    "The relationship between active addresses and stablecoin supply shows how much stablecoin value is associated with each network's user base. This comparison reveals whether networks have high stablecoin supply per address or many addresses with lower individual stablecoin holdings.",
 
-    "## Data Comparison",
+    "```chains-scatter-stables-chart",
+    "```",
+    
+    "## Active Addresses vs Transaction Cost",
+    
+    "The relationship between active addresses and transaction cost shows how much users pay for transactions relative to the network's user base. This comparison reveals whether networks have high transaction costs per address or many addresses with lower individual transaction costs.",
 
-    "The table below compares actual 30-day data with daily projections (last 1 day × 30) to show how recent activity patterns compare to longer-term averages.",
-
-    "```chains-scatter-comparison-table",
+    "```chains-scatter-txcosts-chart",
     "```",
     
     "## Key Insights",

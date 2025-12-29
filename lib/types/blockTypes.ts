@@ -20,6 +20,9 @@ export type BlockType =
   | 'table' // For table blocks
   | 'chains-scatter-chart' // For chains scatter chart with active addresses vs transaction count
   | 'chains-scatter-chart-daily' // For chains scatter chart using daily data × 30
+  | 'chains-scatter-stables-chart' // For chains scatter chart with active addresses vs stablecoin supply
+  | 'chains-scatter-throughput-chart' // For chains scatter chart with active addresses vs throughput
+  | 'chains-scatter-txcosts-chart' // For chains scatter chart with active addresses vs transaction cost
   | 'chains-scatter-comparison-table'; // For comparison table showing 30d vs daily × 30 data
 
 export interface BaseBlock {
@@ -271,12 +274,24 @@ export interface DropdownBlock extends BaseBlock {
   };
 }
 
-export interface ChainsScatterChartBlock extends BaseBlock {
+export interface ChainsScatterTxCountChartBlock extends BaseBlock {
   type: 'chains-scatter-chart';
 }
 
 export interface ChainsScatterChartDailyBlock extends BaseBlock {
   type: 'chains-scatter-chart-daily';
+}
+
+export interface ChainsScatterStablesChartBlock extends BaseBlock {
+  type: 'chains-scatter-stables-chart';
+}
+
+export interface ChainsScatterThroughputChartBlock extends BaseBlock {
+  type: 'chains-scatter-throughput-chart';
+}
+
+export interface ChainsScatterTxCostsChartBlock extends BaseBlock {
+  type: 'chains-scatter-txcosts-chart';
 }
 
 export interface ChainsScatterComparisonTableBlock extends BaseBlock {
@@ -301,8 +316,11 @@ export type ContentBlock =
   | KpiCardsBlock
   | TitleButtonBlock
   | FaqBlock
-  | ChainsScatterChartBlock
+  | ChainsScatterTxCountChartBlock
   | ChainsScatterChartDailyBlock
+  | ChainsScatterStablesChartBlock
+  | ChainsScatterThroughputChartBlock
+  | ChainsScatterTxCostsChartBlock
   | ChainsScatterComparisonTableBlock;
 
 // Helper function to generate a unique ID for blocks

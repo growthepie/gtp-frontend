@@ -41,7 +41,9 @@ export default function ClientQuickBitePage({ params }: Props) {
       try {
         setIsLoading(true);
         
-        const quickBite = getQuickBiteBySlug(params.slug);
+        // Normalize slug to lowercase for case-insensitive lookup
+        const normalizedSlug = params.slug.toLowerCase();
+        const quickBite = getQuickBiteBySlug(normalizedSlug);
         if (!quickBite) {
           setShowNotFound(true);
           return;

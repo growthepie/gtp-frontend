@@ -72,6 +72,9 @@ interface ChartWrapperProps {
   seeMetricURL?: string | null;
   showXAsDate?: boolean;
   onFilterChange?: (visibleChains: string[]) => void;
+  ratioTitle?: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -90,7 +93,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   seeMetricURL,
   showXAsDate = false,
   disableTooltipSort = false,
-  onFilterChange
+  onFilterChange,
+  ratioTitle,
+  xAxisLabel = 'Active Addresses',
+  yAxisLabel = 'Transaction Count'
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -264,17 +270,74 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       if (chartType === "scatter" && point) {
         const { series, y, x: xValue } = point;
         const { name, color } = series;
+        
+        // Don't show tooltip for trendline
+        if (name === 'Trendline') {
+          return '';
+        }
+        
         const nameString = name?.slice(0, 20) || '';
         const pointColor = color?.stops ? color.stops[0][1] : color || '#666666';
         
-        const xFormatted = formatNumber(xValue, true, "normal");
-        const yFormatted = formatNumber(y, true, "normal");
+        // Format numbers with max 2 decimal places and comma separators for scatter chart tooltip
+        const formatScatterNumber = (val: number): string => {
+          if (val === 0) return "0";
+          
+          const absVal = Math.abs(val);
+          
+          // Helper to add commas to a number string
+          const addCommas = (numStr: string): string => {
+            const parts = numStr.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join('.');
+          };
+          
+          // For small numbers, format directly with max 2 decimal places and commas
+          if (absVal < 1000) {
+            const formatted = val.toFixed(2).replace(/\.?0+$/, '');
+            return addCommas(formatted);
+          }
+          
+          // For larger numbers, use d3 format then limit decimal places
+          let formatted = d3Format(`.2~s`)(val).replace(/G/, "B");
+          
+          // Extract number part and suffix (K, M, B, T)
+          const match = formatted.match(/^([\d,]+\.?\d*)([KMBT]?)$/);
+          if (match) {
+            const numStr = match[1].replace(/,/g, '');
+            const suffix = match[2];
+            const num = parseFloat(numStr);
+            
+            if (!isNaN(num) && num % 1 !== 0) {
+              // Has decimals - round to max 2 decimal places, remove trailing zeros, add commas
+              const rounded = num.toFixed(2).replace(/\.?0+$/, '');
+              return addCommas(rounded) + suffix;
+            } else if (!isNaN(num)) {
+              // No decimals, add commas and suffix
+              return addCommas(num.toString()) + suffix;
+            }
+          }
+          
+          return formatted;
+        };
+        
+        const xFormatted = formatScatterNumber(xValue);
+        
+        // Check if y-axis should have currency prefix (for stablecoin supply and transaction cost)
+        const isCurrency = yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost';
+        const yFormatted = isCurrency ? `$${formatScatterNumber(y)}` : formatScatterNumber(y);
+        
+        // Calculate ratio if ratioTitle is provided
+        const ratioValue = ratioTitle && xValue !== 0 ? y / xValue : null;
+        const ratioFormatted = ratioValue !== null 
+          ? (isCurrency ? `$${formatScatterNumber(ratioValue)}` : formatScatterNumber(ratioValue))
+          : null;
         
         return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway rounded-full bg-opacity-60 min-w-[240px]">
           <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${nameString}</div>
           <div class="flex space-x-2 items-center font-medium mb-0.5">
             <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${pointColor}"></div>
-            <div class="tooltip-point-name text-xs w-min truncate">Active Addresses:</div>
+            <div class="tooltip-point-name text-xs w-min truncate">${xAxisLabel}:</div>
             <div class="flex-1 text-right justify-end w-full flex numbers-xs">
               <div class="flex justify-end text-right w-full">
                 <div>${xFormatted}</div>
@@ -283,13 +346,24 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           </div>
           <div class="flex space-x-2 items-center font-medium mb-0.5">
             <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${pointColor}"></div>
-            <div class="tooltip-point-name text-xs w-min truncate">Transaction Count:</div>
+            <div class="tooltip-point-name text-xs w-min truncate">${yAxisLabel}:</div>
             <div class="flex-1 text-right justify-end w-full flex numbers-xs">
               <div class="flex justify-end text-right w-full">
                 <div>${yFormatted}</div>
               </div>
             </div>
           </div>
+          ${ratioFormatted !== null ? `
+          <div class="flex space-x-2 items-center font-medium mb-0.5">
+            <div class="min-w-4 max-w-4"></div>
+            <div class="tooltip-point-name text-xs w-min truncate">${ratioTitle}:</div>
+            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+                <div>${ratioFormatted}</div>
+              </div>
+            </div>
+          </div>
+          ` : ''}
         </div>`;
       }
       
@@ -360,7 +434,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [jsonMeta, chartType, disableTooltipSort],
+    [jsonMeta, chartType, disableTooltipSort, ratioTitle, xAxisLabel, yAxisLabel],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
@@ -398,8 +472,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
  
   
   return (
-    <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
-      <div style={{ width, height }} className="relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
+    <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"} ${chartType === "scatter" ? "pb-[15px]" : ""}`}>
+      <div style={{ width, height }} className={`relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ${chartType === "scatter" ? "overflow-visible" : ""}`}>
         <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
           <div className="flex items-center justify-center md:justify-between">
             <div className="flex items-center gap-x-[5px]">
@@ -481,7 +555,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               animation={{
                 duration: 50,
               }}
-              marginBottom={showXAsDate ? 32 : 20}
+              marginBottom={chartType === "scatter" ? 35 : (showXAsDate ? 32 : 20)}
               marginLeft={50}
               marginRight={hasOppositeYAxis ? 50 : 5}
               marginTop={15}
@@ -489,6 +563,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             
             
             <XAxis
+              min={chartType === "scatter" ? 0 : undefined}
+              minPadding={chartType === "scatter" ? 0 : undefined}
+              startOnTick={chartType === "scatter" ? true : undefined}
+              endOnTick={chartType === "scatter" ? true : undefined}
               crosshair={{
                 width: 0.5,
                 color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -500,11 +578,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   fontSize: "10px",
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
                 },
-                distance: 20,
+                distance: chartType === "scatter" ? 20 : 20,
                 enabled: showXAsDate || chartType === "scatter",
-                useHTML: true,
+                useHTML: chartType !== "scatter",
+                y: chartType === "scatter" ? 25 : undefined,
                 formatter: chartType === "scatter" ? function (this: AxisLabelsFormatterContextObject) {
-                  return formatNumber(this.value, true, "normal");
+                  if (this.value !== undefined && this.value !== null && !isNaN(Number(this.value))) {
+                    return formatNumber(this.value, true, "normal");
+                  }
+                  return '';
                 } : showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
                   if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
                     let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
@@ -546,7 +628,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               type={showXAsDate ? "datetime" : (chartType === "scatter" ? "linear" : undefined)}
-              tickAmount={5}
+              tickAmount={chartType === "scatter" ? undefined : 5}
+              tickInterval={chartType === "scatter" ? 1000000 : undefined}
               tickLength={15}
               plotLines={yAxisLine?.map((line) => ({
                 value: line.xValue,
@@ -590,7 +673,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 //   }
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
-                  return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                  const formatted = formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                  // Add $ prefix for stablecoin supply and transaction cost
+                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost') {
+                    return `$${formatted}`;
+                  }
+                  return formatted;
                 },
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
@@ -676,6 +764,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     animation={isScatter ? false : (series.name === 'Trendline' ? false : true)}
                     stacking={series.stacking ? series.stacking : undefined}
                     borderRadius={type === "column" ? "8%" : undefined}
+                    enableMouseTracking={isTrendline ? false : (series.enableMouseTracking !== undefined ? series.enableMouseTracking : true)}
                     marker={isScatter ? {
                       enabled: true,
                       radius: 4,
@@ -687,7 +776,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     }}
                     states={{
                       hover: {
-                        enabled: true,
+                        enabled: !isTrendline,
                         brightness: 0.1,
                       },
                       inactive: {
@@ -721,7 +810,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 //   }
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
-                  return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                  const formatted = formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                  // Add $ prefix for stablecoin supply and transaction cost
+                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost') {
+                    return `$${formatted}`;
+                  }
+                  return formatted;
                 },
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
@@ -952,7 +1046,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
+        <div className={`md:px-[50px] relative ${chartType === "scatter" ? "bottom-0" : "bottom-[2px]"} flex flex-col justify-between gap-y-[5px] md:gap-y-0`}>
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
             <div className="flex justify-between gap-x-[10px]">

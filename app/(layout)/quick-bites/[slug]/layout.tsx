@@ -9,14 +9,16 @@ type Props = {
 };
 
 export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
+  // Normalize slug to lowercase for case-insensitive lookup
+  const normalizedSlug = slug.toLowerCase();
   // Get the quick bite data from the central data store
-  const QuickBite = getQuickBiteBySlug(slug);
+  const QuickBite = getQuickBiteBySlug(normalizedSlug);
   
   // Check if the slug exists in our data
   if (!QuickBite) {
     track("404 Error", {
       location: "404 Error",
-      page: "/quick-bites/" + slug,
+      page: "/quick-bites/" + normalizedSlug,
     });
     return notFound();
   }
@@ -35,7 +37,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
     openGraph: {
       images: [
         {
-          url: QuickBite.og_image || `https://api.growthepie.com/v1/og_images/quick-bites/${slug}.png`,
+          url: QuickBite.og_image || `https://api.growthepie.com/v1/og_images/quick-bites/${normalizedSlug}.png`,
           width: 1200,
           height: 627,
           alt: `${QuickBite.title} - growthepie.com`,

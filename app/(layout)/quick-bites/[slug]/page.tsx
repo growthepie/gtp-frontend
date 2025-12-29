@@ -18,10 +18,12 @@ type QbModule = {
 
 // ----- SEO: generate <head> metadata -----
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const qb = getQuickBiteBySlug(params.slug);
+  // Normalize slug to lowercase for case-insensitive lookup
+  const normalizedSlug = params.slug.toLowerCase();
+  const qb = getQuickBiteBySlug(normalizedSlug);
   if (!qb) return {};
 
-  const seo = generateSeo(params.slug, qb);
+  const seo = generateSeo(normalizedSlug, qb);
 
   return {
     title: seo.metaTitle,
@@ -43,17 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const qb = getQuickBiteBySlug(params.slug);
+  // Normalize slug to lowercase for case-insensitive lookup
+  const normalizedSlug = params.slug.toLowerCase();
+  const qb = getQuickBiteBySlug(normalizedSlug);
   if (!qb) return notFound();
 
   const serializeJsonLd = (data: unknown) =>
     JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
 
-  const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
+  const jsonLdArticle = generateJsonLdArticle(normalizedSlug, qb, {
     dateModified: qb.date,
     language: 'en',
   });
-  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
+  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(normalizedSlug, qb);
 
   const graphs = [
     jsonLdArticle,
@@ -71,7 +75,7 @@ export default async function Page({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
         />
       ))}
-      <ClientQuickBitePage params={params} />
+      <ClientQuickBitePage params={{ slug: normalizedSlug }} />
     </>
   );
 }

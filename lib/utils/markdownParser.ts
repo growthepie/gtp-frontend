@@ -217,6 +217,42 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           continue;
         }
       }
+      // Handle chains-scatter-txcosts-chart blocks (must come before other scatter charts)
+      else if (text.startsWith('```chains-scatter-txcosts-chart')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-txcosts-chart',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
+      // Handle chains-scatter-throughput-chart blocks (must come before other scatter charts)
+      else if (text.startsWith('```chains-scatter-throughput-chart')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-throughput-chart',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
+      // Handle chains-scatter-stables-chart blocks (must come before chains-scatter-chart)
+      else if (text.startsWith('```chains-scatter-stables-chart')) {
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-stables-chart',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
       // Handle chains-scatter-chart blocks (must come after more specific patterns)
       else if (text.startsWith('```chains-scatter-chart')) {
         const closingMarker = i + 1 < content.length && content[i + 1] === '```';

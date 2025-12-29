@@ -206,7 +206,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         da_layers: data?.da_layers || {},
       }}
     >
-      {data && !isLoading && AllChains.length > 0 ? children : null}
+      {children}
     </MasterContext.Provider>
   );
 };
@@ -215,9 +215,25 @@ export const useMaster = () => {
   const ctx = useContext(MasterContext);
 
   if (!ctx) {
-    throw new Error(
-      "useMaster must be used within a MasterProvider",
-    );
+    // Return safe defaults if context is not available (shouldn't happen, but handles edge cases)
+    return {
+      data: undefined,
+      AllChains: [],
+      AllChainsByKeys: {},
+      AllChainsByStacks: {},
+      AllDALayers: [],
+      AllDALayersByKeys: {},
+      DefaultChainSelection: [],
+      EnabledChainsByKeys: {},
+      SupportedChainKeys: [],
+      ChainsNavigationItems: null,
+      ChainsNavigationItemsByKeys: {},
+      formatMetric: () => "",
+      metrics: {},
+      da_metrics: {},
+      chains: {},
+      da_layers: {},
+    };
   }
 
   return ctx;
