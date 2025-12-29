@@ -8,17 +8,26 @@ export function Analytics({ gtmId }: { gtmId: string }) {
   
   return (
     <>
-      {/* Set default consent state BEFORE GTM loads */}
       <Script id="consent-defaults" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           
           gtag('consent', 'default', ${JSON.stringify(defaultConsent)});
+          
+          // Reset old consents (before version 2)
+          (function() {
+            var cookie = document.cookie.split('; ').find(row => row.startsWith('gtpCookieConsent='));
+            var version = document.cookie.split('; ').find(row => row.startsWith('gtpConsentVersion='));
+            
+            if (cookie && !version) {
+              // Delete old cookie to trigger re-consent
+              document.cookie = 'gtpCookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            }
+          })();
         `}
       </Script>
       
-      {/* Load GTM */}
       <Script id="gtm-init" strategy="afterInteractive">
         {`
           (function(w,d,s,l,i){

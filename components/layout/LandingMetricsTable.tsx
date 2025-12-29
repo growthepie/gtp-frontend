@@ -193,16 +193,11 @@ export default memo(function LandingMetricsTable({
       }))
       .filter((row) => row.chain.chainType != null);
 
-    // Separate selected and unselected chains
+    // Filter to only selected chains
     const selectedChains = allChains.filter((row) => row.isSelected);
-    const unselectedChains = allChains.filter((row) => !row.isSelected);
 
-    // Sort each group
-    const sortedSelected = landingDataSorter(selectedChains, sort.metric, sort.sortOrder as SortOrder);
-    const sortedUnselected = landingDataSorter(unselectedChains, sort.metric, sort.sortOrder as SortOrder);
-
-    // Return selected chains first, then unselected
-    return [...sortedSelected, ...sortedUnselected];
+    // Sort and return only selected chains
+    return landingDataSorter(selectedChains, sort.metric, sort.sortOrder as SortOrder);
   }, [data, landing, EnabledChainsByKeys, focusEnabled, sort, landingDataSorter, selectedChainTypes]);
 
   const monthsSinceLaunch = useMemo(() => {
@@ -230,7 +225,7 @@ export default memo(function LandingMetricsTable({
     <>
       <GridTableHeader
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
-        className="mt-[15px] md:mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
+        className="mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
       >
         <GridTableHeaderCell><></></GridTableHeaderCell>
         <GridTableHeaderCell

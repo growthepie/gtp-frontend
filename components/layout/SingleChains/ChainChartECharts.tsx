@@ -1168,10 +1168,12 @@ const MetricChart = memo(
       const unitKey = units.find((u) => u !== "usd" && u !== "eth") || (showUsd ? "usd" : "eth");
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
+      const baseDecimals = unitInfo?.decimals ?? 2;
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
       const valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
+        maximumFractionDigits: decimals,
+        minimumFractionDigits: decimals,
       });
 
       return {
@@ -1194,9 +1196,9 @@ const MetricChart = memo(
       if (!isIncomplete) return null;
 
       const labels: Record<string, string> = {
-        weekly: "acc. this week",
-        monthly: "acc. this month",
-        quarterly: "acc. this quarter",
+        weekly: "this week",
+        monthly: "this month",
+        quarterly: "this quarter",
       };
 
       return labels[selectedTimeInterval];
@@ -1215,10 +1217,12 @@ const MetricChart = memo(
       const unitKey = units.find((u) => u !== "usd" && u !== "eth") || (showUsd ? "usd" : "eth");
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
+      const baseDecimals = unitInfo?.decimals ?? 2;
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
       const valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
+        maximumFractionDigits: decimals,
+        minimumFractionDigits: decimals,
       });
 
       return {
@@ -1243,13 +1247,13 @@ const MetricChart = memo(
               <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
             </div>
           </Link>
-          <div className="relative numbers-lg -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
+          <div className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
             {accumulationBadge && (
               <div className="hidden @[340px]:flex px-[5px] h-[13px] items-center justify-center bg-color-bg-medium rounded-full">
                 <span className="text-xxxs whitespace-nowrap">{accumulationBadge}</span>
               </div>
             )}
-            <div className="flex">
+            <div className="flex numbers-lg">
               <div>{displayValue.prefix}</div>
               <div>{displayValue.value}</div>
               {displayValue.suffix && <div className="pl-0.5">{displayValue.suffix}</div>}

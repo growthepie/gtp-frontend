@@ -137,6 +137,7 @@ export interface ChartBlock extends BaseBlock {
       yPathToData?: string; // For scatter plots: path to y-axis data
       dashStyle?: Highcharts.DashStyleValue;
       makeNegative?: boolean;
+      aggregation?: "daily" | "weekly" | "monthly";
     }[];
   } | null;
   seeMetricURL?: string | null;

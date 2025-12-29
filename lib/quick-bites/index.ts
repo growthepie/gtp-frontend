@@ -11,6 +11,7 @@ import ethereumScaling from './qb-ethereum-scaling';
 import ethSupply from './qb-ETH-supply';
 import lineaTokenBurn from './qb-linea-burn';
 import averageAddress from './qb-average-address';
+import Fusaka from './qb-fusaka';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -24,6 +25,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "eth-supply": ethSupply,
   "linea-burn": lineaTokenBurn,
   "average-address": averageAddress,
+  "fusaka": Fusaka,
 };
 
 export default QUICK_BITES_DATA; 

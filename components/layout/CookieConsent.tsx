@@ -25,21 +25,27 @@ export default function CookieConsent() {
     setCookie("gtpCookieConsent", "true", {
       maxAge: 60 * 60 * 24 * 365,
     });
-
+    setCookie("gtpConsentVersion", "2", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  
     gtag("consent", "update", getConsentUpdate(true));
-
-    console.log("accepting cookies");
+    
+    console.log("[CookieConsent] Accepting cookies");
   };
-
+  
   const denyCookie = () => {
     setConsent(true);
     setCookie("gtpCookieConsent", "false", {
       maxAge: 60 * 60 * 24 * 365,
     });
+    setCookie("gtpConsentVersion", "2", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
     
     gtag("consent", "update", getConsentUpdate(false));
     
-    console.log("denying cookies");
+    console.log("[CookieConsent] Denying cookies");
   };
 
   if (consent === true) {

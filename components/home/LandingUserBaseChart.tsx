@@ -116,8 +116,11 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
             </Subheading>
           </Container>
           <Container className="pt-[15px]">
-            <TopRowContainer className="gap-y-[10px] rounded-t-[15px] rounded-b-[24px] !p-[2px] !pl-[10px] flex-col-reverse">
-              <TopRowParent className="text-md">
+            <TopRowContainer className="!justify-normal flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
+              <TopRowParent className="!justify-center lg:!justify-normal">
+                <div className="text-md pl-[5px]">Choose which chains to show</div>
+              </TopRowParent>
+              <TopRowParent className="text-md lg:min-h-[30px] !flex-1">
                 <ChainTypeFilter
                   selectedTypes={selectedChainTypes}
                   onChange={setSelectedChainTypes}

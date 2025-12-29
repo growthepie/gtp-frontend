@@ -31,73 +31,226 @@ const arbitrumTimeboost: QuickBiteData = createQuickBite({
     ),
     "```",
 
-    "```chart",
+    "```chart-toggle",
     JSON.stringify({
-      type: "column",
-      title: "Daily Timeboost Revenue in ETH",
-      subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Timeboost Fees",
-            color: "#1DF7EF",
-            stacking: "normal",
-            xIndex: 1,
-            yIndex: 0,
-            suffix: null,
-            prefix: 'Ξ',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
-            pathToData: "data.fees_paid_priority_eth.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day. Data updated daily.",
+      title: "Timeboost Revenue in ETH",
+      description: "Toggle between daily, weekly, and monthly views of Timeboost revenue",
+      layout: "segmented",
+      defaultIndex: 0,
+      charts: [
+        {
+          toggleLabel: "Daily",
+          type: "column",
+          title: "Daily Timeboost Revenue in ETH",
+          subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "daily",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day. Data updated daily.",
+        },
+        {
+          toggleLabel: "Weekly",
+          type: "column",
+          title: "Weekly Timeboost Revenue in ETH",
+          subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per week",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "weekly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per week. Data aggregated by calendar week.",
+        },
+        {
+          toggleLabel: "Monthly",
+          type: "column",
+          title: "Monthly Timeboost Revenue in ETH",
+          subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per month",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "monthly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per month. Data aggregated by month.",
+        }
+      ],
     }),
     "```",
 
     "## Timeboost vs Network Fees",
     "In addition to revenue from Timeboost, the Arbitrum DAO also receives the standard transaction fees that users pay. The following chart allows you to track the share of Timeboost fees vs Network fees in ETH.",
 
-    "```chart",
+    "```chart-toggle",
     JSON.stringify({
-      type: "area",
       title: "Timeboost vs Network Fees in ETH",
-      subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Timeboost Fees",
-            color: "#1DF7EF",
-            stacking: "percent",
-            xIndex: 1,
-            yIndex: 0,
-            suffix: null,
-            prefix: 'Ξ',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
-            pathToData: "data.fees_paid_priority_eth.daily.values",
+      description: "Toggle between daily, weekly, and monthly views of Timeboost vs Network fees share",
+      layout: "segmented",
+      defaultIndex: 0,
+      charts: [
+        {
+          toggleLabel: "Daily",
+          type: "area",
+          title: "Timeboost vs Network Fees in ETH (Daily)",
+          subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "daily",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              },
+              {
+                name: "Network Fees",
+                color: "#FFDF27",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "daily",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_base_eth.daily.values",
+              }
+            ],
           },
-          {
-            name: "Network Fees",
-            color: "#FFDF27",
-            stacking: "percent",
-            xIndex: 1,
-            yIndex: 0,
-            suffix: null,
-            prefix: 'Ξ',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
-            pathToData: "data.fees_paid_base_eth.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Feess. Data updated daily.",
-      seeMetricURL: "https://www.growthepie.com/economics"
+          height: 400,
+          caption: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees. Data updated daily.",
+          seeMetricURL: "https://www.growthepie.com/economics"
+        },
+        {
+          toggleLabel: "Weekly",
+          type: "area",
+          title: "Timeboost vs Network Fees in ETH (Weekly)",
+          subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "weekly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              },
+              {
+                name: "Network Fees",
+                color: "#FFDF27",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "weekly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_base_eth.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees. Data aggregated by calendar week.",
+          seeMetricURL: "https://www.growthepie.com/economics"
+        },
+        {
+          toggleLabel: "Monthly",
+          type: "area",
+          title: "Timeboost vs Network Fees in ETH (Monthly)",
+          subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Timeboost Fees",
+                color: "#1DF7EF",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "monthly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_priority_eth.daily.values",
+              },
+              {
+                name: "Network Fees",
+                color: "#FFDF27",
+                stacking: "percent",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: 'Ξ',
+                tooltipDecimals: 2,
+                aggregation: "monthly",
+                url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+                pathToData: "data.fees_paid_base_eth.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees. Data aggregated by month.",
+          seeMetricURL: "https://www.growthepie.com/economics"
+        }
+      ],
     }),
     "```",
 

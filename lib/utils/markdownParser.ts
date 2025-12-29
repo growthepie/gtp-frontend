@@ -293,6 +293,10 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       else if (text.startsWith('- ')) {
         blocks.push({ id: generateBlockId(), type: 'list', content: text.substring(2), items: [text.substring(2)] });
       }
+      // Handle blank/whitespace-only lines as spacers
+      else if (!text || text.trim().length === 0) {
+        blocks.push({ id: generateBlockId(), type: 'spacer', height: 15 });
+      }
       // Default to paragraph
       else {
         blocks.push({ id: generateBlockId(), type: 'paragraph', content: parseBoldText(text) });

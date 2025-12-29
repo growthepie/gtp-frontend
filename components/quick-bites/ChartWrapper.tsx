@@ -66,7 +66,8 @@ interface ChartWrapperProps {
       tooltipDecimals?: number,
       dashStyle?: Highcharts.DashStyleValue,
       makeNegative?: boolean,
-      yMultiplication?: number
+      yMultiplication?: number,
+      aggregation?: "daily" | "weekly" | "monthly"
     }[]
   }
   seeMetricURL?: string | null;
@@ -166,13 +167,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     return jsonMeta.meta.map((series: any, index: number) => ({
       ...series,
       processedData: (() => {
-        const rawData = jsonData[index]?.map((item: any) => [
+        let rawData = jsonData[index]?.map((item: any) => [
           item[series.xIndex],
           item[series.yIndex]
         ]) || [];
 
         // Apply transformations (multiplication, negation) if specified
-        return rawData.map(([x, y]) => {
+        rawData = rawData.map(([x, y]) => {
           if (y === null || y === undefined) return [x, null];
 
           let transformedY = y;
@@ -187,6 +188,57 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           return [x, transformedY];
         });
+
+        // Apply aggregation if specified
+        if (series.aggregation && series.aggregation !== "daily") {
+          const aggregated = new Map<string, { sum: number; count: number; firstTimestamp: number }>();
+          
+          // Filter out null values for aggregation
+          const validData = rawData.filter(([x, y]) => y !== null && y !== undefined);
+          
+          if (validData.length === 0) {
+            return rawData;
+          }
+          
+          validData.forEach(([timestamp, value]) => {
+            let key: string;
+            if (series.aggregation === "weekly") {
+              // Group by calendar weeks (week starts on Monday)
+              const date = new Date(timestamp);
+              const weekStart = new Date(date);
+              const dayOfWeek = date.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+              // Convert to Monday-based: Monday = 0, Tuesday = 1, ..., Sunday = 6
+              const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+              weekStart.setUTCDate(date.getUTCDate() - mondayOffset); // Go back to Monday
+              weekStart.setUTCHours(0, 0, 0, 0);
+              key = weekStart.getTime().toString();
+            } else if (series.aggregation === "monthly") {
+              // Group by calendar month (year-month)
+              const date = new Date(timestamp);
+              const monthStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+              monthStart.setUTCHours(0, 0, 0, 0);
+              key = monthStart.getTime().toString();
+            } else {
+              return; // Unknown aggregation, skip
+            }
+            
+            if (!aggregated.has(key)) {
+              aggregated.set(key, { sum: 0, count: 0, firstTimestamp: timestamp });
+            }
+            
+            const bucket = aggregated.get(key)!;
+            bucket.sum += value;
+            bucket.count += 1;
+          });
+          
+          // Convert aggregated map to array, summing values for each period
+          rawData = Array.from(aggregated.entries()).map(([key, bucket]) => [
+            parseInt(key), // Use the period start timestamp
+            bucket.sum // Sum of all values in the period
+          ]).sort((a, b) => a[0] - b[0]); // Sort by timestamp
+        }
+
+        return rawData;
       })()
     }));
   }, [jsonMeta, jsonData]);
@@ -202,6 +254,29 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     });
   }, [processedSeriesData, filteredNames, hasTrendline]);
 
+  const minTimestampDelta = useMemo(() => {
+    const seriesToInspect = filteredSeries.length ? filteredSeries : processedSeriesData;
+    let smallestDelta = Number.POSITIVE_INFINITY;
+
+    seriesToInspect.forEach((series: any) => {
+      const points = series?.processedData || [];
+      for (let i = 1; i < points.length; i++) {
+        const current = points[i]?.[0];
+        const previous = points[i - 1]?.[0];
+
+        if (typeof current === "number" && typeof previous === "number") {
+          const delta = Math.abs(current - previous);
+          if (delta > 0 && delta < smallestDelta) {
+            smallestDelta = delta;
+          }
+        }
+      }
+    });
+
+    return smallestDelta === Number.POSITIVE_INFINITY ? null : smallestDelta;
+  }, [filteredSeries, processedSeriesData]);
+
+  const shouldShowTimeInTooltip = showXAsDate && !!minTimestampDelta && minTimestampDelta < 24 * 60 * 60 * 1000;
   
   // Add timespans and selectedTimespan
   const timespans = {
@@ -372,7 +447,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         return '';
       }
       
-      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
+      let dateString = moment.utc(x).utc().locale("en-GB").format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y || 0;
         return acc;
@@ -398,11 +474,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
-          
-
-          const currentPrefix = jsonMeta?.meta?.[index]?.prefix || '';
-          const currentSuffix = jsonMeta?.meta?.[index]?.suffix || '';
-          const currentDecimals = jsonMeta?.meta?.[index]?.tooltipDecimals ?? 2;
+          // Match meta by series name instead of the sorted index so suffix/prefix follow the right series
+          const metaEntry = jsonMeta?.meta.find((meta) => meta.name === name);
+          const currentPrefix = metaEntry?.prefix || '';
+          const currentSuffix = metaEntry?.suffix || '';
+          const currentDecimals = metaEntry?.tooltipDecimals ?? 2;
+          const stackingMode = metaEntry?.stacking;
 
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {
@@ -412,7 +489,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           let displayText;
           /* this might be wrong */
-          if (jsonMeta?.meta?.[index]?.stacking === "percent") {
+          if (stackingMode === "percent") {
             const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
@@ -434,7 +511,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [jsonMeta, chartType, disableTooltipSort, ratioTitle, xAxisLabel, yAxisLabel],
+    [jsonMeta, chartType, disableTooltipSort, ratioTitle, xAxisLabel, yAxisLabel, shouldShowTimeInTooltip],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
@@ -654,6 +731,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             />
             <YAxis
               id="0"
+              type={options?.yAxis?.[0]?.type}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -790,6 +868,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </YAxis>
             <YAxis
               id="1"
+              type={options?.yAxis?.[1]?.type || options?.yAxis?.[0]?.type}
               opposite={true}
               labels={{
                 style: {

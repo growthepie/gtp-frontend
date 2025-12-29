@@ -1,5 +1,6 @@
 "use client";
 import { GTPIcon } from "./layout/GTPIcon";
+import { TopRowChild } from "./layout/TopRow";
 
 type ChainType = 'l1' | 'rollup' | 'others';
 
@@ -25,6 +26,8 @@ export default function ChainTypeFilter({
 }: ChainTypeFilterProps) {
   const toggleType = (type: string) => {
     if (selectedTypes.includes(type)) {
+      // Prevent deselecting the last remaining type
+      if (selectedTypes.length === 1) return;
       // Remove type
       onChange(selectedTypes.filter((t) => t !== type));
     } else {
@@ -34,14 +37,14 @@ export default function ChainTypeFilter({
   };
 
   return (
-    <div className="flex items-center gap-x-[10px]">
-      <div className="text-md">Choose which chains to show</div>
+    <>
       {chainTypeOptions.map((option) => {
         const isSelected = selectedTypes.includes(option.value);
         return (
-          <div
+          <TopRowChild
             key={option.value}
-            className={`flex items-center gap-x-[5px] px-[15px] py-[5px] rounded-full cursor-pointer ${isSelected ? "bg-color-ui-active" : "hover:bg-color-ui-hover/10"}`}
+            className={`flex items-center justify-center gap-x-[5px] !px-[15px] !py-[5px] flex-1 ${isSelected ? "" : "bg-background opacity-50 hover:opacity-100"}`}
+            isSelected
             onClick={() => toggleType(option.value)}
           >
             <GTPIcon
@@ -49,10 +52,17 @@ export default function ChainTypeFilter({
               size="sm"
               className="text-color-text-primary"
             />
-            <div className="text-sm">{option.label}</div>
-          </div>
+            <div className="text-sm">
+              <div className="hidden sm:block">
+              {option.label}
+              </div>
+              <div className="block sm:hidden">
+              {option.label.split(" ").length > 1 ? option.label.split(" ")[1] : option.label}
+              </div>
+            </div>
+          </TopRowChild>
         );
       })}
-    </div>
+    </>
   );
 }
