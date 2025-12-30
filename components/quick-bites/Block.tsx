@@ -19,6 +19,7 @@ import { ChainsScatterStablesChartBlock } from './blocks/ChainsScatterStablesCha
 import { ChainsScatterThroughputChartBlock } from './blocks/ChainsScatterThroughputChartBlock';
 import { ChainsScatterTxCostsChartBlock } from './blocks/ChainsScatterTxCostsChartBlock';
 import { ChainsScatterComparisonTableBlock } from './blocks/ChainsScatterComparisonTableBlock';
+import { ScatterChartToggleBlock } from './blocks/ScatterChartToggleBlock';
 import FaqBlock from './blocks/FaqBlock';
 import { SpacerBlock } from './blocks/SpacerBlock';
 
@@ -73,6 +74,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" />;
     case 'chains-scatter-comparison-table':
       return <ChainsScatterComparisonTableBlock />;
+    case 'scatter-chart-toggle':
+      return <ScatterChartToggleBlock block={block} />;
     case 'spacer':
       return <SpacerBlock block={block} />;
     default:

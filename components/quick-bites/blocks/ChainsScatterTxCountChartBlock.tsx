@@ -438,7 +438,7 @@ export const ChainsScatterTxCountChartBlock: React.FC<ChainsScatterTxCountChartB
         margins="normal"
         width="100%"
         height={400}
-        title="Active Addresses vs Transaction Count (Last 30 Days)"
+        title="Volume"
         subtitle="30-day comparison for top 10 chains by transaction count"
         showXAsDate={false}
         disableTooltipSort={false}

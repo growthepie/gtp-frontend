@@ -1,4 +1,5 @@
 // lib/utils/dynamicContent.ts - Extended version
+
 export const processDynamicContent = async (content: any[]): Promise<any[]> => {
   const dynamicDataCache = new Map<string, any>();
 
@@ -355,6 +356,221 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
             .replace('{{linea_projected_annual_burn_rate_percentage}}', projectedAnnualBurnRatePercentage)
             .replace('{{linea_max_supply}}', formattedMaxLineaSupply)
             .replace('{{linea_total_usd_burnt}}', lineaTotalUsdBurnt);
+        }
+      }
+
+      // Handle average address KPI placeholders
+      if (processedItem.includes('{{avg_address_')) {
+        const masterData = await fetchData('master', "https://api.growthepie.com/v1/master.json");
+        
+        if (masterData?.chains) {
+          // Get all chain keys that support the required metrics
+          const getChainKeysForMetrics = (metric1: string, metric2: string) => {
+            return Object.keys(masterData.chains).filter(key => {
+              const chain = masterData.chains[key];
+              return chain.supported_metrics?.includes(metric1) && chain.supported_metrics?.includes(metric2);
+            });
+          };
+
+          // Helper to fetch and calculate average per-address value
+          const calculateAveragePerAddress = async (
+            metric1: string,
+            metric2: string,
+            getValue: (data1: any, data2: any) => number | null,
+            formatValue: (value: number) => string
+          ): Promise<string> => {
+            const chainKeys = getChainKeysForMetrics(metric1, metric2);
+            
+            if (chainKeys.length === 0) return 'N/A';
+
+            const urls1 = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/${metric1}.json`);
+            const urls2 = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/${metric2}.json`);
+
+            const [results1, results2] = await Promise.all([
+              Promise.all(urls1.map(async (url) => {
+                try {
+                  const response = await fetch(url);
+                  if (!response.ok) return null;
+                  return await response.json();
+                } catch {
+                  return null;
+                }
+              })),
+              Promise.all(urls2.map(async (url) => {
+                try {
+                  const response = await fetch(url);
+                  if (!response.ok) return null;
+                  return await response.json();
+                } catch {
+                  return null;
+                }
+              }))
+            ]);
+
+            const chainsWithData: Array<{ activeAddresses: number; perAddressValue: number }> = [];
+
+            chainKeys.forEach((chainKey, index) => {
+              const data1 = results1[index];
+              const data2 = results2[index];
+              
+              if (!data1 || !data2) return;
+
+              const daa30d = data1.details?.summary?.last_30d?.data?.[0] ?? data1.summary?.last_30d?.data?.[0];
+              const activeAddresses = daa30d !== undefined ? daa30d : null;
+              
+              if (activeAddresses === null || activeAddresses === 0) return;
+
+              const value = getValue(data1, data2);
+              if (value === null) return;
+
+              chainsWithData.push({
+                activeAddresses,
+                perAddressValue: value / activeAddresses
+              });
+            });
+
+            // Sort by active addresses descending, take top 10
+            const top10Chains = chainsWithData
+              .sort((a, b) => b.activeAddresses - a.activeAddresses)
+              .slice(0, 10);
+
+            if (top10Chains.length === 0) return 'N/A';
+
+            // Calculate average per-address value
+            const totalPerAddress = top10Chains.reduce((sum, chain) => sum + chain.perAddressValue, 0);
+            const average = totalPerAddress / top10Chains.length;
+
+            return formatValue(average);
+          };
+
+          // Format number helper
+          const formatNumber = (val: number, decimals: number = 2): string => {
+            if (val === 0) return "0";
+            const absVal = Math.abs(val);
+            
+            if (absVal < 1000) {
+              return val.toFixed(decimals).replace(/\.?0+$/, '');
+            }
+            
+            // Format larger numbers with K, M, B suffixes
+            if (absVal >= 1000000000) {
+              return (val / 1000000000).toFixed(decimals).replace(/\.?0+$/, '') + 'B';
+            }
+            if (absVal >= 1000000) {
+              return (val / 1000000).toFixed(decimals).replace(/\.?0+$/, '') + 'M';
+            }
+            if (absVal >= 1000) {
+              return (val / 1000).toFixed(decimals).replace(/\.?0+$/, '') + 'K';
+            }
+            
+            return val.toFixed(decimals).replace(/\.?0+$/, '');
+          };
+
+          // Calculate each metric
+          if (processedItem.includes('{{avg_address_volume}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'txcount',
+              (daaData, txCountData) => {
+                const tx30d = txCountData.details?.summary?.last_30d?.data?.[0] ?? txCountData.summary?.last_30d?.data?.[0];
+                return tx30d !== undefined ? tx30d : null;
+              },
+              (val) => formatNumber(val, 2)
+            );
+            processedItem = processedItem.replace('{{avg_address_volume}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_complexity}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'throughput',
+              (daaData, throughputData) => {
+                const throughput30d = throughputData.details?.summary?.last_30d?.data?.[0] ?? throughputData.summary?.last_30d?.data?.[0];
+                return throughput30d !== undefined ? throughput30d * 1000000 : null; // Multiply by 1M like in the chart
+              },
+              (val) => formatNumber(val, 2)
+            );
+            processedItem = processedItem.replace('{{avg_address_complexity}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_value}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'stables_mcap',
+              (daaData, stablesData) => {
+                const stables30d = stablesData.details?.summary?.last_30d?.data?.[0] ?? stablesData.summary?.last_30d?.data?.[0];
+                return stables30d !== undefined ? stables30d : null;
+              },
+              (val) => `$${formatNumber(val, 2)}`
+            );
+            processedItem = processedItem.replace('{{avg_address_value}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_unit_cost}}')) {
+            // For unit cost, calculate average transaction cost (not per address)
+            const chainKeys = getChainKeysForMetrics('daa', 'txcosts');
+            
+            if (chainKeys.length === 0) {
+              processedItem = processedItem.replace('{{avg_address_unit_cost}}', 'N/A');
+            } else {
+              const daaUrls = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/daa.json`);
+              const txCostsUrls = chainKeys.map(key => `https://api.growthepie.com/v1/metrics/chains/${key}/txcosts.json`);
+
+              const [daaResults, txCostsResults] = await Promise.all([
+                Promise.all(daaUrls.map(async (url) => {
+                  try {
+                    const response = await fetch(url);
+                    if (!response.ok) return null;
+                    return await response.json();
+                  } catch {
+                    return null;
+                  }
+                })),
+                Promise.all(txCostsUrls.map(async (url) => {
+                  try {
+                    const response = await fetch(url);
+                    if (!response.ok) return null;
+                    return await response.json();
+                  } catch {
+                    return null;
+                  }
+                }))
+              ]);
+
+              const chainsWithData: Array<{ activeAddresses: number; txCost: number }> = [];
+
+              chainKeys.forEach((chainKey, index) => {
+                const daaData = daaResults[index];
+                const txCostsData = txCostsResults[index];
+                
+                if (!daaData || !txCostsData) return;
+
+                const daa30d = daaData.details?.summary?.last_30d?.data?.[0] ?? daaData.summary?.last_30d?.data?.[0];
+                const activeAddresses = daa30d !== undefined ? daa30d : null;
+                
+                const txCosts30d = txCostsData.details?.summary?.last_30d?.data?.[0] ?? txCostsData.summary?.last_30d?.data?.[0];
+                const txCost = txCosts30d !== undefined ? txCosts30d : null;
+
+                if (activeAddresses === null || txCost === null) return;
+
+                chainsWithData.push({ activeAddresses, txCost });
+              });
+
+              // Sort by active addresses descending, take top 10
+              const top10Chains = chainsWithData
+                .sort((a, b) => b.activeAddresses - a.activeAddresses)
+                .slice(0, 10);
+
+              if (top10Chains.length === 0) {
+                processedItem = processedItem.replace('{{avg_address_unit_cost}}', 'N/A');
+              } else {
+                // Calculate average transaction cost (not per address)
+                const totalTxCost = top10Chains.reduce((sum, chain) => sum + chain.txCost, 0);
+                const averageTxCost = totalTxCost / top10Chains.length;
+                processedItem = processedItem.replace('{{avg_address_unit_cost}}', `$${formatNumber(averageTxCost, 4)}`);
+              }
+            }
+          }
         }
       }
 

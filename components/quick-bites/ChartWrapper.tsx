@@ -355,7 +355,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         const pointColor = color?.stops ? color.stops[0][1] : color || '#666666';
         
         // Format numbers with max 2 decimal places and comma separators for scatter chart tooltip
-        const formatScatterNumber = (val: number): string => {
+        const formatScatterNumber = (val: number, decimals: number = 2): string => {
           if (val === 0) return "0";
           
           const absVal = Math.abs(val);
@@ -367,14 +367,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             return parts.join('.');
           };
           
-          // For small numbers, format directly with max 2 decimal places and commas
+          // For small numbers, format directly with specified decimal places and commas
           if (absVal < 1000) {
-            const formatted = val.toFixed(2).replace(/\.?0+$/, '');
+            const formatted = val.toFixed(decimals).replace(/\.?0+$/, '');
             return addCommas(formatted);
           }
           
           // For larger numbers, use d3 format then limit decimal places
-          let formatted = d3Format(`.2~s`)(val).replace(/G/, "B");
+          let formatted = d3Format(`.${decimals}~s`)(val).replace(/G/, "B");
           
           // Extract number part and suffix (K, M, B, T)
           const match = formatted.match(/^([\d,]+\.?\d*)([KMBT]?)$/);
@@ -384,8 +384,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             const num = parseFloat(numStr);
             
             if (!isNaN(num) && num % 1 !== 0) {
-              // Has decimals - round to max 2 decimal places, remove trailing zeros, add commas
-              const rounded = num.toFixed(2).replace(/\.?0+$/, '');
+              // Has decimals - round to max specified decimal places, remove trailing zeros, add commas
+              const rounded = num.toFixed(decimals).replace(/\.?0+$/, '');
               return addCommas(rounded) + suffix;
             } else if (!isNaN(num)) {
               // No decimals, add commas and suffix
@@ -400,12 +400,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         
         // Check if y-axis should have currency prefix (for stablecoin supply and transaction cost)
         const isCurrency = yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost';
-        const yFormatted = isCurrency ? `$${formatScatterNumber(y)}` : formatScatterNumber(y);
+        // Use 4 decimals for Transaction Cost, 2 for others
+        const yDecimals = yAxisLabel === 'Transaction Cost' ? 4 : 2;
+        const yFormatted = isCurrency ? `$${formatScatterNumber(y, yDecimals)}` : formatScatterNumber(y);
         
         // Calculate ratio if ratioTitle is provided
         const ratioValue = ratioTitle && xValue !== 0 ? y / xValue : null;
+        const ratioDecimals = yAxisLabel === 'Transaction Cost' ? 4 : 2;
         const ratioFormatted = ratioValue !== null 
-          ? (isCurrency ? `$${formatScatterNumber(ratioValue)}` : formatScatterNumber(ratioValue))
+          ? (isCurrency ? `$${formatScatterNumber(ratioValue, ratioDecimals)}` : formatScatterNumber(ratioValue))
           : null;
         
         return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway rounded-full bg-opacity-60 min-w-[240px]">

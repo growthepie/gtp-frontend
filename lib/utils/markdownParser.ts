@@ -1,5 +1,5 @@
 // File: lib/utils/markdownParser.ts
-import { ContentBlock, FaqBlock, generateBlockId, ChartBlock, ChartToggleBlock } from '@/lib/types/blockTypes';
+import { ContentBlock, FaqBlock, generateBlockId, ChartBlock, ChartToggleBlock, ScatterChartToggleBlock } from '@/lib/types/blockTypes';
 
 // Simple utility to convert markdown to raw HTML without remark
 // This is a placeholder - we'll use react-markdown for actual rendering at component level
@@ -106,6 +106,21 @@ export async function processMarkdownContent(content: string[]): Promise<Content
             const chartToggleBlock = parseChartToggleBlock(jsonString);
             if (chartToggleBlock) {
               blocks.push(chartToggleBlock);
+              i += 2;
+              continue;
+            }
+          }
+        }
+      }
+      // Handle scatter chart toggle blocks
+      else if (text.startsWith('```scatter-chart-toggle')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          if (closingMarker) {
+            const scatterChartToggleBlock = parseScatterChartToggleBlock(jsonString);
+            if (scatterChartToggleBlock) {
+              blocks.push(scatterChartToggleBlock);
               i += 2;
               continue;
             }
@@ -656,6 +671,76 @@ function parseChartToggleBlock(jsonString: string): ChartToggleBlock | null {
     return block;
   } catch (error) {
     console.error('Error parsing chart toggle data:', error);
+    return null;
+  }
+}
+
+function parseScatterChartToggleBlock(jsonString: string): ScatterChartToggleBlock | null {
+  try {
+    const toggleConfig = JSON.parse(jsonString);
+
+    if (!Array.isArray(toggleConfig.charts) || toggleConfig.charts.length === 0) {
+      console.error('Error parsing scatter chart toggle data: charts array is required.');
+      return null;
+    }
+
+    const charts = toggleConfig.charts
+      .map((chartConfig: any, index: number) => {
+        if (!chartConfig || typeof chartConfig !== 'object') {
+          return null;
+        }
+
+        const chartType = chartConfig.type;
+        const validTypes = ['chains-scatter-chart', 'chains-scatter-stables-chart', 'chains-scatter-throughput-chart', 'chains-scatter-txcosts-chart'];
+        
+        if (!chartType || !validTypes.includes(chartType)) {
+          console.error(`Invalid scatter chart type: ${chartType}`);
+          return null;
+        }
+
+        const toggleLabel =
+          typeof chartConfig.toggleLabel === 'string' && chartConfig.toggleLabel.trim().length > 0
+            ? chartConfig.toggleLabel.trim()
+            : `Chart ${index + 1}`;
+
+        return {
+          toggleLabel,
+          type: chartType as 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart',
+        };
+      })
+      .filter((chart): chart is { toggleLabel: string; type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' } => chart !== null);
+
+    if (!charts.length) {
+      console.error('Error parsing scatter chart toggle data: no valid charts provided.');
+      return null;
+    }
+
+    const defaultIndex =
+      typeof toggleConfig.defaultIndex === 'number'
+        ? Math.min(Math.max(0, toggleConfig.defaultIndex), charts.length - 1)
+        : 0;
+
+    const layout = toggleConfig.layout === 'segmented' ? 'segmented' : 'tabs';
+    const description =
+      typeof toggleConfig.description === 'string'
+        ? parseBoldText(toggleConfig.description)
+        : '';
+
+    const block: ScatterChartToggleBlock = {
+      id: generateBlockId(),
+      type: 'scatter-chart-toggle',
+      title: toggleConfig.title || '',
+      description,
+      className: toggleConfig.className || '',
+      layout,
+      defaultIndex,
+      charts,
+      showInMenu: parseShowInMenu(toggleConfig),
+    };
+
+    return block;
+  } catch (error) {
+    console.error('Error parsing scatter chart toggle data:', error);
     return null;
   }
 }

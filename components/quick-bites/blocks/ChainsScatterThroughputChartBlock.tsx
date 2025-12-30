@@ -438,7 +438,7 @@ export const ChainsScatterThroughputChartBlock: React.FC<ChainsScatterThroughput
         margins="normal"
         width="100%"
         height={400}
-        title="Active Addresses vs Throughput (Last 30 Days)"
+        title="Complexity"
         subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}

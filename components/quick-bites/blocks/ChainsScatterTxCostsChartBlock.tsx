@@ -438,13 +438,12 @@ export const ChainsScatterTxCostsChartBlock: React.FC<ChainsScatterTxCostsChartB
         margins="normal"
         width="100%"
         height={400}
-        title="Active Addresses vs Transaction Cost (Last 30 Days)"
+        title="Unit cost"
         subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}
         options={chartOptions}
         onFilterChange={handleFilterChange}
-        ratioTitle="Transaction Cost per Address"
         xAxisLabel="Active Addresses"
         yAxisLabel="Transaction Cost"
       />

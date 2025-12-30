@@ -23,7 +23,8 @@ export type BlockType =
   | 'chains-scatter-stables-chart' // For chains scatter chart with active addresses vs stablecoin supply
   | 'chains-scatter-throughput-chart' // For chains scatter chart with active addresses vs throughput
   | 'chains-scatter-txcosts-chart' // For chains scatter chart with active addresses vs transaction cost
-  | 'chains-scatter-comparison-table'; // For comparison table showing 30d vs daily × 30 data
+  | 'chains-scatter-comparison-table' // For comparison table showing 30d vs daily × 30 data
+  | 'scatter-chart-toggle'; // For toggle block with multiple scatter charts
 
 export interface BaseBlock {
   id: string;
@@ -299,6 +300,19 @@ export interface ChainsScatterComparisonTableBlock extends BaseBlock {
   type: 'chains-scatter-comparison-table';
 }
 
+export interface ScatterChartToggleBlock extends BaseBlock {
+  type: 'scatter-chart-toggle';
+  title?: string;
+  description?: string;
+  className?: string;
+  layout?: 'tabs' | 'segmented';
+  defaultIndex?: number;
+  charts: Array<{
+    toggleLabel: string;
+    type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart';
+  }>;
+}
+
 export type ContentBlock = 
   | ContainerBlock
   | ParagraphBlock
@@ -322,7 +336,8 @@ export type ContentBlock =
   | ChainsScatterStablesChartBlock
   | ChainsScatterThroughputChartBlock
   | ChainsScatterTxCostsChartBlock
-  | ChainsScatterComparisonTableBlock;
+  | ChainsScatterComparisonTableBlock
+  | ScatterChartToggleBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {
