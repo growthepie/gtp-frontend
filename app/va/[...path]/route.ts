@@ -2,9 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAnalyticsValidation } from '@/lib/analyticsValidation'
 
-const ENDPOINT_MAP: Record<string, string> = {
-  'event': 'https://va.vercel-scripts.com/v1/event',
-  'vitals': 'https://vitals.vercel-analytics.com/v1/vitals',
+// Map custom paths to Vercel's internal /_vercel/insights/* paths
+// Vercel's infrastructure handles these automatically when deployed on Vercel
+const PATH_MAP: Record<string, string> = {
+  'event': '/_vercel/insights/event',
+  'view': '/_vercel/insights/view',
+  'session': '/_vercel/insights/session',
+  'vitals': '/_vercel/speed-insights/vitals',
 }
 
 async function handleRequest(
@@ -12,14 +16,19 @@ async function handleRequest(
   { params }: { params: { path: string[] } }
 ) {
   const path = params.path.join('/')
-  const targetUrl = ENDPOINT_MAP[path]
+  const targetPath = PATH_MAP[path]
 
-  if (!targetUrl) {
+  if (!targetPath) {
     return new NextResponse(null, { status: 404 })
   }
 
   try {
-    // Extract client IP (same pattern as your GA proxy)
+    // Build the full URL to the same domain's /_vercel/insights/* path
+    const host = request.headers.get('host') || ''
+    const protocol = host.includes('localhost') ? 'http' : 'https'
+    const targetUrl = `${protocol}://${host}${targetPath}`
+
+    // Extract client IP
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || request.headers.get('x-real-ip')
       || ''
@@ -31,7 +40,7 @@ async function handleRequest(
       headers: {
         'Content-Type': request.headers.get('content-type') || 'application/json',
         'User-Agent': request.headers.get('user-agent') || '',
-        ...(clientIp && { 
+        ...(clientIp && {
           'X-Forwarded-For': clientIp,
           'x-vercel-ip': clientIp,
         }),

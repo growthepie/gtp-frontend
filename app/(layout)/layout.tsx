@@ -1,5 +1,6 @@
 import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { Analytics as GTMAnalytics } from "@/components/Analytics";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono, Source_Code_Pro } from "next/font/google";
@@ -212,6 +213,7 @@ export default function RootLayout({
           <DeveloperTools />
           <CookieConsent />
         </Providers>
+        <GTMAnalytics gtmId={gtpGtmId || ''} />
         <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
