@@ -33,7 +33,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-book-open" size="md" />}
               label="Knowledge"
-              href="https://docs.growthepie.com/"
+              href="https://docs.growthepie.xyz/"
             />
             {/* <FooterLink
               leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
@@ -63,7 +63,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<Image src={APIIcon} alt="API" width={24} height={24} />}
               label="API"
-              href="https://docs.growthepie.com/api"
+              href="https://docs.growthepie.xyz/api"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="github-monochrome" size="md" className="text-color-text-primary" />}
