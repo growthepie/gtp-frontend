@@ -37,9 +37,9 @@ async function handleCollect(request: NextRequest) {
       || ''
 
     // Geo hint for regional accuracy
-    if (address && !decodedParams.has('ip_override')) {
+    if (address && !decodedParams.has('_uip')) {
       const geo = address.includes('.') ? address.replace(/\.\d+$/, '.0') : address
-      decodedParams.set('ip_override', geo)
+      decodedParams.set('_uip', geo)
     }
 
     const queryString = decodedParams.toString()
