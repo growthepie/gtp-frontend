@@ -42,10 +42,11 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
     targetUrl.searchParams.set(key, value)
   })
 
-  // Add uip param for GA4 collect requests (for geo accuracy)
-  const isGACollect = targetDomain.includes('google-analytics') && targetPath.includes('collect')
-  if (isGACollect && address && !targetUrl.searchParams.has('uip')) {
-    targetUrl.searchParams.set('uip', address)
+  // Geo hint for regional accuracy
+  const isCollect = targetDomain.includes('google-analytics') && targetPath.includes('collect')
+  if (isCollect && address && !targetUrl.searchParams.has('ip_override')) {
+    const geo = address.includes('.') ? address.replace(/\.\d+$/, '.0') : address
+    targetUrl.searchParams.set('ip_override', geo)
   }
 
   try {

@@ -36,9 +36,10 @@ async function handleCollect(request: NextRequest) {
       || request.headers.get('x-real-ip')
       || ''
 
-    // Add uip param for GA4 IP override (more reliable than X-Forwarded-For for GA)
-    if (address && !decodedParams.has('uip')) {
-      decodedParams.set('uip', address)
+    // Geo hint for regional accuracy
+    if (address && !decodedParams.has('ip_override')) {
+      const geo = address.includes('.') ? address.replace(/\.\d+$/, '.0') : address
+      decodedParams.set('ip_override', geo)
     }
 
     const queryString = decodedParams.toString()
