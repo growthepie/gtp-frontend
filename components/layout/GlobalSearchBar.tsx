@@ -15,7 +15,7 @@ import EthUsdSwitchSimple from './EthUsdSwitchSimple';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
 import { GTPIconName } from '@/icons/gtp-icon-names';
-import { track } from '@vercel/analytics/react';
+import { track } from '@/lib/tracking';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
 import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
 import WorkWithUs from './WorkWithUs';

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Icon from "./Icon";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import DiscordIcon from "@/icons/footer/Discord.svg";
 import XIcon from "@/icons/footer/X.svg";
 import LensIcon from "@/icons/footer/Lens.svg";

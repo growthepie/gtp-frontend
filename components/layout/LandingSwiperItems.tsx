@@ -9,7 +9,7 @@ import { navigationItems } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
 
 import "@splidejs/splide/css";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";

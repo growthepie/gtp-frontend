@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import Icon from "@/components/layout/Icon";
 
 export default function BottomBanner() {

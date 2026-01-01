@@ -6,7 +6,7 @@ import { getIcon, Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { GTPIcon } from "./GTPIcon";
 import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
 import { useToast } from "../toast/GTPToast";

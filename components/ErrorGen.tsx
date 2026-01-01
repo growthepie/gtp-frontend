@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { navigationItems as navItemsWithoutChains } from "@/lib/navigation";
 import { useMediaQuery } from "usehooks-ts";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { useMaster } from "@/contexts/MasterContext";
 
 const Error = ({

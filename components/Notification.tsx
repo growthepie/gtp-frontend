@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import useSWR from "swr";
 import type { NotificationType } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";

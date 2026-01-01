@@ -1,6 +1,6 @@
 "use client";
 import Icon from "@/components/layout/Icon";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { useEffect, useState, useMemo, useRef } from "react";
 import SwiperItem from "@/components/layout/LandingSwiperItems";
 import useSWR from "swr";

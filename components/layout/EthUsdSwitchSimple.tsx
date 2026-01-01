@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { ToggleSwitch } from "./ToggleSwitch";
 
 interface EthUsdSwitchProps {

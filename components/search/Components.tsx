@@ -25,7 +25,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');

@@ -12,7 +12,7 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
 import { useTheme } from "next-themes";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
