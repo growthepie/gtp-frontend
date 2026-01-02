@@ -18,6 +18,10 @@ import { ChainsScatterTxCountChartBlock } from './blocks/ChainsScatterTxCountCha
 import { ChainsScatterStablesChartBlock } from './blocks/ChainsScatterStablesChartBlock';
 import { ChainsScatterThroughputChartBlock } from './blocks/ChainsScatterThroughputChartBlock';
 import { ChainsScatterTxCostsChartBlock } from './blocks/ChainsScatterTxCostsChartBlock';
+import { ChainsScatterAppRevenueChartBlock } from './blocks/ChainsScatterAppRevenueChartBlock';
+import { ChainsScatterFeesChartBlock } from './blocks/ChainsScatterFeesChartBlock';
+import { ChainsScatterRentPaidChartBlock } from './blocks/ChainsScatterRentPaidChartBlock';
+import { ChainsScatterMarketCapChartBlock } from './blocks/ChainsScatterMarketCapChartBlock';
 import { ChainsScatterComparisonTableBlock } from './blocks/ChainsScatterComparisonTableBlock';
 import { ScatterChartToggleBlock } from './blocks/ScatterChartToggleBlock';
 import FaqBlock from './blocks/FaqBlock';
@@ -72,6 +76,14 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ChainsScatterThroughputChartBlock key="scatter-throughput-30d" />;
     case 'chains-scatter-txcosts-chart':
       return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" />;
+    case 'chains-scatter-app-revenue-chart':
+      return <ChainsScatterAppRevenueChartBlock key="scatter-app-revenue-30d" />;
+    case 'chains-scatter-fees-chart':
+      return <ChainsScatterFeesChartBlock key="scatter-fees-30d" />;
+    case 'chains-scatter-rent-paid-chart':
+      return <ChainsScatterRentPaidChartBlock key="scatter-rent-paid-30d" />;
+    case 'chains-scatter-market-cap-chart':
+      return <ChainsScatterMarketCapChartBlock key="scatter-market-cap-30d" />;
     case 'chains-scatter-comparison-table':
       return <ChainsScatterComparisonTableBlock />;
     case 'scatter-chart-toggle':

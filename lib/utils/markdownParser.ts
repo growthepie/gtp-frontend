@@ -244,6 +244,38 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           continue;
         }
       }
+      // Handle chains-scatter-app-revenue-chart blocks
+      else if (text.startsWith('```chains-scatter-app-revenue-chart')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          if (closingMarker) {
+            try {
+              const config = jsonString.trim() ? JSON.parse(jsonString) : {};
+              blocks.push({
+                id: generateBlockId(),
+                type: 'chains-scatter-app-revenue-chart',
+                showInMenu: parseShowInMenu(config),
+              });
+              i += 2; // Skip the JSON and closing marker
+              continue;
+            } catch (error) {
+              console.error('Error parsing chains-scatter-app-revenue-chart config:', error);
+              // Fall through to create block without config
+            }
+          }
+        }
+        // Fallback: if no JSON or parsing failed, just check for closing marker on next line
+        const closingMarker = i + 1 < content.length && content[i + 1] === '```';
+        if (closingMarker) {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chains-scatter-app-revenue-chart',
+          });
+          i += 1; // Skip the closing marker
+          continue;
+        }
+      }
       // Handle chains-scatter-throughput-chart blocks (must come before other scatter charts)
       else if (text.startsWith('```chains-scatter-throughput-chart')) {
         const closingMarker = i + 1 < content.length && content[i + 1] === '```';
@@ -691,7 +723,7 @@ function parseScatterChartToggleBlock(jsonString: string): ScatterChartToggleBlo
         }
 
         const chartType = chartConfig.type;
-        const validTypes = ['chains-scatter-chart', 'chains-scatter-stables-chart', 'chains-scatter-throughput-chart', 'chains-scatter-txcosts-chart'];
+        const validTypes = ['chains-scatter-chart', 'chains-scatter-stables-chart', 'chains-scatter-throughput-chart', 'chains-scatter-txcosts-chart', 'chains-scatter-app-revenue-chart', 'chains-scatter-fees-chart', 'chains-scatter-rent-paid-chart', 'chains-scatter-market-cap-chart'];
         
         if (!chartType || !validTypes.includes(chartType)) {
           console.error(`Invalid scatter chart type: ${chartType}`);
@@ -705,10 +737,10 @@ function parseScatterChartToggleBlock(jsonString: string): ScatterChartToggleBlo
 
         return {
           toggleLabel,
-          type: chartType as 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart',
+          type: chartType as 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart',
         };
       })
-      .filter((chart): chart is { toggleLabel: string; type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' } => chart !== null);
+      .filter((chart): chart is { toggleLabel: string; type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart' } => chart !== null);
 
     if (!charts.length) {
       console.error('Error parsing scatter chart toggle data: no valid charts provided.');

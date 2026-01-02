@@ -7,12 +7,74 @@ const averageAddress: QuickBiteData = createQuickBite({
   shortTitle: "Avg Address",
   content: [
 
-    "# The Problem With Active Addresses",
+    "# The Problem with Active Addresses",
     "Active addresses is a metric that gets a lot of critism because it can be easily manipulated by multiple parties each with different incentives. So instead of looking at the total number this quick bite will exsplore combining active addresses with economic metrics that are harder to game. We will also explore the relationshtip between active addresses and other fundamental metrics to understand their relatiionshp and how it differs per chain.",
 
+
+    "# Economics per Active Address",
+    
+    "```kpi-cards",
+    JSON.stringify([
+      {
+        title: "App Revenue",
+        value: "{{avg_address_app_revenue}}",
+        description: "Average app revenue per address",
+        icon: "gtp-metrics-feespaidbyusers",
+        info: "Average app revenue per active address across the top 10 chains by active addresses (last 30 days)."
+      },
+      {
+        title: "Chain Revenue",
+        value: "{{avg_address_chain_revenue}}",
+        description: "Average chain revenue per address",
+        icon: "gtp-metrics-feespaidbyusers",
+        info: "Average chain revenue per active address across the top 10 chains by active addresses (last 30 days)."
+      },
+      {
+        title: "Rent Paid to L1",
+        value: "{{avg_address_rent_paid}}",
+        description: "Average rent paid to L1 per address",
+        icon: "gtp-metrics-rentpaidtol1",
+        info: "Average rent paid to L1 per active address across the top 10 chains by active addresses (last 30 days)."
+      },
+      {
+        title: "Market Cap",
+        value: "{{avg_address_market_cap}}",
+        description: "Average market cap per address",
+        icon: "gtp-metrics-marketcap",
+        info: "Average market cap per active address across the top 10 chains by active addresses (last 30 days)."
+      }
+    ]),
+    "```",
+    
+    "```scatter-chart-toggle",
+    JSON.stringify({
+      title: null,
+      description: null,
+      layout: "segmented",
+      defaultIndex: 0,
+      charts: [
+        {
+          toggleLabel: "App Revenue",
+          type: "chains-scatter-app-revenue-chart"
+        },
+        {
+          toggleLabel: "Chain Revenue",
+          type: "chains-scatter-fees-chart"
+        },
+        {
+          toggleLabel: "Rent Paid to L1",
+          type: "chains-scatter-rent-paid-chart"
+        },
+        {
+          toggleLabel: "Market Cap",
+          type: "chains-scatter-market-cap-chart"
+        }
+      ]
+    }),
+    "```",
+    
     "# Fundamentals per Active Address",
     
-    "The average address on a blockchain represents the typical user experience and behavior patterns across the network. Understanding what makes an address 'average' provides valuable insights into network health, user distribution, and economic activity.",
     
     "```kpi-cards",
     JSON.stringify([
@@ -47,10 +109,7 @@ const averageAddress: QuickBiteData = createQuickBite({
     ]),
     "```",
     
-    "## Scatter Charts",
-    
-    "The following scatter plots compare active addresses with different metrics to reveal patterns in network usage, engagement, and economic activity across different blockchain networks.",
-
+   
     "```scatter-chart-toggle",
     JSON.stringify({
       title: null,

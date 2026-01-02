@@ -398,15 +398,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         
         const xFormatted = formatScatterNumber(xValue);
         
-        // Check if y-axis should have currency prefix (for stablecoin supply and transaction cost)
-        const isCurrency = yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost';
+        // Check if y-axis should have currency prefix (for stablecoin supply, transaction cost, app revenue, chain revenue, rent paid, and market cap)
+        const isCurrency = yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost' || yAxisLabel === 'App Revenue' || yAxisLabel === 'Chain Revenue' || yAxisLabel === 'Rent Paid to L1' || yAxisLabel === 'Market Cap';
         // Use 4 decimals for Transaction Cost, 2 for others
         const yDecimals = yAxisLabel === 'Transaction Cost' ? 4 : 2;
         const yFormatted = isCurrency ? `$${formatScatterNumber(y, yDecimals)}` : formatScatterNumber(y);
         
         // Calculate ratio if ratioTitle is provided
         const ratioValue = ratioTitle && xValue !== 0 ? y / xValue : null;
-        const ratioDecimals = yAxisLabel === 'Transaction Cost' ? 4 : 2;
+        const ratioDecimals = yAxisLabel === 'Transaction Cost' || yAxisLabel === 'Rent Paid to L1' ? 4 : 2;
         const ratioFormatted = ratioValue !== null 
           ? (isCurrency ? `$${formatScatterNumber(ratioValue, ratioDecimals)}` : formatScatterNumber(ratioValue))
           : null;
@@ -755,8 +755,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
                   const formatted = formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
-                  // Add $ prefix for stablecoin supply and transaction cost
-                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost') {
+                  // Add $ prefix for stablecoin supply, transaction cost, app revenue, chain revenue, rent paid, and market cap
+                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost' || yAxisLabel === 'App Revenue' || yAxisLabel === 'Chain Revenue' || yAxisLabel === 'Rent Paid to L1' || yAxisLabel === 'Market Cap') {
                     return `$${formatted}`;
                   }
                   return formatted;
@@ -893,8 +893,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
                   const formatted = formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
-                  // Add $ prefix for stablecoin supply and transaction cost
-                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost') {
+                  // Add $ prefix for stablecoin supply, transaction cost, app revenue, chain revenue, rent paid, and market cap
+                  if (yAxisLabel === 'Stablecoin Supply' || yAxisLabel === 'Transaction Cost' || yAxisLabel === 'App Revenue' || yAxisLabel === 'Chain Revenue' || yAxisLabel === 'Rent Paid to L1' || yAxisLabel === 'Market Cap') {
                     return `$${formatted}`;
                   }
                   return formatted;

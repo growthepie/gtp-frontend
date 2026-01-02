@@ -6,6 +6,10 @@ import { ChainsScatterTxCountChartBlock } from './ChainsScatterTxCountChartBlock
 import { ChainsScatterStablesChartBlock } from './ChainsScatterStablesChartBlock';
 import { ChainsScatterThroughputChartBlock } from './ChainsScatterThroughputChartBlock';
 import { ChainsScatterTxCostsChartBlock } from './ChainsScatterTxCostsChartBlock';
+import { ChainsScatterAppRevenueChartBlock } from './ChainsScatterAppRevenueChartBlock';
+import { ChainsScatterFeesChartBlock } from './ChainsScatterFeesChartBlock';
+import { ChainsScatterRentPaidChartBlock } from './ChainsScatterRentPaidChartBlock';
+import { ChainsScatterMarketCapChartBlock } from './ChainsScatterMarketCapChartBlock';
 
 interface ScatterChartToggleBlockProps {
   block: ScatterChartToggleBlockType;
@@ -63,6 +67,14 @@ export const ScatterChartToggleBlock: React.FC<ScatterChartToggleBlockProps> = (
         return <ChainsScatterThroughputChartBlock key="scatter-throughput-30d" />;
       case 'chains-scatter-txcosts-chart':
         return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" />;
+      case 'chains-scatter-app-revenue-chart':
+        return <ChainsScatterAppRevenueChartBlock key="scatter-app-revenue-30d" />;
+      case 'chains-scatter-fees-chart':
+        return <ChainsScatterFeesChartBlock key="scatter-fees-30d" />;
+      case 'chains-scatter-rent-paid-chart':
+        return <ChainsScatterRentPaidChartBlock key="scatter-rent-paid-30d" />;
+      case 'chains-scatter-market-cap-chart':
+        return <ChainsScatterMarketCapChartBlock key="scatter-market-cap-30d" />;
       default:
         return null;
     }

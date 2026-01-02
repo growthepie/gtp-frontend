@@ -23,6 +23,10 @@ export type BlockType =
   | 'chains-scatter-stables-chart' // For chains scatter chart with active addresses vs stablecoin supply
   | 'chains-scatter-throughput-chart' // For chains scatter chart with active addresses vs throughput
   | 'chains-scatter-txcosts-chart' // For chains scatter chart with active addresses vs transaction cost
+  | 'chains-scatter-app-revenue-chart' // For chains scatter chart with active addresses vs app revenue
+  | 'chains-scatter-fees-chart' // For chains scatter chart with active addresses vs fees (chain revenue)
+  | 'chains-scatter-rent-paid-chart' // For chains scatter chart with active addresses vs rent paid to L1
+  | 'chains-scatter-market-cap-chart' // For chains scatter chart with active addresses vs market cap
   | 'chains-scatter-comparison-table' // For comparison table showing 30d vs daily × 30 data
   | 'scatter-chart-toggle'; // For toggle block with multiple scatter charts
 
@@ -296,6 +300,22 @@ export interface ChainsScatterTxCostsChartBlock extends BaseBlock {
   type: 'chains-scatter-txcosts-chart';
 }
 
+export interface ChainsScatterAppRevenueChartBlock extends BaseBlock {
+  type: 'chains-scatter-app-revenue-chart';
+}
+
+export interface ChainsScatterFeesChartBlock extends BaseBlock {
+  type: 'chains-scatter-fees-chart';
+}
+
+export interface ChainsScatterRentPaidChartBlock extends BaseBlock {
+  type: 'chains-scatter-rent-paid-chart';
+}
+
+export interface ChainsScatterMarketCapChartBlock extends BaseBlock {
+  type: 'chains-scatter-market-cap-chart';
+}
+
 export interface ChainsScatterComparisonTableBlock extends BaseBlock {
   type: 'chains-scatter-comparison-table';
 }
@@ -309,7 +329,7 @@ export interface ScatterChartToggleBlock extends BaseBlock {
   defaultIndex?: number;
   charts: Array<{
     toggleLabel: string;
-    type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart';
+    type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart';
   }>;
 }
 
@@ -336,6 +356,10 @@ export type ContentBlock =
   | ChainsScatterStablesChartBlock
   | ChainsScatterThroughputChartBlock
   | ChainsScatterTxCostsChartBlock
+  | ChainsScatterAppRevenueChartBlock
+  | ChainsScatterFeesChartBlock
+  | ChainsScatterRentPaidChartBlock
+  | ChainsScatterMarketCapChartBlock
   | ChainsScatterComparisonTableBlock
   | ScatterChartToggleBlock;
 

@@ -571,6 +571,75 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
               }
             }
           }
+
+          // Economics metrics
+          if (processedItem.includes('{{avg_address_app_revenue}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'app_revenue',
+              (daaData, appRevenueData) => {
+                const appRevenue30d = appRevenueData.details?.summary?.last_30d?.data?.[0] ?? appRevenueData.summary?.last_30d?.data?.[0];
+                return appRevenue30d !== undefined ? appRevenue30d : null;
+              },
+              (val) => `$${formatNumber(val, 2)}`
+            );
+            processedItem = processedItem.replace('{{avg_address_app_revenue}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_chain_revenue}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'fees',
+              (daaData, feesData) => {
+                const fees30d = feesData.details?.summary?.last_30d?.data?.[0] ?? feesData.summary?.last_30d?.data?.[0];
+                return fees30d !== undefined ? fees30d : null;
+              },
+              (val) => {
+                // Format with 2 decimal places, keeping trailing zeros for currency
+                const absVal = Math.abs(val);
+                if (absVal < 1000) {
+                  return `$${val.toFixed(2)}`;
+                }
+                if (absVal >= 1000000000) {
+                  return `$${(val / 1000000000).toFixed(2)}B`;
+                }
+                if (absVal >= 1000000) {
+                  return `$${(val / 1000000).toFixed(2)}M`;
+                }
+                if (absVal >= 1000) {
+                  return `$${(val / 1000).toFixed(2)}K`;
+                }
+                return `$${val.toFixed(2)}`;
+              }
+            );
+            processedItem = processedItem.replace('{{avg_address_chain_revenue}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_rent_paid}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'rent_paid',
+              (daaData, rentPaidData) => {
+                const rentPaid30d = rentPaidData.details?.summary?.last_30d?.data?.[0] ?? rentPaidData.summary?.last_30d?.data?.[0];
+                return rentPaid30d !== undefined ? rentPaid30d : null;
+              },
+              (val) => `$${formatNumber(val, 4)}`
+            );
+            processedItem = processedItem.replace('{{avg_address_rent_paid}}', value);
+          }
+
+          if (processedItem.includes('{{avg_address_market_cap}}')) {
+            const value = await calculateAveragePerAddress(
+              'daa',
+              'market_cap',
+              (daaData, marketCapData) => {
+                const marketCap30d = marketCapData.details?.summary?.last_30d?.data?.[0] ?? marketCapData.summary?.last_30d?.data?.[0];
+                return marketCap30d !== undefined ? marketCap30d : null;
+              },
+              (val) => `$${formatNumber(val, 2)}`
+            );
+            processedItem = processedItem.replace('{{avg_address_market_cap}}', value);
+          }
         }
       }
 
