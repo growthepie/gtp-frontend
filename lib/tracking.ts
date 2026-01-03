@@ -12,7 +12,7 @@ function hasGrantedConsent(): boolean {
 }
 
 /**
- * Track an event to both VA & GA
+ * Track an event to both VA & GA (via GTM dataLayer)
  */
 export function track(
   event: string,
@@ -21,14 +21,17 @@ export function track(
   // Send to Vercel Analytics
   vaTrack(event, params)
 
-  // Send to GA via GTM only if user has granted consent
-  if (typeof window !== 'undefined' && window.gtag && hasGrantedConsent()) {
-    window.gtag('event', event, params)
+  // Send to GTM dataLayer only if user has granted consent
+  if (typeof window !== 'undefined' && window.dataLayer && hasGrantedConsent()) {
+    window.dataLayer.push({
+      event,
+      ...params
+    })
   }
 }
 
 declare global {
   interface Window {
-    gtag?: (command: string, action: string, params?: Record<string, unknown>) => void
+    dataLayer?: Record<string, unknown>[]
   }
 }
