@@ -12,17 +12,27 @@ export function Analytics({ gtmId }: { gtmId: string }) {
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = function(){dataLayer.push(arguments);}
-          
-          gtag('consent', 'default', ${JSON.stringify(defaultConsent)});
-          
-          // Reset old consents (before version 2)
+
+          // Check for existing consent BEFORE setting defaults
           (function() {
-            var cookie = document.cookie.split('; ').find(row => row.startsWith('gtpCookieConsent='));
-            var version = document.cookie.split('; ').find(row => row.startsWith('gtpConsentVersion='));
-            
-            if (cookie && !version) {
-              // Delete old cookie to trigger re-consent
+            var consentCookie = document.cookie.split('; ').find(function(row) { return row.startsWith('gtpCookieConsent='); });
+            var versionCookie = document.cookie.split('; ').find(function(row) { return row.startsWith('gtpConsentVersion='); });
+
+            // Reset old consents (before version 2)
+            if (consentCookie && !versionCookie) {
               document.cookie = 'gtpCookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+              consentCookie = null;
+            }
+
+            // Determine consent state from cookie VALUE (not just existence)
+            var hasGrantedConsent = consentCookie && consentCookie.split('=')[1] === 'true';
+
+            if (hasGrantedConsent) {
+              // User previously accepted - set granted consent
+              gtag('consent', 'default', ${JSON.stringify(ANALYTICS_CONFIG.consentTypes)});
+            } else {
+              // New user or declined - set denied consent
+              gtag('consent', 'default', ${JSON.stringify(defaultConsent)});
             }
           })();
         `}

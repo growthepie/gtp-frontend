@@ -3,7 +3,16 @@
 import { track as vaTrack } from '@vercel/analytics'
 
 /**
- * Track an event to both VA & GA
+ * Check if user has granted cookie consent
+ */
+function hasGrantedConsent(): boolean {
+  if (typeof document === 'undefined') return false
+  const cookie = document.cookie.split('; ').find(row => row.startsWith('gtpCookieConsent='))
+  return cookie ? cookie.split('=')[1] === 'true' : false
+}
+
+/**
+ * Track an event to both VA & GA (via GTM dataLayer)
  */
 export function track(
   event: string,
@@ -12,14 +21,17 @@ export function track(
   // Send to Vercel Analytics
   vaTrack(event, params)
 
-  // Send to GA via GTM
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', event, params)
+  // Send to GTM dataLayer only if user has granted consent
+  if (typeof window !== 'undefined' && window.dataLayer && hasGrantedConsent()) {
+    window.dataLayer.push({
+      event,
+      ...params
+    })
   }
 }
 
 declare global {
   interface Window {
-    gtag?: (command: string, action: string, params?: Record<string, unknown>) => void
+    dataLayer?: Record<string, unknown>[]
   }
 }
