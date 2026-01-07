@@ -1,9 +1,9 @@
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import { MasterURL } from "@/lib/urls";
 
-export default function Head() {
-  const IS_DEV_HOST = process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev.") || process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-");
+const IS_DEV = process.env.IS_DEV === "true";
 
+export default function Head() {
   return (
     <>
       {/* Preload master JSON file with high priority */}
@@ -53,7 +53,7 @@ export default function Head() {
       <link rel="manifest" href="/site.webmanifest" />
       <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#da532c" />
-      {IS_DEV_HOST && <meta name="robots" content="noindex" />}
+      {IS_DEV && <meta name="robots" content="noindex" />}
     </>
   );
 }
