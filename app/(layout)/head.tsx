@@ -2,8 +2,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import { MasterURL } from "@/lib/urls";
 
 export default function Head() {
-  const HOST = typeof window !== "undefined" ? window.location.host : "";
-  const IS_DEV_HOST = HOST.includes("dev.") || HOST.includes("dev-");
+  const IS_DEV_HOST = process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev.") || process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-");
 
   return (
     <>
