@@ -19,7 +19,7 @@ const Fusaka: QuickBiteData = {
       title: null,
       description: "Select Timeframe",
       layout: "segmented",
-      defaultIndex: 1,
+      defaultIndex: 2,
       charts: [
         {
           toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
@@ -349,7 +349,7 @@ const Fusaka: QuickBiteData = {
       title: null,
       description: "Select Timeframe",
       layout: "segmented",
-      defaultIndex: 2,
+      defaultIndex: 3,
       charts: [
         {
           toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
