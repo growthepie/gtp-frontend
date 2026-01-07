@@ -1,0 +1,11 @@
+name: Deploy on global-top-bar push
+on:
+  push:
+    branches:
+      - global-top-bar
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.GLOBAL_TOP_BAR_DEPLOY_HOOK }}

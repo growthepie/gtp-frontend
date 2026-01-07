@@ -3,11 +3,14 @@ import {
   EpochBudgetItem,
   EpochStats,
   OctantClient,
-} from "@/lib/apis/octant";
+} from "@/lib/apis/api";
 import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
+import { NextRequest } from "next/server";
 
-export const revalidate = 60 * 1; // 1 minutes
+export const revalidate = 5; // 5 seconds
+export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 const Client = new OctantClient({
   baseUrl: "https://backend.mainnet.octant.app",
@@ -76,6 +79,7 @@ export type EpochState =
 
 export type EpochProject = {
   name: string;
+  project_key: string;
   address: string;
   profileImageMedium: string;
   website: {
@@ -204,10 +208,10 @@ const getAllEpochs = async () => {
 
     const allocationsByProject = epochAllocations
       ? epochAllocations.reduce((acc, a) => {
-          if (!acc[a.proposal]) {
-            acc[a.proposal] = [];
+          if (!acc[a.project]) {
+            acc[a.project] = [];
           }
-          acc[a.proposal].push(a);
+          acc[a.project].push(a);
           return acc;
         }, {} as { [proposal: string]: EpochAllocation[] })
       : {};
@@ -215,10 +219,10 @@ const getAllEpochs = async () => {
     const totalAllocatedByProject: { [address: string]: number } = {};
     if (epochAllocations) {
       for (const allocation of epochAllocations) {
-        if (!totalAllocatedByProject[allocation.proposal]) {
-          totalAllocatedByProject[allocation.proposal] = 0;
+        if (!totalAllocatedByProject[allocation.project]) {
+          totalAllocatedByProject[allocation.project] = 0;
         }
-        totalAllocatedByProject[allocation.proposal] += parseFloat(
+        totalAllocatedByProject[allocation.project] += parseFloat(
           allocation.amount,
         );
       }
@@ -289,6 +293,15 @@ const getAllEpochs = async () => {
       }
     }
 
+    if (epochNum >= 4) {
+      // subtract total donated from estimated rewards total
+      for (const address in estimatedRewardsByProject) {
+        estimatedRewardsByProject[address].matched =
+          estimatedRewardsByProject[address].total -
+          (totalAllocatedByProject[address] || 0);
+      }
+    }
+
     const totalRewardsRankByProject = Object.entries(
       finalizedRewards ? finalizedRewardsByProject : estimatedRewardsByProject,
     ).sort((a, b) => b[1].total - a[1].total);
@@ -310,6 +323,8 @@ const getAllEpochs = async () => {
         epochState = "FINALIZED";
       }
     }
+
+    // if (epochState === "PENDING" || epochState === "ACTIVE") continue;
 
     epochs.push({
       stats: epochStats.data,
@@ -340,7 +355,7 @@ const getAllEpochs = async () => {
           return {
             address,
             name: metadata.name,
-
+            project_key: metadata.name,
             profileImageMedium: metadata.profileImageMedium,
             website: metadata.website,
 
@@ -382,7 +397,11 @@ const getAllEpochs = async () => {
                   total: 0,
                 },
             thresholdReached:
-              totalAllocatedByProject[address] >= rewardsThreshold,
+              epochNum >= 4
+                ? allocationsByProject[address] &&
+                  new Set(allocationsByProject[address].map((a) => a.donor))
+                    .size > 0
+                : totalAllocatedByProject[address] >= rewardsThreshold,
           };
         }),
       ),
@@ -392,51 +411,20 @@ const getAllEpochs = async () => {
   return epochs;
 };
 
-const totalEffectiveDeposits = async (epoch: number) => {
-  const estimatedTotalEffective = await Client.deposits
-    .getEstimatedTotalEffectiveDeposit()
-    .then((res) => res.data.totalEffective);
-
-  const totalEffective = await Client.deposits
-    .getTotalEffectiveDeposit(epoch)
-    .then((res) => res.data.totalEffective);
-
-  const locked_ratio = await Client.deposits
-    .getLockedRatio(epoch)
-    .then((res) => res.data.lockedRatio);
-
-  return [
-    {
-      label: "Estimated Total Effective Deposits",
-      value:
-        estimatedTotalEffective !== null
-          ? formatNumber(parseInt(estimatedTotalEffective) / 10 ** 18, true)
-          : "N/A",
-    },
-    {
-      label: "Total Effective Deposits",
-      value:
-        totalEffective !== null
-          ? formatNumber(parseInt(totalEffective) / 10 ** 18, true)
-          : "N/A",
-    },
-    {
-      label: "Locked Ratio",
-      value:
-        locked_ratio !== null
-          ? formatNumber(parseFloat(locked_ratio).toFixed(4), false, true)
-          : "N/A",
-    },
-  ];
-};
-
 const fetchData = async () => {
   const epochs = await getAllEpochs();
-
   return epochs;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+
+  if (!params.get("isCron")) {
+    // This is running during build time
+    return new Response(JSON.stringify([]), {
+      headers: { "content-type": "application/json" },
+    });
+  }
   const result = await fetchData();
   // console.log(result[2].projects[2]);
 

@@ -12,23 +12,24 @@ import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
 import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useMaster } from "@/contexts/MasterContext";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
-//     title: "Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
+//     title: "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Engagement",
 //     description:
 //       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
 //   };
 // }
 
 export default function Page() {
+  const { AllChainsByKeys, AllChains } = useMaster();
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
@@ -38,16 +39,14 @@ export default function Page() {
   const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
   const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
 
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (queryTheme == "light") {
-        setTheme("light");
-      } else {
-        setTheme("dark");
-      }
-    }, 1000);
-  }, []);
+    if (queryTheme === "light") {
+      setTheme("light");
+    } else {
+      setTheme("dark");
+    }
+  }, [queryTheme, setTheme]);
 
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 
@@ -80,48 +79,34 @@ export default function Page() {
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !landing) return;
 
     setSelectedChains(
-      Object.keys(data.chains)
+      Object.keys(landing.data.metrics.table_visual)
         .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
         .map((chain) => chain),
     );
   }, [data, landing, selectedMetric, selectedTimeInterval]);
 
-  const chains = useMemo(() => {
-    if (!data) return [];
 
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
-    );
-  }, [data]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),
   );
+
+
   return (
     <>
       {data && landing && master ? (
         <LandingChart
-          data={Object.keys(data.chains)
-            .filter((chain) => selectedChains.includes(chain))
-            .map((chain) => {
-              return {
-                name: chain,
-                // type: 'spline',
-                types: data.chains[chain].data.types,
-                data: data.chains[chain].data.data,
-              };
-            })}
+          data={data}
           master={master}
-          sources={landing.data.metrics.user_base.source}
+          sources={landing.data.metrics.engagement.source}
           cross_chain_users={data.cross_chain_users}
           cross_chain_users_comparison={data.cross_chain_users_comparison}
           latest_total={data.latest_total}

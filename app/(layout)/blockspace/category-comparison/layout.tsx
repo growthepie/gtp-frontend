@@ -1,40 +1,34 @@
 import { Metadata } from "next";
-import { navigationItems } from "@/lib/navigation";
+import { getPageMetadata } from "@/lib/metadata";
 
 type Props = {
   params: { metric: string };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const option = navigationItems
-    .find((item) => item.label === "Blockspace")
-    ?.options.find((item) => item.urlKey === "category-comparison");
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/blockspace/category-comparison",
+    {}
+  );
 
-  if (option) {
-    const currentDate = new Date();
-    // Set the time to 2 am
-    currentDate.setHours(2, 0, 0, 0);
-    // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
-    const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
-    return {
-      title: option.page?.title,
-      description: option.page?.description,
+  const currentDate = new Date();
+  // Set the time to 2 am
+  currentDate.setHours(2, 0, 0, 0);
+  // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
+  const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
+  return {
+      title: metadata.title,
+      description: metadata.description,
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/blockspace/category-comparison.png?date=${dateString}`,
+            url: `https://api.growthepie.com/v1/og_images/blockspace/category-comparison.png`,
             width: 1200,
             height: 627,
-            alt: "growthepie.xyz",
+            alt: "growthepie.com",
           },
         ],
       },
-    };
-  }
-
-  return {
-    title: "Metric not found",
-    description: "Metric not found",
   };
 }
 

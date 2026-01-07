@@ -32,15 +32,15 @@ export const Switch = ({
             <div
               className={`block 
                         w-[50px] h-7
-                        rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
+                        rounded-full transition duration-200 ease-in-out text-forest-900 bg-color-bg-medium`}
             ></div>
             <div
               className={`dot absolute left-0.5 top-0.5
                         w-6
                         h-6
                         rounded-full transition duration-200 ease-in-out
-                        bg-forest-900 text-forest-500 
-                        ${checked ? "transform translate-x-[22px]" : ""}
+                         text-color-text-primary 
+                        ${checked ? "transform translate-x-[22px] bg-[#CDD8D3] " : "bg-color-ui-hover "}
                         rounded-full`}
             ></div>
           </div>

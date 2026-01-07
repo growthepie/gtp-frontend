@@ -17,7 +17,7 @@ const ChainsList: { [key: string]: Chains } = {
     name: "All Chains",
     icon: "/all-chains.svg",
   },
-  "OP Chains": {
+  "op-stack": {
     name: "OP Chains",
     icon: "/Optimism-logo.svg",
   },
@@ -55,7 +55,7 @@ export default function EcosystemDropdown({}: // optOpen,
     if (selectedStack && Object.keys(ChainsList).includes(selectedStack)) {
       setChainEcosystemFilter(selectedStack);
     }
-  }, [ChainsList, selectedStack, setChainEcosystemFilter]);
+  }, [selectedStack, setChainEcosystemFilter]);
 
   const chainHeight = (Object.keys(ChainsList).length - 1) * 100;
 
@@ -70,12 +70,12 @@ export default function EcosystemDropdown({}: // optOpen,
         <ul
           className={`relative z-[30] transition-[width] duration-300 ease-in-out ${
             optOpen
-              ? "border-l border-r border-b rounded-2xl lg:rounded-3xl dark:bg-[#1F2726] bg-white  border-forest-900 dark:border-forest-500 transition-colors"
+              ? "rounded-2xl border-b border-l border-r border-forest-900 bg-white transition-colors dark:border-forest-500 dark:bg-color-bg-default lg:rounded-3xl"
               : ""
           }`}
         >
           <li
-            className={`flex justify-start items-center overflow-hidden cursor-pointer transition-all bg-transparent border-forest-900 dark:border-forest-500 border-[1px] rounded-full py-[6px] px-[10px] space-x-[5px] lg:py-[10px] lg:px-[15px] lg:space-x-[10px]`}
+            className={`flex cursor-pointer items-center justify-start space-x-[5px] overflow-hidden rounded-full border-[1px] border-forest-900 bg-transparent px-[10px] py-[6px] transition-all dark:border-forest-500 lg:space-x-[10px] lg:px-[15px] lg:py-[10px]`}
             onClick={() => {
               setOptOpen(!optOpen);
             }}
@@ -85,7 +85,7 @@ export default function EcosystemDropdown({}: // optOpen,
                 <div>
                   <Icon
                     icon={"feather:chevron-right"}
-                    className={`font-light !h-[20px] !w-[20px] lg:!h-[24px] lg:!w-[24px] transition-transform duration-300 ease-in-out transform text-forest-900 dark:text-forest-50 ${
+                    className={`!h-[20px] !w-[20px] transform font-light text-forest-900 transition-transform duration-300 ease-in-out dark:text-forest-50 lg:!h-[24px] lg:!w-[24px] ${
                       optOpen ? "rotate-90" : "rotate-0"
                     }`}
                   />
@@ -107,7 +107,7 @@ export default function EcosystemDropdown({}: // optOpen,
                   quality={100}
                 />
                 <div
-                  className={`text-xs lg:text-sm whitespace-nowrap leading-snug transition-all duration-300 ease-in-out overflow-hidden ${
+                  className={`overflow-hidden whitespace-nowrap text-xs leading-snug transition-all duration-300 ease-in-out lg:text-sm ${
                     optOpen ? "w-full" : "w-0 lg:w-full"
                   }`}
                 >
@@ -118,7 +118,7 @@ export default function EcosystemDropdown({}: // optOpen,
           </li>
           <div
             className={`transition-all duration-300 ease-in-out ${
-              optOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
+              optOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0"
             }`}
           >
             {Object.keys(ChainsList).map((stack, i) => {
@@ -126,9 +126,9 @@ export default function EcosystemDropdown({}: // optOpen,
                 stack !== selectedStack && (
                   <li
                     key={i}
-                    className={`flex justify-start items-center cursor-pointer  rounded-full py-[6px] px-[10px] space-x-[5px] lg:py-[10px] lg:px-[15px] lg:space-x-[10px] text-sm w-full ${
+                    className={`flex w-full cursor-pointer items-center justify-start space-x-[5px] rounded-full px-[10px] py-[6px] text-sm lg:space-x-[10px] lg:px-[15px] lg:py-[10px] ${
                       optOpen ? "opacity-100" : "opacity-0"
-                    } hover:bg-forest-100 hover:dark:bg-black/10`}
+                    } hover:bg-color-bg-default hover:dark:bg-black/10`}
                     onClick={() => {
                       setSelectedStack(stack);
                       setOptOpen(false);
@@ -137,7 +137,7 @@ export default function EcosystemDropdown({}: // optOpen,
                     <div>
                       <Icon
                         icon={"feather:chevron-right"}
-                        className={`font-light !h-[20px] !w-[20px] lg:!h-[24px] lg:!w-[24px] opacity-0`}
+                        className={`!h-[20px] !w-[20px] font-light opacity-0 lg:!h-[24px] lg:!w-[24px]`}
                       />
                     </div>
                     <Image
@@ -157,7 +157,7 @@ export default function EcosystemDropdown({}: // optOpen,
                       quality={100}
                     />
                     <div
-                      className={`text-xs lg:text-sm whitespace-nowrap leading-snug transition-all duration-300 ease-in-out overflow-hidden  ${
+                      className={`overflow-hidden whitespace-nowrap text-xs leading-snug transition-all duration-300 ease-in-out lg:text-sm ${
                         optOpen ? "w-full" : "w-0 lg:w-full"
                       }`}
                     >

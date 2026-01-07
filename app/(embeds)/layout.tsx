@@ -8,60 +8,10 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 // import Head from "./head";
-import { Graph } from "schema-dts";
 
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.growthepie.xyz/#organization",
-      name: "growthepie",
-      url: "https://www.growthepie.xyz",
-      logo: "https://www.growthepie.xyz/logo_full.png",
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.growthepie.xyz/#website",
-      url: "https://www.growthepie.xyz",
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-      publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.growthepie.xyz/logo_full.png",
-        },
-      },
-    },
-  ],
-};
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: false});
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.xyz",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.xyz/logo_full.png",
-//     },
-//   },
-// };
-
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",
@@ -69,10 +19,10 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.growthepie.xyz"),
+  metadataBase: new URL("https://www.growthepie.com"),
   title: {
     absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Engagement - growthepie",
     template: "%s - growthepie",
   },
   description:
@@ -80,13 +30,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
-    url: "https://www.growthepie.xyz",
+    url: "https://www.growthepie.com",
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: "https://www.growthepie.com/gtp_og.png",
         width: 1200,
         height: 627,
-        alt: "growthepie.xyz",
+        alt: "growthepie.com",
       },
     ],
     locale: "en_US",
@@ -94,13 +44,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "growthepie.xyz",
+    title: "growthepie.com",
     description: "Growing Ethereum’s Ecosystem Together",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: ["https://www.growthepie.com/gtp_og.png"],
   },
   robots: {
     index: true,
@@ -148,13 +98,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       {/* <Head /> */}
-      <body className="sbg-white sdark:bg-[#1F2726] bg-transparent text-forest-900 dark:text-forest-500 font-raleway">
+      <body className="bg-transparent text-color-text-primary font-raleway">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>{children}</Providers>
-        <Analytics />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );

@@ -19,14 +19,17 @@
 .DS_Store
 *.pem
 
+# cache
+.cache/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
+# env files
+.env*
 
 # vercel
 .vercel
@@ -36,3 +39,26 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# sitemaps, robots.txt
+/public/sitemap.xml
+/public/sitemap-0.xml
+/public/robots.txt
+
+# icon library
+/public/icon-library
+
+# figma styles
+/lib/figma-styles/output
+
+# icons logs, figma cache, etc.
+/lib/icons-process.log
+/lib/figma-export.log
+/lib/figma-file-cache.json.gz
+
+# analytics testing
+test-analytics.mjs
+
+# Screenshots
+*.png
+

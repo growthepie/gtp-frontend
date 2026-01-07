@@ -1,39 +1,35 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
-import Image from "next/image";
-import { useMediaQuery } from "@react-hook/media-query";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
-  AllChains,
-  AllChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
-import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Swiper from "@/components/layout/SwiperItems";
+import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
-import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
-import Link from "next/link";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
+import { useMaster } from "@/contexts/MasterContext";
+import { useLocalStorage } from "usehooks-ts";
+import ChainTypeFilter from "../ChainTypeFilter";
+import { GTPIcon } from "../layout/GTPIcon";
+import Subheading from "../layout/Subheading";
+import Heading from "../layout/Heading";
+import { TopRowContainer, TopRowParent } from "../layout/TopRow";
 
-export default function LandingUserBaseChart() {
-  // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
-
+export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const [isSidebarOpen] = useState(false);
-
-  // useEffect(() => {
-  //   setIsSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
+  const [selectedChainTypes, setSelectedChainTypes] = useLocalStorage<string[]>(
+    "landingChainTypeFilter",
+    ["l1", "rollup", "others"]
+  );
+  const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
     data: landing,
@@ -54,38 +50,19 @@ export default function LandingUserBaseChart() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState("Total Users");
+  const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
+
+  const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
+
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  useEffect(() => {
-    if (!data) return;
 
-    setSelectedChains(
-      Object.keys(data.chains)
-        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
-        .map((chain) => chain),
-    );
-  }, [data, landing, selectedMetric, selectedTimeInterval]);
 
-  const chains = useMemo(() => {
-    if (!data || !master) return [];
-
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master) &&
-        chain.key != "ethereum",
-    );
-  }, [data, master]);
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key),
-  );
 
   return (
     <>
@@ -94,32 +71,20 @@ export default function LandingUserBaseChart() {
         dataValidating={[masterValidating, landingValidating]}
         fullScreen={true}
       />
-      {data && landing && master ? (
+
+      {data && landing && master && AllChainsByKeys ? (
         <>
           <Container
-            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${
-              isSidebarOpen
-                ? "md:h-[718px] lg:h-[626px]"
-                : "md:h-[718px] lg:h-[657px]"
-            } rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full`}
           >
             <LandingChart
-              data={Object.keys(data.chains)
-                .filter((chain) => selectedChains.includes(chain))
-                .map((chain) => {
-                  return {
-                    name: chain,
-                    // type: 'spline',
-                    types: data.chains[chain].data.types,
-                    data: data.chains[chain].data.data,
-                  };
-                })}
+              data={data}
               master={master}
-              sources={landing.data.metrics.user_base.source}
+              sources={landing.data.metrics.engagement.source}
               cross_chain_users={data.cross_chain_users}
               cross_chain_users_comparison={data.cross_chain_users_comparison}
-              latest_total={data.latest_total}
-              latest_total_comparison={data.latest_total_comparison}
+              latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}
+              latest_total_comparison={focusEnabled ? data.latest_total_comparison_l2 : data.latest_total_comparison}
               l2_dominance={data.l2_dominance}
               l2_dominance_comparison={data.l2_dominance_comparison}
               selectedMetric={selectedMetric}
@@ -127,17 +92,53 @@ export default function LandingUserBaseChart() {
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
-          <HorizontalScrollContainer>
-            <LandingMetricsTable
-              data={{ chains: landing.data.metrics.table_visual }}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chains={chains}
-              metric={selectedTimeInterval}
-              master={master}
-              // interactable={selectedMetric !== "Total Users"}
-              interactable={false}
-            />
+          <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
+                <GTPIcon
+                  icon="gtp-multiple-chains"
+                  size="lg"
+                />
+                <Heading
+                  id="layer-2-traction-title"
+                  className="heading-large-lg"
+                  as="h2"
+                >
+                  Chains in the Ecosystem
+                </Heading>
+              </div>
+            </div>
+            <Subheading className="text-md px-[5px]">
+              Overview of the chains being part of the (wider) Ethereum ecosystem.
+            </Subheading>
+          </Container>
+          <Container className="pt-[15px]">
+            <TopRowContainer className="!justify-normal flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
+              <TopRowParent className="!justify-center lg:!justify-normal">
+                <div className="text-md pl-[5px]">Choose which chains to show</div>
+              </TopRowParent>
+              <TopRowParent className="text-md lg:min-h-[30px] !flex-1">
+                <ChainTypeFilter
+                  selectedTypes={selectedChainTypes}
+                  onChange={setSelectedChainTypes}
+                />
+              </TopRowParent>
+            </TopRowContainer>
+          </Container>
+          <HorizontalScrollContainer reduceLeftMask={true}>
+            <TableRankingProvider>
+              <div className="flex flex-col gap-y-[5px]">
+              <LandingMetricsTable
+                data={{ chains: landing.data.metrics.table_visual }}
+                master={master}
+                // interactable={selectedMetric !== "Total Users"}
+                interactable={false}
+                sort={sort}
+                setSort={setSort}
+                selectedChainTypes={selectedChainTypes}
+              />
+              </div>
+            </TableRankingProvider>
           </HorizontalScrollContainer>
         </>
       ) : (
@@ -151,7 +152,7 @@ export default function LandingUserBaseChart() {
           >
             <div
               role="status"
-              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-color-bg-default"
             >
               <Icon
                 icon="feather:loading"
@@ -169,7 +170,7 @@ export default function LandingUserBaseChart() {
           >
             <div
               role="status"
-              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-color-bg-default"
             >
               <Icon
                 icon="feather:loading"

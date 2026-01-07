@@ -20,6 +20,7 @@ export interface ChainData {
   chain_name: string;
   overview: Overviews;
   daily: Daily;
+  totals: Overviews;
 }
 
 export interface Daily {
@@ -57,4 +58,21 @@ export interface Categories {
   token_transfers: number[];
   nft_fi: number[];
   cefi: number[];
+}
+
+
+export interface StreaksData {
+  last_updated_utc: string;
+  data: {
+    [key: string]: {
+      txcount: {
+        value: number;
+      };
+      fees: {
+        usd: number;
+        eth: number;
+      };
+      
+    }
+  }
 }

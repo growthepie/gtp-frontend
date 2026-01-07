@@ -56,9 +56,8 @@ const CategoryBar = ({
     return {
       native_transfers: false,
       token_transfers: false,
-      nft_fi: false,
-      defi: false,
-      cefi: false,
+      collectibles: false,
+      finance: false,
       utility: false,
       scaling: false,
       gaming: false,
@@ -67,7 +66,7 @@ const CategoryBar = ({
   return (
     // <Container>
     <div
-      className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-forest-1000 ${openSub ? "h-[170px]" : "h-[65px]"
+      className={`border-color-text-primary flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-color-ui-active ${openSub ? "h-[170px]" : "h-[65px]"
         }`}
     >
       {Object.keys(categories).map((category, i) =>
@@ -75,8 +74,8 @@ const CategoryBar = ({
           <div
             key={category}
             className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-[700ms]  justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${selectedCategory === category
-              ? "bg-[#5A6462]"
-              : "hover:bg-forest-500 dark:hover:bg-white/5"
+              ? "bg-color-bg-default"
+              : "bg-color-ui-default hover:bg-color-ui-hover"
               } `}
             onClick={() => {
               if (selectedCategory === category) {
@@ -110,23 +109,7 @@ const CategoryBar = ({
                     ? "125px"
                     : "10px",
 
-              borderLeft: "0.5px dotted var(--dark-active-text, #CDD8D3)",
-              background:
-                selectedCategory === category
-                  ? "#5A6462"
-                  : isCategoryHovered[category]
-                    ? "#FFFFFF0D"
-                    : `linear-gradient(
-                    90deg,
-                    rgba(16, 20, 19, ${0.3 - (i / (Object.keys(categories).length - 1)) * 0.2
-                    }) 0%,
-                    #101413 15.10%,
-                    rgba(16, 20, 19, ${0.06 + (i / Object.keys(categories).length) * 0.94
-                    }) 48.96%,
-                    #101413 86.98%,
-                    rgba(16, 20, 19, ${0.3 - (i / (Object.keys(categories).length - 1)) * 0.2
-                    }) 100%
-                  )`,
+              borderLeft: "0.5px dotted rgb(var(--text-primary))",
             }}
           >
             <div
@@ -161,7 +144,7 @@ const CategoryBar = ({
                   <div className="mr-2 text-[10px]">
                     Select All Subcategories
                   </div>
-                  <div className="rounded-full flex items-center justify-center bg-forest-900 w-[15px] h-[15px]">
+                  <div className="rounded-full flex items-center justify-center bg-color-ui-active w-[15px] h-[15px]">
                     <Icon
                       icon="feather:check-circle"
                       className={`w-[13px] h-[13px] ${checkAllSelected(category)
@@ -176,9 +159,9 @@ const CategoryBar = ({
                 data[category].subcategories.list.map((subcategory) => (
                   <button
                     key={subcategory}
-                    className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${checkSubcategory(category, subcategory)
-                      ? "opacity-100"
-                      : "opacity-30"
+                    className={`flex border-color-ui-hover rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-color-ui-hover z-10 ${checkSubcategory(category, subcategory)
+                      ? "text-color-text-primary"
+                      : "text-color-text-secondary"
                       }`}
                     onClick={(e) => {
                       handleToggleSubcategory(category, subcategory);
@@ -188,7 +171,7 @@ const CategoryBar = ({
                     <div className="mr-2 text-[10px]">
                       {formatSubcategories(subcategory)}
                     </div>
-                    <div className="rounded-full flex items-center justify-center bg-forest-900 w-[15px] h-[15px]">
+                    <div className="rounded-full flex items-center justify-center bg-color-ui-active w-[15px] h-[15px]">
                       <Icon
                         icon="feather:check-circle"
                         className={`w-[13px] h-[13px]  ${checkSubcategory(category, subcategory)
@@ -225,7 +208,7 @@ const CategoryBar = ({
           <div
             key={category}
             className={
-              "relative flex flex-col min-w-[140px] w-full h-full justify-start mt-2 ml-0.5 pl-[18px] dark:text-white bg-white dark:bg-inherit"
+              "relative flex flex-col min-w-[140px] w-full h-full justify-start pt-2 pl-[20px] bg-color-ui-default text-color-text-primary"
             }
           >
             <div className="text-sm font-bold pb-[10px]">

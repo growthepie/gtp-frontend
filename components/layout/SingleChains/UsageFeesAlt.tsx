@@ -93,7 +93,7 @@ export default function UsageFees({
 
   return (
     <div
-      className={` bg-clip-border h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] w-full overflow-hidden ${isMobile ? "justify-between" : "justify-normal"
+      className={` bg-clip-border h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-color-bg-default w-full overflow-hidden ${isMobile ? "justify-between" : "justify-normal"
         } `}
     >
       {shadowElement ? shadowElement : null}
@@ -174,7 +174,7 @@ export default function UsageFees({
       <div className="h-full flex flex-col justify-between items-end pr-[5px] z-10 ">
         <Link
           href={`/fees`}
-          className="rounded-full  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
+          className="rounded-full  w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
         >
           <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
         </Link>

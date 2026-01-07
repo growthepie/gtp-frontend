@@ -1,72 +1,22 @@
 import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { Analytics as GTMAnalytics } from "@/components/Analytics";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono, Source_Code_Pro } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
-import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
-import { Graph } from "schema-dts";
 import Share from "@/components/Share";
-import Details from "@/components/Details";
-import BottomBanner from "@/components/BottomBanner";
-import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import Footer from "@/components/layout/Footer";
+import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
+import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.growthepie.xyz/#organization",
-      name: "growthepie",
-      url: "https://www.growthepie.xyz",
-      logo: "https://www.growthepie.xyz/logo_full.png",
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.growthepie.xyz/#website",
-      url: "https://www.growthepie.xyz",
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-      publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.growthepie.xyz/logo_full.png",
-        },
-      },
-    },
-  ],
-};
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.xyz",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.xyz/logo_full.png",
-//     },
-//   },
-// };
-
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",
@@ -74,29 +24,28 @@ export const viewport = {
 };
 
 const gtpMain = {
-  title: {
-    absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
-    template: "%s - growthepie",
-  },
+  title: "growthepie – Ethereum Ecosystem Analytics",
   description:
-    "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+    "Comprehensive data and insights across Ethereum Layer 1 and Layer 2 networks. Visualize usage, economics, and growth of the entire Ethereum ecosystem.",
 };
 
 const gtpFees = {
   title: {
-    absolute: "Ethereum Layer 2 Fees - Real-Time Data - growthepie",
+    absolute: "Ethereum Layer 2 Fees - growthepie",
     template: "%s - growthepie",
   },
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
-const isFees = true;
+const isFees = false;
 
-const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+const host = isFees ? "fees.growthepie.com" : "www.growthepie.com";
 
 const title = isFees ? gtpFees.title : gtpMain.title;
 const description = isFees ? gtpFees.description : gtpMain.description;
+
+// YYYY-MM-DD UTC
+const current_date = new Date().toISOString().split("T")[0];
 
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
@@ -104,15 +53,14 @@ export const metadata: Metadata = {
   description: description,
   openGraph: {
     title: "growthepie",
-    description: "Growing Ethereum’s Ecosystem Together",
-    url: "https://www.growthepie.xyz",
-
+    description: "Visualizing Ethereum's Story Through Data",
+    url: "https://www.growthepie.com",
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: `https://api.growthepie.com/v1/og_images/landing.png?date=${current_date}`,
         width: 1200,
         height: 627,
-        alt: "growthepie.xyz",
+        alt: "growthepie.com",
       },
     ],
     locale: "en_US",
@@ -120,13 +68,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "growthepie.xyz",
-    description: "Growing Ethereum’s Ecosystem Together",
+    title: "growthepie.com",
+    description: "Visualizing Ethereum's Story Through Data",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: [`https://www.growthepie.com/gtp_og.png?date=${current_date}`],
   },
   robots: {
     index: true,
@@ -148,22 +96,39 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
-const robotoMono = Roboto_Mono({
+const firaMono = Fira_Mono({
   subsets: ["latin"],
-  variable: "--font-roboto-mono",
+  variable: "--font-fira-mono",
+  weight: ["400", "500", "700"],
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
+
+const firaSans = Fira_Sans({
+  subsets: ["latin"],
+  variable: "--font-fira-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  variable: "--font-source-code-pro",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
 export default function RootLayout({
   children,
@@ -182,11 +147,23 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
+      style={{
+        fontFeatureSettings: "'pnum' on, 'lnum' on",
+      }}
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
+      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
+        {/* GTM noscript fallback */}
+        <noscript>
+          <iframe 
+            src={`/api/insights/n.html?id=${gtpGtmId}`}
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html: script,
@@ -197,30 +174,38 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
+          <div
+            id="background-container"
+            className="background-container !fixed"
+          >
+            <div className="background-gradient-group">
+              <div className="background-gradient-yellow"></div>
+              <div className="background-gradient-green"></div>
+            </div>
+          </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px] min-h-screen">
+            <div className="flex min-h-screen w-full max-w-[1920px] md:pl-[30px]">
+              <ProjectsMetadataProvider>
+                <GlobalSearchBar />
+              </ProjectsMetadataProvider>
               <SidebarContainer />
-              <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-full relative min-h-full">
-                  <div className="background-container !fixed">
-                    <div className="background-gradient-group">
-                      <div className="background-gradient-yellow"></div>
-                      <div className="background-gradient-green"></div>
-                    </div>
-                  </div>
+              <div
+                id="content-panel"
+                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-inherit"
+              >
+                <div className="relative min-h-full w-full">
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 pb-[165px] min-h-[calc(100vh-218px-56px)] md:min-h-[calc(100vh-207px-80px)]">
+                  <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
                   </main>
-                  <BottomBanner />
+                  {/* <BottomBanner /> */}
+                  <Footer />
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
-                <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1920px] justify-end">
+                <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
                     {/* <Details /> */}
                     <Share />
-                  </div>
                 </div>
               </div>
             </div>
@@ -228,7 +213,8 @@ export default function RootLayout({
           <DeveloperTools />
           <CookieConsent />
         </Providers>
-        <Analytics />
+        <GTMAnalytics gtmId={gtpGtmId || ''} />
+        <Analytics scriptSrc="/api/va/script.js" />
       </body>
     </html>
   );

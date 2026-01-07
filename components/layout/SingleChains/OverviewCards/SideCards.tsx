@@ -1,0 +1,214 @@
+"use client";
+import useSWR from "swr";
+import { useState, useEffect, useMemo } from "react";
+import { useSSEChains } from "../useSSEChains";
+import TPSChartCard, { ChainTPSHistoryItem } from "./TPSChartCard";
+import TXCostCard from "./TXCostCard";
+import { GTPIcon } from "../../GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import moment from "moment";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import { Icon } from "@iconify/react";
+import HighlightCards from "./HighlightCards";
+import MetricCards from "./MetricCards";
+import EventsCard from "./EventsCard";
+import { EventItem } from "./EventsCard";
+import { EthereumEvents } from "@/types/api/MasterResponse";
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { isMobile } from "react-device-detect";
+import { ChainOverview } from "@/lib/chains";
+
+interface HistoryArrayItem {
+    tps: number;
+    timestamp: string;
+    timestamp_ms: number;
+}
+
+const COST_KEYS: Array<keyof ChainTPSHistoryItem> = [
+    "tx_cost_erc20_transfer",
+    "tx_cost_swap",
+    "tx_cost_avg",
+    "tx_cost_median",
+];
+
+const hasNonZeroTxCost = (data?: Partial<ChainTPSHistoryItem> | null) => {
+    if (!data) return false;
+    return COST_KEYS.some((key) => {
+        const value = data[key];
+        return typeof value === "number" && !Number.isNaN(value) && value !== 0;
+    });
+};
+
+
+const PartitionLine = ({ title, infoContent, leftIcon }: { title?: string, infoContent?: string, leftIcon?: string }) => {
+    return (
+        <div className={`flex items-center gap-x-[10px] w-full px-[10px] text-[#5A6462] ${title ? "h-fit" : "h-[0px] overflow-y-visible"}`}>
+            {leftIcon && (
+                <GTPIcon icon={leftIcon as GTPIconName} size="md" containerClassName="!size-[28px] flex items-center justify-center" />
+            )}
+            <div 
+                className="w-full h-[1px]" 
+                style={{
+                    backgroundImage: `linear-gradient(to right, #344240 50%, transparent 50%)`,
+                    backgroundSize: '4px 1px',
+                    backgroundRepeat: 'repeat-x'
+                }}
+            />
+            <div className="flex-1 flex items-center gap-x-[5px]">
+            {title && (
+                <div className="heading-large-xxs h-[17px] flex items-center whitespace-nowrap pr-[5px]">{title}</div>
+            )}
+            {infoContent && (
+            <div className='w-[15px] h-fit z-30'>
+                <GTPTooltipNew
+                    placement="bottom-start"
+                    size="md"
+                    allowInteract={true}
+                    trigger={
+                        <div
+                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
+                        data-tooltip-trigger
+                        >
+                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
+                        </div>
+                    }
+                    containerClass="flex flex-col gap-y-[10px]"
+                    positionOffset={{ mainAxis: -20, crossAxis: 20 }}
+
+                >
+                    <div>
+                        <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                        {infoContent}
+                        </TooltipBody>
+                    </div>
+                </GTPTooltipNew>
+            </div>
+            )}
+            </div>
+        </div>
+    )
+}
+
+export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: ChainOverview }) {
+
+    const [tpsHistory, setTpsHistory] = useState<any[]>([]);
+    const [costHistory, setCostHistory] = useState<ChainTPSHistoryItem[]>([]);
+    const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
+    const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
+    const [height, setHeight] = useState<number[]>([]);
+
+
+
+
+
+    const totalHeight = useMemo(() => { 
+        return height.reduce((acc, curr) => acc + curr, 0);
+    }, [height]);
+
+
+    useEffect(() => {
+        if (initialHistory?.history) {
+        const reversedHistory = [...initialHistory.history].reverse();
+        setTpsHistory(reversedHistory);
+        const initialCostEntries = (reversedHistory as ChainTPSHistoryItem[]).filter((item) => hasNonZeroTxCost(item));
+        setCostHistory(initialCostEntries.slice(-24));
+        }
+    }, [initialHistory]);
+
+    // 2. Append new live data points from the SSE stream to the chart's history.
+    useEffect(() => {
+        if (chainDataTPS?.tps && lastUpdated && tpsHistory.length > 0) {
+        const newPoint: HistoryArrayItem = {
+            tps: chainDataTPS.tps,
+            timestamp: lastUpdated.toISOString(),
+            timestamp_ms: lastUpdated.getTime(),
+        };
+
+        // Prevent adding duplicate points for the same timestamp
+        if (tpsHistory[tpsHistory.length - 1]?.timestamp !== newPoint.timestamp) {
+            setTpsHistory((prev) => {
+            const updatedHistory = [...prev, newPoint];
+            // Keep the chart performant by only showing the last ~100 data points
+            return updatedHistory.slice(-100);
+            });
+        }
+        }
+    }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
+
+    useEffect(() => {
+        if (!chainDataTPS || !lastUpdated) return;
+
+        setCostHistory((prev) => {
+        if (!hasNonZeroTxCost(chainDataTPS)) {
+            return prev;
+        }
+
+        const lastEntry = prev[prev.length - 1];
+        if (lastEntry && lastEntry.timestamp === chainDataTPS.timestamp) {
+            const updated = [...prev];
+            updated[updated.length - 1] = chainDataTPS;
+            return updated;
+        }
+
+        const updatedHistory = [...prev, chainDataTPS];
+        return updatedHistory.slice(-24);
+        });
+    }, [chainDataTPS, lastUpdated]);
+
+    const hasTxCostData = useMemo(() => {
+        if (costHistory.length > 0) return true;
+        return hasNonZeroTxCost(chainDataTPS);
+    }, [costHistory, chainDataTPS]);
+
+    const latestCostDatum = useMemo(() => {
+        if (chainDataTPS && hasNonZeroTxCost(chainDataTPS)) {
+        return chainDataTPS;
+        }
+        return costHistory[costHistory.length - 1];
+    }, [chainDataTPS, costHistory]);
+
+
+
+
+   
+    return (
+        <div  className="flex flex-col w-full gap-y-[10px] h-full">
+            {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).length > 0 && <PartitionLine title="Highlights" infoContent="Notable growth highlights and all-time highs from the past week." leftIcon={"gtp-megaphone"} />}
+            {chainDataOverview && Object.keys(chainDataOverview.data.highlights || {}).map((metric, index) => (
+                <HighlightCards key={chainDataOverview.data.highlights[metric].metric_id} metric={chainDataOverview.data.highlights[metric].metric_name} icon={chainDataOverview.data.highlights[metric].icon} chainKey={chainKey} chainOverviewData={chainDataOverview} metricKey={chainDataOverview.data.highlights[metric].metric_id} index={index} />
+            ))}
+            {chainDataTPS && <PartitionLine title="Realtime" infoContent="Real-time TPS and, when available, transaction cost metrics based on the latest processed blocks. FDV, if displayed, updates every hour." />}
+            {chainDataTPS && (
+                <>
+                        <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
+                        {(hasTxCostData && latestCostDatum || costHistory.length > 0) && (
+                            <TXCostCard
+                                chainKey={chainKey}
+                                chainData={latestCostDatum}
+                                master={master}
+                                overviewData={chainDataOverview}
+                                costHistory={costHistory}
+                            />
+                        )}
+                </>
+            )}
+            {chainDataOverview && <MetricCards chainKey={chainKey} master={master} metricKey={"fdv"} metricData={master.metrics["fdv"]} overviewData={chainDataOverview} />}
+
+            {chainDataOverview  && Object.keys(chainDataOverview.data.kpi_cards || {}).length > 0 && <PartitionLine title="Yesterday" infoContent="Sparklines display the last 60 days. The KPI shows yesterday’s value, with the week-over-week change below." />}
+            {chainDataOverview && Object.keys(chainDataOverview.data.kpi_cards || {}).filter((metric) => !["fdv"].includes(metric)).map((metric) => (
+                <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
+            ))}
+            <PartitionLine />
+            {chainDataOverview && (
+                <EventsCard totalHeight={500} tooltipContent="This card shows notable highlights on this chain, such as upgrades, campaigns, or token launches. Click an event to view more details.">
+                    <div className="heading-large-md pb-[30px]">Events</div>
+                    {[...chainDataOverview.data.events]
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((event, index) => (
+                            <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} finalIndex={Object.keys(chainDataOverview.data.events).length - 1} />
+                        ))}
+                </EventsCard>
+            )}
+        </div>
+    )
+}

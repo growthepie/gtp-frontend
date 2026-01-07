@@ -56,9 +56,7 @@ export enum Type {
 
 export interface AggregatedData {
   types: Type[];
-  arbitrum: number[];
-  optimism: number[];
-  zksync_era: number[];
+  [key: string]: Type[] | number[];
 }
 
 export interface Daily {
@@ -69,5 +67,6 @@ export interface Daily {
 }
 
 export interface Subcategories {
+  [key: string]: string[] | Aggregated;
   list: string[];
 }

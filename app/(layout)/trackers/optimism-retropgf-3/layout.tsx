@@ -5,6 +5,19 @@ import Icon from "@/components/layout/Icon";
 import Subheading from "@/components/layout/Subheading";
 import Image from "next/image";
 import Link from "next/link";
+import { getPageMetadata } from "@/lib/metadata";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/trackers/optimism-retropgf-3",
+    {}
+  );
+  return {
+    title: metadata.title,
+    description: metadata.description,
+  };
+}
 
 export default async function Layout({
   children,
@@ -13,7 +26,7 @@ export default async function Layout({
 }) {
   return (
     <>
-      <Container className="flex flex-col w-full mt-[25px] md:mt-[45px]">
+      <Container className="flex flex-col w-full mt-[45px] md:mt-[30px]">
         <div className="flex justify-between items-start w-full mb-[0px]">
           <div className="flex flex-col">
             <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
@@ -26,7 +39,7 @@ export default async function Layout({
                   width={36}
                 /> */}
                 <Icon icon="gtp:optimism-logo-monochrome" className="w-9 h-9 mr-2 fill-[#FF0420] text-[#FF0420]" />
-                <Heading className="text-[24px] md:text-[28px] lg:text-[36px] leading-snug" as="h1">
+                <Heading className="heading-large-xl leading-snug" as="h1">
                   RetroPGF 3 Tracker
                 </Heading>
               </div>
@@ -44,7 +57,7 @@ export default async function Layout({
               href={"https://app.powerbi.com/view?r=eyJrIjoiNGM0YjEyYjEtMzc2ZS00NDBiLTgxNjItOTgzZDY0MGQxNmNmIiwidCI6IjRjYThhMzQ5LThiMmEtNDY1Yy05MTdlLWM1ZThhMjdjMzhjNCIsImMiOjN9"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>RPGF3 Analytics <span className="hidden md:inline-block">Dashboard</span></div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -53,7 +66,7 @@ export default async function Layout({
               href={"https://vote.optimism.io/retropgf/3/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Optimism Agora</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -62,7 +75,7 @@ export default async function Layout({
               href={"https://retropgfhub.com/retropgf3/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>RetroPGF Hub</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -71,7 +84,7 @@ export default async function Layout({
               href={"https://retrolist.app/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Retrolist</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -80,7 +93,7 @@ export default async function Layout({
               href={"https://www.pairwise.vote/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Pairwise</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -89,7 +102,7 @@ export default async function Layout({
               href={"https://www.opensource.observer/explore/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Open Source Observer</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -98,7 +111,7 @@ export default async function Layout({
               href="https://www.notion.so/Impact-Evaluation-Framework-1bda7c3908c54d52ac4ef364251ef651"
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Impact Evaluation Framework</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />

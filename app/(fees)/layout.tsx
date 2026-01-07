@@ -5,68 +5,17 @@ import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
-import { Graph } from "schema-dts";
 import BottomBanner from "@/components/BottomBanner";
 import Backgrounds from "@/components/layout/Backgrounds";
-import "../background.css";
 import Share from "@/components/Share";
 import Icon from "@/components/layout/Icon";
 import FeesContainer from "@/components/layout/FeesContainer";
 import Head from "../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
 
-const jsonLd: Graph = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `https://www.growthepie.xyz/#organization`,
-      name: "growthepie",
-      url: "https://www.growthepie.xyz",
-      logo: "https://www.growthepie.xyz/logo_full.png",
-      sameAs: [
-        "https://twitter.com/growthepie_eth",
-        "https://mirror.xyz/blog.growthepie.eth",
-        "https://github.com/growthepie",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `https://www.growthepie.xyz/#website`,
-      url: `https://www.growthepie.xyz/`,
-      name: "growthepie",
-      description:
-        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-      publisher: {
-        "@type": "Organization",
-        name: "growthepie",
-        logo: {
-          "@type": "ImageObject",
-          url: `https://www.growthepie.xyz/logo_full.png`,
-        },
-      },
-    },
-  ],
-};
+import { generateJsonLd } from "@/utils/json-ld";
+const jsonLd = generateJsonLd({host: "fees.growthepie.com", withSearchAction: false});
 
-// const jsonLdWebSite: WithContext<WebSite> = {
-//   "@context": "https://schema.org",
-//   "@type": "WebSite",
-//   url: "https://www.growthepie.xyz",
-//   name: "growthepie",
-//   description:
-//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   publisher: {
-//     "@type": "Organization",
-//     name: "growthepie",
-//     logo: {
-//       "@type": "ImageObject",
-//       url: "https://www.growthepie.xyz/logo_full.png",
-//     },
-//   },
-// };
-
-// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
   initialScale: "1.0",
@@ -76,7 +25,7 @@ export const viewport = {
 const gtpMain = {
   title: {
     absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Engagement - growthepie",
     template: "%s - growthepie",
   },
   description:
@@ -93,7 +42,7 @@ const gtpFees = {
 };
 const isFees = true;
 
-const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+const host = isFees ? "fees.growthepie.com" : "www.growthepie.com";
 
 const title = isFees ? gtpFees.title : gtpMain.title;
 const description = isFees ? gtpFees.description : gtpMain.description;
@@ -114,13 +63,13 @@ export const metadata: Metadata = {
         url: `https://${host}/gtp_fees_og.png`,
         width: 1200,
         height: 630,
-        alt: "growthepie.xyz",
+        alt: "growthepie.com",
       },
       {
         url: `https://${host}/logo_fees_full.png`,
         width: 772,
         height: 181,
-        alt: "growthepie.xyz",
+        alt: "growthepie.com",
       },
       {
         url: `https://${host}/logo_pie_only.png`,
@@ -134,7 +83,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "growthepie.xyz",
+    title: "growthepie.com",
     description: "Growing Ethereum’s Ecosystem Together",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
@@ -189,7 +138,7 @@ export default function RootLayout({
     >
       <Head />
 
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden min-h-screen relative">
+      <body className="bg-forest-50 dark:bg-color-bg-default text-forest-900 dark:text-color-text-primary font-raleway !overflow-x-hidden min-h-screen relative">
         <div className="background-container !fixed">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -209,7 +158,7 @@ export default function RootLayout({
             <div className="flex flex-col items-center justify-end min-h-screen w-full">
               <FeesContainer className="hidden md:flex max-w-[650px] md:min-w-[650px] md:max-w-[750px] pb-[20px] justify-end">
                 <div className="pointer-events-auto">
-                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-color-bg-medium rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
                     <Share />
                   </div>
                 </div>

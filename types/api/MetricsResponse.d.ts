@@ -1,13 +1,17 @@
-﻿export type MetricsResponse = {
-  data: {
-    avg?: boolean;
-    monthly_agg: "sum" | "avg" | "unique";
-    metric_id: string;
-    metric_name: string;
-    description: string;
-    source: string[];
-    chains: Chains;
-  };
+﻿import { Changes, Summary } from "./ChainMetricResponse";
+
+export type MetricsResponse = {
+  data: MetricData;
+};
+
+export type MetricData = {
+  avg?: boolean;
+  monthly_agg: "sum" | "avg" | "unique";
+  metric_id: string;
+  metric_name: string;
+  description: string;
+  source: string[];
+  chains: Chains;
 };
 
 export type Chains = {
@@ -16,32 +20,33 @@ export type Chains = {
 
 export type ChainData = {
   chain_name: string;
-  changes: {
-    types: string[];
-    "1d": number[];
-    "7d": number[];
-    "30d": number[];
-    "90d": number[];
-    "180d": number[];
-    "365d": number[];
-  };
+  changes: Changes;
   daily: {
     types: string[];
     data: number[][];
   };
-  changes_monthly: {
+  daily_7d_rolling: {
     types: string[];
-    "30d": number[];
-    "90d": number[];
-    "180d": number[];
-    "365d": number[];
+    data: number[][];
+  } | undefined;
+  weekly?: {
+    types: string[];
+    data: number[][];
   };
+  // changes_monthly: {
+  //   types: string[];
+  //   "30d": number[];
+  //   "90d": number[];
+  //   "180d": number[];
+  //   "365d": number[];
+  // };
   monthly: {
     types: string[];
     data: number[][];
   };
-  last_30d: {
-    types: string[];
-    data: number[];
-  };
+  summary: Summary;
+  // last_30d: {
+  //   types: string[];
+  //   data: number[];
+  // };
 };

@@ -1,25 +1,15 @@
 "use client";
-import Image from "next/image";
 import {
   useMemo,
   useState,
   useEffect,
-  useRef,
   useCallback,
-  useContext,
-  CSSProperties,
 } from "react";
-import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
-import { AllChainsByKeys } from "@/lib/chains";
-import { color } from "highcharts";
-import { useHover, useMediaQuery } from "usehooks-ts";
-import { Chart } from "../charts/chart";
+import {  useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
-import Colors from "tailwindcss/colors";
 
-import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
@@ -34,19 +24,10 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
-
-// object which contains the allowed modes for chains with mode exceptions
-const AllowedModes: {
-  [chain: string]: {
-    metric: string[];
-    scale: string[];
-  };
-} = {
-  imx: {
-    metric: ["txcount"],
-    scale: ["absolute", "share"],
-  },
-};
+import { useMaster } from "@/contexts/MasterContext";
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function OverviewMetrics({
   data,
@@ -55,6 +36,7 @@ export default function OverviewMetrics({
   setSelectedTimespan,
   forceSelectedChain,
   forceCategory,
+  isSingleChainView,
 }: {
   data: Chains;
   master: MasterResponse;
@@ -62,16 +44,20 @@ export default function OverviewMetrics({
   setSelectedTimespan: (timespan: string) => void;
   forceSelectedChain?: string;
   forceCategory?: string;
+  isSingleChainView?: boolean;
 }) {
   const { theme } = useTheme();
+  const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
-    forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
+  "txcount_share"
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
   const [selectedCategory, setSelectedCategory] = useState(
-    forceCategory ? forceCategory : "nft",
+    forceCategory
+      ? forceCategory
+      : Object.keys(master.blockspace_categories.main_categories)[0],
   );
 
   const [selectedValue, setSelectedValue] = useState("share");
@@ -92,7 +78,6 @@ export default function OverviewMetrics({
     forceSelectedChain ?? null,
   );
 
-  const chartComponent = useRef<Highcharts.Chart | null>(null);
   const hoverCategory = (category: string) => {
     if (!hoveredCategories.includes(category)) {
       setHoveredCategories([category]);
@@ -235,7 +220,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },
@@ -264,7 +249,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },
@@ -328,20 +313,9 @@ export default function OverviewMetrics({
                 {Object.keys(timespans).map((timespan) => (
                   <TopRowChild
                     key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                     isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
-                      // setXAxis();
-                      // chartComponent?.current?.xAxis[0].update({
-                      //   min: timespans[selectedTimespan].xMin,
-                      //   max: timespans[selectedTimespan].xMax,
-                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      //   tickPositions: getTickPositions(
-                      //     timespans.max.xMin,
-                      //     timespans.max.xMax,
-                      //   ),
-                      // });
                     }}
                   >
                     <span className="hidden md:block">
@@ -353,21 +327,6 @@ export default function OverviewMetrics({
                   </TopRowChild>
                 ))}
               </TopRowParent>
-              {/* <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-              !isMobile
-                ? ["max", "180d"].includes(selectedTimespan)
-                  ? "translate-y-[calc(-100%+3px)]"
-                  : "translate-y-0 "
-                : ["max", "180d"].includes(selectedTimespan)
-                ? "translate-y-[calc(100%+3px)]"
-                : "translate-y-0"
-            }`}
-          >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-              7-day rolling average
-            </div>
-          </div> */}
             </TopRowContainer>
           </Container>
           {/*Chain Rows/List */}
@@ -396,8 +355,8 @@ export default function OverviewMetrics({
             </RowProvider>
           </div>
           {/*Chart Head*/}
-          <Container>
-            <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
+          {/* <Container>
+            <div className=" ">
               <h2 className="text-[20px] font-bold">
                 {!forceSelectedChain ? (
                   (selectedChain
@@ -413,76 +372,79 @@ export default function OverviewMetrics({
                 )}
               </h2>
             </div>
-          </Container>
-          {/*Chart*/}
-          {selectedTimespan === "1d" ? (
-            <></>
-          ) : (
-            <Container>
-              <OverviewChart
-                data={data}
-                master={master}
-                selectedTimespan={selectedTimespan}
-                timespans={timespans}
-                setSelectedTimespan={setSelectedTimespan}
-                selectedMode={selectedMode}
-                selectedValue={selectedValue}
-                selectedCategory={selectedCategory}
-                selectedChain={selectedChain}
-                forceSelectedChain={forceSelectedChain}
-                categories={categories}
-                hoveredCategories={hoveredCategories}
-                allCats={allCats}
-                setHoveredChartSeriesId={setHoveredChartSeriesId}
-                hoveredChartSeriesId={hoveredChartSeriesId}
-                forceHoveredChartSeriesId={forceHoveredChartSeriesId}
-                chartComponent={chartComponent}
-              />
+          </Container> */}
+          {/*Chart */}
+          {isSingleChainView && (
+            selectedTimespan === "1d" ? (
+              <></>
+            ) : (
+              <Container className="mb-1">
+                <OverviewChart
+                  data={data}
+                  master={master}
+                  selectedTimespan={selectedTimespan}
+                  timespans={timespans}
+                  setSelectedTimespan={setSelectedTimespan}
+                  selectedMode={selectedMode}
+                  selectedValue={selectedValue}
+                  selectedCategory={selectedCategory}
+                  selectedChain={selectedChain}
+                  forceSelectedChain={forceSelectedChain}
+                  categories={categories}
+                  hoveredCategories={hoveredCategories}
+                  allCats={allCats}
+                  setHoveredChartSeriesId={setHoveredChartSeriesId}
+                  hoveredChartSeriesId={hoveredChartSeriesId}
+                  forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+                />
+              </Container>
+            )
+          )}
+          {/*Selected ubcategories*/}
+          {isSingleChainView && (
+            <Container className="w-[100%] ml-[22px]">
+              <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
+                <h1 className="font-bold text-sm pr-2 pl-2">
+                  {!allCats
+                    ? master &&
+                      master.blockspace_categories.main_categories[
+                        selectedCategory
+                      ]
+                    : "All"}
+                </h1>
+                {!allCats ? (
+                  master &&
+                  Object.keys(
+                    master.blockspace_categories["mapping"][selectedCategory],
+                  ).map((key) => (
+                    <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                      {formatSubcategories(
+                        master.blockspace_categories["mapping"][selectedCategory][
+                          key
+                        ],
+                      )}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-xs px-[4px] py-[5px] mx-[5px]">
+                    All Categories Selected
+                  </p>
+                )}
+              </div>
             </Container>
           )}
-          {/*Chart Footer*/}
-          <Container className="w-[98%] ml-4">
-            <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
-              <h1 className="font-bold text-sm pr-2 pl-2">
-                {!allCats
-                  ? master &&
-                    master.blockspace_categories.main_categories[
-                      selectedCategory
-                    ]
-                  : "All"}
-              </h1>
-              {!allCats ? (
-                master &&
-                Object.keys(
-                  master.blockspace_categories["mapping"][selectedCategory],
-                ).map((key) => (
-                  <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
-                    {formatSubcategories(
-                      master.blockspace_categories["mapping"][selectedCategory][
-                        key
-                      ],
-                    )}
-                  </p>
-                ))
-              ) : (
-                <p className="text-xs px-[4px] py-[5px] mx-[5px]">
-                  All Categories Selected
-                </p>
-              )}
-            </div>
-          </Container>
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedValue("absolute");
@@ -504,8 +466,8 @@ export default function OverviewMetrics({
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "share"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                    ? "bg-color-ui-active"
+                    : "bg-color-ui-default hover:bg-color-ui-hover"
                 }`}
                 onClick={() => {
                   setSelectedValue("share");
@@ -527,47 +489,83 @@ export default function OverviewMetrics({
           </Container>
           {/*Contracts Header */}
           <Container>
-            <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
-              <h1 className="text-lg font-bold">Most Active Contracts</h1>
-              <p className="text-sm mt-[15px]">
-                See the most active contracts within the selected timeframe (
-                {timespans[selectedTimespan].label}) and for your selected
-                category.{" "}
-              </p>
+            <div className="w-[100%] mx-auto mt-[30px] flex flex-col">
+              <div className="flex items-start justify-between">
+                <h2 className="heading-large-md">Most Active Contracts</h2>
+                <div className="hidden md:block">
+                <TitleButtonLink
+                  label="Don’t see your app? Label here."
+                  icon="oli-open-labels-initiative"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                  />
+                </div>
+                <div className="block md:hidden">
+                  <TitleButtonLink
+                    label={<div className="heading-small-xxs">Label here.</div>}
+                    icon="oli-open-labels-initiative"
+                    iconSize="md"
+                    iconBackground="bg-transparent"
+                    href="https://www.openlabelsinitiative.org/?gtp.applications"
+                    newTab
+                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                    className="w-fit"
+                    containerClassName=""
+                  />
+                </div>
+              </div>
+                <p className="text-sm mt-[15px]">
+                  See the most active contracts within the selected timeframe (
+                  {timespans[selectedTimespan].label}), for your selected category (
+                  {categories[selectedCategory]}), and for{" "}
+                  {selectedChain
+                    ? AllChainsByKeys[selectedChain]?.label
+                    : chainEcosystemFilter === "all-chains"
+                    ? "All Chains"
+                    : chainEcosystemFilter === "op-stack"
+                    ? "OP Stack Chains"
+                    : "OP Superchain"}
+                  .
+                </p>
             </div>
           </Container>
           {/*Contracts Label and Rows */}
-          <HorizontalScrollContainer paddingBottom={20}>
-            <ContractProvider
-              value={{
-                data,
-                master,
-                selectedMode,
-                forceSelectedChain,
-                selectedCategory,
-                selectedChain,
-                selectedTimespan,
-                selectedValue,
-                categories,
-                allCats,
-                timespans,
-                standardChainKey,
-                setSelectedChain,
-                setSelectedCategory,
-                setAllCats,
-                formatSubcategories,
-              }}
-            >
-              <ContractContainer />
-            </ContractProvider>
+          <HorizontalScrollContainer>
+            <ProjectsMetadataProvider>
+              <ContractProvider
+                value={{
+                  data: data,
+                  master: master,
+                  selectedMode: selectedMode,
+                  selectedCategory: selectedCategory,
+                  selectedTimespan: selectedTimespan,
+                  timespans: timespans,
+                  categories: categories,
+                  formatSubcategories: formatSubcategories,
+                  showUsd: showUsd,
+                  selectedValue: selectedValue,
+                  forceSelectedChain: forceSelectedChain,
+                  selectedChain: selectedChain,
+                  allCats: allCats,
+                  standardChainKey: standardChainKey,
+                  setAllCats: setAllCats,
+                  setSelectedChain: setSelectedChain,
+                  setSelectedCategory: setSelectedCategory,
+                  selectedChains: undefined,
+                  selectedSubcategories: undefined,
+                  chainEcosystemFilter: chainEcosystemFilter,
+                  focusEnabled: false,
+                }}
+              >
+                <ContractContainer />
+              </ContractProvider>
+            </ProjectsMetadataProvider>
           </HorizontalScrollContainer>
-          {/* <ContractLabelModal
-        isOpen={isContractLabelModalOpen}
-        onClose={() => {
-          setIsContractLabelModalOpen(false);
-        }}
-        contract={selectedContract}
-      /> */}
         </div>
       )}
     </>

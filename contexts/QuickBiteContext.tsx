@@ -1,0 +1,65 @@
+'use client';
+
+import React, { createContext, useState, useContext, useMemo } from 'react';
+
+// Define the shape of the context state
+interface QuickBiteState {
+  [key: string]: any;
+}
+
+// Define the shape of the context value
+interface QuickBiteContextType {
+  sharedState: QuickBiteState;
+  setSharedState: (key: string, value: any) => void;
+  exclusiveFilterKeys: FilterKeys;
+  setExclusiveFilterKeys: (keys: FilterKeys) => void;
+  inclusiveFilterKeys: FilterKeys;
+  setInclusiveFilterKeys: (keys: FilterKeys) => void;
+}
+
+interface FilterKeys {
+  categoryKey: null | string;
+  valueKey: null | string;
+}
+
+// Create the context with a default value
+const QuickBiteContext = createContext<QuickBiteContextType | null>(null);
+
+// Create the provider component
+export const QuickBiteProvider = ({ children }: { children: React.ReactNode }) => {
+  const [sharedState, setSharedStateInternal] = useState<QuickBiteState>({});
+  const [exclusiveFilterKeys, setExclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
+  const [inclusiveFilterKeys, setInclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
+
+  const setSharedState = (key: string, value: any) => {
+
+    setSharedStateInternal(prevState => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+
+  const contextValue = useMemo(() => ({
+    sharedState,
+    setSharedState,
+    exclusiveFilterKeys,
+    setExclusiveFilterKeys,
+    inclusiveFilterKeys,
+    setInclusiveFilterKeys,
+  }), [sharedState, exclusiveFilterKeys, inclusiveFilterKeys]);
+
+  return (
+    <QuickBiteContext.Provider value={contextValue}>
+      {children}
+    </QuickBiteContext.Provider>
+  );
+};
+
+// Create a custom hook for easy access to the context
+export const useQuickBite = () => {
+  const context = useContext(QuickBiteContext);
+  if (!context) {
+    throw new Error('useQuickBite must be used within a QuickBiteProvider');
+  }
+  return context;
+};

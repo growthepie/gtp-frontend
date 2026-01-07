@@ -1,27 +1,31 @@
+import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 
 export interface ContractContainerInterface {
-  data: Chains;
-  selectedMode: string;
-  selectedCategory: string;
-  selectedChain: string | null;
-  selectedTimespan: string;
-  categories: Object;
-  allCats: boolean;
-  timespans: Object;
-  standardChainKey: string;
-  setAllCats: (cats: boolean) => void;
-}
-
-export interface ContractRowInterface {
-  data: Chains;
+  data: Chains | CategoryComparisonResponseData;
   master: MasterResponse;
+  categories: { [key: string]: string };
+  timespans: { [key: string]: { label: string; shortLabel: string; value: number; xMin?: number; xMax?: number } };
+  standardChainKey?: string | null;
+
   selectedMode: string;
-  selectedCategory: string;
+  selectedValue?: 'absolute' | 'share';
   selectedTimespan: string;
-  selectedValue: string;
-  setSelectedCategory: (category: string) => void;
+
+  selectedCategory: string;
+  setSelectedCategory?: (value: string) => void;
+
+  selectedChain?: string | null;
+  setSelectedChain?: (value: string | null) => void;
+
+  selectedChains?: string[];
+  selectedSubcategories?: string[];
+
+  allCats?: boolean;
+  setAllCats?: (value: boolean) => void;
+
+  forceSelectedChain?: string;
   formatSubcategories: (str: string) => string;
 }
 

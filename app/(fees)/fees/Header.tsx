@@ -7,7 +7,7 @@ import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 import Banner from "@/components/Banner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "@/components/layout/HeaderLinks";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 
 export default function Header() {
   return (

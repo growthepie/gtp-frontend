@@ -66,6 +66,21 @@ export function useTooltip({
 
   const interactions = useInteractions([hover, focus, dismiss, role]);
 
+  // Add scroll event listener to close the tooltip on scroll
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setOpen(false);
+    };
+
+    // Attach the scroll listener to the window. 
+    // If you have a specific scrollable container, attach it there instead.
+    window.addEventListener("scroll", handleScroll, true); // Use capture to catch all scroll events
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [setOpen]);
+
   return React.useMemo(
     () => ({
       open,
@@ -132,6 +147,7 @@ export const TooltipTrigger = React.forwardRef<
       // The user can style the trigger based on the state
       data-state={context.open ? "open" : "closed"}
       {...context.getReferenceProps(props)}
+      title={"Tooltip Trigger"}
     >
       {/* <motion.div whileHover={{ size: 1.02 }} whileTap={{ size: 1.0 }}> */}
       {children}

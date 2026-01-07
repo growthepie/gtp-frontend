@@ -9,14 +9,19 @@ export interface ChainsData {
   website: string;
   explorer: string;
   metrics: Metrics;
-  ranking: {
-    [metric: string]: { color_scale: number; rank: number; out_of: number };
-  };
-  hottest_contract: {
-    data: any[][];
-    types: any[];
-  };
+  ranking: ChainRanking;
+  hottest_contract: HottestContractData;
 }
+
+export interface HottestContractData {
+  data: any[][];
+  types: any[];
+}
+
+export interface ChainRanking {
+  [metric: string]: { color_scale: number; rank: number; out_of: number };
+}
+
 export interface Metrics {
   [key: string]: MetricData;
 }
@@ -25,11 +30,14 @@ export interface MetricData {
   unit: string;
   source: string[];
   changes: Changes;
-  daily: Daily;
+  daily: IntervalData;
+  weekly?: IntervalData;
+  monthly?: IntervalData;
+  quarterly?: IntervalData;
   avg: boolean;
 }
 
-export interface Daily {
+export interface IntervalData {
   types: string[];
   data: [number, number][];
 }

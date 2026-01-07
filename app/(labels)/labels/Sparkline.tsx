@@ -1,4 +1,3 @@
-import { AllChainsByKeys } from "@/lib/chains";
 import { HighchartsChart, LineSeries, HighchartsSparkline, Tooltip, Chart, XAxis, YAxis } from "react-jsx-highcharts"
 // import "../../highcharts.axis.css";
 // height = 20,
@@ -33,27 +32,6 @@ export default function Sparkline({ chainKey, data }) {
             radius: 0,
             symbol: "circle",
           },
-          // fillOpacity: 0,
-          // fillColor: {
-          //   linearGradient: {
-          //     x1: 0,
-          //     y1: 0,
-          //     x2: 0,
-          //     y2: 1,
-          //   },
-          //   stops: [
-          //     [
-          //       0,
-          //       AllChainsByKeys[chainKey].colors["dark"][0] +
-          //       "33",
-          //     ],
-          //     [
-          //       1,
-          //       AllChainsByKeys[chainKey].colors["dark"][1] +
-          //       "33",
-          //     ],
-          //   ],
-          // },
           color: {
             linearGradient: {
               x1: 0,
@@ -128,7 +106,6 @@ export default function Sparkline({ chainKey, data }) {
             id={chainKey}
             name={chainKey}
             data={data}
-            // color={AllChainsByKeys[chainKey].colors["dark"][0]}
             animation={false}
           />
         </YAxis>

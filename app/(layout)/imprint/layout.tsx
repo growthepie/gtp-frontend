@@ -1,9 +1,13 @@
 import { Metadata } from "next";
+import { getPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Imprint",
-  description: "Imprint",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/imprint",
+    {}
+  );
+  return metadata;
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;

@@ -25,10 +25,10 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import Icon from "@/components/layout/Icon";
-import { AllChainsByKeys } from "@/lib/chains";
 import Link from "next/link";
 import { uniq } from "lodash";
 import { useTheme } from "next-themes";
+import { useMaster } from "@/contexts/MasterContext";
 
 // import { theme as customTheme } from "../../tailwind.config";
 
@@ -61,6 +61,8 @@ import { useTheme } from "next-themes";
 // ];
 
 export default function ContractsPage({ params }: { params: any }) {
+  const { AllChainsByKeys } = useMaster();
+
   const {
     data: contracts,
     error: contractsError,
@@ -238,7 +240,7 @@ export default function ContractsPage({ params }: { params: any }) {
                 >
                   <Icon
                     icon="feather:link-2"
-                    className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
+                    className="w-4 h-4 text-forest-900/80 dark:text-color-text-primary/80"
                   />
                 </Link>
               )}
@@ -462,7 +464,7 @@ export default function ContractsPage({ params }: { params: any }) {
                           <div
                             {...{
                               className: header.column.getCanSort()
-                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold ${i === 0 ? "pl-[10px]" : ""
+                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-color-text-primary text-xs font-bold ${i === 0 ? "pl-[10px]" : ""
                                 }`
                                 : "",
                               onClick: header.column.getToggleSortingHandler(),
@@ -498,7 +500,7 @@ export default function ContractsPage({ params }: { params: any }) {
                                     {dataUniqueValues[
                                       header.id
                                     ].toLocaleString("en-GB")}
-                                    <span className="text-forest-900/30 dark:text-forest-500/30">
+                                    <span className="text-forest-900/30 dark:text-color-text-primary/30">
                                       {"/"}
                                       {contractsUniqueValues[
                                         header.id
@@ -569,7 +571,7 @@ export default function ContractsPage({ params }: { params: any }) {
             style={{ height: `${virtualizer.getTotalSize()}px` }}
             className="w-full"
           >
-            {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
+            {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-color-ui-active" /> */}
             <table className="table-fixed w-full">
               {/* <thead className="sticky top-0 z-50"> */}
               <thead>
@@ -594,13 +596,13 @@ export default function ContractsPage({ params }: { params: any }) {
                             //   ? "sticky top-0 z-20"
                             //   : "sticky top-0 left-0 z-30"
                             ""
-                            } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                            } bg-white dark:bg-color-ui-active whitespace-nowrap`}
                         >
                           {header.isPlaceholder ? null : (
                             <div
                               {...{
                                 className: header.column.getCanSort()
-                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
+                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-color-text-primary text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
                                   }`
                                   : "",
                                 onClick:

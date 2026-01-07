@@ -26,7 +26,7 @@ export default function SupportUsBanner() {
       }
       target="_blank"
       rel="noopener"
-      className={`relative flex overflow-hidden xl:hidden hard-shine items-center justify-between px-1 py-1 rounded-full text-[10px] sm:text-sm font-semibold mr-auto w-[375px] sm:w-[560px] mt-6 z-0 ${isFirstText ? "text-white bg-[#FF0420] dark:bg-[#FF0420]" : "text-black bg-forest-100 dark:bg-[#1DF7EF]"
+      className={`relative flex overflow-hidden xl:hidden hard-shine items-center justify-between px-1 py-1 rounded-full text-[10px] sm:text-sm font-semibold mr-auto w-[375px] sm:w-[560px] mt-6 z-0 ${isFirstText ? "text-white bg-[#FF0420] dark:bg-[#FF0420]" : "text-black bg-color-bg-default dark:bg-[#1DF7EF]"
         }`}
     >
       <div

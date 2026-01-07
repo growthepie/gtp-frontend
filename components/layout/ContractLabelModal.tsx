@@ -1,12 +1,12 @@
 "use client";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
+import { useMaster } from "@/contexts/MasterContext";
 
 type ContractInfo = {
   address: string;
@@ -34,6 +34,8 @@ export default function ContractLabelModal({
 }: ContractLabelModalProps) {
   const { theme } = useTheme();
 
+  const { AllChainsByKeys } = useMaster();
+
   if (!isOpen) return null;
 
   return (
@@ -42,7 +44,7 @@ export default function ContractLabelModal({
         className="absolute inset-0 bg-white dark:bg-black opacity-80"
         onClick={onClose}
       ></div>
-      <div className="relative bg-forest-50 dark:bg-[#1F2726] border-forest-200 dark:border-forest-500 border rounded-[27px] w-[90%] md:w-[80%] lg:w-[60%]">
+      <div className="relative bg-forest-50 dark:bg-color-bg-default border-forest-200 dark:border-forest-500 border rounded-[27px] w-[90%] md:w-[80%] lg:w-[60%]">
         <div className="flex flex-col items-center justify-center w-full h-full pl-[15px] pr-[30px] py-[10px] space-y-[15px]">
           <div className="flex space-x-[26px] items-center w-full">
             <div>
@@ -70,11 +72,11 @@ export default function ContractLabelModal({
                     <TooltipTrigger>
                       <Icon
                         icon="feather:info"
-                        className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                        className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                       />
                     </TooltipTrigger>
                     <TooltipContent className="z-[110]">
-                      <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                      <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                         <div className="font-medium">
                           This is the Contract name.
                         </div>
@@ -98,11 +100,11 @@ export default function ContractLabelModal({
                     <TooltipTrigger>
                       <Icon
                         icon="feather:info"
-                        className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                        className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                       />
                     </TooltipTrigger>
                     <TooltipContent className="z-[110]">
-                      <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                      <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                         <div className="font-medium">
                           This is the Project name.
                         </div>
@@ -149,7 +151,7 @@ export default function ContractLabelModal({
             </div>
           </div>
           <div className="flex space-x-[15px] items-start justify-center w-full font-medium">
-            <button className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500">
+            <button className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-color-text-primary">
               Cancel
             </button>
             <button className="px-[16px] py-[6px] rounded-full bg-[#F0995A] text-forest-900">

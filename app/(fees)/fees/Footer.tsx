@@ -2,7 +2,7 @@
 import FeesContainer from "@/components/layout/FeesContainer";
 import Icon from "@/components/layout/Icon";
 import Link from "next/link";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import Container from "@/components/layout/Container";
 import { useMediaQuery } from "usehooks-ts";
 import Share from "@/components/Share";
@@ -54,7 +54,7 @@ export default function Footer({
     >
       <div className="relative pointer-events-none">
         <div
-          className="bg-[#151a19] z-10 md:hidden fixed inset-0 pointer-events-none"
+          className="bg-color-ui-active z-10 md:hidden fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "bottom",
             maskImage: `linear-gradient(to top, white 0, white 80px, transparent 120px`,
@@ -69,7 +69,7 @@ export default function Footer({
       <FeesContainer className="max-w-[650px] md:min-w-[650px] md:max-w-[750px] flex justify-center md:justify-start z-20">
         <div className="w-full flex flex-col md:flex-row justify-center items-center md:justify-start gap-y-[10px] md:gap-x-[15px] px-[15px] pb-[2px] md:pb-[20px]">
           <div
-            className={`flex items-center md:h-[50px] text-[12px] text-[#CDD8D3] dark:text-[#CDD8D3] gap-x-[5px] md:gap-x-[15px]`}
+            className={`flex items-center md:h-[50px] text-[12px] text-color-text-primary dark:text-color-text-primary gap-x-[5px] md:gap-x-[15px]`}
           >
             <Link
               href="/privacy-policy"
@@ -118,10 +118,10 @@ export default function Footer({
       </FeesContainer>
       {isMobile && (
         <div className={`w-[100%] mb-2 z-10`}>
-          <div className="relative flex p-[5px] items-center justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+          <div className="relative flex p-[5px] items-center justify-between rounded-full mt-[16px] bg-color-bg-medium  shadow-[0px_0px_50px_0px_#000000]">
             <Link
-              className="flex items-center w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-              href="https://www.growthepie.xyz/"
+              className="flex items-center w-[44px] h-[44px] bg-color-bg-default gap-x-[10px] rounded-full p-[10px] gap"
+              href="https://www.growthepie.com/"
               target="_blank"
             >
               <div className="w-6 h-6 z-[100]">
@@ -130,7 +130,7 @@ export default function Footer({
             </Link>
             <div className="flex items-center gap-x-[10px]">
               <div
-                className={`flex items-center relative w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[10px] py-[10px] gap transition-all z-20 duration-300 cursor-pointer ${
+                className={`flex items-center relative w-[44px] h-[44px] bg-color-bg-default gap-x-[10px] rounded-full px-[10px] py-[10px] gap transition-all z-20 duration-300 cursor-pointer ${
                   hoverSettings
                     ? "w-[308px] justify-start"
                     : "w-[128px] justify-start"
@@ -152,7 +152,7 @@ export default function Footer({
       )}
       {isMobile && (
         <div
-          className={`absolute bottom-6 bg-[#151A19] rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
+          className={`absolute bottom-6 bg-color-ui-active rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
             hoverSettings
               ? "w-[90vw] shadow-[0px_4px_46.2px_0px_#000000] opacity-100"
               : "w-[0px] shadow-transparent opacity-0"
@@ -179,14 +179,14 @@ export default function Footer({
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">
                 <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[15px] pr-[15px]">
-                  <div className="font-normal text-forest-500/50 text-right">
+                  <div className="font-normal text-color-text-primary/50 text-right">
                     Units
                   </div>
                   <div className="grid grid-cols-[130px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
                     <div className="flex flex-1 items-center place-self-end">
                       <Icon
                         icon="gtp:gtp-dollar"
-                        className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${
+                        className={`h-[15px] w-[15px] font-[900] text-color-text-primary relative ${
                           hoverSettings ? "text-sm" : ""
                         }`}
                       />
@@ -195,7 +195,7 @@ export default function Footer({
                       </div>
                     </div>
                     {/* <div className="flex gap-x-[10px] items-center"> */}
-                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                    <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                       onClick={() => {
@@ -236,7 +236,7 @@ export default function Footer({
                           className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
                           key={categoryKey + "_category"}
                         >
-                          <div className="font-normal text-forest-500/50 text-right">
+                          <div className="font-normal text-color-text-primary/50 text-right">
                             {categoryKey + " Metrics"}
                           </div>
                           {master &&
@@ -273,7 +273,7 @@ export default function Footer({
                                     <div className="flex flex-1 items-center place-self-end">
                                       <Icon
                                         icon=""
-                                        className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
+                                        className={`h-[15px] w-[15px] font-[900] text-color-text-primary relative self-center justify-self-center ${
                                           hoverSettings ? "text-sm" : ""
                                         }`}
                                       />
@@ -282,7 +282,7 @@ export default function Footer({
                                       </div>
                                     </div>
                                     {/* <div className="flex gap-x-[10px] items-center"> */}
-                                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                                    <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
                                     <div
                                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                                       onClick={() => {

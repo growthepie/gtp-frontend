@@ -1,60 +1,91 @@
 "use client";
-import { Icon } from "@iconify/react";
-import { useState } from "react";
-import { useSpring, animated } from "@react-spring/web";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { useEffect, useRef, useState } from "react";
+import { GTPIcon } from "./GTPIcon";
 
 export default function QuestionAnswer({
   question,
   answer,
   note,
   className = "",
+  questionClassName = "",
+  answerClassName = "",
   startOpen = false,
 }: {
   question: string | React.ReactNode;
   answer: string | React.ReactNode;
   note?: string | React.ReactNode;
   className?: string;
+  questionClassName?: string;
+  answerClassName?: string;
   startOpen?: boolean;
 }) {
   const [open, setOpen] = useState(startOpen);
+  const [answerHeight, setAnswerHeight] = useState(0);
+  const answerRef = useRef<HTMLDivElement>(null);
 
-  const [ref, { height }] = useElementSizeObserver<HTMLDivElement>();
+  useEffect(() => {
+    const updateAnswerHeight = () => {
+      if (answerRef.current) {
+        setAnswerHeight(answerRef.current.offsetHeight);
+      }
+    };
+    updateAnswerHeight();
+    const resizeObserver = new ResizeObserver(updateAnswerHeight);
+    if (answerRef.current) {
+      resizeObserver.observe(answerRef.current);
+    }
+    return () => resizeObserver.disconnect();
+  }, [answer]);
+
+  useEffect(() => {
+    setOpen(startOpen);
+  }, [startOpen]);
 
   return (
-    <div className={className ?? ""}>
+    <div className={`rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col ${className}`}>
       <div
-        className="flex items-center cursor-pointer space-x-[10px]"
+        className={`group/question flex items-center cursor-pointer space-x-[10px] ${questionClassName}`}
         onClick={() => setOpen(!open)}
       >
-        <div className="flex w-[13px] h-[13px] items-center justify-center">
-          <Icon
-            icon="feather:arrow-right-circle"
-            className={`w-[13px] h-[13px] transform rotate-0 transition-transform duration-300 ${
-              open ? "rotate-90" : "rotate-0"
-            }`}
-          />
+        <div className="w-[26px] h-[26px] flex items-center justify-center">
+          <div
+            className={`w-[26px] h-[26px] flex items-center justify-center bg-color-bg-medium group-hover/question:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${open ? "rotate-90" : "rotate-0"}`}
+          >
+            <GTPIcon
+              icon="gtp-chevronright-monochrome"
+              size="sm"
+              className="!size-[10px] text-color-text-primary"
+              containerClassName="!size-[10px]"
+            />
+          </div>
         </div>
-        <div className="font-semibold text-sm leading-snug">{question}</div>
+        <h3 className={`font-semibold leading-[133%] heading-sm ${open ? "" : "select-none"}`}>
+          {question}
+        </h3>
       </div>
       <div
-        className={`transition-height duration-300 overflow-hidden text-base`}
+        className={`transition-[height] duration-300 overflow-hidden text-xs ${answerClassName}`}
         style={{
-          height: open ? height : 0,
+          height: open ? answerHeight : 0,
         }}
       >
-        <div ref={ref} className="pt-[15px]">
+        <div ref={answerRef} className="pt-[15px]">
           {answer}
         </div>
       </div>
-      <div
-        className={`transition-height duration-300 overflow-hidden text-base`}
-        style={{
-          height: open ? 25 : 0,
-        }}
-      >
-        {note && <div className="pt-[10px]">{note}</div>}
-      </div>
-    </div>
+      {
+        note && (
+          <div
+            className={`transition-height duration-300 overflow-hidden text-xs ${answerClassName}`}
+            style={{
+              maxHeight: open ? 300 : 0,
+            }
+            }
+          >
+            <div className="pt-[10px]">{note}</div>
+          </div >
+        )
+      }
+    </div >
   );
 }

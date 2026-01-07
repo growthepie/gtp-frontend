@@ -103,19 +103,14 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(BASE_URL + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 1 * 1000 * 60, // 1 minutes,
-  });
+  } = useSWR<ProjectsResponse>("/api/optimism-retropgf-3/projects");
 
   const {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
   } = useSWR<ListAmountsByProjectIdResponse>(
-    BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId",
-    {
-      refreshInterval: 1 * 1000 * 60, // 2 minutes,
-    },
+    "/api/optimism-retropgf-3/listAmountsByProjectId",
   );
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -387,7 +382,7 @@ export default function Page() {
             !Number.isNaN(
               listAmountsByProjectId.listQuartiles[info.row.original.id].max,
             ) && (
-              <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
+              <div className="flex text-[0.55rem] text-forest-900/60 dark:text-color-text-primary/60 font-inter font-light leading-[1]">
                 <div className="absolute left-0 -top-1.5">
                   {formatNumber(
                     listAmountsByProjectId.listQuartiles[info.row.original.id]
@@ -412,19 +407,19 @@ export default function Page() {
           <TooltipTrigger className="w-full"> */}
           <div className="text-[0.7rem] font-normal w-full flex space-x-0.5 items-center font-inter mt-1">
             {listAmountsByProjectId.listQuartiles[info.row.original.id].q3 >
-              1 ? (
+            1 ? (
               <>
-                <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                <div className=" text-forest-900 dark:text-color-text-primary font-light leading-[1] text-right">
                   {formatNumber(
                     listAmountsByProjectId.listQuartiles[info.row.original.id]
                       .q1,
                     true,
                   )}
                 </div>
-                <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">
+                <div className="flex-1 text-forest-900/50 dark:text-color-text-primary/50">
                   -
                 </div>
-                <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                <div className="text-forest-900 dark:text-color-text-primary font-light leading-[1] text-right">
                   {formatNumber(
                     listAmountsByProjectId.listQuartiles[info.row.original.id]
                       .q3,
@@ -434,7 +429,7 @@ export default function Page() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
+              <div className="flex-1 text-forest-900/80 dark:text-color-text-primary font-light leading-[1] text-right">
                 {formatNumber(
                   listAmountsByProjectId.listQuartiles[info.row.original.id]
                     .median,
@@ -456,7 +451,7 @@ export default function Page() {
 
           {/* </TooltipTrigger>
           <TooltipContent className="z-50 flex items-center justify-center">
-            <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
+            <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
               <div className="px-3 text-sm">{info.row.original.display_name}</div>
               <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key, i) => (
                 listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== undefined && listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== null &&
@@ -472,7 +467,7 @@ export default function Page() {
                   <div key={`${i}${j}`} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
                     <div className="flex flex-col text-[0.6rem] leading-snug">
                       <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
-                      <div className="font-light text-forest-900/80 dark:text-forest-500/80">
+                      <div className="font-light text-forest-900/80 dark:text-color-text-primary/80">
                         {list.listAuthor.resolvedName.name ? (
                           <>{list.listAuthor.resolvedName.name}</>
                         ) : (
@@ -491,7 +486,7 @@ export default function Page() {
 
                     </div>
                     <div className="w-16 font-inter font-[600] text-xs text-right">
-                      {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
+                      {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-color-text-primary/80">OP</span>
                     </div>
                   </div>
                 ))
@@ -510,7 +505,7 @@ export default function Page() {
     (info) => {
       return (
         <div className="w-full whitespace-nowrap text-ellipsis relative">
-          <div className="absolute -left-0 -top-2.5 text-[0.6rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+          <div className="absolute -left-0 -top-2.5 text-[0.6rem] text-forest-900/30 dark:text-color-text-primary/30 font-light leading-[1]">
             #{getProjectsTotalFundingRank(info.row.original.funding_sources)}
           </div>
           <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
@@ -552,12 +547,13 @@ export default function Page() {
                 style={{
                   height: "2px",
 
-                  width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                    info.row.original.funding_sources,
-                  )["TOTAL"] /
-                    getMaxTotalFundingAmount()) *
+                  width: `${
+                    (getProjectsCombinedFundingSourcesByCurrency(
+                      info.row.original.funding_sources,
+                    )["TOTAL"] /
+                      getMaxTotalFundingAmount()) *
                     100.0
-                    }%`,
+                  }%`,
                   // right with bases on bottom and right
                 }}
               ></div>
@@ -607,7 +603,7 @@ export default function Page() {
                 )}
               </div>
 
-              <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light w-0 overflow-visible">
+              <div className="text-[0.6rem] text-forest-900/80 dark:text-color-text-primary/80 font-light w-0 overflow-visible">
                 {/* {info.table
                   .getSortedRowModel()
                   .rows.findIndex((d) => d.id === info.row.id) + 1} */}
@@ -635,7 +631,7 @@ export default function Page() {
                 >
                   <Icon
                     icon="feather:external-link"
-                    className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
+                    className="w-4 h-4 text-forest-900/80 dark:text-color-text-primary/80"
                   />
                 </Link>
               )}
@@ -643,7 +639,7 @@ export default function Page() {
 
             <div
               className="flex-1 overflow-hidden text-ellipsis font-bold whitespace-nowrap"
-            // style={{ whiteSpace: "pre-wrap" }}
+              // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
             </div>
@@ -671,14 +667,15 @@ export default function Page() {
           <div className="w-full flex justify-between items-center">
             <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-1 hover:bg-forest-900/10 dark:hover:bg-forest-500/10">
               <Link
-                href={`https://vote.optimism.io/retropgf/3/application/${info.row.original.id.split("|")[1]
-                  }`}
+                href={`https://vote.optimism.io/retropgf/3/application/${
+                  info.row.original.id.split("|")[1]
+                }`}
                 rel="noopener noreferrer"
                 target="_blank"
               >
                 <Icon
                   icon="gtp:agora"
-                  className="w-3 h-3 text-forest-900/80 dark:text-forest-500/80"
+                  className="w-3 h-3 text-forest-900/80 dark:text-color-text-primary/80"
                 />
               </Link>
             </div>
@@ -695,12 +692,12 @@ export default function Page() {
               {info.row.original.applicant_type === "PROJECT" ? (
                 <Icon
                   icon={"clarity:users-solid"}
-                  className="w-6 h-6 text-forest-900/80 dark:text-forest-500/80 fill-current"
+                  className="w-6 h-6 text-forest-900/80 dark:text-color-text-primary/80 fill-current"
                 />
               ) : (
                 <Icon
                   icon={"clarity:user-solid"}
-                  className="w-6 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
+                  className="w-6 h-4 text-forest-900/80 dark:text-color-text-primary/80 fill-current"
                 />
               )}
             </div>
@@ -708,10 +705,11 @@ export default function Page() {
               rel="noopener noreferrer"
               target="_blank"
               href={`https://optimistic.etherscan.io/address/${info.row.original.applicant.address.address}`}
-              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
-                ? "text-forest-900 dark:text-forest-500"
-                : "text-forest-900/50 dark:text-forest-500/50"
-                } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${
+                info.row.original.applicant.address.resolvedName.name
+                  ? "text-forest-900 dark:text-color-text-primary"
+                  : "text-forest-900/50 dark:text-color-text-primary/50"
+              } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
             >
               {info.row.original.applicant.address.resolvedName.name ? (
                 <>{info.row.original.applicant.address.resolvedName.name}</>
@@ -770,7 +768,7 @@ export default function Page() {
               <>
                 <div className="absolute inset-0 bg-gradient-to-tr border from-[#FF0420]/30 via-[#FF0420]/50 to-[#FF0420]/30 border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-sm"></div>
 
-                <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
+                <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-color-text-primary leading-[1]">
                   #
                   {getAwardedRank(
                     RPGF3ResultsById[info.row.original.id].awarded,
@@ -789,7 +787,7 @@ export default function Page() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center">
-                    <div className="ml-2 px-3 py-1.5 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
+                    <div className="ml-2 px-3 py-1.5 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
                       <div className="text-xs text-center">Award Amount</div>
                       <div className="flex justify-between space-x-1 font-bold items-end leading-snug">
                         <div className="flex-1 text-right">
@@ -810,8 +808,8 @@ export default function Page() {
                               </span>
                               {Math.round(
                                 projectsResponse.prices.optimism.usd *
-                                RPGF3ResultsById[info.row.original.id]
-                                  .awarded,
+                                  RPGF3ResultsById[info.row.original.id]
+                                    .awarded,
                               ).toLocaleString("en-GB")}
                             </div>
                             <div className="text-left opacity-60 text-[0.65rem]">
@@ -840,20 +838,21 @@ export default function Page() {
                     }}
                   >
                     <div
-                      className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-forest-100"
+                      className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-color-bg-default"
                       style={{
                         height: "2px",
 
-                        width: `${(RPGF3ResultsById[info.row.original.id].awarded /
-                          getMaxAwardedAmount()) *
+                        width: `${
+                          (RPGF3ResultsById[info.row.original.id].awarded /
+                            getMaxAwardedAmount()) *
                           100.0
-                          }%`,
+                        }%`,
                         // right with bases on bottom and right
                       }}
                     ></div>
                   </div>
                   <div
-                    className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-forest-100/30"
+                    className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-color-bg-default/30"
                     style={{
                       height: "2px",
                       width: `100%`,
@@ -864,7 +863,7 @@ export default function Page() {
             ) : (
               <div className="font-normal w-full flex justify-end font-inter">
                 <div className="flex space-x-1">
-                  <div className="text-forest-900/50 dark:text-forest-500/50">
+                  <div className="text-forest-900/50 dark:text-color-text-primary/50">
                     —
                   </div>
                 </div>
@@ -899,10 +898,11 @@ export default function Page() {
               <div className="w-4 h-4">
                 <Icon
                   icon={"feather:check-square"}
-                  className={`w-4 h-4  fill-current ${RPGF3ResultsById[info.row.original.id].result_quorum
-                    ? "text-green-500 dark:text-green-500"
-                    : "text-forest-900/80 dark:text-forest-500/80"
-                    }`}
+                  className={`w-4 h-4  fill-current ${
+                    RPGF3ResultsById[info.row.original.id].result_quorum
+                      ? "text-green-500 dark:text-green-500"
+                      : "text-forest-900/80 dark:text-color-text-primary/80"
+                  }`}
                 />
               </div>
             </div>
@@ -929,8 +929,8 @@ export default function Page() {
         cell: (info) => (
           <>
             <div className="w-full whitespace-nowrap text-ellipsis relative">
-              {/* {listAmountsByProjectId?.numUniqueAuthors[info.row.original.id] && <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
-                <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{listAmountsByProjectId.numUniqueAuthors[info.row.original.id]}</div>
+              {/* {listAmountsByProjectId?.numUniqueAuthors[info.row.original.id] && <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-color-text-primary/30 font-light leading-[1]">
+                <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-color-text-primary/30" >{listAmountsByProjectId.numUniqueAuthors[info.row.original.id]}</div>
                 <div>
                   {listAmountsByProjectId.numUniqueAuthors[info.row.original.id] > 1 ? "authors" : "author"}
                 </div>
@@ -940,10 +940,10 @@ export default function Page() {
                   <div>
                     {listAmountsByProjectId &&
                       listAmountsByProjectId["listCounts"][
-                      info.row.original.id
+                        info.row.original.id
                       ]}
                   </div>
-                  <div className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80">
+                  <div className="w-4 h-4 text-forest-900/80 dark:text-color-text-primary/80">
                     <Icon icon={"feather:list"} className={`w-4 h-4`} />
                   </div>
                 </div>
@@ -1004,7 +1004,7 @@ export default function Page() {
                     />
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center">
-                    <div className="-mr-3.5 px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="-mr-3.5 px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="flex flex-col text-xs space-y-1">
                         <div className="font-light">
                           Total{" "}
@@ -1018,7 +1018,7 @@ export default function Page() {
                           <div className="font-light">
                             For OP tokens we calculated with $1.35
                           </div>
-                          <div className="text-[0.65rem] leading-snug text-forest-900/80 dark:text-forest-500/80">
+                          <div className="text-[0.65rem] leading-snug text-forest-900/80 dark:text-color-text-primary/80">
                             (OP price when RPGF applications were closed).
                           </div>
                         </div>
@@ -1072,19 +1072,19 @@ export default function Page() {
                   {listAmountsByProjectId &&
                     Object.values(
                       listAmountsByProjectId.retropgfStatus[
-                      info.row.original.id
+                        info.row.original.id
                       ],
                     ).filter((value) => value).length > 0 && (
-                      <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-forest-500/40 font-light leading-[1] flex space-x-1 items-center">
+                      <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-color-text-primary/40 font-light leading-[1] flex space-x-1 items-center">
                         <div className="leading-snug">RetroPGF</div>
                         {Object.entries(
                           listAmountsByProjectId.retropgfStatus[
-                          info.row.original.id
+                            info.row.original.id
                           ],
                         ).map(([key, value]) => (
                           <div key={key}>
                             {value !== null && value > 0 ? (
-                              <div className="flex w-2.5 h-2.5 justify-center font-medium bg-[#FE5468]/40 text-[#FE5468] rounded-full text-[0.55rem] font-mono leading-snug">
+                              <div className="flex w-2.5 h-2.5 justify-center font-medium bg-[#FE5468]/40 text-color-accent-red rounded-full text-[0.55rem] font-mono leading-snug">
                                 {key.replace(/[^0-9]/g, "")}
                               </div>
                             ) : (
@@ -1117,7 +1117,7 @@ export default function Page() {
                                 <div
                                   className={
                                     currency === "OP"
-                                      ? "text-[#FE5468] leading-[1.6] font-[500]"
+                                      ? "text-color-accent-red leading-[1.6] font-[500]"
                                       : "text-[#7fdcd6] leading-[1.6] font-[400]"
                                   }
                                 >
@@ -1126,7 +1126,9 @@ export default function Page() {
                                       $
                                     </span>
                                   )}
-                                  {parseInt(value as string).toLocaleString("en-GB")}
+                                  {parseInt(value as string).toLocaleString(
+                                    "en-GB",
+                                  )}
                                   {currency === "OP" && (
                                     <>
                                       {" "}
@@ -1138,7 +1140,7 @@ export default function Page() {
                                 </div>
                               </>
                             ) : (
-                              <div className="text-forest-900/30 dark:text-forest-500/30">
+                              <div className="text-forest-900/30 dark:text-color-text-primary/30">
                                 0
                               </div>
                             )}
@@ -1151,28 +1153,30 @@ export default function Page() {
                       className="relative z-10"
                       style={{
                         height: "2px",
-                        width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"] /
-                          getProjectsCombinedFundingSourcesByCurrency(
+                        width: `${
+                          (getProjectsCombinedFundingSourcesByCurrency(
                             info.row.original.funding_sources,
-                          )["TOTAL"]) *
+                          )["TOTAL"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
                           100.0
-                          }%`,
+                        }%`,
                       }}
                     >
                       <div
                         className="absolute bg-[#7fdcd6]"
                         style={{
                           height: "2px",
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["USD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["USD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                       <div
@@ -1183,23 +1187,25 @@ export default function Page() {
                             getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
                             )["USD"] !== 0
-                              ? `${(getProjectsCombinedFundingSourcesByCurrency(
-                                info.row.original.funding_sources,
-                              )["USD"] /
-                                getProjectsCombinedFundingSourcesByCurrency(
-                                  info.row.original.funding_sources,
-                                )["TOTAL"]) *
-                              100.0
-                              }%`
+                              ? `${
+                                  (getProjectsCombinedFundingSourcesByCurrency(
+                                    info.row.original.funding_sources,
+                                  )["USD"] /
+                                    getProjectsCombinedFundingSourcesByCurrency(
+                                      info.row.original.funding_sources,
+                                    )["TOTAL"]) *
+                                  100.0
+                                }%`
                               : 0,
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["OPUSD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["OPUSD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                     </div>
@@ -1213,7 +1219,7 @@ export default function Page() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center">
-                  <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                  <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
                     <div className="px-3 text-sm">
                       {info.row.original.display_name}
                     </div>
@@ -1245,7 +1251,7 @@ export default function Page() {
                             <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
                               {fundingSource.type}
                             </div>
-                            <div className="font-light text-forest-900/80 dark:text-forest-500/80">
+                            <div className="font-light text-forest-900/80 dark:text-color-text-primary/80">
                               {fundingSource.description}
                             </div>
                           </div>
@@ -1253,7 +1259,7 @@ export default function Page() {
                             <div className="flex-1 text-right">
                               {formatNumber(fundingSource.amount, true)}
                             </div>{" "}
-                            <div className="w-4 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">
+                            <div className="w-4 text-left text-[10px] font-light text-forest-900/80 dark:text-color-text-primary/80">
                               {fundingSource.currency}
                             </div>
                           </div>
@@ -1304,7 +1310,7 @@ export default function Page() {
                   <Icon icon="feather:info" className="w-4 h-4 " />
                 </TooltipTrigger>
                 <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                  <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                  <div className="px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                     <div className="flex flex-col text-xs space-y-1">
                       <div className="font-light">
                         <span className="font-semibold">VC Funding</span>{" "}
@@ -1380,7 +1386,7 @@ export default function Page() {
                       <div className="w-5 h-5">
                         <Icon
                           icon={"fluent:money-16-regular"}
-                          className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
+                          className={`w-5 h-5 fill-current text-forest-900/80 dark:text-color-text-primary/80`}
                         />
                       </div>
                     </>
@@ -1392,7 +1398,7 @@ export default function Page() {
                 </div>
               </div>
             ) : (
-              <div className="text-forest-900/30 dark:text-forest-500/30 text-[0.6rem]">
+              <div className="text-forest-900/30 dark:text-color-text-primary/30 text-[0.6rem]">
                 Unknown / DYOR
               </div>
             )}
@@ -1425,7 +1431,7 @@ export default function Page() {
               <Icon icon={"bx:coin"} className="w-6 h-6" />
             </TooltipTrigger>
             <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-              <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+              <div className="px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                 <div className="flex flex-col text-xs space-y-1">
                   <div className="">
                     <span className="font-bold">Has Token</span>{" "}
@@ -1496,7 +1502,7 @@ export default function Page() {
                     />
                   </TooltipTrigger>
                   <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                    <div className="px-3 py-1.5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="px-3 py-1.5 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="text-xs space-x-1">
                         <span className="font-light">
                           This project has a{" "}
@@ -1628,8 +1634,9 @@ export default function Page() {
         }
         
         td {
-            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-          };
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -1674,7 +1681,6 @@ export default function Page() {
   });
   const { width: tableWidth } = useResizeObserver({
     ref: tableRef,
-
   });
 
   const [isTableWidthWider, setIsTableWidthWider] = useState(false);
@@ -1761,7 +1767,6 @@ export default function Page() {
       <ShowLoading
         dataLoading={[projectsLoading]}
         dataValidating={[projectsValidating]}
-
       />
       {/* <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`} ref={containerRef}> */}
       <Container>
@@ -1778,7 +1783,7 @@ export default function Page() {
 
             <div className="relative flex flex-1">
               <input
-                className="block rounded-full pl-10 pr-3 py-1.5 w-full font-medium text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-10 pr-3 py-1.5 w-full font-medium text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Project Filter"
                 value={displayNameFilter}
                 onChange={(e) => {
@@ -1790,18 +1795,18 @@ export default function Page() {
               />
               <Icon
                 icon="feather:search"
-                className="w-6 h-6 absolute left-[10px] top-[8px] z-10 text-forest-900 dark:text-forest-500"
+                className="w-6 h-6 absolute left-[10px] top-[8px] z-10 text-forest-900 dark:text-color-text-primary"
               />
               {displayNameFilter.length > 0 && (
                 <div
-                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-color-text-primary text-xs font-light leading-[1.2]"
                   onClick={() => {
                     setDisplayNameFilter("");
                   }}
                 >
                   <Icon
                     icon="feather:x"
-                    className="w-6 h-6 z-10 text-forest-900 dark:text-forest-500"
+                    className="w-6 h-6 z-10 text-forest-900 dark:text-color-text-primary"
                   />
                 </div>
               )}
@@ -1810,7 +1815,7 @@ export default function Page() {
               {canDownloadCSV && (
                 <div
                   onClick={handleExportCSV}
-                  className="flex items-center space-x-1.5 cursor-pointer rounded-full px-4 py-2 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium"
+                  className="flex items-center space-x-1.5 cursor-pointer rounded-full px-4 py-2 bg-forest-50 dark:bg-forest-900 dark:text-color-text-primary text-forest-900 font-medium"
                 >
                   <Icon icon="feather:download" className="w-4 h-4" />
                   <div className="text-base font-semibold">Export CSV</div>
@@ -1824,21 +1829,21 @@ export default function Page() {
       </Container>
 
       <Container
-        className={`w-full mt-[0px] h-100 -mb-12 ${isTableWidthWider
-          ? "!pr-0 !pl-[20px] md:!pl-[50px]"
-          : "!px-[20px] md:!px-[50px]"
-          }`}
+        className={`w-full mt-[0px] h-100 -mb-12 ${
+          isTableWidthWider
+            ? "!pr-0 !pl-[20px] md:!pl-[50px]"
+            : "!px-[20px] md:!px-[50px]"
+        }`}
       >
         <div
-          className={`w-full ${isTableWidthWider
-            ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
-            : "overflow-x-hidden"
-            } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
+          className={`w-full ${
+            isTableWidthWider
+              ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
+              : "overflow-x-hidden"
+          } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
         >
           <div className={tableMinWidthClass}>
             <div className="flex flex-col items-center justify-center w-full h-full relative">
-
-
               {Style}
 
               <div className={`${tableMinWidthClass} pr-4`}>
@@ -1867,8 +1872,9 @@ export default function Page() {
                                   <div
                                     className={
                                       header.column.getCanSort()
-                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                        }`
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-color-text-primary text-[11px] font-bold w-fit ${
+                                            i === 0 ? "pl-[10px]" : ""
+                                          }`
                                         : ""
                                     }
                                     style={{
@@ -1913,7 +1919,7 @@ export default function Page() {
                                             {dataUniqueValues[
                                               header.id
                                             ].toLocaleString("en-GB")}
-                                            <span className="text-forest-900/30 dark:text-forest-500/30">
+                                            <span className="text-forest-900/30 dark:text-color-text-primary/30">
                                               {"/"}
                                               {projectsUniqueValues[
                                                 header.id
@@ -1966,14 +1972,14 @@ export default function Page() {
                 ${
                   // if scroll is at top or bottom, don't show the fade
                   parentRef.current &&
-                    (parentRef.current.scrollTop < 30 ||
-                      parentRef.current.scrollTop >
+                  (parentRef.current.scrollTop < 30 ||
+                    parentRef.current.scrollTop >
                       parentRef.current.scrollHeight -
-                      parentRef.current.clientHeight -
-                      30)
+                        parentRef.current.clientHeight -
+                        30)
                     ? "fade-edge-div-vertical-hidden"
                     : "fade-edge-div-vertical"
-                  }}`}
+                }}`}
               >
                 <div
                   ref={parentRef}
@@ -1983,7 +1989,7 @@ export default function Page() {
                     style={{ height: `${virtualizer.getTotalSize()}px` }}
                     className="w-full"
                   >
-                    {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
+                    {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-color-ui-active" /> */}
                     <table className="table-fixed w-full">
                       {/* <thead className="sticky top-0 z-50"> */}
                       <thead>
@@ -2011,14 +2017,15 @@ export default function Page() {
                                     //   ? "sticky top-0 z-20"
                                     //   : "sticky top-0 left-0 z-30"
                                     ""
-                                    } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                                  } bg-white dark:bg-color-ui-active whitespace-nowrap`}
                                 >
                                   {header.isPlaceholder ? null : (
                                     <div
                                       {...{
                                         className: header.column.getCanSort()
-                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                          }`
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-color-text-primary text-[11px] font-bold h-0 ${
+                                              i === 0 ? "pl-[10px]" : ""
+                                            }`
                                           : "",
                                         onClick:
                                           header.column.getToggleSortingHandler(),
@@ -2060,8 +2067,9 @@ export default function Page() {
                                 key={row.id}
                                 style={{
                                   height: `${virtualRow.size}px`,
-                                  transform: `translateY(${virtualRow.start - index * virtualRow.size
-                                    }px)`,
+                                  transform: `translateY(${
+                                    virtualRow.start - index * virtualRow.size
+                                  }px)`,
                                 }}
                               >
                                 {row.getVisibleCells().map((cell, i) => {
@@ -2093,9 +2101,11 @@ export default function Page() {
             </div>
           </div>
         </div>
+      </Container>
+      <div className="px-[40px]">
         <QuestionAnswer
           startOpen={false}
-          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-[240px] left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          className="z-50 relative top-[80px] "
           question={"What can you see in this list?"}
           answer={
             <div className="text-xs lg:text-sm">
@@ -2142,7 +2152,7 @@ export default function Page() {
             </div>
           }
         />
-      </Container>
+      </div>
     </>
   );
 }

@@ -14,16 +14,20 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from "next/router";
 import { notFound } from "next/navigation";
+import { useMaster } from "@/contexts/MasterContext";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 const ChainOverview = ({ params }: { params: any }) => {
   const forceCategory = params.category;
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data: usageData,
@@ -45,7 +49,7 @@ const ChainOverview = ({ params }: { params: any }) => {
       return notFound();
     }
   }, [master]);
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -87,16 +91,17 @@ const ChainOverview = ({ params }: { params: any }) => {
         const isSupported =
           chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
         const isMaster = master?.chains[chain] ? true : false;
+        const passETH = chain === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           chain === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : master?.chains[chain].bucket.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
-        return passEcosystem && isSupported;
+        return passEcosystem && isSupported && passETH;
       })
       .reduce((result, chain) => {
         const chainKey = AllChainsByKeys[chain].key;
@@ -110,7 +115,7 @@ const ChainOverview = ({ params }: { params: any }) => {
       }, {});
 
     return filteredChains;
-  }, [chainEcosystemFilter, master, usageData?.data.chains]);
+  }, [chainEcosystemFilter, master, usageData?.data.chains, focusEnabled]);
 
   return (
     <>
@@ -123,28 +128,23 @@ const ChainOverview = ({ params }: { params: any }) => {
           <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
               <div className="flex gap-x-[8px] items-center">
-                <Image
-                  src="/GTP-Package.svg"
-                  alt="GTP Chain"
-                  className="object-contain w-[32px] h-[32px]"
-                  height={36}
-                  width={36}
-                />
-                <Heading
-                  className="text-[26px] leading-snug lg:text-[36px]"
-                  as="h1"
-                >
-                  Chain Overview
-                </Heading>
+                <Title title="Chain Overview" icon="gtp-chain" as="h1"  />
+         
               </div>
               <EcosystemDropdown />
             </div>
             <div className="flex items-center w-[99%] mx-auto mb-[30px]">
-              <div className="text-[16px]">
-                An overview of chains high-level blockspace usage. All expressed
-                in share of chain usage. You can toggle between share of chain
-                usage or absolute numbers.
-              </div>
+              <div className="text-[14px]">
+                We label smart contracts based on their usage type and aggregate usage per category. 
+                You can toggle between share of chain
+                usage or absolute numbers. The category definitions can 
+                be found <a
+                  href="https://github.com/openlabelsinitiative/OLI/blob/main/1_label_schema/tags/valuesets/usage_category.yml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >here</a>.
+                </div>
             </div>
           </Container>
 

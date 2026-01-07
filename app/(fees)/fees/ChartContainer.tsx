@@ -1,8 +1,8 @@
 "use client";
 import Icon from "@/components/layout/Icon";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { useEffect, useState, useMemo, useRef } from "react";
-import SwiperItem from "@/components/layout/SwiperItem";
+import SwiperItem from "@/components/layout/LandingSwiperItems";
 import useSWR from "swr";
 import { LandingURL } from "@/lib/urls";
 import FeesChart from "./FeesChart";
@@ -44,7 +44,7 @@ export default function ChartContainer({
   master,
 }: SlidingFooterContainerProps) {
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
-    "https://api.growthepie.xyz/v1/fees/linechart.json",
+    "https://api.growthepie.com/v1/fees/linechart.json",
   );
 
   const [metricIndex, setMetricIndex] = useState(0);
@@ -168,7 +168,7 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px] ${
+      className={`relative w-full bg-color-bg-default rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px] ${
         isOpen
           ? "shadow-[0px_0px_30px_0px_#000000BF]"
           : "shadow-[0px_0px_50px_0px_#00000066]"
@@ -176,9 +176,9 @@ export default function ChartContainer({
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-40">
         <div
-          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] ${
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-color-bg-default ${
             isOpen ? "shadow-[0px_0px_30px_0px_#000000BF]" : "shadow-none"
-          }  transition-shadow duration-300 cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
+          }  transition-shadow duration-300 cursor-pointer border-[1.5px] border-forest-500 dark:border-color-border ${
             isOpen ? "" : "hard-shine-2"
           }`}
           onClick={() => {
@@ -237,9 +237,9 @@ export default function ChartContainer({
                 </div>
                 <div>{` over time`}</div>
               </div>
-              <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
+              <div className="w-full md:w-[165px] bg-color-bg-medium rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
                 <div
-                  className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
+                  className="px-[7px] py-[3px] bg-color-ui-hover dark:bg-color-bg-default rounded-full cursor-pointer"
                   onClick={() => {
                     if (timeFrameIndex === 0) {
                       setTimeFrameIndex(timeFrames.length - 1);
@@ -259,14 +259,14 @@ export default function ChartContainer({
                     className="w-[15px] h-[15px]"
                   />
                 </div>
-                <div className="flex gap-x-[5px] items-center text-[#CDD8D3]">
+                <div className="flex gap-x-[5px] items-center text-color-text-primary">
                   <Icon icon="feather:clock" className="w-[10px] h-[10px]" />
                   <div className="text-[10px] font-semibold">
                     {timeframeToText(timeFrames[timeFrameIndex])}
                   </div>
                 </div>
                 <div
-                  className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
+                  className="px-[7px] py-[3px] bg-color-ui-hover dark:bg-color-bg-default rounded-full cursor-pointer"
                   onClick={() => {
                     if (timeFrameIndex === timeFrames.length - 1) {
                       setTimeFrameIndex(0);
@@ -313,7 +313,7 @@ export default function ChartContainer({
                   {chartMinMaxXAxisLabels.map((label, index) => (
                     <div
                       key={index}
-                      className="h-[15px] w-[1px] bg-[#5A6462]"
+                      className="h-[15px] w-[1px] bg-color-ui-hover"
                     ></div>
                   ))}
                 </div>

@@ -5,9 +5,10 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { navigationItems } from "@/lib/navigation";
+import { navigationItems as navItemsWithoutChains } from "@/lib/navigation";
 import { useMediaQuery } from "usehooks-ts";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
+import { useMaster } from "@/contexts/MasterContext";
 
 const Error = ({
   header,
@@ -21,6 +22,18 @@ const Error = ({
   const [navIndex, setNavIndex] = useState<number | null>(null);
   const [randIndices, setRandIndices] = useState<number[] | null>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const { ChainsNavigationItems } = useMaster();
+
+  const [navigationItems, setNavigationItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (ChainsNavigationItems) {
+      // insert chains navigation items as item 3 in the navigation items array
+      const navItems = [...navItemsWithoutChains];
+      navItems.splice(3, 0, ChainsNavigationItems);
+      setNavigationItems(navItems);
+    }
+  }, [ChainsNavigationItems]);
 
   function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -77,7 +90,7 @@ const Error = ({
     <>
       <div className="flex flex-col items-center justify-center w-full mt-[85px] md:mt-[125px] -mb-[100px] gap-y-[15px]">
         <div
-          className={`flex flex-col bg-[#1F2726] border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
+          className={`flex flex-col bg-color-bg-default border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
           ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${
             isMobile ? "w-[95%]" : "w-[587px]"
           }`}
@@ -95,7 +108,7 @@ const Error = ({
           <div className="text-[15px] leading-[150%]">{subheader}</div>
           <div className="flex flex-col gap-y-[5px]">
             <Link
-              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
+              className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
               ${isMobile ? "h-[50px]" : "h-[54px]"}`}
               href={`/`}
             >
@@ -104,7 +117,7 @@ const Error = ({
             </Link>
             {randIndices && navIndex && (
               <Link
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${
                   isMobile ? "h-[50px]" : "h-[54px]"
                 }`}
                 href={`/${pageGroup}/${
@@ -126,7 +139,7 @@ const Error = ({
               randIndices.map((index) => (
                 <Link
                   key={index}
-                  className={`flex self-center items-center p-[15px] w-[250px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                  className={`flex self-center items-center p-[15px] w-[250px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                     isMobile ? "h-[50px]" : "h-[54px]"
                   }`}
                   href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
@@ -139,7 +152,7 @@ const Error = ({
                 </Link>
               ))}
             <a
-              className={`flex self-center items-center p-[15px] w-[299px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+              className={`flex self-center items-center p-[15px] w-[299px] bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
               href={`https://docs.growthepie.xyz/`}
@@ -149,7 +162,7 @@ const Error = ({
             </a>
             {!navIndex && (
               <a
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                   isMobile ? "h-[50px]" : "h-[54px]"
                 }`}
                 href={`https://mirror.xyz/blog.growthepie.eth`}
@@ -159,10 +172,10 @@ const Error = ({
               </a>
             )}
             <Link
-              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+              className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
-              href={`/optimism-retropgf-3`}
+              href={`/trackers/optimism-retropgf-3`}
             >
               <Icon
                 icon="gtp:optimism-logo-monochrome"

@@ -1,38 +1,49 @@
+"use client";
 import { useContractContext } from "./ContractContext";
 import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { ContractRowInterface } from "./ContextInterface";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../Tooltip";
 import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
-
+import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
+import useSWR from "swr";
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
+import { LabelsURLS, LandingURL, MasterURL } from "@/lib/urls";
+
+import {
+  GridTableChainIcon,
+  GridTableHeader,
+  GridTableHeaderCell,
+  GridTableRow,
+} from "@/components/layout/GridTable";
+import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { Category } from "@/app/(layout)/applications/_components/Components";
 
 export default function ContractRow({
   rowKey,
   i,
   selectedContract,
   sortedContracts,
-  sortOrder,
-  setSortOrder,
   setSelectedContract,
 }: {
   rowKey: string;
   i: number;
   selectedContract: ContractInfo | null;
   sortedContracts: Object;
-  sortOrder: boolean;
-  setSortOrder: (order: boolean) => void;
   setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
+  const { AllChainsByKeys } = useMaster();
+  const { projectNameToProjectData } = useProjectsMetadata();
   const [copyContract, setCopyContract] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
     string | null
-  >("nft");
+  >("collectibles");
   const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
     useState(false);
 
@@ -40,15 +51,11 @@ export default function ContractRow({
   const { theme } = useTheme();
 
   const {
-    data,
     master,
     selectedMode,
-    selectedCategory,
-    selectedTimespan,
-    selectedValue,
-    setSelectedCategory,
     formatSubcategories,
-  } = useContractContext() as ContractRowInterface;
+  } = useContractContext();
+
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
@@ -97,12 +104,33 @@ export default function ContractRow({
     return retValue;
   }
 
+  const { data: projectsData } = useSWR<LabelsProjectsResponse>(
+    LabelsURLS.projects,
+  );
+
+  const ownerProjectDisplayNameToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    let displayNameIndex = projectsData.data.types.indexOf("display_name");
+
+    if (displayNameIndex === -1) return {};
+
+    let d = {};
+
+    projectsData.data.data.forEach((project) => {
+      if (project[displayNameIndex] !== null)
+        d[project[displayNameIndex]] = project;
+    });
+
+    return d;
+  }, [projectsData]);
+
   return (
     <>
       {selectedContract &&
         selectedContract.address === sortedContracts[rowKey].address && (
-          <div key={rowKey + "" + sortOrder}>
-            <div className="flex rounded-[27px] bg-forest-50 dark:bg-[#1F2726] border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
+          <div key={rowKey + "-labelform"}>
+            <div className="flex rounded-[27px]  mt-[7.5px] group relative z-[100]">
               <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
                 <div className="w-full h-full rounded-[27px] overflow-clip">
                   <div className="relative w-full h-full">
@@ -111,7 +139,7 @@ export default function ContractRow({
                       style={{
                         background:
                           AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                         width: getWidth(sortedContracts[rowKey]),
                       }}
@@ -168,7 +196,7 @@ export default function ContractRow({
                       style={{
                         color:
                           AllChainsByKeys[selectedContract.chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -185,11 +213,11 @@ export default function ContractRow({
                             <TooltipTrigger>
                               <Icon
                                 icon="feather:info"
-                                className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                               />
                             </TooltipTrigger>
                             <TooltipContent className="z-[110]">
-                              <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                              <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                                 <div className="font-medium">
                                   This is the Contract name.
                                 </div>
@@ -214,11 +242,11 @@ export default function ContractRow({
                             <TooltipTrigger>
                               <Icon
                                 icon="feather:info"
-                                className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                className="w-6 h-6 text-forest-900 dark:text-color-text-primary"
                               />
                             </TooltipTrigger>
                             <TooltipContent className="z-[110]">
-                              <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                              <div className="p-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                                 <div className="font-medium">
                                   This is the Project name.
                                 </div>
@@ -249,11 +277,11 @@ export default function ContractRow({
                               <option
                                 key={key}
                                 value={key}
-                                className="bg-forest-50 dark:bg-[#1F2726]"
+                                className="bg-forest-50 dark:bg-color-bg-default"
                               >
                                 {
                                   master.blockspace_categories.main_categories[
-                                    key
+                                  key
                                   ]
                                 }
                               </option>
@@ -276,7 +304,7 @@ export default function ContractRow({
                               <option
                                 key={key}
                                 value={key}
-                                className="bg-forest-50 dark:bg-[#1F2726]"
+                                className="bg-forest-50 dark:bg-color-bg-default"
                               >
                                 {formatSubcategories(key)}
                               </option>
@@ -304,7 +332,7 @@ export default function ContractRow({
                   </div>
                   <div className="flex space-x-[15px] items-start justify-center w-full font-medium pt-[15px]">
                     <button
-                      className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500"
+                      className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-color-text-primary"
                       onClick={() => setSelectedContract(null)}
                       disabled={isFormSubmitting}
                     >
@@ -327,199 +355,147 @@ export default function ContractRow({
           </div>
         )}
 
-      <div key={rowKey + "" + sortOrder}>
-        <div className="flex rounded-full border-forest-200 dark:border-forest-500 border h-[60px] mt-[7.5px] group hover:bg-forest-300 hover:dark:bg-forest-800 relative">
-          <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
-            <div className="w-full h-full rounded-full overflow-clip">
-              <div className="relative w-full h-full">
-                <div
-                  className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
-                  style={{
-                    background:
-                      AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme ?? "dark"
-                      ][1],
-                    width: getWidth(sortedContracts[rowKey]),
-                  }}
-                ></div>
-              </div>
+      <GridTableRow
+        key={rowKey}
+        gridDefinitionColumns="grid-cols-[20px,280px,150px,115px,minmax(195px,800px),130px] relative"
+        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
+      >
+        <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
+
+        {/* Contract Name and Address */}
+        <div className="flex justify-between gap-x-[10px]">
+          {sortedContracts[rowKey].name ? (
+            <div className="truncate">{sortedContracts[rowKey].name}</div>
+          ) : (
+            <div className="truncate font-mono">
+              {sortedContracts[rowKey].address}
             </div>
-          </div>
-          <div className="flex w-[100%] items-center ml-4 mr-8">
-            <div className="flex items-center h-10 !w-[34%] relative">
-              <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
-              <div className="flex-none mr-[36px]">
+          )}
+          <div className="flex items-center gap-x-[5px]">
+            <div className="h-[15px] w-[15px]">
+              <div
+                className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    sortedContracts[rowKey].address,
+                  );
+                  setCopyContract(true);
+                  setTimeout(() => {
+                    setCopyContract(false);
+                  }, 1000);
+                }}
+              >
                 <Icon
-                  icon={`gtp:${sortedContracts[rowKey].chain.replace(
-                    "_",
-                    "-",
-                  )}-logo-monochrome`}
-                  className="w-[29px] h-[29px]"
-                  style={{
-                    color:
-                      AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme ?? "dark"
-                      ][1],
-                  }}
+                  icon={copyContract ? "feather:check" : "feather:copy"}
+                  className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 />
               </div>
-              <div className="flex flex-grow">
-                <div
-                  className={`flex flex-none items-center space-x-2 w-0 ${
-                    copyContract ? " delay-1000" : ""
-                  } overflow-clip transition-all duration-200 ease-in-out ${
-                    sortedContracts[rowKey].name &&
-                    sortedContracts[rowKey].project_name
-                      ? "group-hover:w-[48px]"
-                      : "group-hover:w-[96px]"
-                  }`}
-                >
-                  {!(
-                    sortedContracts[rowKey].name &&
-                    sortedContracts[rowKey].project_name
-                  ) && (
-                    <div
-                      className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                      onClick={() => {
-                        setSelectedContract(sortedContracts[rowKey]);
-                        setIsContractLabelModalOpen(true);
-                      }}
-                    >
-                      <Icon icon="gtp:add-tag" className="w-6 h-6" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-full p-2 ${
-                      copyContract
-                        ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                        : "bg-forest-50 dark:bg-forest-1000"
-                    } text-white cursor-pointer`}
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        sortedContracts[rowKey].address,
-                      );
-                      setCopyContract(true);
-                      setTimeout(() => {
-                        setCopyContract(false);
-                      }, 1000);
-                    }}
-                  >
-                    {!copyContract && (
-                      <Icon icon="feather:copy" className="w-5 h-5" />
-                    )}
-                    {copyContract && (
-                      <Icon icon="feather:check" className="w-5 h-5" />
-                    )}
-                  </div>
-                </div>
-                <div
-                  className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
-                >
-                  {sortedContracts[rowKey].name ||
-                  sortedContracts[rowKey].project_name ? (
-                    <>
-                      <div
-                        className={`min-w-full max-w-full text-base ${
-                          sortedContracts[rowKey].project_name
-                            ? "font-bold"
-                            : "opacity-30 italic"
-                        }`}
-                      >
-                        {sortedContracts[rowKey].project_name
-                          ? sortedContracts[rowKey].project_name
-                          : "Project Label Missing"}
-                      </div>
-
-                      <div
-                        className={`min-w-full max-w-full text-sm ${
-                          sortedContracts[rowKey].name
-                            ? ""
-                            : "opacity-30 italic"
-                        }`}
-                      >
-                        {sortedContracts[rowKey].name
-                          ? sortedContracts[rowKey].name
-                          : "Contract Label Missing"}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="min-w-full max-w-full text-base opacity-30 italic">
-                      {sortedContracts[rowKey].address.substring(0, 6) +
-                        "..." +
-                        sortedContracts[rowKey].address.substring(36, 42)}
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
-            <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
-              <div className="flex w-[40%]">
-                {master &&
-                  master.blockspace_categories.main_categories[
-                    sortedContracts[rowKey].main_category_key
-                  ]}
-              </div>
-              <div className="flex">
-                {master &&
-                master.blockspace_categories.sub_categories[
-                  sortedContracts[rowKey].sub_category_key
-                ]
-                  ? master.blockspace_categories.sub_categories[
-                      sortedContracts[rowKey].sub_category_key
-                    ]
-                  : "Unlabeled"}
-              </div>
-            </div>
-            <div className="flex items-center !w-[23%]  mr-4">
-              <div className="flex flex-col w-[38%] items-end ">
-                <div className="flex gap-x-1 w-[110px] justify-end  ">
-                  <div className="flex">
-                    {selectedMode.includes("gas_fees_")
-                      ? showUsd
-                        ? `$`
-                        : `Ξ`
-                      : ""}
-                  </div>
-                  {selectedMode.includes("gas_fees_")
-                    ? showUsd
-                      ? Number(
-                          sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(
-                            0,
-                          ),
-                        ).toLocaleString("en-GB")
-                      : Number(
-                          sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(
-                            2,
-                          ),
-                        ).toLocaleString("en-GB")
-                    : Number(
-                        sortedContracts[rowKey].txcount_absolute.toFixed(0),
-                      ).toLocaleString("en-GB")}
-                </div>
-              </div>
-
-              <div className="flex items-center w-[57%] justify-end ">
-                {master && (
-                  <Link
-                    href={
-                      master.chains[sortedContracts[rowKey].chain]
-                        .block_explorer +
-                      "address/" +
-                      sortedContracts[rowKey].address
-                    }
-                    target="_blank"
-                  >
-                    <Icon
-                      icon="material-symbols:link"
-                      className="w-[30px] h-[30px]"
-                    />
-                  </Link>
-                )}
-              </div>
-            </div>
+            <Link
+              href={`${master.chains[sortedContracts[rowKey].chain].block_explorer
+                }address/${sortedContracts[rowKey].address}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon
+                icon="gtp:gtp-block-explorer-alt"
+                className="w-[14px] h-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              />
+            </Link>
           </div>
         </div>
-      </div>
+
+        {/* Application Name */}
+        <div className="flex justify-between min-w-0 items-center h-full">
+          {sortedContracts[rowKey].project_name ? (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
+                  <Link
+                    href={`/applications/${projectNameToProjectData[sortedContracts[rowKey].project_name].owner_project}`}
+                    // Link handles layout, inner span handles truncation
+                    className="flex h-[30px] items-center hover:underline cursor-pointer select-none min-w-0" // Keep flex items-center, add min-w-0
+                  >
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex h-[30px] items-center cursor-normal select-none min-w-0"> {/* Keep flex items-center, add min-w-0 */}
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
+                  </div>
+                )
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <GTPApplicationTooltip project_name={sortedContracts[rowKey].project_name} />
+            </GTPTooltipNew>
+          ) : (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
+                  <span className="block w-full truncate">
+                    Not Available
+                  </span>
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <OLIContractTooltip 
+                icon="gtp-project-monochrome" 
+                iconClassName="text-[#5A6462]" 
+                project_name="Not Available" 
+                message="Project information not available."
+                contractAddress={sortedContracts[rowKey].address}
+                chain={sortedContracts[rowKey].chain}
+              />
+            </GTPTooltipNew>
+          )}
+        </div>
+        
+        {/* Main Category */}  
+        <div className="truncate">
+          <Category
+            category={
+              master.blockspace_categories.main_categories[
+                sortedContracts[rowKey].main_category_key
+              ]
+            }
+          />
+        </div>
+
+        {/* Sub Category */}
+        <div className="truncate">
+          {
+            master.blockspace_categories.sub_categories[
+            sortedContracts[rowKey].sub_category_key
+            ]
+          }
+        </div>
+
+        {/* Metric Value */}
+        <div className="flex items-center justify-end numbers-xs">
+          {selectedMode.includes("gas_fees_")
+            ? showUsd
+              ? `$${Number(
+                sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(0),
+              ).toLocaleString("en-GB")}`
+              : `Ξ${Number(
+                sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(0),
+              ).toLocaleString("en-GB")}`
+            : Number(sortedContracts[rowKey].txcount_absolute).toLocaleString(
+              "en-GB",
+            )}
+        </div>
+      </GridTableRow>
     </>
   );
 }

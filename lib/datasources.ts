@@ -6,4 +6,7 @@ export const Sources = {
   DefiLlama: "https://defillama.com/",
   Dune: "https://dune.com/",
   Chainbase: "https://chainbase.com/",
+  RPC: "https://www.growthepie.xyz/",
+  OLI: "https://www.openlabelsinitiative.org/",
+  growthepie: "https://www.growthepie.xyz/",
 };
