@@ -11,7 +11,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../../VerticalScrollContainer";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import FocusSwitch from "../FocusSwitch";
 import EthUsdSwitch from "../EthUsdSwitch";
 import { GTPIcon } from "../GTPIcon";

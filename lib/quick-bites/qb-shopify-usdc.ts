@@ -38,33 +38,95 @@ const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
       ]),
       "```",
       "> Commerce Payment Protocol is used by multiple companies including Shopify, however it is by design not possible to trace which payments are linked to each company. Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users. ([3a])[https://www.mobiloud.com/blog/shopify-statistics] ([3b])[https://craftberry.co/articles/how-many-shopify-stores-are-there] ([3c])[https://www.yaguara.co/shopify-statistics/#:~:text=There%20are%209.55%20million%20Shopify,are%20currently%20live%20on%20Shopify]",
-    "## Commerce Payment Protocol USDC Volumes (Daily)",
+    "## Commerce Payment Protocol USDC Volumes",
     "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen onchain.",
 
-    "```chart",
+    "```chart-toggle",
     JSON.stringify({
-      type: "column",
       title: "Settled USDC Volume",
-      subtitle: "The daily volume of USDC settled through Commerce Payment Protocol",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Volume Settled",
-            color: "#2151F5",
-            stacking: "normal",
-            xIndex: 1,
-            yIndex: 0,
-            suffix: null,
-            prefix: '$',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
-            pathToData: "data.gross_volume_usdc.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "The daily volume of USDC settled through Commerce Payment Protocol. Data updated daily.",
+      description: "Toggle between daily, weekly, and monthly views of USDC volume settled through Commerce Payment Protocol",
+      layout: "segmented",
+      defaultIndex: 0,
+      charts: [
+        {
+          toggleLabel: "Daily",
+          type: "column",
+          title: "Settled USDC Volume (Daily)",
+          subtitle: "The daily volume of USDC settled through Commerce Payment Protocol",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Volume Settled",
+                color: "#2151F5",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: '$',
+                tooltipDecimals: 2,
+                aggregation: "daily",
+                url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+                pathToData: "data.gross_volume_usdc.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The daily volume of USDC settled through Commerce Payment Protocol. Data updated daily.",
+        },
+        {
+          toggleLabel: "Weekly",
+          type: "column",
+          title: "Settled USDC Volume (Weekly)",
+          subtitle: "The weekly volume of USDC settled through Commerce Payment Protocol",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Volume Settled",
+                color: "#2151F5",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: '$',
+                tooltipDecimals: 2,
+                aggregation: "weekly",
+                url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+                pathToData: "data.gross_volume_usdc.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The weekly volume of USDC settled through Commerce Payment Protocol. Data aggregated by calendar week.",
+        },
+        {
+          toggleLabel: "Monthly",
+          type: "column",
+          title: "Settled USDC Volume (Monthly)",
+          subtitle: "The monthly volume of USDC settled through Commerce Payment Protocol",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Volume Settled",
+                color: "#2151F5",
+                stacking: "normal",
+                xIndex: 1,
+                yIndex: 0,
+                suffix: null,
+                prefix: '$',
+                tooltipDecimals: 2,
+                aggregation: "monthly",
+                url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+                pathToData: "data.gross_volume_usdc.daily.values",
+              }
+            ],
+          },
+          height: 400,
+          caption: "The monthly volume of USDC settled through Commerce Payment Protocol. Data aggregated by month.",
+        }
+      ],
     }),
     "```",
 

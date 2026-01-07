@@ -10,7 +10,7 @@ import Banner from "@/components/Banner";
 import SupportUsBanner from "./SupportUsBanner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "./HeaderLinks";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import FocusSwitch from "./FocusSwitch";
 import { HeaderSearchButton, SearchComponent } from "../search/Components";
 import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";

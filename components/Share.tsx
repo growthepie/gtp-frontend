@@ -8,7 +8,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { useSessionStorage } from "usehooks-ts";
 import useCookieChange from "./layout/CookieChange";
 import { GrayOverlay } from "./layout/Backgrounds";

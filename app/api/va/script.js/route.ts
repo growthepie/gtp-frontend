@@ -37,6 +37,18 @@ async function handleGet(request: NextRequest) {
       `https://${host}/api/va`
     )
 
+    // Rewrite the event endpoint (page views, custom events)
+    script = script.replace(
+      /https:\/\/va\.vercel-scripts\.com\/v1\/event/g,
+      `https://${host}/va/event`
+    )
+
+    // Rewrite relative /_vercel/insights/* paths to /va/*
+    script = script.replace(/\/_vercel\/insights\/view/g, '/va/view')
+    script = script.replace(/\/_vercel\/insights\/event/g, '/va/event')
+    script = script.replace(/\/_vercel\/insights\/session/g, '/va/session')
+    script = script.replace(/\/_vercel\/insights/g, '/va')
+
     return new NextResponse(script, {
       status: 200,
       headers: {

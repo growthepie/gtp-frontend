@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { setCookie, hasCookie } from "cookies-next";
+import { setCookie, getCookie } from "cookies-next";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -17,7 +17,19 @@ export default function CookieConsent() {
       return;
     }
 
-    setConsent(hasCookie("gtpCookieConsent"));
+    const cookieValue = getCookie("gtpCookieConsent");
+
+    if (cookieValue !== undefined) {
+      setConsent(true); // Hide banner
+
+      // Sync consent state with GTM for returning users
+      const hasGranted = cookieValue === "true";
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag("consent", "update", getConsentUpdate(hasGranted));
+      }
+    } else {
+      setConsent(false); // Show banner
+    }
   }, [isOgMode]);
 
   const acceptCookie = () => {
@@ -25,15 +37,21 @@ export default function CookieConsent() {
     setCookie("gtpCookieConsent", "true", {
       maxAge: 60 * 60 * 24 * 365,
     });
-
+    setCookie("gtpConsentVersion", "2", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  
     gtag("consent", "update", getConsentUpdate(true));
-
+    
     console.log("[CookieConsent] Accepting cookies");
   };
-
+  
   const denyCookie = () => {
     setConsent(true);
     setCookie("gtpCookieConsent", "false", {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+    setCookie("gtpConsentVersion", "2", {
       maxAge: 60 * 60 * 24 * 365,
     });
     

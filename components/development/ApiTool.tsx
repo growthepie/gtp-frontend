@@ -3,7 +3,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { useSWRConfig } from "swr";
 import { useEffect, useMemo } from "react";
 import { Icon } from "@iconify/react";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 
 // ability to change the API root between v1 and dev
 export default function ApiTool() {

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import useAsyncStorage from "@/hooks/useAsyncStorage";

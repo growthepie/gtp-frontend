@@ -16,10 +16,19 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
+import ChainTypeFilter from "../ChainTypeFilter";
+import { GTPIcon } from "../layout/GTPIcon";
+import Subheading from "../layout/Subheading";
+import Heading from "../layout/Heading";
+import { TopRowContainer, TopRowParent } from "../layout/TopRow";
 
 export default function LandingUserBaseChart({isLoading = false}: {isLoading?: boolean}) {
   const [isSidebarOpen] = useState(false);
   const [focusEnabled] = useLocalStorage("focusEnabled", false)
+  const [selectedChainTypes, setSelectedChainTypes] = useLocalStorage<string[]>(
+    "landingChainTypeFilter",
+    ["l1", "rollup", "others"]
+  );
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -83,6 +92,39 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
+          <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
+                <GTPIcon
+                  icon="gtp-multiple-chains"
+                  size="lg"
+                />
+                <Heading
+                  id="layer-2-traction-title"
+                  className="heading-large-lg"
+                  as="h2"
+                >
+                  Chains in the Ecosystem
+                </Heading>
+              </div>
+            </div>
+            <Subheading className="text-md px-[5px]">
+              Overview of the chains being part of the (wider) Ethereum ecosystem.
+            </Subheading>
+          </Container>
+          <Container className="pt-[15px]">
+            <TopRowContainer className="!justify-normal flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
+              <TopRowParent className="!justify-center lg:!justify-normal">
+                <div className="text-md pl-[5px]">Choose which chains to show</div>
+              </TopRowParent>
+              <TopRowParent className="text-md lg:min-h-[30px] !flex-1">
+                <ChainTypeFilter
+                  selectedTypes={selectedChainTypes}
+                  onChange={setSelectedChainTypes}
+                />
+              </TopRowParent>
+            </TopRowContainer>
+          </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
               <div className="flex flex-col gap-y-[5px]">
@@ -93,6 +135,7 @@ export default function LandingUserBaseChart({isLoading = false}: {isLoading?: b
                 interactable={false}
                 sort={sort}
                 setSort={setSort}
+                selectedChainTypes={selectedChainTypes}
               />
               </div>
             </TableRankingProvider>

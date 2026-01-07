@@ -22,7 +22,7 @@ import {
 } from "@/components/layout/TopRow";
 import Heading from "@/components/layout/Heading";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { useMediaQuery } from "usehooks-ts";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import {

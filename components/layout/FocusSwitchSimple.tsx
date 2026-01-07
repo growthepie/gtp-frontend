@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
 import { ToggleSwitch } from "./ToggleSwitch";
 import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";

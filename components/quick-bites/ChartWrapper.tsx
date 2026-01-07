@@ -66,7 +66,8 @@ interface ChartWrapperProps {
       tooltipDecimals?: number,
       dashStyle?: Highcharts.DashStyleValue,
       makeNegative?: boolean,
-      yMultiplication?: number
+      yMultiplication?: number,
+      aggregation?: "daily" | "weekly" | "monthly"
     }[]
   }
   seeMetricURL?: string | null;
@@ -127,13 +128,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     return jsonMeta.meta.map((series: any, index: number) => ({
       ...series,
       processedData: (() => {
-        const rawData = jsonData[index]?.map((item: any) => [
+        let rawData = jsonData[index]?.map((item: any) => [
           item[series.xIndex],
           item[series.yIndex]
         ]) || [];
 
         // Apply transformations (multiplication, negation) if specified
-        return rawData.map(([x, y]) => {
+        rawData = rawData.map(([x, y]) => {
           if (y === null || y === undefined) return [x, null];
 
           let transformedY = y;
@@ -148,6 +149,57 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           return [x, transformedY];
         });
+
+        // Apply aggregation if specified
+        if (series.aggregation && series.aggregation !== "daily") {
+          const aggregated = new Map<string, { sum: number; count: number; firstTimestamp: number }>();
+          
+          // Filter out null values for aggregation
+          const validData = rawData.filter(([x, y]) => y !== null && y !== undefined);
+          
+          if (validData.length === 0) {
+            return rawData;
+          }
+          
+          validData.forEach(([timestamp, value]) => {
+            let key: string;
+            if (series.aggregation === "weekly") {
+              // Group by calendar weeks (week starts on Monday)
+              const date = new Date(timestamp);
+              const weekStart = new Date(date);
+              const dayOfWeek = date.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+              // Convert to Monday-based: Monday = 0, Tuesday = 1, ..., Sunday = 6
+              const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+              weekStart.setUTCDate(date.getUTCDate() - mondayOffset); // Go back to Monday
+              weekStart.setUTCHours(0, 0, 0, 0);
+              key = weekStart.getTime().toString();
+            } else if (series.aggregation === "monthly") {
+              // Group by calendar month (year-month)
+              const date = new Date(timestamp);
+              const monthStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+              monthStart.setUTCHours(0, 0, 0, 0);
+              key = monthStart.getTime().toString();
+            } else {
+              return; // Unknown aggregation, skip
+            }
+            
+            if (!aggregated.has(key)) {
+              aggregated.set(key, { sum: 0, count: 0, firstTimestamp: timestamp });
+            }
+            
+            const bucket = aggregated.get(key)!;
+            bucket.sum += value;
+            bucket.count += 1;
+          });
+          
+          // Convert aggregated map to array, summing values for each period
+          rawData = Array.from(aggregated.entries()).map(([key, bucket]) => [
+            parseInt(key), // Use the period start timestamp
+            bucket.sum // Sum of all values in the period
+          ]).sort((a, b) => a[0] - b[0]); // Sort by timestamp
+        }
+
+        return rawData;
       })()
     }));
   }, [jsonMeta, jsonData]);

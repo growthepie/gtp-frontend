@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { TooltipContent } from "./Tooltip";
 import { TooltipTrigger } from "./Tooltip";
 import { ToggleSwitch } from "./ToggleSwitch";
