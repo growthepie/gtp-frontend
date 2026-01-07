@@ -663,7 +663,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHead>
           </div>
 
-          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:max-w-[398px] lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
+          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
             <ChainSectionHeadAlt
               title={"Background"}
               icon={"gtp:gtp-backgroundinformation"}
@@ -678,14 +678,12 @@ VirtualizedList.displayName = 'VirtualizedList';
                 className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-color-bg-default lg:max-h-[111px]`}
               >
                 <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
-                <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)] lg:w-[378px]">
+                <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)]">
                   <div className="w-full">
                     <div className="text-xs font-semibold text-[#5A6462]">
                       Background Information
                     </div>
-                    <div
-                      className={`text-[10px] leading-[150%] md:min-w-[378px] md:max-w-[378px]`}
-                    >
+                    <div className="text-[10px] leading-[150%]">
                       Octant is a novel platform for experiments in
                       participatory public goods funding, centered on
                       Golem&apos;s native ERC-20 token, GLM. Developed by the
@@ -700,7 +698,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHeadAlt>
           </div>
           <div className="flex flex-shrink flex-grow basis-0 flex-col gap-x-[5px] gap-y-[5px] lg:flex-row">
-            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:min-w-[67px] lg:flex-shrink lg:basis-[294px] lg:hover:min-w-[294px]">
+            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
               <ChainSectionHeadAlt
                 title={"Community"}
                 icon={"gtp:gtp-users"}
@@ -894,7 +892,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               </ChainSectionHeadAlt>
             </div>
             <div className="flex flex-shrink flex-grow basis-0 gap-x-[5px]">
-              <div className="min-w-full transition-all duration-300 @container lg:min-w-[67px] lg:max-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
+              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
                 <ChainSectionHeadAlt
                   title={"Project Funding"}
                   icon={"gtp:gtp-project"}
