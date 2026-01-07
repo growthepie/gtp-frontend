@@ -22,7 +22,7 @@ import { Supporters } from "@/lib/contributors";
 import { useSearchParams } from "next/navigation";
 import ShowLoading from "@/components/layout/ShowLoading";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { DonationPGFRow } from "@/app/api/donations/pgf/route";
 import { DonationImpactRow } from "@/app/api/donations/impactusers/route";
 import { DonationUpdateRow } from "@/app/api/donations/updates/route";

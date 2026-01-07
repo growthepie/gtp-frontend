@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";

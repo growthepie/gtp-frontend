@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Icon from "./Icon";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 
 export default function HeaderLinks() {
   return (

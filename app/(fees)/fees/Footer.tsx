@@ -2,7 +2,7 @@
 import FeesContainer from "@/components/layout/FeesContainer";
 import Icon from "@/components/layout/Icon";
 import Link from "next/link";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import Container from "@/components/layout/Container";
 import { useMediaQuery } from "usehooks-ts";
 import Share from "@/components/Share";

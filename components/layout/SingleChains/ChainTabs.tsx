@@ -2,7 +2,7 @@
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import { useState } from "react";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 const TAB_INFO = {

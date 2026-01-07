@@ -8,7 +8,7 @@ import { SidebarMenuGroup, SidebarMenuLink } from "../SidebarMenuGroup";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../../VerticalScrollContainer";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import FocusSwitchSimple from "../FocusSwitchSimple";
 import EthUsdSwitchSimple from "../EthUsdSwitchSimple";
 import { GTPIcon } from "../GTPIcon";

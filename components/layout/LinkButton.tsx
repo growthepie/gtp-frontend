@@ -3,7 +3,7 @@ import Link from "next/link";
 import Icon from "./Icon";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 import { useEffect, useState } from "react";
 
 interface LinkButtonProps {

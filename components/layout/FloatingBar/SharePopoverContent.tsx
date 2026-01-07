@@ -9,7 +9,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../Tooltip"; // Assumes Tooltip.tsx is in components/layout/
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
-import { track } from "@vercel/analytics/react";
+import { track } from "@/lib/tracking";
 import { useSessionStorage } from "usehooks-ts";
 
 const mainEmbedPages = ["", "fundamentals"];

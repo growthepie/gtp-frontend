@@ -35,10 +35,19 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
     || ''
 
   // Build target URL
-  const queryString = searchParams.toString()
-  const targetUrl = queryString
-    ? `https://${targetDomain}/${targetPath}?${queryString}`
-    : `https://${targetDomain}/${targetPath}`
+  let targetUrl = new URL(`https://${targetDomain}/${targetPath}`)
+  
+  // Copy over search params
+  searchParams.forEach((value, key) => {
+    targetUrl.searchParams.set(key, value)
+  })
+
+  // Geo hint for regional accuracy
+  const isCollect = targetDomain.includes('google-analytics') && targetPath.includes('collect')
+  if (isCollect && address && !targetUrl.searchParams.has('_uip')) {
+    const geo = address.includes('.') ? address.replace(/\.\d+$/, '.0') : address
+    targetUrl.searchParams.set('_uip', geo)
+  }
 
   try {
     const options: RequestInit = {
@@ -59,7 +68,7 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       }
     }
 
-    const response = await fetch(targetUrl, options)
+    const response = await fetch(targetUrl.toString(), options)
 
     // For tracking beacons (collect endpoints), return minimal response
     const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)
@@ -104,7 +113,7 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
     })
   } catch (error) {
     // Avoid logging anything that could contain PII
-    console.error('Proxy error:', error instanceof Error ? error.message : 'Unknown error', 'Path:', path)
+    console.error('Proxy error:', error instanceof Error ? error.message : 'Unknown error')
 
     // Return 204 for beacons, 500 for scripts
     const isBeacon = path.includes('collect') || CLARITY_BEACON_DOMAINS.some(d => targetDomain === d)

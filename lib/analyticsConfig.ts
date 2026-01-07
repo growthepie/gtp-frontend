@@ -164,7 +164,7 @@ export function rewriteScriptContent(script: string, host: string): string {
   script = script.replace(/\/gtag\/js/g, '/api/insights/t.js')
 
   // Rewrite collect path
-  script = script.replace(/\/g\/collect/g, '/p/')
+  script = script.replace(/\/g\/collect/g, '/p')
 
   // Rewrite /a? endpoint
   script = script.replace(/["']\/a\?/g, '"/api/insights/a?')

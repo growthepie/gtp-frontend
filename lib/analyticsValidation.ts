@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const ALLOWED_PATTERNS = [
   'growthepie.com',      // exact match
   '*.growthepie.com',    // any subdomain
+  '*.vercel.app',        // Vercel preview deployments
   'localhost:3000',
   'localhost:3001',
 ]

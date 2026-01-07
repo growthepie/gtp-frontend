@@ -225,7 +225,7 @@ export default memo(function LandingMetricsTable({
     <>
       <GridTableHeader
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
-        className="mt-[15px] md:mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
+        className="mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
       >
         <GridTableHeaderCell><></></GridTableHeaderCell>
         <GridTableHeaderCell

@@ -8,17 +8,36 @@ export function Analytics({ gtmId }: { gtmId: string }) {
   
   return (
     <>
-      {/* Set default consent state BEFORE GTM loads */}
       <Script id="consent-defaults" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          
-          gtag('consent', 'default', ${JSON.stringify(defaultConsent)});
+          window.gtag = function(){dataLayer.push(arguments);}
+
+          // Check for existing consent BEFORE setting defaults
+          (function() {
+            var consentCookie = document.cookie.split('; ').find(function(row) { return row.startsWith('gtpCookieConsent='); });
+            var versionCookie = document.cookie.split('; ').find(function(row) { return row.startsWith('gtpConsentVersion='); });
+
+            // Reset old consents (before version 2)
+            if (consentCookie && !versionCookie) {
+              document.cookie = 'gtpCookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+              consentCookie = null;
+            }
+
+            // Determine consent state from cookie VALUE (not just existence)
+            var hasGrantedConsent = consentCookie && consentCookie.split('=')[1] === 'true';
+
+            if (hasGrantedConsent) {
+              // User previously accepted - set granted consent
+              gtag('consent', 'default', ${JSON.stringify(ANALYTICS_CONFIG.consentTypes)});
+            } else {
+              // New user or declined - set denied consent
+              gtag('consent', 'default', ${JSON.stringify(defaultConsent)});
+            }
+          })();
         `}
       </Script>
       
-      {/* Load GTM */}
       <Script id="gtm-init" strategy="afterInteractive">
         {`
           (function(w,d,s,l,i){

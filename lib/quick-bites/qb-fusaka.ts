@@ -10,21 +10,69 @@ const Fusaka: QuickBiteData = {
     "# Introduction:",
     "Activated on December 3rd, 2025 and including 12 EIPs, the Fusaka upgrade advances both Ethereum’s L1 scaling and its blob scaling roadmap. Fusaka also signals Ethereum’s commitment to sustainable fee dynamics and the long-term monetization of blobs.",
 
-    "# Scaling Blobs",
-    "Fusaka scales blob capacity through Blob-Parameter-Only (BPO) upgrades, specifically BPO1 and BPO2. BPO upgrades are lightweight protocol updates that adjust only blob-related parameters without introducing broader execution or consensus changes. These upgrades increase Ethereum’s data availability capacity, supporting rollups and other L2 systems that rely on blobs for data availability.",
-    "BPO1 activated on Tuesday, 9th December 2025 at 03:10 UTC (timestamp: 1757387400), increasing the target blob count per block from 6 to 10 (with a maximum of 15). BPO2 will follow on Friday, 2nd January 2026 at 21:03:04 UTC (timestamp: 1767387784), further raising the target from 10 to 14 blobs per block (with a maximum of 21).",
-    
+    "# Scaling Blobs", 
+    "Fusaka scales blob capacity through Blob-Parameter-Only (BPO) upgrades (EIP-7892), specifically BPO1 and BPO2. These updates are complemented by PeerDAS (EIP-7594), which introduces Peer Data Availability Sampling. While BPO increases the target blob count, PeerDAS ensures the network can handle this increased data load by allowing nodes to verify blobs without downloading them in their entirety.",
+    "BPO upgrades are lightweight protocol updates that adjust only blob-related parameters without introducing broader execution or consensus changes. These upgrades increase Ethereum’s data availability capacity, supporting rollups and other L2 systems that rely on blobs for data availability. BPO1 activated on the 9th of December 2025, increasing the target blob count per block from 6 to 10 (with a maximum of 15). BPO2 activated on the 7th of January 2026, further raising the target from 10 to 14 blobs per block (with a maximum of 21).", 
+
     "```chart-toggle",
     JSON.stringify({
       title: null,
       description: "Select Timeframe",
       layout: "segmented",
-      defaultIndex: 1,
+      defaultIndex: 2,
       charts: [
+        {
+          toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
+          type: "line",
+          title: "Is Blob Capacity Since Fusaka-BPO2 Keeping Up with Demand?",
+          subtitle: "Average blobs per block vs target and blob fees in ETH.",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Avg blob count",
+                color: "#FFC300",
+                type: "line",
+                xIndex: 0,
+                yIndex: 1,
+                tooltipDecimals: 2,
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+              {
+                name: "Target blob count",
+                color: "#19D9D6",
+                type: "line",
+                dashStyle: "Dash",
+                xIndex: 0,
+                yIndex: 5,
+                tooltipDecimals: 0,
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+              {
+                name: "Total blob fees",
+                color: "#FE5468",
+                type: "line",
+                oppositeYAxis: true,
+                xIndex: 0,
+                yIndex: 4,
+                tooltipDecimals: 4,
+                suffix: null,
+                prefix: 'Ξ',
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+            ],
+          },
+          height: 500,
+          yAxisLine: [],
+          caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
+        },
         {
           toggleLabel: "since Fusaka-BPO1 (2025-12-09)",
           type: "line",
-          title: "Blob Usage, Target & Fees Since Fusaka-BPO1",
+          title: "Is Blob Capacity Since Fusaka-BPO1 Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -66,13 +114,26 @@ const Fusaka: QuickBiteData = {
             ],
           },
           height: 500,
-          yAxisLine: [],
+          yAxisLine: [
+            {
+              xValue: 1767747695000,
+              annotationPositionY: -8,
+              annotationPositionX: 0,
+              annotationText: "Fusaka-BPO2",
+              lineStyle: "Dash",
+              lineColor: "#CDD8D3",
+              textColor: "#CDD8D3",
+              textFontSize: "9px",
+              backgroundColor: "#CDD8D3",
+              lineWidth: 1,
+            }
+          ],
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
           toggleLabel: "since Fusaka (2025-12-03)",
           type: "line",
-          title: "Blob Usage, Target & Fees Since Fusaka",
+          title: "Is Blob Capacity Since Fusaka Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -127,13 +188,25 @@ const Fusaka: QuickBiteData = {
               backgroundColor: "#CDD8D3",
               lineWidth: 1,
             },
+            {
+              xValue: 1767747695000,
+              annotationPositionY: -8,
+              annotationPositionX: 0,
+              annotationText: "Fusaka-BPO2",
+              lineStyle: "Dash",
+              lineColor: "#CDD8D3",
+              textColor: "#CDD8D3",
+              textFontSize: "9px",
+              backgroundColor: "#CDD8D3",
+              lineWidth: 1,
+            }
           ],
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
           toggleLabel: "since Pectra (2025-05-07)",
           type: "line",
-          title: "Blob Usage, Target & Fees Since Pectra",
+          title: "Is Blob Capacity Since Pectra Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -194,7 +267,7 @@ const Fusaka: QuickBiteData = {
         {
           toggleLabel: "since Dencun (2024-03-13)",
           type: "line",
-          title: "Blob Usage, Target & Fees Since Dencun",
+          title: "Is Blob Capacity Since Dencun Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -276,12 +349,60 @@ const Fusaka: QuickBiteData = {
       title: null,
       description: "Select Timeframe",
       layout: "segmented",
-      defaultIndex: 2,
+      defaultIndex: 3,
       charts: [
+        {
+          toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
+          type: "line",
+          title: "Can We Scale L1 Gas Fast Enough Since Fusaka-BPO2 to Lower Fees?",
+          subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [
+              {
+                name: "Avg gas used",
+                color: "#FFC300",
+                type: "line",
+                xIndex: 0,
+                yIndex: 1,
+                tooltipDecimals: 2,
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_gas/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+              {
+                name: "Gas limit",
+                color: "#19D9D6",
+                type: "line",
+                dashStyle: "Dash",
+                xIndex: 0,
+                yIndex: 2,
+                tooltipDecimals: 0,
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_gas/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+              {
+                name: "Total base gas fees",
+                color: "#FE5468",
+                type: "line",
+                oppositeYAxis: true,
+                xIndex: 0,
+                yIndex: 4,
+                tooltipDecimals: 4,
+                suffix: null,
+                prefix: 'Ξ',
+                url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_gas/Fusaka-BPO2.json",
+                pathToData: "data.timeseries.values",
+              },
+            ],
+          },
+          height: 500,
+          yAxisLine: [],
+          caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
+        },
         {
           toggleLabel: "since Fusaka-BPO1 (2025-12-09)",
           type: "line",
-          title: "Gas Usage & Fees Since Fusaka-BPO1",
+          title: "Can We Scale L1 Gas Fast Enough Since Fusaka-BPO1 to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -308,7 +429,7 @@ const Fusaka: QuickBiteData = {
                 pathToData: "data.timeseries.values",
               },
               {
-                name: "Base gas fees",
+                name: "Total base gas fees",
                 color: "#FE5468",
                 type: "line",
                 oppositeYAxis: true,
@@ -323,13 +444,26 @@ const Fusaka: QuickBiteData = {
             ],
           },
           height: 500,
-          yAxisLine: [],
+          yAxisLine: [
+            {
+              xValue: 1767747695000,
+              annotationPositionY: -8,
+              annotationPositionX: 0,
+              annotationText: "Fusaka-BPO2",
+              lineStyle: "Dash",
+              lineColor: "#CDD8D3",
+              textColor: "#CDD8D3",
+              textFontSize: "9px",
+              backgroundColor: "#CDD8D3",
+              lineWidth: 1,
+            }
+          ],
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
           toggleLabel: "since Fusaka (2025-12-03)",
           type: "line",
-          title: "Gas Usage & Fees Since Fusaka",
+          title: "Can We Scale L1 Gas Fast Enough Since Fusaka to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -356,7 +490,7 @@ const Fusaka: QuickBiteData = {
                 pathToData: "data.timeseries.values",
               },
               {
-                name: "Base gas fees",
+                name: "Total base gas fees",
                 color: "#FE5468",
                 type: "line",
                 oppositeYAxis: true,
@@ -384,13 +518,25 @@ const Fusaka: QuickBiteData = {
               backgroundColor: "#CDD8D3",
               lineWidth: 1,
             },
+            {
+              xValue: 1767747695000,
+              annotationPositionY: -8,
+              annotationPositionX: 0,
+              annotationText: "Fusaka-BPO2",
+              lineStyle: "Dash",
+              lineColor: "#CDD8D3",
+              textColor: "#CDD8D3",
+              textFontSize: "9px",
+              backgroundColor: "#CDD8D3",
+              lineWidth: 1,
+            }
           ],
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
           toggleLabel: "since Pectra (2025-05-07)",
           type: "line",
-          title: "Gas Usage & Fees Since Pectra",
+          title: "Can We Scale L1 Gas Fast Enough Since Pectra to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -417,7 +563,7 @@ const Fusaka: QuickBiteData = {
                 pathToData: "data.timeseries.values",
               },
               {
-                name: "Base gas fees",
+                name: "Total base gas fees",
                 color: "#FE5468",
                 type: "line",
                 oppositeYAxis: true,
@@ -450,7 +596,7 @@ const Fusaka: QuickBiteData = {
         {
           toggleLabel: "since Dencun (2024-03-13)",
           type: "line",
-          title: "Gas Usage & Fees Since Dencun",
+          title: "Can We Scale L1 Gas Fast Enough Since Dencun to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
           showXAsDate: true,
           dataAsJson: {
@@ -477,7 +623,7 @@ const Fusaka: QuickBiteData = {
                 pathToData: "data.timeseries.values",
               },
               {
-                name: "Base gas fees",
+                name: "Total base gas fees",
                 color: "#FE5468",
                 type: "line",
                 oppositeYAxis: true,
@@ -548,7 +694,7 @@ const Fusaka: QuickBiteData = {
     "```chart",
     JSON.stringify({
       type: "area",
-      title: "Blob Fees vs Gas Fees",
+      title: "How Much Do Blobs Actually Contribute to the ETH Burn?",
       subtitle: "The share of burn that is coming from blob fees vs gas fees",
       showXAsDate: true,
       dataAsJson: {
@@ -619,7 +765,7 @@ const Fusaka: QuickBiteData = {
     "```chart",
     JSON.stringify({
       type: "line",
-      title: "Median Blob Gas Price",
+      title: "Is EIP-7918 Successfully Ending the 'Zero-Fee' Blob Era?",
       subtitle: "Comparing the new EIP-7918 excess blob gas calculation vs. the old blob gas path.",
       showXAsDate: true,
       options: {
@@ -679,7 +825,7 @@ const Fusaka: QuickBiteData = {
   related: [],
   author: [{
     name: "Lorenz Lehmann",
-    xUsername: "LehmannLorenz",
+    xUsername: "lorenz234",
   },
   {
     name: "ETH Wave",

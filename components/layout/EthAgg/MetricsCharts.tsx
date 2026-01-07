@@ -17,7 +17,7 @@ import { Splide, SplideSlide, SplideTrack } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
-import { track } from '@vercel/analytics/react';
+import { track } from '@/lib/tracking';
 import SwiperContainer from '../SwiperContainer';
 import SwiperComponent from '@/components/SwiperComponent';
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";

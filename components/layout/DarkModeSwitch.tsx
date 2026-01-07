@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
-import { track } from "@vercel/analytics";
+import { track } from "@/lib/tracking";
 
 type DarkModeSwitchProps = {
   isMobile?: boolean;

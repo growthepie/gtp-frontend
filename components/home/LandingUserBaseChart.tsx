@@ -16,22 +16,19 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
-import ViewToggle from "../ViewToggle";
 import ChainTypeFilter from "../ChainTypeFilter";
 import { GTPIcon } from "../layout/GTPIcon";
 import Subheading from "../layout/Subheading";
 import Heading from "../layout/Heading";
 import { TopRowContainer, TopRowParent } from "../layout/TopRow";
-import { IS_PRODUCTION } from "@/lib/helpers";
 
 export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const [isSidebarOpen] = useState(false);
-  const [focusEnabled] = useLocalStorage("focusEnabled", false);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedChainTypes, setSelectedChainTypes] = useLocalStorage<string[]>(
     "landingChainTypeFilter",
     ["l1", "rollup", "others"]
   );
-  const [showTable, setShowTable] = useLocalStorage("landingShowTable", true);
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -126,25 +123,20 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
-              {false && ( // hide for now
-                <TopRowParent className="">
-                  <ViewToggle showTable={showTable} setShowTable={setShowTable} />
-                </TopRowParent>
-              )}
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
               <div className="flex flex-col gap-y-[5px]">
-                <LandingMetricsTable
-                  data={{ chains: landing.data.metrics.table_visual }}
-                  master={master}
-                  // interactable={selectedMetric !== "Total Users"}
-                  interactable={false}
-                  sort={sort}
-                  setSort={setSort}
-                  selectedChainTypes={selectedChainTypes}
-                />
+              <LandingMetricsTable
+                data={{ chains: landing.data.metrics.table_visual }}
+                master={master}
+                // interactable={selectedMetric !== "Total Users"}
+                interactable={false}
+                sort={sort}
+                setSort={setSort}
+                selectedChainTypes={selectedChainTypes}
+              />
               </div>
             </TableRankingProvider>
           </HorizontalScrollContainer>

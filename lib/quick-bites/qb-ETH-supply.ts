@@ -124,7 +124,7 @@ const ethSupply: QuickBiteData = createQuickBite({
   related: [],
   author: [{
     name: "Lorenz Lehmann",
-    xUsername: "LehmannLorenz",
+    xUsername: "lorenz234",
   }],
   topics: [
     {
