@@ -81,6 +81,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       if (selectedScale === "percentage") return "area";
       if (selectedScale === "stacked")
         return selectedTimeInterval === "daily" ? "area" : "column";
+      if (selectedScale === "cumulative") return "line"; // Use line for cumulative
 
       return "line";
     },
@@ -188,9 +189,18 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         }
       }
 
-      const seriesData = data.map((d) => {
+      let seriesData = data.map((d) => {
         return [d[timeIndex], d[valueIndex] * valueMulitplier];
       });
+
+      // Transform to cumulative if selectedScale is "cumulative"
+      if (selectedScale === "cumulative") {
+        let runningTotal = 0;
+        seriesData = seriesData.map((d) => {
+          runningTotal += d[1];
+          return [d[0], runningTotal];
+        });
+      }
 
       let marker = {
         lineColor: MetadataByKeys[name].colors[theme ?? "dark"][0],
@@ -368,6 +378,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       theme,
       showUsd,
       showGwei,
+      selectedScale,
     ],
   );
 

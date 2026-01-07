@@ -608,6 +608,17 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                     >
                       Percentage
                     </button>
+                    <button
+                      className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"cumulative" === selectedScale
+                        ? "bg-color-ui-active"
+                        : "hover:bg-color-ui-hover"
+                        }`}
+                      onClick={() => {
+                        setSelectedScale("cumulative");
+                      }}
+                    >
+                      Cumulative
+                    </button>
                   </>
                 )}
               </div>

@@ -370,6 +370,8 @@ function MetricChart({
         return "area";
       case "percentageDecimal":
         return "area";
+      case "cumulative":
+        return "area";
       default:
         return "line";
     }
@@ -403,6 +405,15 @@ function MetricChart({
           },
           area: {
             stacking: "normal",
+          },
+        };
+      case "cumulative":
+        return {
+          line: {
+            stacking: undefined,
+          },
+          area: {
+            stacking: undefined,
           },
         };
       default:

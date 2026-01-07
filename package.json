@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "icons:update": "dotenv -e .env.local -- tsx ./lib/figma.ts && node ./lib/icons.mjs",
-    "figma-icons": "npm run icons:update"
+    "figma-icons": "npm run icons:update",
+    "record:animations": "tsx scripts/record-chart-animations.ts"
   },
   "dependencies": {
     "@download/blockies": "^1.0.3",
@@ -93,6 +94,7 @@
     "jsdom": "^26.1.0",
     "postcss": "^8.4.31",
     "prettier-plugin-tailwindcss": "^0.6.8",
+    "playwright": "^1.40.0",
     "sass": "^1.58.0",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.4",

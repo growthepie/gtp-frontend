@@ -352,6 +352,7 @@ export default function ComparisonChart({
       if (selectedScale === "percentage") return "area";
       if (selectedScale === "stacked")
         return selectedTimeInterval === "daily" ? "area" : "column";
+      if (selectedScale === "cumulative") return "line"; // Use line for cumulative
 
       return "line";
     },
@@ -359,6 +360,15 @@ export default function ComparisonChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  // Animation state for cumulative charts
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDayIndex, setAnimationDayIndex] = useState(0);
+  const [hasCompletedAnimation, setHasCompletedAnimation] = useState(false);
+  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [markerPosition, setMarkerPosition] = useState<{ x: number; y: number; color: string } | null>(null);
+  const [showFirework, setShowFirework] = useState(false);
+  const [hasShownFirework, setHasShownFirework] = useState(false);
 
   const filteredData = useMemo<
     { name: string; data: any[]; types: string[] }[]
@@ -397,6 +407,229 @@ export default function ComparisonChart({
       return bData - aData;
     });
   }, [data, reversePerformer, showEthereumMainnet]);
+
+  // Get max data length for animation
+  const maxDataLength = useMemo(() => {
+    if (!filteredData || filteredData.length === 0) return 0;
+    return Math.max(...filteredData.map(series => series.data.length));
+  }, [filteredData]);
+
+  // Calculate full Y axis range from complete data (for fixed axis during animation)
+  const fullYAxisRange = useMemo(() => {
+    if (!filteredData || filteredData.length === 0 || selectedScale !== "cumulative") {
+      return { min: undefined, max: undefined };
+    }
+
+    // Get all data points from all series to calculate the full range
+    let maxValue = 0;
+    let minValue = 0;
+
+    filteredData.forEach((series) => {
+      // Calculate cumulative values for this series (same logic as in getSeriesData)
+      let runningTotal = 0;
+      const timeIndex = 0;
+      let valueIndex = 1;
+      let valueMultiplier = 1;
+
+      if (series.types.includes("usd")) {
+        if (showUsd) {
+          valueIndex = series.types.indexOf("usd");
+        } else {
+          valueIndex = series.types.indexOf("eth");
+          if (showGwei) valueMultiplier = 1000000000;
+        }
+      }
+
+      series.data.forEach((d) => {
+        const value = d[valueIndex] * valueMultiplier;
+        runningTotal += value;
+        maxValue = Math.max(maxValue, runningTotal);
+        minValue = Math.min(minValue, runningTotal);
+      });
+    });
+
+    return {
+      min: metric_id === "profit" ? minValue : 0,
+      max: maxValue * 1.1, // Add 10% padding at the top
+    };
+  }, [filteredData, selectedScale, showUsd, showGwei, metric_id]);
+
+  // Keyboard listener for spacebar to start/stop animation
+  useEffect(() => {
+    // Only enable animation for cumulative scale
+    if (selectedScale !== "cumulative") {
+      return;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if user is typing in an input field
+      const activeElement = document.activeElement;
+      const isTypingInInput = 
+        activeElement?.tagName === 'INPUT' || 
+        activeElement?.tagName === 'TEXTAREA' ||
+        activeElement?.getAttribute('contenteditable') === 'true';
+
+      if (isTypingInInput) return;
+
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        
+        if (isAnimating) {
+          // Stop animation
+          setIsAnimating(false);
+          if (animationIntervalRef.current) {
+            clearInterval(animationIntervalRef.current);
+            animationIntervalRef.current = null;
+          }
+        } else {
+          // Start animation from beginning
+          setAnimationDayIndex(0);
+          setIsAnimating(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedScale, isAnimating]);
+
+  // Animation interval
+  useEffect(() => {
+    if (!isAnimating || selectedScale !== "cumulative") {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+      return;
+    }
+
+    animationIntervalRef.current = setInterval(() => {
+      setAnimationDayIndex((prev) => {
+        if (prev >= maxDataLength - 1) {
+          setIsAnimating(false);
+          setHasCompletedAnimation(true); // Mark animation as completed
+          // Trigger marker growth, then firework animation
+          setTimeout(() => {
+            setShowFirework(true); // This will trigger the marker to grow
+            // Show firework lines after marker grows
+            setTimeout(() => {
+              // Firework lines will show (marker will be hidden by showFirework condition)
+            }, 150); // Brief delay for marker growth
+            // Hide firework after animation completes
+            setTimeout(() => {
+              setShowFirework(false);
+              // Mark that firework has been shown after animation completes to prevent marker reappearance
+              setHasShownFirework(true);
+            }, 750);
+          }, 200);
+          return maxDataLength - 1;
+        }
+        return prev + 1;
+      });
+    }, 10); // 25ms per day for 2x speed animation
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+    };
+  }, [isAnimating, maxDataLength, selectedScale]);
+
+  // Reset animation when scale changes
+  useEffect(() => {
+    if (selectedScale !== "cumulative") {
+      setIsAnimating(false);
+      setAnimationDayIndex(0);
+      setHasCompletedAnimation(false);
+      setMarkerPosition(null); // Clear marker when scale changes
+      setShowFirework(false); // Clear firework when scale changes
+      setHasShownFirework(false); // Reset firework state when scale changes
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+    }
+  }, [selectedScale]);
+
+  // Reset completion flag when starting new animation
+  useEffect(() => {
+    if (isAnimating && selectedScale === "cumulative") {
+      setHasCompletedAnimation(false);
+    }
+  }, [isAnimating, selectedScale]);
+
+  // Update marker position to follow the most recent visible point during animation
+  useLayoutEffect(() => {
+    if (selectedScale !== "cumulative" || !chartComponent.current || filteredData.length === 0) {
+      if (!isAnimating && !hasCompletedAnimation) {
+        setMarkerPosition(null);
+      }
+      return;
+    }
+
+    // Stop updating marker position once firework has been shown
+    if (hasShownFirework) {
+      setMarkerPosition(null);
+      return;
+    }
+
+    // Update marker immediately without delays
+    const updateMarker = () => {
+      const chart = chartComponent.current;
+      if (!chart) return;
+      
+      const firstSeries = chart.series[0];
+      if (firstSeries && firstSeries.data.length > 0) {
+        let currentPointIndex: number;
+        
+        if (hasCompletedAnimation || !isAnimating) {
+          // Animation completed or not animating - use the last point
+          currentPointIndex = firstSeries.data.length - 1;
+        } else if (animationDayIndex > 0) {
+          // During animation, use the last visible point
+          // animationDayIndex represents how many points are visible
+          // The last visible point is at index animationDayIndex - 1
+          currentPointIndex = Math.min(animationDayIndex - 1, firstSeries.data.length - 1);
+        } else {
+          // No points visible yet
+          return;
+        }
+        
+        const currentPoint = firstSeries.data[currentPointIndex];
+        
+        if (currentPoint) {
+          // Force chart to recalculate plot positions if needed
+          if (currentPoint.plotX === undefined || currentPoint.plotY === undefined) {
+            // Point might not have plot coordinates yet, try again immediately
+            requestAnimationFrame(updateMarker);
+            return;
+          }
+          
+          const plotX = currentPoint.plotX ?? 0;
+          const plotY = currentPoint.plotY ?? 0;
+          const chartPosition = {
+            x: chart.plotLeft + plotX,
+            y: chart.plotTop + plotY,
+          };
+          
+          const seriesColor = filteredData[0]?.name 
+            ? MetadataByKeys[filteredData[0].name]?.colors[theme ?? "dark"][0]
+            : "#36a2eb";
+          setMarkerPosition({
+            x: chartPosition.x,
+            y: chartPosition.y,
+            color: seriesColor || "#36a2eb",
+          });
+        }
+      }
+    };
+
+    // Update immediately, use requestAnimationFrame only if coordinates aren't ready
+    updateMarker();
+  }, [animationDayIndex, isAnimating, hasCompletedAnimation, selectedScale, filteredData, MetadataByKeys, theme, hasShownFirework]);
 
   function shortenNumber(number) {
     let numberStr = Math.floor(number).toString();
@@ -993,6 +1226,56 @@ export default function ComparisonChart({
     }
   }, [selectedTimespan, timespans, zoomed]);
 
+  // Force x-axis to stay fixed during animation - only update when animation starts
+  useEffect(() => {
+    if (chartComponent.current && isAnimating && selectedScale === "cumulative") {
+      const xMin = timespans[selectedTimespan].xMin;
+      const xMax = timespans[selectedTimespan].xMax;
+      
+      // Update axis to lock it once when animation starts
+      chartComponent.current.xAxis[0].update({
+        min: xMin,
+        max: xMax,
+        minPadding: 0,
+        maxPadding: 0,
+        ordinal: false,
+      }, false);
+      
+      // Set extremes once, then prevent further updates
+      chartComponent.current.xAxis[0].setExtremes(
+        xMin,
+        xMax,
+        false, // redraw = false
+        false, // animation = false
+      );
+    }
+  }, [isAnimating, selectedScale, selectedTimespan, timespans]);
+
+  // Prevent x-axis from auto-adjusting during animation
+  // Only check occasionally (every 20 frames) to reduce flickering
+  useEffect(() => {
+    if (chartComponent.current && isAnimating && selectedScale === "cumulative") {
+      const xMin = timespans[selectedTimespan].xMin;
+      const xMax = timespans[selectedTimespan].xMax;
+      const axis = chartComponent.current.xAxis[0];
+      
+      // Only check every 20 frames to reduce flickering
+      if (animationDayIndex % 20 === 0) {
+        const currentMin = axis.min;
+        const currentMax = axis.max;
+        const threshold = 1000; // 1 second in milliseconds
+        
+        if (
+          (currentMin !== undefined && Math.abs(currentMin - xMin) > threshold) ||
+          (currentMax !== undefined && Math.abs(currentMax - xMax) > threshold)
+        ) {
+          // Silently fix without redraw
+          axis.setExtremes(xMin, xMax, false, false);
+        }
+      }
+    }
+  }, [animationDayIndex, isAnimating, selectedScale, selectedTimespan, timespans]);
+
   // update selectedTimespanByTimeInterval if selectedTimespan or selectedTimeInterval changes
   useEffect(() => {
     setSelectedTimespansByTimeInterval((prev) => ({
@@ -1223,9 +1506,27 @@ export default function ComparisonChart({
         }
       }
 
-      const seriesData = data.map((d) => {
+      let seriesData = data.map((d) => {
         return [d[timeIndex], d[valueIndex] * valueMulitplier];
       });
+
+      // Transform to cumulative if selectedScale is "cumulative"
+      if (selectedScale === "cumulative") {
+        let runningTotal = 0;
+        seriesData = seriesData.map((d) => {
+          runningTotal += d[1];
+          return [d[0], runningTotal];
+        });
+
+        // Apply animation filter - only show data up to animationDayIndex when animating
+        // When not animating, show all data
+        if (isAnimating) {
+          // When animating, show data up to animationDayIndex (0 = blank, 1 = first point, etc.)
+          // animationDayIndex represents how many points to show (0 = none, 1 = first, etc.)
+          seriesData = seriesData.slice(0, animationDayIndex);
+        }
+        // When not animating, show all data (seriesData is already complete)
+      }
 
       if (selectedTimeInterval === "daily") {
         return {
@@ -1326,6 +1627,9 @@ export default function ComparisonChart({
       theme,
       showUsd,
       showGwei,
+      selectedScale,
+      isAnimating,
+      animationDayIndex,
     ],
   );
 
@@ -1352,13 +1656,14 @@ export default function ComparisonChart({
         height: height,
         className: "zoom-chart",
         marginLeft: metric_id === "txcosts" ? 90 : 60,
+        marginRight: selectedScale === "cumulative" ? 50 : 0,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
-          enabled: is_embed ? false : true,
+          enabled: is_embed || (isAnimating && selectedScale === "cumulative") ? false : true,
         },
         zooming: {
-          type: is_embed ? undefined : "x",
+          type: is_embed || (isAnimating && selectedScale === "cumulative") ? undefined : "x",
           mouseWheel: {
             enabled: false,
           },
@@ -1397,8 +1702,12 @@ export default function ComparisonChart({
         showFirstLabel: true,
         showLastLabel: true,
         type: master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear",
-        min: metric_id === "profit" || (master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale)) ? null : 0,
-        max: selectedScale === "percentage" ? 100 : undefined,
+        min: (isAnimating || hasCompletedAnimation) && selectedScale === "cumulative" 
+          ? fullYAxisRange.min 
+          : (metric_id === "profit" || (master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale)) ? null : 0),
+        max: (isAnimating || hasCompletedAnimation) && selectedScale === "cumulative"
+          ? fullYAxisRange.max
+          : (selectedScale === "percentage" ? 100 : undefined),
         labels: {
           y: 5,
           style: {
@@ -1449,6 +1758,7 @@ export default function ComparisonChart({
         minTickInterval: 30 * 24 * 3600 * 1000,
         minPadding: 0,
         maxPadding: 0,
+        ordinal: false, // Prevent Highcharts from auto-adjusting based on data
         labels: {
           align: undefined,
           rotation: 0,
@@ -1478,11 +1788,17 @@ export default function ComparisonChart({
           },
         },
         events: {
-          afterSetExtremes: onXAxisSetExtremes,
+          afterSetExtremes: isAnimating && selectedScale === "cumulative" 
+            ? undefined // Disable extremes handler during animation to keep axis fixed
+            : onXAxisSetExtremes,
         },
 
-        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
-        max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
+        min: isAnimating && selectedScale === "cumulative"
+          ? timespans[selectedTimespan].xMin // Force full range during animation
+          : (zoomed ? zoomMin : timespans[selectedTimespan].xMin),
+        max: isAnimating && selectedScale === "cumulative"
+          ? timespans[selectedTimespan].xMax // Force full range during animation
+          : (zoomed ? zoomMax : timespans[selectedTimespan].xMax),
       },
       tooltip: {
         formatter: tooltipFormatter,
@@ -1652,6 +1968,9 @@ export default function ComparisonChart({
     getSeriesData,
     dataGrouping,
     MetadataByKeys,
+    animationDayIndex,
+    isAnimating,
+    fullYAxisRange,
   ]);
 
   // useEffect(() => {
@@ -1751,6 +2070,18 @@ export default function ComparisonChart({
         aggregation={embedAggregation}
       >
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
+          <style jsx global>{`
+            @keyframes firework {
+              0% {
+                opacity: 1;
+                transform: translate(-50%, -100%) rotate(var(--firework-angle)) translateY(0px) scale(1);
+              }
+              100% {
+                opacity: 0;
+                transform: translate(-50%, -100%) rotate(var(--firework-angle)) translateY(-400px) scale(0.5);
+              }
+            }
+          `}</style>
           {highchartsLoaded ? (
             <HighchartsReact
               highcharts={Highcharts}
@@ -1776,6 +2107,112 @@ export default function ComparisonChart({
           {filteredData.length === 0 && (
             <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
               No chain(s) selected for comparison. Please select at least one.
+            </div>
+          )}
+          {/* Circle marker following the most recent point during animation */}
+          {markerPosition && selectedScale === "cumulative" && !hasShownFirework && (
+            <>
+              {/* Marker - shown during animation and grows before firework, then shrinks to invisible */}
+              {isAnimating && !hasCompletedAnimation ? (
+                <div
+                  className="absolute pointer-events-none z-50"
+                  style={{
+                    left: `${markerPosition.x}px`,
+                    top: `${markerPosition.y}px`,
+                    transform: 'translate(-50%, -50%)',
+                    transition: 'none',
+                  }}
+                >
+                  <div
+                    className="w-4 h-4 rounded-full border-2"
+                    style={{
+                      backgroundColor: markerPosition.color,
+                      borderColor: markerPosition.color,
+                      boxShadow: `0 0 8px ${markerPosition.color}, 0 0 12px ${markerPosition.color}40`,
+                    }}
+                  />
+                </div>
+              ) : hasCompletedAnimation && !showFirework && !hasShownFirework ? (
+                <div
+                  className="absolute pointer-events-none z-50"
+                  style={{
+                    left: `${markerPosition.x}px`,
+                    top: `${markerPosition.y}px`,
+                    transform: 'translate(-50%, -50%)',
+                    transition: 'transform 0.15s ease-out',
+                  }}
+                >
+                  <div
+                    className="rounded-full border-2"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      backgroundColor: markerPosition.color,
+                      borderColor: markerPosition.color,
+                      boxShadow: `0 0 8px ${markerPosition.color}, 0 0 12px ${markerPosition.color}40`,
+                      transition: 'width 0.15s ease-out, height 0.15s ease-out',
+                    }}
+                  />
+                </div>
+              ) : hasShownFirework ? (
+                <div
+                  className="absolute pointer-events-none z-50"
+                  style={{
+                    left: `${markerPosition.x}px`,
+                    top: `${markerPosition.y}px`,
+                    transform: 'translate(-50%, -50%)',
+                    transition: 'all 0.2s ease-out',
+                  }}
+                >
+                  <div
+                    className="rounded-full border-2"
+                    style={{
+                      width: '0px',
+                      height: '0px',
+                      backgroundColor: markerPosition.color,
+                      borderColor: markerPosition.color,
+                      opacity: 0,
+                      transition: 'width 0.2s ease-out, height 0.2s ease-out, opacity 0.2s ease-out',
+                    }}
+                  />
+                </div>
+              ) : null}
+            </>
+          )}
+          {/* Firework effect - separate from marker */}
+          {showFirework && markerPosition && selectedScale === "cumulative" && (
+            <div
+              className="absolute pointer-events-none z-40"
+              style={{
+                left: `${markerPosition.x}px`,
+                top: `${markerPosition.y}px`,
+                transform: 'translate(-50%, -50%)',
+                width: '0',
+                height: '0',
+              }}
+            >
+              {Array.from({ length: 10 }).map((_, i) => {
+                const angle = (i * 360) / 10;
+                return (
+                  <div
+                    key={i}
+                    className="absolute"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      width: '1.5px',
+                      height: '200px',
+                      backgroundColor: markerPosition.color,
+                      transformOrigin: '50% 100%',
+                      transform: `translate(-50%, -100%) rotate(${angle}deg) translateY(0px)`,
+                      animation: `firework 0.5s ease-out forwards`,
+                      animationDelay: `${i * 0.03}s`,
+                      boxShadow: `0 0 20px ${markerPosition.color}`,
+                      '--firework-angle': `${angle}deg`,
+                    } as React.CSSProperties}
+                  />
+                );
+              })}
             </div>
           )}
           {/* </div> */}
@@ -2051,6 +2488,112 @@ export default function ComparisonChart({
                           master[metric_info_key][metric_id].name}
                       </div>
                     </div>
+                    {/* Circle marker following the most recent point during animation */}
+                    {markerPosition && selectedScale === "cumulative" && !hasShownFirework && (
+                      <>
+                        {/* Marker - shown during animation and grows before firework, then shrinks to invisible */}
+                        {isAnimating && !hasCompletedAnimation ? (
+                          <div
+                            className="absolute pointer-events-none z-50"
+                            style={{
+                              left: `${markerPosition.x}px`,
+                              top: `${markerPosition.y}px`,
+                              transform: 'translate(-50%, -50%)',
+                              transition: 'none',
+                            }}
+                          >
+                            <div
+                              className="w-4 h-4 rounded-full border-2"
+                              style={{
+                                backgroundColor: markerPosition.color,
+                                borderColor: markerPosition.color,
+                                boxShadow: `0 0 8px ${markerPosition.color}, 0 0 12px ${markerPosition.color}40`,
+                              }}
+                            />
+                          </div>
+                        ) : hasCompletedAnimation && !showFirework && !hasShownFirework ? (
+                          <div
+                            className="absolute pointer-events-none z-50"
+                            style={{
+                              left: `${markerPosition.x}px`,
+                              top: `${markerPosition.y}px`,
+                              transform: 'translate(-50%, -50%)',
+                              transition: 'transform 0.15s ease-out',
+                            }}
+                          >
+                            <div
+                              className="rounded-full border-2"
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                backgroundColor: markerPosition.color,
+                                borderColor: markerPosition.color,
+                                boxShadow: `0 0 8px ${markerPosition.color}, 0 0 12px ${markerPosition.color}40`,
+                                transition: 'width 0.15s ease-out, height 0.15s ease-out',
+                              }}
+                            />
+                          </div>
+                        ) : hasShownFirework ? (
+                          <div
+                            className="absolute pointer-events-none z-50"
+                            style={{
+                              left: `${markerPosition.x}px`,
+                              top: `${markerPosition.y}px`,
+                              transform: 'translate(-50%, -50%)',
+                              transition: 'all 0.2s ease-out',
+                            }}
+                          >
+                            <div
+                              className="rounded-full border-2"
+                              style={{
+                                width: '0px',
+                                height: '0px',
+                                backgroundColor: markerPosition.color,
+                                borderColor: markerPosition.color,
+                                opacity: 0,
+                                transition: 'width 0.2s ease-out, height 0.2s ease-out, opacity 0.2s ease-out',
+                              }}
+                            />
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                    {/* Firework effect - separate from marker */}
+                    {showFirework && markerPosition && selectedScale === "cumulative" && (
+                      <div
+                        className="absolute pointer-events-none z-40"
+                        style={{
+                          left: `${markerPosition.x}px`,
+                          top: `${markerPosition.y}px`,
+                          transform: 'translate(-50%, -50%)',
+                          width: '0',
+                          height: '0',
+                        }}
+                      >
+                        {Array.from({ length: 10 }).map((_, i) => {
+                          const angle = (i * 360) / 10;
+                          return (
+                            <div
+                              key={i}
+                              className="absolute"
+                              style={{
+                                left: '50%',
+                                top: '50%',
+                                width: '1.5px',
+                                height: '200px',
+                                backgroundColor: markerPosition.color,
+                                transformOrigin: '50% 100%',
+                                transform: `translate(-50%, -100%) rotate(${angle}deg) translateY(0px)`,
+                                animation: `firework 0.5s ease-out forwards`,
+                                animationDelay: `${i * 0.03}s`,
+                                boxShadow: `0 0 20px ${markerPosition.color}`,
+                                '--firework-angle': `${angle}deg`,
+                              } as React.CSSProperties}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -2168,6 +2711,17 @@ export default function ComparisonChart({
                       >
                         Percentage
                       </button>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"cumulative" === selectedScale
+                          ? "bg-forest-500 dark:bg-color-ui-active"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("cumulative");
+                        }}
+                      >
+                        Cumulative
+                      </button>
                     </>
                   )}
                 </div>
@@ -2242,6 +2796,17 @@ export default function ComparisonChart({
                         }}
                       >
                         Percentage
+                      </button>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"cumulative" === selectedScale
+                          ? "bg-forest-500 dark:bg-color-ui-active"
+                          : "hover:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("cumulative");
+                        }}
+                      >
+                        Cumulative
                       </button>
                     </>
                   )}
