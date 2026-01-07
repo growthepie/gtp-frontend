@@ -1,7 +1,7 @@
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import { MasterURL } from "@/lib/urls";
 
-const IS_DEV = process.env.IS_DEV === "true";
+const IS_DEV = process.env.IS_DEV === "True";
 
 export default function Head() {
   return (
