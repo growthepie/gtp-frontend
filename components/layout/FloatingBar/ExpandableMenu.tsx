@@ -1,7 +1,7 @@
 "use client";
 import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
 import Link from "next/link";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // ============= Type Definitions =============
 export type ExpandableMenuItem = {
@@ -283,6 +283,33 @@ function useHoverBehavior(
   return { handleMouseEnter, handleMouseLeave };
 }
 
+function useContentHeight(
+  contentRef: React.RefObject<HTMLDivElement | null>,
+  isAutoHeight: boolean
+) {
+  const [measuredHeight, setMeasuredHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!isAutoHeight) return;
+
+    const el = contentRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      setMeasuredHeight(el.scrollHeight);
+    };
+
+    measure();
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(el);
+
+    return () => resizeObserver.disconnect();
+  }, [contentRef, isAutoHeight]);
+
+  return measuredHeight;
+}
+
 // ============= Sub-components =============
 function MenuItems({
   items,
@@ -357,11 +384,16 @@ export default function ExpandableMenu({
   contentPadding,
 }: ExpandableMenuProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // State management
   const { open, setOpen } = useExpandableState(controlledOpen, onOpenChange);
+
+  // Dynamic height measurement for "auto" height
+  const isAutoHeight = expandedSize.height === "auto";
+  const measuredHeight = useContentHeight(contentRef, isAutoHeight);
 
   // Track transition state to prevent interaction during animation
   useEffect(() => {
@@ -429,7 +461,7 @@ export default function ExpandableMenu({
   const wCollapsed = formatSize(collapsedSize.width);
   const hCollapsed = formatSize(collapsedSize.height);
   const wExpanded = formatSize(expandedSize.width);
-  const hExpanded = formatSize(expandedSize.height);
+  const hExpanded = isAutoHeight ? `${measuredHeight}px` : formatSize(expandedSize.height);
   
   // Get placement-specific styles
   const placementStyles = getPlacementStyles(placement, offset);
@@ -490,10 +522,11 @@ export default function ExpandableMenu({
         }}
       >
         {/* Panel Content */}
-        <div 
+        <div
+          ref={contentRef}
           className={`flex flex-col gap-y-[7px] w-full h-full ${contentClassName}`}
-          style={{ 
-            minHeight: hExpanded,
+          style={{
+            minHeight: isAutoHeight ? undefined : hExpanded,
             opacity: open ? 1 : 0,
             pointerEvents: open && !isTransitioning ? "auto" : "none",
             padding: appliedPadding,
