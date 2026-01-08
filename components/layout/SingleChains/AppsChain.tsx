@@ -104,50 +104,52 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
       <div className="pt-[15px]">
          <Controls />
       </div>
-      <div>
-        <div
-          className={``}
+      {!hideTopGainers && (
+        <div>
+          <div
+            className={``}
 
-        >
-          <div className={`pt-[30px]`}>
-            <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-lg">Top Gainers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
-              <div className="flex justify-between items-center gap-x-[10px]">
-                <div className="text-xs">
-                  Projects on {chainInfo?.name} that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+          >
+            <div className={`pt-[30px]`}>
+              <div className="flex flex-col gap-y-[10px] ">
+                <div className="heading-lg">Top Gainers on {chainInfo?.name} by {metricsDef[medianMetric].name}</div>
+                <div className="flex justify-between items-center gap-x-[10px]">
+                  <div className="text-xs">
+                    Projects on {chainInfo?.name} that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                  </div>
+                  <Tooltip placement="left">
+                    <TooltipTrigger>
+                      <div className="size-[15px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="z-[99]">
+                      <TopGainersAndLosersTooltip metric={selectedMetrics[0]} scopeLabel={chainInfo?.name} />
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <Tooltip placement="left">
-                  <TooltipTrigger>
-                    <div className="size-[15px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="z-[99]">
-                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} scopeLabel={chainInfo?.name} />
-                  </TooltipContent>
-                </Tooltip>
               </div>
             </div>
-          </div>
-          
-          <div ref={topGainersRef}>
-            <div className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
-              {topGainers.map((application, index) => (
-                <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
-              {isLoading && new Array(6).fill(0).map((_, index) => (
-                <ApplicationCard key={`loading-${index}`} application={undefined} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
-            </div>
-          
-            <div className={`block md:hidden`}>
-              <div className="pt-[10px]">
-                <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application } chainsPage={true} chainKey={chainKey} />)} />
+            
+            <div ref={topGainersRef}>
+              <div className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
+                {topGainers.map((application, index) => (
+                  <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                ))}
+                {isLoading && new Array(6).fill(0).map((_, index) => (
+                  <ApplicationCard key={`loading-${index}`} application={undefined} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                ))}
+              </div>
+            
+              <div className={`block md:hidden`}>
+                <div className="pt-[10px]">
+                  <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application } chainsPage={true} chainKey={chainKey} />)} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
       <div className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-lg">Top Ranked Apps on {chainInfo?.name}</div>
