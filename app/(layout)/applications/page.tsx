@@ -142,7 +142,7 @@ export default function Page() {
 
 
 
-  const hideTopGainersAndLosers = useMemo(() => {
+  const hideTopGainers = useMemo(() => {
     return selectedTimespan === "max" || selectedStringFilters.length > 0 || topGainers.length === 0;
   }, [selectedTimespan, selectedStringFilters, topGainers.length]);
 
@@ -150,49 +150,51 @@ export default function Page() {
 
   return (
     <>
-      <div>
-        <div
-          className={``}
+      {!hideTopGainers && (
+        <div>
+          <div
+            className={``}
 
-        >
-          <Container className={`pt-[30px]`}>
-            <div className="flex flex-col gap-y-[10px] ">
-              <div className="heading-lg">Top Gainers by {metricsDef[medianMetric].name}</div>
-              <div className="flex justify-between items-center gap-x-[10px]">
-                <div className="text-xs">
-                  Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+          >
+            <Container className={`pt-[30px]`}>
+              <div className="flex flex-col gap-y-[10px] ">
+                <div className="heading-lg">Top Gainers by {metricsDef[medianMetric].name}</div>
+                <div className="flex justify-between items-center gap-x-[10px]">
+                  <div className="text-xs">
+                    Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                  </div>
+                  <Tooltip placement="left">
+                    <TooltipTrigger>
+                      <div className="size-[15px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="z-[99]">
+                      <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <Tooltip placement="left">
-                  <TooltipTrigger>
-                    <div className="size-[15px]">
-                      <Icon icon="feather:info" className="size-[15px]" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="z-[99]">
-                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
-                  </TooltipContent>
-                </Tooltip>
               </div>
-            </div>
-          </Container>
-          <div ref={topGainersRef}>
-            <Container className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
-              {topGainers.map((application, index) => (
-                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
-              {isLoading && new Array(6).fill(0).map((_, index) => (
-                <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-              ))}
             </Container>
-          
-            <div className={`block md:hidden`}>
-              <div className="pt-[10px]">
-                <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application} />)} />
+            <div ref={topGainersRef}>
+              <Container className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
+                {topGainers.map((application, index) => (
+                  <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                ))}
+                {isLoading && new Array(6).fill(0).map((_, index) => (
+                  <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                ))}
+              </Container>
+            
+              <div className={`block md:hidden`}>
+                <div className="pt-[10px]">
+                  <CardSwiper cards={topGainers.map((application, index) => <ApplicationCard key={index} application={application} />)} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">
@@ -809,5 +811,4 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
 }, areTableRowPropsEqual);
 
 ApplicationTableRow.displayName = 'ApplicationTableRow';
-
 
