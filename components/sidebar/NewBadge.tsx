@@ -12,6 +12,7 @@ const NewBadge = forwardRef<HTMLDivElement, NewBadgeProps>(({ badgeId, style, cl
     <motion.div 
       ref={ref} 
       style={style}
+      // @ts-ignore
       className={`z-50 pointer-events-none ${className || ''}`}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}

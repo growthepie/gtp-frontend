@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 
-export const revalidate = 60 * 60; // 1 hour
+export const revalidate = 3600; // 1 hour
 
 const getLastMod = (date?: string): string => {
   if (!date) {

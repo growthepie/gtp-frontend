@@ -16,7 +16,7 @@ export default function UsageFees({
   const [hoverBarIndex, setHoverBarIndex] = useState<Number | null>(null);
   const [selectedBarIndex, setSelectedBarIndex] = useState(23);
   const isMobile = useMediaQuery("(max-width: 1024px)");
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const optIndex = useMemo(() => {
     let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
     let retIndex = 23 - Number(pickIndex);
@@ -91,6 +91,24 @@ export default function UsageFees({
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }, []);
 
+  const getDisplayValue = (optIndex: number, showUsd: boolean) => {
+    // const valueKey = showUsd ? key + "_usd" : key;
+    if(!chainFeeData || !chainFeeData[optIndex] || !chainFeeData[optIndex][showUsd ? 2 : 1]) return "N/A";
+    if(showUsd){
+        return Intl.NumberFormat(undefined, {
+          notation: "compact",
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 0,
+        }).format(chainFeeData[optIndex][2] * 100);
+    } else {
+      return Intl.NumberFormat(undefined, {
+          notation: "compact",
+          maximumFractionDigits: 1,
+          minimumFractionDigits: 0,
+        }).format(chainFeeData[optIndex][1] *  1000000000);
+    }
+  }
+
   return (
     <div
       className={` bg-clip-border h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-color-bg-default w-full overflow-hidden ${isMobile ? "justify-between" : "justify-normal"
@@ -111,16 +129,9 @@ export default function UsageFees({
       <div className="flex gap-x-[5px]">
         <div className="flex flex-col items-center leading-tight pt-[9px] ">
           <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
-            {chainFeeData[0] &&
-              chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !== null
-              ? Intl.NumberFormat(undefined, {
-                notation: "compact",
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 1,
-              }).format(chainFeeData[optIndex][showUsd ? 2 : 1] * 100)
-              : "N/A"}
+            {getDisplayValue(optIndex, showUsd)}
           </div>
-          <div className="text-[8px] w-[44px] flex justify-center">cents</div>
+          <div className="text-[8px] w-[44px] flex justify-center">{showUsd ? "cents" : "gwei"}</div>
         </div>
         <div className="flex flex-col leading-3 gap-y-[0px] justify-self-start">
           <div className="text-[10px] text-[#5A6462] font-bold">

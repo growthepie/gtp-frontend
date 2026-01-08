@@ -1,4 +1,5 @@
-"use client";
+"use client";;
+import { use } from "react";
 import { ContractsURL } from "@/lib/urls";
 import { Contract } from "@/types/api/ContractsResponse";
 import { ContractsResponse } from "@/types/api/ContractsResponse";
@@ -10,7 +11,8 @@ import useSWR from "swr";
 //   return json.slice(0, 10);
 // }
 
-export default function ContractsPage({ params }: { params: any }) {
+export default function ContractsPage(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const {
     data: contracts,
     error: contractsError,

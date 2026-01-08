@@ -1,7 +1,10 @@
 'use client';
-import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { debounce } from 'lodash';
+
+import { useEffect, useRef } from "react";
+import type { ReactNode } from "react";
+import { debounce } from "lodash";
 import Highcharts from "highcharts/highstock";
+import { create } from "zustand";
 
 export const MOBILE_BREAKPOINT = 768;
 
@@ -14,91 +17,167 @@ export type EmbedData = {
   zoomed?: boolean;
 };
 
-type UIContextState = {
+type Updater<T> = T | ((prevState: T) => T);
+
+const resolveState = <T,>(value: Updater<T>, previous: T): T =>
+  typeof value === "function" ? (value as (prev: T) => T)(previous) : value;
+
+const defaultEmbedData: EmbedData = {
+  width: 945,
+  height: 638,
+  src: "",
+  title: "",
+  timeframe: "absolute",
+};
+
+export type UIState = {
   isSidebarOpen: boolean;
-  isMobile: boolean;
-  isMobileSidebarOpen: boolean;
+  setIsSidebarOpen: (value: Updater<boolean>) => void;
   toggleSidebar: () => void;
+  isMobile: boolean;
+  setIsMobile: (value: Updater<boolean>) => void;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (value: Updater<boolean>) => void;
   toggleMobileSidebar: () => void;
   embedData: EmbedData;
-  setEmbedData: (embedData: EmbedData | ((prevEmbedData: EmbedData) => EmbedData)) => void;
+  setEmbedData: (value: Updater<EmbedData>) => void;
   isSafariBrowser: boolean;
+  setIsSafariBrowser: (value: Updater<boolean>) => void;
   isDragging: boolean;
-  setIsDragging: (isDragging: boolean) => void;
+  setIsDragging: (value: Updater<boolean>) => void;
   dragChartId: string;
-  setDragChartId: (dragChartId: string) => void;
+  setDragChartId: (value: string) => void;
   focusSwitchEnabled: boolean;
-  setFocusSwitchEnabled: (focusSwitchEnabled: boolean) => void;
+  setFocusSwitchEnabled: (value: Updater<boolean>) => void;
 };
 
+const getInitialSidebarOpen = () => {
+  if (typeof window === "undefined") {
+    // server render: rely on CSS to collapse for smaller viewports
+    return true;
+  }
+  return window.innerWidth >= 1280;
+};
 
-const defaultState: UIContextState = {
-  isSidebarOpen: false,
+export const useUIStore = create<UIState>((set) => ({
+  isSidebarOpen: getInitialSidebarOpen(),
+  setIsSidebarOpen: (value) =>
+    set((state) => ({
+      isSidebarOpen: resolveState(value, state.isSidebarOpen),
+    })),
+  toggleSidebar: () =>
+    set((state) => ({
+      isSidebarOpen: !state.isSidebarOpen,
+    })),
   isMobile: false,
+  setIsMobile: (value) =>
+    set((state) => ({
+      isMobile: resolveState(value, state.isMobile),
+    })),
   isMobileSidebarOpen: false,
-  toggleSidebar: () => {},
-  toggleMobileSidebar: () => {},
-  embedData: { width: 945, height: 638, src: "", title: "", timeframe: "absolute" },
-  setEmbedData: () => {},
+  setIsMobileSidebarOpen: (value) =>
+    set((state) => ({
+      isMobileSidebarOpen: resolveState(value, state.isMobileSidebarOpen),
+    })),
+  toggleMobileSidebar: () =>
+    set((state) => ({
+      isMobileSidebarOpen: !state.isMobileSidebarOpen,
+    })),
+  embedData: defaultEmbedData,
+  setEmbedData: (value) =>
+    set((state) => ({
+      embedData: resolveState(value, state.embedData),
+    })),
   isSafariBrowser: false,
+  setIsSafariBrowser: (value) =>
+    set((state) => ({
+      isSafariBrowser: resolveState(value, state.isSafariBrowser),
+    })),
   isDragging: false,
-  setIsDragging: () => {},
+  setIsDragging: (value) =>
+    set((state) => ({
+      isDragging: resolveState(value, state.isDragging),
+    })),
   dragChartId: "",
-  setDragChartId: () => {},
+  setDragChartId: (value) =>
+    set(() => ({
+      dragChartId: value,
+    })),
   focusSwitchEnabled: true,
-  setFocusSwitchEnabled: () => {},
+  setFocusSwitchEnabled: (value) =>
+    set((state) => ({
+      focusSwitchEnabled: resolveState(value, state.focusSwitchEnabled),
+    })),
+}));
+
+const defaultSelector = (state: UIState) => state;
+
+export function useUIContext(): UIState;
+export function useUIContext<T>(selector: (state: UIState) => T): T;
+export function useUIContext<T>(selector?: (state: UIState) => T) {
+  const selectorToUse = selector ?? (defaultSelector as (state: UIState) => T);
+  return useUIStore(selectorToUse);
+}
+
+type ProviderProps = {
+  children: ReactNode;
 };
 
-const UIContext = createContext<UIContextState>(defaultState);
+export const UIContextProvider = ({ children }: ProviderProps) => {
+  const setIsSafariBrowser = useUIStore((state) => state.setIsSafariBrowser);
+  const setIsMobile = useUIStore((state) => state.setIsMobile);
+  const setIsSidebarOpen = useUIStore((state) => state.setIsSidebarOpen);
+  const isMobileSidebarOpen = useUIStore((state) => state.isMobileSidebarOpen);
+  const isMobile = useUIStore((state) => state.isMobile);
 
-export const useUIContext = () => useContext(UIContext);
-
-export const UIContextProvider = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(defaultState.isSidebarOpen);
-  const [isMobile, setIsMobile] = useState(defaultState.isMobile);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(defaultState.isMobileSidebarOpen);
-  const [embedData, setEmbedData] = useState<EmbedData>(defaultState.embedData);
-  const [isSafariBrowser, setIsSafariBrowser] = useState(defaultState.isSafariBrowser);
-  const [isDragging, setIsDragging] = useState(defaultState.isDragging);
-  const [dragChartId, setDragChartId] = useState(defaultState.dragChartId);
-  const [focusSwitchEnabled, setFocusSwitchEnabled] = useState(defaultState.focusSwitchEnabled);
-
-  const prevWindowWidthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 0);
-
-  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
-  const toggleMobileSidebar = useCallback(() => setIsMobileSidebarOpen(prev => !prev), []);
+  const prevWindowWidthRef = useRef<number>(
+    typeof window !== "undefined" ? window.innerWidth : 0,
+  );
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const initialWidth = window.innerWidth;
-    
+
     setIsSafariBrowser(isSafari);
-    setIsMobile(initialWidth < 768);
+    setIsMobile(initialWidth < MOBILE_BREAKPOINT);
     setIsSidebarOpen(initialWidth >= 1280);
     prevWindowWidthRef.current = initialWidth;
-    
+
     const handleResize = () => {
       const currentWidth = window.innerWidth;
       const isExpanding = currentWidth > prevWindowWidthRef.current;
-      
-      setIsMobile(currentWidth < 768);
-      setIsSidebarOpen(prev => currentWidth >= 1280 ? (isExpanding ? prev : true) : false);
+
+      setIsMobile(currentWidth < MOBILE_BREAKPOINT);
+      setIsSidebarOpen((prev) =>
+        currentWidth >= 1280 ? (isExpanding ? prev : true) : false,
+      );
 
       prevWindowWidthRef.current = currentWidth;
     };
-    
+
     const debouncedHandleResize = debounce(handleResize, 150);
-    
-    window.addEventListener('resize', debouncedHandleResize);
+
+    window.addEventListener("resize", debouncedHandleResize);
     return () => {
-      window.removeEventListener('resize', debouncedHandleResize);
+      window.removeEventListener("resize", debouncedHandleResize);
       debouncedHandleResize.cancel();
     };
-  }, []);
+  }, [setIsSafariBrowser, setIsMobile, setIsSidebarOpen]);
 
   useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
     const contentPanel = document.getElementById("content-panel");
     const shouldLockScroll = isMobileSidebarOpen && isMobile;
+
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalBodyOverflow = document.body.style.overflow;
 
     if (contentPanel) {
       contentPanel.style.touchAction = shouldLockScroll ? "none" : "auto";
@@ -106,44 +185,26 @@ export const UIContextProvider = ({ children }) => {
     document.body.style.touchAction = shouldLockScroll ? "none" : "auto";
     document.body.style.overflow = shouldLockScroll ? "hidden" : "auto";
 
+    return () => {
+      if (contentPanel) {
+        contentPanel.style.touchAction = "auto";
+      }
+      document.body.style.touchAction = originalBodyTouchAction || "auto";
+      document.body.style.overflow = originalBodyOverflow || "auto";
+    };
   }, [isMobileSidebarOpen, isMobile]);
 
-  const contextValue = useMemo(() => ({
-    isSidebarOpen,
-    isMobile,
-    isMobileSidebarOpen,
-    toggleSidebar,
-    toggleMobileSidebar,
-    embedData,
-    setEmbedData,
-    isSafariBrowser,
-    isDragging,
-    setIsDragging,
-    dragChartId,
-    setDragChartId,
-    focusSwitchEnabled,
-    setFocusSwitchEnabled,
-  }), [
-    isSidebarOpen, isMobile, isMobileSidebarOpen, embedData, isSafariBrowser, 
-    isDragging, dragChartId, focusSwitchEnabled,
-    toggleSidebar, toggleMobileSidebar // Add memoized functions here
-  ]);
-
-  return <UIContext.Provider value={contextValue}>{children}</UIContext.Provider>;
+  return <>{children}</>;
 };
-
-
 
 // Custom hook for Highcharts wrappers
 export const useHighchartsWrappers = () => {
-  // const { isDragging, setIsDragging, dragChartId, setDragChartId } = useUIContext();
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragChartId, setDragChartId] = useState("");
+  const setIsDragging = useUIStore((state) => state.setIsDragging);
+  const setDragChartId = useUIStore((state) => state.setDragChartId);
 
   useEffect(() => {
     const wrapHighchartsMethods = () => {
       Highcharts.wrap(Highcharts.Pointer.prototype, "reset", function (proceed) {
-        // const chart: Highcharts.Chart = this.chart;
         if (this.chart.container.classList.contains("zoom-chart")) {
           this.chart.container.style.cursor = "url(/cursors/zoom.svg) 14.5 14.5, auto";
         }
@@ -151,14 +212,11 @@ export const useHighchartsWrappers = () => {
       });
 
       Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (proceed, e) {
-        // const chart: Highcharts.Chart = this.chart;
         if (this.chart.container.classList.contains("zoom-chart")) {
           setDragChartId(this.chart.container.id);
 
-          // invisible cursor
           this.chart.container.style.cursor = "none";
 
-          // place vertical dotted line on click
           if (this.chart.series.length > 0) {
             const x = e.chartX;
             const y = e.chartY;
@@ -296,15 +354,14 @@ export const useHighchartsWrappers = () => {
       });
 
       Highcharts.wrap(Highcharts.Pointer.prototype, "drag", function (proceed, e) {
-        // const chart: Highcharts.Chart = this.chart;
+        const { dragChartId, isDragging } = useUIStore.getState();
+
         if (this.chart.container.id === dragChartId) {
           if (!isDragging) {
             setIsDragging(true);
           }
-          // invisible cursor
           this.chart.container.style.cursor = "none";
 
-          // update vertical dotted line on drag
           if (this.chart.series.length > 0) {
             const x = e.chartX;
             const y = e.chartY;
@@ -371,7 +428,6 @@ export const useHighchartsWrappers = () => {
                   : "/cursors/rightArrow.svg",
             });
 
-            // get the x value of the left and right edges of the selected area
             const leftXValue = this.chart.xAxis[0].toValue(
               leftX - this.chart.plotLeft,
               true,
@@ -384,7 +440,6 @@ export const useHighchartsWrappers = () => {
             const leftDate = new Date(leftXValue);
             const rightDate = new Date(rightXValue);
 
-            // display the number of days selected
             const numDays = Math.round(
               (rightXValue - leftXValue) / (24 * 60 * 60 * 1000),
             );
@@ -406,7 +461,6 @@ export const useHighchartsWrappers = () => {
               this.chart.leftDateText.attr("visibility", "visible");
             }
 
-            // display the left date
             this.chart.leftDateText.attr({
               text: `${leftDate.toLocaleDateString("en-GB", {
                 timeZone: "UTC",
@@ -422,7 +476,6 @@ export const useHighchartsWrappers = () => {
               this.chart.rightDateText.attr("visibility", "visible");
             }
 
-            // display the right date label with arrow pointing down
             this.chart.rightDateText.attr({
               text: `${rightDate.toLocaleDateString("en-GB", {
                 timeZone: "UTC",
@@ -439,16 +492,12 @@ export const useHighchartsWrappers = () => {
       });
 
       Highcharts.wrap(Highcharts.Pointer.prototype, "drop", function (proceed, e) {
-        const chart: Highcharts.Chart = this.chart;
+        const { dragChartId } = useUIStore.getState();
 
+        if (this.chart.container.id === dragChartId) {
+          setIsDragging(false);
 
-        if (chart.container.id === dragChartId) {
-          if (isDragging)
-            setIsDragging(false);
-
-          // set cursor back to default
           this.chart.container.style.cursor = "url(/cursors/zoom.svg) 14.5 14.5, auto";
-          // setIsDragging(false);
 
           const elements = [
             "zoomLineStart",
@@ -475,5 +524,5 @@ export const useHighchartsWrappers = () => {
     };
 
     wrapHighchartsMethods();
-  }, [isDragging, setIsDragging, dragChartId, setDragChartId]);
+  }, [setDragChartId, setIsDragging]);
 };

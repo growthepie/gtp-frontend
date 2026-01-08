@@ -32,7 +32,8 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
   );
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const { embedData, setEmbedData } = useUIContext();
+  const embedData = useUIContext((state) => state.embedData);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
 
   function copyText(entryText: string) {
     navigator.clipboard.writeText(entryText);

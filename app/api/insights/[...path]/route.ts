@@ -7,16 +7,18 @@ const CLARITY_BEACON_DOMAINS = ['a.clarity.ms', 'k.clarity.ms', 'j.clarity.ms']
 
 async function handleGet(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params.path)
+  const { path } = await params
+  return proxyRequest(request, path)
 }
 
 async function handlePost(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return proxyRequest(request, params.path)
+  const { path } = await params
+  return proxyRequest(request, path)
 }
 
 export const GET = withAnalyticsValidation(handleGet)
@@ -90,8 +92,8 @@ async function proxyRequest(request: NextRequest, pathParts: string[]) {
       let content = await response.text()
       const host = request.headers.get('host') || 'localhost:3000'
 
-      // Apply all URL rewrites
-      content = rewriteScriptContent(content, host)
+      // Apply URL rewrites (pass targetDomain for domain-specific rewrites)
+      content = rewriteScriptContent(content, host, targetDomain)
 
       return new NextResponse(content, {
         status: response.status,

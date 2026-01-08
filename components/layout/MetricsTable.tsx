@@ -15,6 +15,8 @@ import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 
+const AnimatedDiv = animated.div as any;
+
 const MetricsTable = ({
   data,
   master,
@@ -142,7 +144,8 @@ const MetricsTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
 
   const changesKey = useMemo(() => {
     if (timeIntervalKey === "monthly") {
@@ -539,7 +542,7 @@ const MetricsTable = ({
           // style={{ height: height, direction: "ltr" }}
           >
             {transitions((style, item, t, index) => (
-              <animated.div
+              <AnimatedDiv
                 className="absolute w-full select-none"
                 style={{ zIndex: Object.keys(data).length - index, ...style }}
               >
@@ -822,7 +825,7 @@ const MetricsTable = ({
                     </div>
                   </div>
                 </div>
-              </animated.div>
+              </AnimatedDiv>
             ))}
           </div>
         </VerticalScrollContainer>

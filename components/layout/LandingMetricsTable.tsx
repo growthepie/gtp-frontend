@@ -8,7 +8,7 @@ import {
 import { ReactNode, createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import d3 from "d3";
+import { format as d3Format } from "d3"
 import moment from "moment";
 import { Icon } from "@iconify/react";
 import { useTransition, animated, useSpring } from "@react-spring/web";
@@ -142,17 +142,33 @@ export default memo(function LandingMetricsTable({
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
   const [centerMetric, setCenterMetric] = useState("daa");
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-  const [maxVal, setMaxVal] = useState(0);
+  // const [maxVal, setMaxVal] = useState(0);
   const { theme } = useTheme();
   const router = useRouter();
 
 
 
-  useEffect(() => {
-    if (!data) return;
-    setMaxVal(
-      Math.max(
-        ...Object.keys(data.chains)
+  // useEffect(() => {
+  //   if (!data) return;
+  //   setMaxVal(
+  //     Math.max(
+  //       ...Object.keys(data.chains)
+  //         .filter(
+  //           (chain) =>
+  //             Object.keys(EnabledChainsByKeys).includes(chain) &&
+  //             EnabledChainsByKeys[chain].chainType != null &&
+  //             EnabledChainsByKeys[chain].chainType != "L1" &&
+  //             data.chains[chain].users > 0,
+  //         )
+  //         .map((chain) => data.chains[chain].users > 0 ? data.chains[chain].users : -1),
+  //     ),
+  //   );
+  // }, [data, EnabledChainsByKeys]);
+
+  const maxVal = useMemo(() => {
+    if (!data) return 0;
+    return Math.max(
+      ...Object.keys(data.chains)
           .filter(
             (chain) =>
               Object.keys(EnabledChainsByKeys).includes(chain) &&
@@ -161,7 +177,6 @@ export default memo(function LandingMetricsTable({
               data.chains[chain].users > 0,
           )
           .map((chain) => data.chains[chain].users > 0 ? data.chains[chain].users : -1),
-      ),
     );
   }, [data, EnabledChainsByKeys]);
 
@@ -398,7 +413,7 @@ export default memo(function LandingMetricsTable({
                   </div>
                 </div>
                 <div className="flex justify-end items-center numbers-xs">
-                  {d3.format(data.chains[item.chain.key].cross_chain_activity > 0.01 ? ".1%" : ".1%")(data.chains[item.chain.key].cross_chain_activity)}
+                  {d3Format(data.chains[item.chain.key].cross_chain_activity > 0.01 ? ".1%" : ".1%")(data.chains[item.chain.key].cross_chain_activity)}
                 </div>
                 <div className="flex justify-end items-center numbers-xs">
                   {formatAge(item.chain.key)}
@@ -568,7 +583,7 @@ const ChainRankCell = memo(function ChainRankCell({
   const { data: master } = useMaster();
 
   const router = useRouter();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
     "fundamentalsChains",

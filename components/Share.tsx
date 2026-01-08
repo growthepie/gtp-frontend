@@ -36,7 +36,8 @@ export default function Share() {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   
-  const { embedData, setEmbedData } = useUIContext();
+  const embedData = useUIContext((state) => state.embedData);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
 
   function copyText(entryText) {
     navigator.clipboard.writeText(entryText);

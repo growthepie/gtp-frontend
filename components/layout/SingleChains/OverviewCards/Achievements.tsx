@@ -719,7 +719,7 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
                             >
                                 {/* {animated && (
                             <animate
-                                attributeName="stop-color"
+                                attributeName="stopColor"
                                 values="#FE5468; #FF6B3D; #FE5468; #FF4757; #FE5468"
                                 dur="2.5s"
                                 repeatCount="indefinite"

@@ -15,10 +15,10 @@ const customizeButtonWidthMobile = "44px";
 const customizeButtonWidth = "136px";
 const customizeButtonWidthHover = "280px";
 
-const useOutsideAlerter = (ref: React.RefObject<HTMLElement>, callback: () => void) => {
+const useOutsideAlerter = (ref: React.RefObject<HTMLElement | null>, callback: () => void) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      if (ref.current && ref.current !== null && !ref.current.contains(event.target as Node)) {
         callback();
       }
     };
@@ -44,7 +44,7 @@ export default function FloatingBar() {
 
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
   const [isCustomizedOpenLocked, setIsCustomizedOpenLocked] = useState(false);
-  const customizeGroupRef = useRef<HTMLDivElement>(null);
+  const customizeGroupRef = useRef<HTMLDivElement | null>(null);
 
   useOutsideAlerter(customizeGroupRef, () => {
     setIsCustomizeOpen(false)

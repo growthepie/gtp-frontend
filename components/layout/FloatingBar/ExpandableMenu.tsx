@@ -390,7 +390,7 @@ export default function ExpandableMenu({
   }, [setOpen, isTransitioning]);
   
   // Setup behavior hooks
-  useOutsideAlerter(rootRef, handleClose, open);
+  useOutsideAlerter(rootRef as React.RefObject<HTMLElement>, handleClose, open);
   useEscapeKey(handleClose);
   const { handleMouseEnter, handleMouseLeave } = useHoverBehavior(openOn, setOpen, open);
   

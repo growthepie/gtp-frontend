@@ -81,8 +81,8 @@ export default function StableInsights({ }: {}) {
   const handleClick = () => {
     setClicked(!clicked);
   };
-  const { isMobile } = useUIContext();
-  const { isSidebarOpen } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const {
     data: data,
     error: error,

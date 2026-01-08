@@ -42,7 +42,7 @@ import { useLocalStorage, useWindowSize, useIsMounted, useResizeObserver } from 
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
-import d3 from "d3";
+import { format as d3Format } from "d3"
 import { debounce, forEach } from "lodash";
 import {
   Tooltip,
@@ -96,11 +96,13 @@ const ChainComponent = function ChainComponent({
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
   const { AllChainsByKeys } = useMaster();
   const { width, height } = useWindowSize();
   const { theme } = useTheme();
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  // const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useUIContext((state) => state.isMobile);
 
   // Get ECharts colors based on current theme
   const echartsColors = useMemo(() => {
@@ -114,11 +116,11 @@ const ChainComponent = function ChainComponent({
   const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<echarts.ECharts[]>([]);
   const chartRef = useRef<ReactECharts>(null);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
   
   // Use resize observer to handle chart repositioning
   const { width: containerWidth = 0, height: containerHeight = 0 } = useResizeObserver({
-    ref: chartContainerRef,
+    ref: chartContainerRef as React.RefObject<HTMLElement>,
     box: 'border-box',
   });
 
@@ -239,26 +241,26 @@ const ChainComponent = function ChainComponent({
         }
       }
 
-      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
         if (selectedScale === "percentage") {
-          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".4s")(val).replace(/G/, "B") + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            number = prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
           }
         }
       }

@@ -2,9 +2,12 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   experimental: {
-    missingSuspenseWithCSRBailout: false,
     scrollRestoration: true,
+    optimizeCss: true,
   },
   async rewrites() {
     return {
@@ -149,7 +152,7 @@ const nextConfig = {
       },
       {
         source: "/labels",
-        destination: "https://labels.growthepie.xyz/",
+        destination: "https://labels.growthepie.com/",
         permanent: true,
       },
       // Only include the icons redirect in production, not in development

@@ -24,7 +24,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { cache } from "react";
 
 type Props = {
-  params: { metric: string };
+  params: Promise<{ metric: string }>;
 };
 
 const fetchMasterData = cache(async (): Promise<MasterResponse> => {
@@ -39,7 +39,9 @@ const fetchMasterData = cache(async (): Promise<MasterResponse> => {
   return response.json();
 });
 
-export async function generateMetadata({ params: { metric } }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const { metric } = await props.params;
+
   if (!metric) {
     track("404 Error", {
       location: "404 Error",
@@ -123,13 +125,14 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: { metric: string };
+  params: Promise<{ metric: string }>;
 }) {
-  const metricConfig = findMetricConfig(params.metric);
+const { metric } = await params;
+  const metricConfig = findMetricConfig(metric);
   if (!metricConfig) {
     track("404 Error", {
       location: "404 Error",
-      page: "/fundamentals/" + params.metric,
+      page: "/fundamentals/" + metric,
     });
     return notFound();
   }
@@ -140,7 +143,7 @@ export default async function Layout({
     icon: "",
   };
   const pageTitle = pageData.title || metricConfig.label || "No Title";
-  const metadata = await getPageMetadata(`/fundamentals/${params.metric}`, {});
+  const metadata = await getPageMetadata(`/fundamentals/${metric}`, {});
   const master = await fetchMasterData();
   const keywords = buildKeywords(metricConfig);
   const aboutThings = buildAboutThings(metricConfig);
@@ -148,14 +151,14 @@ export default async function Layout({
     ? new Date(master.last_updated_utc).toISOString()
     : new Date().toISOString();
 
-  const faqJsonLd = buildFaqJsonLd(params.metric, metricConfig.page);
-  const datasetJsonLd = buildDatasetJsonLd(params.metric, metricConfig.page, {
+  const faqJsonLd = buildFaqJsonLd(metric, metricConfig.page);
+  const datasetJsonLd = buildDatasetJsonLd(metric, metricConfig.page, {
     description: metadata.description,
     keywords,
     about: aboutThings,
     dateModified: lastUpdated,
   });
-  const definedTermSetJsonLd = buildDefinedTermSet(params.metric, metricConfig.page);
+  const definedTermSetJsonLd = buildDefinedTermSet(metric, metricConfig.page);
   const jsonLdGraphs = [datasetJsonLd, faqJsonLd, definedTermSetJsonLd].filter(Boolean) as Record<
     string,
     unknown
@@ -173,12 +176,12 @@ export default async function Layout({
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
-            <FundamentalsBackButton />
+<FundamentalsBackButton />
             <Title
               icon={pageData.icon as GTPIconName}
               title={pageTitle}
               button={
-                params.metric === "transaction-costs" && (
+                metric === "transaction-costs" && (
                   <TitleButtonLink
                     label="Detailed Fees Overview"
                     icon="detailed-fees"
@@ -235,7 +238,7 @@ export default async function Layout({
           />
         )}
       </PageContainer>
-      <MetricRelatedQuickBites metricKey={params.metric} metricType="fundamentals" includePageContainer={true} />
+      <MetricRelatedQuickBites metricKey={metric} metricType="fundamentals" includePageContainer={true} />
     </PageRoot>
   );
 }

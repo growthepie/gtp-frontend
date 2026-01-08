@@ -1,8 +1,7 @@
 "use client";
-import React, { useMemo, useEffect } from "react";
+import React, { memo, useMemo, createContext, useContext, useEffect, useState } from "react";
 import ChainComponent from "@/components/charts/ChainComponent";
 import Link from "next/link";
-import Image from "next/image";
 import Icon from "@/components/layout/Icon";
 import { LandingURL } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
@@ -73,68 +72,44 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["fusaka"];
-const quickBiteItems: { slug: string; quickBite: QuickBiteData }[] = quickBiteIds
-  .map((quickBiteId) => ({
-    slug: quickBiteId,
-    quickBite: getQuickBiteBySlug(quickBiteId),
-  }))
-  .filter(
-    (
-      quickBite,
-    ): quickBite is { slug: string; quickBite: QuickBiteData } =>
-      quickBite.quickBite !== undefined,
-  );
+const quickBiteIds = ["ethereum-scaling"];
 
-const QuickBiteCard = ({
-  quickBite,
-  slug,
-  forceLightText = false,
-  isPriority = false,
-}: {
-  quickBite: QuickBiteData;
-  slug: string;
-  forceLightText?: boolean;
-  isPriority?: boolean;
-}) => {
+const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
   return (
-    <Link
+    <Link 
       href={`/quick-bites/${slug}`}
-      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] overflow-hidden bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-bg-medium"  
+      style={{
+        background: `url(${quickBite.image}) no-repeat center center / cover`,
+      }}
     >
-      <Image
-        src={quickBite.image}
-        alt={quickBite.title}
-        fill
-        priority={isPriority}
-        fetchPriority={isPriority ? "high" : "auto"}
-        sizes="(min-width: 768px) 320px, 145px"
-        className="absolute inset-0 z-10 h-full w-full object-cover"
-      />
-      <div
-        className="absolute inset-0 -z-10 w-full h-full pointer-events-none"
-        style={{
+        <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
+        <div className="flex justify-end">
+          <div className="pl-[38px] md:pl-0 select-none">
+            <div className="flex items-center justify-center p-[1px] rounded-full bg-[#263130] w-fit">
+              <div className="flex items-center pl-[15px] py-[4px] gap-x-[8px] bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 pr-[5px]">
+                <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
+                  Full Article
+                </div>
+                <div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
+                  <Icon icon="feather:arrow-right" className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{
           opacity: 0.6,
           background: "linear-gradient(180deg, var(--color-bg-default, #1F2726) 15%, rgba(31, 39, 38, 0.00) 54.17%)",
-        }}
-        aria-hidden="true"
-      />
-      <div className={`heading-large-md z-10 ${forceLightText ? "text-[#cdd8d3]" : ""}`}>{quickBite.title}</div>
-      <div className="flex justify-end z-10">
-        <TitleButtonLink
-          label="Full Article"
-          href={`/quick-bites/${slug}`}
-          className="w-fit"
-          containerClassName="!border-none"
-          leftIcon={undefined}
-          rightIcon={"feather:arrow-right" as GTPIconName}
-          gradientClass="bg-[#263130]"
+        }} 
+        className="absolute top-0 left-0 w-full h-full rounded-[15px] z-0 pointer-events-none"
         />
-      </div>
+
     </Link>
-  );
-};
+  )
+}
+
 
 const metricIds = ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"];
 
@@ -164,18 +139,24 @@ export default function LandingSwiperItems() {
     }
   }, [landing]);
 
+  // const [quickBiteItems, setQuickBiteItems] = useState<{slug: string, quickBite: QuickBiteData}[]>([]);
+  // useEffect(() => {
+  //   const quickBites = quickBiteIds.map(quickBiteId => ({slug: quickBiteId, quickBite: getQuickBiteBySlug(quickBiteId)}));
+  //   setQuickBiteItems(quickBites.filter((quickBite): quickBite is {slug: string, quickBite: QuickBiteData} => quickBite.quickBite !== undefined));
+  // }, []);
+
+  const quickBiteItems = useMemo(() => {
+    // return [];
+    return quickBiteIds.map(quickBiteId => ({slug: quickBiteId, quickBite: getQuickBiteBySlug(quickBiteId)})).filter((quickBite): quickBite is {slug: string, quickBite: QuickBiteData} => quickBite.quickBite !== undefined);
+  }, []);
+
   return (
     // <FocusProvider>
       <SplideTrack>
-        {quickBiteItems.map(({slug, quickBite}, index) => (
+        {quickBiteItems.map(({slug, quickBite}) => (
           <SplideSlide key={slug}>
             <div className="group w-full">
-              <QuickBiteCard
-                quickBite={quickBite}
-                slug={slug}
-                forceLightText={true}
-                isPriority={index === 0}
-              />
+              <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
             </div>
           </SplideSlide>
         ))}

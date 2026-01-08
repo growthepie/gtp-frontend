@@ -1,5 +1,5 @@
 "use client";
-import { useLayoutEffect, useMemo, useState } from "react";
+import { use, useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
 import { ChainData } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
@@ -14,7 +14,8 @@ import { MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 
-const Chain = ({ params }: { params: any }) => {
+const Chain = (props: { params: Promise<any> }) => {
+  const params = use(props.params);
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;

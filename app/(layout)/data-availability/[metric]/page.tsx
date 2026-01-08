@@ -1,4 +1,5 @@
 "use client";
+import { use } from "react";
 import useSWR from "swr";
 import { PageContainer } from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
@@ -13,7 +14,9 @@ import MetricTable from "@/components/metric/MetricTable";
 import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 
-const DataAvailability = ({ params: { metric } }) => {
+const DataAvailability = (props: { params: Promise<{ metric: string }> }) => {
+  const { metric } = use(props.params);
+
   const { is_og } = useParams();
   const {
     data: master,

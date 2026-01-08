@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, use } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
@@ -24,7 +24,8 @@ import { notFound } from "next/navigation";
 import { useMaster } from "@/contexts/MasterContext";
 import { Title } from "@/components/layout/TextHeadingComponents";
 
-const ChainOverview = ({ params }: { params: any }) => {
+const ChainOverview = (props: { params: Promise<any> }) => {
+  const params = use(props.params);
   const forceCategory = params.category;
 
   const { AllChainsByKeys } = useMaster();
@@ -55,7 +56,7 @@ const ChainOverview = ({ params }: { params: any }) => {
     "max",
   );
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",

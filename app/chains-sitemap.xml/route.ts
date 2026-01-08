@@ -4,7 +4,7 @@ import type { MasterResponse, ChainInfo } from "@/types/api/MasterResponse";
 
 const EXCLUDED_URL_KEYS = new Set(["multiple", "all_l2s", "all-l2s"]);
 
-export const revalidate = 60 * 60; // 1 hour
+export const revalidate = 3600; // 1 hour
 
 type ExtendedChainInfo = ChainInfo & {
   last_updated?: string;

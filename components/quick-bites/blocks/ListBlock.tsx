@@ -34,7 +34,7 @@ const parseMarkdownLinksToHtml = (text: string): string => {
 };
 
 // Helper function to parse bold text and links
-const parseBoldTextAndLinks = (text: string): JSX.Element[] => {
+const parseBoldTextAndLinks = (text: string): React.ReactElement[] => {
   // First process links
   const textWithLinks = parseMarkdownLinksToHtml(text);
   

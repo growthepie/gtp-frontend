@@ -172,7 +172,6 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
         </div>
       ) : (
         <TopRowParent>
-          
           {timeIntervals.map((interval) => (
             <TopRowChild
               key={interval}

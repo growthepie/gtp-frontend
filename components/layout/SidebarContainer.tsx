@@ -17,7 +17,8 @@ import { createPortal } from "react-dom";
 import { IconContextMenu } from "./IconContextMenu";
 
 export default function SidebarContainer() {
-  const { isSidebarOpen, toggleSidebar } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const toggleSidebar = useUIContext((state) => state.toggleSidebar);
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
 
@@ -184,7 +185,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useOutsideAlerter(menuRef, () => {
+  useOutsideAlerter(menuRef as React.RefObject<HTMLElement>, () => {
     setIsOpen(false);
   });
 

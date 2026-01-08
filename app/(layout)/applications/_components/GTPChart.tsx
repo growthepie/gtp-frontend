@@ -145,22 +145,23 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
         if (prefix || suffix) {
           // for small USD amounts, show 2 decimals
           if (absVal === 0) number = "0";
+          else if (absVal < 0.1) number = val.toFixed(3);
           else if (absVal < 1) number = val.toFixed(2);
           else if (absVal < 10)
             number = units[unitKey].currency ? val.toFixed(2) :
-              d3Format(`~.3s`)(val).replace(/G/, "B");
+              d3Format(`.2~s`)(val).replace(/G/, "B");  // Changed from .3~s
           else if (absVal < 100)
-            number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-              d3Format(`~.4s`)(val).replace(/G/, "B")
+            number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+              d3Format(`.2~s`)(val).replace(/G/, "B");  // Changed from .4~s
           else
-            number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-              d3Format(`~.2s`)(val).replace(/G/, "B");
+            number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+              d3Format(`~s`)(val).replace(/G/, "B");     // Changed from .2~s
         } else {
           if (absVal === 0) number = "0";
           else if (absVal < 1) number = val.toFixed(2);
           else if (absVal < 10)
-            d3Format(`.2s`)(val).replace(/G/, "B")
-          else number = d3Format(`s`)(val).replace(/G/, "B");
+            number = d3Format(`.2~s`)(val).replace(/G/, "B");
+          else number = d3Format(`~s`)(val).replace(/G/, "B");
         }
         // for negative values, add a minus sign before the prefix
         number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
@@ -783,7 +784,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   const {metricsDef} = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
-  const {isMobile} = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   
   const valuePrefix = Object.keys(metricsDef[metric_id].units).includes("usd") ? showUsd ? metricsDef[metric_id].units.usd.prefix : metricsDef[metric_id].units.eth.prefix : Object.values(metricsDef[metric_id].units)[0].prefix;
   const tooltipPositioner =

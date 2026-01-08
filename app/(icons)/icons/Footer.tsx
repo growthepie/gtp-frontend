@@ -10,7 +10,7 @@ import Share from "@/components/Share";
 
 
 export default function Footer() {
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
 
   return (
     <div className="pointer-events-none fixed bottom-0 left-0 right-0 top-0 z-50 flex flex-col justify-end overflow-hidden">

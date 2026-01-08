@@ -63,8 +63,7 @@ export default function EthAgg() {
   const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
   const { data: historyData, isLoading: isHistoryLoading, isValidating: isHistoryValidating } = useSWR<HistoryData>("https://sse.growthepie.com/api/history")
 
-  const { setFocusSwitchEnabled } = useUIContext();
-  // const { showBirthdayAnimation } = useBirthdayAnimation();
+const setFocusSwitchEnabled = useUIContext((state) => state.setFocusSwitchEnabled);
 
   // // const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);
   // const selectedBreakdownGroup = useMemo(() => {

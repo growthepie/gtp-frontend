@@ -4,6 +4,9 @@ import { useSpring, animated, config } from "react-spring";
 import Image from "next/image";
 import { delay, xor } from "lodash";
 
+const AnimatedDiv = animated.div as any;
+const AnimatedH1 = animated.h1 as any;
+
 const TopAnimation = () => {
   const [topMounted, setTopMounted] = useState(false);
   const [middleMounted, setMiddleMounted] = useState(false);
@@ -147,7 +150,7 @@ const TopAnimation = () => {
                       hidden max-w-[1120px]"
       >
         <div className="ml-12 items-center flex">
-          <animated.div className="flex items-center" style={LeftAnimate(0)}>
+          <AnimatedDiv className="flex items-center" style={LeftAnimate(0)}>
             <div className="w-[40px] h-[40px] xl:w-[58px] xl:h-[58px] lg:w-[44px] lg:h-[44px]">
               <Image
                 src="/eth-ani.png"
@@ -166,17 +169,17 @@ const TopAnimation = () => {
                 className="relative top-[0px] right-[55px] xl:right-[41px] lg:right-[56px]"
               />
             </div>
-          </animated.div>
-          <animated.h1
+          </AnimatedDiv>
+          <AnimatedH1
             className="relative right-[40px] lg:right-[32px] lg:text-[21px] xl:right-[0px] xl:text-[21px] font-bold text-[15px]"
             style={LeftAnimate(1)}
           >
             One Ecosystem
-          </animated.h1>
+          </AnimatedH1>
         </div>
         <div className="flex flex-col gap-y-2 lg:pr-0">
           <div className="flex gap-x-4 items-center">
-            <animated.div style={TopMiddle(0)}>
+            <AnimatedDiv style={TopMiddle(0)}>
               <div className="">
                 <Image
                   src="/control-ani.svg"
@@ -187,17 +190,17 @@ const TopAnimation = () => {
                   className=""
                 />
               </div>
-            </animated.div>
-            <animated.h1
+            </AnimatedDiv>
+            <AnimatedH1
               className="text-xs xl:text-base xl:pr-4"
               style={TopMiddle(1)}
             >
               different use cases
-            </animated.h1>
+            </AnimatedH1>
           </div>
 
           <div className="flex gap-x-4 items-center">
-            <animated.div style={CenterMiddle(0)}>
+            <AnimatedDiv style={CenterMiddle(0)}>
               <div className="">
                 <Image
                   src="/chains-ani.svg"
@@ -208,16 +211,16 @@ const TopAnimation = () => {
                   className=""
                 />
               </div>
-            </animated.div>
-            <animated.h1
+            </AnimatedDiv>
+            <AnimatedH1
               className="text-xs xl:text-base xl:pr-4"
               style={CenterMiddle(1)}
             >
               many chains and layers
-            </animated.h1>
+            </AnimatedH1>
           </div>
           <div className="flex gap-x-4 items-center">
-            <animated.div style={BottomMiddle(0)}>
+            <AnimatedDiv style={BottomMiddle(0)}>
               <div className="">
                 <Image
                   src="/emoji-ani.svg"
@@ -228,17 +231,17 @@ const TopAnimation = () => {
                   className=""
                 />
               </div>
-            </animated.div>
-            <animated.h1
+            </AnimatedDiv>
+            <AnimatedH1
               className="text-xs xl:text-base xl:pr-4"
               style={BottomMiddle(1)}
             >
               all growing the total user base
-            </animated.h1>
+            </AnimatedH1>
           </div>
         </div>
         <div className="flex gap-x-4 items-center">
-          <animated.div style={RightAnimate(0)}>
+          <AnimatedDiv style={RightAnimate(0)}>
             <Image
               src="/emoji-pie-ani.svg"
               alt="pie emoji"
@@ -247,13 +250,13 @@ const TopAnimation = () => {
               className=""
               loading="eager"
             />
-          </animated.div>
-          <animated.h1
+          </AnimatedDiv>
+          <AnimatedH1
             className="w-[160px] text-[15px] font-bold lg:text-[21px]"
             style={RightAnimate(1)}
           >
             for a positive sum game.
-          </animated.h1>
+          </AnimatedH1>
         </div>
         <Image
           src="/logo-crop.svg"

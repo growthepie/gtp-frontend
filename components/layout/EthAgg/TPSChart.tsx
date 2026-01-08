@@ -220,7 +220,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
         lazyUpdate={true}
         style={{ height: '100%' }}
       />
-      <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-start w-[147px] -space-y-[3.811px] ${centerWatermark ? 'top-1/2 -translate-y-1/2 z-10' : 'bottom-[-25.353px]'}`}>
+      <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-start w-[147px] -space-y-[3.811px] pointer-events-none ${centerWatermark ? 'top-1/2 -translate-y-1/2 z-10' : 'bottom-[-25.353px]'}`}>
         <div className={`w-[147px] ${centerWatermark ? 'opacity-40' : ''}`}>
           {centerWatermark ? (
             <ChartWatermarkWithMetricName className="w-full h-auto" useColor={true} />

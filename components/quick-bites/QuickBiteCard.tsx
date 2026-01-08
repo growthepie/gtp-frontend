@@ -65,6 +65,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   const minWidthClass = className.includes('min-w-') ? '' : 'min-w-[275px]';
 
   return (
+    <div className='relative'>
     <Link
       href={`/quick-bites/${slug}`}
       className={`block h-full ${minWidthClass} ${className} !h-[275px] select-none group`}
@@ -121,52 +122,49 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
               ))}
             </div>
           )}
-          <div className='flex justify-end'>
-            {topics && topics.length > 0 && (() => {
-              const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
-
-              return (
-                <div className="flex gap-x-[5px]">
-                  {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
-                    const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
-                  
-                    // Resolve chain information if this is a chain URL
-                    let resolvedIcon = topic.icon;
-                    let resolvedColor = topic.color;
-                    
-                    if (topic.url.startsWith('/chains/') && !topic.icon) {
-                      const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
-                      if (chainInfo) {
-                        resolvedIcon = chainInfo.icon;
-                        resolvedColor = chainInfo.color;
-                      }
-                    }
-                    
-                    return (
-                      <Link
-                        key={topic.name}
-                        href={topic.url}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center rounded-full text-xs"
-                        style={{
-                          color: showColor ? resolvedColor || '#344240' : '#344240'
-                        }}
-                        title={topic.name}
-                        aria-label={topic.name}
-                      >
-                        <GTPIcon icon={(resolvedIcon || "chain-dark") as GTPIconName} size="sm" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })()}
           </div>
-        </div>
-
-
       </div>
     </Link>
+    <div className='absolute bottom-0 right-0 p-[15px]'>
+        {topics && topics.length > 0 && (() => {
+          const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
+
+          return (
+            <div className="flex gap-x-[5px]">
+              {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
+                const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
+              
+                // Resolve chain information if this is a chain URL
+                let resolvedIcon = topic.icon;
+                let resolvedColor = topic.color;
+                
+                if (topic.url.startsWith('/chains/') && !topic.icon) {
+                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
+                  if (chainInfo) {
+                    resolvedIcon = chainInfo.icon;
+                    resolvedColor = chainInfo.color;
+                  }
+                }
+                
+                return (
+                  <Link
+                    key={topic.name}
+                    href={topic.url}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center rounded-full text-xs"
+                    style={{
+                      color: showColor ? resolvedColor || '#344240' : '#344240'
+                    }}
+                  >
+                    <GTPIcon icon={(resolvedIcon || "chain-dark") as GTPIconName} size="sm" />
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
   );
 };
 

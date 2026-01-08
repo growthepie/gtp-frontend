@@ -22,7 +22,7 @@ import {
 import fullScreen from "highcharts/modules/full-screen";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import Link from "next/link";
 import {
   Get_AllChainsNavigationItems,
@@ -145,7 +145,7 @@ export default function ChainChart({
   const [zoomMax, setZoomMax] = useState<number | null>(null);
   const dayMs = 24 * 60 * 60 * 1000;
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
@@ -499,29 +499,29 @@ export default function ChainChart({
     
       let val = parseFloat(value as string);
 
-      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
         if (selectedScale === "percentage") {
-          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".3s")(val).replace(/G/, "B") + " " + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".4s")(val).replace(/G/, "B") + " " + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+                prefix + d3Format(".2s")(val).replace(/G/, "B") + " " + suffix;
           } else {
             if(val < 1 && val > -1){
               number = prefix + val.toFixed(2) + " " + suffix;
             }else{
-              number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+              number = prefix + d3Format(".2s")(val).replace(/G/, "B") + " " + suffix;
             }
 
           }

@@ -235,7 +235,9 @@ export default function ComparisonChart({
     return merge(AllChainsByKeys, AllDALayersByKeys);
   }, [AllChainsByKeys, AllDALayersByKeys]);
 
-  const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
+  const embedData = useUIContext((state) => state.embedData);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] =

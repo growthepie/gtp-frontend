@@ -5,7 +5,7 @@ import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono, Source_Code_Pro } from "next/font/google";
 import Header from "@/components/layout/Header";
-import SidebarContainer from "@/components/layout/SidebarContainer";
+// import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
 import Share from "@/components/Share";
@@ -13,6 +13,8 @@ import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
+import dynamic from "next/dynamic";
+const SidebarContainer = dynamic(() => import("@/components/layout/SidebarContainer"), { ssr: true });
 
 import { generateJsonLd } from "@/utils/json-ld";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
@@ -97,6 +99,7 @@ const raleway = Raleway({
   variable: "--font-raleway",
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const inter = Inter({
@@ -104,6 +107,7 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const firaMono = Fira_Mono({
@@ -112,6 +116,7 @@ const firaMono = Fira_Mono({
   weight: ["400", "500", "700"],
   display: "swap",
   adjustFontFallback: false,
+  preload: true,
 });
 
 const firaSans = Fira_Sans({
@@ -119,6 +124,7 @@ const firaSans = Fira_Sans({
   variable: "--font-fira-sans",
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
+  preload: true,
 });
 
 const sourceCodePro = Source_Code_Pro({
@@ -126,6 +132,7 @@ const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+  preload: true,
 });
 
 const gtpGtmId = process.env.NEXT_PUBLIC_GTM_ID;

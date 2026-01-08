@@ -17,7 +17,7 @@ export default function FocusSwitchSimple({
   className = "",
   showBorder = false,
 }: FocusSwitchProps) {
-  const { focusSwitchEnabled } = useUIContext();
+  const focusSwitchEnabled = useUIContext((state) => state.focusSwitchEnabled);
   const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
   const [mounted, setMounted] = useState(false);
 

@@ -87,7 +87,8 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                 
                 <div ref={contentRef}>
                     {Children.map(children, (child) => {
-                        if (isValidElement(child)) {
+                        // Only pass hover/lock state to EventItem components, not DOM elements
+                        if (isValidElement(child) && typeof child.type !== 'string') {
                             return cloneElement(child, {
                                 hoveredEvent,
                                 setHoveredEvent,

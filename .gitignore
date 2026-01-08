@@ -62,3 +62,4 @@ test-analytics.mjs
 # Screenshots
 *.png
 
+.claude/

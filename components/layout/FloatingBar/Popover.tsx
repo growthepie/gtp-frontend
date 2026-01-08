@@ -335,7 +335,7 @@ export const Popover: FC<PopoverProps> = ({
   trigger = 'click',
   portal = false,
 }) => {
-  const popoverContentRef = useRef<HTMLDivElement>(null);
+  const popoverContentRef = useRef<HTMLDivElement | null>(null);
   const triggerWrapperRef = useClickOutside<HTMLDivElement>(
     () => {
       if (isOpen && closeOnClickOutside) {
@@ -343,7 +343,7 @@ export const Popover: FC<PopoverProps> = ({
       }
     },
     closeOnClickOutside && isOpen,
-    [popoverContentRef]
+    [popoverContentRef as React.RefObject<HTMLElement>]
   );
 
   const handleTriggerClick = () => {
@@ -388,7 +388,7 @@ export const Popover: FC<PopoverProps> = ({
       {isOpen && (
         <PopoverContent
           ref={popoverContentRef}
-          triggerRef={triggerWrapperRef}
+          triggerRef={triggerWrapperRef as React.RefObject<HTMLElement>}
           placement={placement}
           offset={offset}
           className={contentClassName}

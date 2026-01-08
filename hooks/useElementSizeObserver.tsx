@@ -19,9 +19,9 @@ const DEFAULT_SIZE: Size = {
 
 export const useElementSizeObserver = <T extends HTMLElement = HTMLDivElement>(
   options: Options = {},
-): [RefObject<T>, Size] => {
+): [RefObject<T | null>, Size] => {
   const { enabled = true, initialSize, box = "border-box" } = options;
-  const ref = useRef<T>(null);
+  const ref = useRef<T | null>(null);
   const mergedInitialSize = useMemo(
     () => ({
       ...DEFAULT_SIZE,

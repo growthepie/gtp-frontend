@@ -30,6 +30,8 @@ import { TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPIcon } from "../GTPIcon";
 
+const AnimatedDiv = animated.div as any;
+
 
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "fixed_parameters"];
@@ -42,7 +44,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 
   const { data: chart_data, error: chart_error, isLoading: chart_loading, isValidating: chart_validating } = useSWR<DATimeseriesResponse>(DATimeseriesURL);
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const { AllDALayersByKeys, AllChainsByKeys, data: master } = useMaster();
 
   const [selectedCategory, setSelectedCategory] = useState("size");
@@ -692,7 +694,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 
 
             return (
-              <animated.div
+              <AnimatedDiv
                 className={"absolute w-full flex flex-col pr-0.5 "}
                 key={item.key + " chainGridParent"}
                 style={{ ...style }}
@@ -878,7 +880,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                   </div>
                 </div>
 
-              </animated.div>
+              </AnimatedDiv>
             )
           })}
           <div

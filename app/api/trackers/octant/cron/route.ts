@@ -3,9 +3,8 @@ import { Pool } from "pg";
 import { createHash } from "crypto";
 import { BASE_URL } from "@/lib/helpers";
 
-export const revalidate = 5; // 5 seconds
-export const maxDuration = 300; // This function can run for a maximum of 5 minutes
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // 5 minutes
+export const maxDuration = 300;
 
 const pool = new Pool({
   connectionString: process.env.FUN_DATABASE_URL,
@@ -104,8 +103,8 @@ const processCron = async () => {
   };
 };
 
-export async function GET(req: NextRequest, res: Response) {
-  const authHeader = req.headers.get("authorization");
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
   // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
   //   return new Response("Unauthorized", {
   //     status: 401,

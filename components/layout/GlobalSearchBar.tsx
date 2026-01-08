@@ -27,7 +27,9 @@ import { IS_PRODUCTION } from '@/lib/helpers';
 export default function GlobalFloatingBar() {
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
-  const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const toggleSidebar = useUIContext((state) => state.toggleSidebar);
 
   // State for controlling popover visibility
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
@@ -68,7 +70,7 @@ export default function GlobalFloatingBar() {
   // Track if the user is interacting with search (not just focused)
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   // Handle search activation
   const activateSearch = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
@@ -698,7 +700,7 @@ export default function GlobalFloatingBar() {
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -865,7 +867,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               rx="2"
               fill={pressedKey === 'Enter' ? "rgb(var(--ui-hover))" : "rgb(var(--ui-active))"}
             />
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="rgb(var(--text-primary))" stroke-width="2" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="rgb(var(--text-primary))" strokeWidth="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="rgb(var(--text-primary))" stroke="rgb(var(--text-primary))" />
           </svg>
           <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
@@ -885,7 +887,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
 }
 
 const GTPLogoOld = () => {
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const toast = useToast(); // Keep toast for fetch error
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);

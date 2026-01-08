@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
+import type { Variants, Transition } from 'framer-motion';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark, { ChartWatermarkWithMetricName } from '../../ChartWatermark';
 import { isMobile } from 'react-device-detect';
@@ -96,7 +97,20 @@ type ViewMode = 'main' | 'sub';
 // Animation Variants (NEW)
 // ============================================================================
 
-const categoryVariants = {
+const SPRING_TRANSITION: Transition = {
+  type: 'spring',
+  stiffness: 200,
+  damping: 25,
+  mass: 1,
+};
+
+const HOVER_SPRING: Transition = {
+  type: 'spring',
+  stiffness: 400,
+  damping: 17,
+};
+
+const categoryVariants: Variants = {
   initial: {
     opacity: 0,
     scale: 0.8,
@@ -106,12 +120,7 @@ const categoryVariants = {
     opacity: 1,
     scale: 1,
     borderColor: "rgb(var(--bg-medium))",
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 25,
-      mass: 1,
-    }
+    transition: SPRING_TRANSITION,
   },
   exit: {
     opacity: 0,
@@ -120,7 +129,7 @@ const categoryVariants = {
   }
 };
 
-const appTileVariants = {
+const appTileVariants: Variants = {
   initial: { opacity: 0, scale: 0 },
   animate: (i: number) => ({
     opacity: 0,
@@ -135,7 +144,7 @@ const appTileVariants = {
   exit: { opacity: 0, scale: 0 },
   hover: {
     scale: 1.1,
-    transition: { type: "spring", stiffness: 400, damping: 17 }
+    transition: HOVER_SPRING,
   },
   hoverMain: {
     borderColor: "rgb(var(--ui-hover))",
@@ -1276,15 +1285,19 @@ const CategorySection = ({
   return (
     <motion.div
       layoutId={layoutId}
+      // @ts-ignore
       className={`group/category-section absolute rounded-[15px] border overflow-visible cursor-pointer z-[5]`}
       variants={categoryVariants}
       initial="initial"
       animate={{
-        ...categoryVariants.animate,
+        opacity: 1,
+        scale: 1,
+        borderColor: "rgb(var(--bg-medium))",
         left: node.x,
         top: node.y,
         width: node.width,
         height: node.height,
+        transition: SPRING_TRANSITION,
       }}
       exit="exit"
       whileHover={viewMode === 'main' ? "hoverMain" : undefined}
@@ -1297,6 +1310,7 @@ const CategorySection = ({
     >
       {/* Animated category label */}
       <motion.div
+        // @ts-ignore
         className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1402,6 +1416,7 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
             }}
           >
             <motion.div
+              // @ts-ignore
               className="w-[44px] h-[44px] bg-color-bg-medium rounded-[10px] flex items-center justify-center"
               whileHover="hover"
               variants={appTileVariants}
@@ -1427,6 +1442,7 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
               </div>
             </motion.div>
             <motion.div
+              // @ts-ignore
               className="text-[10px] w-full h-[19.12px] truncate text-center pt-[4px]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -186,12 +186,13 @@ export const DynamicLabel = ({ labels, selectedLabel, className }: DynamicLabelP
     <div className="relative transition-all duration-300 ease-in-out overflow-hidden min-h-[21px] z-0" style={{ width: width }}>
       <AnimatePresence>
       <motion.div
-      ref={ref}
+        ref={ref}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         key={selectedLabel}
+        //@ts-ignore
         className={`absolute ${className || ""} z-10 top-0 bottom-0`}
       >
         {currentLabel}

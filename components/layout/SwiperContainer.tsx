@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { Icon } from "@iconify/react";
 import { Splide, SplideTrack } from "@splidejs/react-splide";
 import { useUIContext } from "@/contexts/UIContext";
@@ -19,7 +19,8 @@ export default function SwiperContainer({
   size = "landing",
   }: SwiperContainerProps) {
 
-  const { isSidebarOpen, isMobile } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isMobile = useUIContext((state) => state.isMobile);
 
 
   const sizeClassMap = {
@@ -43,49 +44,110 @@ export default function SwiperContainer({
   //   }
   // }, []);
 
-  let breakpoints: { [key: number]: { perPage: number } } = {
-    640: {
-      perPage: 1,
-    },
-    900: {
-      perPage: isSidebarOpen ? 1 : 2,
-    },
-    1100: {
-      perPage: 2,
-    },
-    1250: {
-      perPage: isSidebarOpen ? 2 : 3,
-    },
-    1450: {
-      perPage: 3,
-    },
-    1600: {
-      perPage: 3,
-    },
-    6000: {
-      perPage: 3,
-    },
-  }
+  // let breakpoints: { [key: number]: { perPage: number } } = {
+  //   640: {
+  //     perPage: 1,
+  //   },
+  //   900: {
+  //     perPage: isSidebarOpen ? 1 : 2,
+  //   },
+  //   1100: {
+  //     perPage: 2,
+  //   },
+  //   1250: {
+  //     perPage: isSidebarOpen ? 2 : 3,
+  //   },
+  //   1450: {
+  //     perPage: 3,
+  //   },
+  //   1600: {
+  //     perPage: 3,
+  //   },
+  //   6000: {
+  //     perPage: 3,
+  //   },
+  // }
 
-  if(size === "meet-layer-2s") {
-    breakpoints = {
+  // if(size === "meet-layer-2s") {
+  //   breakpoints = {
+  //     640: {
+  //       perPage: 1,
+  //     },
+  //     900: {
+  //       perPage: 2,
+  //     },
+  //     1250: {
+  //       perPage: 3,
+  //     },
+  //     1600: {
+  //       perPage: 4,
+  //     },
+  //     6000: {
+  //       perPage: 5,
+  //     }
+  //   }
+  // }
+
+  const breakpoints = useMemo(() => {
+    const base = {
       640: {
         perPage: 1,
       },
       900: {
+        perPage: isSidebarOpen ? 1 : 2,
+      },
+      1100: {
         perPage: 2,
       },
       1250: {
+        perPage: isSidebarOpen ? 2 : 3,
+      },
+      1450: {
         perPage: 3,
       },
       1600: {
-        perPage: 4,
+        perPage: 3,
       },
       6000: {
-        perPage: 5,
-      }
+        perPage: 3,
+      },
+    };
+
+    if (size === "meet-layer-2s") {
+      return {
+        ...base,
+        640: {
+          perPage: 1,
+        },
+        900: {
+          perPage: isSidebarOpen ? 1 : 2,
+        },
+        1250: {
+          perPage: 3,
+        },
+        1600: {
+          perPage: 4,
+        },
+        6000: {
+          perPage: 5,
+        }
+      };
+    } 
+    return base;
+
+  }, [size, isSidebarOpen]);
+
+  useEffect(() => {
+    if (splideRef.current?.splide) {
+      // Delay refresh to ensure DOM and state have fully updated
+      const timer = setTimeout(() => {
+        splideRef.current?.splide?.refresh();
+      }, 350);
+      
+      return () => clearTimeout(timer);
     }
-  }
+  }, [isSidebarOpen, isMobile]);
+
 
   return (
     <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
@@ -112,11 +174,11 @@ export default function SwiperContainer({
               };
             });
           }}
-          onMounted={(splide) => {
-            setTimeout(() => {
-              splide.refresh();
-            }, 100);
-          }}
+          // onMounted={(splide) => {
+          //   setTimeout(() => {
+          //     splide.refresh();
+          //   }, 200);
+          // }}
           aria-labelledby={ariaId}
           hasTrack={false}
         >

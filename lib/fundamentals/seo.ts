@@ -34,7 +34,7 @@ export const nodeToString = (value?: ReactNode): string => {
 };
 
 const extractText = (element: ReactElement): string => {
-  const { children } = element.props ?? {};
+  const { children } = (element.props ?? {}) as { children?: React.ReactNode };
   if (!children) return "";
 
   const parts = Array.isArray(children) ? children : [children];

@@ -15,19 +15,20 @@ type HorizontalScrollContainerProps = {
   forcedMinWidth?: number;
 };
 
-export default function FeesHorizontalScrollContainer(
-  {
-    children,
-    className,
-    includeMargin = true,
-    paddingRight = 0,
-    paddingLeft = 0,
-    paddingTop = 0,
-    paddingBottom = 0,
-    forcedMinWidth,
-  }: HorizontalScrollContainerProps,
-  ref: React.Ref<HTMLDivElement>,
-) {
+const FeesHorizontalScrollContainer = React.forwardRef<HTMLDivElement, HorizontalScrollContainerProps>(
+  function FeesHorizontalScrollContainer(
+    {
+      children,
+      className,
+      includeMargin = true,
+      paddingRight = 0,
+      paddingLeft = 0,
+      paddingTop = 0,
+      paddingBottom = 0,
+      forcedMinWidth,
+    },
+    ref,
+  ) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentSrollAreaRef, { width: contentSrollAreaWidth }] =
     useElementSizeObserver<HTMLDivElement>();
@@ -312,4 +313,6 @@ export default function FeesHorizontalScrollContainer(
       </div>
     </div>
   );
-}
+});
+
+export default FeesHorizontalScrollContainer;

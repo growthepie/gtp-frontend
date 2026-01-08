@@ -5,6 +5,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Home() {
   const { AllChains, AllChainsByKeys } = useMaster();
@@ -48,12 +49,11 @@ export default function Home() {
 
   return (
     <>
-      {/* <ShowLoading
-        dataLoading={[masterLoading, landingLoading]}
-        dataValidating={[masterValidating, landingValidating]}
+      <ShowLoading
+        dataLoading={[landingLoading]}
+        dataValidating={[landingValidating]}
         fullScreen={true}
-      /> */}
-      {/* )} */}
+      />
 
       {/* <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[45px]">
         <Heading

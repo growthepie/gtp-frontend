@@ -5,13 +5,19 @@ import { track } from "@vercel/analytics/server";
 import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params: { slug } }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
+
+  const {
+    slug
+  } = params;
+
   // Get the quick bite data from the central data store
   const QuickBite = getQuickBiteBySlug(slug);
-  
+
   // Check if the slug exists in our data
   if (!QuickBite) {
     track("404 Error", {
@@ -24,11 +30,10 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   // YYYY-MM-DD UTC
   const current_date = new Date().toISOString().split("T")[0];
 
-  
-  // Generate a description from the content if none is provided
+// Generate a description from the content if none is provided
   const description = QuickBite.subtitle || 
     (QuickBite.content && QuickBite.content.length > 0 ? QuickBite.content[0] : "");
-  
+
   return {
     title: `${QuickBite.title} | growthepie`,
     description: description,

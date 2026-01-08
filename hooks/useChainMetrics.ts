@@ -42,14 +42,14 @@ export function useChainMetrics(
   metricType: "fundamentals" | "data-availability" = "fundamentals"
 ): UseChainMetricsResult {
   const { fetcher } = useSWRConfig();
-  
+
   // Choose the right mapping and metrics based on type
-  const metricKey = metricType === "fundamentals" 
+  const metricKey = metricType === "fundamentals"
     ? MetricURLKeyToAPIKey[metricURLKey]
     : DAMetricURLKeyToAPIKey[metricURLKey];
-  
+
   const metricsDict = metricType === "fundamentals" ? master.metrics : master.da_metrics;
-  
+
   const supportedChainKeys = useMemo(() => {
     if (metricType === "data-availability") {
       return metricsDict[metricKey]?.supported_chains || [];

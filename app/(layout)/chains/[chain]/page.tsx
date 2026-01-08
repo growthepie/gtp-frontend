@@ -5,7 +5,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
-import { useState, useMemo, memo, useCallback, useEffect } from "react";
+import { useState, useMemo, memo, useCallback, useEffect, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
@@ -313,8 +313,8 @@ const UserInsightsContent = memo(({ chainKey }: { chainKey: string }) => {
 });
 UserInsightsContent.displayName = 'UserInsightsContent';
 
-const Chain = ({ params }: { params: any }) => {
-    const { chain } = params;
+const Chain = (props: { params: Promise<{ chain: string }> }) => {
+    const { chain } = use(props.params);
     const master = useMaster();
     const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
     const { theme } = useTheme();

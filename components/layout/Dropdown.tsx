@@ -9,7 +9,7 @@ import { useMediaQuery } from "usehooks-ts";
 
 export default function Dropdown({ label, children }: { label: string | React.ReactNode, children: React.ReactNode }) {
 
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const [optOpen, setOptOpen] = useState(false);
 

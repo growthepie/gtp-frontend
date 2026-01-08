@@ -12,7 +12,7 @@ import { chart, charts, color } from "highcharts";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
-import { animated, useSpring } from "@react-spring/web";
+import { animated, useSpring} from "@react-spring/web";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
   HighchartsProvider,
@@ -52,6 +52,8 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+
+const AnimatedDiv = animated.div as any;
 
 export default function OverviewChart({
   data,
@@ -98,7 +100,7 @@ export default function OverviewChart({
   );
   const reversePerformer = false;
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const { theme } = useTheme();
   const types =
     selectedChain === null
@@ -1162,7 +1164,7 @@ export default function OverviewChart({
             className={` items-end relative top-[2px] min-w-[50px] h-[169px]  lg:min-w-[70px] ${allCats ? "hidden" : "flex"
               }`}
           >
-            <animated.div
+            <AnimatedDiv
               className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
               style={{
                 backgroundColor:
@@ -1179,7 +1181,7 @@ export default function OverviewChart({
               {selectedMode.includes("share")
                 ? (chartAvg * 100).toFixed(2) + "%"
                 : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
-            </animated.div>
+            </AnimatedDiv>
           </div>
         )}
       </div>

@@ -25,8 +25,8 @@ import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { use, useCallback, useMemo } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { useUIContext } from "@/contexts/UIContext";
-import d3 from "d3";
+import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
+import { format as d3Format } from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
@@ -92,8 +92,9 @@ export default function FeesChart({
   master,
 }: FeesChartProps) {
   const { theme } = useTheme();
+  useHighchartsWrappers();
   const { AllChainsByKeys } = useMaster();
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   // const seriesKey = "txcosts_avg";
   const selectedScale: string = "absolute";
 
@@ -185,26 +186,26 @@ export default function FeesChart({
 
       let val = parseFloat(value as string) * multiplier;
 
-      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
         if (selectedScale === "percentage") {
-          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
           if ((showGwei && !showUsd) || (showCents && showUsd)) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".4s")(val).replace(/G/, "B") + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+                prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            number = prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
           }
         }

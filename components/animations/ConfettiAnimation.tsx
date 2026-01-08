@@ -41,7 +41,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const loadingWasTrue = useRef(false);
-  const { isSidebarOpen } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
 
   const colors = [
     '#ff6b6b',

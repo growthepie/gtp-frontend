@@ -9,7 +9,7 @@ import {
   generateSeo,
 } from '@/lib/quick-bites/seo_helper';
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 type QbModule = {
   jsonLdFaq?: unknown;
@@ -18,10 +18,11 @@ type QbModule = {
 
 // ----- SEO: generate <head> metadata -----
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const qb = getQuickBiteBySlug(params.slug);
+  const { slug } = await params;
+  const qb = getQuickBiteBySlug(slug);
   if (!qb) return {};
 
-  const seo = generateSeo(params.slug, qb);
+  const seo = generateSeo(slug, qb);
 
   return {
     title: seo.metaTitle,
@@ -43,17 +44,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const qb = getQuickBiteBySlug(params.slug);
+  const { slug } = await params;
+  const qb = getQuickBiteBySlug(slug);
   if (!qb) return notFound();
 
   const serializeJsonLd = (data: unknown) =>
     JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
 
-  const jsonLdArticle = generateJsonLdArticle(params.slug, qb, {
+  const jsonLdArticle = generateJsonLdArticle(slug, qb, {
     dateModified: qb.date,
     language: 'en',
   });
-  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(params.slug, qb);
+  const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(slug, qb);
 
   const graphs = [
     jsonLdArticle,
@@ -71,7 +73,7 @@ export default async function Page({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
         />
       ))}
-      <ClientQuickBitePage params={params} />
+      <ClientQuickBitePage params={{ slug }} />
     </>
   );
 }

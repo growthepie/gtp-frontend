@@ -42,7 +42,7 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
 export default function Search({ hideChainSection = false }: SearchProps) {
   const { AllChainsByKeys } = useMaster();
   const { availableMainCategories } = useProjectsMetadata(); // Added
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const { applicationDataAggregatedAndFiltered, applicationsChains } = useApplicationsData();
   
   // Get Next.js URL utilities

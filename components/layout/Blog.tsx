@@ -341,7 +341,7 @@ export const BlogPost = ({
                         <figure className="flex flex-col justify-center py-3">
                           <img {...props} />
                           <figcaption className="text-center text-base text-color-text-primary dark:text-forest-300 py-2">
-                            {props.alt}
+                            {props['alt']}
                           </figcaption>
                         </figure>
                       );
@@ -379,6 +379,7 @@ export const BlogPost = ({
         </div>
         {data && (
           <ReactMarkdown
+            // @ts-ignore
             className="blog"
             components={{
               img: ({ node, ...props }) => {
@@ -386,7 +387,7 @@ export const BlogPost = ({
                   <figure className="flex flex-col justify-center py-3">
                     <img {...props} />
                     <figcaption className="text-center text-base text-color-text-primary dark:text-forest-300 py-2">
-                      {props.alt}
+                      {props['alt']}
                     </figcaption>
                   </figure>
                 );

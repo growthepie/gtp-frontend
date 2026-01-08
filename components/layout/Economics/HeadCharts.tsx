@@ -19,7 +19,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
-import d3 from "d3";
+import { format as d3Format } from "d3";
 import {
   navigationItems,
   navigationCategories,
@@ -78,7 +78,7 @@ export default function EconHeadCharts({
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
-  const { isMobile } = useUIContext();
+  const isMobile = useUIContext((state) => state.isMobile);
   const selectedScale: string = "absolute";
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -86,9 +86,8 @@ export default function EconHeadCharts({
     return "Ξ";
   }, [showUsd]);
 
-  const { theme } = useTheme();
-
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
@@ -296,13 +295,13 @@ export default function EconHeadCharts({
 
       // Function to format large numbers with at least 2 decimals
       const formatLargeNumber = (num) => {
-        let formatted = d3.format(".2s")(num).replace(/G/, "B");
+        let formatted = d3Format(".2s")(num).replace(/G/, "B");
         if (/(\.\dK|\.\dM|\.\dB)$/.test(formatted)) {
-          formatted = d3.format(".3s")(num).replace(/G/, "B");
+          formatted = d3Format(".3s")(num).replace(/G/, "B");
         } else if (/(\.\d\dK|\.\d\dM|\.\d\dB)$/.test(formatted)) {
-          formatted = d3.format(".4s")(num).replace(/G/, "B");
+          formatted = d3Format(".4s")(num).replace(/G/, "B");
         } else {
-          formatted = d3.format(".2s")(num).replace(/G/, "B");
+          formatted = d3Format(".2s")(num).replace(/G/, "B");
         }
         return formatted;
       };

@@ -6,7 +6,7 @@ import type { MasterResponse } from "@/types/api/MasterResponse";
 const FUNDAMENTALS_GROUP = "fundamentals";
 const DEFAULT_CHANGE_FREQ = "weekly";
 
-export const revalidate = 60 * 60; // 1 hour
+export const revalidate = 3600; // 1 hour
 
 type MetricItem = (typeof metricItems)[number] & {
   excludeFromSitemap?: boolean;

@@ -31,10 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Layout({
     children,
-    params,
 }: {
     children: React.ReactNode;
-    params: { metric: string };
 }) {
     return (
         <>

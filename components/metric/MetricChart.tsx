@@ -231,7 +231,10 @@ function MetricChart({
   };
   
   const { theme } = useTheme();
-  const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isMobile = useUIContext((state) => state.isMobile);
+  const setEmbedData = useUIContext((state) => state.setEmbedData);
+  const embedData = useUIContext((state) => state.embedData);
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
@@ -554,15 +557,20 @@ function MetricChart({
 
   }, []);
 
+  const timespanData = useMemo(() => {
+    if (!timespans[selectedTimespan]) return { xMin: 0, xMax: 0 };
+    return timespans[selectedTimespan];
+  }, [selectedTimespan, timespans]);
+
   useEffect(() => {
     if (chartComponent.current) {
       if (!zoomed)
         chartComponent.current.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin,
-          timespans[selectedTimespan].xMax,
+          timespanData.xMin,
+          timespanData.xMax,
         );
     }
-  }, [selectedTimespan, timespans, zoomed]);
+  }, [selectedTimespan, timespanData, zoomed]);
 
 
 
@@ -680,20 +688,19 @@ function MetricChart({
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               number = units[unitKey].currency ? val.toFixed(2) :
-                d3Format(`~.3s`)(val).replace(/G/, "B");
+                d3Format(`.3~s`)(val).replace(/G/, "B");  // Changed from .3~s
             else if (absVal < 100)
-              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`~.4s`)(val).replace(/G/, "B")
+              number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+                d3Format(`.4~s`)(val).replace(/G/, "B");  // Changed from .4~s
             else
-              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-                d3Format(`~.2s`)(val).replace(/G/, "B");
+              number = units[unitKey].currency ? d3Format(`~s`)(val).replace(/G/, "B") :
+                d3Format(`.2~s`)(val).replace(/G/, "B");     // Changed from .2~s
           } else {
             if (absVal === 0) number = "0";
-            else if (absVal < 0.1) number = val.toFixed(3);
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
-              number = d3Format(`.2s`)(val).replace(/G/, "B")
-            else number = d3Format(`s`)(val).replace(/G/, "B");
+              number = d3Format(`.2~s`)(val).replace(/G/, "B");
+            else number = d3Format(`~s`)(val).replace(/G/, "B");
           }
           // for negative values, add a minus sign before the prefix
           number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
@@ -974,7 +981,7 @@ function MetricChart({
           e.trigger === "navigator" ||
           e.trigger === "rangeSelectorButton"
         ) {
-          const { xMin, xMax } = timespans[selectedTimespan];
+          const { xMin, xMax } = timespanData;
 
           if (min === xMin && max === xMax) {
             setZoomed(false);
@@ -985,7 +992,7 @@ function MetricChart({
           setZoomMax(max);
         }
       },
-      [selectedTimespan, timespans],
+      [selectedTimespan, timespanData],
     );
 
   const embedAggregation = useMemo(() => {
@@ -1120,7 +1127,7 @@ function MetricChart({
                 useHTML: true,
                 formatter: function (this: AxisLabelsFormatterContextObject) {
 
-                  if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
+                  if (timespanData.xMax - timespanData.xMin <= 40 * 24 * 3600 * 1000) {
                     let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
                     let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
 
@@ -1182,8 +1189,8 @@ function MetricChart({
               // minorTickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
               minPadding={0}
               maxPadding={0}
-              min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
-              max={zoomed ? zoomMax : timespans[selectedTimespan].xMax}
+              min={zoomed ? zoomMin : timespanData.xMin} // don't include the last day
+              max={zoomed ? zoomMax : timespanData.xMax}
 
 
             />
@@ -1197,7 +1204,7 @@ function MetricChart({
               gridLineColor={"#5A6462A7"}
               // gridLineDashStyle={"ShortDot"}
               gridZIndex={10}
-              min={metric_id === "profit" || (master[MetricInfoKeyMap[metric_type]][metric_id].log_default && ["absolute"].includes(selectedScale)) ? null : 0}
+              min={metric_id === "profit" || (log_default === true && ["absolute"].includes(selectedScale)) ? null : 0}
               max={selectedScale === "percentage" ? 100 : undefined}
               showFirstLabel={true}
               showLastLabel={true}

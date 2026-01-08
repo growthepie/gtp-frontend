@@ -361,7 +361,7 @@ const CountDownCircle = ({
   const [progress, setProgress] = useState(1); // 1 = full circle, 0 = empty
   const elapsedRef = useRef(0);
   const startTimeRef = useRef<number | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   
   // Calculate proportional stroke width if not provided
   const actualStrokeWidth = strokeWidth || Math.max(1, size / 7);

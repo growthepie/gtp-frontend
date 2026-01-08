@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const owner_project = (await params).owner_project;
 
   // get the project name from the projects data
-  const name = await fetchProjectName(owner_project) || owner_project;
+  const name = (await fetchProjectName(owner_project)) || owner_project;
 
   const metadata = await getPageMetadata(
     '/applications/[slug]',
@@ -45,12 +45,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function Layout({
-  children, params
-}: {
-  children: React.ReactNode;
-  params: any;
-}) {
+export default async function Layout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<any>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const { owner_project } = params;
 
   return (

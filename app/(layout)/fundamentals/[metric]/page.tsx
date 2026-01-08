@@ -13,9 +13,11 @@ import { MetricBottomControls, MetricTopControls } from "@/components/metric/Met
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 
-const Fundamentals = ({ params: { metric } }) => {
+const Fundamentals = ({ params }) => {
+  const { metric } = use(params as Promise<{ metric: string }>);
+
   const { is_og } = useParams();
   const {
     data: master,
@@ -46,11 +48,11 @@ const Fundamentals = ({ params: { metric } }) => {
         dataLoading={[masterLoading, metricLoading]}
         dataValidating={[masterValidating]}
       />
-      {master && metricData ? (
+      {/* {master && metricData ? ( */}
         <FundamentalsContent metric={metric} type="fundamentals" />
-      ) : (
-        <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
-      )}
+      {/* ) : ( */}
+        {/* <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" /> */}
+      {/* )} */}
     </>
   );
 };

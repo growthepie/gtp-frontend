@@ -9,6 +9,7 @@ const Loader = () => {
 
   return (
     <motion.div
+      // @ts-ignore
       id="main-loader"
       className="fixed inset-0 flex items-center justify-center  z-50 w-full h-full"
       initial={{ opacity: 1 }}
@@ -23,6 +24,7 @@ const Loader = () => {
     >
       <div>
         <motion.div
+          // @ts-ignore
           className="animate-bounce rounded-full h-32 w-32 border-8 border-gray-900 "
           initial={{ y: 0 }}
           animate={{ y: 10 }}

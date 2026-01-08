@@ -55,7 +55,7 @@ export const IconContextMenu = ({
   // }, [isOpen]);
 
   // Close menu on outside click
-  useOutsideAlerter(menuRef, () => {
+  useOutsideAlerter(menuRef as React.RefObject<HTMLElement>, () => {
     setIsOpen(false);
   });
 

@@ -142,10 +142,16 @@ export const getConsentUpdate = (granted: boolean) => {
  * - Replaces domain references with proxy host
  * - Rewrites paths
  * - Renames query params
+ * @param script - The script content to rewrite
+ * @param host - The proxy host domain
+ * @param targetDomain - The original target domain (to apply domain-specific rewrites)
  */
-export function rewriteScriptContent(script: string, host: string): string {
+export function rewriteScriptContent(script: string, host: string, targetDomain?: string): string {
   // Apply URL rewrites from config (handles wildcards)
   script = applyUrlRewrites(script)
+
+  // Check if this is a Clarity script (don't apply GA4-specific rewrites)
+  const isClarityScript = targetDomain?.includes('clarity.ms')
 
   // Rewrite domain references (both quoted strings and full URLs)
   script = script.replace(/"www\.googletagmanager\.com"/g, `"${host}"`)
@@ -176,18 +182,21 @@ export function rewriteScriptContent(script: string, host: string): string {
   script = script.replace(/&gtm=/g, '&_g=')
   script = script.replace(/\?gtm=/g, '?_g=')
 
-  // Rename GA4 collect params
-  script = script.replace(/\.tid=/g, '._d=')
-  script = script.replace(/\.v="2"/g, '._v="2"')
-  script = script.replace(/\.gtm=/g, '._g=')
-  script = script.replace(/\.cid=/g, '._x=')
-  script = script.replace(/\.sid=/g, '._z=')
+  // GA4-specific param rewrites - only apply to Google scripts, not Clarity
+  if (!isClarityScript) {
+    // Rename GA4 collect params
+    script = script.replace(/\.tid=/g, '._d=')
+    script = script.replace(/\.v="2"/g, '._v="2"')
+    script = script.replace(/\.gtm=/g, '._g=')
+    script = script.replace(/\.cid=/g, '._x=')
+    script = script.replace(/\.sid=/g, '._z=')
 
-  // Also handle the URL param patterns
-  script = script.replace(/&tid=/g, '&_d=')
-  script = script.replace(/\?tid=/g, '?_d=')
-  script = script.replace(/&v=/g, '&_v=')
-  script = script.replace(/\?v=/g, '?_v=')
+    // Also handle the URL param patterns
+    script = script.replace(/&tid=/g, '&_d=')
+    script = script.replace(/\?tid=/g, '?_d=')
+    script = script.replace(/&v=/g, '&_v=')
+    script = script.replace(/\?v=/g, '?_v=')
+  }
 
   return script
 }

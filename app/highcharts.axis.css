@@ -26,7 +26,7 @@
   @apply !numbers-xxs;
 }
 
-.highcharts-axis-labels. .year-label {
+.highcharts-axis-labels, .year-label {
   font-size: 20px !important;
   @apply !font-raleway;
 }

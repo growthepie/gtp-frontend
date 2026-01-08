@@ -8,7 +8,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, Category } from "../_components/Components";
-import { memo, ReactNode, useEffect, useMemo, useState } from "react";
+import { memo, ReactNode, useEffect, useMemo, useState, use } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
@@ -31,10 +31,16 @@ import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPToolt
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
 
 type Props = {
-  params: { owner_project: string };
+  params: Promise<{ owner_project: string }>;
 };
 
-export default function Page({ params: { owner_project } }: Props) {
+export default function Page(props: Props) {
+  const params = use(props.params);
+
+  const {
+    owner_project
+  } = params;
+
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
   const { data: master } = useMaster();

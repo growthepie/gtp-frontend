@@ -12,11 +12,17 @@ import { getPageMetadata } from "@/lib/metadata";
 import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 type Props = {
-  params: { metric: string };
+  params: Promise<{ metric: string }>;
 };
 
 
-export async function generateMetadata({ params: { metric } }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
+
+  const {
+    metric
+  } = params;
+
   // 1. Check if the metric is valid
   if (
     !metric ||
@@ -57,23 +63,23 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
   };
 }
 
-export default async function Layout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { metric: string };
-}) {
-  const url = MetricsURLs[params.metric];
+export default async function Layout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{ metric: string }>;
+  }
+) {
+  const { metric } = await props.params;
+  const { children } = props;
 
-  const pageData = daMetricItems.find((item) => item.urlKey === params.metric)
+  const url = MetricsURLs[metric];
+
+  const pageData = daMetricItems.find((item) => item.urlKey === metric)
     ?.page ?? {
     title: "",
     description: "",
     icon: "",
   };
-
-
 
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
@@ -83,7 +89,7 @@ export default async function Layout({
             icon={pageData.icon as GTPIconName}
             title={pageData.title || "No Title"}
             button={
-              params.metric === "transaction-costs" && (
+              metric === "transaction-costs" && (
                 <TitleButtonLink
                   label="Detailed Fees Overview"
                   icon="detailed-fees"

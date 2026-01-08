@@ -16,6 +16,8 @@ import { metricItems } from "@/lib/metrics";
 import { GTPIcon } from "./GTPIcon";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
 
+const AnimatedDiv = animated.div as any;
+
 const DAMetricsTable = ({
   data,
   master,
@@ -137,7 +139,8 @@ const DAMetricsTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
-  const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
 
   const changesKey = useMemo(() => {
     if (timeIntervalKey === "monthly") {
@@ -521,7 +524,7 @@ const DAMetricsTable = ({
         // style={{ direction: "ltr" }}
         >
           {transitions((style, item, t, index) => (
-            <animated.div
+            <AnimatedDiv
               className="absolute w-full pr-[25px] select-none"
               style={{ zIndex: Object.keys(data).length - index, ...style, }}
             >
@@ -716,7 +719,7 @@ const DAMetricsTable = ({
                   </div>
                 </div>
               </div>
-            </animated.div>
+            </AnimatedDiv>
           ))}
 
           {/* <div
@@ -725,7 +728,7 @@ const DAMetricsTable = ({
           // style={{ height: height, direction: "ltr" }}
           >
             {transitions((style, item, t, index) => (
-              <animated.div
+              <AnimatedDiv
                 className="absolute w-full select-none"
                 style={{ zIndex: Object.keys(data).length - index, ...style }}
               >
@@ -987,7 +990,7 @@ const DAMetricsTable = ({
                     </div>
                   </div>
                 </div>
-              </animated.div>
+              </AnimatedDiv>
             ))}
           </div> */}
         </VerticalScrollContainer>

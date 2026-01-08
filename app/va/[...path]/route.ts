@@ -13,9 +13,10 @@ const PATH_MAP: Record<string, string> = {
 
 async function handleRequest(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/')
+  const { path: pathParts } = await params
+  const path = pathParts.join('/')
   const targetPath = PATH_MAP[path]
 
   if (!targetPath) {
