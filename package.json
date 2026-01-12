@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo --experimental-https",
+    "dev:local": "next dev --turbo --experimental-https -H local.growthepie.com",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
