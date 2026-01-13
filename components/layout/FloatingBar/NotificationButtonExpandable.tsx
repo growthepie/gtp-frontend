@@ -107,12 +107,12 @@ export default function NotificationButtonExpandable({
   return (
     <div
       className={`relative shrink-0 transition-all duration-300 ease-out ${className}`}
-      style={{
+      style={shouldHide ? {
         width: buttonWidth,
-        marginLeft: shouldHide ? `${-buttonWidth - 15}px` : '0',
-        opacity: shouldHide ? 0 : 1,
-        pointerEvents: shouldHide ? 'none' : 'auto',
-      }}
+        marginLeft: `${-buttonWidth - 15}px`,
+        opacity: 0,
+        pointerEvents: 'none',
+      } : undefined}
     >
       <ExpandableMenu
         open={open}
