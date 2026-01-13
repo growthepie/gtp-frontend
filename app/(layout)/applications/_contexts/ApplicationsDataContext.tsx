@@ -474,10 +474,10 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
         type: SortType.NUMBER,
         valueAccessor: (item, met: any) => {
           if (met === "category") {
-            return ownerProjectToProjectData[item.owner_project].main_category;
+            return ownerProjectToProjectData[item.owner_project]?.main_category ?? "";
           }
           if (met === "owner_project") {
-            return ownerProjectToProjectData[item.owner_project].display_name;
+            return ownerProjectToProjectData[item.owner_project]?.display_name ?? item.owner_project;
           }
           return item[met];
         }

@@ -435,7 +435,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
             </div>
             <div className='flex flex-col gap-y-[5px] mt-auto pt-[10px]'>
               <div className='flex items-center gap-x-[5px]'>
-                {ProjectData[key].length === 0 ? (
+                {!ProjectData[key] || ProjectData[key].length === 0 ? (
                     <div className='heading-small-xxxs bg-color-bg-medium  rounded-full w-[24px] h-[24px] flex items-center justify-center'>
                       <div className='opacity-90'>N/A</div>
                     </div>
