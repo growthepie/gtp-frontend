@@ -166,8 +166,9 @@ export function rewriteScriptContent(script: string, host: string): string {
   // Rewrite collect path
   script = script.replace(/\/g\/collect/g, '/p')
 
-  // Rewrite /a? endpoint
-  script = script.replace(/["']\/a\?/g, '"/api/insights/a?')
+  // Rewrite /a? endpoint (preserve quote style)
+  script = script.replace(/"\/a\?/g, '"/api/insights/a?')
+  script = script.replace(/'\/a\?/g, "'/api/insights/a?")
 
   // Rename param literals that get concatenated at runtime
   script = script.replace(/&cx=c/g, '&_c=c')

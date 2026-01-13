@@ -11,7 +11,7 @@ export function Analytics({ gtmId }: { gtmId: string }) {
       <Script id="consent-defaults" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
-          window.gtag = function(){dataLayer.push(arguments);}
+          window.gtag = function(){dataLayer.push(arguments);};
 
           // Check for existing consent BEFORE setting defaults
           (function() {
