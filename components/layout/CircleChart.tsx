@@ -74,7 +74,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
               class: 'highcharts-title',
             })
             .css({
-              color: "#CDD8D3",
+              color: "rgb(var(--text-primary))",
               fontSize: '12px',
               fontWeight: 'bold',
               // fontFamily: 'var(--font-raleway), sans-serif !important',
@@ -93,7 +93,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
           class: 'highcharts-title',
         })
         .css({
-          color: "#CDD8D3",
+          color: "rgb(var(--text-primary))",
           fontSize: '12px',
           fontWeight: 'bold',
         }).add();
@@ -225,7 +225,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
                 style: {
                   fontSize: "9px",
                   fontWeight: "semibold",
-                  color: "rgb(215, 223, 222)",
+                  color: "rgb(var(--text-primary))",
                   textOutline: "0px contrast",
                   textAlign: "center",
                   dominantBaseline: "middle",
@@ -291,7 +291,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
               offsetY: 2,
             }}
             style={{
-              color: "rgb(215, 223, 222)",
+              color: "rgb(var(--text-primary))",
             }}
             formatter={tooltipFormatter}
             // ensure tooltip is always above the chart
@@ -315,12 +315,12 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
             showInLegend={false}
             innerSize={((1 - ((strokeWidth + 3) / size)) * 100) + "%"}
             borderWidth={2}
-            borderColor={"rgb(21, 26, 25)"}
+            borderColor={"rgb(var(--ui-shadow))"}
             startAngle={180 + angleOffset}
             endAngle={180 - angleOffset}
 
 
-            data={sortedData.map((d) => ({
+            data={sortedData.filter((d) => d.value > 0).map((d) => ({
               name: d.label,
               y: d.value,
               className: d.className,

@@ -110,7 +110,7 @@ const ChainSectionHead = ({
             }}
           />
         </div>
-        <div className="text-[20px] font-semibold overflow-hidden whitespace-nowrap">{title}</div>
+        <div className="text-[20px] font-semibold overflow-hidden whitespace-nowrap z-0">{title}</div>
       </div>
       <div
         className="overflow-clip hover:!overflow-visible"

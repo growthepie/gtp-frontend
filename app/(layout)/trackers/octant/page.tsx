@@ -663,7 +663,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHead>
           </div>
 
-          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
+          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:max-w-[398px] lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
             <ChainSectionHeadAlt
               title={"Background"}
               icon={"gtp:gtp-backgroundinformation"}
@@ -671,13 +671,13 @@ VirtualizedList.displayName = 'VirtualizedList';
               childrenHeight={isMobile ? 200 : 111}
               className={`flex w-full min-w-[67px] flex-1 transition-all duration-300`}
               shadowElement={
-                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
               }
             >
               <div
                 className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-color-bg-default lg:max-h-[111px]`}
               >
-                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
                 <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)]">
                   <div className="w-full">
                     <div className="text-xs font-semibold text-[#5A6462]">
@@ -698,7 +698,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHeadAlt>
           </div>
           <div className="flex flex-shrink flex-grow basis-0 flex-col gap-x-[5px] gap-y-[5px] lg:flex-row">
-            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
+            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[125px] lg:max-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
               <ChainSectionHeadAlt
                 title={"Community"}
                 icon={"gtp:gtp-users"}
@@ -706,12 +706,12 @@ VirtualizedList.displayName = 'VirtualizedList';
                 childrenHeight={isMobile ? 116 : 111}
                 className="w-full min-w-[67px] transition-all duration-300"
                 shadowElement={
-                  <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,rgb(var(--bg-medium-50))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
+                  <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                 }
               >
                 <div className="group relative flex flex-col gap-y-[5px] overflow-hidden">
                   <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-color-bg-default lg:max-h-[111px]">
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[228px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col pl-[5px]">
                       <div className="text-xs font-semibold text-[#5A6462]">
                         User Wallets with GLM locked
@@ -807,83 +807,6 @@ VirtualizedList.displayName = 'VirtualizedList';
                               <div className="text-xxs">Total Wallets</div>
                             </div>
                           </div>
-                          {/* <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-color-ui-hover px-[13px] py-[5px]">
-                            <svg
-                              width="25"
-                              height="25"
-                              viewBox="0 0 25 25"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              className={`${
-                                summaryData &&
-                                summaryData.locked_changes.changes
-                                  .num_users_locked_glm_change >= 0
-                                  ? ""
-                                  : "rotate-180"
-                              }`}
-                            >
-                              <g clipPath="url(#clip0_11946_38485)">
-                                <path
-                                  d="M15.067 15.1489L20.9266 15.1489C23.3019 15.1489 24.5995 12.4851 23.0789 10.7305L15.0525 1.46928C13.9324 0.176906 11.8681 0.176908 10.748 1.46928L2.72159 10.7305C1.20098 12.4851 2.49855 15.1489 4.87383 15.1489L10.7337 15.1489L10.7337 24.5L15.0525 24.5L15.067 15.1489Z"
-                                  fill="url(#paint0_linear_11946_38485)"
-                                />
-                              </g>
-                              <defs>
-                                {summaryData &&
-                                summaryData.locked_changes.changes
-                                  .num_users_locked_glm_change >= 0 ? (
-                                  <linearGradient
-                                    id="paint0_linear_11946_38485"
-                                    x1="12.9002"
-                                    y1="0.5"
-                                    x2="12.9002"
-                                    y2="24.5"
-                                    gradientUnits="userSpaceOnUse"
-                                  >
-                                    <stop stopColor="#10808C" />
-                                    <stop offset="1" stopColor="#1DF7EF" />
-                                  </linearGradient>
-                                ) : (
-                                  <linearGradient
-                                    id="paint0_linear_11946_38485"
-                                    x1="12.3604"
-                                    y1="0.5"
-                                    x2="28.5391"
-                                    y2="23.2457"
-                                    gradientUnits="userSpaceOnUse"
-                                  >
-                                    <stop stopColor="#FE5468" />
-                                    <stop offset="1" stopColor="#FFDF27" />
-                                  </linearGradient>
-                                )}
-                                <clipPath id="clip0_11946_38485">
-                                  <rect
-                                    width="24"
-                                    height="24"
-                                    fill="white"
-                                    transform="translate(0.933594 0.5)"
-                                  />
-                                </clipPath>
-                              </defs>
-                            </svg>
-
-                            <div className="flex flex-col items-center pt-[5px]">
-                              {summaryData && (
-                                <div className="text-[20px] font-semibold">
-                                  {summaryData.locked_changes.changes
-                                    .num_users_locked_glm_change > 0 && "+"}
-                                  {summaryData.locked_changes.changes
-                                    .num_users_locked_glm_change < 0 && "-"}
-                                  {(
-                                    summaryData.locked_changes.changes
-                                      .num_users_locked_glm_change * 100
-                                  ).toFixed(1)}
-                                  %
-                                </div>
-                              )}
-                              <div className="text-[9px]">in last week</div>
-                            </div>
-                          </div> */}
                         </div>
                       </div>
                     </div>
@@ -892,7 +815,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               </ChainSectionHeadAlt>
             </div>
             <div className="flex flex-shrink flex-grow basis-0 gap-x-[5px]">
-              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
+              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[125px] lg:flex-shrink lg:flex-grow lg:max-w-[294px] lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
                 <ChainSectionHeadAlt
                   title={"Project Funding"}
                   icon={"gtp:gtp-project"}
@@ -900,11 +823,11 @@ VirtualizedList.displayName = 'VirtualizedList';
                   childrenHeight={isMobile ? 116 : 111}
                   className={`min-w-[67px] transition-all duration-300`}
                   shadowElement={
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                   }
                 >
                   <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-color-bg-default">
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0.2)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col">
                       <div className="text-xs font-semibold text-[#5A6462]">
                         Total Funding Paid Out
@@ -1141,7 +1064,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 </div>
                 <input
                   // ref={inputRef}
-                  className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
+                  className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder:text-color-text-primary outline-none`}
                   placeholder="Search Wallets"
                   value={communitySearch}
                   onChange={(e) => {
@@ -1180,7 +1103,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                         fillRule="evenodd"
                         clipRule="evenodd"
                         d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z"
-                        fill="#CDD8D3"
+                        fill="rgb(var(--text-primary))"
                       />
                       <defs>
                         <linearGradient
@@ -1191,8 +1114,8 @@ VirtualizedList.displayName = 'VirtualizedList';
                           y2="24.361"
                           gradientUnits="userSpaceOnUse"
                         >
-                          <stop stopColor="#FE5468" />
-                          <stop offset="1" stopColor="#FFDF27" />
+                          <stop stopColor="rgb(var(--accent-red))" />
+                          <stop offset="1" stopColor="rgb(var(--accent-yellow))" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -1506,7 +1429,7 @@ VirtualizedList.displayName = 'VirtualizedList';
           </div>
           <input
             // ref={inputRef}
-            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
+            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder:text-color-text-primary outline-none`}
             placeholder="Search Wallets"
             value={communitySearch}
             onChange={(e) => {
@@ -1545,7 +1468,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                   fillRule="evenodd"
                   clipRule="evenodd"
                   d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z"
-                  fill="#CDD8D3"
+                  fill="rgb(var(--text-primary))"
                 />
                 <defs>
                   <linearGradient
@@ -1556,8 +1479,8 @@ VirtualizedList.displayName = 'VirtualizedList';
                     y2="24.361"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <stop stopColor="#FE5468" />
-                    <stop offset="1" stopColor="#FFDF27" />
+                    <stop stopColor="rgb(var(--accent-red))" />
+                    <stop offset="1" stopColor="rgb(var(--accent-yellow))" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -1999,6 +1922,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                                         ) : (
                                           <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
                                             {projectMetadataData &&
+                                              projectMetadataData[project_key] &&
                                               projectMetadataData[project_key][
                                                 Epochs[communityEpoch].epoch
                                               ] && (
@@ -2176,7 +2100,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               }}
             >
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-color-bg-default hover:cursor-pointer"
                 onClick={handlePrevFundingEpoch}
               >
                 <Icon icon="feather:arrow-left" className="h-6 w-6" />
@@ -2191,7 +2115,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 </div>
               </div>
               <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-color-bg-default hover:cursor-pointer"
                 onClick={handleNextFundingEpoch}
               >
                 <Icon icon="feather:arrow-right" className="h-6 w-6" />
@@ -2207,7 +2131,7 @@ VirtualizedList.displayName = 'VirtualizedList';
           </div>
           <input
             // ref={inputRef}
-            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
+            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder:text-color-text-primary outline-none`}
             placeholder="Find Project"
             value={fundingSearch}
             onChange={(e) => {
@@ -2246,7 +2170,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                   fillRule="evenodd"
                   clipRule="evenodd"
                   d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z"
-                  fill="#CDD8D3"
+                  fill="rgb(var(--text-primary))"
                 />
                 <defs>
                   <linearGradient
@@ -2257,8 +2181,8 @@ VirtualizedList.displayName = 'VirtualizedList';
                     y2="24.361"
                     gradientUnits="userSpaceOnUse"
                   >
-                    <stop stopColor="#FE5468" />
-                    <stop offset="1" stopColor="#FFDF27" />
+                    <stop stopColor="rgb(var(--accent-red))" />
+                    <stop offset="1" stopColor="rgb(var(--accent-yellow))" />
                   </linearGradient>
                 </defs>
               </svg>
