@@ -5,7 +5,7 @@ import { ANALYTICS_CONFIG } from '@/lib/analyticsConfig'
 
 export function Analytics({ gtmId }: { gtmId: string }) {
   const defaultConsent = ANALYTICS_CONFIG.defaultConsent;
-  
+
   return (
     <>
       <Script
@@ -36,7 +36,7 @@ export function Analytics({ gtmId }: { gtmId: string }) {
           `
         }}
       />
-      
+
       <Script
         id="gtm-init"
         strategy="afterInteractive"

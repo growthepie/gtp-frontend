@@ -844,7 +844,7 @@ const ChainTransitionItem = React.memo(({
   const isSupportedChain = chain !== undefined;
 
   const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
-  const chainName = chain?.label || chainData[chainId].display_name;
+  const chainName = chain?.label || chainData[chainId]?.display_name || chainId;
 
   const value = useMemo(() => {
     if (type === 'tps') {

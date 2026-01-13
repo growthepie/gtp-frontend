@@ -113,19 +113,21 @@ export function ToggleSwitch({
   // Calculate the transform - handle undefined containerWidth gracefully
   const getSliderTransform = () => {
     const baseTransform = 'translateY(-50%)';
-    
-    if (!mounted || !containerWidth || containerWidth === 0) {
-      // Default to left position while container width is being measured
-      return `${baseTransform} translateX(0%)`;
-    }
-    
+
     if (isLeftActive) {
       return `${baseTransform} translateX(0%)`;
-    } else {
-      // Calculate right position: total width minus slider width minus padding
-      const rightOffset = containerWidth - (containerWidth / 2) - config.containerPaddingPx;
-      return `${baseTransform} translateX(${rightOffset}px)`;
     }
+
+    // For right position, use pixel calculation if we have containerWidth,
+    // otherwise use percentage-based fallback (90% of slider width ≈ 45% of container)
+    if (!containerWidth || containerWidth === 0) {
+      // Fallback: approximate right position without exact measurements
+      return `${baseTransform} translateX(90%)`;
+    }
+
+    // Calculate right position: total width minus slider width minus padding
+    const rightOffset = containerWidth - (containerWidth / 2) - config.containerPaddingPx;
+    return `${baseTransform} translateX(${rightOffset}px)`;
   };
 
   if (!mounted) {
@@ -182,7 +184,7 @@ export function ToggleSwitch({
             absolute top-1/2 z-20 w-1/2
             ${config.slider} ${config.labelPadding} ${sliderColor}
             rounded-full flex items-center justify-center
-            ${mounted && containerWidth ? 'transition-transform duration-300 ease-out' : ''}
+            transition-all duration-300 ease-out
           `}
           style={{
             left: `${config.containerPaddingPx / 2}px`,

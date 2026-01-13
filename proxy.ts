@@ -36,7 +36,7 @@ const handleUrlNormalization = (request: NextRequest): NextResponse | null => {
   return null
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const redirect = handleUrlNormalization(request)
   if (redirect) return redirect
 

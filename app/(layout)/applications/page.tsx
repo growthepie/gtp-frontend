@@ -214,7 +214,7 @@ export default function Page() {
           <div className="text-xs">
             {showGrid ? (
               <div>
-                Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
+                Applications ranked by {metricsDef[medianMetric].name} {selectedTimespan === "max" ? "(all-time)" : `in the last ${timespans[selectedTimespan].label}`}. You can apply filters by clicking on the chain icons or by using the search bar.
               </div>
             ) : (
               <div>

@@ -204,7 +204,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
         <div className="text-xs">
-          <Category category={ownerProjectToProjectData[application.owner_project].main_category || ""} />
+          <Category category={ownerProjectToProjectData[application.owner_project]?.main_category || ""} />
         </div>
         <div className="h-[20px] flex items-center gap-x-[5px]">
           <Chains origin_keys={application.origin_keys} />

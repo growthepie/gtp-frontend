@@ -58,7 +58,25 @@ export const useElementSizeObserver = <T extends HTMLElement = HTMLDivElement>(
       const entry = entries.at(-1);
       if (!entry) return;
 
-      const { width, height } = entry.contentRect;
+      // Use borderBoxSize when box="border-box" to include padding
+      // contentRect always returns content-box regardless of box option
+      let width: number;
+      let height: number;
+
+      if (box === "border-box" && entry.borderBoxSize?.[0]) {
+        width = entry.borderBoxSize[0].inlineSize;
+        height = entry.borderBoxSize[0].blockSize;
+        // Fallback to contentRect if borderBoxSize returns 0
+        if (width === 0 && entry.contentRect.width > 0) {
+          width = entry.contentRect.width;
+        }
+        if (height === 0 && entry.contentRect.height > 0) {
+          height = entry.contentRect.height;
+        }
+      } else {
+        width = entry.contentRect.width;
+        height = entry.contentRect.height;
+      }
 
       if (frameId !== null) {
         cancelAnimationFrame(frameId);
