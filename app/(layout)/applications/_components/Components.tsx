@@ -319,15 +319,12 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
 
       >
         <div
-          className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
-          style={{
-            backgroundColor: "rgb(var(--bg-medium))",
-          }}
+          className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer bg-color-bg-medium ${isMobile ? "w-full" : "w-[271px]"}`}
           onMouseEnter={openWithDelay}
           onMouseLeave={cancelHover}
         >
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handlePrev}
           >
             <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -345,7 +342,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             </div>
           </div>
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handleNext}
 
           >
@@ -354,7 +351,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
         </div>
         <div
           className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
-            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-color-text-primary lg:rounded-b-[22px] shadow-standard`
             : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           style={{

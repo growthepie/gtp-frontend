@@ -441,7 +441,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
           {/* Only render dropdown content when open */}
           {/* {isOpen && ( */}
             <div
-              className={`${isOpen ? "max-h-[400px]" : "max-h-0"} pt-[10px] md:pt-0 md:pb-[10px] gap-y-[15px] md:gap-y-[10px] transition-[max-height] z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-color-ui-active left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
+              className={`${isOpen ? "max-h-[400px] shadow-standard" : "max-h-0 shadow-none"} pt-[10px] md:pt-0 md:pb-[10px] gap-y-[15px] md:gap-y-[10px] transition-[max-height] z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-color-ui-active left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
             >
               <div className={`select-none flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-color-bg-medium z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
                 <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
@@ -467,10 +467,10 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                       <GTPIcon
                         icon="gtp-chain-alt"
                         size="sm"
-                        className="text-white"
+                        className="text-color-text-primary"
                       />
                     </div>
-                    <div className="text-white leading-[150%]">Chain</div>
+                    <div className="text-color-text-primary leading-[150%]">Chain</div>
                     <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                   </div>
                   {master && (
@@ -524,10 +524,10 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                       <GTPIcon
                         icon="gtp-categories-monochrome"
                         size="sm"
-                        className="text-white"
+                        className="text-color-text-primary"
                       />
                     </div>
-                    <div className="text-white leading-[150%]">Main Category</div>
+                    <div className="text-color-text-primary leading-[150%]">Main Category</div>
                     <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                   </div>
                   {master && availableMainCategories && availableMainCategories.length > 0 && (
