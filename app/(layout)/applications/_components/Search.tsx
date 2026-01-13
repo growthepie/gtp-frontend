@@ -11,6 +11,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext"; // Correctly added import
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
+import { useMetrics } from "../_contexts/MetricsContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -18,6 +19,40 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 // New props to support chain-scoped usage
 type SearchProps = {
   hideChainSection?: boolean;
+};
+
+const METRIC_FILTER_REGEX = /^\s*([a-zA-Z0-9_]+)\s*(<=|>=|!=|==|=|<|>)\s*([0-9,._]+)\s*$/;
+const EXTRA_METRIC_KEYS = ["num_contracts", "gas_fees_usd", "gas_fees_eth"];
+
+const parseMetricFilter = (input: string, allowedMetrics: Set<string>) => {
+  const match = input.match(METRIC_FILTER_REGEX);
+  if (!match) return null;
+  const metric = match[1].toLowerCase();
+  const operator = match[2];
+  const valueRaw = match[3].replace(/[, _]/g, "");
+  if (!allowedMetrics.has(metric)) return null;
+  if (!Number.isFinite(Number(valueRaw))) return null;
+  return {
+    metric,
+    operator,
+    value: valueRaw,
+    normalized: `${metric}${operator}${valueRaw}`,
+  };
+};
+
+const formatMetricFilterLabel = (
+  filter: string,
+  metricsDef: Record<string, { name?: string }> | null,
+) => {
+  const match = filter.match(METRIC_FILTER_REGEX);
+  if (!match) return filter;
+  const metric = match[1].toLowerCase();
+  const operator = match[2];
+  const valueRaw = match[3].replace(/[, _]/g, "");
+  const value = Number(valueRaw);
+  const metricLabel = metricsDef?.[metric]?.name || metric;
+  const displayValue = Number.isFinite(value) ? value.toLocaleString("en-GB") : valueRaw;
+  return `${metricLabel} ${operator} ${displayValue}`;
 };
 
 const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
@@ -42,6 +77,7 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
 export default function Search({ hideChainSection = false }: SearchProps) {
   const { AllChainsByKeys } = useMaster();
   const { availableMainCategories } = useProjectsMetadata(); // Added
+  const { metricsDef } = useMetrics();
   const isMobile = useUIContext((state) => state.isMobile);
   const { applicationDataAggregatedAndFiltered, applicationsChains } = useApplicationsData();
   
@@ -71,6 +107,11 @@ export default function Search({ hideChainSection = false }: SearchProps) {
     const categories = searchParams.get("main_category")?.split(",").filter(Boolean) || [];
     return categories;
   }, [searchParams]);
+
+  const metricFiltersFromParams = useMemo(() =>
+    searchParams.get("metric_filter")?.split(",").filter(Boolean) || [],
+    [searchParams]
+  );
   
   // Local UI state
   const [isOpen, setIsOpen] = useState<boolean>(!!searchFromParams);
@@ -128,7 +169,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
   }, [applicationDataAggregatedAndFiltered]);
 
   // Update URL params when filters change
-  const updateURLParams = useCallback((filterType: 'origin_key' | 'owner_project' | 'main_category', newValues: string[]) => {
+  const updateURLParams = useCallback((filterType: 'origin_key' | 'owner_project' | 'main_category' | 'metric_filter', newValues: string[]) => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
     
     if (newValues.length === 0) {
@@ -145,7 +186,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
   // Handler for adding/removing filters
   const handleFilter = useCallback(
     (
-      key: 'origin_key' | 'string' | 'main_category',
+      key: 'origin_key' | 'string' | 'main_category' | 'metric_filter',
       value: string
     ) => {
       if (key === "origin_key") {
@@ -172,10 +213,24 @@ export default function Search({ hideChainSection = false }: SearchProps) {
         updateURLParams('main_category', newMainCategories);
       }
 
+      if (key === "metric_filter") {
+        const newMetricFilters = metricFiltersFromParams.includes(value)
+          ? metricFiltersFromParams.filter(filter => filter !== value)
+          : [...metricFiltersFromParams, value];
+        updateURLParams("metric_filter", newMetricFilters);
+      }
+
       setInternalSearch("");
       setSearch("");
     },
-    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams, hideChainSection]
+    [
+      chainsFromParams,
+      stringFiltersFromParams,
+      mainCategoryFromParams,
+      metricFiltersFromParams,
+      updateURLParams,
+      hideChainSection,
+    ]
   );
 
   // Clear all filters
@@ -184,6 +239,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
     if (!hideChainSection) newSearchParams.delete('origin_key');
     newSearchParams.delete('owner_project');
     newSearchParams.delete('main_category');
+    newSearchParams.delete('metric_filter');
     
     const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
     window.history.replaceState(null, "", url);
@@ -225,6 +281,11 @@ export default function Search({ hideChainSection = false }: SearchProps) {
   const [applicationsOwnerProjects, setApplicationsOwnerProjects] = useSessionStorage<
     { owner_project: string; owner_project_clear: string }[]
   >("applicationsOwnerProjects", []);
+
+  const metricFilterAllowList = useMemo(() => {
+    const metrics = Object.keys(metricsDef || {}).map((metric) => metric.toLowerCase());
+    return new Set([...metrics, ...EXTRA_METRIC_KEYS]);
+  }, [metricsDef]);
 
   // Memoize filters to prevent recreating them on every render
   const Filters = useMemo(() => {
@@ -291,12 +352,44 @@ export default function Search({ hideChainSection = false }: SearchProps) {
     )});
 
 
+    const metricFilters = metricFiltersFromParams.map((filter) => (
+      <Badge
+        key={filter}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          handleFilter("metric_filter", filter);
+        }}
+        label={formatMetricFilterLabel(filter, metricsDef)}
+        leftIcon="feather:sliders"
+        leftIconColor="#CDD8D3"
+        rightIcon="gtp:in-button-close-monochrome"
+        rightIconColor="#FE5468"
+        showLabel={true}
+        altColoring={isOpen}
+      />
+    ));
+
     return [
       ...chainFilters,
       ...stringFilters,
       ...mainCategoryFilters,
+      ...metricFilters,
     ];
-  }, [master, chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, AllChainsByKeys, isOpen, handleFilter, boldSearch, availableMainCategories, hideChainSection]);
+  }, [
+    master,
+    chainsFromParams,
+    stringFiltersFromParams,
+    mainCategoryFromParams,
+    metricFiltersFromParams,
+    metricsDef,
+    AllChainsByKeys,
+    isOpen,
+    handleFilter,
+    boldSearch,
+    availableMainCategories,
+    hideChainSection,
+  ]);
 
   // Update autocomplete with debounced search term
   useEffect(() => {
@@ -386,7 +479,12 @@ export default function Search({ hideChainSection = false }: SearchProps) {
               onKeyUp={(e) => {
                 // if enter is pressed, add the search term to the address filters
                 if (e.key === "Enter" && internalSearch.length > 0) {
-                  handleFilter("string", internalSearch);
+                  const metricFilter = parseMetricFilter(internalSearch, metricFilterAllowList);
+                  if (metricFilter) {
+                    handleFilter("metric_filter", metricFilter.normalized);
+                  } else {
+                    handleFilter("string", internalSearch);
+                  }
                   setInternalSearch("");
                   debouncedSetSearch("");
                   e.preventDefault();
