@@ -98,13 +98,22 @@ export default function NotificationButtonExpandable({
     return () => resizeObserver.unobserve(contentEl);
   }, [filteredData]);
 
-  // Hide component if no notifications and hideIfNoNotifications is true
-  if (hideIfNoNotifications && (isLoading || (filteredData && filteredData.length === 0))) {
-    return null;
-  }
+  // Determine if we should hide the button
+  // Only hide after loading confirms there are no notifications
+  const shouldHide = hideIfNoNotifications && !isLoading && filteredData && filteredData.length === 0;
+
+  const buttonWidth = typeof size.width === 'number' ? size.width : 44;
 
   return (
-    <div className={`relative pointer-events-auto shrink-0 ${className}`}>
+    <div
+      className={`relative shrink-0 transition-all duration-300 ease-out ${className}`}
+      style={{
+        width: buttonWidth,
+        marginLeft: shouldHide ? `${-buttonWidth - 15}px` : '0',
+        opacity: shouldHide ? 0 : 1,
+        pointerEvents: shouldHide ? 'none' : 'auto',
+      }}
+    >
       <ExpandableMenu
         open={open}
         onOpenChange={handleOpenChange}
