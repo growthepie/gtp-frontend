@@ -142,12 +142,22 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Inline script to prevent flash of wrong theme on initial load
+  // Only sets the class, does NOT touch localStorage to avoid cross-tab conflicts
   const script = `
   (function() {
-    // Set dark theme
-    document.documentElement.classList.add('dark');
-    // Optionally, set dark theme in local storage
-    localStorage.setItem('theme', 'dark');
+    try {
+      var theme = localStorage.getItem('theme');
+      // If no stored preference or stored as 'dark', use dark theme
+      if (!theme || theme === '"dark"' || theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      // Fallback to dark if localStorage fails
+      document.documentElement.classList.add('dark');
+    }
   })();
 `;
 

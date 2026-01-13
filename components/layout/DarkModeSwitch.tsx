@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import { track } from "@/lib/tracking";
@@ -11,13 +11,23 @@ type DarkModeSwitchProps = {
 export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const isToggling = useRef(false);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
+    // Debounce rapid clicks to prevent cross-tab sync issues
+    if (isToggling.current) return;
+    isToggling.current = true;
+
+    // Allow next toggle after a short delay
+    setTimeout(() => {
+      isToggling.current = false;
+    }, 300);
+
     if (theme === "dark") {
       track("changed to Light Mode", {
         location: isMobile ? "mobile Menu" : "desktop Sidebar",
@@ -31,7 +41,7 @@ export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
     }
 
     setTheme(theme === "dark" ? "light" : "dark");
-  };
+  }, [theme, setTheme, isMobile]);
 
   if (!mounted) {
     return null;

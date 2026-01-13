@@ -1162,13 +1162,24 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "", isMobile = false }) 
 
 export const DarkModeToggleButton = () => {
   const { theme, setTheme } = useTheme();
+  const isToggling = useRef(false);
+
+  const handleToggle = useCallback(() => {
+    // Debounce rapid clicks to prevent cross-tab sync issues
+    if (isToggling.current) return;
+    isToggling.current = true;
+
+    setTimeout(() => {
+      isToggling.current = false;
+    }, 300);
+
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [theme, setTheme]);
 
   return (
     <FloatingBarButton
       icon={theme === "dark" ? "gtp-night" as GTPIconName : "gtp-sun" as GTPIconName}
-      onClick={() => {
-        setTheme(theme === "dark" ? "light" : "dark");
-      }}
+      onClick={handleToggle}
       title={theme === "dark" ? "Light Mode" : "Dark Mode"}
     />
   )
