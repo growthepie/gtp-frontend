@@ -66,6 +66,13 @@ export const useElementSizeObserver = <T extends HTMLElement = HTMLDivElement>(
       if (box === "border-box" && entry.borderBoxSize?.[0]) {
         width = entry.borderBoxSize[0].inlineSize;
         height = entry.borderBoxSize[0].blockSize;
+        // Fallback to contentRect if borderBoxSize returns 0
+        if (width === 0 && entry.contentRect.width > 0) {
+          width = entry.contentRect.width;
+        }
+        if (height === 0 && entry.contentRect.height > 0) {
+          height = entry.contentRect.height;
+        }
       } else {
         width = entry.contentRect.width;
         height = entry.contentRect.height;
