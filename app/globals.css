@@ -164,6 +164,22 @@
   }
 }
 
+/* SVG Icon Color Variables (hex format for gradient stop-color) */
+/* These are separate from auto-generated variables above */
+:root {
+  --icon-accent-red: #e83c52;
+  --icon-accent-yellow: #e5b300;
+  --icon-accent-petrol: #0e6f7a;
+  --icon-accent-turquoise: #00cfc5;
+}
+
+.dark {
+  --icon-accent-red: #fe5468;
+  --icon-accent-yellow: #ffdf27;
+  --icon-accent-petrol: #10808c;
+  --icon-accent-turquoise: #1df7ef;
+}
+
 html {
   scroll-behavior: smooth;
 }
