@@ -373,8 +373,13 @@ input:focus-visible {
 } */
 
 /* Fix for Next.js 16 - ensure Splide slides have proper width */
+.splide__list {
+  display: flex !important;
+}
+
 .splide__slide {
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
+  min-width: 0;
 }
 
 .splide__slide > * {
