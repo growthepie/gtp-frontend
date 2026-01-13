@@ -371,6 +371,16 @@ input:focus-visible {
 /* .splide__track {
   overflow: visible !important;
 } */
+
+/* Fix for Next.js 16 - ensure Splide slides have proper width */
+.splide__slide {
+  flex-shrink: 0;
+}
+
+.splide__slide > * {
+  width: 100%;
+}
+
 .splide__pagination {
   @apply !bottom-3 md:!-bottom-4;
 }
