@@ -19,7 +19,7 @@ export default function EthUsdSwitchSimple({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", false);
   const [mounted, setMounted] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const updateTimeoutRef = useRef<NodeJS.Timeout>();
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Only show after hydration to prevent SSR mismatch
   useEffect(() => {

@@ -114,8 +114,7 @@ export function ToggleSwitch({
   const getSliderTransform = () => {
     const baseTransform = 'translateY(-50%)';
     
-    if (!mounted || !containerWidth || containerWidth === 0) {
-      // Default to left position while container width is being measured
+    if (!containerWidth || containerWidth === 0) {
       return `${baseTransform} translateX(0%)`;
     }
     
@@ -131,6 +130,8 @@ export function ToggleSwitch({
   if (!mounted) {
     return null;
   }
+
+  const isReady = containerWidth && containerWidth > 0;
 
   return (
     <div className={`flex items-center ${config.gap} ${className}`}>
@@ -182,7 +183,8 @@ export function ToggleSwitch({
             absolute top-1/2 z-20 w-1/2
             ${config.slider} ${config.labelPadding} ${sliderColor}
             rounded-full flex items-center justify-center
-            ${mounted && containerWidth ? 'transition-transform duration-300 ease-out' : ''}
+            transition-all duration-300 ease-out
+            ${isReady ? 'opacity-100' : 'opacity-0'}
           `}
           style={{
             left: `${config.containerPaddingPx / 2}px`,
