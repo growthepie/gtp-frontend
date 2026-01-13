@@ -452,7 +452,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                         className="w-[15px] h-[15px]"
                       />
                     </div>
-                    <div className="text-white leading-[150%] whitespace-nowrap">Active Filter(s)</div>
+                    <div className="text-color-text-primary leading-[150%] whitespace-nowrap">Active Filter(s)</div>
                   </div>
                   <FilterSelectionContainer className="w-full">
                     {Filters}
