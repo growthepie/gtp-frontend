@@ -510,13 +510,12 @@ export default function ExpandableMenu({
       
       {/* Expandable Panel */}
       <div 
-        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 bg-color-ui-active rounded-b-2xl rounded-t-0 z-20 ${panelClassName}`}
+        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 bg-color-ui-active rounded-b-2xl rounded-t-0 z-20 ${panelClassName} ${open ? "shadow-standard" : ""}`}
         style={{
           ...placementStyles.position,
           height: open ? hExpanded : panelHeightCollapsed,
           width: open ? wExpanded : panelWidthCollapsed,
           transformOrigin: placementStyles.transformOrigin,
-          boxShadow: open ? "0 4px 46.2px 0 #000" : "none",
           borderRadius: placementStyles.borderRadius,
           pointerEvents: open && !isTransitioning ? "auto" : "none",
         }}
