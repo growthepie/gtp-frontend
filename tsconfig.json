@@ -38,8 +38,6 @@
     ".next/types/**/*.ts",
     "app/(labels)/layout.tsx.old",
     "lib/figma.ts",
-    ".next\\dev/types/**/*.ts",
-    ".next\\dev/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
