@@ -11,6 +11,7 @@ import Link from "next/link";
 import { ExpandableCardContainer } from "@/components/layout/EthAgg/MetricsTop";
 import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 const partners = [
   {
@@ -101,6 +102,11 @@ const faqs = [
     answer:
       "Free listings cover every chain in the ecosystem. Paid tiers unlock deeper indexing, more granular visualizations, and tailored support.",
   },
+  ...(IS_PRODUCTION ? [] : [{
+    question: "[Place holder]",
+    answer:
+      "[Place holder]",
+  }]),
 ];
 
 export default function SalesPage() {
