@@ -314,29 +314,31 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
 
   return (
-  <EventsCard totalHeight={EXPANDED_LIST_HEIGHT } isHidden={isHidden} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
-    <>
-      <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
-      <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
-        <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
-          <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-            {uptimeData.heading}
-          </div>
-          <div className={`numbers-sm text-color-text-secondary ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
-        </div>
-      </div>
-      <div className="heading-large-md pb-[15px]">Events</div>
-      
-    </>
-  }>
-    {reversedEvents.map((event: any, index: number) => {
-      return (
+    <div className="relative h-full">
+        <EventsCard totalHeight={EXPANDED_LIST_HEIGHT } isHidden={isHidden} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
+          <>
+            <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
+            <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
+              <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
+                <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                  {uptimeData.heading}
+                </div>
+                <div className={`numbers-sm text-color-text-secondary ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
+              </div>
+            </div>
+            <div className="heading-large-md pb-[15px]">Events</div>
+            
+          </>
+        }>
+          {reversedEvents.map((event: any, index: number) => {
+            return (
 
-          <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} finalIndex={Object.keys(reversedEvents).length - 1} />
-       
-      )
-    })}
-  </EventsCard>
+                <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} finalIndex={Object.keys(reversedEvents).length - 1} />
+            
+            )
+          })}
+        </EventsCard>
+    </div>
   );
 });
 

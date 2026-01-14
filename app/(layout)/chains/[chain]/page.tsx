@@ -374,7 +374,7 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
-    }, [selectedTab, chainKey, chain, master]);
+    }, [selectedTab, chainKey, chain, master, theme]);
 
 
 

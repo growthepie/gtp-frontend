@@ -21,6 +21,7 @@ import { GTPIcon } from "../layout/GTPIcon";
 import Subheading from "../layout/Subheading";
 import Heading from "../layout/Heading";
 import { TopRowContainer, TopRowParent } from "../layout/TopRow";
+import { useTheme } from "next-themes";
 
 export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const [isSidebarOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     ["l1", "rollup", "others"]
   );
   const { AllChains, AllChainsByKeys } = useMaster();
+
 
   const {
     data: landing,
@@ -60,6 +62,8 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
       setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
+
+  const { resolvedTheme } = useTheme();
 
 
 
@@ -136,6 +140,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                 sort={sort}
                 setSort={setSort}
                 selectedChainTypes={selectedChainTypes}
+                theme={resolvedTheme}
               />
               </div>
             </TableRankingProvider>

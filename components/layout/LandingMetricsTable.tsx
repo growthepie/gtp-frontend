@@ -130,6 +130,7 @@ export default memo(function LandingMetricsTable({
   sort,
   setSort,
   selectedChainTypes,
+  theme,
 }: {
   data: any;
   master: MasterResponse;
@@ -137,13 +138,13 @@ export default memo(function LandingMetricsTable({
   sort: { metric: string; sortOrder: "asc" | "desc" };
   setSort: (sort: { metric: string; sortOrder: "asc" | "desc" }) => void;
   selectedChainTypes: string[];
+  theme: string | undefined;
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
   const [centerMetric, setCenterMetric] = useState("daa");
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   // const [maxVal, setMaxVal] = useState(0);
-  const { theme } = useTheme();
   const router = useRouter();
 
 
@@ -371,9 +372,10 @@ export default memo(function LandingMetricsTable({
 
             return (
               <GridTableRow
-                key={index}
+                key={`${index}-${theme}`}
                 gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
                 className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
+                theme={theme}
                 bar={{
                   origin_key: item.chain.key,
                   width: lastValsByChainKey[item.chain.key] / maxVal,
@@ -393,7 +395,7 @@ export default memo(function LandingMetricsTable({
               >
                 <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
                   <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]">
-                    <GridTableChainIcon origin_key={item.chain.key} />
+                    <GridTableChainIcon key={`${item.chain.key}-${theme}`} origin_key={item.chain.key} theme={theme} />
                   </div>
                 </div>
                 <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>

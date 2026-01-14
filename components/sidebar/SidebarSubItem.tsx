@@ -11,6 +11,7 @@ import { useMaster } from '@/contexts/MasterContext';
 import { useTooltipContext } from './Sidebar';
 import { DropdownArrow } from '../layout/SidebarMenuGroup';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 
 type Props = {
   item: SidebarLink | SidebarChainLink; // level 1 only
@@ -32,6 +33,7 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
   const { AllChainsByKeys } = useMaster();
   const chainColors = chainKey && AllChainsByKeys?.[chainKey]?.colors ? AllChainsByKeys[chainKey].colors : null;
   const isActive = pathname === href;
+  const { resolvedTheme } = useTheme();
 
   const [isHovered, setIsHovered] = useState(false);
   const isIconHovered = isHovered || isTooltipOpen;
@@ -64,8 +66,8 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
         icon={icon} 
         size={"sm"} 
         containerClassName='absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]'
-        className={chainColors ? (shouldUseChainColor ? `text-[${chainColors.dark[1]}]` : 'text-color-text-secondary') : 'text-color-text-secondary'}
-        style={{ color: shouldUseChainColor ? chainColors!.dark[1] : 'rgb(var(--text-secondary))'}} 
+        className={chainColors ? (shouldUseChainColor ? `text-[${chainColors[resolvedTheme === "dark" ? "dark" : "light"][1]}]` : 'text-color-text-secondary') : 'text-color-text-secondary'}
+        style={{ color: shouldUseChainColor ? chainColors![resolvedTheme === "dark" ? "dark" : "light"][1] : 'rgb(var(--text-secondary))'}} 
       />
       </div>
       <div className={`flex flex-1 min-w-0 items-center whitespace-nowrap heading-large-xs overflow-hidden transition-opacity duration-200 pl-[15px] ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
@@ -82,8 +84,8 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
         icon={icon} 
         size={"sm"} 
         containerClassName='absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]'
-        className={chainColors ? (shouldUseChainColor ? `text-[${chainColors.dark[1]}]` : 'text-color-text-secondary') : 'text-color-text-secondary'}
-        style={{ color: shouldUseChainColor ? chainColors!.dark[1] : 'rgb(var(--text-secondary))'}} 
+        className={chainColors ? (shouldUseChainColor ? `text-[${chainColors[resolvedTheme === "dark" ? "dark" : "light"][1]}]` : 'text-color-text-secondary') : 'text-color-text-secondary'}
+        style={{ color: shouldUseChainColor ? chainColors![resolvedTheme === "dark" ? "dark" : "light"][1] : 'rgb(var(--text-secondary))'}} 
       />
       </div>
       <div className={`flex min-w-0 items-center whitespace-nowrap heading-large-xs pl-[15px] pr-[15px]`}>

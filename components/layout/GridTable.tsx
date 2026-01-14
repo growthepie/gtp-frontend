@@ -7,6 +7,7 @@ import React from "react";
 import { useWindowSize } from "usehooks-ts";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useTheme } from "next-themes";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -61,12 +62,17 @@ export const GridTableRow = ({
   style,
   bar,
   onClick,
-}: GridTableRowProps) => {
+  theme: themeProp,
+}: GridTableRowProps & { theme?: string }) => {
   const { AllChainsByKeys } = useMaster();
+  const { resolvedTheme } = useTheme();
+  
+  // Use prop if provided, otherwise fall back to resolved theme from context
+  const theme = themeProp ?? resolvedTheme;
 
   const getBarColor = () => {
     if (bar && bar.origin_key) {
-      return AllChainsByKeys[bar.origin_key].colors["dark"][1];
+      return AllChainsByKeys[bar.origin_key].colors[theme === "dark" ? "dark" : "light"][1];
     }
 
     if (bar && bar.color) {
@@ -119,8 +125,12 @@ export const GridTableRow = ({
   );
 };
 
-export const GridTableChainIcon = ({ origin_key, className, color }: { origin_key: string, className?: string, color?: string}) => {
+export const GridTableChainIcon = ({ origin_key, className, color, theme: themeProp }: { origin_key: string, className?: string, color?: string, theme?: string }) => {
   const { AllChainsByKeys } = useMaster();
+  const { resolvedTheme } = useTheme();
+  
+  // Use prop if provided, otherwise fall back to resolved theme from context
+  const theme = themeProp ?? resolvedTheme;
 
   return (
     <div className={`flex h-full items-center ${className || ""}`}>
@@ -136,7 +146,7 @@ export const GridTableChainIcon = ({ origin_key, className, color }: { origin_ke
             color: color ||
               AllChainsByKeys[
                 origin_key
-              ].colors["dark"][0],
+              ].colors[theme === "dark" ? "dark" : "light"][0],
           }}
         />
       )}

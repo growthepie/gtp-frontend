@@ -4,7 +4,7 @@ import { ChainInfo } from "@/types/api/MasterResponse";
 import { useState } from "react";
 import { track } from "@/lib/tracking";
 import { IS_PRODUCTION } from "@/lib/helpers";
-
+import { useTheme } from "next-themes";
 const TAB_INFO = {
     "overview": {
         "header": "Overview",
@@ -36,6 +36,8 @@ const TAB_INFO = {
 export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { chainInfo: ChainInfo, selectedTab: string, setSelectedTab: (tab: string) => void }){
     const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
+    const { theme } = useTheme();
+
     // add user_insights to chainInfo.tab_status if on DEV
     const tabStatus = {
         ...chainInfo.tab_status,
@@ -51,7 +53,7 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
             })
             .map((tab, index) => (
             <div
-                key={tab}
+                key={tab + theme + index}
                 onClick={() => {
                     if (!(chainInfo.tab_status[tab] === "locked" || chainInfo.tab_status[tab] === "soon")) {
                         track(`clicked chain tab ${tab}`, {
@@ -70,8 +72,8 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
                     comingSoon={chainInfo.tab_status[tab] === "soon"}
                     icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
                     header={tab === "overview" ? chainInfo.name_short : TAB_INFO[tab].header}
-                    iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
-                    index={index + 1}
+                    iconColor={tab === "overview" ? chainInfo.colors[theme ?? "dark"][0] : undefined}
+                    index={index + 1}       
                     isHovered={hoveredTab === tab}
                 />
             </div>

@@ -342,7 +342,7 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     const maxPercentage = Math.max(...points.map(point => point.percentage));
     
     // Start building the tooltip HTML
-    let tooltip = `<div class="mt-3 mr-3 mb-3 min-w-60 md:min-w-60 text-xs font-raleway highcharts-tooltip-container">
+    let tooltip = `<div class="mt-3 mr-3 mb-3 min-w-60 md:min-w-60 text-xs font-raleway  highcharts-tooltip-container">
       <div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
     
     // Add points

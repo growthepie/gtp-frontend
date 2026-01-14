@@ -119,7 +119,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
         appendToBody: true,
         confine: false,
         axisPointer: { type: 'line', lineStyle: { color: 'rgb(215, 223, 222)', width: 1, type: 'solid' } },
-        backgroundColor: 'rgb(var(--bg-default) / 0.95)',
+        backgroundColor: 'rgb(var(--bg-default))',
         shadowColor: 'rgb(var(--ui-shadow))',
         shadowBlur: 27,
         shadowOffsetX: 0,

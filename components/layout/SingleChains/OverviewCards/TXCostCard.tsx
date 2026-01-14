@@ -8,6 +8,7 @@ import { HistoryDots } from "../../EthAgg/HistoryDots";
 import { getGradientColor } from "../../EthAgg/helpers";
 import { GetRankingColor } from "@/lib/chains";
 import { formatNumber } from "@/lib/utils/formatters";
+import { useTheme } from "next-themes";
 export interface ChainData {
     chain_name:                 string;
     display_name:               string;
@@ -37,7 +38,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
     const [txCostSelectedIndex, setTxCostSelectedIndex] = useState<number | null>(null);
     const [txCostHoverIndex, setTxCostHoverIndex] = useState<number | null>(null);
     const recentCostHistory = useMemo(() => costHistory.slice(-24), [costHistory]);
-
+    const { theme } = useTheme();
     useEffect(() => {
         if (recentCostHistory.length === 0) {
             setTxCostSelectedIndex(null);
@@ -66,7 +67,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
     // Get ranking color for transaction costs if overview data is available
     const rankingColor = overviewData?.data?.ranking?.txcosts
         ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100)
-        : master.chains[chainKey].colors.dark[0];
+        : master.chains[chainKey].colors[theme ?? "dark"][0];
 
     const activeIndex = txCostHoverIndex ?? txCostSelectedIndex ?? (recentCostHistory.length ? recentCostHistory.length - 1 : null);
     const lastCostData = activeIndex !== null ? recentCostHistory[activeIndex] : undefined;
@@ -132,7 +133,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
                     </div>
                     <div className="flex flex-col gap-y-[2px] items-end min-w-[110px]">
                         <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
-                            {lastCostData ? <div className="text-right" style={{ color: master.chains[chainKey].colors.dark[0] }}>{getDisplayValue("tx_cost_median", showUsd)} </div> : <div className="heading-small-xs numbers-md">N/A</div>}
+                            {lastCostData ? <div className="text-right" style={{ color: master.chains[chainKey].colors[theme ?? "dark"][0] }}>{getDisplayValue("tx_cost_median", showUsd)} </div> : <div className="heading-small-xs numbers-md">N/A</div>}
                             <GTPIcon icon={"gtp-realtime"} size="sm" className="animate-pulse" />
                         </div>
                         <div className="relative min-w-[80px] flex justify-end text-right">

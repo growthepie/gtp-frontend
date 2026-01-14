@@ -12,6 +12,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useRouter } from "next/navigation";
 import { getFundamentalsByKey } from "@/lib/metrics";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { useTheme } from "next-themes";
 
 const formatLargeNumber = (value: number, decimals: number) => {
     const absValue = Math.abs(value);
@@ -34,6 +35,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
     const router = useRouter();
+    const { theme } = useTheme();
     
     // Custom tooltip state
     const [customTooltip, setCustomTooltip] = useState<{
@@ -90,7 +92,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
         return (
          <div
-            className={`absolute pointer-events-none z-[999] bg-[#2A3433FE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
+            className={`absolute pointer-events-none z-[999] bg-color-bg-default/95 shadow-standard rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway `}
             style={{
               left: tooltipX,
               top: tooltipY,
@@ -99,7 +101,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
             
           >
                 <div className="flex items-center gap-x-[5px] justify-between mb-2 pl-[21px] ">
-                    <div className="heading-small-xs text-white">{dateStr}</div>
+                    <div className="heading-small-xs text-color-text-primary">{dateStr}</div>
                 </div>
                 {data.map((item, index) => (
                     <div key={index} className="flex justify-between items-center gap-x-[10px] h-[12px]">
@@ -108,9 +110,9 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                                 className="w-4 h-2 rounded-r-full " 
                                 style={{ backgroundColor: item.color }}
                             />
-                            <span className="text-xs whitespace-nowrap text-white">{metricData.name}</span>
+                            <span className="text-xs whitespace-nowrap text-color-text-primary">{metricData.name}</span>
                         </div>
-                            <span className="numbers-xs text-white font-medium">
+                            <span className="numbers-xs text-color-text-primary font-medium">
                                 {prefix}{formatLargeNumber(item.value, 2)} {suffix}
                         </span>
                     </div>
@@ -161,7 +163,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                     metricKey={metricKey} 
                     metricData={metricData} 
                     overviewData={overviewData} 
-                    chainColor={chainData.colors.dark[0]}
+                    chainColor={chainData.colors[theme ?? "dark"][0]}
                     customTooltip={customTooltip}
                     setCustomTooltip={setCustomTooltip}
                     isInteracting={isInteracting}
@@ -173,7 +175,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 />
             </div>
             <div className="flex flex-col gap-y-[2px] justify-center items-end min-w-[90px] [md:min-w-[120px] pl-[5px] group-hover:pr-[20px] transition-all duration-200">
-                <div className=" numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color: chainData.colors.dark[0] }}>
+                <div className=" numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color: chainData.colors[theme ?? "dark"][0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[valueIndex], 2)} {suffix}
                 </div>
                 <div className="numbers-xxs " style={{ color: overviewData.data.kpi_cards[metricKey].wow_change.data[0] > 0 ? "#4CFF7E" : "#FF3838" }}>{Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 1 }).format(overviewData.data.kpi_cards[metricKey].wow_change.data[0] * 100)}%</div>
