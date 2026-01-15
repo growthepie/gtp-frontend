@@ -270,26 +270,70 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
-// Hook to cycle through animated placeholder options
+// Hook to cycle through animated placeholder options with typewriter effect
 const useAnimatedPlaceholder = (isActive: boolean) => {
   const options = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentText, setCurrentText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isActive) {
-      // Reset to first option when not active
+      // Reset when not active
       setCurrentIndex(0);
+      setCurrentText("");
+      setIsDeleting(false);
       return;
     }
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % options.length);
-    }, 2500); // Change every 2.5 seconds
+    const currentOption = options[currentIndex];
+    
+    // Typing speed (milliseconds per character)
+    const typingSpeed = 100;
+    // Deleting speed (milliseconds per character)
+    const deletingSpeed = 70;
+    // Pause after typing complete (milliseconds)
+    const pauseAfterTyping = 2000;
+    // Pause after deleting complete (milliseconds)
+    const pauseAfterDeleting = 500;
 
-    return () => clearInterval(interval);
-  }, [isActive, options.length]);
+    let timeoutId: NodeJS.Timeout;
 
-  return `Search: ${options[currentIndex]}`;
+    if (!isDeleting) {
+      // Typing phase
+      if (currentText.length < currentOption.length) {
+        // Continue typing
+        timeoutId = setTimeout(() => {
+          setCurrentText(currentOption.slice(0, currentText.length + 1));
+        }, typingSpeed);
+      } else {
+        // Finished typing, wait then start deleting
+        timeoutId = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseAfterTyping);
+      }
+    } else {
+      // Deleting phase
+      if (currentText.length > 0) {
+        // Continue deleting
+        timeoutId = setTimeout(() => {
+          setCurrentText(currentText.slice(0, -1));
+        }, deletingSpeed);
+      } else {
+        // Finished deleting, wait then move to next option
+        timeoutId = setTimeout(() => {
+          setIsDeleting(false);
+          setCurrentIndex((prev) => (prev + 1) % options.length);
+        }, pauseAfterDeleting);
+      }
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isActive, currentIndex, currentText, isDeleting, options]);
+
+  return `Search:${currentText}`;
 };
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
@@ -324,7 +368,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const { totalMatches } = useSearchBuckets();
     const [isFocused, setIsFocused] = useState(false);
     
-    // Animated placeholder - only animate when input is empty
+    // Animated placeholder - only animate when input is empty (hook must always be called)
     const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -460,8 +504,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 id="global-search-input"
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={localQuery.length === 0 ? animatedPlaceholder : placeholder}
+                className={`flex-1 h-full bg-transparent text-color-text-primary ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                placeholder={!IS_PRODUCTION && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}
@@ -526,10 +570,12 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-white placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={localQuery.length === 0 ? animatedPlaceholder : placeholder}
+                className={`flex-1 h-full bg-transparent text-white ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                placeholder={!IS_PRODUCTION && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
+                onFocus={handleInternalFocus}
+                onBlur={handleInternalBlur}
               />
               <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
                 <div className="flex items-center px-[15px] h-[24px] border border-color-text-primary rounded-full select-none">
