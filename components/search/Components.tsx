@@ -270,6 +270,28 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
+// Hook to cycle through animated placeholder options
+const useAnimatedPlaceholder = (isActive: boolean) => {
+  const options = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isActive) {
+      // Reset to first option when not active
+      setCurrentIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % options.length);
+    }, 2500); // Change every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, [isActive, options.length]);
+
+  return `Search: ${options[currentIndex]}`;
+};
+
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
@@ -301,6 +323,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [localQuery, setLocalQuery] = useState(query);
     const { totalMatches } = useSearchBuckets();
     const [isFocused, setIsFocused] = useState(false);
+    
+    // Animated placeholder - only animate when input is empty
+    const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);
@@ -436,7 +461,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={placeholder}
+                placeholder={localQuery.length === 0 ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}
@@ -502,7 +527,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-white placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={placeholder}
+                placeholder={localQuery.length === 0 ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
               />
