@@ -37,9 +37,66 @@ export type AggregatedDataRow = {
 
 const memoizedResults = new Map();
 const MAX_CACHE_SIZE = 20;
+const METRIC_FILTER_ALLOWLIST = new Set([
+  "gas_fees",
+  "gas_fees_usd",
+  "gas_fees_eth",
+  "txcount",
+  "daa",
+  "num_contracts",
+]);
+const METRIC_FILTER_REGEX = /^\s*([a-zA-Z0-9_]+)\s*(<=|>=|!=|==|=|<|>)\s*([0-9,._]+)\s*$/;
 
-function getCacheKey(timespan: string, filters: { [key: string]: string[] }, focusEnabled: boolean) {
-  return `${timespan}-${JSON.stringify(filters)}-${focusEnabled}`;
+type MetricFilter = {
+  metric: string;
+  operator: string;
+  value: number;
+};
+
+function getCacheKey(
+  timespan: string,
+  filters: { [key: string]: string[] },
+  focusEnabled: boolean,
+  showUsd: boolean,
+) {
+  return `${timespan}-${JSON.stringify(filters)}-${focusEnabled}-${showUsd}`;
+}
+
+function parseMetricFilters(rawFilters: string[], showUsd: boolean): MetricFilter[] {
+  return rawFilters
+    .map((raw) => {
+      const match = raw.match(METRIC_FILTER_REGEX);
+      if (!match) return null;
+      const metricRaw = match[1].toLowerCase();
+      if (!METRIC_FILTER_ALLOWLIST.has(metricRaw)) return null;
+      const operator = match[2];
+      const value = Number(match[3].replace(/[, _]/g, ""));
+      if (!Number.isFinite(value)) return null;
+      const metric = metricRaw === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metricRaw;
+      return { metric, operator, value };
+    })
+    .filter((filter): filter is MetricFilter => filter !== null);
+}
+
+function matchesMetricFilter(value: number, filter: MetricFilter): boolean {
+  if (!Number.isFinite(value)) return false;
+  switch (filter.operator) {
+    case ">":
+      return value > filter.value;
+    case ">=":
+      return value >= filter.value;
+    case "<":
+      return value < filter.value;
+    case "<=":
+      return value <= filter.value;
+    case "=":
+    case "==":
+      return value === filter.value;
+    case "!=":
+      return value !== filter.value;
+    default:
+      return false;
+  }
 }
 
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
@@ -83,13 +140,19 @@ function aggregateProjectData(
   data: AppDatum[],
   typesArr: string[],
   ownerProjectToProjectData: { [key: string]: any },
-  filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], main_category: [] },
+  filters: { [key: string]: string[] } = {
+    origin_key: [],
+    owner_project: [],
+    main_category: [],
+    metric_filter: [],
+  },
   timespan: string,
   focusEnabled: boolean,
-  supportedChainsKeys: string[]
+  supportedChainsKeys: string[],
+  showUsd: boolean,
 ): AggregatedDataRow[] {
   // Generate cache key
-  const cacheKey = getCacheKey(timespan, filters, focusEnabled);
+  const cacheKey = getCacheKey(timespan, filters, focusEnabled, showUsd);
   
   // Check if we have cached results
   if (memoizedResults.has(cacheKey)) {
@@ -224,14 +287,24 @@ function aggregateProjectData(
     };
   });
 
+  const metricFilters = parseMetricFilters(filters.metric_filter || [], showUsd);
+  const filteredResults = metricFilters.length === 0
+    ? results
+    : results.filter((item) =>
+        metricFilters.every((filter) => {
+          const value = (item as Record<string, number>)[filter.metric];
+          return matchesMetricFilter(value, filter);
+        }),
+      );
+
   // Calculate ranks in a single pass for all metrics - do this separately for clarity
-  assignRanks(results, 'gas_fees_eth');
-  assignRanks(results, 'gas_fees_usd');
-  assignRanks(results, 'txcount');
-  assignRanks(results, 'daa');
+  assignRanks(filteredResults, 'gas_fees_eth');
+  assignRanks(filteredResults, 'gas_fees_usd');
+  assignRanks(filteredResults, 'txcount');
+  assignRanks(filteredResults, 'daa');
 
   // Cache the results
-  memoizedResults.set(cacheKey, results);
+  memoizedResults.set(cacheKey, filteredResults);
 
   // Limit cache size to avoid memory leaks
   if (memoizedResults.size > MAX_CACHE_SIZE) {
@@ -239,7 +312,7 @@ function aggregateProjectData(
     const firstKey = memoizedResults.keys().next().value;
     memoizedResults.delete(firstKey);
   }
-  return results;
+  return filteredResults;
 }
 
 const devMiddleware = (useSWRNext) => {
@@ -328,6 +401,10 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     const categories = searchParams.get("main_category")?.split(",") || [];
     return categories;
   }, [searchParams]);
+  const selectedMetricFiltersParam = useMemo(() =>
+    searchParams.get("metric_filter")?.split(",") || [],
+    [searchParams]
+  );
 
 
   enum FilterType {
@@ -423,18 +500,34 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) {
       return [];
     }
-    const aggregated = aggregateProjectData(
-      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
-        origin_key: selectedChainsParam,
-        owner_project: selectedStringFiltersParam,
-        main_category: selectedMainCategoryParam,
-      },
-      selectedTimespan,
-      focusEnabled,
-      supportedChainKeys
-    );
+      const aggregated = aggregateProjectData(
+        applicationsDataTimespan[selectedTimespan].data.data,
+        applicationsDataTimespan[selectedTimespan].data.types,
+        ownerProjectToProjectData,
+        {
+          origin_key: selectedChainsParam,
+          owner_project: selectedStringFiltersParam,
+          main_category: selectedMainCategoryParam,
+          metric_filter: selectedMetricFiltersParam,
+        },
+        selectedTimespan,
+        focusEnabled,
+        supportedChainKeys,
+        showUsd,
+      );
     return aggregated;
-  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled, supportedChainKeys]);
+  }, [
+    applicationsTimespan,
+    selectedTimespan,
+    selectedChainsParam,
+    selectedStringFiltersParam,
+    selectedMainCategoryParam,
+    selectedMetricFiltersParam,
+    ownerProjectToProjectData,
+    focusEnabled,
+    supportedChainKeys,
+    showUsd,
+  ]);
 
   const applicationDataAggregated = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -450,16 +543,21 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
 
     return aggregateProjectData(
-      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+      applicationsDataTimespan[selectedTimespan].data.data,
+      applicationsDataTimespan[selectedTimespan].data.types,
+      ownerProjectToProjectData,
+      {
         origin_key: [],
         owner_project: [],
         main_category: [],
+        metric_filter: [],
       },
       selectedTimespan,
       focusEnabled,
-      supportedChainKeys
-    )
-  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled, supportedChainKeys]);
+      supportedChainKeys,
+      showUsd,
+    );
+  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled, supportedChainKeys, showUsd]);
 
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string | null; display_name: string }>,
