@@ -271,7 +271,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
 }
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -436,7 +436,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder="Search"
+                placeholder={placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}
@@ -502,7 +502,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-white placeholder-color-text-primary border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder="Search"
+                placeholder={placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
               />

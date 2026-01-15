@@ -89,8 +89,39 @@ const tiers = [
 
 const faqs = [
   {
-    question: "More offers on-demand",
-    answer: "Yes. We co-create dashboards, labels, and metrics with partners. Tell us what you need and we will scope it together.",
+    question: "How does growthepie ensure data neutrality and accuracy?",
+    answer:
+      "We apply a rigorous, open-source cleaning process to data aggregated from multiple sources, but most through our own indexing via RPCs. Our framework ensures a level playing field and aims for standardization for the entire Ethereumecosystem, focusing on transparent and verifiable onchain metrics.",
+  },
+  {
+    question: "How can our Marketing or Business Development teams use the platform?",
+    answer:
+      "You can leverage our high-quality visualizations to showcase network growth, highlight specific niches (like gaming), and identify unexplored market opportunities using transaction and active address data.",
+  },
+  {
+    question: "How can our Finance representatives and Executive leadership use the platform?",
+    answer:
+      "We have dedicated economics dashboards and metrics that can be used to track the health of the ecosystem and the performance of the chains. You can see onchain profit, revenue, costs, and more. Specifically for Applications, you can identify which projects are driving the most activity and revenue.",
+  },
+  {
+    question: "Can our internal data team integrate with your platform?",
+    answer:
+      "Yes. We provide standardized, out-of-the-box metrics that make benchmarking much faster. Partners also gain API access to integrate our aggregated data and labels directly into their own internal tools.",
+  },
+  {
+    question: "How do listings work?",
+    answer:
+      "Free listings cover every chain in the ecosystem, free for EVM-based chains. Paid tiers unlock deeper indexing, more granular visualizations, branded 'Homebase' pages, and tailored support.",
+  },
+  {
+    question: "What is the benefit of the Open Labels Initiative (OLI)?",
+    answer:
+      "The OLI makes application-level metrics fully self-serve. It allows you to identify exactly which smart contracts and apps are driving activity in your ecosystem with high granularity.",
+  },
+  {
+    question: "Do you offer insights or support for more than just the English-speaking markets?",
+    answer:
+      "We are expanding our coverage to include localized research and data visualizations, helping projects reach and understand this high-growth community. More soon.",
   },
   {
     question: "Can I request custom features and metrics?",
@@ -98,15 +129,15 @@ const faqs = [
       "Yes. We co-create dashboards, labels, and metrics with partners. Tell us what you need and we will scope it together.",
   },
   {
-    question: "How do listings work?",
+    question: "Is there a way to receive dedicated analyst support?",
     answer:
-      "Free listings cover every chain in the ecosystem. Paid tiers unlock deeper indexing, more granular visualizations, and tailored support.",
+      "Strategic partners gain access to our 'Ask an Analyst' service, quarterly insight calls, and dedicated alerts-as-a-service to stay informed on the latest ecosystem trends.",
   },
-  ...(IS_PRODUCTION ? [] : [{
-    question: "[Place holder]",
+  {
+    question: "Why should we support growthepie as a Public Good?",
     answer:
-      "[Place holder]",
-  }]),
+      "We are built 'by builders, for builders.' Supporting us ensures that transparent, high-quality Ethereum analytics remain open and accessible to the entire community rather than being locked behind private paywalls.",
+  },
 ];
 
 export default function SalesPage() {
