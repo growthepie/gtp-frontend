@@ -42,6 +42,17 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
   const chartData = useMemo(() => {
     return tpsHistory || [];
   }, [tpsHistory]);
+  const formatTps = (value?: number) => {
+    if (value == null) {
+      return "N/A";
+    }
+    const hasDecimals = Math.abs(value) < 1000;
+
+    return value.toLocaleString("en-US", {
+      minimumFractionDigits: hasDecimals ? 1 : 0,
+      maximumFractionDigits: hasDecimals ? 1 : 0,
+    });
+  };
 
 
   return (
@@ -71,7 +82,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   </div>
             </div>
             <div className="flex flex-col gap-y-[2px] group md:mx-auto">
-                  <div className="heading-small-xs numbers-sm">{chainData.ath?.toFixed(1)} TPS</div>
+                  <div className="heading-small-xs numbers-sm">{formatTps(chainData.ath)} TPS</div>
                   <div className="relative min-w-[80px]">
                       <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">All-Time High</div>
                       <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["ath_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
@@ -80,7 +91,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
            </div>
            <div className="flex flex-col-reverse gap-y-[10px] md:flex-row md:w-full md:justify-between">
             <div className="flex flex-col gap-y-[2px] group items-end md:items-start">
-                  <div className="heading-small-xs numbers-sm">{chainData["24h_high"]?.toFixed(1)} TPS</div>
+                  <div className="heading-small-xs numbers-sm">{formatTps(chainData["24h_high"])} TPS</div>
                   <div className="relative min-w-[90x]">
                       <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">24h Peak</div>
                       <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 md:right-auto md:left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["24h_high_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
@@ -88,7 +99,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
             </div>
             <div className="flex items-center gap-x-[8px] heading-small-xs  group">
                   <div className="flex flex-col gap-y-[2px] items-end">
-                    <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)}</div>
+                    <div className="numbers-2xl group-hover:numbers-md transition-all duration-200" style={{ color: master.chains[chainKey].colors.dark[0] }}>{formatTps(chainData.tps)}</div>
                     <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">Current TPS</div>
                   </div>
                   <GTPIcon icon={"gtp-realtime"} size="sm" className="mb-0.5 animate-pulse" />
