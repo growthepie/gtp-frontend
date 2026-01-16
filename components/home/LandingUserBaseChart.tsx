@@ -22,9 +22,11 @@ import Subheading from "../layout/Subheading";
 import Heading from "../layout/Heading";
 import { TopRowContainer, TopRowParent } from "../layout/TopRow";
 import { useTheme } from "next-themes";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
-  const [isSidebarOpen] = useState(false);
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  
   const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedChainTypes, setSelectedChainTypes] = useLocalStorage<string[]>(
     "landingChainTypeFilter",
@@ -64,9 +66,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
   }, [landing, selectedTimeInterval]);
 
   const { resolvedTheme } = useTheme();
-
-
-
 
   return (
     <>

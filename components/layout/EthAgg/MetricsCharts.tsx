@@ -13,13 +13,10 @@ import Link from 'next/link';
 import "@/app/highcharts.axis.css";
 import { AggChart } from './AggChart';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
-import { Splide, SplideSlide, SplideTrack } from '@splidejs/react-splide';
-import '@splidejs/react-splide/css';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import { track } from '@/lib/tracking';
-import SwiperContainer from '../SwiperContainer';
-import SwiperComponent from '@/components/SwiperComponent';
+import { Carousel, CarouselBreakpoints } from "@/components/Carousel";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
@@ -379,11 +376,16 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
   if (!meetL2sData) {
     // Optional: Add a loading skeleton here
     return null;
-  }
-
+  } 
 
   return (
-    <SwiperComponent>
+    <Carousel
+      heightClass="h-[calc(235px+12px+15px)]" // height of the slides + height of the dots + distance from the slides to the dots
+      minSlideWidth={266}
+      pagination="dots"
+      arrows={false}
+      bottomOffset={0}
+    >
       {l2Keys.map((key) => {
         const l2Data = meetL2sData[key];
         const chainInfo = AllChainsByKeys[key];
@@ -468,7 +470,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
           </div>
         );
       })}
-    </SwiperComponent>
+    </Carousel>
   );
 });
 

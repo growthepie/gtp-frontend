@@ -4,7 +4,6 @@ import Heading from "@/components/layout/Heading";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Subheading from "@/components/layout/Subheading";
-// import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
 import Link from "next/link";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -15,7 +14,6 @@ import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import t
 import { LinkButton } from "@/components/layout/LinkButton";
 import dynamic from "next/dynamic";
 const LandingSwiperItems = dynamic(() => import("@/components/layout/LandingSwiperItems"), { ssr: true });
-const SwiperContainer = dynamic(() => import("@/components/layout/SwiperContainer"), { ssr: true });
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -47,9 +45,7 @@ export default async function Page() {
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
           <LandingFirstHeaders />
       </Container>
-      <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
-        <LandingSwiperItems />
-      </SwiperContainer>
+      <LandingSwiperItems />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <LandingSecondHeaders />
       </Container>

@@ -751,10 +751,7 @@ export const TopGainersAndLosersTooltip = ({ metric, scopeLabel }: { metric: str
   const medianScopeText = scopeLabel ? "within this chain view" : "across all applications";
   return (
     <div
-      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-      }}
+      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
       onClick={(e) => {
         e.stopPropagation();
       }}
@@ -797,10 +794,7 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
 
   return (
     <div
-      className="w-[238px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-      }}
+      className="w-[238px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
       onClick={(e) => {
         e.stopPropagation();
       }}

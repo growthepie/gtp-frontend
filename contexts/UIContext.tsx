@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { debounce } from "lodash";
 import Highcharts from "highcharts/highstock";
@@ -34,8 +34,14 @@ export type UIState = {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (value: Updater<boolean>) => void;
   toggleSidebar: () => void;
+  isSidebarAnimating: boolean;
+  setIsSidebarAnimating: (value: Updater<boolean>) => void;
+  isResizing: boolean;
+  setIsResizing: (value: Updater<boolean>) => void;
   isMobile: boolean;
   setIsMobile: (value: Updater<boolean>) => void;
+  isLessThan2xl: boolean;
+  setIsLessThan2xl: (value: Updater<boolean>) => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (value: Updater<boolean>) => void;
   toggleMobileSidebar: () => void;
@@ -69,10 +75,25 @@ export const useUIStore = create<UIState>((set) => ({
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
     })),
+  isSidebarAnimating: false,
+  setIsSidebarAnimating: (value) =>
+    set((state) => ({
+      isSidebarAnimating: resolveState(value, state.isSidebarAnimating),
+    })),
+  isResizing: false,
+  setIsResizing: (value) =>
+    set((state) => ({
+      isResizing: resolveState(value, state.isResizing),
+    })),
   isMobile: false,
   setIsMobile: (value) =>
     set((state) => ({
       isMobile: resolveState(value, state.isMobile),
+    })),
+  isLessThan2xl: false,
+  setIsLessThan2xl: (value) =>
+    set((state) => ({
+      isLessThan2xl: resolveState(value, state.isLessThan2xl),
     })),
   isMobileSidebarOpen: false,
   setIsMobileSidebarOpen: (value) =>
@@ -129,44 +150,90 @@ export const UIContextProvider = ({ children }: ProviderProps) => {
   const setIsSidebarOpen = useUIStore((state) => state.setIsSidebarOpen);
   const isMobileSidebarOpen = useUIStore((state) => state.isMobileSidebarOpen);
   const isMobile = useUIStore((state) => state.isMobile);
+  const isLessThan2xl = useUIStore((state) => state.isLessThan2xl);
+  const setIsLessThan2xl = useUIStore((state) => state.setIsLessThan2xl);
+
+  const setIsResizing = useUIStore((state) => state.setIsResizing);
+  const setIsSidebarAnimating = useUIStore((state) => state.setIsSidebarAnimating);
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
+
+  const isFirstRender = useRef(true);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track sidebar animation
+  useLayoutEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    setIsSidebarAnimating(true);
+    const timeout = setTimeout(() => {
+      setIsSidebarAnimating(false);
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [isSidebarOpen, setIsSidebarAnimating]);
 
   const prevWindowWidthRef = useRef<number>(
     typeof window !== "undefined" ? window.innerWidth : 0,
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-
+  
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const initialWidth = window.innerWidth;
-
+  
     setIsSafariBrowser(isSafari);
     setIsMobile(initialWidth < MOBILE_BREAKPOINT);
     setIsSidebarOpen(initialWidth >= 1280);
+    setIsLessThan2xl(initialWidth < 1536);
     prevWindowWidthRef.current = initialWidth;
-
-    const handleResize = () => {
+  
+    // Debounced version for the heavier layout updates
+    const debouncedUpdateLayout = debounce(() => {
       const currentWidth = window.innerWidth;
       const isExpanding = currentWidth > prevWindowWidthRef.current;
-
+  
       setIsMobile(currentWidth < MOBILE_BREAKPOINT);
+      setIsLessThan2xl(currentWidth < 1536);
       setIsSidebarOpen((prev) =>
         currentWidth >= 1280 ? (isExpanding ? prev : true) : false,
       );
-
+  
       prevWindowWidthRef.current = currentWidth;
+    }, 50);
+  
+    const handleResize = () => {
+      // Set resizing to true IMMEDIATELY on every resize event
+      setIsResizing(true);
+  
+      // Clear any existing timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+  
+      // Set resizing to false only after resizing stops (no events for 200ms)
+      resizeTimeoutRef.current = setTimeout(() => {
+        setIsResizing(false);
+      }, 100);
+  
+      // Run the debounced layout updates
+      debouncedUpdateLayout();
     };
-
-    const debouncedHandleResize = debounce(handleResize, 150);
-
-    window.addEventListener("resize", debouncedHandleResize);
+  
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", debouncedHandleResize);
-      debouncedHandleResize.cancel();
+      window.removeEventListener("resize", handleResize);
+      debouncedUpdateLayout.cancel();
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
-  }, [setIsSafariBrowser, setIsMobile, setIsSidebarOpen]);
+  }, [setIsSafariBrowser, setIsMobile, setIsSidebarOpen, setIsResizing, setIsLessThan2xl]);
 
   useEffect(() => {
     if (typeof document === "undefined") {
@@ -192,7 +259,7 @@ export const UIContextProvider = ({ children }: ProviderProps) => {
       document.body.style.touchAction = originalBodyTouchAction || "auto";
       document.body.style.overflow = originalBodyOverflow || "auto";
     };
-  }, [isMobileSidebarOpen, isMobile]);
+  }, [isMobileSidebarOpen, isMobile, isLessThan2xl]);
 
   return <>{children}</>;
 };

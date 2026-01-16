@@ -95,14 +95,14 @@ const ChainComponent = function ChainComponent({
   xMin?: number | null;
 }) {
   // Keep track of the mounted state
-  const isMounted = useIsMounted();
-  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
-  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
   const { AllChainsByKeys } = useMaster();
-  const { width, height } = useWindowSize();
   const { theme } = useTheme();
   // const isMobile = useMediaQuery("(max-width: 767px)");
   const isMobile = useUIContext((state) => state.isMobile);
+  
+  const isSidebarAnimating = useUIContext((state) => state.isSidebarAnimating);
+  const isResizing = useUIContext((state) => state.isResizing);
+  const isTransitioning = isSidebarAnimating || isResizing;
 
   // Get ECharts colors based on current theme
   const echartsColors = useMemo(() => {
@@ -119,10 +119,27 @@ const ChainComponent = function ChainComponent({
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
   
   // Use resize observer to handle chart repositioning
-  const { width: containerWidth = 0, height: containerHeight = 0 } = useResizeObserver({
+  const { width: rawContainerWidth = 0, height: rawContainerHeight = 0 } = useResizeObserver({
     ref: chartContainerRef as React.RefObject<HTMLElement>,
     box: 'border-box',
   });
+
+  // Freeze dimensions during transitions
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  useEffect(() => {
+    // Only update dimensions when NOT transitioning
+    if (!isTransitioning && rawContainerWidth > 0) {
+      setContainerWidth(rawContainerWidth);
+    }
+  }, [rawContainerWidth, isTransitioning]);
+
+  useEffect(() => {
+    if (!isTransitioning && rawContainerHeight > 0) {
+      setContainerHeight(rawContainerHeight);
+    }
+  }, [rawContainerHeight, isTransitioning]);
 
   const [zoomMargin, setZoomMargin] = useState([1, 15, 0, 0]);
   const [defaultMargin, setDefaultMargin] = useState([1, 15, 0, 0]);
@@ -829,6 +846,7 @@ const ChainComponent = function ChainComponent({
   }, [selectedTimespan, timespans, zoomed]);
 
   const options: any = useMemo(() => {
+    if (isTransitioning) return null;
     // Define series configurations similar to AggChart
     const seriesConfigs = [
       ...(category !== "rent_paid" && !focusEnabled ? [{
@@ -836,7 +854,7 @@ const ChainComponent = function ChainComponent({
         name: ethData.chain_id,
         type: 'line',
         data: filteredData.map(d => [d[0], d[2]]),
-        stacking: 'total'
+        stacking: 'total',
       }] : []),
       {
         key: data.chain_id,
@@ -1053,9 +1071,12 @@ const ChainComponent = function ChainComponent({
     focusEnabled,
     ethData.chain_id,
     echartsColors,
+    isTransitioning,
   ]);
 
   const getGraphicElements = useCallback(() => {
+    // if (isTransitioning) return [];
+
     if (!chartRef.current || !filteredData.length || !containerWidth || !containerHeight) return [];
 
     const chartInstance = chartRef.current.getEchartsInstance();
@@ -1162,59 +1183,63 @@ const ChainComponent = function ChainComponent({
   // }, [width, height, isSidebarOpen, resituateChart]);
 
   // Handle container size changes and update graphic elements
-  useEffect(() => {
-    if (chartRef.current && containerWidth && containerHeight) {
-      const chartInstance = chartRef.current.getEchartsInstance();
-      if (chartInstance) {
-        // Delay to ensure chart is fully rendered
-        setTimeout(() => {
-          chartInstance.setOption({
-            graphic: getGraphicElements(),
-          });
-        }, 100);
-      }
-    }
-  }, [containerWidth, containerHeight, getGraphicElements]);
+  // useEffect(() => {
+  //   // Skip updates during transitions
+  //   if (isTransitioning) return;
+    
+  //   if (chartRef.current && containerWidth && containerHeight) {
+  //     const chartInstance = chartRef.current.getEchartsInstance();
+  //     if (chartInstance) {
+  //       setTimeout(() => {
+  //         chartInstance.setOption({
+  //           graphic: getGraphicElements(),
+  //         });
+  //       }, 100);
+  //     }
+  //   }
+  // }, [containerWidth, containerHeight, getGraphicElements, isTransitioning]);
 
-  const SourcesDisplay = useMemo(() => {
-    return data.metrics[category].source &&
-      data.metrics[category].source.length > 0 ? (
-      (data.metrics[category].source as string[])
-        .map<ReactNode>((s) => (
-          <Link
-            key={s}
-            rel="noopener noreferrer"
-            target="_blank"
-            href={Sources[s] ?? ""}
-            className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
-          >
-            {s}
-          </Link>
-        ))
-        .reduce((prev, curr) => [prev, ", ", curr])
-    ) : (
-      <>Unavailable</>
-    );
-  }, [category, data.metrics]);
+  // const SourcesDisplay = useMemo(() => {
+  //   return data.metrics[category].source &&
+  //     data.metrics[category].source.length > 0 ? (
+  //     (data.metrics[category].source as string[])
+  //       .map<ReactNode>((s) => (
+  //         <Link
+  //           key={s}
+  //           rel="noopener noreferrer"
+  //           target="_blank"
+  //           href={Sources[s] ?? ""}
+  //           className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
+  //         >
+  //           {s}
+  //         </Link>
+  //       ))
+  //       .reduce((prev, curr) => [prev, ", ", curr])
+  //   ) : (
+  //     <>Unavailable</>
+  //   );
+  // }, [category, data.metrics]);
 
 
 
   // Add this effect to detect focus changes and temporarily disable animations
-  useEffect(() => {
-    // When focusEnabled changes, disable animations temporarily
-    forceNoAnimation.current = true;
+  // useEffect(() => {
+  //   // When focusEnabled changes, disable animations temporarily
+  //   forceNoAnimation.current = true;
     
-    // Re-enable animations after data has been processed
-    const timer = setTimeout(() => {
-      forceNoAnimation.current = false;
-    }, 600);
+  //   // Re-enable animations after data has been processed
+  //   const timer = setTimeout(() => {
+  //     forceNoAnimation.current = false;
+  //   }, 600);
     
-    return () => clearTimeout(timer);
-  }, [focusEnabled]);
+  //   return () => clearTimeout(timer);
+  // }, [focusEnabled]);
 
   const urlKey =
   metricItems[metricItems.findIndex((item) => item.key === category)]
     ?.urlKey;
+
+
 
   return (
     <div
@@ -1237,7 +1262,7 @@ const ChainComponent = function ChainComponent({
             style={{
               height: isMobile ? "146px" : "176px",
               width: "100%",
-              // display: isVisible ? "block" : "none",
+              display: isTransitioning ? "none" : "block",
  
             }}
             onEvents={{

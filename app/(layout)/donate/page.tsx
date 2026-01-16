@@ -1,5 +1,4 @@
 "use client";
-import { useMemo } from "react";
 import Container from "@/components/layout/Container";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
@@ -7,13 +6,10 @@ import { useUIContext } from "@/contexts/UIContext";
 import Heading from "@/components/layout/Heading";
 import Icon from "@/components/layout/Icon";
 import { useEffect, useRef, useState } from "react";
-import { BASE_URL } from "@/lib/helpers";
 import useSWR from "swr";
 import Link from "next/link";
 import { Description } from "@/components/layout/TextComponents";
-import "@splidejs/react-splide/css";
 import {
-  GridTableAddressCell,
   GridTableHeader,
   GridTableHeaderCell,
   GridTableRow,
@@ -28,7 +24,6 @@ import { DonationImpactRow } from "@/app/api/donations/impactusers/route";
 import { DonationUpdateRow } from "@/app/api/donations/updates/route";
 import moment from "moment";
 import Image from "next/image";
-import { checkIsOnDemandRevalidate } from "next/dist/server/api-utils";
 import EthereumSVG from "@/public/donate/ethereum.svg";
 import GivethSVG from "@/public/donate/giveth.svg";
 

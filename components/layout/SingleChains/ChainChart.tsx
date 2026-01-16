@@ -28,7 +28,6 @@ import {
   Get_AllChainsNavigationItems,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
-import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { ChainsBaseURL, MasterURL, getChainMetricURL } from "@/lib/urls";
