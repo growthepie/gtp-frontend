@@ -29,6 +29,7 @@ import {
 import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
+import { useTheme } from "next-themes";
 
 const AnimatedDiv = animated.div as any;
 
@@ -69,7 +70,7 @@ export default function ChainBreakdown({
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
-
+  const { theme } = useTheme();
 
   // console.log(metricSort);
 
@@ -977,7 +978,7 @@ export default function ChainBreakdown({
                             className={`w-[15px] h-[15px] flex items-center justify-center text-xxs`}
                             style={{
                               color:
-                                AllChainsByKeys[item.key].colors["dark"][0],
+                                AllChainsByKeys[item.key].colors[theme ?? "dark"][0],
                             }}
                           />
                           <GTPIcon

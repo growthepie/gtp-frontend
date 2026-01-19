@@ -9,7 +9,7 @@ import {
     PieSeries,
     Series,
 } from "react-jsx-highcharts";
-import Highcharts from "highcharts/highstock";
+import Highcharts, { theme } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import { useMemo, memo,  useState, useCallback, useRef, useEffect } from "react";
 import { useMaster } from "@/contexts/MasterContext";
@@ -30,6 +30,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { ConsoleView } from "react-device-detect";
 import { Background } from "@/components/types/common";
+import { useTheme } from "next-themes";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -72,6 +73,7 @@ const DATableChartsComponent = ({
     const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
     const [selectedScale, setSelectedScale] = useState<string>("stacked");
+    const { theme } = useTheme();
 
     useEffect(() => {
         Highcharts.setOptions({
@@ -351,7 +353,7 @@ const DATableChartsComponent = ({
                     name: d[1],
                     y: d[4],
                     color: AllChainsByKeys[d[0]] 
-                        ? AllChainsByKeys[d[0]].colors["dark"][0] 
+                        ? AllChainsByKeys[d[0]].colors[theme ?? "dark"][0] 
                         : UNLISTED_CHAIN_COLORS[index],
                 },
             ])
@@ -387,7 +389,7 @@ const DATableChartsComponent = ({
                         name: d[1] ? d[1] : d[0],
                         y: d[4],
                         color: AllChainsByKeys[d[0]] 
-                            ? AllChainsByKeys[d[0]].colors["dark"][0] 
+                            ? AllChainsByKeys[d[0]].colors[theme ?? "dark"][0] 
                             : UNLISTED_CHAIN_COLORS[index],
                     });
                 
@@ -395,7 +397,7 @@ const DATableChartsComponent = ({
         }
     
         return pieRetData;
-    }, [pie_data, selectedChain, AllChainsByKeys, filteredChains]);
+    }, [pie_data, selectedChain, AllChainsByKeys, filteredChains, theme]);
     
 
     function formatBytes(bytes: number, decimals = 2) {
@@ -1096,7 +1098,7 @@ const DATableChartsComponent = ({
                                 types,
                                 filteredChains[key][isMonthly ? "monthly" : "daily"].values,
                                 isMonthly ? "column" : "area",
-                                AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex],
+                                AllChainsByKeys[key] ? AllChainsByKeys[key].colors[theme ?? "dark"][0] : UNLISTED_CHAIN_COLORS[realIndex],
                             );
                            
                             
@@ -1510,6 +1512,7 @@ const ChartLegend = (
 
   if(!master) return null;
 
+  const { theme } = useTheme();
   return (
     <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
       {/* Chains */}
@@ -1530,7 +1533,7 @@ const ChartLegend = (
         // check if chain exists in AllChainsByKeys 
         if(AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]]){
           icon = `gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`;
-          color = AllChainsByKeys[key].colors["dark"][0];
+          color = AllChainsByKeys[key].colors[theme ?? "dark"][0];
         // check if chain exists in custom logos (see libs/icons.mjs for how it gets imported)
         }else if(custom_logo_keys.includes(key)){
           icon = `gtp:${key}-custom-logo-monochrome`;

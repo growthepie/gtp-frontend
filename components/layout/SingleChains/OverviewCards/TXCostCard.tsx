@@ -66,7 +66,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
 
     // Get ranking color for transaction costs if overview data is available
     const rankingColor = overviewData?.data?.ranking?.txcosts
-        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100)
+        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100, false, theme as "dark" | "light" ?? "dark")
         : master.chains[chainKey].colors[theme ?? "dark"][0];
 
     const activeIndex = txCostHoverIndex ?? txCostSelectedIndex ?? (recentCostHistory.length ? recentCostHistory.length - 1 : null);
@@ -105,6 +105,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
                         onSelect={setTxCostSelectedIndex}
                         onHover={setTxCostHoverIndex}
                         getGradientColor={getGradientColor}
+                        theme={theme as "dark" | "light" ?? "dark"}
                     />
                 </div>
             </div>

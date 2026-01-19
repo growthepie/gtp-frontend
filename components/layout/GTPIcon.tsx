@@ -3,6 +3,7 @@ import { Icon, getIcon, iconExists } from "@iconify/react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GetRankingColor } from "@/lib/chains";
 import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { IconContextMenu } from "./IconContextMenu";
 import { useGTPIconsLoader } from "@/utils/gtp-icons-loader";
 
@@ -197,7 +198,8 @@ export const GTPIcon = memo(GTPIconBase, (prevProps, nextProps) => {
     prevProps.className === nextProps.className &&
     prevProps.containerClassName === nextProps.containerClassName &&
     prevProps.showContextMenu === nextProps.showContextMenu &&
-    prevProps.showLoadingPlaceholder === nextProps.showLoadingPlaceholder
+    prevProps.showLoadingPlaceholder === nextProps.showLoadingPlaceholder &&
+    prevProps.style?.color === nextProps.style?.color
   );
 });
 
@@ -330,8 +332,9 @@ type RankIconProps = {
 }
 
 export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true }: RankIconProps) => {
-  const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
-  const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
+  const { theme } = useTheme();
+  const color = colorScale == -1 ? `#CDD8D3${theme === "dark" ? "22" : "88"}` : GetRankingColor(colorScale * 100, false, theme as "dark" | "light" ?? "dark");
+  const borderColor = colorScale == -1 ? `#CDD8D3${theme === "dark" ? "22" : "88"}` : color + "AA";
 
   const borderSizeClassMap = {
     sm: "size-[18px]",
@@ -366,7 +369,7 @@ export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true
     >
       <div
         className={`relative rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
-        style={{ background: color }}
+        style={{ backgroundColor: color }}
       >
         {isIcon ? (
           <div className="absolute inset-0 flex items-center justify-center">

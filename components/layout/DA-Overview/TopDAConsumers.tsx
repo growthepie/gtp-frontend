@@ -8,6 +8,7 @@ import DynamicIcon from "../DynamicIcon";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useTheme } from "next-themes";
 
 const AnimatedDiv = animated.div as any;
 
@@ -26,7 +27,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
     const { AllChainsByKeys, da_metrics, data: master } = useMaster();
     const parentRef = useRef(null);
     const [parentWidth, setParentWidth] = useState(0);
-
+    const { theme } = useTheme();
 
     const sortedDAConsumers = useMemo(() => {
         let types = consumer_data[selectedTimespan].types;
@@ -116,7 +117,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                         >
                             <div className={`h-full rounded-full  flex items-center px-[2px]`}
                                 style={{
-                                    backgroundColor: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : unlabelledDAHex[item.index],
+                                    backgroundColor: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors[theme ?? "dark"][0] : unlabelledDAHex[item.index],
                                     width: `${relativeWidth + 122}px`,
                                     minWidth: "122px",
                                     maxWidth: "100%",

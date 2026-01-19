@@ -48,18 +48,17 @@ export default function RowContainer() {
                       selectedCategory === category
                         ? "borden-hidden rounded-[0px]"
                         : "h-full"
+                    }
+                    ${
+                      selectedCategory === category && !allCats
+                        ? "bg-color-ui-hover"
+                        : "bg-color-bg-default"
                     }`}
                       onMouseEnter={() => {
                         hoverCategory(category);
                       }}
                       onMouseLeave={() => {
                         unhoverCategory(category);
-                      }}
-                      style={{
-                        backgroundColor:
-                          selectedCategory === category && !allCats
-                            ? "bg-color-ui-hover"
-                            : "bg-color-bg-default",
                       }}
                     >
                       <button

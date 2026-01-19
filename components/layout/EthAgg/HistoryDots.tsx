@@ -7,7 +7,8 @@ interface HistoryDotsProps {
   hoverIndex: number | null;
   onSelect: (index: number) => void;
   onHover: (index: number | null) => void;
-  getGradientColor: (percentage: number) => string;
+  getGradientColor: (percentage: number, theme?: "dark" | "light") => string;
+  theme?: "dark" | "light";
 }
 
 export function HistoryDots({
@@ -17,6 +18,7 @@ export function HistoryDots({
   onSelect,
   onHover,
   getGradientColor,
+  theme,
 }: HistoryDotsProps) {
   if (!data || data.length === 0) return null;
 
@@ -56,7 +58,7 @@ export function HistoryDots({
 
         const range = maxCost - minCost;
         const percentage = range > 0 ? ((cost - minCost) / range) * 100 : 50; // default to 50 if no range
-        const color = getGradientColor(percentage);
+        const color = getGradientColor(percentage, theme as "dark" | "light" ?? "dark");
 
         const isSelected = normalizedSelectedIndex === index;
         const isHovered = normalizedHoverIndex === index;

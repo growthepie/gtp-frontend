@@ -553,7 +553,7 @@ export function AggChart({
   // Memoized ECharts option configuration
   const option = useMemo(() => {
     const series = seriesConfigs.map((config, index) => {
-      const colors = AllChainsByKeys[config.key]?.colors.dark ?? AllChainsByKeys["all_l2s"]?.colors.dark;
+      const colors = AllChainsByKeys[config.key]?.colors[theme ?? "dark"] ?? AllChainsByKeys["all_l2s"]?.colors[theme ?? "dark"];
 
       const baseConfig: any = {
         name: config.name,
@@ -741,7 +741,7 @@ export function AggChart({
               const tooltipData = seriesConfigs.map((config, seriesIndex) => ({
                 seriesName: config.name,
                 value: seriesData[seriesIndex]?.[categoryIndex] || 0,
-                color: AllChainsByKeys[config.key]?.colors.dark?.[0] || '#CDD8D3',
+                color: AllChainsByKeys[config.key]?.colors[theme ?? "dark"]?.[0] || '#CDD8D3',
                 categoryIndex,
                 categoryLabel: categories[categoryIndex]
               })).filter(item => item.value > 0);

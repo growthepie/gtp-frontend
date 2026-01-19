@@ -12,6 +12,7 @@ import Image from 'next/image';
 import ChartWatermark from '../layout/ChartWatermark';
 import { useMaster } from '@/contexts/MasterContext';
 import { getChainInfoFromUrl } from '@/lib/chains';
+import { useTheme } from 'next-themes';
 
 interface QuickBiteCardProps {
   title: string;
@@ -64,6 +65,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   // Determine the min-width class based on whether a custom className is provided
   const minWidthClass = className.includes('min-w-') ? '' : 'min-w-[275px]';
 
+  const { theme } = useTheme();
   return (
     <div className='relative'>
     <Link

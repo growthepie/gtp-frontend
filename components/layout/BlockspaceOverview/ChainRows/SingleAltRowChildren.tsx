@@ -291,7 +291,7 @@ export default function SingleAltRowChildren({
           (selectedChain && selectedChain !== chainKey)
         )
       ) {
-        style.background = "rgb(var(--bg-default))";
+        style.backgroundColor = "rgb(var(--bg-default))";
         if (isLastCategory) {
           style.borderRadius = "50px 999px 999px 50px";
         } else {
@@ -305,20 +305,20 @@ export default function SingleAltRowChildren({
       ) {
         if (selectedCategory === categoryKey) {
           if (!selectedChain || selectedChain === chainKey) {
-            style.background = "rgb(var(--bg-default))";
+            style.backgroundColor = "rgb(var(--bg-default))";
           } else {
             if (!isCategoryHovered(categoryKey)) {
-              style.background = "inherit";
+              style.backgroundColor = "inherit";
               if (!categoryData) {
-                style.background = "rgb(var(--bg-default))";
+                style.backgroundColor = "rgb(var(--bg-default))";
                 style.borderRadius = "50px";
               }
             } else {
-              style.background = "rgb(var(--bg-default))";
+              style.backgroundColor = "rgb(var(--bg-default))";
             }
           }
         } else {
-          style.background = "rgb(var(--bg-default))";
+          style.backgroundColor = "rgb(var(--bg-default))";
         }
 
         if (

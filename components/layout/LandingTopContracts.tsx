@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { useTheme } from "next-themes";
 
 export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   const {
@@ -219,13 +220,13 @@ ApplicationCard.displayName = 'ApplicationCard';
 export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
   const { AllChainsByKeys } = useMaster();
   const router = useRouter();
-
+  const { theme } = useTheme();
   return (
     <div className="flex items-center gap-x-[0px] group/chains">
       {origin_keys.map((chain, index) => (
         <div
           key={index}
-          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px]`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px]`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors[theme ?? "dark"][0] : '' }}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();

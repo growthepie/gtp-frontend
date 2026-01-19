@@ -6,6 +6,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import moment from "moment";
+import { useTheme } from "next-themes";
 
 
  export interface ChainTPSHistoryItem {
@@ -39,6 +40,7 @@ interface HistoryArrayItem {
 
 export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, master }: { initialHistory: any, tpsHistory: any, chainData: any, chainKey: string, master: MasterResponse  }) => {
   // Ensure the chart data is properly formatted and triggers updates
+  const { theme } = useTheme();
   const chartData = useMemo(() => {
     return tpsHistory || [];
   }, [tpsHistory]);
@@ -66,7 +68,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
             <TPSChart 
               key={`tps-chart-${chainKey}-${chartData.length}`}
               data={chartData} 
-              overrideColor={master.chains[chainKey].colors.dark} 
+              overrideColor={master.chains[chainKey].colors[theme ?? "dark"]} 
               chainName={chainData.display_name}
               centerWatermark={true}
             />

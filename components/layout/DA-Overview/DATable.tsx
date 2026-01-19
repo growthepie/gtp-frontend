@@ -29,6 +29,7 @@ import { getIcon, listIcons } from "@iconify/react";
 import { TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPIcon } from "../GTPIcon";
+import { useTheme } from "next-themes";
 
 const AnimatedDiv = animated.div as any;
 
@@ -934,6 +935,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 }
 
 const DaConsumersTooltip = ({ item, selectedTimespan, breakdown_data, AllChainsByKeys, master }) => {
+  const { theme } = useTheme();
   return (
     <>
     <TooltipHeader title="DA Consumers (Chains)" />
@@ -955,7 +957,7 @@ const DaConsumersTooltip = ({ item, selectedTimespan, breakdown_data, AllChainsB
             // check if chain exists in AllChainsByKeys 
             if (AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]]) {
               icon = `gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].urlKey}-logo-monochrome`;
-              color = AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].colors["dark"][0];
+              color = AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].colors[theme ?? "dark"][0];
               // check if chain exists in custom logos (see libs/icons.mjs for how it gets imported)
             } else if (custom_logo_keys.includes(alt_key)) {
               icon = `gtp:${alt_key}-custom-logo-monochrome`;

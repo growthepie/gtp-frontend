@@ -2,6 +2,7 @@
 import React from 'react';
 import { HistoryDots } from './HistoryDots';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { useTheme } from 'next-themes';
 
 interface FeeDisplayRowProps {
   title: string;
@@ -13,7 +14,7 @@ interface FeeDisplayRowProps {
   hoverIndex: number | null;
   onSelect: (index: number) => void;
   onHover: (index: number | null) => void;
-  getGradientColor: (percentage: number) => string;
+  getGradientColor: (percentage: number, theme?: "dark" | "light") => string;
   formatNumber: (num: number, decimals?: number) => string;
   hoverText?: string;
 }
@@ -32,6 +33,7 @@ export function FeeDisplayRow({
   formatNumber,
   hoverText,
 }: FeeDisplayRowProps) {
+  const { theme } = useTheme();
   return (
     <div className='flex justify-between items-center'>
       <div className='relative w-[90px] 2xl:w-[115px] heading-small-xxs whitespace-nowrap'>
@@ -52,7 +54,7 @@ export function FeeDisplayRow({
             hoverIndex={hoverIndex}
             onSelect={onSelect}
             onHover={onHover}
-            getGradientColor={getGradientColor}
+            getGradientColor={(percentage) => getGradientColor(percentage, theme as "dark" | "light" ?? "dark")}
           />
         </div>
         <div className="flex-1 h-[18px]"></div>

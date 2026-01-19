@@ -62,6 +62,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from '../layout/GTPIcon';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatNumberWithSI } from '../layout/EthAgg/AggChart';
+import { A } from 'million/dist/shared/million.485bbee4';
 
 
 const COLORS = {
@@ -670,7 +671,7 @@ const ChainComponent = function ChainComponent({
           if(name === "ethereum") {
             colors = [
               "#94ABD3",
-              "#596780",
+              AllChainsByKeys[name]?.colors[theme ?? "dark"][0],
             ];
           }
   

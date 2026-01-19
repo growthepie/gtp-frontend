@@ -21,6 +21,7 @@ import { track } from '@/lib/tracking';
 import SwiperContainer from '../SwiperContainer';
 import SwiperComponent from '@/components/SwiperComponent';
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { useTheme } from 'next-themes';
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
 }
@@ -373,7 +374,8 @@ interface MeetL2sSliderProps {
 const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderProps) => {
   const { AllChainsByKeys } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
-
+  const { resolvedTheme } = useTheme();
+  
   const l2Keys = useMemo(() => (meetL2sData ? Object.keys(meetL2sData) : []), [meetL2sData]);
 
   if (!meetL2sData) {
@@ -387,7 +389,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
       {l2Keys.map((key) => {
         const l2Data = meetL2sData[key];
         const chainInfo = AllChainsByKeys[key];
-        const color = chainInfo?.colors?.dark?.[0];
+        const color = chainInfo?.colors?.[resolvedTheme ?? "dark"]?.[0];
 
         return (
           <div 

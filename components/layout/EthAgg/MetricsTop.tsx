@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../ChartWatermark';
 import EventsCard, { EventItem } from '../SingleChains/OverviewCards/EventsCard';
+import { useTheme } from 'next-themes';
 
 const AnimatedDiv = animated.div as any;
 
@@ -842,10 +843,11 @@ const ChainTransitionItem = React.memo(({
   const { AllChainsByKeys } = useMaster();
   // remove zircuit from the AllChainsByKeys
   const chain = chainId !== 'zircuit' ? AllChainsByKeys[chainId] : undefined;
-
+ 
+  const { theme } = useTheme();
   const isSupportedChain = chain !== undefined;
 
-  const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
+  const chainColor = chain?.colors?.[theme ?? "dark"]?.[0] || "#7D8887";
   const chainName = chain?.label || chainData[chainId]?.display_name || chainId;
 
   const value = useMemo(() => {

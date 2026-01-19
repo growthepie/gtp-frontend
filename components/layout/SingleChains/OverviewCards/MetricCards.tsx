@@ -127,7 +127,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     const valueIndex = metricUseUSD ? showUsd ? 0 : 1 : 0;
 
     // Get ranking color based on the metric's ranking
-    const rankingColor = GetRankingColor(overviewData.data.ranking[metricKey].color_scale * 100);
+    const rankingColor = GetRankingColor(overviewData.data.ranking[metricKey].color_scale * 100, false, theme as "dark" | "light" ?? "dark");
 
     return (
         <div 
