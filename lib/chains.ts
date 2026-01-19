@@ -263,22 +263,22 @@ export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
   };
 };
 
-export const GetRankingColor = (percentage, weighted = false) => {
+export const GetRankingColor = (percentage, weighted = false, theme: "dark" | "light" = "dark") => {
   const colors = !weighted
     ? [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 20, color: "#76EDA0" },
-        { percent: 50, color: "#FFDF27" },
-        { percent: 70, color: "#FF9B47" },
-        { percent: 100, color: "#FE5468" },
+      { percent: 0, color: theme === "dark" ? "#1df7ef" : "#00cfc5" },   // accent-turquoise
+      { percent: 20, color: theme === "dark" ? "#76EDA0" : "#18a957" },  // green/positive
+      { percent: 50, color: theme === "dark" ? "#ffdf27" : "#e5b300" },  // accent-yellow
+      { percent: 70, color: theme === "dark" ? "#FF9B47" : "#e07020" },  // orange
+      { percent: 100, color: theme === "dark" ? "#fe5468" : "#e83c52" }, // accent-red
       ]
     : [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 2, color: "#76EDA0" },
-        { percent: 10, color: "#FFDF27" },
-        { percent: 40, color: "#FF9B47" },
-        { percent: 80, color: "#FE5468" },
-        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      { percent: 0, color: theme === "dark" ? "#1df7ef" : "#00cfc5" },   // accent-turquoise
+      { percent: 2, color: theme === "dark" ? "#76EDA0" : "#18a957" },  // green/positive
+      { percent: 10, color: theme === "dark" ? "#ffdf27" : "#e5b300" },  // accent-yellow
+      { percent: 40, color: theme === "dark" ? "#FF9B47" : "#e07020" },  // orange
+      { percent: 80, color: theme === "dark" ? "#fe5468" : "#e83c52" },  // accent-red
+      { percent: 100, color: theme === "dark" ? "#fe5468" : "#e83c52" }, // accent-red
       ];
 
   let lowerBound = colors[0];
