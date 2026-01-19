@@ -105,7 +105,8 @@ export default function SingleAltRowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-color-text-primary`}
+            className={            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-color-bg-default mt-6 overflow-hidden"
+            }
             style={{
               backgroundColor: lightenHexColor(
                 AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
@@ -121,7 +122,7 @@ export default function SingleAltRowParent({ chainKey, index }) {
               <div
                 className="flex justify-center items-center w-[30px] h-full z-20 "
                 style={{
-                  color: AllChainsByKeys[chainKey].colors["dark"][0],
+                  color: AllChainsByKeys[chainKey].colors[theme ?? "dark"][0],
                 }}
               >
                 <Icon

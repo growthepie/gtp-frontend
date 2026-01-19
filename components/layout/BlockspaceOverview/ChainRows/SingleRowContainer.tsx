@@ -31,7 +31,7 @@ export default function RowContainer() {
       >
         <div
           className={
-            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-[#1F2726] mt-6 overflow-hidden"
+            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-color-text-primary border-color- bg-color-bg-default mt-6 overflow-hidden"
           }
         >
           <div className="flex w-full h-full text-[12px]">
@@ -58,24 +58,24 @@ export default function RowContainer() {
                       style={{
                         backgroundColor:
                           selectedCategory === category && !allCats
-                            ? "#5A6462"
-                            : `#1F2726`,
+                            ? "bg-color-ui-hover"
+                            : "bg-color-bg-default",
                       }}
                     >
                       <button
                         key={category}
                         className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                     1px 
-                  ] border-forest-50 dark:border-forest-800
+                  ] border-color-ui-hover
                     ${
                       selectedCategory === category && !allCats
-                        ? "bg-[#151A19]"
+                        ? "bg-color-bg-default"
                         : ""
                     } 
                     ${
                       isCategoryHovered(category) &&
                       (!(selectedCategory === category) || allCats)
-                        ? "bg-[#5A6462]"
+                        ? "bg-color-ui-hover"
                         : ""
                     }`}
                         onClick={() => {

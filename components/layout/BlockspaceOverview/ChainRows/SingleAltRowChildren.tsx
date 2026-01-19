@@ -132,7 +132,7 @@ export default function SingleAltRowChildren({
       categoryKey: string, // dataIndex: number,
     ) => {
       const style: CSSProperties = {
-        backgroundColor: "white",
+        background: "white",
         // width: "0px",
         borderRadius: "0px",
       };
@@ -172,9 +172,15 @@ export default function SingleAltRowChildren({
       );
 
       const dataIndex = categoriesKey;
-      style.backgroundColor = `rgba(0, 0, 0, ${
-        1 - (1 - 0.1 * (dataIndex + 1))
-      })`;
+      if(theme === "dark") {
+        style.background = `rgba(31, 39, 38, ${
+          1 - (1 - 0.1 * (dataIndex + 1))
+        })`;
+      } else {
+        style.background = `rgba(240, 244, 244, ${
+          1 - (1 - 0.1 * (dataIndex + 1))
+        })`;
+      }
 
       if (isLastCategory)
         style.borderRadius = "10000px 99999px 99999px 10000px";
@@ -184,7 +190,7 @@ export default function SingleAltRowChildren({
 
         if (isLastCategory && selectedCategory !== categoryKey) {
           style.background =
-            "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
+            "linear-gradient(-45deg, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)))";
           // style.background = undefined;
           //   "linear-gradient(to right, #e5405e 0%, #ffdb3a 45%, #3fffa2 100%)";
           // style.backgroundPosition = "75% 0%";
@@ -285,7 +291,7 @@ export default function SingleAltRowChildren({
           (selectedChain && selectedChain !== chainKey)
         )
       ) {
-        style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+        style.background = "rgb(var(--bg-default))";
         if (isLastCategory) {
           style.borderRadius = "50px 999px 999px 50px";
         } else {
@@ -299,20 +305,20 @@ export default function SingleAltRowChildren({
       ) {
         if (selectedCategory === categoryKey) {
           if (!selectedChain || selectedChain === chainKey) {
-            style.backgroundColor = "#151A19";
+            style.background = "rgb(var(--bg-default))";
           } else {
             if (!isCategoryHovered(categoryKey)) {
-              style.backgroundColor = "inherit";
+              style.background = "inherit";
               if (!categoryData) {
-                style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+                style.background = "rgb(var(--bg-default))";
                 style.borderRadius = "50px";
               }
             } else {
-              style.backgroundColor = "#1F2726";
+              style.background = "rgb(var(--bg-default))";
             }
           }
         } else {
-          style.backgroundColor = "#1F2726";
+          style.background = "rgb(var(--bg-default))";
         }
 
         if (
@@ -320,7 +326,7 @@ export default function SingleAltRowChildren({
           selectedChain === chainKey ||
           isCategoryHovered(categoryKey)
         ) {
-          style.color = "#CDD8D3";
+          style.color = "rgb(var(--text-primary))";
           style.minWidth = "55px";
           style.width = "calc(100% + 14px)";
           style.height = "38px";
@@ -428,16 +434,16 @@ export default function SingleAltRowChildren({
                   : "text-[14px] font-bold"
               } ${
                 AllChainsByKeys[chainKey].darkTextOnBackground === true
-                  ? "text-black"
-                  : "text-white"
+                  ? "text-color-text-primary"
+                  : "text-color-text-primary"
               }`
             : AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? i > 4
-              ? "text-white/60 text-[10px]"
-              : "text-black text-[10px]"
+              ? "text-color-text-primary/60 text-[10px]"
+              : "text-color-text-primary text-[10px]"
             : i > 4
-            ? "text-white/60 text-[10px]"
-            : "text-white/80 text-[10px]"
+            ? "text-color-text-primary/60 text-[10px]"
+            : "text-color-text-primary/80 text-[10px]"
         } `}
         style={{
           ...subChildStyle(chainKey, categoryKey),
@@ -518,7 +524,7 @@ export default function SingleAltRowChildren({
             </>
           ) : (
             <div
-              className={`text-white/80 
+              className={`text-color-text-primary/80 
                             ${
                               isCategoryHovered(categoryKey) ||
                               selectedCategory === categoryKey
