@@ -31,8 +31,7 @@ const tiers = [
     description: "The entry tier for all Ethereum rollups and chains being part of the ecosystem.",
     highlight: false,
     features: [
-      "Ecosystem page listing in a neutral color",
-      "Aggregation of 2 fundamentals metrics",
+      "Ecosystem page listing (realtime metrics only) in neutral color",
       "Exposure to growthepie's community",
       "Free for rollups using the OP Stack, Arbitrum Nitro, or ZKsync Stack",
     ],
