@@ -33,7 +33,7 @@ const tiers = [
     features: [
       "Ecosystem page listing (realtime metrics only) in neutral color",
       "Exposure to growthepie's community",
-      "Free for rollups using the OP Stack, Arbitrum Nitro, or ZKsync Stack",
+      "Free for rollups using the OP Stack, Arbitrum Nitro, or ZKsync Stack and Ethereum Data Availability",
     ],
   },
   {
@@ -110,7 +110,7 @@ const faqs = [
   {
     question: "How do listings work?",
     answer:
-      "Free listings cover every chain in the ecosystem, free for EVM-based chains. Paid tiers unlock deeper indexing, more granular visualizations, branded 'Homebase' pages, and tailored support.",
+      "Free listings cover every chain in the ecosystem, free for EVM-based chains based on the OP Stack, Arbitrum Nitro, or ZKsync Stack and using Ethereum Data Availability. Paid tiers unlock deeper indexing, more granular visualizations, branded 'Homebase' pages, and tailored support.",
   },
   {
     question: "What is the benefit of the Open Labels Initiative (OLI)?",
