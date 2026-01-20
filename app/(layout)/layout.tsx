@@ -171,7 +171,7 @@ export default function RootLayout({
       }}
     >
       <Head />
-      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-color-bg-default dark:text-color-text-primary">
+      <body className="!overflow-x-hidden overflow-y-scroll font-raleway bg-color-bg-main text-color-text-primary">
         {/* GTM noscript fallback */}
         <noscript>
           <iframe 
