@@ -296,7 +296,7 @@ export const DropdownArrow = ({isOpen, size, disableAnimation = false}: {isOpen:
       >
         <path
           d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129"
-          stroke="#CDD8D3"
+          stroke="rgb(var(--text-primary))"
           strokeWidth="1.5"
           strokeLinejoin="round"
         />

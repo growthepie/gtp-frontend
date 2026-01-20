@@ -640,7 +640,7 @@ const dataAvailabilityGroup: NavigationItem = {
       },
       ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data]) => ({
         label: data.shortTitle,
-        icon: "in-button-right-monochrome" as GTPIconName,
+        icon: "gtp-chevronright" as GTPIconName,
         category: "latest",
         key: slug,
         rootKey: slug,
