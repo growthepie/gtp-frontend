@@ -663,7 +663,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHead>
           </div>
 
-          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:max-w-[398px] lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
+          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
             <ChainSectionHeadAlt
               title={"Background"}
               icon={"gtp:gtp-backgroundinformation"}
@@ -698,7 +698,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHeadAlt>
           </div>
           <div className="flex flex-shrink flex-grow basis-0 flex-col gap-x-[5px] gap-y-[5px] lg:flex-row">
-            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[125px] lg:max-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
+            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
               <ChainSectionHeadAlt
                 title={"Community"}
                 icon={"gtp:gtp-users"}
@@ -815,7 +815,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               </ChainSectionHeadAlt>
             </div>
             <div className="flex flex-shrink flex-grow basis-0 gap-x-[5px]">
-              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[125px] lg:flex-shrink lg:flex-grow lg:max-w-[294px] lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
+              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
                 <ChainSectionHeadAlt
                   title={"Project Funding"}
                   icon={"gtp:gtp-project"}
