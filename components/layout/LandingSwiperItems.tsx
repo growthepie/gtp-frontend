@@ -155,7 +155,7 @@ export default function LandingSwiperItems() {
       heightClass="h-[150px] md:h-[183px]"
       minSlideWidth={{ 0: 280, 1280: 350, 1650: 450 }}
       pagination="dots"
-      arrows={false}
+      arrows={true}
       desktopRightPadding
       bottomOffset={-20}
     >

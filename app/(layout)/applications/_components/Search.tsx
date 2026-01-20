@@ -142,19 +142,6 @@ export default function Search({ hideChainSection = false }: SearchProps) {
     debouncedSetSearch(value); // Debounced update for expensive operations
   };
 
-  // Initialize and update search state
-  useEffect(() => {
-    if (searchFromParams) {
-      setInternalSearch(searchFromParams);
-      setSearch(searchFromParams);
-      setIsOpen(true);
-      handleFilter("string", internalSearch);
-      setInternalSearch("");
-      debouncedSetSearch("");
-      
-    }
-  }, [searchFromParams]);
-
   // Focus input when search opens
   useEffect(() => {
     if (isOpen) {
@@ -318,7 +305,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
           handleFilter("string", string);
         }}
         label={<>&quot;{boldSearch(string)}&quot;</>}
-        leftIcon="feather:search"
+        leftIcon="gtp:gtp-filter-monochrome"
         leftIconColor="#CDD8D3"
         rightIcon="gtp:in-button-close-monochrome"
         rightIconColor="#FE5468"
@@ -443,6 +430,19 @@ export default function Search({ hideChainSection = false }: SearchProps) {
     });
   }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete, availableMainCategories, hideChainSection]); // Added availableMainCategories
 
+  // Initialize and update search state
+  useEffect(() => {
+    if (searchFromParams) {
+      setInternalSearch(searchFromParams);
+      setSearch(searchFromParams);
+      setIsOpen(true);
+      handleFilter("string", internalSearch);
+      setInternalSearch("");
+      debouncedSetSearch("");
+      
+    }
+  }, [searchFromParams]);
+
   return (
     <div className="relative w-full h-[44px]">
       <div
@@ -468,12 +468,12 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                     className="w-[16px] h-[16px]"
                   />
                 </div>
-              ) : <GTPIcon icon="gtp-search" size="md" />}
+              ) : <GTPIcon icon="gtp-filter" size="md" />}
             </div>
             <input
               ref={inputRef}
               className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-color-text-primary placeholder-color-text-primary border-none outline-none overflow-x-clip`}
-              placeholder="Search & Filter"
+              placeholder="Filter"
               value={internalSearch}
               onChange={handleSearchChange}
               onKeyUp={(e) => {

@@ -190,7 +190,7 @@ export default function Page() {
                 <div className="pt-[10px]">
                   <Carousel
                     heightClass="h-[150px]"
-                    focusMode
+                    focusMode={true}
                     focusOpacity={0.5}
                     arrows={false}
                     gap={0} // reduce gap in focus mode

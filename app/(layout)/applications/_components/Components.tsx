@@ -327,7 +327,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handlePrev}
           >
-            <Icon icon="feather:arrow-left" className="w-6 h-6" />
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="rotate-180" />
           </div>
           <div
             className="flex flex-1 flex-col items-center justify-center  gap-y-[1px]"
@@ -346,7 +346,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             onClick={handleNext}
 
           >
-            <Icon icon="feather:arrow-right" className="w-6 h-6" />
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" />
           </div>
         </div>
         <div
