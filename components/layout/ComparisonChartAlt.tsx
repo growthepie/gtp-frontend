@@ -19,7 +19,7 @@ import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
-import d3 from "d3";
+import * as d3 from "d3";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";

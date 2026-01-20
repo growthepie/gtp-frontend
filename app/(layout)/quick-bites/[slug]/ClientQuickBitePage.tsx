@@ -23,6 +23,7 @@ import { useMaster } from '@/contexts/MasterContext';
 import { getChainInfoFromUrl } from '@/lib/chains';
 import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
 import { SmartBackButton } from '@/components/SmartBackButton';
+import { useTheme } from 'next-themes';
 
 type Props = {
   params: { slug: string };
@@ -35,6 +36,7 @@ export default function ClientQuickBitePage({ params }: Props) {
   const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>([]);
   const [showNotFound, setShowNotFound] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchContentBlocks = async () => {
@@ -147,7 +149,7 @@ export default function ClientQuickBitePage({ params }: Props) {
                 let resolvedColor = topic.color;
                 
                 if (topic.url.startsWith('/chains/') && !topic.icon) {
-                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
+                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys, theme as "light" | "dark");
                   if (chainInfo) {
                     resolvedIcon = chainInfo.icon as GTPIconName;
                     resolvedColor = chainInfo.color;

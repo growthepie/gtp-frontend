@@ -18,7 +18,7 @@ import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
-import d3 from "d3";
+import * as d3 from "d3";
 import { debounce, forEach } from "lodash";
 import Link from "next/link";
 import useSWR from "swr";
