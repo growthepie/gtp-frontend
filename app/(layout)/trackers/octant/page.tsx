@@ -240,20 +240,19 @@ export default function Page() {
 
     if (next) {
       setNextEpoch(epochsInfo[next]);
-      countdownEnd =
-        new Date(epochsInfo[next].allocationStart).getTime() / 1000;
+      countdownEnd = moment.utc(epochsInfo[next].allocationStart).unix();
     }
 
     if (curr) {
       setCurrentEpoch(epochsInfo[curr]);
       setCommunityEpoch(parseInt(curr));
       setFundingEpoch(parseInt(curr));
-      countdownEnd = new Date(epochsInfo[curr].allocationEnd).getTime() / 1000;
+      countdownEnd = moment.utc(epochsInfo[curr].allocationEnd).unix();
     }
 
     // console.log("curr", curr, "next", next, "countdownEnd", countdownEnd);
 
-    setCountdownTime(countdownEnd - now + 7200);
+    setCountdownTime(countdownEnd - now);
   }, [summaryData]);
 
   useEffect(() => {
