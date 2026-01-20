@@ -344,7 +344,7 @@ export const GetRankingScale = (
   return scale;
 };
 
-export const getChainInfoFromUrl = (chainUrl: string, allChainsByKeys: { [key: string]: Chain }) => {
+export const getChainInfoFromUrl = (chainUrl: string, allChainsByKeys: { [key: string]: Chain}, theme: "dark" | "light" ) => {
   const urlMatch = chainUrl.match(/\/chains\/([^\/]+)/);
   if (!urlMatch) return null;
   
@@ -357,7 +357,7 @@ export const getChainInfoFromUrl = (chainUrl: string, allChainsByKeys: { [key: s
     key: chain.key,
     name: chain.label,
     icon: `gtp:${chain.urlKey}-logo-monochrome`,
-    color: chain.colors.dark[0],
+    color: chain.colors[theme ?? "dark"][0],
     urlKey: chain.urlKey
   };
 };

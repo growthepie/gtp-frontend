@@ -131,6 +131,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
         {topics && topics.length > 0 && (() => {
           const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
 
+          const { theme } = useTheme();
+          
           return (
             <div className="flex gap-x-[5px]">
               {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
@@ -140,8 +142,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
                 let resolvedIcon = topic.icon;
                 let resolvedColor = topic.color;
                 
-                if (topic.url.startsWith('/chains/') && !topic.icon) {
-                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
+                if ((topic.url.startsWith('/chains/') && !topic.icon) || topic.name === "Ethereum Mainnet") {
+                  const chainInfo = getChainInfoFromUrl(topic.name === "Ethereum Mainnet" ? "/chains/ethereum" : topic.url, AllChainsByKeys, theme as "dark" | "light");
                   if (chainInfo) {
                     resolvedIcon = chainInfo.icon;
                     resolvedColor = chainInfo.color;
