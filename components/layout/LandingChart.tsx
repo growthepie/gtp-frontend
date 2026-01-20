@@ -292,7 +292,9 @@ export default function LandingChart({
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const setEmbedData = useUIContext((state) => state.setEmbedData);
   const embedData = useUIContext((state) => state.embedData);
-
+  const isSidebarAnimating = useUIContext((state) => state.isSidebarAnimating);
+  const isResizing = useUIContext((state) => state.isResizing);
+  const isTransitioning = isSidebarAnimating || isResizing;
 
   // useEffect(() => {
   //   if (embedData.src !== BASE_URL + "/embed/user-base")
@@ -380,9 +382,9 @@ export default function LandingChart({
     embed_show_mainnet ?? false,
   );
 
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useUIContext((state) => state.isMobile);
   // 2xl breakpoint
-  const isLessThan2xl = useMediaQuery("(max-width: 1536px)");
+  const isLessThan2xl = useUIContext((state) => state.isLessThan2xl);
 
   const getSeriesType = useCallback(
     (name: string) => {
@@ -757,6 +759,7 @@ export default function LandingChart({
             this.options['patternRegistry'] = registry;
           },
           render: function() {
+            if(isTransitioning) return;
             const registry = this.options['patternRegistry'] as PatternRegistry;
             if(!registry) return;
 
@@ -779,6 +782,7 @@ export default function LandingChart({
             });
           },
           redraw: function() {
+            if(isTransitioning) return;
             const registry = this.options['patternRegistry'] as PatternRegistry;
             if(!registry) return;
 
@@ -941,7 +945,7 @@ export default function LandingChart({
         },
         enabled: isDragging ? false : true,
       },
-      series: [
+      series: isTransitioning ? [] : [
         ...filteredData
           .sort((a, b) => {
             if(!["main_l1", "main_l2"].includes(a.name)) {
@@ -1103,7 +1107,7 @@ export default function LandingChart({
 
     return merge({}, baseChartOptions, dynamicOptions);
     // return { ...baseOptions };
-  }, [getChartHeight, selectedScale, is_embed, theme, handleAfterSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric]);
+  }, [getChartHeight, selectedScale, is_embed, theme, handleAfterSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric, isTransitioning]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1373,7 +1377,7 @@ export default function LandingChart({
         >
           {highchartsLoaded ? (
             <HighchartsReact
-              // containerProps={{ style: { cursor: "url('cursors/zoom.svg') 14.5 14.5, pointer" } }}
+              containerProps={{ style: { cursor: "url('cursors/zoom.svg') 14.5 14.5, pointer" } }}
               highcharts={Highcharts}
               options={options}
               constructorType={"stockChart"}

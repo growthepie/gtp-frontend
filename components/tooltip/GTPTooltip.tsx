@@ -257,7 +257,7 @@ const TooltipSizeClassMap = {
 
 export const Tooltip = ({ children, size = "sm", className }: TooltipProps) => {
   return (
-    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] ${className}`}>
+    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard ${className}`}>
       {children}
     </div>
   );

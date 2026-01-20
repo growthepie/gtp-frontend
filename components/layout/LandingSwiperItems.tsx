@@ -7,12 +7,10 @@ import { LandingURL } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
 
-import "@splidejs/splide/css";
 import { track } from "@/lib/tracking";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useLocalStorage } from "usehooks-ts";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
 import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
@@ -20,13 +18,14 @@ import { QuickBiteData } from "@/lib/types/quickBites";
 import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
+import { Carousel } from "@/components/Carousel";
+import { useUIContext } from "@/contexts/UIContext";
 
 const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) {
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const urlKey =
-  metricItems[metricItems.findIndex((item) => item.key === metric_id)]
-    ?.urlKey;
+    metricItems[metricItems.findIndex((item) => item.key === metric_id)]?.urlKey;
     
   const chartComponent = useMemo(() => {
     if (!master || !landing) return null;
@@ -49,7 +48,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   const linkComponent = useMemo(() => {
     return (
       <Link
-        className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
+        className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs transition-all duration-300 -translate-y-[40px] group-hover:translate-y-0 md:group-hover:translate-y-[2px] group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
         href={`/fundamentals/${urlKey}`}
         onClick={() => {
           track("clicked Compare link", {
@@ -59,7 +58,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
         }}
       >
         Breakdown{" "}
-        <Icon icon="feather:chevron-right" className="w-4 h-4 md:w-6 md:h-6" />{" "}
+        <Icon icon="feather:chevron-right" className="w-4 h-4" />{" "}
       </Link>
     );
   }, [metric_id, urlKey]);
@@ -151,40 +150,43 @@ export default function LandingSwiperItems() {
   }, []);
 
   return (
-    // <FocusProvider>
-      <SplideTrack>
-        {quickBiteItems.map(({slug, quickBite}) => (
-          <SplideSlide key={slug}>
-            <div className="group w-full">
-              <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
-            </div>
-          </SplideSlide>
-        ))}
-        {filteredMetricIds.map(
-          (metric_id, index) => (
-            <SplideSlide key={metric_id}>
-              <div
-                className="group w-full chain relative"
-              >
-                {landing && master ? (
-                  <SwiperItem 
-                    metric_id={metric_id} 
-                    landing={landing} 
-                    master={master} 
-                    chartId={index}
-                  />
-                ) : (
-                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default">
-                    <div className="flex items-center justify-center h-full w-full">
-                      <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
-                    </div>
-                  </div>
-                )}
+    <Carousel
+      ariaId="layer-2-traction-title"
+      heightClass="h-[150px] md:h-[183px]"
+      minSlideWidth={{ 0: 280, 1280: 350, 1650: 450 }}
+      pagination="dots"
+      arrows={true}
+      desktopRightPadding
+      bottomOffset={-20}
+    >
+      {quickBiteItems.map(({slug, quickBite}) => (
+        <div key={slug} className="group w-full">
+          <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
+        </div>
+      ))}
+      {filteredMetricIds.map(
+        (metric_id, index) => (
+          <div
+            key={metric_id}
+            className="group w-full chain relative"
+          >
+            {landing && master ? (
+              <SwiperItem
+                metric_id={metric_id}
+                landing={landing}
+                master={master}
+                chartId={index}
+              />
+            ) : (
+              <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default">
+                <div className="flex items-center justify-center h-full w-full">
+                  <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
+                </div>
               </div>
-            </SplideSlide>
-          ),
-        )}
-      </SplideTrack>
-    // </FocusProvider>
+            )}
+          </div>
+        ),
+      )}
+    </Carousel>
   );
 }

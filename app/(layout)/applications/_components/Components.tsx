@@ -327,7 +327,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handlePrev}
           >
-            <Icon icon="feather:arrow-left" className="w-6 h-6" />
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="rotate-180" />
           </div>
           <div
             className="flex flex-1 flex-col items-center justify-center  gap-y-[1px]"
@@ -346,7 +346,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             onClick={handleNext}
 
           >
-            <Icon icon="feather:arrow-right" className="w-6 h-6" />
+            <GTPIcon icon="gtp-chevronright-monochrome" size="sm" />
           </div>
         </div>
         <div
@@ -751,10 +751,7 @@ export const TopGainersAndLosersTooltip = ({ metric, scopeLabel }: { metric: str
   const medianScopeText = scopeLabel ? "within this chain view" : "across all applications";
   return (
     <div
-      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-      }}
+      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
       onClick={(e) => {
         e.stopPropagation();
       }}
@@ -797,10 +794,7 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
 
   return (
     <div
-      className="w-[238px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-      }}
+      className="w-[238px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
       onClick={(e) => {
         e.stopPropagation();
       }}

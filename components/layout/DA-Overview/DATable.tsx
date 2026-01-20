@@ -457,7 +457,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
       {/* ) : ( */}
       <HorizontalScrollContainer
         includeMargin={true}
-        className="w-full flex flex-col mt-[30px] overflow-visible"
+        className="w-full flex flex-col mt-[3px] overflow-visible"
       >
         <div
           className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
