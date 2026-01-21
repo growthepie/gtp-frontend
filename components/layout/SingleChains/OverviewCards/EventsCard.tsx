@@ -105,7 +105,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                         setExpanded(!expanded)
                     }}
                 >
-                    <GTPIcon icon="in-button-down-monochrome" size="md" className={`text-[#5A6462] transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
+                    <GTPIcon icon="in-button-down-monochrome" size="md" className={`text-color-text-secondary transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
 
                     {tooltipContent && (    
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">

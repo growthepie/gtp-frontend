@@ -530,7 +530,7 @@ const Value = memo(({
   return (
     <div className="w-full flex items-center justify-end gap-[10px]">
       {/* Rank display (only show if this metric is the current sort metric) */}
-      <div className="numbers-xs text-[#5A6462] w-[calc(7.33*4px+10px)] pl-[10px]">
+      <div className="numbers-xs text-color-text-secondary w-[calc(7.33*4px+10px)] pl-[10px]">
         {isSelectedMetric && rank}
       </div>
 
@@ -661,7 +661,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
       >
         <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
           <div
-            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
+            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-color-bg-medium"
           >
             <ApplicationIcon owner_project={application.owner_project} size="sm" />
           </div>

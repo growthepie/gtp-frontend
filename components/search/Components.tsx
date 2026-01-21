@@ -512,7 +512,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 onBlur={handleInternalBlur}
               />
               <div className={`absolute flex items-center gap-x-[10px] right-[15px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
-                <div className="flex items-center px-[15px] h-[24px] border border-color-text-primary rounded-full select-none">
+                <div className="flex items-center px-[15px] h-[24px] border border-color-bg-medium rounded-full select-none">
                   <div className="text-xxxs text-color-text-primary font-medium font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>

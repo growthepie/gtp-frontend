@@ -73,7 +73,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
       className={`block h-full ${minWidthClass} ${className} !h-[275px] select-none group`}
       aria-labelledby={`card-title-${slug}`}
     >
-      <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>
+      <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-color-bg-medium rounded-[15px]'>
         <div className='flex flex-col'>
           <div className='flex justify-between h-[51px] gap-x-[15px]'>
             <div className='heading-small-xs group-hover:underline line-clamp-3'>{title}</div>

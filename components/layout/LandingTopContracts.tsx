@@ -147,14 +147,14 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
 
   if (!application) {
     return (
-      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
+      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-color-bg-medium rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
       </div>
     )
   }
 
   return (
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
-      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-color-bg-medium rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
       style={{ width: width || undefined }}
     >
       <div>

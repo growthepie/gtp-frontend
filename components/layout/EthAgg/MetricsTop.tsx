@@ -140,7 +140,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           <GTPIcon
             icon="in-button-down-monochrome"
             size="md"
-            className="text-color-text-primary group-hover/card:text-color-ui-hover transition-colors"
+            className="text-color-text-secondary group-hover/card:text-color-ui-hover transition-colors"
           />
         </div>
 

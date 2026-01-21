@@ -82,7 +82,7 @@ export default function EthUsdSwitchSimple({
         onChange={handleToggle}
         size={isMobile ? "xl" : "md"}
         className={`
-          ${showBorder ? "h-fit rounded-full border border-[#5A6462]" : ""} 
+          ${showBorder ? "h-fit rounded-full border border-color-bg-default" : ""} 
           ${isUpdating ? "opacity-80" : ""}
           ${className}
         `.trim()}
