@@ -176,6 +176,10 @@ module.exports = {
         "chains-custom-cool-4": "rgb(var(--chains-custom-cool-4) / <alpha-value>)",
         "chains-custom-cool-5": "rgb(var(--chains-custom-cool-5) / <alpha-value>)"
       },
+      backgroundImage: {
+        'glow-yellow': 'radial-gradient(50% 50% at 50% 50%, rgb(var(--accent-yellow)) 0%, rgba(217, 217, 217, 0) 100%)',
+        'glow-turquoise': 'radial-gradient(50% 50% at 50% 50%, rgb(var(--accent-turquoise)) 0%, rgba(217, 217, 217, 0) 100%)',
+      },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
         glint: 'glint 8s linear infinite',

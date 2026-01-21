@@ -1,114 +1,40 @@
 // import { isMobile } from "react-device-detect";
 
 type BackgroundsProps = {
-  isMobileMenu?: boolean;
-};
+    isMobileMenu?: boolean;
+  };
 
-export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
-  if (isMobileMenu)
+  export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
+    if (isMobileMenu)
+      return (
+        <>
+          <div className="fixed inset-0 !z-[998] pointer-events-none overflow-hidden w-full 
+  h-full bg-color-bg-default" />
+          <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden w-full     
+  h-full hidden md:block antialiased mix-blend-screen opacity-[0.065]">
+            <div className="absolute z-0 pointer-events-none bg-glow-yellow w-[500px]       
+  h-[600px] left-[100px] top-0" />
+            <div className="absolute z-0 pointer-events-none bg-glow-turquoise w-[700px]    
+  h-[600px] left-[275px] top-0" />
+          </div>
+        </>
+      );
+
     return (
-      <>
-        <div
-          style={{
-            // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
-          }}
-          className="fixed inset-0 !z-[998] mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-color-bg-default"
-        ></div>
-        <div
-          style={{
-            mixBlendMode: "screen",
-            opacity: 0.065,
-            pointerEvents: "none",
-          }}
-          className="fixed inset-0 z-50 mouse-events-none overflow-hidden w-full h-full  hidden md:dark:block antialiased"
-        >
-          <div
-            style={{
-              height: "600px",
-              width: "500px",
-              left: "100px",
-              right: "-6px",
-              top: "0px",
-              bottom: "602px",
-              backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-              background: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-              WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-              maskImage: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            }}
-            className="absolute z-0 mouse-events-none"
-          ></div>
-          <div
-            style={{
-              height: "600px",
-              width: "700px",
-              left: "275px",
-              right: "-475px",
-              top: "0px",
-              bottom: "466px",
-              backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-              background: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-              WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-              maskImage: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-            }}
-            className="absolute z-0 mouse-events-none"
-          ></div>
+      <div className="absolute min-w-full min-h-full -z-10">
+        <div className="absolute z-0 pointer-events-none overflow-hidden w-full h-full block
+   bg-color-bg-main" />
+        {/* No opacity - just mix-blend-overlay like Figma */}
+        <div className="absolute z-0 pointer-events-none overflow-hidden w-full h-full      
+  hidden md:block mix-blend-overlay">
+          <div className="absolute z-0 pointer-events-none bg-glow-yellow w-[1791px]        
+  h-[1560px] left-0 -top-[838px]" />
+          <div className="absolute z-0 pointer-events-none bg-glow-turquoise w-[2240px]     
+  h-[1808px] left-[362px] -top-[950px]" />
         </div>
-      </>
-    );
-
-  return (
-    <div className="absolute min-w-full min-h-full -z-10">
-      <div
-        style={{
-          pointerEvents: "none",
-          // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
-        }}
-        className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block dark:bg-color-ui-active"
-      ></div>
-      {/* {!isMobile && ( */}
-      <div
-        style={{
-          mixBlendMode: "overlay",
-          opacity: 0.3,
-          pointerEvents: "none",
-        }}
-        className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden md:dark:block"
-      >
-        <div
-          style={{
-            height: "1215px",
-            width: "1026px",
-            left: "0px",
-            right: "-6px",
-            top: "-90px",
-            bottom: "602px",
-            backgroundImage: `-webkit-radial-gradient(45% 45% at 30% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            background: `radial-gradient(45% 45% at 30% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 20% 50%, #FBB90D 0%, rgba(217, 217, 217, 0.1) 100%, rgba(251, 185, 13, 0) 100%)`,
-            maskImage: `radial-gradient(45% 45% at 20% 50%, #FBB90D 0%, rgba(217, 217, 217, 0.1) 100%, rgba(251, 185, 13, 0) 100%)`,
-          }}
-          className="absolute z-0 mouse-events-none"
-        ></div>
-        <div
-          style={{
-            height: "1274px",
-            width: "1405px",
-            left: "410px",
-            right: "-475px",
-            top: "-90px",
-            bottom: "466px",
-            backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-            background: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-            WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-            maskImage: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
-          }}
-          className="absolute z-0 mouse-events-none"
-        ></div>
       </div>
-      {/* )} */}
-    </div>
-  );
-}
+    );
+  }
 
 type GrayOverlayProps = {
   onClick: () => void;
