@@ -134,14 +134,56 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   }, [setActiveTooltipId]);
 
 
+  // Debug: collect all items with isNew=true
+  const debugNewItems = useMemo(() => {
+    const items: { label: string; type: string; level: string }[] = [];
+
+    sidebarNavigation.forEach((item) => {
+      if (item.isNew) {
+        items.push({ label: item.label, type: item.type, level: 'top-level' });
+      }
+      if (item.type === 'group') {
+        (item as SidebarMenuGroupType).children.forEach((child) => {
+          if ('isNew' in child && child.isNew) {
+            items.push({ label: child.label, type: child.type, level: 'sub-item' });
+          }
+        });
+      }
+    });
+
+    return items;
+  }, [sidebarNavigation]);
+
   return (
     <div className={`select-none flex flex-col bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
       <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
         {sidebarNavigation.map((item, index) => {
-        
+
           return <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
         })}
       </nav>
+
+      {/* Debug panel for isNew items */}
+      {!IS_PRODUCTION && (
+        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-[400px] max-h-[300px] overflow-auto text-xs font-mono !z-global-search-tooltip">
+          <div className="font-bold mb-2 text-yellow-400">Debug: Items with isNew=true ({debugNewItems.length})</div>
+          {debugNewItems.length === 0 ? (
+            <div className="text-gray-400">No items with isNew=true found</div>
+          ) : (
+            <ul className="space-y-1">
+              {debugNewItems.map((item, idx) => (
+                <li key={idx} className="flex gap-2">
+                  <span className={item.level === 'top-level' ? 'text-green-400' : 'text-blue-400'}>
+                    [{item.level}]
+                  </span>
+                  <span className="text-gray-400">{item.type}:</span>
+                  <span>{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -120,7 +120,6 @@ const dataAvailabilityGroup: NavigationItem = {
   label: "Data Availability",
   key: "metrics",
   icon: "gtp-data-availability",
-  // newChild: true,
   options: [
     {
       label: "Overview",
@@ -134,7 +133,6 @@ const dataAvailabilityGroup: NavigationItem = {
       rootKey: "metricsDataAvailabilityOverview",
       urlKey: "overview",
       url: "/data-availability",
-      showNew: true,
     },
     {
       label: "Blob Count",
@@ -237,18 +235,16 @@ const dataAvailabilityGroup: NavigationItem = {
             rootKey: "ethereum-ecosystem",
             urlKey: "ethereum-ecosystem",
             url: "/ethereum-ecosystem",
-            // showNew: true,
+            showNew: false,
           },
         ],
         href: "/ethereum-ecosystem",
-        newChild: true,
       },
     {
     name: "Fundamentals",
     label: "Fundamentals",
     key: "metrics",
     icon: "gtp-fundamentals",
-    newChild: true,
     options: [
       {
         label: "Active Addresses",
@@ -265,7 +261,6 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "metricsDailyActiveAddresses",
         urlKey: "daily-active-addresses",
         url: "/fundamentals/daily-active-addresses",
-        showNew: true,
       },
       {
         label: "Transaction Count",
@@ -368,7 +363,6 @@ const dataAvailabilityGroup: NavigationItem = {
     label: "Economics",
     key: "economics",
     icon: "gtp-metrics-economics",
-    // newChild: true,
     options: [
       {
         label: "Overview",
@@ -382,7 +376,6 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "economics",
         urlKey: "economics",
         url: "/economics",
-        // showNew: true,
       },
       {
         label: "App Revenue",
@@ -545,11 +538,9 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "applications",
         urlKey: "applications",
         url: "/applications",
-        // showNew: true,
       },
     ],
     href: "/applications",
-    newChild: true,
   },
   {
     name: "Blockspace",
@@ -624,6 +615,7 @@ const dataAvailabilityGroup: NavigationItem = {
     name: "Quick Bites",
     label: "Quick Bites",
     icon: "gtp-quick-bites",
+    newChild: true,
     options: [       
       {
         label: "Overview",
@@ -638,7 +630,7 @@ const dataAvailabilityGroup: NavigationItem = {
         urlKey: "quick-bites",
         url: "/quick-bites",
       },
-      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data]) => ({
+      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data], index) => ({
         label: data.shortTitle,
         icon: "gtp-chevronright" as GTPIconName,
         category: "latest",
@@ -647,6 +639,7 @@ const dataAvailabilityGroup: NavigationItem = {
         urlKey: slug,
         url: `/quick-bites/${slug}`,
         group: "latest",
+        showNew: index === 0 ? true : false
       })),
       {
         label: "OP RetroPGF 3",

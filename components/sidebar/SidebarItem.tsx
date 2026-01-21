@@ -12,6 +12,8 @@ import {
 } from '@floating-ui/react';
 import SidebarSubItem from './SidebarSubItem';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import NewBadge from './NewBadge';
+import { AnimatePresence } from 'framer-motion';
 
 type Props = {
   item: SidebarMenuGroupType | SidebarLink;
@@ -42,10 +44,25 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
     strategy: 'fixed',
   });
 
+  // Separate floating instance for badge positioning
+  const { refs: badgeRefs, floatingStyles: badgeFloatingStyles } = useFloating({
+    placement: 'right',
+    middleware: [offset({ mainAxis: -24, crossAxis: -8 }), hide()],
+    whileElementsMounted: (reference, floating, update) =>
+      autoUpdate(reference, floating, update, { animationFrame: true }),
+    strategy: 'fixed',
+  });
+
   const hover = useHover(context, { enabled: !isOpen });
   const dismiss = useDismiss(context, { referencePress: false });
   const { getReferenceProps, getFloatingProps } = useInteractions([hover, dismiss]);
   const isReferenceHidden = middlewareData.hide?.referenceHidden;
+
+  // Combine refs for both tooltip and badge
+  const setRefs = (el: HTMLElement | null) => {
+    refs.setReference(el);
+    badgeRefs.setReference(el);
+  };
 
   const [childrenHeight, setChildrenHeight] = useState(0);
   const childrenRef = useRef<HTMLDivElement>(null);
@@ -54,6 +71,8 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
   }, [item, isOpen, isExpanded, isGroup]);
 
   const isActiveTopLink = !isGroup && pathname === href;
+
+  const showBadge = item.isNew && isOpen && !isExpanded && !isActiveTopLink;
 
   const RowContent = (
     <>
@@ -64,6 +83,25 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
         <span className="heading-large-md whitespace-nowrap">{label}</span>
       </div>
     </>
+  );
+
+  const BadgePortal = (
+    <FloatingPortal id="sidebar-items-portal" >
+      <AnimatePresence>
+        {showBadge && (
+          <div
+            ref={badgeRefs.setFloating}
+            className='z-sidebar-new-badge'
+            style={{
+              ...badgeFloatingStyles,
+              pointerEvents: 'none',
+            }}
+          >
+            <NewBadge badgeId={`sidebar-item-${label}`} />
+          </div>
+        )}
+      </AnimatePresence>
+    </FloatingPortal>
   );
 
   const TooltipContent = () => (
@@ -95,21 +133,22 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
     return (
       <div className="relative">
         <div
-          ref={refs.setReference}
+          ref={setRefs}
           {...getReferenceProps()}
           onClick={handleToggle}
           className="md:pl-[5px] flex"
         >
           <div
             className={`flex flex-1 overflow-hidden items-center w-full rounded-full md:rounded-r-none transition-colors duration-100 text-color-text-primary cursor-pointer relative ${isOpen ? 'hover:bg-color-ui-hover' : ''}`}
-            style={{ 
-              height: '44px', 
-              minWidth: '38px', 
+            style={{
+              height: '44px',
+              minWidth: '38px',
             }}
           >
           {RowContent}
           </div>
         </div>
+        {BadgePortal}
 
         <FloatingPortal id="sidebar-items-portal">
           {context.open && !isReferenceHidden && (
@@ -146,6 +185,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
                     key={`sub-${idx}`}
                     item={child as SidebarLink | SidebarChainLink}
                     isOpen={isOpen}
+                    isParentExpanded={isExpanded}
                     onClose={onClose}
                   />
                 );
@@ -163,18 +203,19 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
   return (
     <div className="relative">
       <Link
-        ref={refs.setReference}
+        ref={setRefs}
         {...getReferenceProps()}
         href={href!}
         onClick={onClose}
         className="md:pl-[5px] flex"
       >
-        <div 
+        <div
           className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''} ${isActiveTopLink ? 'bg-color-ui-active text-color-text-primary' : ''}`}
         >
         {RowContent}
         </div>
       </Link>
+      {BadgePortal}
     
       <FloatingPortal id="sidebar-items-portal">
         {context.open && !isReferenceHidden && (
