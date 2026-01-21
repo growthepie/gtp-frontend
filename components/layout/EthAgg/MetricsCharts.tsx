@@ -402,7 +402,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                 window.location.href = `/chains/${key}`;
               }
             }}
-            className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'
+            className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-color-bg-medium h-full'
           >
             <div className='flex items-center w-full justify-between'>
               <div className='flex items-center gap-x-[5px]'>

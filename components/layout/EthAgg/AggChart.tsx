@@ -689,7 +689,7 @@ export function AggChart({
             placement="top-start"
             trigger={
               <div className='hover:cursor-pointer'>
-                <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' />
+                <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))"}} />
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"
