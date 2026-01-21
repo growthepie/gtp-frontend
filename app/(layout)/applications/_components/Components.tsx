@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
- 
+import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -351,7 +351,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
         </div>
         <div
           className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
-            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-color-text-primary lg:rounded-b-[22px] shadow-standard`
+            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] border-color-bg-medium lg:rounded-b-[22px] shadow-standard`
             : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           style={{
@@ -882,6 +882,7 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
 Links.displayName = 'Links';
 
 export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
+  const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { selectedChains, setSelectedChains } = useApplicationsData();
@@ -953,7 +954,7 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           <div
             key={index}
             className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-color-ui-hover'}`}
-            style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+            style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors[theme ?? "dark"][0] : '' }}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();

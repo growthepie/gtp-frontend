@@ -115,7 +115,7 @@ export const GridTableRow = ({
 
   return (
     <div
-      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
+      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-color-bg-medium grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
       style={style}
       onClick={onClick}
     >
