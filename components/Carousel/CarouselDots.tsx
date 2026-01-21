@@ -30,7 +30,7 @@ export default function CarouselDots({
             key={slideIndex}
             onClick={() => onDotClick(slideIndex)}
             className={`
-              w-[8px] h-[6px] rounded-[2px] transition-all duration-300 cursor-pointer pointer-events-auto
+              w-[8px] h-[8px] rounded-full transition-all duration-300 cursor-pointer pointer-events-auto
               ${
                 isActive
                   ? "bg-color-text-primary/40"
