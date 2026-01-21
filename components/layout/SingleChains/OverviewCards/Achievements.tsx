@@ -609,20 +609,18 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
     };
 
     // Calculate the height of the filled portion (from bottom up)
-    // Since the viewBox height is 25, we calculate based on that
     const viewBoxHeight = 25;
     const heightPercent = volumeToHeight(clampedProgress);
     const filledHeight = (heightPercent / 100) * viewBoxHeight;
     const unfilledY = viewBoxHeight - filledHeight;
 
     const waveY = unfilledY;
-    const waveHeight = 1; // Height of the wave oscillation
+    const waveHeight = 1; 
 
     const uniqueId = `fire-progress-${Math.random().toString(36).substring(2, 11)}`;
 
-    // More vibrant colors on hover
     const gradientColors = isHovered 
-        ? { start: "#FF1744", end: "#FFD700" }  // Brighter red to gold
+        ? { start: "#FF1744", end: "#FFD700" }
         : { start: "#FE5468", end: "#FFDF27" };
 
     const linearGradientProps = [
@@ -713,24 +711,12 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
                                 key={i} 
                                 offset={s.offset} 
                                 stopColor={s.stopColor}
-                                style={{
-                                    transition: 'stop-color 0.3s ease'
-                                }}
-                            >
-                                {/* {animated && (
-                            <animate
-                                attributeName="stopColor"
-                                values="#FE5468; #FF6B3D; #FE5468; #FF4757; #FE5468"
-                                dur="2.5s"
-                                repeatCount="indefinite"
+                                style={{ transition: 'stop-color 0.3s ease' }}
                             />
-                        )} */}
-                            </stop>
                         ))}
                     </linearGradient>
                 ))}
 
-                {/* Clip path for the filled portion */}
                 <clipPath id={`${uniqueId}-fillClip`}>
                     {animated && clampedProgress > 0 && clampedProgress < 100 ? (
                         <path
@@ -741,16 +727,13 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
                                 dur="3s"
                                 repeatCount="indefinite"
                                 values={`
-                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
-                    M 0 ${waveY} Q 1.17 ${waveY + waveHeight * 0.5} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY - waveHeight * 0.8} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
-                    M 0 ${waveY} Q 1.17 ${waveY} 2.33 ${waveY} T 4.67 ${waveY + waveHeight * 0.6} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY - waveHeight} T 14 ${waveY} L 14 25 L 0 25 Z;
-                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight * 0.4} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY + waveHeight * 0.7} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY - waveHeight * 0.5} L 14 25 L 0 25 Z;
-                    M 0 ${waveY} Q 1.17 ${waveY} 2.33 ${waveY + waveHeight * 0.8} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY - waveHeight * 0.6} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
-                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z
-                  `}
-                                keyTimes="0; 0.2; 0.4; 0.6; 0.8; 1"
-                                calcMode="spline"
-                                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1"
+                                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
+                                    M 0 ${waveY} Q 1.17 ${waveY + waveHeight * 0.5} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY - waveHeight * 0.8} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
+                                    M 0 ${waveY} Q 1.17 ${waveY} 2.33 ${waveY} T 4.67 ${waveY + waveHeight * 0.6} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY - waveHeight} T 14 ${waveY} L 14 25 L 0 25 Z;
+                                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight * 0.4} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY + waveHeight * 0.7} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY - waveHeight * 0.5} L 14 25 L 0 25 Z;
+                                    M 0 ${waveY} Q 1.17 ${waveY} 2.33 ${waveY + waveHeight * 0.8} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY - waveHeight * 0.6} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z;
+                                    M 0 ${waveY} Q 1.17 ${waveY - waveHeight} 2.33 ${waveY} T 4.67 ${waveY} T 7 ${waveY} T 9.33 ${waveY} T 11.67 ${waveY} T 14 ${waveY} L 14 25 L 0 25 Z
+                                `}
                             />
                         </path>
                     ) : (
@@ -758,7 +741,6 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
                     )}
                 </clipPath>
 
-                {/* Clip path for the unfilled portion (top part) */}
                 <clipPath id={`${uniqueId}-unfillClip`}>
                     <rect x="0" y="0" width="14" height={viewBoxHeight} />
                 </clipPath>
@@ -774,14 +756,14 @@ const StreakIcon = ({ progress = 0, animated = false, isHovered = false }) => {
                 <path d="M2.38333 15.5991C2.41782 16.3143 2.85983 18.2048 3.25555 19.205C2.12648 17.7646 0.892125 15.5546 0.539062 14.3965L2.38333 15.5991Z" fill="rgb(var(--text-secondary))"></path>
             </g>
 
-            {/* Colored filled portion */}
+            {/* Colored filled portion - NOW USING THE EXACT SAME COORDINATES AS GRAY */}
             <g clipPath={`url(#${uniqueId}-fillClip)`}>
-                <path d="M0.764047 13.1511C0.686899 12.0746 0.980059 11.0862 1.60904 10.1278C2.03017 9.49066 2.62738 8.80269 3.28631 8.04483C4.98627 6.08711 7.09193 3.66378 7.60746 0.452637C8.72836 2.91409 8.1847 5.30747 6.94399 7.50843C6.38581 8.49773 5.76772 9.20839 5.17778 9.88638C4.48345 10.6842 3.82906 11.4366 3.35892 12.543C3.10025 13.1447 2.95321 13.7211 2.88423 14.2847L0.764047 13.1511Z" fill={`url(#${uniqueId}-paint0_linear)`}></path>
-                <path d="M4.40234 15.0985C4.66101 14.1492 5.10847 13.2615 5.70296 12.4002C6.19488 11.6814 6.65595 11.1486 7.06982 10.6703C8.4621 9.05926 9.32615 8.05907 9.07293 2.65967C9.23539 3.00638 9.39604 3.34038 9.55215 3.66258L9.55305 3.6644C10.9108 6.48345 11.8638 8.46023 10.2628 11.1749C9.47137 12.5164 8.89413 13.1835 8.38405 13.7734C7.80953 14.4369 7.31942 15.0041 6.70315 16.3238L4.40234 15.0985Z" fill={`url(#${uniqueId}-paint1_linear)`}></path>
-                <path d="M10.3638 14.248C9.73937 14.9877 8.72012 16.0078 8.67383 16.075L14.4417 12.8503C14.321 11.7756 13.5287 10.5095 12.5548 8.70972C12.7517 11.0822 11.826 12.5153 10.3638 14.248Z" fill={`url(#${uniqueId}-paint2_linear)`}></path>
-                <path d="M14.4002 13.9224C14.245 14.6103 13.3955 16.0416 12.7711 16.785C10.7979 19.1321 9.77049 20.1332 8.08233 23.6647C7.98703 23.2826 7.88719 22.9223 7.79189 22.5783C7.32084 20.8792 7.03131 19.4643 7.59585 18.2444L14.4002 13.9224Z" fill={`url(#${uniqueId}-paint3_linear)`}></path>
-                <path d="M6.7805 21.879C6.29765 20.4659 5.95094 19.2842 6.20326 17.7893L4.18654 16.4751C4.0749 18.6742 5.01428 21.2419 7.60825 24.5474C7.47029 23.7288 7.05642 22.6868 6.7805 21.879Z" fill={`url(#${uniqueId}-paint4_linear)`}></path>
-                <path d="M2.84232 15.5991C2.87681 16.3143 3.31882 18.2048 3.71454 19.205C2.58547 17.7646 1.35111 15.5546 0.998047 14.3965L2.84232 15.5991Z" fill={`url(#${uniqueId}-paint5_linear)`}></path>
+                <path d="M0.305062 13.1511C0.227915 12.0746 0.521074 11.0862 1.15005 10.1278C1.57118 9.49066 2.16839 8.80269 2.82732 8.04483C4.52728 6.08711 6.63295 3.66378 7.14848 0.452637C8.26938 2.91409 7.72572 5.30747 6.48501 7.50843C5.92683 8.49773 5.30874 9.20839 4.71879 9.88638C4.02447 10.6842 3.37008 11.4366 2.89993 12.543C2.64126 13.1447 2.49423 13.7211 2.42525 14.2847L0.305062 13.1511Z" fill={`url(#${uniqueId}-paint0_linear)`}></path>
+                <path d="M3.94336 15.0985C4.20203 14.1492 4.64948 13.2615 5.24397 12.4002C5.7359 11.6814 6.19697 11.1486 6.61084 10.6703C8.00312 9.05926 8.86717 8.05907 8.61394 2.65967C8.77641 3.00638 8.93705 3.34038 9.09316 3.66258L9.09407 3.6644C10.4519 6.48345 11.4049 8.46023 9.80382 11.1749C9.01238 12.5164 8.43514 13.1835 7.92506 13.7734C7.35054 14.4369 6.86043 15.0041 6.24416 16.3238L3.94336 15.0985Z" fill={`url(#${uniqueId}-paint1_linear)`}></path>
+                <path d="M9.90482 14.248C9.28038 14.9877 8.26113 16.0078 8.21484 16.075L13.9827 12.8503C13.862 11.7756 13.0697 10.5095 12.0958 8.70972C12.2928 11.0822 11.367 12.5153 9.90482 14.248Z" fill={`url(#${uniqueId}-paint2_linear)`}></path>
+                <path d="M13.9412 13.9224C13.786 14.6103 12.9365 16.0416 12.3121 16.785C10.3389 19.1321 9.31151 20.1332 7.62335 23.6647C7.52805 23.2826 7.42821 22.9223 7.33291 22.5783C6.86186 20.8792 6.57233 19.4643 7.13686 18.2444L13.9412 13.9224Z" fill={`url(#${uniqueId}-paint3_linear)`}></path>
+                <path d="M6.32152 21.879C5.83867 20.4659 5.49196 19.2842 5.74427 17.7893L3.72755 16.4751C3.61592 18.6742 4.5553 21.2419 7.14926 24.5474C7.0113 23.7288 6.59743 22.6868 6.32152 21.879Z" fill={`url(#${uniqueId}-paint4_linear)`}></path>
+                <path d="M2.38333 15.5991C2.41782 16.3143 2.85983 18.2048 3.25555 19.205C2.12648 17.7646 0.892125 15.5546 0.539062 14.3965L2.38333 15.5991Z" fill={`url(#${uniqueId}-paint5_linear)`}></path>
             </g>
         </svg>
     );
