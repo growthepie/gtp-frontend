@@ -27,7 +27,7 @@ export const TopRowChild = forwardRef<HTMLButtonElement, TopRowChildProps>(({
     <button
       className={`select-none ${roundedClassName} px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
         ? "bg-color-ui-active"
-        : "hover:bg-active/10"
+        : "hover:bg-color-ui-hover"
         } ${className} `}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
