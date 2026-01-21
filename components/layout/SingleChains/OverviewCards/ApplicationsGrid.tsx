@@ -1105,7 +1105,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             </div>
           ) : showAggregateLoadingState ? (
             <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
-              <GTPIcon icon="gtp-info-monochrome" size="md" className="animate-pulse" />
+              <GTPIcon icon="gtp-info-monochrome" size="md" className="text-color-ui-hover" />
               <div className="heading-large-md">
                 Loading Applications
               </div>
@@ -1115,7 +1115,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
             </div>
           ) : showAggregateEmptyState ? (
             <div className={`w-full flex flex-col gap-y-[10px] items-center justify-center h-full inset-0 z-[2] min-h-[192px]`}>
-              <GTPIcon icon="gtp-info-monochrome" size="md" className="" />
+              <GTPIcon icon="gtp-info-monochrome" size="md" className="text-color-ui-hover" />
               <div className="heading-large-md">
                 No Applications Found
               </div>
@@ -1208,7 +1208,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                   className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'} cursor-pointer`}
                   data-tooltip-trigger
                 >
-                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
+                  <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                 </div>
               }
               containerClass="flex flex-col gap-y-[10px]"

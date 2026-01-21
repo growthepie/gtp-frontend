@@ -374,7 +374,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
 
             }}
         >
-          <div className="text-[0.65rem] md:text-xs font-medium transition-[colors] bg-color-bg-default dark:bg-color-ui-active rounded-b-2xl lg:rounded-b-none lg:rounded-t-2xl border border-t-0 lg:border-t lg:border-b-0 border-color-border dark:border-forest-400 text-center w-full pb-1 z-0 ">
+          <div className="text-[0.65rem] md:text-xs font-medium transition-[colors] bg-color-bg-default dark:bg-color-ui-active rounded-b-2xl lg:rounded-b-none lg:rounded-t-2xl border border-t-0 lg:border-t lg:border-b-0 border-none text-center w-full pb-1 z-0 ">
             <span className="hidden md:block">7-day rolling average</span>
             <span className="block md:hidden">7-day average</span>  
           </div>

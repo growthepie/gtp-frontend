@@ -1016,7 +1016,7 @@ const MetricTable = ({
                       style={{
                         color: selectedChains.includes(item.chain.key)
                           ? undefined
-                          : "#5A6462",
+                          : "rgb(var(--text-secondary))",
                       }}
                     >
                       <svg
@@ -1045,7 +1045,7 @@ const MetricTable = ({
                     <div
                       className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
                           ? "bg-white dark:bg-color-ui-active"
-                          : "bg-forest-50 dark:bg-color-bg-default"
+                          : "bg-color-bg-medium group-hover:bg-color-ui-hover"
                         }`}
                     >
                       <Icon

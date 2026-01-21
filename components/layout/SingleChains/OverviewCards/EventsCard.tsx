@@ -119,7 +119,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                                     className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
                                     data-tooltip-trigger
                                 >
-                                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-text-secondary" />
+                                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                                 </div>
                                 }
                                 containerClass="flex flex-col gap-y-[10px]"

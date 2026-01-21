@@ -670,9 +670,9 @@ const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: 
     <Link href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer"
 
     >
-      {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px] ${color ? `text-[${color}]` : "text-inherit"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
+      {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px] ${color ? `text-[${color}]` : "text-color-text-primary"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
       style={{
-        color: color ? color : "inherit",
+        color: color ? color : "rgb(var(--text-primary))",
       }}
       />}
       <div className=" text-xs xs:text-sm">{label}</div>
