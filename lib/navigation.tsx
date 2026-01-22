@@ -217,30 +217,51 @@ const dataAvailabilityGroup: NavigationItem = {
   ],
 };
 
-    export const navigationItems: NavigationItem[] = [
-      { 
-        name: "Ecosystem",
-        label: "Ecosystem",
-        icon: "gtp-ethereumlogo",
-        options: [
-          {
-            label: "Overview",
-            page: {
-              title: "Overview",
-              description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
-              icon: "gtp-overview",
-            },
-            icon: "gtp-overview",
-            key: "ethereum-ecosystem",
-            rootKey: "ethereum-ecosystem",
-            urlKey: "ethereum-ecosystem",
-            url: "/ethereum-ecosystem",
-            showNew: false,
-          },
-        ],
-        href: "/ethereum-ecosystem",
+export const navigationItems: NavigationItem[] = [
+  {
+    name: "Ecosystem",
+    label: "Ecosystem",
+    icon: "gtp-ethereumlogo",
+    options: [
+      {
+        label: "Overview",
+        page: {
+          title: "Overview",
+          description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
+          icon: "gtp-overview",
+        },
+        icon: "gtp-overview",
+        key: "ethereum-ecosystem",
+        rootKey: "ethereum-ecosystem",
+        urlKey: "ethereum-ecosystem",
+        url: "/ethereum-ecosystem",
+        showNew: false,
       },
-    {
+    ],
+    href: "/ethereum-ecosystem",
+  },
+  {
+    name: "Applications",
+    label: "Applications",
+    icon: "gtp-project",
+    options: [
+      {
+        label: "Overview",
+        page: {
+          title: "Overview",
+          description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
+          icon: "gtp-overview",
+        },
+        icon: "gtp-overview",
+        key: "applications-overview",
+        rootKey: "applications",
+        urlKey: "applications",
+        url: "/applications",
+      },
+    ],
+    href: "/applications",
+  },
+  {
     name: "Fundamentals",
     label: "Fundamentals",
     key: "metrics",
@@ -522,27 +543,6 @@ const dataAvailabilityGroup: NavigationItem = {
     ],
   },
   {
-    name: "Applications",
-    label: "Applications",
-    icon: "gtp-project",
-    options: [
-      {
-        label: "Overview",
-        page: {
-          title: "Overview",
-          description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
-          icon: "gtp-overview",
-        },
-        icon: "gtp-overview",
-        key: "applications-overview",
-        rootKey: "applications",
-        urlKey: "applications",
-        url: "/applications",
-      },
-    ],
-    href: "/applications",
-  },
-  {
     name: "Blockspace",
     label: "Blockspace",
     icon: "gtp-blockspace",
@@ -616,7 +616,7 @@ const dataAvailabilityGroup: NavigationItem = {
     label: "Quick Bites",
     icon: "gtp-quick-bites",
     newChild: true,
-    options: [       
+    options: [
       {
         label: "Overview",
         page: {
@@ -642,15 +642,6 @@ const dataAvailabilityGroup: NavigationItem = {
         showNew: index === 0 ? true : false
       })),
       {
-        label: "OP RetroPGF 3",
-        icon: "optimism-logo-monochrome",
-        category: "public-goods-funding",
-        key: "rpgf3",
-        rootKey: "rpgf3",
-        urlKey: "optimism-retropgf-3",
-        url: "/trackers/optimism-retropgf-3",
-      },
-      {
         label: "Octant",
         icon: "octant-monochrome",
         category: "public-goods-funding",
@@ -669,9 +660,18 @@ const dataAvailabilityGroup: NavigationItem = {
         urlKey: "glodollar",
         url: "/trackers/glodollar",
       },
+      {
+        label: "OP RetroPGF 3",
+        icon: "optimism-logo-monochrome",
+        category: "public-goods-funding",
+        key: "rpgf3",
+        rootKey: "rpgf3",
+        urlKey: "optimism-retropgf-3",
+        url: "/trackers/optimism-retropgf-3",
+      },
     ],
   },
-  
+
 
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW
