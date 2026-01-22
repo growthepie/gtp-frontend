@@ -74,7 +74,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
       >
             {/* <div className="heading-large-md ">Events</div> */}
 
-            <div className={`absolute z-10 flex flex-col bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
+            <div className={`relative z-10 flex flex-col bg-color-bg-default rounded-[15px] px-[15px] xs:px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-standard" : ""}`}
                  style={{
                     height: isHidden ? 0 : (expanded ? (measuredContentHeight + 110 || totalHeight) : 245),
                     minHeight: isHidden ? 0 : (minHeight || "100%"),

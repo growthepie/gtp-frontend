@@ -212,7 +212,7 @@ export default function Page() {
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">
             <div className="heading-lg flex items-center gap-x-[5px]">
-              {showGrid ? "Top Ranked" : `Top Applications ${selectedCategory ? `> ${data?.blockspace_categories.main_categories[selectedCategory]}` : ""}`}
+              {showGrid ? "Top Ranked Apps" : `Top Applications ${selectedCategory ? `> ${data?.blockspace_categories.main_categories[selectedCategory]}` : ""}`}
               {selectedCategory && (
                 <button className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center" onClick={() => setClearSelectedCategory(true)}>
                   <Image src="/In-Button-Close.svg" alt="Close" className="relative left-[0.5px] bottom-[0.5px]"  width={16} height={16} />

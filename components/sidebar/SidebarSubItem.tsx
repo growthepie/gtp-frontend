@@ -12,14 +12,17 @@ import { useTooltipContext } from './Sidebar';
 import { DropdownArrow } from '../layout/SidebarMenuGroup';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
+import NewBadge from './NewBadge';
+import { AnimatePresence } from 'framer-motion';
 
 type Props = {
   item: SidebarLink | SidebarChainLink; // level 1 only
   isOpen: boolean;
+  isParentExpanded: boolean;
   onClose?: () => void;
 };
 
-const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
+const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
   const { href, icon, label } = item;
   // console.log('item', item);
   const isChain = item.type === 'chain-link';
@@ -38,6 +41,7 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
   const [isHovered, setIsHovered] = useState(false);
   const isIconHovered = isHovered || isTooltipOpen;
   const shouldUseChainColor = !!chainColors && (isIconHovered || isActive);
+  const showBadge = item.isNew && isOpen && isParentExpanded && !isActive;
 
   const { refs, floatingStyles, context, middlewareData } = useFloating({
     open: isTooltipOpen,
@@ -45,6 +49,16 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
     placement: 'right-end',
     middleware: [offset({ mainAxis: -46 }), shift(), hide()],
     whileElementsMounted: autoUpdate,
+    strategy: 'fixed',
+  });
+
+  // Separate floating instance for badge positioning
+  const { refs: badgeRefs, floatingStyles: badgeFloatingStyles } = useFloating({
+    open: showBadge,
+    placement: 'right',
+    middleware: [offset({ mainAxis: -24, crossAxis: -8 }), hide()],
+    whileElementsMounted: (reference, floating, update) =>
+      autoUpdate(reference, floating, update, { animationFrame: true }),
     strategy: 'fixed',
   });
 
@@ -58,16 +72,16 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
   const chainItemClasses = isChain ? '!h-[26px] !pl-0 !pr-0 !ml-[6px]' : 'ml-[1px]';
   const inactiveClasses = `text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''}`;
   const activeClasses = 'bg-color-ui-active text-color-text-primary';
-  
+
   const RowContent = (
-    <div className={`group flex items-center w-full rounded-l-full md:rounded-r-none rounded-r-full h-[36px] md:pl-[5px] pr-[15px] py-[3px] ${isActive ? activeClasses : inactiveClasses} ${chainItemClasses}`}>
+    <div className={`group flex items-center w-full rounded-l-full md:rounded-r-none rounded-r-full h-[36px] md:pl-[5px] pr-[15px] py-[3px] ${isActive ? activeClasses : inactiveClasses} ${chainItemClasses} relative`}>
       <div className={`${iconContainer}`}>
-      <GTPIcon 
-        icon={icon} 
-        size={"sm"} 
+      <GTPIcon
+        icon={icon}
+        size={"sm"}
         containerClassName='absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]'
         className={chainColors ? (shouldUseChainColor ? `text-[${chainColors[resolvedTheme === "dark" ? "dark" : "light"][1]}]` : 'text-color-text-primary') : 'text-color-text-primary'}
-        style={{ color: shouldUseChainColor ? chainColors![resolvedTheme === "dark" ? "dark" : "light"][1] : 'rgb(var(--text-primary))'}} 
+        style={{ color: shouldUseChainColor ? chainColors![resolvedTheme === "dark" ? "dark" : "light"][1] : 'rgb(var(--text-primary))'}}
       />
       </div>
       <div className={`flex flex-1 min-w-0 items-center whitespace-nowrap heading-large-xs overflow-hidden transition-opacity duration-200 pl-[15px] ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
@@ -95,10 +109,16 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
     </div>
   );
 
+  // Combine refs for both tooltip and badge
+  const setRefs = (el: HTMLAnchorElement | null) => {
+    refs.setReference(el);
+    badgeRefs.setReference(el);
+  };
+
   return (
-    <div className={`${containerPadding}`}> 
+    <div className={`${containerPadding}`}>
       <Link
-        ref={refs.setReference}
+        ref={setRefs}
         {...getReferenceProps()}
         href={href}
         className={``}
@@ -115,6 +135,24 @@ const SidebarSubItem = ({ item, isOpen, onClose }: Props) => {
             <TooltipContent />
           </div>
         )}
+      </FloatingPortal>
+
+      {/* Badge rendered in portal to escape overflow-hidden parent */}
+      <FloatingPortal id="sidebar-items-portal">
+        <AnimatePresence>
+          {showBadge && (
+            <div
+              ref={badgeRefs.setFloating}
+              className='z-sidebar-new-badge'
+              style={{
+                ...badgeFloatingStyles,
+                pointerEvents: 'none',
+              }}
+            >
+              <NewBadge badgeId={`sidebar-subitem-${label}`} />
+            </div>
+          )}
+        </AnimatePresence>
       </FloatingPortal>
       </div>
   );

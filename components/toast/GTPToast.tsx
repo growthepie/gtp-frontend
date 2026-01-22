@@ -50,8 +50,8 @@ interface ToastProviderProps {
   maxToasts?: number;
 }
 
-// Toast Item Component
-const ToastItem = memo(({
+// Toast Item Component with CSSTransition wrapper (nodeRef required for React 19)
+const ToastItemWithTransition = memo(({
   toast,
   onDismiss
 }: {
@@ -103,49 +103,60 @@ const ToastItem = memo(({
 
   const { icon, iconClassName, title } = getTypeStyles();
 
-
   return (
-    <div
-      ref={nodeRef}
-      className={`flex flex-col gap-y-[5px] w-[350px] max-w-[90vw] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] z-50`}
+    <CSSTransition
+      nodeRef={nodeRef}
+      timeout={300}
+      classNames={{
+        enter: "toast-enter",
+        enterActive: "toast-enter-active",
+        exit: "toast-exit",
+        exitActive: "toast-exit-active"
+      }}
     >
-      <div className={`flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center ${toast.className}`}>
-        {icon && icon}
-        {title && <div className="heading-small-xs h-[18px] flex items-center">{title}</div>}
-        {toast.rightIcon && <>{toast.rightIcon}</>}
-        <div className="flex-1" />
-        <button
-          onClick={onDismiss}
-          className="text-[#5A6462] hover:text-color-text-primary transition-colors flex-shrink-0"
+      <div ref={nodeRef} style={{ pointerEvents: "auto" }}>
+        <div
+          className={`flex flex-col gap-y-[5px] w-[350px] max-w-[90vw] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] z-50`}
         >
-          <GTPIcon icon={"feather:x" as GTPIconName} size="sm" />
-        </button>
-      </div>
-      <div className={`flex items-start w-full pl-[20px] gap-x-[10px]`}>
-        <div className="flex-1 text-xs">
-          {toast.message}
+          <div className={`flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center ${toast.className}`}>
+            {icon && icon}
+            {title && <div className="heading-small-xs h-[18px] flex items-center">{title}</div>}
+            {toast.rightIcon && <>{toast.rightIcon}</>}
+            <div className="flex-1" />
+            <button
+              onClick={onDismiss}
+              className="text-[#5A6462] hover:text-color-text-primary transition-colors flex-shrink-0"
+            >
+              <GTPIcon icon={"feather:x" as GTPIconName} size="sm" />
+            </button>
+          </div>
+          <div className={`flex items-start w-full pl-[20px] gap-x-[10px]`}>
+            <div className="flex-1 text-xs">
+              {toast.message}
 
-          {toast.action && (
-            <div className="mt-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toast.action?.onClick();
-                  onDismiss();
-                }}
-                className="text-xs underline text-[#76ECAD]"
-              >
-                {toast.action.label}
-              </button>
+              {toast.action && (
+                <div className="mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toast.action?.onClick();
+                      onDismiss();
+                    }}
+                    className="text-xs underline text-[#76ECAD]"
+                  >
+                    {toast.action.label}
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+    </CSSTransition>
   );
 });
 
-ToastItem.displayName = 'ToastItem';
+ToastItemWithTransition.displayName = 'ToastItemWithTransition';
 
 // ToastContainer Component
 const ToastContainer = memo(({
@@ -184,23 +195,11 @@ const ToastContainer = memo(({
     >
       <TransitionGroup component={null}>
         {toasts.map((toast) => (
-          <CSSTransition
+          <ToastItemWithTransition
             key={toast.id}
-            timeout={300}
-            classNames={{
-              enter: "toast-enter",
-              enterActive: "toast-enter-active",
-              exit: "toast-exit",
-              exitActive: "toast-exit-active"
-            }}
-          >
-            <div style={{ pointerEvents: "auto" }}>
-              <ToastItem
-                toast={toast}
-                onDismiss={() => onDismiss(toast.id)}
-              />
-            </div>
-          </CSSTransition>
+            toast={toast}
+            onDismiss={() => onDismiss(toast.id)}
+          />
         ))}
       </TransitionGroup>
     </div>,

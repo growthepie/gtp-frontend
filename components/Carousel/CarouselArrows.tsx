@@ -23,7 +23,7 @@ export default function CarouselArrows({
     rounded-full text-forest-400 bg-white dark:bg-forest-700
     size-[20px] md:size-[30px] flex items-center justify-center
     transition-opacity duration-200 z-10
-    disabled:opacity-30 disabled:cursor-not-allowed
+    disabled:opacity-0 disabled:pointer-events-none
     hover:bg-forest-50 dark:hover:bg-forest-600
   `;
 

@@ -179,6 +179,9 @@ module.exports = {
       backgroundImage: {
         'glow-yellow': 'radial-gradient(50% 50% at 50% 50%, rgb(var(--accent-yellow)) 0%, rgba(217, 217, 217, 0) 100%)',
         'glow-turquoise': 'radial-gradient(50% 50% at 50% 50%, rgb(var(--accent-turquoise)) 0%, rgba(217, 217, 217, 0) 100%)',
+        "oli-gradient": "linear-gradient(to right, rgb(92, 68, 194) 0%, rgb(105, 173, 218) 50%, rgb(255, 22, 132) 94%)",
+        "gradient-accent-warm": "linear-gradient(to right, rgb(254, 84, 104) 0%, rgb(255, 223, 39) 100%)",
+        "gradient-accent-cool": "linear-gradient(to right, rgb(16, 128, 140) 0%, rgb(29, 247, 239) 100%)",
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
@@ -206,6 +209,8 @@ module.exports = {
         'global-search-backdrop': '7000',
         'dropdown': '1000',
         'dropdown-background': '999',
+        'show-loading': '200',
+        'sidebar-new-badge': '5',
         'chart': '20',
       },
       transitionDuration: {

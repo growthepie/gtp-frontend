@@ -240,20 +240,19 @@ export default function Page() {
 
     if (next) {
       setNextEpoch(epochsInfo[next]);
-      countdownEnd =
-        new Date(epochsInfo[next].allocationStart).getTime() / 1000;
+      countdownEnd = moment.utc(epochsInfo[next].allocationStart).unix();
     }
 
     if (curr) {
       setCurrentEpoch(epochsInfo[curr]);
       setCommunityEpoch(parseInt(curr));
       setFundingEpoch(parseInt(curr));
-      countdownEnd = new Date(epochsInfo[curr].allocationEnd).getTime() / 1000;
+      countdownEnd = moment.utc(epochsInfo[curr].allocationEnd).unix();
     }
 
     // console.log("curr", curr, "next", next, "countdownEnd", countdownEnd);
 
-    setCountdownTime(countdownEnd - now + 7200);
+    setCountdownTime(countdownEnd - now);
   }, [summaryData]);
 
   useEffect(() => {
@@ -663,7 +662,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHead>
           </div>
 
-          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:max-w-[398px] lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
+          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:flex-1 lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
             <ChainSectionHeadAlt
               title={"Background"}
               icon={"gtp:gtp-backgroundinformation"}
@@ -671,13 +670,13 @@ VirtualizedList.displayName = 'VirtualizedList';
               childrenHeight={isMobile ? 200 : 111}
               className={`flex w-full min-w-[67px] flex-1 transition-all duration-300`}
               shadowElement={
-                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
               }
             >
               <div
                 className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-color-bg-default lg:max-h-[111px]`}
               >
-                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
                 <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)]">
                   <div className="w-full">
                     <div className="text-xs font-semibold text-[#5A6462]">
@@ -698,7 +697,7 @@ VirtualizedList.displayName = 'VirtualizedList';
             </ChainSectionHeadAlt>
           </div>
           <div className="flex flex-shrink flex-grow basis-0 flex-col gap-x-[5px] gap-y-[5px] lg:flex-row">
-            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[125px] lg:max-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
+            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:hover:min-w-[294px]">
               <ChainSectionHeadAlt
                 title={"Community"}
                 icon={"gtp:gtp-users"}
@@ -706,12 +705,12 @@ VirtualizedList.displayName = 'VirtualizedList';
                 childrenHeight={isMobile ? 116 : 111}
                 className="w-full min-w-[67px] transition-all duration-300"
                 shadowElement={
-                  <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
+                  <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                 }
               >
                 <div className="group relative flex flex-col gap-y-[5px] overflow-hidden">
                   <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-color-bg-default lg:max-h-[111px]">
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col pl-[5px]">
                       <div className="text-xs font-semibold text-[#5A6462]">
                         User Wallets with GLM locked
@@ -815,7 +814,7 @@ VirtualizedList.displayName = 'VirtualizedList';
               </ChainSectionHeadAlt>
             </div>
             <div className="flex flex-shrink flex-grow basis-0 gap-x-[5px]">
-              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[125px] lg:flex-shrink lg:flex-grow lg:max-w-[294px] lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
+              <div className="min-w-full transition-all duration-300 @container lg:flex-1 lg:min-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1920px]:min-w-[294px]">
                 <ChainSectionHeadAlt
                   title={"Project Funding"}
                   icon={"gtp:gtp-project"}
@@ -823,11 +822,11 @@ VirtualizedList.displayName = 'VirtualizedList';
                   childrenHeight={isMobile ? 116 : 111}
                   className={`min-w-[67px] transition-all duration-300`}
                   shadowElement={
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                   }
                 >
                   <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-color-bg-default">
-                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--ui-shadow)/0)_0%,rgb(var(--ui-shadow)/0.8)_38%,rgb(var(--ui-shadow))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col">
                       <div className="text-xs font-semibold text-[#5A6462]">
                         Total Funding Paid Out
