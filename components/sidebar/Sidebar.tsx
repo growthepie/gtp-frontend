@@ -165,24 +165,25 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
       {/* Debug panel for isNew items */}
       {!IS_PRODUCTION && (
-        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-[400px] max-h-[300px] overflow-auto text-xs font-mono !z-global-search-tooltip">
-          <div className="font-bold mb-2 text-yellow-400">Debug: Items with isNew=true ({debugNewItems.length})</div>
-          {debugNewItems.length === 0 ? (
-            <div className="text-gray-400">No items with isNew=true found</div>
-          ) : (
-            <ul className="space-y-1">
-              {debugNewItems.map((item, idx) => (
-                <li key={idx} className="flex gap-2">
-                  <span className={item.level === 'top-level' ? 'text-green-400' : 'text-blue-400'}>
-                    [{item.level}]
-                  </span>
-                  <span className="text-gray-400">{item.type}:</span>
-                  <span>{item.label}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <></>
+        // <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-[400px] max-h-[300px] overflow-auto text-xs font-mono !z-global-search-tooltip">
+        //   <div className="font-bold mb-2 text-yellow-400">Debug: Items with isNew=true ({debugNewItems.length})</div>
+        //   {debugNewItems.length === 0 ? (
+        //     <div className="text-gray-400">No items with isNew=true found</div>
+        //   ) : (
+        //     <ul className="space-y-1">
+        //       {debugNewItems.map((item, idx) => (
+        //         <li key={idx} className="flex gap-2">
+        //           <span className={item.level === 'top-level' ? 'text-green-400' : 'text-blue-400'}>
+        //             [{item.level}]
+        //           </span>
+        //           <span className="text-gray-400">{item.type}:</span>
+        //           <span>{item.label}</span>
+        //         </li>
+        //       ))}
+        //     </ul>
+        //   )}
+        // </div>
       )}
     </div>
   );
