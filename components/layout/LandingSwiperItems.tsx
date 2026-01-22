@@ -48,7 +48,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   const linkComponent = useMemo(() => {
     return (
       <Link
-        className="flex w-auto space-x-[10px] items-center opacity-0 py-1.5 pl-[20px] text-xs transition-all duration-300 -translate-y-[40px] group-hover:translate-y-0 md:group-hover:translate-y-[2px] group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
+        className="flex w-fit space-x-[10px] items-center opacity-0 py-1.5 pl-[20px] text-xs transition-all duration-300 -translate-y-[40px] group-hover:translate-y-0 md:group-hover:translate-y-[2px] group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
         href={`/fundamentals/${urlKey}`}
         onClick={() => {
           track("clicked Compare link", {
