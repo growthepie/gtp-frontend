@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { SidebarMenuGroup as SidebarMenuGroupType, SidebarLink, SidebarChainLink, SidebarSectionTitle } from '@/lib/transform-navigation';
 import { GTPIcon, GTPIconSize } from '@/components/layout/GTPIcon';
 import { useSidebarContext, useTooltipContext } from './Sidebar';
+import { useUIStore } from '@/contexts/UIContext';
 import {
   useFloating, FloatingPortal, offset, shift, autoUpdate, hide,
   useHover, useInteractions, useDismiss,
@@ -23,6 +24,7 @@ type Props = {
 
 const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
   const pathname = usePathname();
+  const isMobile = useUIStore((state) => state.isMobile);
   const isGroup = item.type === 'group';
   const href = !isGroup ? (item as SidebarLink).href : undefined;
   const label = item.label;
@@ -79,16 +81,24 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
       <div className="relative flex items-center justify-center rounded-full size-[38px] min-w-[38px]">
         <DropdownIcon size="lg" icon={icon} iconBackground="none" showArrow={isGroup} isOpen={isExpanded} contextMenuOptions={{ isLink: !isGroup }} disableAnimation={true} />
       </div>
-      <div className={`flex-1 flex items-center justify-between overflow-hidden transition-opacity duration-200 whitespace-nowrap pl-[5px] ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`flex-1 flex items-center overflow-hidden transition-opacity duration-200 whitespace-nowrap pl-[5px] ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         <span className="heading-large-md whitespace-nowrap">{label}</span>
+        {/* New Badge (Mobile) */}
+        {item.isNew && isMobile && (
+          <span className={`px-[10px] py-[5px] heading-xs mx-[10px] rounded-full bg-gradient-to-b from-[#FE5468] to-[#FFDF27] text-[rgb(var(--ui-active))] uppercase tracking-wide transition-opacity duration-100 ${showBadge ? "opacity-100" : "opacity-0"}`}>
+            New
+          </span>
+        )}
       </div>
     </>
   );
 
+  // Floating badge portal - only show on desktop (not mobile)
+  // z-index 100: above content/footer, below show-loading (200)
   const BadgePortal = (
     <FloatingPortal id="sidebar-items-portal" >
       <AnimatePresence>
-        {showBadge && (
+        {showBadge && !isMobile && (
           <div
             ref={badgeRefs.setFloating}
             className='z-sidebar-new-badge'
@@ -106,10 +116,10 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
 
   const TooltipContent = () => (
     <div className="md:pl-[5px]">
-      <div 
+      <div
         className="flex items-center rounded-full transition-colors duration-200 text-color-text-primary relative bg-color-ui-hover"
-        style={{ 
-          height: '44px', 
+        style={{
+          height: '44px',
         }}
       >
         <div className="flex items-center justify-center rounded-full size-[38px]">
@@ -145,21 +155,21 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
               minWidth: '38px',
             }}
           >
-          {RowContent}
+            {RowContent}
           </div>
         </div>
         {BadgePortal}
 
         <FloatingPortal id="sidebar-items-portal">
           {context.open && !isReferenceHidden && (
-          <div
-            ref={refs.setFloating}
-            {...getFloatingProps()}
-            style={{ ...floatingStyles, pointerEvents: 'none'}}
-            className="z-global-search-tooltip"
-          >
-            <TooltipContent />
-          </div>
+            <div
+              ref={refs.setFloating}
+              {...getFloatingProps()}
+              style={{ ...floatingStyles, pointerEvents: 'none' }}
+              className="z-global-search-tooltip"
+            >
+              <TooltipContent />
+            </div>
           )}
         </FloatingPortal>
 
@@ -212,18 +222,18 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
         <div
           className={`flex items-center w-full rounded-full md:rounded-r-none h-[44px] pl-0 text-color-text-primary ${isOpen ? 'hover:bg-color-ui-hover' : ''} ${isActiveTopLink ? 'bg-color-ui-active text-color-text-primary' : ''}`}
         >
-        {RowContent}
+          {RowContent}
         </div>
       </Link>
       {BadgePortal}
-    
+
       <FloatingPortal id="sidebar-items-portal">
         {context.open && !isReferenceHidden && (
-        <div
-          ref={refs.setFloating}
-          {...getFloatingProps()}
-          style={{ ...floatingStyles, pointerEvents: 'none',}}
-          className="z-global-search-tooltip"
+          <div
+            ref={refs.setFloating}
+            {...getFloatingProps()}
+            style={{ ...floatingStyles, pointerEvents: 'none', }}
+            className="z-global-search-tooltip"
           >
             <TooltipContent />
           </div>
@@ -312,7 +322,7 @@ export const DropdownIcon = memo(({
 });
 
 
-export const DropdownArrow = ({isOpen, size, disableAnimation = false}: {isOpen: boolean; size: "sm" | "md" | "lg"; disableAnimation?: boolean}) => {
+export const DropdownArrow = ({ isOpen, size, disableAnimation = false }: { isOpen: boolean; size: "sm" | "md" | "lg"; disableAnimation?: boolean }) => {
   const iconSizeMap: { [key: string]: "sm" | "md" | "lg" } = {
     sm: "sm",
     md: "sm",

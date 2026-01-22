@@ -210,7 +210,7 @@ module.exports = {
         'dropdown': '1000',
         'dropdown-background': '999',
         'show-loading': '200',
-        'sidebar-new-badge': '5',
+        'sidebar-new-badge': '100',
         'chart': '20',
       },
       transitionDuration: {
