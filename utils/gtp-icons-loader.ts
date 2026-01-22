@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/lib/helpers";
-import { addCollection, iconExists } from "@iconify/react";
+import { addCollection, iconExists, listIcons } from "@iconify/react";
+import type { IconifyJSON } from "@iconify/react";
 
 class GTPIconsLoader {
   private static instance: GTPIconsLoader;
@@ -55,7 +56,7 @@ class GTPIconsLoader {
       };
 
       // Fetch both icon sets
-      const [gtpIcons, gtpFigmaIcons] = await Promise.all([
+      const [gtpIcons, gtpFigmaIcons] = await Promise.all<[Promise<IconifyJSON>, Promise<IconifyJSON>]>([
         fetch(`/gtp.json`, fetchOptions).then(res => {
           if (!res.ok) throw new Error(`Failed to fetch gtp.json: ${res.status}`);
           return res.json();
@@ -67,10 +68,31 @@ class GTPIconsLoader {
       ]);
       
       // console.log("[GTPIconsLoader] JSON files fetched, adding collections...");
-      
+      const currentIcons = listIcons(undefined, "gtp");
+
+      // filter out icons that are already loaded
+      const filterLoadedIcons = (iconSet: IconifyJSON): IconifyJSON => {
+        const filteredIcons: IconifyJSON = {
+          prefix: iconSet.prefix,
+          icons: {},
+          width: iconSet.width,
+          height: iconSet.height,
+        };
+        for (const iconName in iconSet.icons) {
+          const fullIconName = `${iconSet.prefix}:${iconName}`;
+          if (!currentIcons.includes(fullIconName)) {
+            filteredIcons.icons[iconName] = iconSet.icons[iconName];
+          }
+        }
+        return filteredIcons;
+      };
+
+      const gtpIconsToAdd = filterLoadedIcons(gtpIcons);
+      const gtpFigmaIconsToAdd = filterLoadedIcons(gtpFigmaIcons);
+
       // Add collections immediately (no setTimeout needed)
-      addCollection(gtpIcons);
-      addCollection(gtpFigmaIcons);
+      addCollection(gtpIconsToAdd);
+      addCollection(gtpFigmaIconsToAdd);
       
       // Optional: Verify a sample icon exists to ensure collections are loaded
       // You can check for a known icon from your collection
