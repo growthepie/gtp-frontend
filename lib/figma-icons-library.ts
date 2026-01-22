@@ -18,7 +18,7 @@
 
   2. Run the Generation Script:
      Execute this script from the project root:
-     $ tsx lib/figma-icons-library.ts
+     $ npx tsx lib/figma-icons-library.ts
      This will populate `public/icon-library/` with optimized SVGs within the `icons` and `logos` folders 
      and the `index.json` manifest.
 
@@ -32,7 +32,7 @@
 
 export { };
 
-import { promises as fs, statSync } from 'fs';
+import { createWriteStream, promises as fs, statSync } from 'fs';
 import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -352,7 +352,6 @@ function getGradientStructureHash(gradient: GradientInfo): string {
   return createHash('sha256').update(stringified).digest('hex').substring(0, 16); // Use first 16 chars of SHA256 hash
 }
 
-
 /**
  * Main function to orchestrate fetching and saving SVGs for "small" variants.
  */
@@ -368,7 +367,13 @@ async function main() {
     if (!cacheIsFresh) {
       console.log("Figma data cache is stale. Fetching live data...");
       const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
-      await fs.writeFile(cacheFilePath, JSON.stringify(figmaData, null, 2), 'utf-8');
+      const stream = createWriteStream(cacheFilePath);
+      stream.write(JSON.stringify(figmaData));
+      stream.end();
+      await new Promise<void>((resolve, reject) => {
+        stream.on('finish', resolve);
+        stream.on('error', reject);
+      });
     }else{
       console.log("Figma data cache is fresh. Loading from cache...");
     }
@@ -385,71 +390,77 @@ async function main() {
     // print the names of the children of the document
     console.log("Children of the document:", figmaData.document.children.map(child => child.name));
 
-    let ICONS_AND_LOGOS_PAGE_ID = "21411:73871"
-    let ICONS_AND_LOGOS_FRAME_ID = "21411:74021"
-    let GROWTHEPIE_ICONS_NODE_ID = "21411:74022"
-    let LOGOS_NODE_ID = "21411:74172"
-
     // --- Find page with the name "Icons & Logos" ---
     const iconsAndLogosPage = figmaData.document.children.find(child => child.name.includes("Icons & Logos"));
     if (!iconsAndLogosPage) throw new Error(`Page node "Icons & Logos" not found.`);
     console.log(`1. Found Page: ${iconsAndLogosPage.name}, ID: ${iconsAndLogosPage.id}, Type: ${iconsAndLogosPage.type}`);
-    ICONS_AND_LOGOS_PAGE_ID = iconsAndLogosPage.id;
 
-    // --- Find the frame with the name "Icons & Logos" within the page ---
+    // --- Find the section with the name "Icons & Logos" within the page ---
     const iconsAndLogosFrame = iconsAndLogosPage.children?.find(child => child.name.includes("Icons & Logos")); 
-    if (!iconsAndLogosFrame) throw new Error(`Frame node "Icons & Logos" not found.`);
-    console.log(`2. Found Frame: ${iconsAndLogosFrame.name}, ID: ${iconsAndLogosFrame.id}, Type: ${iconsAndLogosFrame.type}`);
-    ICONS_AND_LOGOS_FRAME_ID = iconsAndLogosFrame.id;
+    if (!iconsAndLogosFrame) throw new Error(`Section "Icons & Logos" not found.`);
+    console.log(`2. Found Section: ${iconsAndLogosFrame.name}, ID: ${iconsAndLogosFrame.id}, Type: ${iconsAndLogosFrame.type}`);
 
-    // --- Find the frame with the name "Logos" within the page ---
-    const logosFrame = iconsAndLogosFrame.children?.find(child => child.name === "Logos");
-    if (!logosFrame) throw new Error(`Frame node "Logos" not found.`);
-    console.log(`3. Found Frame: ${logosFrame.name}, ID: ${logosFrame.id}, Type: ${logosFrame.type}`);
-    LOGOS_NODE_ID = logosFrame.id;
+    // --- Find all icon frames we care about ---
+    const iconFrameNames = [
+      'growthepie icons',
+      'Chain icons', 
+      'Social Media icons',
+      'Additional Control icons'
+    ];
 
-    // --- Find the node with the name "growthepie - Icons" within the page ---
-    const growthepieIconsFrame = iconsAndLogosFrame.children?.find(child => child.name.includes("growthepie - Icons"));
-    if (!growthepieIconsFrame) throw new Error(`Frame node "growthepie - Icons" not found.`);
-    console.log(`4. Found Frame: ${growthepieIconsFrame.name}, ID: ${growthepieIconsFrame.id}, Type: ${growthepieIconsFrame.type}`);
-    GROWTHEPIE_ICONS_NODE_ID = growthepieIconsFrame.id;
+    const iconFrames: FigmaNode[] = [];
+    for (const frameName of iconFrameNames) {
+      const frame = iconsAndLogosFrame.children?.find(child => 
+        child.name.toLowerCase() === frameName.toLowerCase() && child.type === 'FRAME'
+      );
+      if (frame) {
+        console.log(`   Found Frame: ${frame.name}, ID: ${frame.id}`);
+        iconFrames.push(frame);
+      } else {
+        console.warn(`   Frame "${frameName}" not found - skipping.`);
+      }
+    }
 
-    console.log(" -------------------------------------------------------------- ")
+    if (iconFrames.length === 0) {
+      throw new Error('No icon frames found to process.');
+    }
 
-    // --- Find the relevant nodes ---
-    const pageNode = findPageNodeById(figmaData.document.children, ICONS_AND_LOGOS_PAGE_ID);
-    if (!pageNode) throw new Error(`Page node ${ICONS_AND_LOGOS_PAGE_ID} not found.`);
-    console.log(`Found Page: ${pageNode.name}`);
+    console.log(" -------------------------------------------------------------- ");
 
-    const frameNode = findFrameNodeById(pageNode, ICONS_AND_LOGOS_FRAME_ID);
-    if (!frameNode) throw new Error(`Frame node ${ICONS_AND_LOGOS_FRAME_ID} not found.`);
-    console.log(`Found Frame: ${frameNode.name}`);
-
-    const iconsNode = findNodeById(frameNode, GROWTHEPIE_ICONS_NODE_ID);
-    if (!iconsNode) throw new Error(`Icons node ${GROWTHEPIE_ICONS_NODE_ID} not found.`);
-    console.log(`Found Icons Node: ${iconsNode.name}`);
-
-    const logosNode = findNodeById(frameNode, LOGOS_NODE_ID);
-    if (!logosNode) throw new Error(`Logos node ${LOGOS_NODE_ID} not found.`);
-    console.log(`Found Logos Node: ${logosNode.name}`);
-
-
-    // --- Organize nodes and filter for "Small" variants ---
-    const organizedIcons = iconsNode.children ? organizeChildNodes("icons", iconsNode.children) : [];
-    const organizedLogos = logosNode.children ? organizeChildNodes("logos", logosNode.children) : [];
-
-    const allOrganizedItems = [...organizedIcons, ...organizedLogos];
+    // --- Organize nodes from all icon frames ---
+    const allOrganizedItems: OrganizedItem[] = [];
+    for (const frame of iconFrames) {
+      // Fallback category derived from frame name (without "icons" suffix)
+      const fallbackCategory = toKebabCase(frame.name.replace(/icons?$/i, '').trim());
+      const organizedItems = frame.children ? organizeChildNodes("icons", frame.children) : [];
+      
+      // Only override category if it's "uncategorized"
+      organizedItems.forEach(item => {
+        if (!item.category || item.category === 'uncategorized') {
+          item.category = fallbackCategory || 'uncategorized';
+        }
+      });
+      
+      allOrganizedItems.push(...organizedItems);
+      
+      // Log category breakdown for debugging
+      const categoryBreakdown = organizedItems.reduce((acc, item) => {
+        acc[item.category || 'uncategorized'] = (acc[item.category || 'uncategorized'] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      console.log(`Organized ${organizedItems.length} items from "${frame.name}":`, categoryBreakdown);
+    }
 
     // Structure to hold info for variants we actually want to fetch
     const variantsToFetch: {
       nodeId: string;
       type: string;
       category: string;
-      name: string; // Kebab-case name of the component set
-      originalVariant: VariantInfo; // Keep original info if needed later
+      name: string;
+      originalVariant: VariantInfo;
     }[] = [];
 
-    console.log(`Organized ${organizedIcons.length} icon sets and ${organizedLogos.length} logo sets.`);
+    console.log(`Organized ${allOrganizedItems.length} icon sets and ${allOrganizedItems.length} logo sets.`);
 
     for (const item of allOrganizedItems) {
       // log the size of the variants
