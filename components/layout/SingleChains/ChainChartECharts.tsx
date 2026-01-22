@@ -1118,10 +1118,22 @@ const MetricChart = memo(
       }
 
       // Always apply graphic elements (current or previous)
-      chartInstance.setOption(
-        { graphic: lastGraphicElements.current },
-        { notMerge: false, lazyUpdate: false }
-      );
+      // Defer setOption to avoid calling during ECharts' main rendering process
+      // This happens when drawLastPointLines is triggered from event handlers like datazoom
+      setTimeout(() => {
+        try {
+          const instance = chartRef.current?.getEchartsInstance();
+          if (instance && !instance.isDisposed?.()) {
+            instance.setOption(
+              { graphic: lastGraphicElements.current },
+              { notMerge: false, lazyUpdate: false }
+            );
+          }
+        } catch (e) {
+          // Chart may have been disposed during async operations - silently ignore
+          console.debug('Chart instance unavailable during drawLastPointLines:', e);
+        }
+      }, 0);
     }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval]);
 
     // Draw lines after chart renders - call multiple times to ensure we catch when chart is ready
@@ -1310,8 +1322,8 @@ const MetricChart = memo(
         </div>
 
         {/* Date labels */}
-        <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/50 pointer-events-none">
-          <div className="w-[5px] h-[5px] text-color-text-primary rounded-full"></div>
+        <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium/50 pointer-events-none">
+          <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
           <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
             {new Date(zoomed ? zoomMin! : activeTimespan?.xMin ?? 0).toLocaleDateString("en-GB", {
               timeZone: "UTC",
@@ -1320,7 +1332,7 @@ const MetricChart = memo(
             })}
           </div>
         </div>
-        <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-color-bg-medium/50 pointer-events-none">
+        <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium/50 pointer-events-none">
           <div className="text-color-text-primary text-[8px] font-medium leading-[150%]">
             {new Date(zoomed ? zoomMax! : activeTimespan?.xMax ?? Date.now()).toLocaleDateString("en-GB", {
               timeZone: "UTC",
@@ -1328,7 +1340,7 @@ const MetricChart = memo(
               year: "numeric",
             })}
           </div>
-          <div className="w-[5px] h-[5px] text-color-text-primary rounded-full"></div>
+          <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full"></div>
         </div>
       </div>
     );
