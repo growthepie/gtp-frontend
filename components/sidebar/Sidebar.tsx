@@ -75,7 +75,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigationItemsWithChains = useMemo(() => {
     if (ChainsNavigationItems) {
       const newNavigationItems = [...navigationItems];
-      newNavigationItems.splice(3, 0, ChainsNavigationItems);
+      newNavigationItems.splice(2, 0, ChainsNavigationItems);
 
       // if not production, add the chains rework item
       if(!IS_PRODUCTION) {
@@ -98,9 +98,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       for (const item of groups) {
         if (item.type === 'group') {
           // Replicate the special case for Fundamentals on the homepage
-          if (pathname === "/" && item.label === "Fundamentals") {
-            return item.label;
-          }
+          // if (pathname === "/" && item.label === "Fundamentals") {
+          //   return item.label;
+          // }
           // Check if any child link matches the current path
           const isChildActive = item.children.some(
             (child: any) => child.type.includes('link') && pathname.startsWith(child.href)
