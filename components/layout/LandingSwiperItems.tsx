@@ -48,7 +48,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   const linkComponent = useMemo(() => {
     return (
       <Link
-        className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs transition-all duration-300 -translate-y-[40px] group-hover:translate-y-0 md:group-hover:translate-y-[2px] group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
+        className="flex w-auto space-x-[10px] items-center opacity-0 py-1.5 pl-[20px] text-xs transition-all duration-300 -translate-y-[40px] group-hover:translate-y-0 md:group-hover:translate-y-[2px] group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
         href={`/fundamentals/${urlKey}`}
         onClick={() => {
           track("clicked Compare link", {
@@ -152,12 +152,12 @@ export default function LandingSwiperItems() {
   return (
     <Carousel
       ariaId="layer-2-traction-title"
-      heightClass="h-[150px] md:h-[183px]"
+      heightClass="h-[150px] md:h-[185px]"
       minSlideWidth={{ 0: 280, 1280: 350, 1650: 450 }}
       pagination="dots"
       arrows={true}
       desktopRightPadding
-      bottomOffset={-20}
+      bottomOffset={-28}
     >
       {quickBiteItems.map(({slug, quickBite}) => (
         <div key={slug} className="group w-full">
