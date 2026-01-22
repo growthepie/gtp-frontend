@@ -8,6 +8,7 @@ import {
   useHover, useInteractions, useDismiss
 } from '@floating-ui/react';
 import { useMaster } from '@/contexts/MasterContext';
+import { useUIStore } from '@/contexts/UIContext';
 import { useTooltipContext } from './Sidebar';
 import { DropdownArrow } from '../layout/SidebarMenuGroup';
 import { useState } from 'react';
@@ -28,6 +29,7 @@ const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
   const isChain = item.type === 'chain-link';
   const chainKey = isChain ? item.key : undefined;
 
+  const isMobile = useUIStore((state) => state.isMobile);
   const { activeTooltipId, setActiveTooltipId } = useTooltipContext();
   const tooltipId = href;
   const isTooltipOpen = activeTooltipId === tooltipId;
@@ -86,6 +88,12 @@ const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
       </div>
       <div className={`flex flex-1 min-w-0 items-center whitespace-nowrap heading-large-xs overflow-hidden transition-opacity duration-200 pl-[15px] ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         {label}
+        {/* New Badge (Mobile) */}
+        {item.isNew && isMobile && (
+          <span className={`px-[5px] py-[2px] heading-xxs mx-[10px] rounded-full bg-gradient-to-b from-[#FE5468] to-[#FFDF27] text-[rgb(var(--ui-active))] uppercase tracking-wide transition-opacity duration-100 ${showBadge ? "opacity-100" : "opacity-0"}`}>
+            New
+          </span>
+        )}
       </div>
     </div>
   );
@@ -137,10 +145,11 @@ const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
         )}
       </FloatingPortal>
 
-      {/* Badge rendered in portal to escape overflow-hidden parent */}
+      {/* Badge rendered in portal to escape overflow-hidden parent - only show on desktop */}
+      {/* z-index 100: above content/footer, below show-loading (200) */}
       <FloatingPortal id="sidebar-items-portal">
         <AnimatePresence>
-          {showBadge && (
+          {showBadge && !isMobile && (
             <div
               ref={badgeRefs.setFloating}
               className='z-sidebar-new-badge'
