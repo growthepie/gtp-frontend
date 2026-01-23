@@ -16,6 +16,7 @@ interface TPSChartProps {
   data: HistoryItem[];
   chainName?: string;
   centerWatermark?: boolean;
+  anchorZero?: boolean;
 }
 
 // Your existing formatNumberWithSI function...
@@ -57,7 +58,7 @@ const getCssVarAsRgb = (name: string): string => {
   return `rgb(${parts.join(', ')})`; 
 };
 
-export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark}: TPSChartProps) => {
+export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark, anchorZero}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -89,7 +90,18 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
 
     const windowed = tpsValues.slice(startIndex);
     const maxInWindow = windowed.length ? Math.max(...windowed) : 0;
-    const yAxisMax = Math.ceil(maxInWindow / 5) * 5;
+    
+    // Calculate min and max for y-axis with padding
+    const minInWindow = windowed.length ? Math.min(...windowed) : 0;
+    const shouldFloatZero = !anchorZero && maxInWindow > 1000;
+    const step = shouldFloatZero ? 50 : 5;
+    const range = Math.max(maxInWindow - minInWindow, 0);
+    const padding = shouldFloatZero ? range * 0.05 : 0;
+    const rawMin = shouldFloatZero ? Math.max(0, minInWindow - padding) : 0;
+    const rawMax = maxInWindow + padding;
+    const yAxisMin = Math.floor(rawMin / step) * step;
+    const yAxisMax = Math.ceil(rawMax / step) * step;
+    const yAxisInterval = Math.max(yAxisMax - yAxisMin, step);
 
     // const maxValue = Math.max(...tpsValues);
     // const yAxisMax = Math.ceil(maxValue / 5) * 5;
@@ -106,7 +118,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       },
       yAxis: {
         type: 'value',
-        interval: yAxisMax,
+        interval: yAxisInterval,
         axisLabel: {
           color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)',
           fontSize: 10,
@@ -114,12 +126,12 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
           fontFamily: 'var(--font-raleway), var(--font-fira-sans), sans-serif',
           align: 'right',
           margin: 10,
-          formatter: (value) => [0, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
+          formatter: (value) => [yAxisMin, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
         },
         splitLine: { show: true, lineStyle: { color: '#5A64624F', type: 'solid' } },
         axisLine: { show: false },
         axisTick: { show: false },
-        min: 0,
+        min: yAxisMin,
         max: yAxisMax,
       },
       tooltip: {
@@ -216,7 +228,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       ],
       animationDuration: 50,
     };
-  }, [data, theme]); // The hook now depends on the `data` prop and theme
+  }, [data, theme, anchorZero]); // The hook now depends on the `data` prop, theme, and axis behavior
 
   return (
     <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
