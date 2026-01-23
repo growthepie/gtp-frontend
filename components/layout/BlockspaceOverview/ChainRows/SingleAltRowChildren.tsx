@@ -225,6 +225,7 @@ export default function SingleAltRowChildren({
       isCategoryHovered,
       categories,
       selectedTimespan,
+      theme,
     ],
   );
 
@@ -399,6 +400,7 @@ export default function SingleAltRowChildren({
       isCategoryHovered,
       categories,
       selectedTimespan,
+      theme,
     ],
   );
 
