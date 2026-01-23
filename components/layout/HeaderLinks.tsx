@@ -47,7 +47,7 @@ export default function HeaderLinks() {
           });
         }}
       >
-        <Icon icon="gtp:farcaster" className="h-[24px] w-[26px]" />
+        <Icon icon="gtp:farcaster-monochrome" className="h-[24px] w-[26px]" />
       </Link>
 
       <Link

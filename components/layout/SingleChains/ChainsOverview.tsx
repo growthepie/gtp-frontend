@@ -29,7 +29,7 @@ const socials = {
     name: "Twitter",
   },
   Discord: {
-    icon: "gtp:discord",
+    icon: "gtp:discord-monochrome",
     name: "Discord",
   },
   Telegram: {

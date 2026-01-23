@@ -1255,19 +1255,19 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           href="https://www.github.com/growthepie"
           target="_blank"
           rel="noopener"
-          className="dark:text-forest-200 text-forest-900"
+          className="text-color-text-primary"
           onClick={() => track("clicked Github link", { location: "mobile sidebar", page: pathname })}
         >
-          <GTPIcon icon="github" size="md" />
+          <GTPIcon icon="github-monochrome" size="md" />
         </Link>
         <Link
           href="https://discord.gg/fxjJFe7QyN"
           target="_blank"
           rel="noopener"
-          className="dark:text-forest-200 text-forest-900"
+          className="text-color-text-primary"
           onClick={() => track("clicked Discord link", { location: "mobile sidebar", page: pathname })}
         >
-          <GTPIcon icon="discord" size="md" />
+          <GTPIcon icon="discord-monochrome" size="md" />
         </Link>
         <Link
           href="https://twitter.com/growthepie_eth"
@@ -1281,19 +1281,19 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           href="https://share.lens.xyz/u/growthepie.lens"
           target="_blank"
           rel="noopener"
-          className="dark:text-forest-200 text-forest-900"
+          className="text-color-text-primary"
           onClick={() => track("clicked Lens link", { location: "mobile sidebar", page: pathname })}
         >
-          <GTPIcon icon="lens" size="md" />
+          <GTPIcon icon="lens-monochrome" size="md" />
         </Link>
         <Link
           href="https://warpcast.com/growthepie"
           target="_blank"
           rel="noopener"
-          className="dark:text-forest-200 text-forest-900"
+          className="text-color-text-primary"
           onClick={() => track("clicked Warpcast link", { location: "mobile sidebar", page: pathname })}
         >
-          <GTPIcon icon="farcaster" size="md" />
+          <GTPIcon icon="farcaster-monochrome" size="md" />
         </Link>
       </div>
     </div>

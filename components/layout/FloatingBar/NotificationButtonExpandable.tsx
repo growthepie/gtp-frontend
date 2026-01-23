@@ -122,8 +122,8 @@ export default function NotificationButtonExpandable({
         closeOnSelect={false} // Don't auto-close when clicking content
         collapsedSize={size}
         expandedSize={{ width: customExpandedWidth, height: customExpandedHeight }}
-        triggerClassName={shadow && !open ? "shadow-[0px_0px_50px_0px_#000000] !px-0 !gap-0" : "!px-0 !gap-0"}
-        panelClassName="shadow-[0px_0px_50px_0px_#000000]"
+        triggerClassName={shadow && !open ? "shadow-soft-lg !px-0 !gap-0" : "!px-0 !gap-0"}
+        panelClassName="shadow-soft-lg"
         contentClassName="gap-y-0 pt-0 pb-0" // Remove default spacing for custom content
         renderTrigger={({ open, props }) => (
           <button
