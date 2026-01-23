@@ -576,11 +576,15 @@ export default function EconHeadCharts({
           </TopRowParent>
         </TopRowContainer>
       </Container>
-      <div className={`transition-height duration-500 relative overflow-hidden ${selectedTimespan === "1d" ? "h-[0px]" : "h-[197px]"}`}>
+      <div className={`transition-height duration-500 relative overflow-visible ${selectedTimespan === "1d" ? "h-[0px]" : "h-[calc(197px)]"}`}>
         <Carousel
           ariaId="economics-traction-title"
-          heightClass="h-[197px]"
+          heightClass="h-[calc(197px)]" // height of the slides + height of the dots + distance from the slides to the dots
           minSlideWidth={300}
+          maxSlidesPerView={3}
+          pagination="dots"
+          arrows={true}
+          bottomOffset={-24}
         >
           {Object.keys(chart_data.metrics)
             .filter((key) => {
