@@ -7,6 +7,81 @@ import NotificationContent from './NotificationContent';
 import { GTPIcon } from '../GTPIcon';
 import { useUIContext } from '@/contexts/UIContext';
 
+/**
+ * Converts a CSS color variable to hex format.
+ * Handles rgb(), rgba(), hsl(), hsla(), and named colors.
+ */
+const convertCSSVarToHex = (cssVar: string): string => {
+  // Get the computed value of the CSS variable
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .trim();
+
+  // If already hex, return as-is
+  if (value.startsWith('#')) {
+    return value;
+  }
+
+  // Handle rgb() and rgba()
+  const rgbMatch = value.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  }
+
+  // Handle hsl() and hsla()
+  const hslMatch = value.match(/^hsla?\((\d+),\s*(\d+)%?,\s*(\d+)%?/);
+  if (hslMatch) {
+    const h = parseInt(hslMatch[1], 10) / 360;
+    const s = parseInt(hslMatch[2], 10) / 100;
+    const l = parseInt(hslMatch[3], 10) / 100;
+
+    const hueToRgb = (p: number, q: number, t: number): number => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    let r: number, g: number, b: number;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hueToRgb(p, q, h + 1 / 3);
+      g = hueToRgb(p, q, h);
+      b = hueToRgb(p, q, h - 1 / 3);
+    }
+
+    const toHex = (x: number) => {
+      const hex = Math.round(x * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  // For named colors or other formats, use a canvas to convert
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = value;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    }
+  }
+
+  return value; // Return original if conversion fails
+};
+
 interface NotificationButtonExpandableProps {
   className?: string;
   hideIfNoNotifications?: boolean;
@@ -122,8 +197,8 @@ export default function NotificationButtonExpandable({
         closeOnSelect={false} // Don't auto-close when clicking content
         collapsedSize={size}
         expandedSize={{ width: customExpandedWidth, height: customExpandedHeight }}
-        triggerClassName={shadow && !open ? "md:shadow-none shadow-soft-lg !px-0 !gap-0" : "!px-0 !gap-0"}
-        panelClassName=" md:shadow-none shadow-soft-lg"
+        triggerClassName={shadow && !open ? `md:shadow-none shadow-[0px_0px_50px_0px_${convertCSSVarToHex("--ui-shadow")}] !px-0 !gap-0` : "!px-0 !gap-0"}
+        panelClassName={`md:shadow-none shadow-[0px_0px_50px_0px_${convertCSSVarToHex("--ui-shadow")}]`}
         contentClassName="gap-y-0 pt-0 pb-0" // Remove default spacing for custom content
         renderTrigger={({ open, props }) => (
           <button
