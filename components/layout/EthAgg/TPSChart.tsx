@@ -146,11 +146,12 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
           }).format(value);
          
 
-          // Format the date for display in the tooltip
+          // Format the date for display in the tooltip (must be UTC to match the label)
           const formattedDate = new Intl.DateTimeFormat("en-GB", {
             // month: 'short', day: 'numeric', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit',
             hour12: false,
+            timeZone: "UTC",
           }).format(new Date(timestamp));
 
           return `
