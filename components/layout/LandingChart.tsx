@@ -1409,7 +1409,7 @@ export default function LandingChart({
       </div>
       <div className="pb-0">
         <div className="h-[34px] flex flex-col justify-start ">
-            <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 relative h-[34px]">
+            <div className="flex justify-between items-center rounded-full bg-color-bg-medium p-0.5 relative h-[34px]">
               {/* toggle ETH */}
               <div>
                 <div className={`z-10 pl-0.5 ${focusEnabled ? "flex items-center" : "hidden"}`} >
@@ -1564,7 +1564,7 @@ const MetricCard = ({
   theme: string;
 }) => {
   return (
-    <div className="hidden lg:flex gap-x-[6px] bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
+    <div className="hidden lg:flex gap-x-[6px] bg-color-bg-medium rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
       <GTPIcon icon={icon} size="md" />
       <div className="flex flex-col items-center justify-center -space-y-[5px]">
         <div className="text-[10px] font-medium leading-[1.5]">
