@@ -16,6 +16,8 @@ export interface Author {
   
   export interface ChartMeta {
     name: string;
+    nameFromPath?: string;
+    nameIndex?: number;
     color: string;
     xIndex: number;
     yIndex: number;

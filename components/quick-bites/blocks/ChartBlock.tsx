@@ -42,6 +42,8 @@ interface JsonMeta {
   meta: {
     type?: string,
     name: string,
+    nameFromPath?: string,
+    nameIndex?: number,
     color: string,
     stacking?: string,
     xIndex: number,
@@ -103,6 +105,30 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       )
     : undefined;
 
+  const resolvedJsonMeta = React.useMemo(() => {
+    if (!block.dataAsJson?.meta) return null;
+    if (!unProcessedData) return block.dataAsJson.meta;
+
+    return block.dataAsJson.meta.map((meta, index) => {
+      let resolvedName = meta.name;
+
+      if (meta.nameFromPath) {
+        const sourceData = unProcessedData[index] ?? unProcessedData[0];
+        const nameCandidates = getNestedValue(sourceData, meta.nameFromPath);
+        const nameIndex = meta.nameIndex ?? meta.yIndex;
+
+        if (Array.isArray(nameCandidates) && typeof nameCandidates[nameIndex] === "string") {
+          resolvedName = nameCandidates[nameIndex];
+        }
+      }
+
+      return {
+        ...meta,
+        name: resolvedName,
+      };
+    });
+  }, [block.dataAsJson, unProcessedData]);
+
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
 
   // Don't render the chart if there's a filter key but no data yet.
@@ -136,9 +162,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           subtitle={block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle}
           jsonData={nestedData}
           showXAsDate={block.showXAsDate}
+          showZeroTooltip={block.showZeroTooltip}
+          showTotalTooltip={block.showTotalTooltip}
           jsonMeta={
             block.dataAsJson ? {
-              meta: block.dataAsJson.meta
+              meta: resolvedJsonMeta || block.dataAsJson.meta
             } : undefined
           }
           disableTooltipSort={block.disableTooltipSort}

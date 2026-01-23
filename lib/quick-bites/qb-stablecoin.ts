@@ -1,0 +1,153 @@
+// In your quick bite data file (e.g., lib/quick-bites/linea-token-burn.ts)
+import { QuickBiteData } from '@/lib/types/quickBites';
+import { prefetchDNS } from 'react-dom';
+
+const Stablecoin: QuickBiteData = {
+  title: "Stablecoin Breakdown",
+  shortTitle: "Stablecoins",
+  subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
+  content: [
+    "# Introduction:",
+    "Tracking stablecoin composition on to show how the mix evolves over time.",
+    "",
+    "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Stablecoin Breakdown",
+      subtitle: "Stacked circulating supply of top stablecoins.",
+      showXAsDate: true,
+      showZeroTooltip: false,
+      showTotalTooltip: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#94ABD3",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 1,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#2151F5",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 2,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#FFC300",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 3,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#FE5468",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 4,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#9e6067",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 5,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#19D9D6",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 6,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+          {
+            name: "",
+            nameFromPath: "data.timeseries.types",
+            color: "#CDD8D3",
+            stacking: "normal",
+            xIndex: 0,
+            yIndex: 7,
+            tooltipDecimals: 2,
+            suffix: null,
+            prefix: '$',
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            pathToData: "data.timeseries.values",
+          },
+        ],
+      },
+      height: 450,
+      caption: "Stacked supply of the top stablecoins on Arbitrum.",
+    }),
+    "```",
+
+    "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
+  ],
+  image: "https://api.growthepie.com/v1/quick-bites/banners/fusaka.png",
+  og_image: "",
+  date: "2026-01-23",
+  related: [],
+  author: [{
+    name: "Lorenz Lehmann",
+    xUsername: "LehmannLorenz",
+  }],
+  topics: [
+    {
+      icon: "ethereum-logo-monochrome",
+      color: "#94ABD3",
+      name: "Ethereum Mainnet",
+      url: "/chains/ethereum"
+    },
+    {
+      icon: "gtp-metrics-economics",
+      name: "Economics",
+      url: "/economics"
+    },
+    {
+      icon: "gtp-data-availability",
+      name: "Data Availability",
+      url: "/data-availability"
+    },
+  ],
+  icon: "",
+  showInMenu: false
+};
+
+export default Stablecoin;

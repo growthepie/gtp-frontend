@@ -112,10 +112,14 @@ export interface ChartBlock extends BaseBlock {
   }[];
   disableTooltipSort?: boolean;
   showXAsDate?: boolean;
+  showZeroTooltip?: boolean;
+  showTotalTooltip?: boolean;
   dataAsJson?: {
-    meta: {
+    meta?: {
       type?: string;
       name: string;
+      nameFromPath?: string;
+      nameIndex?: number;
       color: string;
       stacking?: "normal" | "percent" | null;
       xIndex: number;
