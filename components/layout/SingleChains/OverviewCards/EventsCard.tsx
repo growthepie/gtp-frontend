@@ -8,7 +8,7 @@ import { Icon } from "@iconify/react";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EventIcon } from "@/components/layout/EthAgg/MetricsTop";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { LinkButton } from '@/components/layout/LinkButton';
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
@@ -218,7 +218,7 @@ export const EventItem = ({
             <div className="w-full flex flex-col gap-y-[5px]">
                 <div className="flex justify-between items-center w-full h-[24px]">
                     <div className="heading-large-xxs">{event.title}</div>
-                    <div className="text-xxs ">{moment(event.date).format('D MMMM YYYY')}</div>
+                    <div className="text-xxs ">{dayjs(event.date).format('D MMMM YYYY')}</div>
                 </div>
                 <div
                     className={`w-full flex flex-col transition-[height] duration-300 overflow-hidden`}

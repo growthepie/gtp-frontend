@@ -31,7 +31,7 @@ import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
 import { useMaster } from "@/contexts/MasterContext";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const COLORS = {
@@ -229,13 +229,13 @@ export default function FeesChart({
   
       const showOthers = points.length > 10;
       
-      // Use moment format like the good example
-      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      // Format date string
+      let dateString = dayjs.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
   
       // check if data steps are less than 1 day
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
       if (timeDiff < 1000 * 60 * 60 * 24) {
-        dateString += " " + moment.utc(x).utc().format("HH:mm");
+        dateString += " " + dayjs.utc(x).utc().format("HH:mm");
       }
   
       // Match the header structure from the good example

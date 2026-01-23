@@ -43,7 +43,7 @@ import { useTimespan } from "../_contexts/TimespanContext";
 import { useChartScale } from "../_contexts/ChartScaleContext";
 import { useMetrics } from "../_contexts/MetricsContext";
 import { useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
 
 const COLORS = {
@@ -840,7 +840,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
-      const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      const dateString = dayjs.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       

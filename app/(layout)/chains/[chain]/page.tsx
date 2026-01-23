@@ -338,8 +338,14 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
 
     // Update URL when selectedTab changes
     useEffect(() => {
+      const currentTabInUrl = searchParams.get("tab");
+      const targetTab = selectedTab === "overview" ? null : selectedTab;
+
+      // Only update URL if the tab parameter actually needs to change
+      if (currentTabInUrl === targetTab) return;
+
       const currentParams = new URLSearchParams(searchParams.toString());
-      
+
       if (selectedTab === "overview") {
         // Remove tab parameter for overview (default)
         currentParams.delete("tab");
@@ -347,7 +353,7 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         // Set tab parameter for other tabs
         currentParams.set("tab", selectedTab);
       }
-      
+
       const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
       router.replace(newUrl, { scroll: false });
     }, [selectedTab, router, searchParams]);

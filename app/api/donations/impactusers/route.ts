@@ -1,5 +1,4 @@
 import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
-import moment from "moment";
 
 const notificationTable = "tblVEHOeuoE5I4aQ7";
 const baseId = "appZWDvjvDmVnOici";

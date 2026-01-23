@@ -22,7 +22,7 @@ import { track } from "@/lib/tracking";
 import { DonationPGFRow } from "@/app/api/donations/pgf/route";
 import { DonationImpactRow } from "@/app/api/donations/impactusers/route";
 import { DonationUpdateRow } from "@/app/api/donations/updates/route";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import Image from "next/image";
 import EthereumSVG from "@/public/donate/ethereum.svg";
 import GivethSVG from "@/public/donate/giveth.svg";
@@ -115,7 +115,7 @@ export default function Donations() {
     const start = new Date(row.startDate);
     const end = new Date(row.endDate);
     const now = new Date();
-    const day = moment.utc(end).format("ddd");
+    const day = dayjs.utc(end).format("ddd");
 
     // Format the date using toLocaleString with the user's locale
     return (

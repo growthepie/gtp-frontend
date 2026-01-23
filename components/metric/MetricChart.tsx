@@ -44,7 +44,7 @@ import ChartWatermark, { ChartWatermarkWithMetricName } from "@/components/layou
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import dynamic from "next/dynamic";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -727,7 +727,7 @@ function MetricChart({
   
       const showOthers = points.length > 10;
   
-      const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      const dateString = dayjs.utc(x).format("DD MMM YYYY");
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       

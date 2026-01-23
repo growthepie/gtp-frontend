@@ -2,7 +2,7 @@
 
 import { GTPIcon } from "../../GTPIcon";
 import { useMemo, useEffect, useState } from "react";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
 import { HistoryDots } from "../../EthAgg/HistoryDots";
 import { getGradientColor } from "../../EthAgg/helpers";
@@ -139,7 +139,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
                         </div>
                         <div className="relative min-w-[80px] flex justify-end text-right">
                             <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Median Fee</div>
-                            {lastCostData ? <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{!txCostHoverIndex && "updated"} {Math.abs(moment.utc(lastCostData["last_updated"]).diff(moment.utc(), "seconds"))} seconds ago</div> : <div className="heading-small-xs numbers-sm">N/A</div>}
+                            {lastCostData ? <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{!txCostHoverIndex && "updated"} {Math.abs(dayjs.utc(lastCostData["last_updated"]).diff(dayjs.utc(), "seconds"))} seconds ago</div> : <div className="heading-small-xs numbers-sm">N/A</div>}
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 // MetricHeader.tsx
 "use client";
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import moment from 'moment';
+import dayjs from "@/lib/dayjs";
 import { MetricData, useApplicationDetailsData } from '../_contexts/ApplicationDetailsDataContext';
 import { ApplicationIcon } from './Components';
 import { useProjectsMetadata } from '../_contexts/ProjectsMetadataContext';
@@ -450,8 +450,8 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   );
   
   const allTooltipContent = useMemo(() => {
-    const maxDate = moment.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
-    let minDate = moment
+    const maxDate = dayjs.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
+    let minDate = dayjs
       .unix(maxUnix / 1000)
       .subtract(timespans[selectedTimespan].value, "days")
       .utc()
@@ -459,7 +459,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
       .format("DD MMM YYYY");
 
     if (selectedTimespan === "max") {
-      minDate = moment.unix(minUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
+      minDate = dayjs.unix(minUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
     }
 
     return (
@@ -668,7 +668,7 @@ const ChainBar = memo(({
   const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
 
   // Compute tooltip data – e.g., first seen, min/max dates
-  const firstSeen = moment(chainFirstSeen);
+  const firstSeen = dayjs(chainFirstSeen);
   const maxUnix = Math.max(
     ...Object.values(metricData.over_time).map((chainData) =>
       chainData.daily.data[chainData.daily.data.length - 1][0]
@@ -679,10 +679,10 @@ const ChainBar = memo(({
       chainData.daily.data[0][0]
     )
   );
-  const maxDate = moment.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
+  const maxDate = dayjs.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
   let min = selectedTimespan === "max"
-    ? moment.unix(minUnix / 1000)
-    : moment.unix(maxUnix / 1000).subtract(timespans[selectedTimespan].value, "days");
+    ? dayjs.unix(minUnix / 1000)
+    : dayjs.unix(maxUnix / 1000).subtract(timespans[selectedTimespan].value, "days");
   let minDate = min.utc().locale("en-GB").format("DD MMM YYYY");
   if (firstSeen.isAfter(min)) {
     minDate = firstSeen.utc().locale("en-GB").format("DD MMM YYYY");

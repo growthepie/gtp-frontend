@@ -5,7 +5,7 @@ import { TPSChart } from "../../EthAgg/TPSChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { useTheme } from "next-themes";
 
 
@@ -87,7 +87,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   <div className="heading-small-xs numbers-sm">{formatTps(chainData.ath)} TPS</div>
                   <div className="relative min-w-[80px]">
                       <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">All-Time High</div>
-                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["ath_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
+                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{dayjs.utc(chainData["ath_timestamp"]).format("D/M/YYYY HH:mm [UTC]")}</div>
                   </div>
             </div>
            </div>
@@ -96,7 +96,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   <div className="heading-small-xs numbers-sm">{formatTps(chainData["24h_high"])} TPS</div>
                   <div className="relative min-w-[90x]">
                       <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">24h Peak</div>
-                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 md:right-auto md:left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["24h_high_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
+                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 right-0 md:right-auto md:left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{dayjs.utc(chainData["24h_high_timestamp"]).format("D/M/YYYY HH:mm [UTC]")}</div>
                   </div>
             </div>
             <div className="flex items-center gap-x-[8px] heading-small-xs  group">

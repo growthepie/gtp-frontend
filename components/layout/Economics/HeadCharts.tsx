@@ -26,7 +26,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
-import { unix } from "moment";
+import dayjs from "@/lib/dayjs";
 import "@/app/highcharts.axis.css";
 import {
   TopRowContainer,

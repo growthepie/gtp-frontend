@@ -6,7 +6,6 @@ import TPSChartCard, { ChainTPSHistoryItem } from "./TPSChartCard";
 import TXCostCard from "./TXCostCard";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import moment from "moment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { Icon } from "@iconify/react";
 import HighlightCards from "./HighlightCards";
@@ -117,11 +116,13 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
 
     // 2. Append new live data points from the SSE stream to the chart's history.
     useEffect(() => {
-        if (chainDataTPS?.tps && lastUpdated && tpsHistory.length > 0) {
+        if (chainDataTPS?.tps && chainDataTPS?.timestamp && tpsHistory.length > 0) {
+        // Use the data point's own timestamp (Unix ms) for consistency with historical data
+        const timestampMs = chainDataTPS.timestamp;
         const newPoint: HistoryArrayItem = {
             tps: chainDataTPS.tps,
-            timestamp: lastUpdated.toISOString(),
-            timestamp_ms: lastUpdated.getTime(),
+            timestamp: new Date(timestampMs).toISOString(),
+            timestamp_ms: timestampMs,
         };
 
         // Prevent adding duplicate points for the same timestamp
@@ -133,7 +134,7 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
             });
         }
         }
-    }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
+    }, [chainDataTPS, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
 
     useEffect(() => {
         if (!chainDataTPS || !lastUpdated) return;

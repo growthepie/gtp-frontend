@@ -1,6 +1,6 @@
 import Notification from "@/components/Notification";
 import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 
 const notificationTable = "tblA4NwUahsIldb6x";
 const baseId = "appZWDvjvDmVnOici";
@@ -61,7 +61,7 @@ async function fetchData() {
             const startTime = record.fields["Start Time"]?.trim() || "";
             
             if (startDate && startTime) {
-              startTimestamp = moment.utc(`${startDate}T${startTime}`).valueOf();
+              startTimestamp = dayjs.utc(`${startDate}T${startTime}`).valueOf();
             }
           } catch (e) {
             console.warn(`Invalid start date/time for record ${record.id}:`, e.message);
@@ -76,7 +76,7 @@ async function fetchData() {
             const endTime = record.fields["End Time"]?.trim() || "";
             
             if (endDate && endTime) {
-              endTimestamp = moment.utc(`${endDate}T${endTime}`).valueOf();
+              endTimestamp = dayjs.utc(`${endDate}T${endTime}`).valueOf();
             }
           } catch (e) {
             console.warn(`Invalid end date/time for record ${record.id}:`, e.message);

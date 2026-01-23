@@ -23,7 +23,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { TPSChart } from './TPSChart';
 import { throttle } from 'lodash';
 import { LinkButton } from '../LinkButton';
-import moment from 'moment';
+import dayjs from "@/lib/dayjs";
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../ChartWatermark';
@@ -459,7 +459,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
             <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>All-Time High</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
             {globalMetrics.total_tps_24h_high && globalMetrics.total_tps_ath && (
               <div className='numbers-sm'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
@@ -469,7 +469,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
             <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>24h Peak</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
             <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>

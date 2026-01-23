@@ -25,7 +25,7 @@ import "@/app/highcharts.axis.css";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3"
 
 let highchartsInitialized = false;
@@ -296,7 +296,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     function (this: any) {
       const { x, points } = this;
       const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
-      let dateString = moment.utc(x).utc().locale("en-GB").format(dateFormat);
+      let dateString = dayjs.utc(x).format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
