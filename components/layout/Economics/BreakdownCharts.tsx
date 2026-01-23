@@ -1,3 +1,4 @@
+"use client";
 import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
 import React, {
   useState,
@@ -35,6 +36,10 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { times } from "lodash";
 import ChartWatermark from "../ChartWatermark";
+
+// Initialize Highcharts modules once at module level
+addHighchartsMore(Highcharts);
+
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
@@ -43,6 +48,30 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+
+const getCssVarColor = (cssVar: string, opacity?: number): string => {
+  if (typeof window === "undefined") {
+    // SSR fallback - return a placeholder that will be replaced on client
+    return opacity !== undefined ? `rgba(128, 128, 128, ${opacity})` : "rgb(128, 128, 128)";
+  }
+  const rgbValues = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .trim()
+    .replace(/ /g, ", ");
+  return opacity !== undefined
+    ? `rgba(${rgbValues}, ${opacity})`
+    : `rgb(${rgbValues})`;
+};
+
+// Store CSS variable names - use getCssVarColor() to resolve them
+const METRIC_CSS_VARS = {
+  profit: ["--accent-yellow", "--accent-yellow"],
+  fees: ["--accent-turquoise", "--accent-turquoise"],
+  costs: {
+    costs_l1: ["--accent-red", "--accent-red"],
+    costs_blobs: ["--accent-red", "--accent-red"],
+  },
+} as const;
 
 type AreaData = {
   seriesData: any[][]; // Replace 'any' with the specific type if known
@@ -66,8 +95,6 @@ function BreakdownCharts({
   isOpen?: boolean;
   isMonthly?: boolean;
 }) {
-  addHighchartsMore(Highcharts);
-
   const { AllChainsByKeys } = useMaster();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -566,12 +593,12 @@ function BreakdownCharts({
         className="w-full h-full min-h-[210px] max-h-[210px] relative "
         ref={chartRef}
       >
-        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
-          <div className="w-[5px] h-[5px] bg-[#1DF7EF] rounded-full"></div>
+        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[2px]">
+          <div className="min-w-[5px] min-h-[5px] bg-color-accent-turquoise rounded-full"></div>
           <div className="text-xxxs">Revenue</div>
         </div>
-        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
-          <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
+        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[2px]">
+          <div className="w-[5px] h-[5px] bg-color-accent-red rounded-full" />
           <div className="text-xxxs">Cost</div>
         </div>
         <div className="absolute w-full h-full flex justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
@@ -795,7 +822,7 @@ function BreakdownCharts({
             >
               <AreaSeries
                 name="Revenue"
-                color={"#1DF7EF"}
+                color={getCssVarColor(METRIC_CSS_VARS.fees[0])}
                 data={dailyData.revenue.data.map((d: any) => [
                   d[0],
                   d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
@@ -817,16 +844,16 @@ function BreakdownCharts({
                     /* 50% in hex: 80 */
                     // [0.33, "#10808C80"],
                     // [1, "#1DF7EF80"],
-                    [0, "#10808CDD"],
-                    [0.5, "#10808CDD"],
-                    [1, "#1DF7EFDD"],
+                    [0, getCssVarColor(METRIC_CSS_VARS.fees[1], 1.00)],
+                    [0.5, getCssVarColor(METRIC_CSS_VARS.fees[1], 0.60)],
+                    [1, getCssVarColor(METRIC_CSS_VARS.fees[0], 0.40)],
                   ],
                 }}
               />
               {/* Second line */}
               <AreaSeries
                 name="Costs"
-                color={"#FE5468"}
+                color={getCssVarColor(METRIC_CSS_VARS.costs.costs_l1[0])}
                 data={dailyData.costs.data.map((d: any) => [
                   d[0],
                   d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
@@ -847,9 +874,9 @@ function BreakdownCharts({
                     /* 50% in hex: 80 */
                     // [0.33, "#98323E80"],
                     // [1, "#FE546880"],
-                    [0, "#98323EDD"],
-                    [0.5, "#98323EDD"],
-                    [1, "#FE5468DD"],
+                    [0, getCssVarColor(METRIC_CSS_VARS.costs.costs_l1[1], 1.00)],
+                    [0.5, getCssVarColor(METRIC_CSS_VARS.costs.costs_l1[1], 0.80)],
+                    [1, getCssVarColor(METRIC_CSS_VARS.costs.costs_l1[0], 0.50)],
                   ],
                 }}
               />
@@ -880,11 +907,11 @@ function BreakdownCharts({
         ref={profitChartRef}
       >
         <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
-          <div className="w-[5px] h-[5px] bg-[#EEFF97] rounded-full"></div>
+          <div className="min-w-[5px] min-h-[5px] bg-color-accent-yellow rounded-full"></div>
           <div className="text-xxxs">Profit</div>
         </div>
         <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-color-bg-medium-50 bg-opacity-50 rounded-full flex items-center z-20  gap-x-[2px] px-[3px]">
-          <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
+          <div className="min-w-[5px] min-h-[5px] bg-color-accent-yellow/50 rounded-full" />
           <div className="text-xxxs">Loss</div>
         </div>
 
@@ -1140,8 +1167,8 @@ function BreakdownCharts({
                         y2: 1,
                       },
                       stops: [
-                        [0, "#FFE761DD"],
-                        [1, "#C7AE24DD"],
+                        [0, getCssVarColor(METRIC_CSS_VARS.profit[0], 1.00)],
+                        [1, getCssVarColor(METRIC_CSS_VARS.profit[1], 1.00)],
                       ],
                     },
                   },
@@ -1154,9 +1181,9 @@ function BreakdownCharts({
                         y2: 1,
                       },
                       stops: [
-                        [0, "#EEFF97DD"],
-                        [0.5, "#EEFF97DD"],
-                        [1, "#A1B926DD"],
+                        [0, getCssVarColor(METRIC_CSS_VARS.profit[0], 1.00)],
+                        [0.5, getCssVarColor(METRIC_CSS_VARS.profit[0], 0.60)],
+                        [1, getCssVarColor(METRIC_CSS_VARS.profit[1], 0.40)],
                       ],
                     },
                   },

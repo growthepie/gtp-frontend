@@ -488,18 +488,18 @@ export default function ChainBreakdown({
       if (isOpen) {
         if (openLight) {
           return (
-            "border-[#CDD8D3] border-y-[1px]" +
+            "border-bg-medium border-y-[1px]" +
             (metric === "chain" ? " border-l-[1px] rounded-l-full" : "")
           );
         } else if (openDark) {
           return (
-            "border-[#CDD8D399] border-y-[1px]" +
+            "border-bg-medium-50 border-y-[1px]" +
             (metric === "size" ? " border-r-[1px] rounded-r-full" : "")
           );
         }
       } else {
         return (
-          "border-[#5A6462] border-y-[1px]" +
+          "border-bg-medium border-y-[1px]" +
           (metric === "chain"
             ? " border-l-[1px] rounded-l-full"
             : metric === "size"
@@ -1058,7 +1058,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-color-accent-turquoise`}
                             style={{
                               width: `${(100 *
                                 data[item.key][selectedTimespan].revenue
@@ -1126,7 +1126,7 @@ export default function ChainBreakdown({
                           </div>
                           <div className="flex justify-start w-full items-end text-xxxs ">
                             <div
-                              className="bg-[#D03434] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
+                              className="bg-color-negative flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
                                 width: `${100 *
                                   (data[item.key][selectedTimespan].costs
@@ -1137,7 +1137,7 @@ export default function ChainBreakdown({
                               }}
                             ></div>
                             <div
-                              className="bg-[#FE5468] rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
+                              className="bg-color-accent-red rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
                               style={{
                                 width: `${120 *
                                   (data[item.key][selectedTimespan].costs
@@ -1188,7 +1188,7 @@ export default function ChainBreakdown({
                             className={`h-[4px] ${data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
-                              ? "bg-[#EEFF97] rounded-r-2xl "
+                              ? "bg-color-accent-yellow rounded-r-2xl "
                               : "bg-[#FFDF27] rounded-l-2xl"
                               }`}
                             style={{
@@ -1243,7 +1243,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`absolute h-[4px] bg-color-ui-hover w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
+                            className={`absolute h-[4px] bg-color-text-secondary w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
                               .total[0] > 0
                               ? "rounded-r-full"
                               : "rounded-l-full"
@@ -1252,7 +1252,7 @@ export default function ChainBreakdown({
                           <div
                             className={`h-[4px] z-10 ${data[item.key][selectedTimespan].profit_margin
                               .total[0] > 0
-                              ? "bg-[#45AA6F] rounded-r-2xl "
+                              ? "bg-chains-custom-cool-2 rounded-r-2xl "
                               : "bg-[#FF8F27] rounded-l-2xl"
                               }`}
                             style={{
@@ -1395,24 +1395,24 @@ export default function ChainBreakdown({
                   : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
                   } min-w-[1125px]`}
               >
-                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
+                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-color-text-secondary ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-color-bg-medium-50">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs  bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].revenue.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs ">
                     {formatNumber(totals[selectedTimespan].costs.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].profit.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs">
                   <div
                         className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${totals[selectedTimespan].profit_margin
                           .total[0] > 0
@@ -1548,7 +1548,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] bg-color-bg-medium-50 border-[1px] items-center justify-center numbers-xs bg-m">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium bg-color-bg-medium-50 border-[1px] items-center justify-center numbers-xs bg-m">
                     {formatBytes(
                         totals[selectedTimespan].size.total[0],
                     )}
