@@ -485,7 +485,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
         {/* TPS Chart - Pass the combined historical and live data */}
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
-          <TPSChart data={tpsHistory} />
+          <TPSChart data={tpsHistory} anchorZero />
         </div>
       </div>
 
