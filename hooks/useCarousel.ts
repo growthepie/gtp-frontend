@@ -44,6 +44,7 @@ export function useCarousel(
   const [slidesInView, setSlidesInView] = useState<number[]>([]);
   const [progress, setProgress] = useState(0);
   const [isReady, setIsReady] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   // Scroll handlers
   const scrollPrev = useCallback(() => {
@@ -106,11 +107,33 @@ export function useCarousel(
 
     onInit?.(emblaApi);
 
+    // Disable pointer events during drag, allow taps through
+    let didScroll = false;
+    const onPointerDown = () => {
+      didScroll = false;
+      setIsScrolling(true);
+    };
+    const onPointerUp = () => {
+      // If no scroll happened, it was a tap - briefly re-enable to trigger click
+      if (!didScroll) {
+        setIsScrolling(false);
+      } else {
+        setIsScrolling(false);
+      }
+      didScroll = false;
+    };
+    const onScroll = () => {
+      didScroll = true;
+    };
+
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
     emblaApi.on("reInit", checkOverflow);
     emblaApi.on("resize", checkOverflow);
     emblaApi.on("slidesInView", updateSlidesInView);
+    emblaApi.on("pointerDown", onPointerDown);
+    emblaApi.on("pointerUp", onPointerUp);
+    emblaApi.on("scroll", onScroll);
 
     return () => {
       emblaApi.off("select", onSelect);
@@ -118,6 +141,9 @@ export function useCarousel(
       emblaApi.off("reInit", checkOverflow);
       emblaApi.off("resize", checkOverflow);
       emblaApi.off("slidesInView", updateSlidesInView);
+      emblaApi.off("pointerDown", onPointerDown);
+      emblaApi.off("pointerUp", onPointerUp);
+      emblaApi.off("scroll", onScroll);
     };
   }, [emblaApi, onSelect, checkOverflow, updateSlidesInView, onInit]);
 
@@ -153,5 +179,6 @@ export function useCarousel(
     scrollTo,
     progress,
     isReady,
+    isScrolling,
   };
 }
