@@ -228,7 +228,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       ],
       animationDuration: 50,
     };
-  }, [data, theme, anchorZero]); // The hook now depends on the `data` prop, theme, and axis behavior
+  }, [data, theme, anchorZero, chainName, overrideColor]); // The hook now depends on the `data` prop, theme, and axis behavior
 
   return (
     <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
