@@ -116,7 +116,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
           margin: 10,
           formatter: (value) => [0, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
         },
-        splitLine: { show: true, lineStyle: { color: '#5A6462', type: 'solid' } },
+        splitLine: { show: true, lineStyle: { color: '#5A64624F', type: 'solid' } },
         axisLine: { show: false },
         axisTick: { show: false },
         min: 0,
