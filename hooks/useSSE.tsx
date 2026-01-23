@@ -7,15 +7,17 @@ interface UseSSEOptions {
   onMessage: (event: MessageEvent) => void;
   onError?: (error: Event) => void;
   onOpen?: (event: Event) => void;
+  /** Whether the SSE connection should be active. Defaults to true. */
+  enabled?: boolean;
 }
 
 /**
  * A generic hook for managing a Server-Sent Events (SSE) connection.
  * It automatically pauses the connection when the tab is hidden and resumes when it's focused.
  * @param url The URL of the SSE endpoint.
- * @param options Callbacks for message, error, and open events.
+ * @param options Callbacks for message, error, and open events, plus optional enabled flag.
  */
-export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSSEOptions) {
+export function useSSE(url: string | null, { onMessage, onError, onOpen, enabled = true }: UseSSEOptions) {
   const [readyState, setReadyState] = useState<ReadyState>(0); // Starts as CONNECTING
   const eventSourceRef = useRef<EventSource | null>(null);
   
@@ -37,11 +39,11 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
   }, []); // Empty dependency array means this runs once on mount.
 
   useEffect(() => {
-    // We now check for the URL, onMessage, AND if the page is visible.
-    if (!url || !onMessage || !isPageVisible) {
+    // We now check for the URL, onMessage, enabled flag, AND if the page is visible.
+    if (!url || !onMessage || !isPageVisible || !enabled) {
       // If we have a connection but shouldn't, close it.
       if (eventSourceRef.current) {
-        // console.log(`[useSSE] Closing SSE connection to ${url} due to page visibility or config change.`);
+        // console.log(`[useSSE] Closing SSE connection to ${url} due to page visibility, enabled flag, or config change.`);
         eventSourceRef.current.close();
         eventSourceRef.current = null;
         setReadyState(2); // Manually set to CLOSED
@@ -80,8 +82,8 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
         setReadyState(2); // Manually set to CLOSED
       }
     };
-    // Re-run this effect if the URL, callbacks, or page visibility changes.
-  }, [url, onMessage, onError, onOpen, isPageVisible]); 
+    // Re-run this effect if the URL, callbacks, enabled flag, or page visibility changes.
+  }, [url, onMessage, onError, onOpen, isPageVisible, enabled]); 
 
   return { readyState };
 }

@@ -13,8 +13,9 @@ interface SingleChainSSEData {
  * A hook to fetch and parse real-time metrics data for a specific chain.
  * Uses the generic useSSE hook for connection management.
  * @param chainKey The key identifier for the specific chain (e.g., 'arbitrum', 'optimism')
+ * @param enabled Whether the SSE connection should be active. Defaults to true.
  */
-export function useSSEChains(chainKey: string) {
+export function useSSEChains(chainKey: string, enabled: boolean = true) {
   const [chainData, setChainData] = useState<ChainTPSHistoryItem | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -35,7 +36,7 @@ export function useSSEChains(chainKey: string) {
   }, []); // Empty dependency array: this function never needs to change
 
   // Use the generic hook to manage the connection
-  const { readyState } = useSSE(sseUrl, { onMessage: handleMessage });
+  const { readyState } = useSSE(sseUrl, { onMessage: handleMessage, enabled });
 
   // Map the native readyState to our custom status for the UI
   const connectionStatus =
