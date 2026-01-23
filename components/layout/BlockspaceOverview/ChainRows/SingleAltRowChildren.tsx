@@ -376,7 +376,7 @@ export default function SingleAltRowChildren({
           style.borderRadius = "999px";
 
           style.border = `2px solid ${
-            AllChainsByKeys[chainKey].colors["dark"][0] +
+            AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
             (isCategoryHovered(categoryKey) ? "EE" : "FF")
           } `;
           if (!categoryData) {

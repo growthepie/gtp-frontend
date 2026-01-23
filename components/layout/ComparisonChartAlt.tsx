@@ -2206,7 +2206,7 @@ export default function ComparisonChart({
           )}
         </div>
         {data.filter((d) => d.name === "ethereum").length > 0 ? (
-          <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1">
+          <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-color-bg-medium p-0.5 px-0.5 md:px-1">
             {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
             {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
             {/* toggle ETH */}
