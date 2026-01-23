@@ -48,6 +48,15 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
+// Helper to get resolved CSS variable as rgb() color (Canvas-compatible format)
+const getCssVarAsRgb = (name: string): string => {
+  if (typeof window === 'undefined') return 'rgb(0, 0, 0)';
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  // Convert space-separated "14 111 122" to comma-separated "rgb(14, 111, 122)"
+  const parts = value.split(' ').filter(Boolean);
+  return `rgb(${parts.join(', ')})`; 
+};
+
 export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,15 +128,15 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
         appendToBody: true,
         confine: false,
         axisPointer: { type: 'line', lineStyle: { color: 'rgb(215, 223, 222)', width: 1, type: 'solid' } },
-        backgroundColor: 'rgb(var(--bg-default))',
-        shadowColor: 'rgb(var(--ui-shadow))',
+        backgroundColor: getCssVarAsRgb('--bg-default'),
+        shadowColor: getCssVarAsRgb('--ui-shadow'),
         shadowBlur: 27,
         shadowOffsetX: 0,
         shadowOffsetY: 0,
         borderRadius: 15,
         borderWidth: 0,
         padding: [15, 15, 15, 0], // Adjusted padding
-        textStyle: { color: 'rgb(var(--text-primary))' },
+        textStyle: { color: getCssVarAsRgb('--text-primary') },
         // Updated formatter to include the timestamp
         formatter: (params) => {
           if (!Array.isArray(params) || params.length === 0) return '';
@@ -198,8 +207,8 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
               type: 'linear',
               x: 0, y: 1, x2: 0, y2: 0,
               colorStops: [
-                { offset: 0, color: overrideColor?.[0] ?? '#10808C' },
-                { offset: 1, color: overrideColor?.[1] ?? '#1DF7EF' }
+                { offset: 0, color: overrideColor?.[0] ?? getCssVarAsRgb('--accent-petrol') },
+                { offset: 1, color: overrideColor?.[1] ?? getCssVarAsRgb('--accent-turquoise') }
               ],
             },
           },

@@ -321,7 +321,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
             <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
               <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
-                <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent'>
                   {uptimeData.heading}
                 </div>
                 <div className={`numbers-sm text-color-text-secondary ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
@@ -475,7 +475,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
           {/* Live TPS */}
           <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
-            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
+            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap'>
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(globalMetrics.total_tps || 0)}</div>
               <div>TPS</div>
             </div>
@@ -617,7 +617,7 @@ export const TokenTransferFeeCard = React.memo(({
           costValue={ethDisplayValue}
           costHistory={ethCostLive}
           showUsd={showUsd}
-          gradientClass="from-[#596780] to-[#94ABD3]"
+          gradientClass="from-chains-ethereum to-chains-ethereum/50"
           selectedIndex={ethCostSelectedIndex}
           hoverIndex={ethCostHoverIndex}
           onSelect={(index) => setEthCostSelectedIndex(index)}
