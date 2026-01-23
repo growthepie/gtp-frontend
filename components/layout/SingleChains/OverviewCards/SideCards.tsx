@@ -121,8 +121,6 @@ export default function LiveCards({ chainKey, chainData, master, chainDataOvervi
         timestamp_ms: lastUpdated.millisecond(),
       };
 
-      console.log(lastUpdated);
-
       // Prevent adding duplicate points for the same timestamp
       if (tpsHistory[tpsHistory.length - 1]?.timestamp !== newPoint.timestamp) {
         setTpsHistory((prev) => {
