@@ -388,9 +388,9 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
                 }
                 {is_fees ? "" : " GB"}
               </div>
-              <hr className="absolute w-full border-t-[2px] top-[64px] border-[#5A64624F] my-4" />
-              <hr className="absolute w-full border-t-[2px] top-[114px] border-[#5A64624F] my-4" />
-              <hr className="absolute w-full border-t-[2px] top-[166px] border-[#5A64624F] my-4" />
+              <hr className="absolute w-full border-t-[1.5px] top-[64px] border-[#5A64624F] my-4" />
+              <hr className="absolute w-full border-t-[1.5px] top-[114px] border-[#5A64624F] my-4" />
+              <hr className="absolute w-full border-t-[1.5px] top-[166px] border-[#5A64624F] my-4" />
               <div className="absolute w-full h-full flex top-[10px] justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
                 <ChartWatermark className="w-[128.54px] h-[25.69px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
               </div>
@@ -694,7 +694,7 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
                       opposite={false}
                       type="linear"
                       gridLineWidth={0}
-                      gridLineColor={"#5A64624F"}
+                      gridLineColor={"#5A646200"}
                       showFirstLabel={false}
                       showLastLabel={false}
                       tickAmount={5}

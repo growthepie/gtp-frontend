@@ -13,9 +13,26 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   // fetch data from API
-  const res: MasterResponse = await fetch(MasterURL, {
-    cache: "no-store",
-  }).then((r) => r.json());
+  let res: MasterResponse;
+  try {
+    const response = await fetch(MasterURL, {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      console.error(`Master API returned ${response.status}: ${response.statusText}`);
+      return {
+        title: "growthepie",
+        description: "Layer 2 analytics",
+      };
+    }
+    res = await response.json();
+  } catch (error) {
+    console.error("Failed to fetch master data:", error);
+    return {
+      title: "growthepie",
+      description: "Layer 2 analytics",
+    };
+  }
 
   // 1. Fetch data specific to this chain (e.g., its full name)
   const AllChainsByUrlKey = Object.keys(res.chains).filter((key) => !["multiple", "all_l2s"].includes(key)).reduce((acc, key) => {

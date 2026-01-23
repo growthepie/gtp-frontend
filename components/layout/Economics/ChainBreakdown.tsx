@@ -488,18 +488,18 @@ export default function ChainBreakdown({
       if (isOpen) {
         if (openLight) {
           return (
-            "border-[#CDD8D3] border-y-[1px]" +
+            "border-bg-medium border-y-[1px]" +
             (metric === "chain" ? " border-l-[1px] rounded-l-full" : "")
           );
         } else if (openDark) {
           return (
-            "border-[#CDD8D399] border-y-[1px]" +
+            "border-bg-medium-50 border-y-[1px]" +
             (metric === "size" ? " border-r-[1px] rounded-r-full" : "")
           );
         }
       } else {
         return (
-          "border-[#5A6462] border-y-[1px]" +
+          "border-bg-medium border-y-[1px]" +
           (metric === "chain"
             ? " border-l-[1px] rounded-l-full"
             : metric === "size"
@@ -1395,24 +1395,24 @@ export default function ChainBreakdown({
                   : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
                   } min-w-[1125px]`}
               >
-                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
+                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-color-text-secondary ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-color-bg-medium-50">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs  bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].revenue.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs ">
                     {formatNumber(totals[selectedTimespan].costs.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                     {formatNumber(totals[selectedTimespan].profit.total[showUsd ? 0 : 1])}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs">
                   <div
                         className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${totals[selectedTimespan].profit_margin
                           .total[0] > 0
@@ -1548,7 +1548,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] bg-color-bg-medium-50 border-[1px] items-center justify-center numbers-xs bg-m">
+                  <div className="flex rounded-full w-full h-[34px] border-bg-medium bg-color-bg-medium-50 border-[1px] items-center justify-center numbers-xs bg-m">
                     {formatBytes(
                         totals[selectedTimespan].size.total[0],
                     )}

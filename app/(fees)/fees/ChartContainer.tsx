@@ -304,7 +304,7 @@ export default function ChartContainer({
                 />
                 {/* </div> */}
                 <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
-                  <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                  <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
                 </div>
               </div>
               {/* xMin and xMax chart labels */}

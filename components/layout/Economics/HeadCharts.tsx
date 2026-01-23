@@ -659,9 +659,9 @@ export default function EconHeadCharts({
                         minimumFractionDigits: 2,
                       }).format(sumDisplayValue)}
                   </div>
-                  <hr className="absolute w-full border-t-[2px] top-[54px] border-[#5A64624F] my-4" />
-                  <hr className="absolute w-full border-t-[2px] top-[95px] border-[#5A64624F] my-4" />
-                  <hr className="absolute w-full border-t-[2px] top-[137px] border-[#5A64624F] my-4" />
+                  <hr className="absolute w-full border-t-[1.5px] top-[54px] border-[#5A64624F] my-4" />
+                  <hr className="absolute w-full border-t-[1.5px] top-[95px] border-[#5A64624F] my-4" />
+                  <hr className="absolute w-full border-t-[1.5px] top-[137px] border-[#5A64624F] my-4" />
 
                   <div className="absolute w-full h-full flex top-[10px] justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
                     <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
