@@ -46,14 +46,31 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-const METRIC_COLORS = {
-  profit: ["#EEFF97", "#A1B926"],
-  fees: ["#1DF7EF", "#10808C"],
-  costs: {
-    costs_l1: ["#FE5468", "#98323E"],
-    costs_blobs: ["#D41027", "#FE5468"],
-  },
+// Helper to resolve CSS variable colors with optional opacity
+// Usage: getCssVarColor("--accent-yellow") or getCssVarColor("--accent-yellow", .50)
+const getCssVarColor = (cssVar: string, opacity?: number): string => {
+  if (typeof window === "undefined") {
+    // SSR fallback - return a placeholder that will be replaced on client
+    return opacity !== undefined ? `rgba(128, 128, 128, ${opacity})` : "rgb(128, 128, 128)";
+  }
+  const rgbValues = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .trim()
+    .replace(/ /g, ", ");
+  return opacity !== undefined
+    ? `rgba(${rgbValues}, ${opacity})`
+    : `rgb(${rgbValues})`;
 };
+
+// Store CSS variable names - use getCssVarColor() to resolve them
+const METRIC_CSS_VARS = {
+  profit: ["--accent-yellow", "--accent-yellow"],
+  fees: ["--accent-turquoise", "--accent-turquoise"],
+  costs: {
+    costs_l1: ["--accent-red", "--accent-red"],
+    costs_blobs: ["--accent-red", "--accent-red"],
+  },
+} as const;
 
 const urls = {
   profit: "/fundamentals/profit",
@@ -726,9 +743,9 @@ export default function EconHeadCharts({
                                 y2: 0,
                               },
                               stops: [
-                                [0, METRIC_COLORS[key][1]],
+                                [0, getCssVarColor(METRIC_CSS_VARS[key][1])],
                                 // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, METRIC_COLORS[key][0]],
+                                [1, getCssVarColor(METRIC_CSS_VARS[key][0])],
                               ],
                             },
                           },
@@ -748,9 +765,9 @@ export default function EconHeadCharts({
                                 y2: 1,
                               },
                               stops: [
-                                [0, METRIC_COLORS[key][1] + "DD"],
-                                [0.5, METRIC_COLORS[key][1] + "DD"],
-                                [1, METRIC_COLORS[key][0] + "DD"],
+                                [0, getCssVarColor(METRIC_CSS_VARS[key][1], .50)],
+                                [0.5, getCssVarColor(METRIC_CSS_VARS[key][1], .50)],
+                                [1, getCssVarColor(METRIC_CSS_VARS[key][0], .50)],
                               ],
                             },
                             // shadow: {
@@ -766,9 +783,9 @@ export default function EconHeadCharts({
                                 y2: 0,
                               },
                               stops: [
-                                [0, METRIC_COLORS[key][0]],
+                                [0, getCssVarColor(METRIC_CSS_VARS[key][0])],
                                 // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, METRIC_COLORS[key][0]],
+                                [1, getCssVarColor(METRIC_CSS_VARS[key][0])],
                               ],
                             },
                             // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
@@ -1061,7 +1078,7 @@ export default function EconHeadCharts({
                                     size: 5,
                                     opacity: 0.5,
                                     attributes: {
-                                      fill: METRIC_COLORS[key][0],
+                                      fill: getCssVarColor(METRIC_CSS_VARS[key][0]),
                                       stroke: undefined,
                                     },
                                   },
@@ -1107,8 +1124,8 @@ export default function EconHeadCharts({
                                           y2: 0,
                                         },
                                         stops: [
-                                          [0, METRIC_COLORS[key][costKey][0]], // Use the unique color for each series
-                                          [1, METRIC_COLORS[key][costKey][0]],
+                                          [0, getCssVarColor(METRIC_CSS_VARS[key][costKey][0])], // Use the unique color for each series
+                                          [1, getCssVarColor(METRIC_CSS_VARS[key][costKey][0])],
                                         ],
                                       }}
                                       fillColor={{
@@ -1121,18 +1138,15 @@ export default function EconHeadCharts({
                                         stops: [
                                           [
                                             0,
-                                            METRIC_COLORS[key][costKey][1] +
-                                            "DD",
+                                            getCssVarColor(METRIC_CSS_VARS[key][costKey][1], 0.50),
                                           ],
                                           [
                                             0.6,
-                                            METRIC_COLORS[key][costKey][1] +
-                                            "DD",
+                                            getCssVarColor(METRIC_CSS_VARS[key][costKey][1], 0.50),
                                           ],
                                           [
                                             1,
-                                            METRIC_COLORS[key][costKey][0] +
-                                            "DD",
+                                            getCssVarColor(METRIC_CSS_VARS[key][costKey][0], 0.50),
                                           ],
                                         ],
                                       }}
@@ -1146,11 +1160,11 @@ export default function EconHeadCharts({
                                         stops: [
                                           [
                                             0,
-                                            METRIC_COLORS[key][costKey][
+                                            getCssVarColor(METRIC_CSS_VARS[key][costKey][
                                             costKey === "costs_l1" ? 0 : 1
-                                            ],
+                                            ]),
                                           ], // Use the unique color for each series
-                                          [1, METRIC_COLORS[key][costKey][1]],
+                                          [1, getCssVarColor(METRIC_CSS_VARS[key][costKey][1])],
                                         ],
                                       }}
                                       states={{
@@ -1160,9 +1174,9 @@ export default function EconHeadCharts({
                                             size: 5,
                                             opacity: 0.5,
                                             attributes: {
-                                              fill: METRIC_COLORS[key][
+                                              fill: getCssVarColor(METRIC_CSS_VARS[key][
                                                 costKey
-                                              ][0],
+                                              ][0]),
                                               stroke: undefined,
                                             },
                                           },

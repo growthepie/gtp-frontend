@@ -1058,7 +1058,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-color-accent-turquoise`}
                             style={{
                               width: `${(100 *
                                 data[item.key][selectedTimespan].revenue
@@ -1126,7 +1126,7 @@ export default function ChainBreakdown({
                           </div>
                           <div className="flex justify-start w-full items-end text-xxxs ">
                             <div
-                              className="bg-[#D03434] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
+                              className="bg-color-negative flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
                                 width: `${100 *
                                   (data[item.key][selectedTimespan].costs
@@ -1137,7 +1137,7 @@ export default function ChainBreakdown({
                               }}
                             ></div>
                             <div
-                              className="bg-[#FE5468] rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
+                              className="bg-color-accent-red rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
                               style={{
                                 width: `${120 *
                                   (data[item.key][selectedTimespan].costs
@@ -1188,7 +1188,7 @@ export default function ChainBreakdown({
                             className={`h-[4px] ${data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
-                              ? "bg-[#EEFF97] rounded-r-2xl "
+                              ? "bg-color-accent-yellow rounded-r-2xl "
                               : "bg-[#FFDF27] rounded-l-2xl"
                               }`}
                             style={{
@@ -1243,7 +1243,7 @@ export default function ChainBreakdown({
                             }`}
                         >
                           <div
-                            className={`absolute h-[4px] bg-color-ui-hover w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
+                            className={`absolute h-[4px] bg-color-text-secondary w-[50px] z-0 ${data[item.key][selectedTimespan].profit_margin
                               .total[0] > 0
                               ? "rounded-r-full"
                               : "rounded-l-full"
@@ -1252,7 +1252,7 @@ export default function ChainBreakdown({
                           <div
                             className={`h-[4px] z-10 ${data[item.key][selectedTimespan].profit_margin
                               .total[0] > 0
-                              ? "bg-[#45AA6F] rounded-r-2xl "
+                              ? "bg-chains-custom-cool-2 rounded-r-2xl "
                               : "bg-[#FF8F27] rounded-l-2xl"
                               }`}
                             style={{
