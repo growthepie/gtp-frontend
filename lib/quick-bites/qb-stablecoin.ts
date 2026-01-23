@@ -117,6 +117,88 @@ const Stablecoin: QuickBiteData = {
       caption: "Stacked supply of the top stablecoins on Arbitrum.",
     }),
     "```",
+    "## Stablecoin Breakdown Table",
+    "```table",
+    JSON.stringify({
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/tables/arbitrum.json",
+        pathToRowData: "data.stables_per_chain.rows",
+        pathToColumnKeys: "data.stables_per_chain.columns",
+        pathToTypes: "data.stables_per_chain.types",
+      },
+      columnDefinitions: {
+        name: {
+          label: "Name",
+          type: "string",
+          minWidth: 160,
+          isNumeric: false,
+          sortByValue: true
+        },
+        symbol: {
+          label: "Symbol",
+          type: "string",
+          minWidth: 60,
+          isNumeric: false,
+          sortByValue: true
+        },
+        logo: {
+          label: "",
+          type: "image",
+          minWidth: 20,
+          isNumeric: false,
+          sortByValue: false
+        },
+        value: {
+          label: "Supply",
+          type: "number",
+          minWidth: 120,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 2,
+            },
+          }
+        },
+        value_usd: {
+          label: "Value (USD)",
+          type: "number",
+          minWidth: 140,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+        fiat: {
+          label: "Fiat",
+          type: "string",
+          minWidth: 60,
+          isNumeric: false,
+          sortByValue: true
+        },
+        metric_key: {
+          label: "Type",
+          type: "metric",
+          minWidth: 20,
+          isNumeric: false,
+          sortByValue: true
+        },
+        origin_key: {
+          label: "Origin",
+          type: "chain",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true
+        },
+      },
+      columnOrder: ["logo", "name", "symbol", "fiat", "value", "value_usd", "metric_key", "origin_key"],
+    }),
+    "```",
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],

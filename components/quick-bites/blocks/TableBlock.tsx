@@ -12,6 +12,8 @@ import VerticalScrollContainer from '@/components/VerticalScrollContainer';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
+import { useMaster } from "@/contexts/MasterContext";
+import { useTheme } from "next-themes";
 
 
 const getNestedValue = (obj: any, path: string) => {
@@ -25,6 +27,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const { AllChainsByKeys } = useMaster();
+  const { resolvedTheme } = useTheme();
 
   const url = useMemo(() => {
     if (!block.readFromJSON) return null;
@@ -47,23 +51,29 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   }, [block.readFromJSON, block.columnDefinitions, jsonData]);
 
   const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
+  const hiddenKeys = useMemo(() => {
+    const entries = Object.entries(block.columnDefinitions || {});
+    return new Set(entries.filter(([, def]) => def?.hidden).map(([key]) => key));
+  }, [block.columnDefinitions]);
 
   const columnKeyOrder = useMemo(() => {
+    const visibleDefault = defaultColumnKeyOrder.filter((key) => !hiddenKeys.has(key));
+
     if (!Array.isArray(block.columnOrder) || block.columnOrder.length === 0) {
-      return defaultColumnKeyOrder;
+      return visibleDefault;
     }
 
     const seen = new Set<string>();
     const orderedKeys: string[] = [];
 
     block.columnOrder.forEach((key) => {
-      if (dynamicColumnKeys[key] && !seen.has(key)) {
+      if (dynamicColumnKeys[key] && !seen.has(key) && !hiddenKeys.has(key)) {
         orderedKeys.push(key);
         seen.add(key);
       }
     });
 
-    defaultColumnKeyOrder.forEach((key) => {
+    visibleDefault.forEach((key) => {
       if (!seen.has(key)) {
         orderedKeys.push(key);
         seen.add(key);
@@ -71,7 +81,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     });
 
     return orderedKeys;
-  }, [block.columnOrder, defaultColumnKeyOrder, dynamicColumnKeys]);
+  }, [block.columnOrder, defaultColumnKeyOrder, dynamicColumnKeys, hiddenKeys]);
+
+  const hasLeadingLogo = columnKeyOrder[0] && block.columnDefinitions?.[columnKeyOrder[0]]?.type === "image";
 
   const columnIndexMap = useMemo(() => {
     return defaultColumnKeyOrder.reduce((acc, key, index) => {
@@ -194,7 +206,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   
   
 
-  return (
+    return (
     <div className={`my-8 ${block.className || ''}`}>
       {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
 
@@ -206,7 +218,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           paddingRight={30}
           className="w-full min-w-[600px]"
           header={
-            <GridTableHeader style={{ gridTemplateColumns }} className="group heading-small-xs gap-x-[15px] !pl-[15px] !pr-[5px] select-none h-[34px] !pt-0 !pb-0 !items-end">
+            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'} !pr-[5px] select-none h-[34px] !pt-0 !pb-0 !items-end`}>
               {columnKeyOrder.map(columnKey => (
                 <GridTableHeaderCell
                   key={columnKey}
@@ -216,7 +228,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   onSort={() => dynamicColumnKeys[columnKey]?.sortByValue && handleSort(columnKey)}
                   className={`${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
                 >
-                  {columnDefinitions[columnKey]?.label || formatLabel(columnKey)}
+                  {columnDefinitions[columnKey]?.label ?? formatLabel(columnKey)}
                 </GridTableHeaderCell>
               ))}
             </GridTableHeader>
@@ -224,21 +236,62 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         >
           <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
             {sortedRows.map((rowData, rowIndex) => (
-              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className="group text-xs gap-x-[15px] !pl-[15px] !pr-[15px] select-none h-[34px] !pt-0 !pb-0">
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`group text-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'} !pr-[15px] select-none h-[34px] !pt-0 !pb-0`}>
                 {rowData.map((cellData, colIndex) => {
                   const columnKey = columnKeyOrder[colIndex];
                   let cellMainContent: React.ReactNode | null = null;
                   let cellLeftContent: React.ReactNode | null = null;
                   let cellRightContent: React.ReactNode | null = null;
-                  // default cell content
-                  cellMainContent = (
-                    <>
-                      {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                      <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
-                        {formatValue(cellData?.value, columnKey)}
-                      </span>
-                    </>
-                  );
+                  const columnType = columnDefinitions?.[columnKey]?.type;
+                  if (columnType === "chain" && typeof cellData?.value === "string") {
+                    const chainInfo = AllChainsByKeys[cellData.value];
+                    cellMainContent = (
+                      <div className="flex items-center justify-center w-full">
+                        {chainInfo && (
+                          <Icon
+                            icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
+                            className="w-[15px] h-[15px]"
+                            style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
+                          />
+                        )}
+                      </div>
+                    );
+                  } else if (columnType === "image" && typeof cellData?.value === "string") {
+                    cellMainContent = (
+                      <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] ${columnKey === columnKeyOrder[0] ? "-ml-[6px]" : ""}`}>
+                        <img
+                          src={cellData.value}
+                          alt={`${columnKey} logo`}
+                          className="rounded-full w-[26px] h-[26px] object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    );
+                  } else if (columnType === "metric" && typeof cellData?.value === "string") {
+                    const metricIcon =
+                      cellData.value === "supply_bridged"
+                        ? "gtp-crosschain"
+                        : cellData.value === "supply_direct"
+                          ? "gtp-tokentransfers"
+                          : null;
+                    cellMainContent = metricIcon ? (
+                      <div className="flex items-center justify-center w-full text-color-ui-hover">
+                        <GTPIcon icon={metricIcon as GTPIconName} size="sm" />
+                      </div>
+                    ) : (
+                      <span className="text-xs">{formatValue(cellData?.value, columnKey)}</span>
+                    );
+                  } else {
+                    // default cell content
+                    cellMainContent = (
+                      <>
+                        {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
+                        <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
+                          {formatValue(cellData?.value, columnKey)}
+                        </span>
+                      </>
+                    );
+                  }
 
 
                   // if address, add copy button and double click to select
