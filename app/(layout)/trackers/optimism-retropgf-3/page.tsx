@@ -30,7 +30,7 @@ import {
   useState,
 } from "react";
 import { last, uniq, debounce } from "lodash";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import Image from "next/image";
 import Link from "next/link";
 // import { OsoTaggedProjects } from "./osoTaggedProjects";
@@ -164,7 +164,7 @@ export default function Page() {
 
     const lastUpdated = oldest.last_updated;
 
-    return moment(lastUpdated).fromNow();
+    return dayjs(lastUpdated).fromNow();
   }, [projectsResponse]);
 
   const ballotRankingByProjectId = useMemo<{

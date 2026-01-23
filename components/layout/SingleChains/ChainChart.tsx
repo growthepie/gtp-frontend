@@ -57,7 +57,7 @@ import {
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -2368,7 +2368,7 @@ export default function ChainChart({
                             <div>
                               {intervalData ? data.map((item) => (
                                 <div key={item.chain_id}>
-                                  {item.chain_id}: {intervalData?.data.slice(-4).map((d) => moment(d[0]).utc().format("YYYY-MM-DD")).join(", ")}
+                                  {item.chain_id}: {intervalData?.data.slice(-4).map((d) => dayjs(d[0]).utc().format("YYYY-MM-DD")).join(", ")}
                                 </div>
                                 )) : null
                               }

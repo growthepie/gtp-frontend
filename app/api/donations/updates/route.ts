@@ -1,5 +1,5 @@
 import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 
 const notificationTable = "tblVmaXDw7qrRDrPV";
 const baseId = "appZWDvjvDmVnOici";
@@ -29,7 +29,7 @@ async function fetchData() {
       .filter((record: any) => Object.keys(record.fields).length > 0)
       .sort((a: any, b: any) =>
         // sort by date in descending order
-        moment(b.fields["Date"]).diff(moment(a.fields["Date"])),
+        dayjs(b.fields["Date"]).diff(dayjs(a.fields["Date"])),
       )
       .map((record: any) => ({
         name: record.fields["Name"] || "",

@@ -6,7 +6,7 @@ import useSWR from "swr";
 // import remarkParse from "remark-parse";
 // import html from "remark-html";
 import { useEffect, useMemo, useState } from "react";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
@@ -309,7 +309,7 @@ export const BlogPost = ({
               {/* <div className="hidden sm:flex text-color-text-primary bg-color-bg-default dark:bg-color-ui-hover dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
                 {(data.authorship.contributor as string).slice(0, 6)}
               </div> */}
-              <div>{moment.unix(data.content.timestamp).fromNow()}</div>
+              <div>{dayjs.unix(data.content.timestamp).fromNow()}</div>
             </div>
           </div>
         </div>
@@ -357,7 +357,7 @@ export const BlogPost = ({
               {/* <div className="hidden sm:flex text-color-text-primary bg-color-bg-default dark:bg-color-ui-hover dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
                 {(data.authorship.contributor as string).slice(0, 6)}
               </div> */}
-              <div>{moment.unix(data.content.timestamp).fromNow()}</div>
+              <div>{dayjs.unix(data.content.timestamp).fromNow()}</div>
             </div>
           </div>
         </div>
@@ -375,7 +375,7 @@ export const BlogPost = ({
           <div className="text-base text-color-text-primary bg-color-bg-default dark:bg-forest-900 dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight flex items-center">
             {(data.authorship.contributor as string).slice(0, 6)}
           </div>
-          <div>{moment.unix(data.content.timestamp).fromNow()}</div>
+          <div>{dayjs.unix(data.content.timestamp).fromNow()}</div>
         </div>
         {data && (
           <ReactMarkdown

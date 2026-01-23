@@ -10,7 +10,7 @@ import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
-import moment from 'moment';
+import dayjs from "@/lib/dayjs";
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 
@@ -331,7 +331,7 @@ export function AggChart({
   // Custom Tooltip Component
   const CustomTooltip = useCallback(({ data, x, y, metricName }: { data: any[], x: number, y: number, metricName: string }) => {
     if (!data.length) return null;
-    const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
+    const dateStr = dayjs.utc(data[0].categoryLabel).format("DD MMM YYYY");
 
     // sum of all values
     const pointsSum = data.reduce((acc: number, point: any) => acc + point.value, 0);

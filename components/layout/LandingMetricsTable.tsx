@@ -9,7 +9,7 @@ import { ReactNode, createContext, memo, useCallback, useContext, useEffect, use
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { format as d3Format } from "d3"
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { Icon } from "@iconify/react";
 import { useTransition, animated, useSpring } from "@react-spring/web";
 import {
@@ -94,7 +94,7 @@ const createLandingDataSorter = (master: MasterResponse, landing: LandingPageMet
         } else if (metricKey === "cross_chain_activity") {
           return item.data.cross_chain_activity;
         } else if (metricKey === "age") {
-          return moment(master.chains[item.chain.key].launch_date);
+          return dayjs(master.chains[item.chain.key].launch_date);
         }
         return item.data[metricKey];
       },
@@ -218,7 +218,7 @@ export default memo(function LandingMetricsTable({
 
   const monthsSinceLaunch = useMemo(() => {
     return Object.keys(master.chains).reduce((acc, chain) => {
-      const diff = moment.duration(moment().diff(moment(master.chains[chain].launch_date)));
+      const diff = dayjs.duration(dayjs().diff(dayjs(master.chains[chain].launch_date)));
       acc[chain] = [diff.years(), diff.months()];
       return acc;
     }, {});

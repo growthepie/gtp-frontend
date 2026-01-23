@@ -1,5 +1,5 @@
 import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 
 const notificationTable = "tbl37943VT3Q2UPVI";
 const baseId = "appZWDvjvDmVnOici";
@@ -29,44 +29,44 @@ async function fetchData() {
 
     const jsonResponse = await response.json();
 
-    const now = moment();
+    const now = dayjs();
 
     return jsonResponse.records
       .filter((record: any) => Object.keys(record.fields).length > 0)
       .sort((a: any, b: any) => {
         const aIsCurrent =
-          moment(a.fields["Start Date"]).isBefore(now) &&
-          moment(a.fields["End Date (Time Left)"]).isAfter(now);
+          dayjs(a.fields["Start Date"]).isBefore(now) &&
+          dayjs(a.fields["End Date (Time Left)"]).isAfter(now);
         const bIsCurrent =
-          moment(b.fields["Start Date"]).isBefore(now) &&
-          moment(b.fields["End Date (Time Left)"]).isAfter(now);
+          dayjs(b.fields["Start Date"]).isBefore(now) &&
+          dayjs(b.fields["End Date (Time Left)"]).isAfter(now);
 
-        const aIsFuture = moment(a.fields["Start Date"]).isAfter(now);
-        const bIsFuture = moment(b.fields["Start Date"]).isAfter(now);
+        const aIsFuture = dayjs(a.fields["Start Date"]).isAfter(now);
+        const bIsFuture = dayjs(b.fields["Start Date"]).isAfter(now);
 
-        const aIsPast = moment(a.fields["End Date (Time Left)"]).isBefore(now);
-        const bIsPast = moment(b.fields["End Date (Time Left)"]).isBefore(now);
+        const aIsPast = dayjs(a.fields["End Date (Time Left)"]).isBefore(now);
+        const bIsPast = dayjs(b.fields["End Date (Time Left)"]).isBefore(now);
 
         // current rounds should be at the top, then future rounds, then past rounds and each of these should be sorted by start date
         if (aIsCurrent && bIsCurrent) {
-          return moment(a.fields["Start Date"]).diff(
-            moment(b.fields["Start Date"]),
+          return dayjs(a.fields["Start Date"]).diff(
+            dayjs(b.fields["Start Date"]),
           );
         } else if (aIsCurrent) {
           return -1;
         } else if (bIsCurrent) {
           return 1;
         } else if (aIsFuture && bIsFuture) {
-          return moment(a.fields["Start Date"]).diff(
-            moment(b.fields["Start Date"]),
+          return dayjs(a.fields["Start Date"]).diff(
+            dayjs(b.fields["Start Date"]),
           );
         } else if (aIsFuture) {
           return -1;
         } else if (bIsFuture) {
           return 1;
         } else if (aIsPast && bIsPast) {
-          return moment(a.fields["Start Date"]).diff(
-            moment(b.fields["Start Date"]),
+          return dayjs(a.fields["Start Date"]).diff(
+            dayjs(b.fields["Start Date"]),
           );
         } else if (aIsPast) {
           return -1;
