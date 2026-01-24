@@ -497,6 +497,8 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       disableTooltipSort: chartConfig.disableTooltipSort || false,
       // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
+      showZeroTooltip: chartConfig.showZeroTooltip ?? true,
+      showTotalTooltip: chartConfig.showTotalTooltip ?? false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null,
       yAxisLine: chartConfig.yAxisLine || [],
