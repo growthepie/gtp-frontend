@@ -380,12 +380,12 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
               >
                 <Icon
                   icon={selected.includes(opt.key) ? "feather:check-circle" : "feather:circle"}
-                  className="size-[15px]"
+                  className={`size-[15px] ${selected.includes(opt.key) ? "text-color-text-primary" : "text-color-text-secondary"}`}
                 />
                 {opt.icon && (
                   <GTPIcon
                     icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
-                    className="size-[24px] text-color-ui-hover"
+                    className="size-[24px] text-color-text-secondary"
                   />
                 )}
                 <div>{opt.name}</div>

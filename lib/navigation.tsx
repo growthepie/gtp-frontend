@@ -238,7 +238,7 @@ export const navigationItems: NavigationItem[] = [
         showNew: false,
       },
     ],
-    href: "/ethereum-ecosystem",
+    href: "/ethereum-ecosystem/metrics",
   },
   {
     name: "Applications",

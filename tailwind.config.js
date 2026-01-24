@@ -223,7 +223,8 @@ module.exports = {
       },
       boxShadow: {
         'card-dark': '0px 0px 27px rgb(var(--ui-shadow))',
-        "standard": "0px 0px 27px 0px rgb(var(--ui-shadow))"
+        "standard": "0px 0px 27px 0px rgb(var(--ui-shadow))",
+        "soft-lg": "0px 0px 50px 0px rgb(var(--ui-shadow))"
       },
     },
   },

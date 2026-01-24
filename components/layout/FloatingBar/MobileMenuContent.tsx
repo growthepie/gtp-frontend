@@ -174,7 +174,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
                 <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
               </Link>
               <Link href="https://warpcast.com/growthepie" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Warpcast link", { location: "mobile menu", page: pathname }); onClose(); }}>
-                <Icon icon="gtp:farcaster" className="h-[19px] w-[19px]" />
+                <Icon icon="gtp:farcaster-monochrome" className="h-[19px] w-[19px]" />
               </Link>
               {/* Close Button */}
               <button className="flex h-full items-center" onClick={onClose}>
@@ -317,7 +317,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
             });
           }}
         >
-          <GTPIcon icon="farcaster" size="md" />
+          <GTPIcon icon="farcaster-monochrome" size="md" />
         </Link>
       </div>
     </div>

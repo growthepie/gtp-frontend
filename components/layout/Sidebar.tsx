@@ -282,7 +282,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     }}
                   >
                     <Icon
-                      icon="gtp:farcaster"
+                      icon="gtp:farcaster-monochrome"
                       className="h-[19px] w-[19px]"
                     />
                   </Link>

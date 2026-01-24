@@ -16,6 +16,7 @@ interface TPSChartProps {
   data: HistoryItem[];
   chainName?: string;
   centerWatermark?: boolean;
+  anchorZero?: boolean;
 }
 
 // Your existing formatNumberWithSI function...
@@ -48,7 +49,16 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
-export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark}: TPSChartProps) => {
+// Helper to get resolved CSS variable as rgb() color (Canvas-compatible format)
+const getCssVarAsRgb = (name: string): string => {
+  if (typeof window === 'undefined') return 'rgb(0, 0, 0)';
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  // Convert space-separated "14 111 122" to comma-separated "rgb(14, 111, 122)"
+  const parts = value.split(' ').filter(Boolean);
+  return `rgb(${parts.join(', ')})`; 
+};
+
+export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWatermark, anchorZero}: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -80,7 +90,18 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
 
     const windowed = tpsValues.slice(startIndex);
     const maxInWindow = windowed.length ? Math.max(...windowed) : 0;
-    const yAxisMax = Math.ceil(maxInWindow / 5) * 5;
+    
+    // Calculate min and max for y-axis with padding
+    const minInWindow = windowed.length ? Math.min(...windowed) : 0;
+    const shouldFloatZero = !anchorZero && maxInWindow > 1000;
+    const step = shouldFloatZero ? 50 : 5;
+    const range = Math.max(maxInWindow - minInWindow, 0);
+    const padding = shouldFloatZero ? range * 0.05 : 0;
+    const rawMin = shouldFloatZero ? Math.max(0, minInWindow - padding) : 0;
+    const rawMax = maxInWindow + padding;
+    const yAxisMin = Math.floor(rawMin / step) * step;
+    const yAxisMax = Math.ceil(rawMax / step) * step;
+    const yAxisInterval = Math.max(yAxisMax - yAxisMin, step);
 
     // const maxValue = Math.max(...tpsValues);
     // const yAxisMax = Math.ceil(maxValue / 5) * 5;
@@ -97,7 +118,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       },
       yAxis: {
         type: 'value',
-        interval: yAxisMax,
+        interval: yAxisInterval,
         axisLabel: {
           color: theme !== 'dark' ? 'rgb(31 39 38)' : 'rgb(205 216 211)',
           fontSize: 10,
@@ -105,12 +126,12 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
           fontFamily: 'var(--font-raleway), var(--font-fira-sans), sans-serif',
           align: 'right',
           margin: 10,
-          formatter: (value) => [0, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
+          formatter: (value) => [yAxisMin, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
         },
-        splitLine: { show: true, lineStyle: { color: '#5A6462', type: 'solid' } },
+        splitLine: { show: true, lineStyle: { color: '#5A64624F', type: 'solid' } },
         axisLine: { show: false },
         axisTick: { show: false },
-        min: 0,
+        min: yAxisMin,
         max: yAxisMax,
       },
       tooltip: {
@@ -119,15 +140,15 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
         appendToBody: true,
         confine: false,
         axisPointer: { type: 'line', lineStyle: { color: 'rgb(215, 223, 222)', width: 1, type: 'solid' } },
-        backgroundColor: 'rgb(var(--bg-default))',
-        shadowColor: 'rgb(var(--ui-shadow))',
+        backgroundColor: getCssVarAsRgb('--bg-default'),
+        shadowColor: getCssVarAsRgb('--ui-shadow'),
         shadowBlur: 27,
         shadowOffsetX: 0,
         shadowOffsetY: 0,
         borderRadius: 15,
         borderWidth: 0,
         padding: [15, 15, 15, 0], // Adjusted padding
-        textStyle: { color: 'rgb(var(--text-primary))' },
+        textStyle: { color: getCssVarAsRgb('--text-primary') },
         // Updated formatter to include the timestamp
         formatter: (params) => {
           if (!Array.isArray(params) || params.length === 0) return '';
@@ -198,8 +219,8 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
               type: 'linear',
               x: 0, y: 1, x2: 0, y2: 0,
               colorStops: [
-                { offset: 0, color: overrideColor?.[0] ?? '#10808C' },
-                { offset: 1, color: overrideColor?.[1] ?? '#1DF7EF' }
+                { offset: 0, color: overrideColor?.[0] ?? getCssVarAsRgb('--accent-petrol') },
+                { offset: 1, color: overrideColor?.[1] ?? getCssVarAsRgb('--accent-turquoise') }
               ],
             },
           },
@@ -207,7 +228,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
       ],
       animationDuration: 50,
     };
-  }, [data, theme]); // The hook now depends on the `data` prop and theme
+  }, [data, theme, anchorZero, chainName, overrideColor]); // The hook now depends on the `data` prop, theme, and axis behavior
 
   return (
     <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
