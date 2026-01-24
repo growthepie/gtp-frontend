@@ -14,6 +14,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
+import Mustache from 'mustache';
 
 
 const getNestedValue = (obj: any, path: string) => {
@@ -30,10 +31,38 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { AllChainsByKeys } = useMaster();
   const { resolvedTheme } = useTheme();
 
+  const parseChainKeys = (value: unknown): string[] => {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item).trim()).filter(Boolean);
+    }
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+    if (value === null || value === undefined) return [];
+    return [String(value).trim()].filter(Boolean);
+  };
+
   const url = useMemo(() => {
     if (!block.readFromJSON) return null;
-    return block.jsonData?.url || null;
-  }, [block.readFromJSON, block.jsonData]);
+    const rawUrl = block.jsonData?.url;
+    if (!rawUrl) return null;
+
+    if (rawUrl.includes("{{")) {
+      const requiredVars = (Mustache.parse(rawUrl) || [])
+        .filter(tag => tag[0] === 'name')
+        .map(tag => tag[1]);
+
+      const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
+      if (!allVarsAvailable) return null;
+
+      return Mustache.render(rawUrl, sharedState);
+    }
+
+    return rawUrl;
+  }, [block.readFromJSON, block.jsonData, sharedState]);
 
   const { data: jsonData, error, isLoading } = useSWR(url);
 
@@ -243,17 +272,22 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   let cellLeftContent: React.ReactNode | null = null;
                   let cellRightContent: React.ReactNode | null = null;
                   const columnType = columnDefinitions?.[columnKey]?.type;
-                  if (columnType === "chain" && typeof cellData?.value === "string") {
-                    const chainInfo = AllChainsByKeys[cellData.value];
+                  if (columnType === "chain") {
+                    const chainKeys = parseChainKeys(cellData?.value);
                     cellMainContent = (
-                      <div className="flex items-center justify-center w-full">
-                        {chainInfo && (
-                          <Icon
-                            icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
-                            className="w-[15px] h-[15px]"
-                            style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
-                          />
-                        )}
+                      <div className="flex items-center justify-center w-full gap-x-[4px]">
+                        {chainKeys.map((chainKey) => {
+                          const chainInfo = AllChainsByKeys[chainKey];
+                          if (!chainInfo) return null;
+                          return (
+                            <Icon
+                              key={chainKey}
+                              icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
+                              className="w-[15px] h-[15px]"
+                              style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
+                            />
+                          );
+                        })}
                       </div>
                     );
                   } else if (columnType === "image" && typeof cellData?.value === "string") {
@@ -273,7 +307,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         ? "gtp-crosschain"
                         : cellData.value === "supply_direct"
                           ? "gtp-tokentransfers"
-                          : null;
+                          : cellData.value === "locked_supply"
+                            ? "gtp-lock"
+                            : null;
                     cellMainContent = metricIcon ? (
                       <div className="flex items-center justify-center w-full text-color-ui-hover">
                         <GTPIcon icon={metricIcon as GTPIconName} size="sm" />

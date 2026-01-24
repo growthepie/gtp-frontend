@@ -10,6 +10,23 @@ const Stablecoin: QuickBiteData = {
     "# Introduction:",
     "Tracking stablecoin composition on to show how the mix evolves over time.",
     "",
+    "```dropdown",
+    JSON.stringify({
+      label: "Select a Chain",
+      placeholder: "Choose a chain...",
+      searchable: true,
+      stateKey: "selectedChain",
+      defaultValue: "arbitrum",
+      allowEmpty: false,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "origin_key",
+        labelField: "name"
+      }
+    }),
+    "```",
     "```chart",
     JSON.stringify({
       type: "area",
@@ -30,7 +47,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -43,7 +60,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -56,7 +73,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -69,7 +86,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -82,7 +99,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -95,7 +112,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
           {
@@ -108,7 +125,7 @@ const Stablecoin: QuickBiteData = {
             tooltipDecimals: 2,
             suffix: null,
             prefix: '$',
-            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_arbitrum.json",
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/timeseries/top_{{selectedChain}}.json",
             pathToData: "data.timeseries.values",
           },
         ],
@@ -122,7 +139,7 @@ const Stablecoin: QuickBiteData = {
     JSON.stringify({
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/tables/arbitrum.json",
+        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/tables/{{selectedChain}}.json",
         pathToRowData: "data.stables_per_chain.rows",
         pathToColumnKeys: "data.stables_per_chain.columns",
         pathToTypes: "data.stables_per_chain.types",
@@ -189,7 +206,7 @@ const Stablecoin: QuickBiteData = {
           sortByValue: true
         },
         origin_key: {
-          label: "Origin",
+          label: "Bridged From/To",
           type: "chain",
           minWidth: 80,
           isNumeric: false,
