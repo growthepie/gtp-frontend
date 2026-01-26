@@ -23,7 +23,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { TPSChart } from './TPSChart';
 import { throttle } from 'lodash';
 import { LinkButton } from '../LinkButton';
-import moment from 'moment';
+import dayjs from "@/lib/dayjs";
 import Link from 'next/link';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import ChartWatermark from '../ChartWatermark';
@@ -321,7 +321,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
             <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
               <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
-                <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent'>
                   {uptimeData.heading}
                 </div>
                 <div className={`numbers-sm text-color-text-secondary ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>{uptimeData.subheading}</div>
@@ -459,7 +459,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
             <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>All-Time High</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
             {globalMetrics.total_tps_24h_high && globalMetrics.total_tps_ath && (
               <div className='numbers-sm'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
@@ -469,13 +469,13 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
             <div className='heading-small-xxxs text-color-text-secondary'>
               <div className='group-hover:hidden'>24h Peak</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
             <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
           {/* Live TPS */}
           <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
-            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
+            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap'>
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(globalMetrics.total_tps || 0)}</div>
               <div>TPS</div>
             </div>
@@ -617,7 +617,7 @@ export const TokenTransferFeeCard = React.memo(({
           costValue={ethDisplayValue}
           costHistory={ethCostLive}
           showUsd={showUsd}
-          gradientClass="from-[#596780] to-[#94ABD3]"
+          gradientClass="from-chains-ethereum to-chains-ethereum/50"
           selectedIndex={ethCostSelectedIndex}
           hoverIndex={ethCostHoverIndex}
           onSelect={(index) => setEthCostSelectedIndex(index)}
@@ -1097,7 +1097,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       ...prev,
       eventExpanded: prev.eventExpanded === eventKey ? null : eventKey
     }));
-  }, []);
+  }, [setShowEvents, showEvents]);
 
   // Separate function for scroll navigation that directly sets expanded event (no toggle)
   const handleSetExpandedEvent = useCallback((eventKey: string) => {

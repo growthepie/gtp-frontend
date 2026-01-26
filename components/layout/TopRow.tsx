@@ -62,7 +62,7 @@ export const TopRowContainer = forwardRef<HTMLDivElement, TopRowContainerProps>(
 }, ref) => {
   return (
     <div
-      className={`select-none flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full bg-color-bg-default
+      className={`select-none flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full bg-color-bg-medium
         ${className} `}
       ref={ref ?? null}
       style={style}

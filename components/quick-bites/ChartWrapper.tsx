@@ -25,7 +25,7 @@ import "@/app/highcharts.axis.css";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3"
 
 let highchartsInitialized = false;
@@ -72,6 +72,8 @@ interface ChartWrapperProps {
   }
   seeMetricURL?: string | null;
   showXAsDate?: boolean;
+  showZeroTooltip?: boolean;
+  showTotalTooltip?: boolean;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -89,7 +91,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   yAxisLine,
   seeMetricURL,
   showXAsDate = false,
-  disableTooltipSort = false
+  disableTooltipSort = false,
+  showZeroTooltip = true,
+  showTotalTooltip = false
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -296,7 +300,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     function (this: any) {
       const { x, points } = this;
       const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
-      let dateString = moment.utc(x).utc().locale("en-GB").format(dateFormat);
+      let dateString = dayjs.utc(x).format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
@@ -306,7 +310,31 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      const tooltipPoints = points
+      const filteredPoints = showZeroTooltip ? points : points.filter((point: any) => point.y !== 0);
+      const totalMeta = jsonMeta?.meta?.[0];
+      const totalPrefix = totalMeta?.prefix || '';
+      const totalSuffix = totalMeta?.suffix || '';
+      const totalDecimals = totalMeta?.tooltipDecimals ?? 2;
+      const totalValue = total.toLocaleString("en-GB", {
+        minimumFractionDigits: totalDecimals,
+        maximumFractionDigits: totalDecimals
+      });
+      const totalLine = showTotalTooltip
+        ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full"></div>
+            <div class="tooltip-point-name text-xs">Total</div>
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+              <div class="${!totalPrefix && "hidden"}">${totalPrefix}</div>
+              ${totalValue}
+              <div class="ml-0.5 ${!totalSuffix && "hidden"}">${totalSuffix}</div>
+            </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+          </div>`
+        : "";
+
+      const tooltipPoints = filteredPoints
         // order by value
         .sort((a: any, b: any) => {
           if(disableTooltipSort) return 0;
@@ -358,9 +386,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         })
         .join("");
 
-      return tooltip + tooltipPoints + tooltipEnd;
+      return tooltip + tooltipPoints + totalLine + tooltipEnd;
     },
-    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort],
+    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);

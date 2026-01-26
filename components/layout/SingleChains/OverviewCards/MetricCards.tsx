@@ -7,7 +7,7 @@ import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse"
 import ReactECharts from "echarts-for-react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useState, useCallback, useRef, useEffect } from "react";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useRouter } from "next/navigation";
 import { getFundamentalsByKey } from "@/lib/metrics";
@@ -70,7 +70,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
     // Custom Tooltip Component - defined early to avoid hook order issues
     const CustomTooltip = useCallback(({ data, x, y, prefix, suffix }: { data: any[], x: number, y: number, prefix: string, suffix: string }) => {
         if (!data.length) return null;
-        const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
+        const dateStr = dayjs.utc(data[0].categoryLabel).format("DD MMM YYYY");
 
         const tooltipWidth = 200;
         const tooltipHeight = 80;

@@ -13,7 +13,7 @@ import {
   TooltipContent,
 } from "@/components/layout/Tooltip";
 import Address, { AddressIcon } from "@/components/layout/Address";
-import moment from "moment";
+import dayjs from "@/lib/dayjs";
 import Container from "@/components/layout/Container";
 import {
   TopRowChild,
@@ -198,11 +198,11 @@ export default function Page() {
       //   new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
 
       // the incoming data is in UTC, so we need to adjust the time to the local timezone
-      let epochAllocationStart = moment
+      let epochAllocationStart = dayjs
         .utc(epochsInfo[epoch].allocationStart)
         .local()
         .unix();
-      let epochAllocationEnd = moment
+      let epochAllocationEnd = dayjs
         .utc(epochsInfo[epoch].allocationEnd)
         .local()
         .unix();
@@ -240,14 +240,14 @@ export default function Page() {
 
     if (next) {
       setNextEpoch(epochsInfo[next]);
-      countdownEnd = moment.utc(epochsInfo[next].allocationStart).unix();
+      countdownEnd = dayjs.utc(epochsInfo[next].allocationStart).unix();
     }
 
     if (curr) {
       setCurrentEpoch(epochsInfo[curr]);
       setCommunityEpoch(parseInt(curr));
       setFundingEpoch(parseInt(curr));
-      countdownEnd = moment.utc(epochsInfo[curr].allocationEnd).unix();
+      countdownEnd = dayjs.utc(epochsInfo[curr].allocationEnd).unix();
     }
 
     // console.log("curr", curr, "next", next, "countdownEnd", countdownEnd);
@@ -2081,7 +2081,7 @@ VirtualizedList.displayName = 'VirtualizedList';
         >
           <TopRowParent className="flex !w-full flex-col !items-center px-[15px] py-[5px] leading-[120%] md:!w-fit md:!items-start">
             {/* <div className="text-[9px]">Next Epoch starts in</div>
-            <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div> */}
+            <div className="font-bold text-[16px]">{dayjs("2024-10-13T16:00:00Z").diff(dayjs(), "days")} days</div> */}
             {EpochStatus}
             <div className="text-[16px] font-bold">
               {/* {countdownTimeFormatted}
@@ -3544,9 +3544,9 @@ const CountdownTimer = ({ time }: { time: number }) => {
 
   const countdownTimeFormatted = useMemo(() => {
     const days = Math.floor(countdownTime / 86400);
-    const hours = moment.utc(countdownTime * 1000).format("HH");
-    const minutes = moment.utc(countdownTime * 1000).format("mm");
-    const seconds = moment.utc(countdownTime * 1000).format("ss");
+    const hours = dayjs.utc(countdownTime * 1000).format("HH");
+    const minutes = dayjs.utc(countdownTime * 1000).format("mm");
+    const seconds = dayjs.utc(countdownTime * 1000).format("ss");
 
     return (
       <div className="flex items-center gap-x-[5px] leading-[1.1]">

@@ -21,7 +21,6 @@ import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { preload } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
-import moment from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -627,13 +626,20 @@ const MetricChart = memo(
       // Create placeholder graphic elements that will be updated by drawLastPointLines
       // Use last known positions to prevent flashing during transitions
       // Always use 3 line segments (v1, h, v2) to match drawLastPointLines
+      // Start invisible if no previous position - drawLastPointLines will make them visible
+      const hasKnownPosition = lastXPos.current !== null;
       const xPos = lastXPos.current ?? 500;
       const placeholderGraphics = data.map((item, index) => {
         const chainColors = AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"] || ["#CDD8D3", "#CDD8D3"];
         const topY = index === 0 ? 25 : 50; // Match drawLastPointLines
         const turnY = topY + 28; // Match drawLastPointLines
         const lastY = lastYPositions.current[item.chain_id] ?? topY;
-        const lineStyle = { stroke: chainColors[0], lineWidth: 1, lineDash: [2, 2] };
+        const lineStyle = {
+          stroke: chainColors[0],
+          lineWidth: 1,
+          lineDash: [2, 2],
+          opacity: hasKnownPosition ? 1 : 0, // Start invisible on first render
+        };
         return [
           // Segment 1: vertical from dot to turn point
           {
@@ -642,7 +648,7 @@ const MetricChart = memo(
             shape: { x1: xPos, y1: topY, x2: xPos, y2: turnY },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
             silent: true,
           },
           // Segment 2: horizontal (collapsed to point in line mode)
@@ -652,7 +658,7 @@ const MetricChart = memo(
             shape: { x1: xPos, y1: turnY, x2: xPos, y2: turnY },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
             silent: true,
           },
           // Segment 3: vertical from turn point to data point
@@ -662,7 +668,7 @@ const MetricChart = memo(
             shape: { x1: xPos, y1: turnY, x2: xPos, y2: lastY },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
             silent: true,
           },
           // Circle at top
@@ -670,8 +676,9 @@ const MetricChart = memo(
             type: "circle",
             id: `lastpoint-circle-${item.chain_id}`,
             shape: { cx: xPos, cy: topY, r: 4.5 },
-            style: { fill: chainColors[0] },
+            style: { fill: chainColors[0], opacity: hasKnownPosition ? 1 : 0 },
             z: 101,
+            transition: ["shape", "style"],
             silent: true,
           },
         ];
@@ -703,7 +710,7 @@ const MetricChart = memo(
           axisPointer: {
             show: true,
             type: "line",
-            snap: true,
+            snap: false, // Don't snap - show crosshair at cursor position even without data
             label: { show: false },
             lineStyle: {
               color: COLORS.PLOT_LINE,
@@ -991,6 +998,7 @@ const MetricChart = memo(
           stroke: chainColors[0],
           lineWidth: 1,
           lineDash: [2, 2],
+          opacity: 1, // Ensure visible when positioned correctly
         };
 
         // Always use 3 line segments for smooth animation between modes
@@ -1013,7 +1021,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
 
           // Segment 2: Horizontal from right edge to bar center
@@ -1028,7 +1036,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
 
           // Segment 3: Vertical from turn point down to bar top
@@ -1043,7 +1051,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
         } else {
           // Line/area chart: all 3 segments collapse to straight vertical line
@@ -1062,7 +1070,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
 
           // Segment 2: Collapsed horizontal (zero width - just a point)
@@ -1077,7 +1085,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
 
           // Segment 3: Bottom portion of vertical line
@@ -1092,7 +1100,7 @@ const MetricChart = memo(
             },
             style: lineStyle,
             z: 100,
-            transition: ["shape"],
+            transition: ["shape", "style"],
           });
         }
 
@@ -1107,8 +1115,10 @@ const MetricChart = memo(
           },
           style: {
             fill: chainColors[0],
+            opacity: 1, // Ensure visible when positioned correctly
           },
           z: 101,
+          transition: ["shape", "style"],
         });
       });
 
@@ -1136,20 +1146,33 @@ const MetricChart = memo(
       }, 0);
     }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval]);
 
-    // Draw lines after chart renders - call multiple times to ensure we catch when chart is ready
+    // Draw lines after chart renders - use RAF to ensure chart is ready
     useEffect(() => {
-      // Immediate attempt
-      drawLastPointLines();
+      let cancelled = false;
+      let rafId: number;
+      let timeoutId: ReturnType<typeof setTimeout>;
 
-      // Retry a few times as chart may still be rendering
-      const timer1 = setTimeout(() => drawLastPointLines(), 50);
-      const timer2 = setTimeout(() => drawLastPointLines(), 150);
-      const timer3 = setTimeout(() => drawLastPointLines(), 300);
+      const attemptDraw = () => {
+        if (cancelled) return;
+        const chartInstance = chartRef.current?.getEchartsInstance();
+        // Only draw if chart instance exists and has valid dimensions
+        if (chartInstance && chartInstance.getWidth() > 0) {
+          drawLastPointLines();
+        } else {
+          // Chart not ready yet, retry after a short delay
+          timeoutId = setTimeout(() => {
+            rafId = requestAnimationFrame(attemptDraw);
+          }, 50);
+        }
+      };
+
+      // Use RAF to wait for next paint cycle when chart should be ready
+      rafId = requestAnimationFrame(attemptDraw);
 
       return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
+        cancelled = true;
+        cancelAnimationFrame(rafId);
+        clearTimeout(timeoutId);
       };
     }, [drawLastPointLines, option]);
 
@@ -1171,10 +1194,10 @@ const MetricChart = memo(
           // Redraw lines after zoom
           setTimeout(() => drawLastPointLines(), 50);
         },
-        finished: () => {
-          // Chart finished rendering, draw the lines
-          drawLastPointLines();
-        },
+        // Note: Removed 'finished' event handler that was calling drawLastPointLines()
+        // on every render completion. This caused severe choppiness when hovering with
+        // shared cursors (echarts.connect) since all connected charts would fire 'finished'
+        // events simultaneously. drawLastPointLines is already called via useEffect when needed.
       }),
       [onZoomChange, drawLastPointLines]
     );

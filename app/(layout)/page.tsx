@@ -37,7 +37,7 @@ export default async function Page() {
           <Subheading className="text-lg md:text-xl">
             Ethereum is more than one blockchain. It&apos;s many.
           </Subheading>
-          <LinkButton href="https://ethereum.org/" icon="ethereum-logo-monochrome" iconClassName="text-[#94ABD3]">
+          <LinkButton href="https://ethereum.org/" icon="ethereum-logo-monochrome" iconClassName="text-chains-ethereum">
             What is Ethereum?
           </LinkButton>
         </div>

@@ -6,7 +6,6 @@ import useSWR from "swr";
 import remarkParse from "remark-parse";
 // import html from "remark-html";
 import { useEffect, useMemo, useState } from "react";
-import moment from "moment";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";

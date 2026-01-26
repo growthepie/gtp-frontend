@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { useSSE } from '@/hooks/useSSE';
 import { ChainMetrics } from '../EthAgg/types';
 import { ChainTPSHistoryItem } from './OverviewCards/TPSChartCard';
+import dayjs from '@/lib/dayjs';
+import { Dayjs } from 'dayjs';
 // Types specific to single chain SSE data
 interface SingleChainSSEData {
   type: 'initial' | 'update';
@@ -13,10 +15,11 @@ interface SingleChainSSEData {
  * A hook to fetch and parse real-time metrics data for a specific chain.
  * Uses the generic useSSE hook for connection management.
  * @param chainKey The key identifier for the specific chain (e.g., 'arbitrum', 'optimism')
+ * @param enabled Whether the SSE connection should be active. Defaults to true.
  */
-export function useSSEChains(chainKey: string) {
+export function useSSEChains(chainKey: string, enabled: boolean = true) {
   const [chainData, setChainData] = useState<ChainTPSHistoryItem | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Dayjs | null>(null);
 
   // Construct the SSE URL dynamically based on chainKey
   const sseUrl = chainKey ? `https://sse.growthepie.com/events/chain/${chainKey}` : null;
@@ -27,7 +30,7 @@ export function useSSEChains(chainKey: string) {
       const parsedData: SingleChainSSEData = JSON.parse(event.data);
       if (parsedData.type === 'initial' || parsedData.type === 'update') {
         setChainData(parsedData.data || null);
-        setLastUpdated(new Date(parsedData.timestamp));
+        setLastUpdated(dayjs.utc(parsedData.timestamp));
       }
     } catch (error) {
       console.error('Error parsing SSE message:', error);
@@ -35,7 +38,7 @@ export function useSSEChains(chainKey: string) {
   }, []); // Empty dependency array: this function never needs to change
 
   // Use the generic hook to manage the connection
-  const { readyState } = useSSE(sseUrl, { onMessage: handleMessage });
+  const { readyState } = useSSE(sseUrl, { onMessage: handleMessage, enabled });
 
   // Map the native readyState to our custom status for the UI
   const connectionStatus =
