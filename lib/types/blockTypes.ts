@@ -61,6 +61,7 @@ export interface TableBlock extends BaseBlock {
       isNumeric?: boolean;
       minWidth?: number;
       copyable?: boolean; // Add this line
+      hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
       units?: {
         [key: string]: {
@@ -112,10 +113,14 @@ export interface ChartBlock extends BaseBlock {
   }[];
   disableTooltipSort?: boolean;
   showXAsDate?: boolean;
+  showZeroTooltip?: boolean;
+  showTotalTooltip?: boolean;
   dataAsJson?: {
-    meta: {
+    meta?: {
       type?: string;
       name: string;
+      nameFromPath?: string;
+      nameIndex?: number;
       color: string;
       stacking?: "normal" | "percent" | null;
       xIndex: number;

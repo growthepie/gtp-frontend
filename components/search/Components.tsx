@@ -271,14 +271,24 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
 }
 
 // Hook to cycle through animated placeholder options with typewriter effect
-const useAnimatedPlaceholder = (isActive: boolean) => {
-  const options = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
+const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false) => {
+  // Use searchbar_items from master JSON if available, otherwise fall back to default options
+  const defaultOptions = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
+  const searchbarItems = masterData?.['searchbar_items'] as string[] | undefined;
+  const options = useMemo(() => {
+    if (searchbarItems && searchbarItems.length > 0) {
+      return searchbarItems.map(item => ` ${item}`);
+    }
+    return defaultOptions;
+  }, [searchbarItems]);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!isActive) {
+    // Don't animate on server-side or before mount to prevent hydration mismatch
+    if (!isMounted || !isActive) {
       // Reset when not active
       setCurrentIndex(0);
       setCurrentText("");
@@ -331,7 +341,12 @@ const useAnimatedPlaceholder = (isActive: boolean) => {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isActive, currentIndex, currentText, isDeleting, options]);
+  }, [isMounted, isActive, currentIndex, currentText, isDeleting, options]);
+
+  // Return consistent value during SSR to prevent hydration mismatch
+  if (!isMounted) {
+    return "Search:";
+  }
 
   return `Search:${currentText}`;
 };
@@ -360,16 +375,22 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       }
     }, [forwardedRef]); // Re-run if forwardedRef changes (though it usually doesn't for a component instance)
 
-    const { AllChainsByKeys } = useMaster();
+    const { AllChainsByKeys, data: masterData } = useMaster();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const query = searchParams.get("query") || "";
     const [localQuery, setLocalQuery] = useState(query);
     const { totalMatches } = useSearchBuckets();
     const [isFocused, setIsFocused] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     
-    // Animated placeholder - only animate when input is empty (hook must always be called)
-    const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0);
+    // Track client-side mount to prevent hydration mismatch
+    useEffect(() => {
+      setIsMounted(true);
+    }, []);
+    
+    // Animated placeholder - only animate when input is empty and mounted (hook must always be called)
+    const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0, masterData, isMounted);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);
@@ -505,7 +526,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-color-text-primary ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={!IS_PRODUCTION && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
+                placeholder={isMounted && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}
@@ -571,7 +592,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-white ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
-                placeholder={!IS_PRODUCTION && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
+                placeholder={isMounted && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
                 onFocus={handleInternalFocus}

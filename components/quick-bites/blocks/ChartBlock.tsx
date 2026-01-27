@@ -42,6 +42,8 @@ interface JsonMeta {
   meta: {
     type?: string,
     name: string,
+    nameFromPath?: string,
+    nameIndex?: number,
     color: string,
     stacking?: string,
     xIndex: number,
@@ -62,9 +64,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.
   const processedUrls = React.useMemo(() => {
-    if (!block.dataAsJson?.meta) return [];
+    const metaList = block.dataAsJson?.meta;
+    if (!metaList?.length) return [];
 
-    return block.dataAsJson.meta.map(meta => {
+    return metaList.map(meta => {
       if (!meta.url) return null;
 
       // If the URL is a mustache template
@@ -97,11 +100,36 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { data: unProcessedData, error } = useSWR(processedUrls.length > 0 ? processedUrls : null);
   
   // Get nested data for all meta entries
-  const nestedData = block.dataAsJson && unProcessedData 
-    ? block.dataAsJson.meta.map((meta, index) => 
+  const metaList = block.dataAsJson?.meta;
+  const nestedData = metaList?.length && unProcessedData 
+    ? metaList.map((meta, index) => 
         meta.pathToData ? getNestedValue(unProcessedData[index], meta.pathToData) : unProcessedData[index]
       )
     : undefined;
+
+  const resolvedJsonMeta = React.useMemo(() => {
+    if (!metaList?.length) return null;
+    if (!unProcessedData) return metaList;
+
+    return metaList.map((meta, index) => {
+      let resolvedName = meta.name;
+
+      if (meta.nameFromPath) {
+        const sourceData = unProcessedData[index] ?? unProcessedData[0];
+        const nameCandidates = getNestedValue(sourceData, meta.nameFromPath);
+        const nameIndex = meta.nameIndex ?? meta.yIndex;
+
+        if (Array.isArray(nameCandidates) && typeof nameCandidates[nameIndex] === "string") {
+          resolvedName = nameCandidates[nameIndex];
+        }
+      }
+
+      return {
+        ...meta,
+        name: resolvedName,
+      };
+    });
+  }, [metaList, unProcessedData]);
 
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
 
@@ -136,9 +164,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           subtitle={block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle}
           jsonData={nestedData}
           showXAsDate={block.showXAsDate}
+          showZeroTooltip={block.showZeroTooltip}
+          showTotalTooltip={block.showTotalTooltip}
           jsonMeta={
-            block.dataAsJson ? {
-              meta: block.dataAsJson.meta
+            metaList?.length ? {
+              meta: resolvedJsonMeta || metaList
             } : undefined
           }
           disableTooltipSort={block.disableTooltipSort}

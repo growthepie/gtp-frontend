@@ -238,7 +238,7 @@ export const navigationItems: NavigationItem[] = [
         showNew: false,
       },
     ],
-    href: "/ethereum-ecosystem",
+    href: "/ethereum-ecosystem/metrics",
   },
   {
     name: "Applications",
@@ -630,7 +630,7 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "quick-bites",
         url: "/quick-bites",
       },
-      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => slug !== "test-bite" && index < 3).map(([slug, data], index) => ({
+      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => QUICK_BITES_DATA[slug].showInMenu === true).map(([slug, data], index) => ({
         label: data.shortTitle,
         icon: "gtp-chevronright" as GTPIconName,
         category: "latest",

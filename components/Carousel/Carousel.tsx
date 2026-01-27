@@ -171,6 +171,7 @@ export default function Carousel({
     scrollTo,
     progress,
     isReady,
+    isScrolling,
   } = useCarousel({
     breakpoints: resolvedBreakpoints,
     sidebarAware: false, // We handle sidebar awareness ourselves now
@@ -324,7 +325,13 @@ export default function Carousel({
                   aria-roledescription="slide"
                   aria-label={`Slide ${index + 1} of ${slides.length}`}
                 >
-                  <div className="w-full h-full">{child}</div>
+                  <div className="relative w-full h-full">
+                    {child}
+                    {/* Overlay to block interactions during drag (desktop only) */}
+                    {!isMobile && isScrolling && (
+                      <div className="absolute inset-0 z-10" />
+                    )}
+                  </div>
                 </div>
               );
             })}

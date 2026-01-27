@@ -115,4 +115,5 @@ export type UseCarouselReturn = {
   scrollTo: (index: number) => void;
   progress: number;
   isReady: boolean;
+  isScrolling: boolean;
 };

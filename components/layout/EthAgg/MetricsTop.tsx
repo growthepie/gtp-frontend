@@ -1097,7 +1097,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       ...prev,
       eventExpanded: prev.eventExpanded === eventKey ? null : eventKey
     }));
-  }, []);
+  }, [setShowEvents, showEvents]);
 
   // Separate function for scroll navigation that directly sets expanded event (no toggle)
   const handleSetExpandedEvent = useCallback((eventKey: string) => {

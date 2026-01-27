@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { useSSE } from '@/hooks/useSSE';
 import { ChainMetrics } from '../EthAgg/types';
 import { ChainTPSHistoryItem } from './OverviewCards/TPSChartCard';
+import dayjs from '@/lib/dayjs';
+import { Dayjs } from 'dayjs';
 // Types specific to single chain SSE data
 interface SingleChainSSEData {
   type: 'initial' | 'update';
@@ -17,7 +19,7 @@ interface SingleChainSSEData {
  */
 export function useSSEChains(chainKey: string, enabled: boolean = true) {
   const [chainData, setChainData] = useState<ChainTPSHistoryItem | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Dayjs | null>(null);
 
   // Construct the SSE URL dynamically based on chainKey
   const sseUrl = chainKey ? `https://sse.growthepie.com/events/chain/${chainKey}` : null;
@@ -28,7 +30,7 @@ export function useSSEChains(chainKey: string, enabled: boolean = true) {
       const parsedData: SingleChainSSEData = JSON.parse(event.data);
       if (parsedData.type === 'initial' || parsedData.type === 'update') {
         setChainData(parsedData.data || null);
-        setLastUpdated(new Date(parsedData.timestamp));
+        setLastUpdated(dayjs.utc(parsedData.timestamp));
       }
     } catch (error) {
       console.error('Error parsing SSE message:', error);
