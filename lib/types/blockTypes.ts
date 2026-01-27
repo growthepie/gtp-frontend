@@ -329,6 +329,8 @@ export interface ScatterChartToggleBlock extends BaseBlock {
   defaultIndex?: number;
   charts: Array<{
     toggleLabel: string;
+    title?: string;
+    chartTitle?: string;
     type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart';
   }>;
 }

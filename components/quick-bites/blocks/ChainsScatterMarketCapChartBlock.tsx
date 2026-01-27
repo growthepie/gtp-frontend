@@ -68,7 +68,7 @@ const calculateTrendline = (points: Array<[number, number]>): Array<[number, num
 };
 
 interface ChainsScatterMarketCapChartBlockProps {
-  // No props needed - always uses last_30d data
+  chartTitle?: string;
 }
 
 interface ChartSeriesData {
@@ -86,7 +86,7 @@ interface ChartSeriesData {
   visible?: boolean;
 }
 
-export const ChainsScatterMarketCapChartBlock: React.FC<ChainsScatterMarketCapChartBlockProps> = () => {
+export const ChainsScatterMarketCapChartBlock: React.FC<ChainsScatterMarketCapChartBlockProps> = ({ chartTitle }) => {
   const { theme } = useTheme();
   const [daaDataArray, setDaaDataArray] = useState<(MetricData | null)[]>([]);
   const [marketCapDataArray, setMarketCapDataArray] = useState<(MetricData | null)[]>([]);
@@ -426,7 +426,7 @@ export const ChainsScatterMarketCapChartBlock: React.FC<ChainsScatterMarketCapCh
         margins="normal"
         width="100%"
         height={400}
-        title="Market Cap"
+        title={chartTitle || "Market Cap"}
         subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}

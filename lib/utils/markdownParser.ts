@@ -735,12 +735,24 @@ function parseScatterChartToggleBlock(jsonString: string): ScatterChartToggleBlo
             ? chartConfig.toggleLabel.trim()
             : `Chart ${index + 1}`;
 
+        const title =
+          typeof chartConfig.title === 'string' && chartConfig.title.trim().length > 0
+            ? chartConfig.title.trim()
+            : undefined;
+
+        const chartTitle =
+          typeof chartConfig.chartTitle === 'string' && chartConfig.chartTitle.trim().length > 0
+            ? chartConfig.chartTitle.trim()
+            : undefined;
+
         return {
           toggleLabel,
+          title,
+          chartTitle,
           type: chartType as 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart',
         };
       })
-      .filter((chart): chart is { toggleLabel: string; type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart' } => chart !== null);
+      .filter((chart): chart is { toggleLabel: string; title?: string; chartTitle?: string; type: 'chains-scatter-chart' | 'chains-scatter-stables-chart' | 'chains-scatter-throughput-chart' | 'chains-scatter-txcosts-chart' | 'chains-scatter-app-revenue-chart' | 'chains-scatter-fees-chart' | 'chains-scatter-rent-paid-chart' | 'chains-scatter-market-cap-chart' } => chart !== null);
 
     if (!charts.length) {
       console.error('Error parsing scatter chart toggle data: no valid charts provided.');

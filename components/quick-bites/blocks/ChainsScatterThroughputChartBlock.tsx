@@ -68,7 +68,7 @@ const calculateTrendline = (points: Array<[number, number]>): Array<[number, num
 };
 
 interface ChainsScatterThroughputChartBlockProps {
-  // No props needed - always uses last_30d data
+  chartTitle?: string;
 }
 
 interface ChartSeriesData {
@@ -86,7 +86,7 @@ interface ChartSeriesData {
   visible?: boolean;
 }
 
-export const ChainsScatterThroughputChartBlock: React.FC<ChainsScatterThroughputChartBlockProps> = () => {
+export const ChainsScatterThroughputChartBlock: React.FC<ChainsScatterThroughputChartBlockProps> = ({ chartTitle }) => {
   const { theme } = useTheme();
   const [daaDataArray, setDaaDataArray] = useState<(MetricData | null)[]>([]);
   const [throughputDataArray, setThroughputDataArray] = useState<(MetricData | null)[]>([]);
@@ -438,7 +438,7 @@ export const ChainsScatterThroughputChartBlock: React.FC<ChainsScatterThroughput
         margins="normal"
         width="100%"
         height={400}
-        title="Complexity"
+        title={chartTitle || "Complexity"}
         subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}

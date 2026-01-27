@@ -68,7 +68,7 @@ const calculateTrendline = (points: Array<[number, number]>): Array<[number, num
 };
 
 interface ChainsScatterAppRevenueChartBlockProps {
-  // No props needed - always uses last_30d data
+  chartTitle?: string;
 }
 
 interface ChartSeriesData {
@@ -86,7 +86,7 @@ interface ChartSeriesData {
   visible?: boolean;
 }
 
-export const ChainsScatterAppRevenueChartBlock: React.FC<ChainsScatterAppRevenueChartBlockProps> = () => {
+export const ChainsScatterAppRevenueChartBlock: React.FC<ChainsScatterAppRevenueChartBlockProps> = ({ chartTitle }) => {
   const { theme } = useTheme();
   const [daaDataArray, setDaaDataArray] = useState<(MetricData | null)[]>([]);
   const [appRevenueDataArray, setAppRevenueDataArray] = useState<(MetricData | null)[]>([]);
@@ -438,7 +438,7 @@ export const ChainsScatterAppRevenueChartBlock: React.FC<ChainsScatterAppRevenue
         margins="normal"
         width="100%"
         height={400}
-        title="App Revenue"
+        title={chartTitle || "App Revenue"}
         subtitle="30-day comparison for top 10 chains by active addresses"
         showXAsDate={false}
         disableTooltipSort={false}

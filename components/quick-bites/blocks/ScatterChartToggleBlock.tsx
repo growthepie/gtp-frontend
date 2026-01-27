@@ -57,24 +57,24 @@ export const ScatterChartToggleBlock: React.FC<ScatterChartToggleBlockProps> = (
     );
   };
 
-  const renderScatterChart = (chartType: string) => {
+  const renderScatterChart = (chartType: string, chartTitle?: string) => {
     switch (chartType) {
       case 'chains-scatter-chart':
-        return <ChainsScatterTxCountChartBlock key="scatter-30d" />;
+        return <ChainsScatterTxCountChartBlock key="scatter-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-stables-chart':
-        return <ChainsScatterStablesChartBlock key="scatter-stables-30d" />;
+        return <ChainsScatterStablesChartBlock key="scatter-stables-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-throughput-chart':
-        return <ChainsScatterThroughputChartBlock key="scatter-throughput-30d" />;
+        return <ChainsScatterThroughputChartBlock key="scatter-throughput-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-txcosts-chart':
-        return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" />;
+        return <ChainsScatterTxCostsChartBlock key="scatter-txcosts-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-app-revenue-chart':
-        return <ChainsScatterAppRevenueChartBlock key="scatter-app-revenue-30d" />;
+        return <ChainsScatterAppRevenueChartBlock key="scatter-app-revenue-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-fees-chart':
-        return <ChainsScatterFeesChartBlock key="scatter-fees-30d" />;
+        return <ChainsScatterFeesChartBlock key="scatter-fees-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-rent-paid-chart':
-        return <ChainsScatterRentPaidChartBlock key="scatter-rent-paid-30d" />;
+        return <ChainsScatterRentPaidChartBlock key="scatter-rent-paid-30d" chartTitle={chartTitle} />;
       case 'chains-scatter-market-cap-chart':
-        return <ChainsScatterMarketCapChartBlock key="scatter-market-cap-30d" />;
+        return <ChainsScatterMarketCapChartBlock key="scatter-market-cap-30d" chartTitle={chartTitle} />;
       default:
         return null;
     }
@@ -113,7 +113,7 @@ export const ScatterChartToggleBlock: React.FC<ScatterChartToggleBlockProps> = (
       </div>
       {selectedChart && (
         <div className="mt-4">
-          {renderScatterChart(selectedChart.type)}
+          {renderScatterChart(selectedChart.type, selectedChart.chartTitle)}
         </div>
       )}
     </div>

@@ -55,6 +55,7 @@ const averageAddress: QuickBiteData = createQuickBite({
       charts: [
         {
           toggleLabel: "App Revenue",
+          title: "How do apps benefit per active address?",
           type: "chains-scatter-app-revenue-chart"
         },
         {

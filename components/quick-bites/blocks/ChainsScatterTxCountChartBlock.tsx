@@ -68,7 +68,7 @@ const calculateTrendline = (points: Array<[number, number]>): Array<[number, num
 };
 
 interface ChainsScatterTxCountChartBlockProps {
-  // No props needed - always uses last_30d data
+  chartTitle?: string;
 }
 
 interface ChartSeriesData {
@@ -86,7 +86,7 @@ interface ChartSeriesData {
   visible?: boolean;
 }
 
-export const ChainsScatterTxCountChartBlock: React.FC<ChainsScatterTxCountChartBlockProps> = () => {
+export const ChainsScatterTxCountChartBlock: React.FC<ChainsScatterTxCountChartBlockProps> = ({ chartTitle }) => {
   const { theme } = useTheme();
   const [daaDataArray, setDaaDataArray] = useState<(MetricData | null)[]>([]);
   const [txCountDataArray, setTxCountDataArray] = useState<(MetricData | null)[]>([]);
@@ -438,7 +438,7 @@ export const ChainsScatterTxCountChartBlock: React.FC<ChainsScatterTxCountChartB
         margins="normal"
         width="100%"
         height={400}
-        title="Volume"
+        title={chartTitle || "Volume"}
         subtitle="30-day comparison for top 10 chains by transaction count"
         showXAsDate={false}
         disableTooltipSort={false}
