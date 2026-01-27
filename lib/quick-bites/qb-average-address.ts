@@ -8,7 +8,7 @@ const averageAddress: QuickBiteData = createQuickBite({
   content: [
 
     "# The Problem with Active Addresses",
-    "Active addresses is a metric that gets a lot of critism because it can be easily manipulated by multiple parties each with different incentives. So instead of looking at the total number this quick bite will exsplore combining active addresses with economic metrics that are harder to game. We will also explore the relationshtip between active addresses and other fundamental metrics to understand their relatiionshp and how it differs per chain.",
+    "Active addresses is a metric that gets a lot of critism because it can be easily manipulated by multiple parties each with different incentives. So instead of looking at the total number this quick bite will explore combining active addresses with economic metrics that are harder to game. We will also explore the relationship between active addresses and other fundamental metrics to understand their relationship and how it differs per chain.",
 
 
     "# Economics per Active Address",
