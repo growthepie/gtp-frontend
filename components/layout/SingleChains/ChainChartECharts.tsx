@@ -21,6 +21,7 @@ import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { preload } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
+import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -243,6 +244,7 @@ const MetricChart = memo(
     zoomMax,
     onZoomChange,
     groupId,
+    lineType,
   }: {
     metricKey: string;
     data: ChainsData[];
@@ -259,6 +261,7 @@ const MetricChart = memo(
     zoomMax: number | null;
     onZoomChange: (zoomed: boolean, min: number | null, max: number | null) => void;
     groupId: string;
+    lineType: "complex" | "simple";
   }) => {
     const chartRef = useRef<ReactECharts>(null);
     const isMobile = useMediaQuery("(max-width: 767px)");
@@ -266,6 +269,7 @@ const MetricChart = memo(
     const lastGraphicElements = useRef<any[]>([]);
     const lastXPos = useRef<number | null>(null);
     const lastYPositions = useRef<{ [chainId: string]: number }>({});
+    const [textPosition, setTextPosition] = useState<number | null>(null);
 
     // Determine chart type based on interval and comparison
     const chartType = useMemo(() => {
@@ -968,15 +972,15 @@ const MetricChart = memo(
 
       const graphicElements: any[] = [];
       const chartWidth = chartInstance.getWidth();
-      const linesXPos = chartWidth - 15; // 15px from right edge
+      let linesXPos = chartWidth - 15; // 15px from right edge (default for simple mode and line charts)
       let hasValidElements = false;
 
       // Check if we're rendering bars (no compare + weekly/monthly/quarterly)
       const isComparing = chainKey.length > 1;
       const isBarChart = !isComparing && (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly" || selectedTimeInterval === "quarterly");
 
-      // Save x position for placeholder graphics
-      lastXPos.current = linesXPos;
+      // For complex mode bar charts, we'll calculate linesXPos based on last bar position
+      // For now, keep default - will be updated per series in complex mode
 
       data.forEach((item, seriesIndex) => {
         const seriesDataObj = seriesDataMap[item.chain_id];
@@ -1009,53 +1013,119 @@ const MetricChart = memo(
         // For line charts: all segments collapse to a single vertical line at linesXPos
 
         if (isBarChart) {
-          // Bar chart: path with 2 turns to hit top-center of bar
-          const turnY = topY + 28; // Y level where we turn horizontally
+          if (lineType === "simple") {
+            // Simple mode: straight vertical line, dot at bar center, text positioned relative to dot
+            // Position dot at the center of the last bar
+            const dotXPos = lastPointX;
+            
+            // Update linesXPos for this series to position the dot at bar center
+            // This will be used for the circle position
+            const currentLinesXPos = dotXPos;
+            
+            // For the first series, update the global position for text positioning
+            // In simple mode, position text to the left of the dot with a gap
+            if (seriesIndex === 0) {
+              lastXPos.current = currentLinesXPos;
+              // Calculate text position: dot is at lastPointX from left, text should be gap pixels to the left
+              // CSS 'right' property is distance from right edge, so: chartWidth - (lastPointX - gap)
+              const chartWidth = chartInstance.getWidth();
+              const gap = 10; // Gap between text and dot
+              setTextPosition(Math.max(0, chartWidth - lastPointX + gap));
+            }
 
-          // Segment 1: Vertical from dot down to turn point
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-v1-${item.chain_id}`,
-            shape: {
-              x1: linesXPos,
-              y1: topY,
-              x2: linesXPos,
-              y2: turnY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Segment 1: Straight vertical line from dot down to bar center
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v1-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: topY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
 
-          // Segment 2: Horizontal from right edge to bar center
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-h-${item.chain_id}`,
-            shape: {
-              x1: linesXPos,
-              y1: turnY,
-              x2: lastPointX,
-              y2: turnY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Collapsed horizontal segment (for animation compatibility)
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-h-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: lastPointY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
 
-          // Segment 3: Vertical from turn point down to bar top
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-v2-${item.chain_id}`,
-            shape: {
-              x1: lastPointX,
-              y1: turnY,
-              x2: lastPointX,
-              y2: lastPointY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Collapsed vertical segment (for animation compatibility)
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v2-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: lastPointY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+          } else {
+            // Complex mode: kinked path with 2 turns to hit top-center of bar
+            const turnY = topY + 28; // Y level where we turn horizontally
+
+            // Segment 1: Vertical from dot down to turn point
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v1-${item.chain_id}`,
+              shape: {
+                x1: linesXPos,
+                y1: topY,
+                x2: linesXPos,
+                y2: turnY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+
+            // Segment 2: Horizontal from right edge to bar center
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-h-${item.chain_id}`,
+              shape: {
+                x1: linesXPos,
+                y1: turnY,
+                x2: lastPointX,
+                y2: turnY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+
+            // Segment 3: Vertical from turn point down to bar top
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v2-${item.chain_id}`,
+              shape: {
+                x1: lastPointX,
+                y1: turnY,
+                x2: lastPointX,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+          }
         } else {
           // Line/area chart: all 3 segments collapse to straight vertical line
           // This allows smooth animation when switching from bar to line mode
@@ -1108,11 +1178,13 @@ const MetricChart = memo(
         }
 
         // Circle at top (value display dot)
+        // In simple mode bar charts, position dot at bar center; otherwise use linesXPos (right edge)
+        const dotXPosition = (isBarChart && lineType === "simple") ? lastPointX : linesXPos;
         graphicElements.push({
           type: "circle",
           id: `lastpoint-circle-${item.chain_id}`,
           shape: {
-            cx: linesXPos,
+            cx: dotXPosition,
             cy: topY,
             r: 4.5,
           },
@@ -1147,7 +1219,7 @@ const MetricChart = memo(
           console.debug('Chart instance unavailable during drawLastPointLines:', e);
         }
       }, 0);
-    }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval]);
+    }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval, lineType]);
 
     // Draw lines after chart renders - use RAF to ensure chart is ready
     useEffect(() => {
@@ -1283,6 +1355,10 @@ const MetricChart = memo(
 
     if (!seriesDataMap[data[0]?.chain_id]) return null;
 
+    // Determine if this is a bar chart for text positioning
+    const isComparing = chainKey.length > 1;
+    const isBarChartForText = !isComparing && (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly" || selectedTimeInterval === "quarterly");
+
     return (
       <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative @container">
         {/* Header */}
@@ -1296,7 +1372,12 @@ const MetricChart = memo(
               <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
             </div>
           </Link>
-          <div className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
+          <div 
+            className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0"
+            style={isBarChartForText && lineType === "simple" && textPosition !== null 
+              ? { right: `${textPosition}px`, position: 'absolute', top: '1px' } 
+              : undefined}
+          >
             {accumulationBadge && (
               <div className="hidden @[340px]:flex px-[5px] h-[13px] items-center justify-center bg-color-bg-medium rounded-full">
                 <span className="text-xxxs whitespace-nowrap">{accumulationBadge}</span>
@@ -1411,6 +1492,17 @@ export default function ChainChartECharts({
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [lineType, setLineType] = useLocalStorage<"complex" | "simple">("fundamentalsLineTypeV2", "complex");
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure component is mounted before rendering toggle to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const handleLineTypeChange = useCallback((value: string) => {
+    setLineType(value as "complex" | "simple");
+  }, [setLineType]);
   const [isPending, startTransition] = useTransition();
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
@@ -1687,6 +1779,19 @@ export default function ChainChartECharts({
           <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
             Fundamental Metrics
           </Heading>
+          {mounted && (
+            <ToggleSwitch
+              values={{
+                left: { value: "simple", label: "simple" },
+                right: { value: "complex", label: "complex" },
+              }}
+              value={lineType}
+              onChange={handleLineTypeChange}
+              size="sm"
+              ariaLabel="Line type toggle"
+              className="ml-[12px]"
+            />
+          )}
         </div>
 
         {/* Chain Compare Dropdown */}
@@ -1898,6 +2003,7 @@ export default function ChainChartECharts({
                             zoomMax={zoomMax}
                             onZoomChange={handleZoomChange}
                             groupId="fundamentals-charts"
+                            lineType={lineType}
                           />
                         </LazyChart>
                       );
