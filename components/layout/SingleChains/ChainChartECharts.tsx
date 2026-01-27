@@ -518,7 +518,10 @@ const MetricChart = memo(
           }
         } else if (chartType === "bar") {
           // Column/bar chart styling with shadow/glow effect
-          baseSeries.barMaxWidth = 50;
+          // Remove barMaxWidth to allow bars to grow naturally with fewer data points
+          // Use 15% gap to match landing charts (equivalent to Highcharts pointPadding: 0.15)
+          baseSeries.barCategoryGap = '15%';
+          baseSeries.barGap = '15%';
 
           const LARGE_DATASET_THRESHOLD = 100;
           const isLargeDataset = processedData.length > LARGE_DATASET_THRESHOLD;

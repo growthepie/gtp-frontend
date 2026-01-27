@@ -412,13 +412,21 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       monthly: 30 * 24 * 3600 * 1000,
     };
 
-    const pointsSettings = {
-      pointPlacement:
-        (selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") &&
-          selectedScale === "stacked"
-          ? 0
-          : 0.5,
-    };
+    // Determine if this will be a column chart for weekly/monthly stacked
+    const isColumnChart = (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly") && selectedScale === "stacked";
+    
+    const pointsSettings = isColumnChart
+      ? {
+          pointPlacement: selectedTimeInterval === "monthly" ? 0 : 0.5,
+          pointRange: timeIntervalToMilliseconds[selectedTimeInterval],
+        }
+      : {
+          pointPlacement:
+            (selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") &&
+              selectedScale === "stacked"
+              ? 0
+              : 0.5,
+        };
 
 
     const chainDataKeys = metric_type === "fundamentals" ? chainKeys.filter((chainKey) =>
