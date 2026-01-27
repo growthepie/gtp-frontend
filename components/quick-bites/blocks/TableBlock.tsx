@@ -247,19 +247,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           paddingRight={30}
           className="w-full min-w-[600px]"
           header={
-            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'} !pr-[5px] select-none h-[34px] !pt-0 !pb-0 !items-end`}>
-              {columnKeyOrder.map(columnKey => (
-                <GridTableHeaderCell
+            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'}  select-none h-[34px] !pt-0 !pb-0 !items-end -mr-[17px]`}>
+              {columnKeyOrder.map(columnKey => {
+                const randColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+                return <GridTableHeaderCell
                   key={columnKey}
                   justify={columnDefinitions[columnKey]?.isNumeric ? 'end' : 'start'}
                   metric={columnKey}
                   sort={{ metric: sortConfig?.key || '', sortOrder: sortConfig?.direction || 'desc' }}
                   onSort={() => dynamicColumnKeys[columnKey]?.sortByValue && handleSort(columnKey)}
-                  className={`${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
+                  className={` ${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
                 >
                   {columnDefinitions[columnKey]?.label ?? formatLabel(columnKey)}
                 </GridTableHeaderCell>
-              ))}
+              })}
             </GridTableHeader>
           }
         >
@@ -275,7 +276,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   if (columnType === "chain") {
                     const chainKeys = parseChainKeys(cellData?.value);
                     cellMainContent = (
-                      <div className="flex items-center justify-center w-full gap-x-[4px]">
+                      <div className="flex items-center justify-center w-full gap-x-[5px]">
                         {chainKeys.map((chainKey) => {
                           const chainInfo = AllChainsByKeys[chainKey];
                           if (!chainInfo) return null;
@@ -292,7 +293,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     );
                   } else if (columnType === "image" && typeof cellData?.value === "string") {
                     cellMainContent = (
-                      <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] ${columnKey === columnKeyOrder[0] ? "-ml-[6px]" : ""}`}>
+                      <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] ${columnKey === columnKeyOrder[0] ? "-ml-[5px]" : ""}`}>
                         <img
                           src={cellData.value}
                           alt={`${columnKey} logo`}
@@ -393,7 +394,6 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       </Link>
                     );
                   }
-
 
 
                   return (
