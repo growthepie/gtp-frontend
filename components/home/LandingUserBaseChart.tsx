@@ -23,6 +23,13 @@ import Heading from "../layout/Heading";
 import { TopRowContainer, TopRowParent } from "../layout/TopRow";
 import { useTheme } from "next-themes";
 import { useUIContext } from "@/contexts/UIContext";
+import ViewToggle from "../ViewToggle";
+import ApplicationsGrid from "../layout/SingleChains/OverviewCards/ApplicationsGrid";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
+import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
+import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
 
 export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
@@ -50,14 +57,22 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+
   const [data, setData] = useState<any>(null);
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
+  
+
   const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
 
+
+  //Filters for apps grid/table
+  const [showTable, setShowTable] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
 
   useEffect(() => {
     if (landing) {
@@ -116,33 +131,58 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
             </Subheading>
           </Container>
           <Container className="pt-[15px]">
-            <TopRowContainer className="!justify-normal flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
+            <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
               <TopRowParent className="!justify-center lg:!justify-normal">
                 <div className="text-md pl-[5px]">Choose which chains to show</div>
-              </TopRowParent>
-              <TopRowParent className="text-md lg:min-h-[30px] !flex-1">
                 <ChainTypeFilter
                   selectedTypes={selectedChainTypes}
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
+              <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
+                <ViewToggle
+                  showTable={showTable}
+                  setShowTable={setShowTable}
+                />
+              </TopRowParent>
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
-            <TableRankingProvider>
-              <div className="flex flex-col gap-y-[5px]">
-              <LandingMetricsTable
-                data={{ chains: landing.data.metrics.table_visual }}
-                master={master}
-                // interactable={selectedMetric !== "Total Users"}
-                interactable={false}
-                sort={sort}
-                setSort={setSort}
-                selectedChainTypes={selectedChainTypes}
-                theme={resolvedTheme}
-              />
-              </div>
-            </TableRankingProvider>
+            <div style={{ display: showTable ? "block" : "none" }}>
+              <TableRankingProvider>
+                <div className="flex flex-col gap-y-[5px]">
+                <LandingMetricsTable
+                  data={{ chains: landing.data.metrics.table_visual }}
+                  master={master}
+                  // interactable={selectedMetric !== "Total Users"}
+                  interactable={false}
+                  sort={sort}
+                  setSort={setSort}
+                  selectedChainTypes={selectedChainTypes}
+                  theme={resolvedTheme}
+                />
+                </div>
+              </TableRankingProvider>
+            </div>
+            <div className="bg-color-bg-default rounded-[15px] mt-[15px]" style={{ display: showTable ? "none" : "block" }}>
+              <TimespanProvider timespans={{
+                "7d": {
+                  shortLabel: "7d",
+                  label: "7 days",
+                  value: 7,
+                },
+              }}>
+                <MetricsProvider>
+                  <SortProvider defaultOrder="desc" defaultKey="txcount">
+                    <ProjectsMetadataProvider>
+                      <ApplicationsDataProvider disableShowLoading={true}>
+                        <ApplicationsGrid chainKey="all" appsPage={true} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} clearSelectedCategory={clearSelectedCategory} setClearSelectedCategory={setClearSelectedCategory} chainTypeFilters={selectedChainTypes} />
+                      </ApplicationsDataProvider>
+                    </ProjectsMetadataProvider>
+                  </SortProvider>
+                </MetricsProvider>
+              </TimespanProvider>
+            </div>
           </HorizontalScrollContainer>
         </>
       ) : (

@@ -278,9 +278,10 @@ interface DensePackedTreeMapProps {
   setSelectedCategory?: (category: string | null) => void;
   clearSelectedCategory?: boolean;
   setClearSelectedCategory?: (clear: boolean) => void;
+  chainTypeFilters?: string[];
 }
 
-const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategory, setSelectedCategory, clearSelectedCategory, setClearSelectedCategory }: DensePackedTreeMapProps) => {
+const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategory, setSelectedCategory, clearSelectedCategory, setClearSelectedCategory, chainTypeFilters = [] }: DensePackedTreeMapProps) => {
   // ============================================================================
   // State
   // ============================================================================
@@ -416,7 +417,26 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
         return [];
       }
 
-      return aggregatedApps
+      // Filter apps by chain type if chainTypeFilters is provided
+      let filteredAggregatedApps = aggregatedApps;
+      if (chainTypeFilters.length > 0 && AllChainsByKeys) {
+        filteredAggregatedApps = aggregatedApps.filter((app) => {
+          // Check if any of the app's chains match the selected chain types
+          return app.origin_keys.some((chainKey) => {
+            const chainInfo = AllChainsByKeys[chainKey];
+            if (!chainInfo) return false;
+            
+            // Map chain.chainType to filter values (l1, rollup, others)
+            const chainType = chainInfo.chainType;
+            console.log(chainType, chainTypeFilters);
+            if (chainType === 'l1') return chainTypeFilters.includes('l1');
+            if (chainType === 'rollup') return chainTypeFilters.includes('rollup');
+            return chainTypeFilters.includes('others');
+          });
+        });
+      }
+
+      return filteredAggregatedApps
         .map((aggregatedApp) => {
           const projectMeta = ownerProjectMap[aggregatedApp.owner_project];
 
@@ -447,7 +467,7 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
       filteredProjectsData,
       ownerProjectMap
     );
-  }, [aggregatedApps, appDataSource, filteredProjectsData, isAllChainsView, ownerProjectMap]);
+  }, [aggregatedApps, appDataSource, filteredProjectsData, isAllChainsView, ownerProjectMap, chainTypeFilters, AllChainsByKeys]);
 
   const categoryNodes = useMemo(() => {
     const allNodes = buildCategoryNodes(

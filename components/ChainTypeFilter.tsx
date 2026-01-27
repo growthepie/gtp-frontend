@@ -54,7 +54,7 @@ export default function ChainTypeFilter({
               size="sm"
               className="text-color-text-primary"
             />
-            <div className="text-sm">
+            <div className="text-sm text-nowrap">
               <div className="hidden sm:block">
               {option.label}
               </div>
