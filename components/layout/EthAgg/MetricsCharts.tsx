@@ -1,24 +1,15 @@
-import React, { useMemo, useState, useCallback, useEffect, memo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import useSWR from 'swr';
 import { EthAggURL } from '@/lib/urls';
 import { EthereumEcosystemOverviewResponse, CountLayer2s, Tps, Stables, Gdp, MeetL2s } from '@/types/api/EthereumEcosystemOverviewResponse';
 import "@/app/highcharts.axis.css";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
-import { useMaster } from "@/contexts/MasterContext";
-import { GTPIconName } from "@/icons/gtp-icon-names";
-import { Icon } from '@iconify/react';
-import Link from 'next/link';
-import "@/app/highcharts.axis.css";
+import { useLocalStorage } from "usehooks-ts";
 import { AggChart } from './AggChart';
-import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
-import { track } from '@/lib/tracking';
-import { Carousel, CarouselBreakpoints } from "@/components/Carousel";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { useTheme } from 'next-themes';
+import MeetL2sSlider from "@/components/layout/MeetL2sSlider";
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
 }
@@ -63,8 +54,6 @@ const formatNumber = (number: number, decimals = 2): string => {
 function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) {
   const { data, error, isLoading } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
   const [showUsd] = useLocalStorage("showUsd", true);
-  const { AllChainsByKeys } = useMaster();
-
   // State to store last point coordinates for each chart
   const [chartCoordinates, setChartCoordinates] = useState<Record<string, { x: number; y: number; circleY: number } | null>>({});
 
@@ -310,16 +299,13 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 }
 
 const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL2sData: MeetL2s | null, selectedBreakdownGroup: string }) => {
-  const { AllChainsByKeys } = useMaster();
-  const [showUsd] = useLocalStorage("showUsd", true);
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const { ownerProjectToProjectData } = useProjectsMetadata();
 
   
 
   const l2Keys = useMemo(() => meetL2sData ? Object.keys(meetL2sData) : [], [meetL2sData]);
 
-  const ProjectData = useMemo(() => {
+  const projectData = useMemo(() => {
     if (!ownerProjectToProjectData || !meetL2sData) return null;
     let projectData: Record<string, any> = {};
     l2Keys.forEach((key) => {
@@ -337,7 +323,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
 
 
 
-  if (!meetL2sData || selectedBreakdownGroup !== "Metrics" || !ProjectData) return null;
+  if (!meetL2sData || selectedBreakdownGroup !== "Metrics" || !projectData) return null;
 
 
 
@@ -351,7 +337,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
         <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
       </Container>
       
-      <MeetL2sSlider meetL2sData={meetL2sData} ProjectData={ProjectData} />
+      <MeetL2sSlider meetL2sData={meetL2sData} projectData={projectData} />
     
     </div>
   );
@@ -361,119 +347,3 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
 MeetLayer2s.displayName = 'MeetLayer2s';
 
 export default MetricsChartsComponent;
-
-
-interface MeetL2sSliderProps {
-  meetL2sData: MeetL2s | null | undefined;
-  ProjectData: Record<string, any>;
-}
-
-const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderProps) => {
-  const { AllChainsByKeys } = useMaster();
-  const [showUsd] = useLocalStorage("showUsd", true);
-  const { resolvedTheme } = useTheme();
-  
-  const l2Keys = useMemo(() => (meetL2sData ? Object.keys(meetL2sData) : []), [meetL2sData]);
-
-  if (!meetL2sData) {
-    // Optional: Add a loading skeleton here
-    return null;
-  } 
-
-  return (
-    <Carousel
-      heightClass="h-[calc(235px+12px+15px)]" // height of the slides + height of the dots + distance from the slides to the dots
-      minSlideWidth={266}
-      pagination="dots"
-      arrows={false}
-      bottomOffset={0}
-    >
-      {l2Keys.map((key) => {
-        const l2Data = meetL2sData[key];
-        const chainInfo = AllChainsByKeys[key];
-        const color = chainInfo?.colors?.[resolvedTheme ?? "dark"]?.[0];
-
-        return (
-          <div 
-            key={key}
-            onClick={(e) => {
-              // Only navigate if we didn't click on a nested link
-              if (!(e.target as HTMLElement).closest('a')) {
-                window.location.href = `/chains/${key}`;
-              }
-            }}
-            className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-color-bg-medium h-full'
-          >
-            <div className='flex items-center w-full justify-between'>
-              <div className='flex items-center gap-x-[5px]'>
-                <GTPIcon
-                  icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
-                  size='md'
-                  style={{ color }}
-                />
-                <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
-              </div>
-              <div className='flex items-center justify-center w-[26px] h-[26px] rounded-full bg-color-bg-medium'>
-                <GTPIcon icon="in-button-right-monochrome" size='sm' containerClassName='!w-[16px] !h-[16px] flex justify-center items-center' className='!w-[10.67px] !h-[10.67px] -mr-[2px]' />
-              </div>
-            </div>
-            <div className='flex gap-x-[10px] items-center justify-between'>
-              <div className='flex flex-col gap-y-[5px] w-[125px]'>
-                <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
-                <div className='text-xs'>Wallets Yesterday</div>
-              </div>
-              <div className='flex flex-col gap-y-[5px] w-[125px]'>
-                <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
-                <div className='text-xs'>Total Wallets</div>
-              </div>
-            </div>
-            <div className='flex gap-x-[10px] items-center justify-between'>
-              <div className='flex flex-col gap-y-[5px] w-[125px]'>
-                <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
-                <div className='text-xs'>Stablecoin Supply</div>
-              </div>
-              <div className='flex flex-col gap-y-[5px] w-[125px]'>
-                <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
-                <div className='text-xs'>TPS/Day</div>
-              </div>
-            </div>
-            <div className='flex flex-col gap-y-[5px] mt-auto pt-[10px]'>
-              <div className='flex items-center gap-x-[5px]'>
-                {!ProjectData[key] || ProjectData[key].length === 0 ? (
-                    <div className='heading-small-xxxs bg-color-bg-medium  rounded-full w-[24px] h-[24px] flex items-center justify-center'>
-                      <div className='opacity-90'>N/A</div>
-                    </div>
-                  ) : (
-                    ProjectData[key].map((project: any) => (
-                      <GTPTooltipNew
-                        key={project.owner_project}
-                        size="md"
-                        placement="top-start"
-                        allowInteract={false}
-                        trigger={
-                          <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
-                            <ApplicationIcon owner_project={project.owner_project} size='sm' />
-                          </Link>
-                        }
-                        containerClass="flex flex-col gap-y-[10px]"
-                        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                      >
-                        {/* <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                          <div className='heading-small-xxs'>{project.display_name}</div>
-                          <div className='text-xs'>{project.description}</div>
-                        </TooltipBody> */}
-                        <ApplicationTooltipAlt owner_project={project.owner_project} />
-                      </GTPTooltipNew>
-                    ))
-                  )}
-              </div>
-              <div className='text-xs'>Most used apps</div>
-            </div>
-          </div>
-        );
-      })}
-    </Carousel>
-  );
-});
-
-MeetL2sSlider.displayName = 'MeetL2sSlider';

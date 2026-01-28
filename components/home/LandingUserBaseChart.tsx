@@ -2,18 +2,16 @@
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import {
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
+import { EthereumEcosystemOverviewResponse, MeetL2s } from "@/types/api/EthereumEcosystemOverviewResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
-import { LandingURL, MasterURL } from "@/lib/urls";
+import { EthAggURL, LandingURL, MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
-import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
 import ChainTypeFilter from "../ChainTypeFilter";
@@ -24,12 +22,113 @@ import { TopRowContainer, TopRowParent } from "../layout/TopRow";
 import { useTheme } from "next-themes";
 import { useUIContext } from "@/contexts/UIContext";
 import ViewToggle from "../ViewToggle";
-import ApplicationsGrid from "../layout/SingleChains/OverviewCards/ApplicationsGrid";
-import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
-import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
-import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
-import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
+import dayjs from "@/lib/dayjs";
+import { format as d3Format } from "d3";
+
+const formatNumber = (number: number, decimals = 2): string => {
+  if (!Number.isFinite(number)) return "N/A";
+  if (number === 0) return "0";
+
+  const absNumber = Math.abs(number);
+  if (absNumber >= 1e12) return (number / 1e12).toFixed(1) + "T";
+  if (absNumber >= 1e9) return (number / 1e9).toFixed(1) + "B";
+  if (absNumber >= 1e6) return (number / 1e6).toFixed(1) + "M";
+  if (absNumber >= 1e3) return (number / 1e3).toFixed(1) + "k";
+  if (absNumber >= 100) return number.toFixed(decimals);
+  return number.toFixed(decimals);
+};
+
+const formatAgeShort = (launchDate?: string) => {
+  if (!launchDate) return "N/A";
+  const diff = dayjs.duration(dayjs().diff(dayjs(launchDate)));
+  const years = diff.years();
+  const months = diff.months();
+  if (years > 0 && months > 0) return `${years}y ${months}m`;
+  if (years > 0) return `${years}y`;
+  if (months > 0) return `${months}m`;
+  return "N/A";
+};
+
+const MeetL2sMapCards = ({
+  meetL2sData,
+  tableVisual,
+  chainKeys,
+  chainAges,
+}: {
+  meetL2sData: MeetL2s | null | undefined;
+  tableVisual: LandingPageMetricsResponse["data"]["metrics"]["table_visual"];
+  chainKeys: string[];
+  chainAges: Record<string, string>;
+}) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const [showUsd] = useLocalStorage("showUsd", true);
+  const { resolvedTheme } = useTheme();
+
+  const projectData = useMemo(() => {
+    if (!ownerProjectToProjectData || !meetL2sData) return null;
+    const mapped: Record<string, any> = {};
+    Object.keys(meetL2sData).forEach((key) => {
+      if (meetL2sData[key]?.top_apps) {
+        mapped[key] = meetL2sData[key].top_apps
+          .map((app) => ownerProjectToProjectData[app])
+          .filter(Boolean);
+      }
+    });
+    return mapped;
+  }, [meetL2sData, ownerProjectToProjectData]);
+
+  return (
+    <div className="grid gap-[15px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {chainKeys.map((chainKey) => {
+        const tableEntry = tableVisual[chainKey] as any;
+        const userShare = tableEntry?.user_share;
+        const crossChain = tableEntry?.cross_chain_activity;
+        const metrics = (
+          <>
+            <div className="flex gap-x-[10px] items-center justify-between">
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">{formatNumber(tableEntry?.users)}</div>
+                <div className="text-xs">Weekly Active</div>
+              </div>
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">
+                  {userShare !== undefined && userShare !== null ? `${(userShare * 100).toFixed(2)}%` : "N/A"}
+                </div>
+                <div className="text-xs">User Share</div>
+              </div>
+            </div>
+            <div className="flex gap-x-[10px] items-center justify-between">
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">
+                  {crossChain !== undefined && crossChain !== null ? d3Format(crossChain > 0.01 ? ".1%" : ".1%")(crossChain) : "N/A"}
+                </div>
+                <div className="text-xs">Cross-Chain Activity</div>
+              </div>
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">{chainAges[chainKey] ?? "N/A"}</div>
+                <div className="text-xs">Age</div>
+              </div>
+            </div>
+          </>
+        );
+
+        return (
+          <MeetL2sCard
+            key={chainKey}
+            chainKey={chainKey}
+            l2Data={meetL2sData?.[chainKey]}
+            projectData={projectData?.[chainKey]}
+            showUsd={showUsd}
+            resolvedTheme={resolvedTheme}
+            metrics={metrics}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 export default function LandingUserBaseChart({ isLoading = false }: { isLoading?: boolean }) {
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
@@ -39,7 +138,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     "landingChainTypeFilter",
     ["l1", "rollup", "others"]
   );
-  const { AllChains, AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
 
 
   const {
@@ -57,6 +156,10 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const {
+    data: ethAgg,
+  } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
+
 
   const [data, setData] = useState<any>(null);
 
@@ -71,8 +174,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
 
   useEffect(() => {
     if (landing) {
@@ -82,6 +183,26 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   const { resolvedTheme } = useTheme();
 
+  const chainAges = useMemo(() => {
+    if (!master) return {};
+    return Object.keys(master.chains).reduce<Record<string, string>>((acc, chainKey) => {
+      acc[chainKey] = formatAgeShort(master.chains[chainKey]?.launch_date);
+      return acc;
+    }, {});
+  }, [master]);
+
+  const tableChainKeys = useMemo(() => {
+    if (!landing || !master) return [];
+
+    return Object.keys(landing.data.metrics.table_visual)
+
+      .filter((chainKey) => { return selectedChainTypes.includes(AllChainsByKeys[chainKey]?.chainType ?? "")})
+      
+  }, [EnabledChainsByKeys, focusEnabled, landing, master, selectedChainTypes]);
+
+
+
+  console.log(tableChainKeys);
   return (
     <>
       <ShowLoading
@@ -164,24 +285,15 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                 </div>
               </TableRankingProvider>
             </div>
-            <div className="bg-color-bg-default rounded-[15px] mt-[15px]" style={{ display: showTable ? "none" : "block" }}>
-              <TimespanProvider timespans={{
-                "7d": {
-                  shortLabel: "7d",
-                  label: "7 days",
-                  value: 7,
-                },
-              }}>
-                <MetricsProvider>
-                  <SortProvider defaultOrder="desc" defaultKey="txcount">
-                    <ProjectsMetadataProvider>
-                      <ApplicationsDataProvider disableShowLoading={true}>
-                        <ApplicationsGrid chainKey="all" appsPage={true} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} clearSelectedCategory={clearSelectedCategory} setClearSelectedCategory={setClearSelectedCategory} chainTypeFilters={selectedChainTypes} />
-                      </ApplicationsDataProvider>
-                    </ProjectsMetadataProvider>
-                  </SortProvider>
-                </MetricsProvider>
-              </TimespanProvider>
+            <div className="rounded-[15px] mt-[15px]" style={{ display: showTable ? "none" : "block" }}>
+              <ProjectsMetadataProvider>
+                <MeetL2sMapCards
+                  meetL2sData={ethAgg?.data.meet_l2s}
+                  tableVisual={landing.data.metrics.table_visual}
+                  chainKeys={tableChainKeys}
+                  chainAges={chainAges}
+                />
+              </ProjectsMetadataProvider>
             </div>
           </HorizontalScrollContainer>
         </>
