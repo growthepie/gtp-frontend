@@ -13,6 +13,7 @@
   composition_types: { [key: string]: CompositionTypes};
   last_updated_utc: string;
   ethereum_events: EthereumEvents[];
+  searchbar_items?: string[];
 }
 
 export interface EthereumEvents {

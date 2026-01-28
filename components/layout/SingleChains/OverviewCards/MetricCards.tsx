@@ -178,7 +178,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 <div className=" numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color: chainData.colors[theme ?? "dark"][0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[valueIndex], 2)} {suffix}
                 </div>
-                <div className="numbers-xxs " style={{ color: overviewData.data.kpi_cards[metricKey].wow_change.data[0] > 0 ? "#4CFF7E" : "#FF3838" }}>{Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 1 }).format(overviewData.data.kpi_cards[metricKey].wow_change.data[0] * 100)}%</div>
+                <div className="numbers-xxs " style={{ color: overviewData.data.kpi_cards[metricKey].wow_change.data[0] > 0 ? "rgb(var(--positive))" : "rgb(var(--negative))" }}>{Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 1 }).format(overviewData.data.kpi_cards[metricKey].wow_change.data[0] * 100)}%</div>
 
             </div>
             

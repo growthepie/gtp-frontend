@@ -273,7 +273,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? columnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             },
             {
               // value: monthlyData[monthlyData.length - 2][0],
@@ -281,7 +281,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? secondZoneDottedColumnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             },
           ];
         } else if (todaysDayOfMonthUTC !== 1) {
@@ -293,7 +293,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? secondZoneDottedColumnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             }
           ];
           marker.radius = 2;
@@ -306,7 +306,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? secondZoneDottedColumnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             }
           ];
         }
@@ -323,7 +323,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? columnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             }
           ];
         }else{
@@ -335,7 +335,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? columnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             },
             {
               // value: monthlyData[monthlyData.length - 2][0],
@@ -343,7 +343,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
               fillColor: isColumnChart ? columnFillColor : seriesFill,
               color: isColumnChart
                 ? secondZoneDottedColumnColor
-                : MetadataByKeys[name].colors["dark"][0],
+                : MetadataByKeys[name].colors[theme ?? "dark"][0],
             },
           ];
         }
@@ -359,6 +359,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         color,
         marker,
         shadow,
+        theme,
       };
     },
     [
