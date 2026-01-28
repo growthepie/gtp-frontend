@@ -104,24 +104,30 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false, selectedScale = "normal") => {
-      let val = parseFloat(value as string);
+      const val = parseFloat(value as string);
+      const absVal = Math.abs(val);
+
+      // Default: compact SI formatting with 2 significant digits
       let number = d3Format(`.2~s`)(val).replace(/G/, "B");
-      let absVal = Math.abs(val);
 
       if (isAxis) {
         if (selectedScale === "percentage") {
+          // Always max 2 decimals for percentages
           number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-            if (absVal === 0) number = "0";
-            else if (absVal < 1) number = val.toFixed(2);
-            else if (absVal < 10)
-              d3Format(`.2s`)(val).replace(/G/, "B")
-            else number = d3Format(`s`)(val).replace(/G/, "B");
-          number = `${number}`
+          if (absVal === 0) {
+            number = "0";
+          } else if (absVal < 1) {
+            // Small values: cap at 2 decimal places
+            number = val.toFixed(2);
+          } else {
+            // All other axis values: SI with max 2 significant digits
+            number = d3Format(".2~s")(val).replace(/G/, "B");
+          }
         }
       }
 
-      return number;
+      return `${number}`;
     },
     [],
   );
