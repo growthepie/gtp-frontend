@@ -686,9 +686,9 @@ export default function GlobalFloatingBar() {
                 >
 
                 </FloatingBarButton>
-                {!IS_PRODUCTION && (
+               
                   <DarkModeToggleButton />
-                )}
+             
               </div>
             </div>
           </FloatingBarContainer>
