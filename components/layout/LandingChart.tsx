@@ -37,6 +37,9 @@ import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
+import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
+import GTPButtonRow from "../GTPButton/GTPButtonRow";
+import { GTPButton } from "../GTPButton/GTPButton";
 
 
 const COLORS = {
@@ -1180,7 +1183,7 @@ export default function LandingChart({
     >
       <div
         id="content-container"
-        className={`h-[225px] lg:h-[81px] 2xl:h-[60px]  ${isMobile ? "mb-[30px]" : "mb-0"
+        className={`h-fit  ${isMobile ? "mb-[30px]" : "mb-0"
           }`}   
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
@@ -1209,164 +1212,54 @@ export default function LandingChart({
             />
           </div>
         </div>
-        <TopRowContainer className={`!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex ${!isSidebarOpen ? "lg:!flex-row" : "xl:!flex-row"} ${!isSidebarOpen ? "lg:!rounded-full" : "xl:!rounded-full"}`}>
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 lg:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
-            <TopRowChild
+        <GTPButtonContainer className="mb-[10px]">
+          <GTPButtonRow>
+            <GTPButton
+              label={isLessThan2xl ? "ETH Ecosystem" : "Total Ethereum Ecosystem"}
+              rightIcon="gtp-metrics-ethereum-ecosystem"
               isSelected={showTotalUsers}
-              roundedClassName="rounded-[12px] sm:rounded-full"
-              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 group/ecosystem relative`}
-              onClick={() => {
+              clickHandler={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
-            >
-              <div className="flex items-center justify-center gap-x-[5px]  ">
-                <div className="flex items-center gap-x-[5px]">
-                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
-                  <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
-                </div>
-              </div>
-              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex shadow-standard">
-                <div className="flex items-center gap-x-[10px]">
-                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
-                  <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
-                </div>
-                <div className="text-xs text-left ">
-                  The total number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week. When "Total Ecosystem" is toggled on you can see the number of addresses that are active only on on Ethereum Mainnet in blue.
-                </div>
-              </div>
-            </TopRowChild>
-            <TopRowChild
+            />
+            <GTPButton
+              label="Composition"
+              rightIcon="gtp-metrics-chaincomposition"
               isSelected={"absolute" === selectedScale && !showTotalUsers}
-              roundedClassName="rounded-[12px] sm:rounded-full"
-              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative`}
-              onClick={() => {
+              clickHandler={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
                 setSelectedMetric("Composition");
               }}
-            >
-              {/*Title Area */}
-              <div className="flex items-center justify-center gap-x-[5px]  ">
-                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                  <div className="flex items-center justify-center  gap-x-[5px]">
-                    <GTPIcon icon="gtp-metrics-chaincomposition" size={isLessThan2xl ? "sm" : "md"}/>
-                    <div className="">Composition</div>
-                  </div>
-
-              </div>
-              {/*Tooltip area: */}
-              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px] shadow-standard">
-                <div className="flex items-center gap-x-[10px]">
-                  <GTPIcon icon="gtp-metrics-chaincomposition" size={"sm"} />
-                  <div className="heading-small-xs">Composition</div>
-                </div>
-                <div className="text-xs text-left mt-[5px] ">
-                  <span>You can see where most addresses are active.</span>
-                  <ul className="list-disc list-inside -indent-3 pl-3">
-                    <li>Ethereum Mainnet: addresses that only interacted with the L1 ("Total Ecosystem" needs to be toggled)</li>
-                    <li>Cross-Layer: addresses that interacted with L1 and at least one L2</li>
-                    <li>Multiple L2s: addresses that interacted with multiple L2s</li>
-                    <li>Single L2: addresses that interacted with a single L2</li>
-                  </ul>
-                </div>
-              </div>
-         
-
-            </TopRowChild>
-            <TopRowChild
-              isSelected={"percentage" === selectedScale}
-              roundedClassName="rounded-[12px] sm:rounded-full"
-              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 relative group/compositionsplit`}
-              onClick={() => {
+            />
+            <GTPButton
+              label={isLessThan2xl ? "Comp. Split" : "Composition Split"}
+              rightIcon="gtp-metrics-chains-percentage"
+              isSelected={selectedScale === "percentage"}
+              clickHandler={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
               }}
-            >
-              {/*Title Area */}
-             <div className="flex items-center justify-center gap-x-[5px] relative w-full ">
-                  <div className="flex items-center justify-center  gap-x-[5px]">
-                      <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
-                      <div className="">{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
-                    </div>
-              </div>
-              {/*Tooltip area: */}
-              <div className="bg-color-bg-default group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] pl-[20px] absolute rounded-[15px] transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px] shadow-standard">
-                <div className="flex items-center gap-x-[10px] ">
-                  <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
-                  <div className="heading-small-xs">Composition Split</div>
-                </div>
-                <div className="text-xs text-left mt-[5px]">
-                  You can see the composition breakdown relative to each other which allows you to gain an understanding of where activity in the Ethereum ecosystem is taking place and how it shifts over time.
-                </div>
-              </div>
-            </TopRowChild>
-          </TopRowParent>
-          <div className={`block ${!isSidebarOpen ? "lg:hidden" : "xl:hidden"} w-[80%] mx-auto my-[10px] h-[2px]`}>
-            <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
-          </div>
+            />
+          </GTPButtonRow>
 
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
-            {!zoomed ? (
-              Object.keys(timespans).map((timespan) => (
-                <TopRowChild
-                  key={timespan}
-                  className={`!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4`}
-                  //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                  isSelected={selectedTimespan === timespan}
-                  onClick={() => {
-                    setSelectedTimespan(timespan);
-                    // setXAxis();
-                    // chartComponent?.current?.xAxis[0].update({
-                    //   min: timespans[selectedTimespan].xMin,
-                    //   max: timespans[selectedTimespan].xMax,
-                    //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                    //   tickPositions: getTickPositions(
-                    //     timespans.max.xMin,
-                    //     timespans.max.xMax,
-                    //   ),
-                    // });
-                    // if (zoomed)
-                    //   setZoomed(false);
-                  }}
-                >
-                  <div className="block sm:hidden">
-                    {timespans[timespan].labelShort}
-                  </div>
-                  <div className="hidden sm:block">
-                    {timespans[timespan].label}
-                  </div>
-                </TopRowChild>
-              ))
-            ) : (
-              <>
-                <button
-                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-3 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
-                  onClick={() => {
-                    // chartComponent?.current?.xAxis[0].setExtremes(
-                    //   timespans[selectedTimespan].xMin,
-                    //   timespans[selectedTimespan].xMax,
-                    // );
-                    setZoomed(false);
-                  }}
-                >
-                  <Icon
-                    icon="feather:zoom-out"
-                    className="h-4 w-4 2xl:w-4 2xl:h-4"
-                  />
-                  <div>Reset Zoom</div>
-                </button>
-                <button
-                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-3.5 2xl:px-4 font-medium bg-color-bg-default dark:bg-color-ui-active`}
-                >
-                  {intervalShown?.label}
-                </button>
-              </>
-            )}
-          </TopRowParent>
-        </TopRowContainer>
+          <GTPButtonRow>
+          {Object.keys(timespans).map((timespan) => (
+            <GTPButton
+              label={timespans[timespan].label}
+              isSelected={selectedTimespan === timespan}
+              clickHandler={() => {
+                setSelectedTimespan(timespan);
+              }}
+            />
+          ))}
+
+          </GTPButtonRow>
+        </GTPButtonContainer>
+
       </div>
       <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] "
          
