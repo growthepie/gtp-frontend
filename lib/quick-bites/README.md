@@ -92,6 +92,105 @@ JSON.stringify([
 "```"
 ```
 
+#### Live Metrics Card
+```typescript
+"```live-metrics",
+JSON.stringify({
+  title: "Transactions Per Second",
+  icon: "gtp-metrics-transactionspersecond",
+  dataUrl: "https://sse.growthepie.com/api/chain/arbitrum",
+  dataPath: "data",
+  refreshInterval: 10000,
+  chart: {
+    dataPath: "history",
+    valueKey: "tps",
+    timeKey: "timestamp",
+    metricLabel: "TPS",
+    overrideColor: ["#2151F5", "#19D9D6"],
+    centerWatermark: true
+  },
+  metricsLeft: [
+    {
+      label: "Block Time",
+      valuePath: "block_time",
+      valueFormat: { type: "duration" }
+    },
+    {
+      label: "All-Time High",
+      valuePath: "ath",
+      valueFormat: { suffix: " TPS", maxDecimals: 0 },
+      hoverValuePath: "ath_timestamp",
+      hoverFormat: { type: "date" }
+    }
+  ],
+  metricsRight: [
+    {
+      label: "24h Peak",
+      valuePath: "24h_high",
+      valueFormat: { suffix: " TPS", maxDecimals: 0 },
+      hoverValuePath: "24h_high_timestamp",
+      hoverFormat: { type: "date" }
+    }
+  ],
+  liveMetric: {
+    label: "Current TPS",
+    valuePath: "tps",
+    valueFormat: { maxDecimals: 1, suffix: " TPS" },
+    accentColor: "#2151F5"
+  }
+}),
+"```"
+```
+
+#### Live Metrics Row (up to 3 cards)
+```typescript
+"```live-metrics-row",
+JSON.stringify({
+  items: [
+    {
+      title: "TPS (Arbitrum)",
+      icon: "gtp-metrics-transactionspersecond",
+      layout: "chart-right",
+      dataUrl: "https://sse.growthepie.com/api/chain/arbitrum/history",
+      dataPath: "history.0",
+      chart: {
+        dataPath: "history",
+        valueKey: "tps",
+        timeKey: "timestamp",
+        metricLabel: "TPS",
+        centerWatermark: true
+      },
+      liveMetric: {
+        label: "Current TPS",
+        valuePath: "tps",
+        valueFormat: { maxDecimals: 1, suffix: " TPS" }
+      }
+    },
+    {
+      title: "TPS (Base)",
+      icon: "gtp-metrics-transactionspersecond",
+      layout: "chart-right",
+      dataUrl: "https://sse.growthepie.com/api/chain/base/history",
+      dataPath: "history.0",
+      chart: {
+        dataPath: "history",
+        valueKey: "tps",
+        timeKey: "timestamp",
+        metricLabel: "TPS",
+        centerWatermark: true
+      },
+      liveMetric: {
+        label: "Current TPS",
+        valuePath: "tps",
+        valueFormat: { maxDecimals: 1, suffix: " TPS" }
+      }
+    }
+  ],
+  className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]"
+}),
+"```"
+```
+
 #### Charts
 ```typescript
 "```chart",

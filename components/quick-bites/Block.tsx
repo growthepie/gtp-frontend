@@ -10,6 +10,8 @@ import { CalloutBlock } from './blocks/CalloutBlock';
 import { IframeBlock } from './blocks/IframeBlock';
 import { ListBlock } from './blocks/ListBlock';
 import KpiBlock from './blocks/KpiBlock';
+import LiveMetricsBlock from './blocks/LiveMetricsBlock';
+import LiveMetricsRowBlock from './blocks/LiveMetricsRowBlock';
 import { TableBlock } from './blocks/TableBlock';
 import { DropdownBlock } from './blocks/DropdownBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
@@ -50,6 +52,10 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ListBlock block={block} />;
     case 'kpi-cards':
       return <KpiBlock block={block} />;
+    case 'live-metrics':
+      return <LiveMetricsBlock block={block} />;
+    case 'live-metrics-row':
+      return <LiveMetricsRowBlock block={block} />;
     case 'table':
       return <TableBlock block={block} />;
     case 'dropdown': // Add this case

@@ -14,6 +14,8 @@ export type BlockType =
   | 'iframe'
   | 'list'      // For list items
   | 'kpi-cards' // For KPI card blocks
+  | 'live-metrics' // For live data metric cards
+  | 'live-metrics-row' // For multiple live metric cards in a row
   | 'dropdown'   // For dropdown blocks
   | 'titleButton'   // For title button blocks
   | 'faq' // For FAQ blocks
@@ -224,6 +226,73 @@ export interface KpiCardsBlock extends BaseBlock {
   className?: string;
 }
 
+export interface LiveMetricFormat {
+  type?: 'number' | 'date' | 'duration';
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  minDecimals?: number;
+  maxDecimals?: number;
+  compact?: boolean;
+  multiply?: number;
+  locale?: string;
+  dateFormat?: string;
+  fallback?: string;
+}
+
+export interface LiveMetricConfig {
+  label: string;
+  valuePath: string;
+  valueFormat?: LiveMetricFormat;
+  hoverLabel?: string;
+  hoverValuePath?: string;
+  hoverFormat?: LiveMetricFormat;
+  align?: 'left' | 'right';
+}
+
+export interface LiveMetricsChartConfig {
+  dataPath?: string;
+  valueKey?: string;
+  timeKey?: string;
+  metricLabel?: string;
+  seriesName?: string;
+  seriesNamePath?: string;
+  overrideColor?: string[];
+  limit?: number;
+  centerWatermark?: boolean;
+  anchorZero?: boolean;
+}
+
+export interface LiveMetricsCardConfig {
+  title: string;
+  icon?: string;
+  className?: string;
+  layout?: 'stacked' | 'chart-right';
+  chartHeightClassName?: string;
+  dataUrl: string;
+  dataPath?: string;
+  historyUrl?: string;
+  historyPath?: string;
+  refreshInterval?: number;
+  metricsLeft?: LiveMetricConfig[];
+  metricsRight?: LiveMetricConfig[];
+  liveMetric?: LiveMetricConfig & {
+    accentColor?: string;
+    liveIcon?: string;
+  };
+  chart?: LiveMetricsChartConfig;
+}
+
+export interface LiveMetricsBlock extends BaseBlock, LiveMetricsCardConfig {
+  type: 'live-metrics';
+}
+
+export interface LiveMetricsRowBlock extends BaseBlock {
+  type: 'live-metrics-row';
+  items: LiveMetricsCardConfig[];
+  className?: string;
+}
+
 export interface TitleButtonBlock extends BaseBlock {
   type: 'titleButton';
   text: string;
@@ -286,6 +355,8 @@ export type ContentBlock =
   | IframeBlock
   | ListBlock
   | KpiCardsBlock
+  | LiveMetricsBlock
+  | LiveMetricsRowBlock
   | TitleButtonBlock
   | FaqBlock;
 

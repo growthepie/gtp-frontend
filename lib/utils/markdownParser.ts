@@ -193,6 +193,38 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // Handle live metrics row blocks
+      else if (text.startsWith('```live-metrics-row')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+
+          if (closingMarker) {
+            const liveMetricsRowBlock = parseLiveMetricsRowBlock(jsonString);
+            if (liveMetricsRowBlock) {
+              blocks.push(liveMetricsRowBlock);
+              i += 2;
+              continue;
+            }
+          }
+        }
+      }
+      // Handle live metrics blocks
+      else if (text.startsWith('```live-metrics')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+
+          if (closingMarker) {
+            const liveMetricsBlock = parseLiveMetricsBlock(jsonString);
+            if (liveMetricsBlock) {
+              blocks.push(liveMetricsBlock);
+              i += 2;
+              continue;
+            }
+          }
+        }
+      }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
         const match = text.match(/^(#{1,6})\s/);
@@ -474,6 +506,63 @@ function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
     return block;
   } catch (error) {
     console.error('Error parsing kpi cards data:', error);
+    return null;
+  }
+}
+
+function parseLiveMetricsBlock(jsonString: string): ContentBlock | null {
+  try {
+    const liveMetricsConfig = JSON.parse(jsonString);
+
+    if (!liveMetricsConfig?.dataUrl) {
+      console.error('Error parsing live metrics data: dataUrl is required.');
+      return null;
+    }
+
+    return {
+      id: generateBlockId(),
+      type: 'live-metrics',
+      title: liveMetricsConfig.title || '',
+      icon: liveMetricsConfig.icon || undefined,
+      className: liveMetricsConfig.className || '',
+      layout: liveMetricsConfig.layout || undefined,
+      chartHeightClassName: liveMetricsConfig.chartHeightClassName || undefined,
+      dataUrl: liveMetricsConfig.dataUrl,
+      dataPath: liveMetricsConfig.dataPath || undefined,
+      historyUrl: liveMetricsConfig.historyUrl || undefined,
+      historyPath: liveMetricsConfig.historyPath || undefined,
+      refreshInterval: liveMetricsConfig.refreshInterval || undefined,
+      metricsLeft: liveMetricsConfig.metricsLeft || undefined,
+      metricsRight: liveMetricsConfig.metricsRight || undefined,
+      liveMetric: liveMetricsConfig.liveMetric || undefined,
+      chart: liveMetricsConfig.chart || undefined,
+      showInMenu: parseShowInMenu(liveMetricsConfig),
+    };
+  } catch (error) {
+    console.error('Error parsing live metrics data:', error);
+    return null;
+  }
+}
+
+function parseLiveMetricsRowBlock(jsonString: string): ContentBlock | null {
+  try {
+    const liveMetricsConfig = JSON.parse(jsonString);
+    const items = Array.isArray(liveMetricsConfig?.items) ? liveMetricsConfig.items : [];
+
+    if (!items.length) {
+      console.error('Error parsing live metrics row data: items array is required.');
+      return null;
+    }
+
+    return {
+      id: generateBlockId(),
+      type: 'live-metrics-row',
+      items: items.slice(0, 3),
+      className: liveMetricsConfig.className || '',
+      showInMenu: parseShowInMenu(liveMetricsConfig),
+    };
+  } catch (error) {
+    console.error('Error parsing live metrics row data:', error);
     return null;
   }
 }

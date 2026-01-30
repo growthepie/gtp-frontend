@@ -44,6 +44,88 @@ const testBite: QuickBiteData = createQuickBite({
           }
       ]),
     "```",
+    "```live-metrics-row",
+    JSON.stringify({
+      items: [
+        {
+          title: "TPS (Arbitrum)",
+          icon: "gtp-metrics-transactionspersecond",
+          layout: "chart-right",
+          dataUrl: "https://sse.growthepie.com/api/chain/arbitrum/history",
+          dataPath: "history.0",
+          refreshInterval: 10000,
+          chart: {
+            dataPath: "history",
+            valueKey: "tps",
+            timeKey: "timestamp",
+            metricLabel: "TPS",
+            seriesNamePath: "display_name",
+            overrideColor: ["#28A0F0", "#19D9D6"],
+            centerWatermark: true,
+            anchorZero: true,
+            limit: 100
+          },
+          liveMetric: {
+            label: "Current TPS",
+            valuePath: "tps",
+            valueFormat: { maxDecimals: 1, suffix: " TPS" },
+            accentColor: "#28A0F0"
+          }
+        },
+        {
+          title: "TPS (Base)",
+          icon: "gtp-metrics-transactionspersecond",
+          layout: "chart-right",
+          dataUrl: "https://sse.growthepie.com/api/chain/base/history",
+          dataPath: "history.0",
+          refreshInterval: 10000,
+          chart: {
+            dataPath: "history",
+            valueKey: "tps",
+            timeKey: "timestamp",
+            metricLabel: "TPS",
+            seriesNamePath: "display_name",
+            overrideColor: ["#2151F5", "#7EA6FF"],
+            centerWatermark: true,
+            anchorZero: true,
+            limit: 100
+          },
+          liveMetric: {
+            label: "Current TPS",
+            valuePath: "tps",
+            valueFormat: { maxDecimals: 1, suffix: " TPS" },
+            accentColor: "#2151F5"
+          }
+        },
+        {
+          title: "TPS (OP Mainnet)",
+          icon: "gtp-metrics-transactionspersecond",
+          layout: "chart-right",
+          dataUrl: "https://sse.growthepie.com/api/chain/optimism/history",
+          dataPath: "history.0",
+          refreshInterval: 10000,
+          chart: {
+            dataPath: "history",
+            valueKey: "tps",
+            timeKey: "timestamp",
+            metricLabel: "TPS",
+            seriesNamePath: "display_name",
+            overrideColor: ["#FE5468", "#FF8BA0"],
+            centerWatermark: true,
+            anchorZero: true,
+            limit: 100
+          },
+          liveMetric: {
+            label: "Current TPS",
+            valuePath: "tps",
+            valueFormat: { maxDecimals: 1, suffix: " TPS" },
+            accentColor: "#FE5468"
+          }
+        }
+      ]
+    }),
+    "```",
+
 
     "## Toggleable Chart Group",
     "This example bundles multiple chart configurations into a single block with a toggle so readers can explore different views.",
@@ -302,6 +384,16 @@ const testBite: QuickBiteData = createQuickBite({
     }),
     "```",
 
+    "## Live Metrics Block",
+    "```live-metrics",
+    JSON.stringify({
+      metrics: [
+        {
+          label: "Ethereum",
+          value: "100",
+        }
+      ]
+    }),
 
 
     "## Table Example",
