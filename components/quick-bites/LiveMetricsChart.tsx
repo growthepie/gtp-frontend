@@ -238,11 +238,11 @@ export const LiveMetricsChart = React.memo(
             centerWatermark ? "top-1/2 -translate-y-1/2 z-10" : "bottom-[-25.353px]"
           }`}
         >
-          <div className={`w-[147px] ${centerWatermark ? "opacity-40" : ""}`}>
+          <div className={`flex items-center justify-center w-[147px] ${centerWatermark ? "opacity-40" : ""}`}>
             {centerWatermark ? (
-              <ChartWatermarkWithMetricName className="w-full h-auto" useColor={true} />
+              <ChartWatermarkWithMetricName className="w-[80%] " useColor={false} />
             ) : (
-              <ChartWatermark className="opacity-20 w-full h-auto" />
+              <ChartWatermark className="text-color-text-secondary mix-blend-darken dark:mix-blend-lighten opacity-20 w-full h-auto" />
             )}
           </div>
         </div>
