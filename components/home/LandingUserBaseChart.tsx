@@ -276,7 +276,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
-            <div style={{ display: showTable ? "block" : "none" }}>
+            <div className="-ml-[5px] pr-[10px]" style={{ display: showTable ? "block" : "none" }}>
               <TableRankingProvider>
                 <div className="flex flex-col gap-y-[5px]">
                 <LandingMetricsTable
