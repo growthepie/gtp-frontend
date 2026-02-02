@@ -67,6 +67,8 @@ const MeetL2sMapCards = ({
   const [showUsd] = useLocalStorage("showUsd", true);
   const { resolvedTheme } = useTheme();
 
+  console.log(meetL2sData);
+
   const projectData = useMemo(() => {
     if (!ownerProjectToProjectData || !meetL2sData) return null;
     const mapped: Record<string, any> = {};
@@ -290,7 +292,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                 </div>
               </TableRankingProvider>
             </div>
-            <div className="rounded-[15px] mt-[15px]" style={{ display: showTable ? "none" : "block" }}>
+            <div className="rounded-[15px] pr-[10px] mt-[15px] -ml-[5px]" style={{ display: showTable ? "none" : "block" }}>
               <ProjectsMetadataProvider>
                 <MeetL2sMapCards
                   meetL2sData={ethAgg?.data.meet_l2s}
