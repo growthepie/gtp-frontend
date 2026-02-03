@@ -118,7 +118,6 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
       <ThemeProvider
         attribute="class"
         defaultTheme="dark"
-        forcedTheme={!IS_PRODUCTION ? undefined : "dark"} // force dark for production
         disableTransitionOnChange
       >
         <SWRConfig
