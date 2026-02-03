@@ -20,7 +20,7 @@ export default function Container({
     return (
       <div
         id={id}
-        className={`px-[20px] md:pl-[45px] md:pr-[60px] text-color-text-primary ${className}`}
+        className={`px-[20px] md:px-[50px] text-color-text-primary ${className}`}
         ref={ref ?? null}
         style={style}
       >
@@ -32,7 +32,7 @@ export default function Container({
   return (
     <div
       id={id}
-      className={`px-[20px] md:pl-[45px] md:pr-[60px] text-color-text-primary ${className}`}
+      className={`px-[20px] md:px-[50px] text-color-text-primary ${className}`}
       ref={ref ?? null}
       style={style}
     >

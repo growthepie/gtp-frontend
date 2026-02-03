@@ -67,8 +67,6 @@ const MeetL2sMapCards = ({
   const [showUsd] = useLocalStorage("showUsd", true);
   const { resolvedTheme } = useTheme();
 
-  console.log(meetL2sData);
-
   const projectData = useMemo(() => {
     if (!ownerProjectToProjectData || !meetL2sData) return null;
     const mapped: Record<string, any> = {};
@@ -205,7 +203,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
 
 
-  console.log(tableChainKeys);
   return (
     <>
       <ShowLoading
@@ -275,8 +272,8 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               </TopRowParent>
             </TopRowContainer>
           </Container>
-          <HorizontalScrollContainer reduceLeftMask={true}>
-            <div className="-ml-[5px] pr-[10px]" style={{ display: showTable ? "block" : "none" }}>
+          <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
+            <div className="" style={{ display: showTable ? "block" : "none" }}>
               <TableRankingProvider>
                 <div className="flex flex-col gap-y-[5px]">
                 <LandingMetricsTable
