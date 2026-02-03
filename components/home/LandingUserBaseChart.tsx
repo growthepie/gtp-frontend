@@ -250,14 +250,14 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                 </Heading>
               </div>
             </div>
-            <Subheading className="text-md px-[5px]">
+            <Subheading className="text-md">
               Overview of the chains being part of the (wider) Ethereum ecosystem.
             </Subheading>
           </Container>
           <Container className="pt-[15px]">
             <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
               <TopRowParent className="!justify-center lg:!justify-normal">
-                <div className="text-md pl-[5px]">Choose which chains to show</div>
+                <div className="text-md hidden lg:block pl-[5px] pr-[5px] whitespace-nowrap">Choose which chains to show</div>
                 <ChainTypeFilter
                   selectedTypes={selectedChainTypes}
                   onChange={setSelectedChainTypes}

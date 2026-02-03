@@ -105,7 +105,7 @@ export const DynamicHeaderSection = ({
         )}
       </div>
       {subheaderValues && selectedSubheaderValue && (
-      <Subheading className={subheadingClassName || "text-md px-[5px] md:px-0"} >
+      <Subheading className={subheadingClassName || "text-md"} >
         
           <motion.span
           key={selectedSubheaderValue}
@@ -136,7 +136,7 @@ export const LandingFirstHeaders = () => {
         subheaderValues={textTogglesFirst.subheaderValues}
         selectedSubheaderValue={isFocusEnabled ? "l2" : "total"}
         headingClassName={"heading-large-lg"}
-        subheadingClassName={"text-md px-[5px]"}
+        subheadingClassName={"text-md"}
       />
     </>
   );
@@ -154,7 +154,7 @@ export const LandingSecondHeaders = () => {
       subheaderValues={textTogglesSecond.subheaderValues}
       selectedSubheaderValue={isFocusEnabled ? "l2" : "total"}
       headingClassName={"heading-large-lg"}
-      subheadingClassName={"text-md px-[5px]"}
+      subheadingClassName={"text-md"}
     />
   );
 }

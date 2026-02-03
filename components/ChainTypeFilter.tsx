@@ -45,7 +45,7 @@ export default function ChainTypeFilter({
           <TopRowChild
             key={option.value}
             // className={`flex items-center gap-x-[5px] px-[15px] py-[5px] rounded-full cursor-pointer ${isSelected ? "bg-color-ui-active" : "hover:bg-color-ui-hover/10"}`}
-            className={`flex items-center justify-center gap-x-[5px] !px-[15px] !py-[5px] flex-1 ${isSelected ? "" : "bg-background opacity-50 hover:opacity-100"}`}
+            className={`flex items-center justify-center gap-x-[5px] !px-[15px] !py-[5px] flex-1 ${isSelected ? "hover:bg-color-ui-hover" : "bg-medium-background hover:bg-color-ui-hover"}`}
             isSelected
             onClick={() => toggleType(option.value)}
           >

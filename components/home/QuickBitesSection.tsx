@@ -23,7 +23,7 @@ const QuickBitesSection: React.FC = () => {
 
   return (
     <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[30px] md:mb-[60px] gap-y-[15px] justify-center !px-0">
-      <div className="flex justify-between items-center px-[30px] md:px-[50px]">
+      <div className="flex justify-between items-center px-[20px] md:px-[50px]">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <GTPIcon
             icon="gtp-quick-bites"
@@ -38,7 +38,7 @@ const QuickBitesSection: React.FC = () => {
         <SectionButtonLink href="/quick-bites" label="See all Quick Bites" shortLabel="More Bites" />
       </div>
 
-      <div className="text-md px-[35px] lg:px-[95px]">
+      <div className="text-md px-[20px] lg:px-[50px]">
         <p className="mb-2">
           Short data-driven articles on specific topics or trends in the Ethereum ecosystem.
         </p>

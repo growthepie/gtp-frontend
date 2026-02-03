@@ -43,7 +43,7 @@ export default async function Page() {
         </div>
       </Container>
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-          <LandingFirstHeaders />
+        <LandingFirstHeaders />
       </Container>
       <LandingSwiperItems />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
@@ -69,7 +69,7 @@ export default async function Page() {
           </div>
           <SectionButtonLink href="/applications" label="See more Applications" shortLabel="More Apps" />
         </div>
-        <Subheading className="text-md px-[5px]">
+        <Subheading className="text-md">
           Applications in the Ethereum ecosystem that showed the strongest growth in the past 7 days.
         </Subheading>
       </Container>
@@ -242,7 +242,6 @@ export default async function Page() {
           />
         </div>
       </Container>
-     
     </>
   );
 }
