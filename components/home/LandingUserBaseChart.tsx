@@ -26,7 +26,7 @@ import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/ap
 import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
-import { IS_DEVELOPMENT } from "@/lib/helpers";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -260,16 +260,16 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
-              <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
-                <div className="flex items-center gap-x-[10px]" style={{
-                  display: IS_DEVELOPMENT ? "flex" : "none"
-                }}>
-                  <ViewToggle
-                    showTable={showTable}
-                    setShowTable={setShowTable}
-                  />
-                </div>
-              </TopRowParent>
+              {!IS_PRODUCTION && (
+                <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
+                  <div className="flex items-center gap-x-[10px]">
+                    <ViewToggle
+                      showTable={showTable}
+                      setShowTable={setShowTable}
+                    />
+                  </div>
+                </TopRowParent>
+              )}
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
