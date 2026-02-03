@@ -17,6 +17,7 @@ interface FeeDisplayRowProps {
   getGradientColor: (percentage: number, theme?: "dark" | "light") => string;
   formatNumber: (num: number, decimals?: number) => string;
   hoverText?: string;
+  hideValue?: boolean;
 }
 
 export function FeeDisplayRow({
@@ -32,6 +33,7 @@ export function FeeDisplayRow({
   getGradientColor,
   formatNumber,
   hoverText,
+  hideValue = false,
 }: FeeDisplayRowProps) {
   const { theme } = useTheme();
   return (
@@ -45,9 +47,9 @@ export function FeeDisplayRow({
         )}
       </div>
 
-      <div className="flex-1 flex justify-end max-w-full min-w-[30px] px-[5px] overflow-x-hidden">
+      <div className={`flex-1 flex justify-end max-w-full min-w-[30px]  px-[5px] overflow-x-hidden ${hideValue ? "-ml-[2px]" : "-ml-0"}`}>
         <div className="flex-1 h-[18px]"></div>
-        <div className='relative flex gap-[1px] items-center justify-center h-[18px]'>
+        <div className={`relative flex gap-[1px] items-center justify-center h-[18px] `}>
           <HistoryDots
             data={costHistory}
             selectedIndex={selectedIndex}
@@ -61,7 +63,7 @@ export function FeeDisplayRow({
       </div>
 
 
-      <div className={`flex bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-2xl`}>
+      <div className={`flex ${hideValue ? "hidden" : "flex"} bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-2xl`}>
         {(() => {
           const value = showUsd
             ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(costValue || 0)

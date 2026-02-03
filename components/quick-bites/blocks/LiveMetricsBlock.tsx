@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Mustache from "mustache";
 import dayjs from "@/lib/dayjs";
@@ -8,6 +8,7 @@ import { useQuickBite } from "@/contexts/QuickBiteContext";
 import {
   LiveMetricsBlock as LiveMetricsBlockType,
   LiveMetricsCardConfig,
+  LiveMetricsFeeDisplayRowConfig,
   LiveMetricConfig,
   LiveMetricFormat,
 } from "@/lib/types/blockTypes";
@@ -17,6 +18,8 @@ import LiveMetricsCard, {
 } from "@/components/quick-bites/LiveMetricsCard";
 import { LiveMetricsChart } from "@/components/quick-bites/LiveMetricsChart";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { FeeDisplayRow } from "@/components/layout/EthAgg/FeeDisplayRow";
+import { getGradientColor } from "@/components/layout/EthAgg/helpers";
 
 const getNestedValue = (obj: any, path?: string) => {
   if (!path) return obj;
@@ -104,14 +107,160 @@ const buildMetricDisplay = (metric: LiveMetricConfig, data: any): LiveMetricDisp
   };
 };
 
+const formatFeeValue = (number: number, decimals: number = 2): string => {
+  if (Number.isNaN(number)) return "0";
+  return number.toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
+
+const toNumber = (value: unknown): number | null => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : null;
+};
+
+const extractHistoryValues = (source: unknown, preferredKey?: string): number[] => {
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((entry) => {
+      if (typeof entry === "number") return entry;
+      if (typeof entry === "string") return toNumber(entry);
+      if (!entry || typeof entry !== "object") return null;
+
+      const candidateKeys = [
+        preferredKey,
+        "value",
+        "tx_cost_erc20_transfer_usd",
+        "tx_cost_erc20_transfer",
+        "tps",
+        "y",
+      ].filter(Boolean) as string[];
+
+      for (const key of candidateKeys) {
+        const parsed = toNumber((entry as Record<string, unknown>)[key]);
+        if (parsed !== null) return parsed;
+      }
+
+      return null;
+    })
+    .filter((value): value is number => value !== null);
+};
+
+interface FeeDisplayRowItemProps {
+  row: LiveMetricsFeeDisplayRowConfig;
+  historyValues: number[];
+  currentValue: number | null;
+}
+
+const FeeDisplayRowItem: React.FC<FeeDisplayRowItemProps> = ({ row, historyValues, currentValue }) => {
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  const normalizedSelectedIndex =
+    selectedIndex === -1
+      ? Math.max(historyValues.length - 1, 0)
+      : Math.min(Math.max(selectedIndex, 0), Math.max(historyValues.length - 1, 0));
+
+  const hoveredOrSelectedIndex = hoverIndex ?? normalizedSelectedIndex;
+  const fallbackValue =
+    historyValues[hoveredOrSelectedIndex] ??
+    historyValues[historyValues.length - 1] ??
+    0;
+  const rowValue = currentValue ?? fallbackValue;
+
+  return (
+    <FeeDisplayRow
+      title={row.title}
+      costValue={rowValue}
+      costHistory={historyValues}
+      showUsd={row.showUsd ?? true}
+      gradientClass={row.gradientClass || "from-[#FE5468] to-[#FFDF27]"}
+      selectedIndex={normalizedSelectedIndex}
+      hoverIndex={hoverIndex}
+      onSelect={setSelectedIndex}
+      onHover={setHoverIndex}
+      getGradientColor={getGradientColor}
+      formatNumber={formatFeeValue}
+      hoverText={row.hoverText}
+      hideValue={true}
+    />
+  );
+};
+
+interface FeeDisplayRowsProps {
+  rows: LiveMetricsFeeDisplayRowConfig[];
+  resolvedData: any;
+  historyData: any;
+  defaultHistoryPath?: string;
+}
+
+const FeeDisplayRows: React.FC<FeeDisplayRowsProps> = ({
+  rows,
+  resolvedData,
+  historyData,
+  defaultHistoryPath,
+}) => {
+  const preparedRows = useMemo(() => {
+    return rows
+      .slice(0, 1)
+      .map((row) => {
+        const source = getNestedValue(historyData, row.historyPath || defaultHistoryPath);
+        const historyValues = extractHistoryValues(source, row.valueKey);
+        const limitedHistory =
+          row.limit && row.limit > 0 ? historyValues.slice(-row.limit) : historyValues;
+        const parsedCurrentValue = row.valuePath
+          ? toNumber(getNestedValue(resolvedData, row.valuePath))
+          : null;
+
+        return {
+          row,
+          historyValues: limitedHistory,
+          currentValue: parsedCurrentValue,
+        };
+      })
+      .filter(({ row }) => Boolean(row?.title));
+  }, [rows, historyData, defaultHistoryPath, resolvedData]);
+
+  if (!preparedRows.length) return null;
+
+  return (
+    <div className="flex flex-col gap-y-[10px]">
+      {preparedRows.map(({ row, historyValues, currentValue }, index) => (
+        <FeeDisplayRowItem
+          key={`${row.title}-${row.historyPath || defaultHistoryPath || "history"}-${index}`}
+          row={row}
+          historyValues={historyValues}
+          currentValue={currentValue}
+        />
+      ))}
+    </div>
+  );
+};
+
 export const LiveMetricsCardRenderer: React.FC<{ config: LiveMetricsCardConfig }> = ({ config }) => {
   const { sharedState } = useQuickBite();
+  const hasFeeDisplayRows = Boolean(config.feeDisplayRows?.length);
+  const chartConfig = hasFeeDisplayRows ? undefined : config.chart;
+
+  useEffect(() => {
+    if (hasFeeDisplayRows && config.chart) {
+      console.warn(`Live metrics card "${config.title}" has both chart and feeDisplayRows. chart will be ignored.`);
+    }
+  }, [hasFeeDisplayRows, config.chart, config.title]);
+
+  useEffect(() => {
+    if ((config.feeDisplayRows?.length || 0) > 1) {
+      console.warn(`Live metrics card "${config.title}" currently supports only one feeDisplayRow. Extra rows will be ignored.`);
+    }
+  }, [config.feeDisplayRows, config.title]);
 
   const liveDataUrl = useMemo(() => resolveUrl(config.dataUrl, sharedState), [config.dataUrl, sharedState]);
   const historyUrl = useMemo(() => {
-    if (!config.chart) return null;
+    if (!chartConfig && !hasFeeDisplayRows) return null;
     return resolveUrl(config.historyUrl ?? config.dataUrl, sharedState);
-  }, [config.chart, config.historyUrl, config.dataUrl, sharedState]);
+  }, [chartConfig, hasFeeDisplayRows, config.historyUrl, config.dataUrl, sharedState]);
 
   const { data: liveData } = useSWR(liveDataUrl, {
     refreshInterval: config.refreshInterval,
@@ -125,7 +274,6 @@ export const LiveMetricsCardRenderer: React.FC<{ config: LiveMetricsCardConfig }
     return getNestedValue(liveData, config.dataPath);
   }, [liveData, config.dataPath]);
 
-  const chartConfig = config.chart;
   const chartData = useMemo(() => {
     if (!chartConfig || !historyData) return [];
     const source = getNestedValue(historyData, chartConfig.dataPath || config.historyPath);
@@ -200,11 +348,21 @@ export const LiveMetricsCardRenderer: React.FC<{ config: LiveMetricsCardConfig }
     />
   ) : null;
 
+  const feeDisplayRowsNode = hasFeeDisplayRows ? (
+    <FeeDisplayRows
+      rows={config.feeDisplayRows || []}
+      resolvedData={resolvedData}
+      historyData={historyData}
+      defaultHistoryPath={config.historyPath}
+    />
+  ) : null;
+
   return (
     <LiveMetricsCard
       title={config.title}
       icon={config.icon as GTPIconName | undefined}
       chart={chartNode}
+      feeDisplayRows={feeDisplayRowsNode}
       leftMetrics={leftMetrics}
       rightMetrics={rightMetrics}
       liveMetric={liveMetric}

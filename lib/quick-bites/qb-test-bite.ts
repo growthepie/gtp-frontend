@@ -48,27 +48,27 @@ const testBite: QuickBiteData = createQuickBite({
     JSON.stringify({
       items: [
         {
-          title: "TPS (Arbitrum)",
-          icon: "gtp-metrics-transactionspersecond",
-          layout: "chart-right",
+          title: "Transfer Fees (Arbitrum)",
+          icon: "gtp-growthepie-fees",
           dataUrl: "https://sse.growthepie.com/api/chain/arbitrum/history",
           dataPath: "history.0",
+          historyPath: "history",
           refreshInterval: 10000,
-          chart: {
-            dataPath: "history",
-            valueKey: "tps",
-            timeKey: "timestamp",
-            metricLabel: "TPS",
-            seriesNamePath: "display_name",
-            overrideColor: ["#28A0F0", "#19D9D6"],
-            centerWatermark: true,
-            anchorZero: true,
-            limit: 100
-          },
+          feeDisplayRows: [
+            {
+              title: "ERC20 Transfer",
+              valuePath: "tx_cost_erc20_transfer_usd",
+              historyPath: "history",
+              valueKey: "tx_cost_erc20_transfer_usd",
+              showUsd: true,
+              gradientClass: "from-chains-arbitrum to-chains-arbitrum/50",
+              hoverText: "new block every ~250ms"
+            }
+          ],
           liveMetric: {
-            label: "Current TPS",
+            label: "Current (USD)",
             valuePath: "tps",
-            valueFormat: { maxDecimals: 1, suffix: " TPS" },
+            valueFormat: { prefix: "$", maxDecimals: 4 },
             accentColor: "#28A0F0"
           }
         },

@@ -19,6 +19,7 @@ interface LiveMetricsCardProps {
   title: string;
   icon?: GTPIconName;
   chart?: React.ReactNode;
+  feeDisplayRows?: React.ReactNode;
   leftMetrics?: LiveMetricDisplay[];
   rightMetrics?: LiveMetricDisplay[];
   liveMetric?: LiveMetricHighlight;
@@ -53,6 +54,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
   title,
   icon,
   chart,
+  feeDisplayRows,
   leftMetrics = [],
   rightMetrics = [],
   liveMetric,
@@ -63,14 +65,16 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
   const hasLeftMetrics = leftMetrics.length > 0;
   const hasRightMetrics = rightMetrics.length > 0;
   const hasLiveMetric = Boolean(liveMetric);
+  const hasFeeDisplayRows = Boolean(feeDisplayRows);
   const liveIcon = liveMetric?.liveIcon ?? "gtp-realtime";
-  const isChartRight = layout === "chart-right";
+  const isChartRight = layout === "chart-right" && !hasFeeDisplayRows;
   const chartHeight = chartHeightClassName || (isChartRight ? "h-[46px]" : "h-[54px]");
+  const showBottomMetrics = !isChartRight && (hasLeftMetrics || hasRightMetrics || (hasLiveMetric && !hasFeeDisplayRows));
 
   const minHeightClassName = isChartRight ? "" : "min-h-[146px]";
 
   return (
-    <div className={`bg-color-bg-default mt-[15px] xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] ${minHeightClassName} ${className}`.trim()}>
+    <div className={`bg-color-bg-default mt-[15px] xs:p-[10px] min-w-[min(100%,400px)] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] ${minHeightClassName} ${className}`.trim()}>
       <div className="flex gap-x-[10px] h-[28px] items-center relative">
         {icon && (
           <GTPIcon icon={icon} size="sm" containerClassName="!size-[28px] relative flex items-center justify-center" />
@@ -78,7 +82,29 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
         <div className="heading-large-xs">{title}</div>
       </div>
 
-      {chart && !isChartRight && (
+      {hasFeeDisplayRows && (
+        <div className="flex items-center justify-between  flex-nowrap pb-[15px] gap-x-[16px] xs:pl-[5px] pl-[5px]">
+          <div className={`flex h-full items-center relative transition-height duration-500 ${chartHeight} overflow-visible`}>
+            <div className=" h-full xs:ml-0 -ml-[5px] max-w-[200px]">
+              {feeDisplayRows}
+            </div>
+          </div>
+          {hasLiveMetric && liveMetric && (
+            <div className="flex flex-col items-end min-w-[90px] shrink-0 z-50 ">
+              <div className="numbers-2xl text-nowrap whitespace-nowrap" style={{ color: liveMetric.accentColor }}>
+                {liveMetric.value}
+              </div>
+              {liveMetric.label && (
+                <div className="heading-small-xxxs text-nowrap text-[#5A6462] whitespace-nowrap">
+                  {liveMetric.label}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!hasFeeDisplayRows && chart && !isChartRight && (
         <div className={`relative transition-height pb-[15px] duration-500 w-full ${chartHeight} overflow-visible`}>
           <div className="w-full h-full xs:ml-0 -ml-[5px]">
             {chart}
@@ -86,7 +112,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
         </div>
       )}
 
-      {chart && isChartRight && (
+      {!hasFeeDisplayRows && chart && isChartRight && (
         <div className="flex items-center pb-[15px] gap-x-[30px] xs:pl-[0px]  pl-[5px]">
           <div className={`relative transition-height duration-500 w-full ${chartHeight} overflow-visible flex-1`}>
             <div className="w-full h-full xs:ml-0 -ml-[5px]">
@@ -108,7 +134,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
         </div>
       )}
 
-      {!isChartRight && (hasLeftMetrics || hasRightMetrics || hasLiveMetric) && (
+      {showBottomMetrics && (
         <div className="flex justify-between pb-[15px] xs:pl-[45px] pl-[5px] items-center">
           {hasLeftMetrics && (
             <div className="flex flex-col gap-y-[10px] md:flex-row md:w-full">

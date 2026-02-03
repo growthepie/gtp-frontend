@@ -263,6 +263,17 @@ export interface LiveMetricsChartConfig {
   anchorZero?: boolean;
 }
 
+export interface LiveMetricsFeeDisplayRowConfig {
+  title: string;
+  historyPath?: string;
+  valuePath?: string;
+  valueKey?: string;
+  showUsd?: boolean;
+  gradientClass?: string;
+  hoverText?: string;
+  limit?: number;
+}
+
 export interface LiveMetricsCardConfig {
   title: string;
   icon?: string;
@@ -281,6 +292,7 @@ export interface LiveMetricsCardConfig {
     liveIcon?: string;
   };
   chart?: LiveMetricsChartConfig;
+  feeDisplayRows?: LiveMetricsFeeDisplayRowConfig[];
 }
 
 export interface LiveMetricsBlock extends BaseBlock, LiveMetricsCardConfig {

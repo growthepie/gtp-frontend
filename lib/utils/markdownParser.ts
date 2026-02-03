@@ -513,10 +513,22 @@ function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
 function parseLiveMetricsBlock(jsonString: string): ContentBlock | null {
   try {
     const liveMetricsConfig = JSON.parse(jsonString);
+    const hasFeeDisplayRows =
+      Array.isArray(liveMetricsConfig?.feeDisplayRows) &&
+      liveMetricsConfig.feeDisplayRows.length > 0;
+    const hasChart = Boolean(liveMetricsConfig?.chart);
 
     if (!liveMetricsConfig?.dataUrl) {
       console.error('Error parsing live metrics data: dataUrl is required.');
       return null;
+    }
+
+    if (hasChart && hasFeeDisplayRows) {
+      console.warn('Live metrics block configured with both chart and feeDisplayRows. chart will be ignored.');
+    }
+
+    if (hasFeeDisplayRows && liveMetricsConfig.feeDisplayRows.length > 1) {
+      console.warn('Live metrics block supports only one feeDisplayRow currently. Extra rows will be ignored.');
     }
 
     return {
@@ -535,7 +547,8 @@ function parseLiveMetricsBlock(jsonString: string): ContentBlock | null {
       metricsLeft: liveMetricsConfig.metricsLeft || undefined,
       metricsRight: liveMetricsConfig.metricsRight || undefined,
       liveMetric: liveMetricsConfig.liveMetric || undefined,
-      chart: liveMetricsConfig.chart || undefined,
+      chart: hasFeeDisplayRows ? undefined : liveMetricsConfig.chart || undefined,
+      feeDisplayRows: hasFeeDisplayRows ? liveMetricsConfig.feeDisplayRows.slice(0, 1) : undefined,
       showInMenu: parseShowInMenu(liveMetricsConfig),
     };
   } catch (error) {
@@ -554,10 +567,29 @@ function parseLiveMetricsRowBlock(jsonString: string): ContentBlock | null {
       return null;
     }
 
+    const parsedItems = items.slice(0, 3).map((item: any) => {
+      const hasFeeDisplayRows = Array.isArray(item?.feeDisplayRows) && item.feeDisplayRows.length > 0;
+      const hasChart = Boolean(item?.chart);
+
+      if (hasChart && hasFeeDisplayRows) {
+        console.warn(`Live metrics row item "${item?.title || 'unknown'}" has both chart and feeDisplayRows. chart will be ignored.`);
+      }
+
+      if (hasFeeDisplayRows && item.feeDisplayRows.length > 1) {
+        console.warn(`Live metrics row item "${item?.title || 'unknown'}" supports only one feeDisplayRow currently. Extra rows will be ignored.`);
+      }
+
+      return {
+        ...item,
+        chart: hasFeeDisplayRows ? undefined : item?.chart,
+        feeDisplayRows: hasFeeDisplayRows ? item?.feeDisplayRows.slice(0, 1) : undefined,
+      };
+    });
+
     return {
       id: generateBlockId(),
       type: 'live-metrics-row',
-      items: items.slice(0, 3),
+      items: parsedItems,
       className: liveMetricsConfig.className || '',
       showInMenu: parseShowInMenu(liveMetricsConfig),
     };

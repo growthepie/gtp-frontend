@@ -7,7 +7,7 @@ import { LiveMetricsCardRenderer } from "./LiveMetricsBlock";
 export const LiveMetricsRowBlock: React.FC<{ block: LiveMetricsRowBlockType }> = ({ block }) => {
   const className =
     block.className ||
-    "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]";
+    "grid [grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))] gap-x-[15px]";
 
   return (
     <div className={className}>

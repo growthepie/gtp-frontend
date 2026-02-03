@@ -142,6 +142,34 @@ JSON.stringify({
 "```"
 ```
 
+You can also render `feeDisplayRows` instead of a chart inside a live metrics card:
+
+```typescript
+"```live-metrics",
+JSON.stringify({
+  title: "Token Transfer Fees",
+  icon: "gtp-growthepie-fees",
+  dataUrl: "https://sse.growthepie.com/api/ethereum",
+  dataPath: "data",
+  historyUrl: "https://sse.growthepie.com/api/ethereum/history",
+  historyPath: "history",
+  feeDisplayRows: [
+    {
+      title: "Ethereum Mainnet",
+      valuePath: "tx_cost_erc20_transfer_usd",
+      historyPath: "history",
+      valueKey: "tx_cost_erc20_transfer_usd",
+      showUsd: true,
+      hoverText: "new block every ~12s"
+    }
+  ]
+}),
+"```"
+```
+
+> `chart` and `feeDisplayRows` are mutually exclusive. If both are provided, `chart` is ignored.
+> For now, only the first `feeDisplayRows` entry is rendered.
+
 #### Live Metrics Row (up to 3 cards)
 ```typescript
 "```live-metrics-row",
