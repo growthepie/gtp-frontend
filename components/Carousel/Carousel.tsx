@@ -268,7 +268,7 @@ export default function Carousel({
     >
       <div
         ref={containerRef}
-        className={`relative wrapper w-full ${heightClass} ${desktopRightPadding ? "md:pr-[15px]" : ""}`}
+        className={`relative wrapper w-full ${heightClass} ${desktopRightPadding ? "md:pr-0" : ""}`}
         aria-labelledby={ariaId}
         role="region"
         aria-roledescription="carousel"

@@ -503,8 +503,8 @@ input:focus-visible {
     to right,
     transparent,
     black 30px,
-    black calc(100% - 60px),
-    transparent calc(100% - 30px),
+    black calc(100% - 45px),
+    transparent calc(100% - 15px),
     transparent
   );
   /* Apply the mask image */
