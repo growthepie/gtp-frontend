@@ -180,6 +180,8 @@ const lineaTokenBurn: QuickBiteData = {
 
     "> Note: Projected burn rates are calculated based on historical data since September 11th, 2025 and assume constant burn rates. Actual future burn rates may vary significantly based on network activity and economic conditions.",
 
+    "> Note: \"Cost (Infra)\" is lagging behind as this datapoint requires onchain disclosure by the Linea team. Data typically appears within a 1-4 week.",
+
     "```chart",
     JSON.stringify({
       title: "Gas Fee Income vs Operating Costs",
