@@ -53,11 +53,7 @@ export default forwardRef(function VerticalScrollContainer(
   const startPosRef = useRef<{ top: number; y: number } | null>(null);
   const trackStartPosRef = useRef<{ scrollTop: number; y: number } | null>(null);
   const isDraggingRef = useRef(false);
-  
-  // Track if initial measurement has happened
-  const [hasInitialMeasurement, setHasInitialMeasurement] = useState(false);
-  const initialMeasurementTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Force re-calculation when height prop changes
   const heightRef = useRef(height);
   useEffect(() => {
@@ -76,24 +72,7 @@ export default forwardRef(function VerticalScrollContainer(
     }
   }, [height]);
 
-  // Set a timeout to ensure we have an initial measurement
-  useEffect(() => {
-    // Wait for initial render and measurement
-    initialMeasurementTimeoutRef.current = setTimeout(() => {
-      if (contentRef.current && contentScrollAreaRef.current) {
-        setHasInitialMeasurement(true);
-        updateScrollableAreaScroll();
-      }
-    }, 50); // Small delay to ensure measurements have happened
-    
-    return () => {
-      if (initialMeasurementTimeoutRef.current) {
-        clearTimeout(initialMeasurementTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Update scroll percentage based on scrollTop and recalculate when needed
+  // Update scroll percentage based on scrollTop
   const updateScrollableAreaScroll = useCallback(() => {
     const contentArea = contentScrollAreaRef.current;
     if (contentArea) {
@@ -104,13 +83,8 @@ export default forwardRef(function VerticalScrollContainer(
           ? 0
           : (contentArea.scrollTop / scrollableHeight) * 100;
       setCurrentScrollPercentage(scrollPercentage);
-      
-      // Consider initial measurement complete
-      if (!hasInitialMeasurement) {
-        setHasInitialMeasurement(true);
-      }
     }
-  }, [contentScrollAreaRef, hasInitialMeasurement]);
+  }, [contentScrollAreaRef]);
 
   // Cursor and user-select handlers
   const updateCursor = (node: HTMLDivElement) => {
@@ -366,41 +340,41 @@ export default forwardRef(function VerticalScrollContainer(
 
   // Calculate thumb position and size
   const { scrollerY, thumbHeight } = useMemo(() => {
-    if (!scrollerRef.current || !contentScrollAreaRef.current || !hasInitialMeasurement) {
+    if (!scrollerRef.current || !contentScrollAreaRef.current) {
       return { scrollerY: '0px', thumbHeight: 20 }; // Show a default thumb until we have measurements
     }
-    
+
     // Calculate thumb height based on content/container ratio
     const contentScrollHeight = contentScrollAreaRef.current.scrollHeight;
     const visibleHeight = contentScrollAreaRef.current.clientHeight;
-    const scrollerHeight = scrollerRef.current.clientHeight;
-    
+    const trackHeight = scrollerRef.current.clientHeight;
+
     // Only show scrollbar if content is taller than visible area
     if (contentScrollHeight <= visibleHeight || visibleHeight === 0) {
       return { scrollerY: '0px', thumbHeight: 0 };
     }
-    
+
     // Calculate thumb height - minimum of 20px
     const calculatedThumbHeight = Math.max(
       20,
-      (visibleHeight / contentScrollHeight) * scrollerHeight
+      (visibleHeight / contentScrollHeight) * trackHeight
     );
-    
-    // Set thumb position
-    const scrollableScrollerHeight = scrollerHeight - calculatedThumbHeight;
-    const scrollerTop = (currentScrollPercentage / 100) * scrollableScrollerHeight;
-    
-    return { 
-      scrollerY: `${scrollerTop}px`, 
-      thumbHeight: calculatedThumbHeight 
-    };
-  }, [currentScrollPercentage, contentScrollAreaRef, hasInitialMeasurement]);
 
-  // Determine whether to show the scroller - only if we have measurements and content > container
+    // Set thumb position
+    const scrollableScrollerHeight = trackHeight - calculatedThumbHeight;
+    const scrollerTop = (currentScrollPercentage / 100) * scrollableScrollerHeight;
+
+    return {
+      scrollerY: `${scrollerTop}px`,
+      thumbHeight: calculatedThumbHeight
+    };
+  // Include observed sizes so useMemo re-runs when they change
+  }, [currentScrollPercentage, scrollerHeight, contentScrollAreaHeight, contentHeight]);
+
+  // Determine whether to show the scroller - only if content > container
   const showScroller = useMemo(() => {
-    if (!hasInitialMeasurement) return false;
     return contentHeight > contentScrollAreaHeight && contentScrollAreaHeight > 0;
-  }, [contentHeight, contentScrollAreaHeight, hasInitialMeasurement]);
+  }, [contentHeight, contentScrollAreaHeight]);
 
   // Handle mask gradients
   const [maskGradient, setMaskGradient] = useState<string>('');
@@ -414,11 +388,6 @@ export default forwardRef(function VerticalScrollContainer(
   }, [currentScrollPercentage, showScroller]);
 
   useEffect(() => {
-    if (!hasInitialMeasurement) {
-      setMaskGradient('');
-      return;
-    }
-    
     if (showTopGradient && showBottomGradient) {
       setMaskGradient(
         'linear-gradient(to bottom, transparent, black 50px, black calc(100% - 50px), transparent)'
@@ -432,7 +401,7 @@ export default forwardRef(function VerticalScrollContainer(
     } else {
       setMaskGradient('');
     }
-  }, [showTopGradient, showBottomGradient, hasInitialMeasurement]);
+  }, [showTopGradient, showBottomGradient]);
 
   // Determine padding based on scrollbar position
   const computedPaddingRight =

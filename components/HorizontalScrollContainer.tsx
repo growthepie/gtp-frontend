@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import GradientMask from "./GradientMask";
-import ScrollThumb from "./ScrollThumb";
+import ScrollThumb, { MIN_THUMB_WIDTH } from "./ScrollThumb";
 
 type HorizontalScrollContainerProps = {
   className?: string;
@@ -48,8 +48,7 @@ export default function HorizontalScrollContainer({
   const [isScrollable, setIsScrollable] = useState(false);
   const [contentScrollAreaRef, { width: contentScrollAreaWidth }] =
     useElementSizeObserver<HTMLDivElement>();
-  const [scrollerRef, { width: scrollerWidth }] =
-    useElementSizeObserver<HTMLDivElement>();
+  const [scrollerRef] = useElementSizeObserver<HTMLDivElement>();
   const [contentRef, { width: contentWidth }] =
     useElementSizeObserver<HTMLDivElement>();
   const grabberRef = useRef<HTMLDivElement>(null);
@@ -59,7 +58,29 @@ export default function HorizontalScrollContainer({
   const startXRef = useRef<number>(0);
   const startScrollLeftRef = useRef<number>(0);
 
-  // Update the current scroll percentage based on scrollLeft
+  // Lightweight thumb-only update (no React state, no re-renders)
+  const updateThumbOnly = useCallback(() => {
+    const contentArea = contentScrollAreaRef.current;
+    const thumb = grabberRef.current;
+    const track = scrollerRef.current;
+    if (!contentArea || !thumb || !track) return;
+
+    const scrollableWidth = contentArea.scrollWidth - contentArea.clientWidth;
+    const scrollPercentage = scrollableWidth
+      ? (contentArea.scrollLeft / scrollableWidth) * 100
+      : 0;
+
+    const trackWidth = track.clientWidth;
+    // Dynamic thumb width: proportional to visible/total ratio, with minimum
+    const visibleRatio = contentArea.clientWidth / contentArea.scrollWidth;
+    const thumbWidth = Math.max(MIN_THUMB_WIDTH, visibleRatio * trackWidth);
+    const thumbX = (scrollPercentage / 100) * (trackWidth - thumbWidth);
+
+    thumb.style.width = `${thumbWidth}px`;
+    thumb.style.transform = `translateY(-50%) translateX(${thumbX}px)`;
+  }, [contentScrollAreaRef, scrollerRef]);
+
+  // Full update including React state (for gradient masks)
   const updateScrollableAreaScroll = useCallback(() => {
     const contentArea = contentScrollAreaRef.current;
     if (contentArea) {
@@ -71,7 +92,8 @@ export default function HorizontalScrollContainer({
       const SCROLL_TOLERANCE_PX = 2;
       setIsScrollable(scrollableWidth > SCROLL_TOLERANCE_PX);
     }
-  }, [contentScrollAreaRef]);
+    updateThumbOnly();
+  }, [contentScrollAreaRef, updateThumbOnly]);
 
   // Unified dragging handler for both mouse and touch
   const handleDragStart = useCallback(
@@ -115,7 +137,8 @@ export default function HorizontalScrollContainer({
             0,
             Math.min(scrollableWidth, scrollLeft)
           );
-          updateScrollableAreaScroll();
+          // Use lightweight update during drag (no React state changes)
+          updateThumbOnly();
         });
       };
 
@@ -130,6 +153,8 @@ export default function HorizontalScrollContainer({
         document.removeEventListener("touchmove", handleMove);
         document.removeEventListener("touchend", handleEnd);
         resetCursor(grabberRef.current);
+        // Full update on drag end to sync gradient masks
+        updateScrollableAreaScroll();
       };
 
       // Add event listeners for both mouse and touch
@@ -139,7 +164,7 @@ export default function HorizontalScrollContainer({
       document.addEventListener("touchend", handleEnd);
       updateCursor(grabberRef.current);
     },
-    [contentScrollAreaRef, updateScrollableAreaScroll]
+    [contentScrollAreaRef, updateThumbOnly, updateScrollableAreaScroll]
   );
 
   // Handle dragging via the thumb (mouse)
@@ -280,9 +305,11 @@ export default function HorizontalScrollContainer({
     if (!area) return;
 
     let isContentDragging = false;
+    let hasDragged = false; // Track if actual movement occurred
     let startX = 0;
     let startScrollLeft = 0;
     let rafId: number | null = null;
+    const DRAG_THRESHOLD = 5; // Minimum pixels to consider it a drag
 
     const onMouseMove = (e: MouseEvent) => {
       e.preventDefault();
@@ -291,6 +318,12 @@ export default function HorizontalScrollContainer({
       if (!isContentDragging || !contentScrollAreaRef.current) return;
       const currentX = e.clientX;
       const dx = currentX - startX;
+
+      // Mark as dragged if movement exceeds threshold
+      if (Math.abs(dx) > DRAG_THRESHOLD) {
+        hasDragged = true;
+      }
+
       const scrollableWidth =
         contentScrollAreaRef.current.scrollWidth -
         contentScrollAreaRef.current.clientWidth;
@@ -302,7 +335,8 @@ export default function HorizontalScrollContainer({
       rafId = requestAnimationFrame(() => {
         if (!contentScrollAreaRef.current) return;
         contentScrollAreaRef.current.scrollLeft = next;
-        updateScrollableAreaScroll();
+        // Use lightweight update during drag (no React state changes)
+        updateThumbOnly();
       });
     };
 
@@ -311,7 +345,11 @@ export default function HorizontalScrollContainer({
       e.stopPropagation();
       e.stopImmediatePropagation();
       e.preventDefault();
+
+      const didDrag = hasDragged;
       isContentDragging = false;
+      hasDragged = false;
+
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
         rafId = null;
@@ -319,6 +357,23 @@ export default function HorizontalScrollContainer({
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
       resetCursor(area);
+
+      // Full update on drag end to sync gradient masks
+      updateScrollableAreaScroll();
+
+      // If we actually dragged, prevent the subsequent click event
+      if (didDrag) {
+        const preventClick = (clickEvent: MouseEvent) => {
+          clickEvent.stopPropagation();
+          clickEvent.preventDefault();
+        };
+        // Use capture phase to intercept before the click reaches any element
+        document.addEventListener("click", preventClick, { capture: true, once: true });
+        // Safety: remove listener on next tick if click doesn't fire (e.g., drag ended outside window)
+        requestAnimationFrame(() => {
+          document.removeEventListener("click", preventClick, { capture: true });
+        });
+      }
     };
 
     const onMouseDown = (e: MouseEvent) => {
@@ -328,6 +383,7 @@ export default function HorizontalScrollContainer({
       e.preventDefault();
       if (!contentScrollAreaRef.current) return;
       isContentDragging = true;
+      hasDragged = false; // Reset drag state
       startX = e.clientX;
       startScrollLeft = contentScrollAreaRef.current.scrollLeft;
       updateCursor(area);
@@ -342,7 +398,7 @@ export default function HorizontalScrollContainer({
       document.removeEventListener("mouseup", onMouseUp);
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [enableDragScroll, contentScrollAreaRef, updateScrollableAreaScroll]);
+  }, [enableDragScroll, contentScrollAreaRef, updateThumbOnly, updateScrollableAreaScroll]);
 
   // Listen to scroll events and rAF-throttle updates to the thumb position
   useEffect(() => {
@@ -423,13 +479,6 @@ export default function HorizontalScrollContainer({
     container.scrollTo({ left: nextScrollLeft, behavior: scrollToBehavior });
   }, [scrollToId, scrollToBehavior, scrollToAlign, contentScrollAreaRef]);
 
-  // Calculate the thumb's horizontal position
-  const scrollerX = useMemo(() => {
-    if (scrollerWidth === 0) {
-      return "0%";
-    }
-    return `${currentScrollPercentage}%`;
-  }, [currentScrollPercentage, scrollerWidth]);
 
   // Determine whether to show the custom scrollbar using real DOM scrollability
   const showScroller = isScrollable;
@@ -518,7 +567,7 @@ export default function HorizontalScrollContainer({
             WebkitMaskSize: "100% 100%",
             maskSize: "100% 100%",
             // expose commonly changed values as CSS vars for potential future CSS usage
-            ["--scroll-position" as any]: scrollerX,
+            ["--scroll-position" as any]: `${currentScrollPercentage}%`,
             ["--mask-gradient" as any]: maskGradient,
             paddingRight: paddingRight ? `${paddingRight}px` : undefined,
             paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
@@ -551,7 +600,7 @@ export default function HorizontalScrollContainer({
       {showScroller && !hideScrollbar && (
         <div className="pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center">
           <div
-            className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full relative"
+            className="w-full p-0.5 bg-black/30 rounded-full relative"
             onMouseDown={(e) => {
               // Prevent scrolling the container when clicking the scrollbar
               e.preventDefault();
@@ -573,7 +622,6 @@ export default function HorizontalScrollContainer({
           >
             <div className="relative w-full h-2" ref={scrollerRef}>
               <ScrollThumb
-                position={scrollerX}
                 onMouseDown={handleThumbMouseDown}
                 onTouchStart={handleThumbTouchStart}
                 ref={grabberRef}

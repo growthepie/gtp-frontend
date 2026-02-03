@@ -3,16 +3,21 @@
 import React, { forwardRef } from "react";
 
 type ScrollThumbProps = {
-  position: string;
   onMouseDown: (e: React.MouseEvent) => void;
   onTouchStart: (e: React.TouchEvent) => void;
 };
 
+export const MIN_THUMB_WIDTH = 20;
+
 const ScrollThumb = forwardRef<HTMLDivElement, ScrollThumbProps>(
-  ({ position, onMouseDown, onTouchStart }, ref) => (
+  ({ onMouseDown, onTouchStart }, ref) => (
     <div
-      className="w-5 h-2 bg-forest-400/30 rounded-full absolute top-1/2 transform -translate-y-1/2 cursor-grab"
-      style={{ left: position }}
+      className="h-2 bg-forest-400/30 rounded-full absolute top-1/2 cursor-grab"
+      style={{
+        width: `${MIN_THUMB_WIDTH}px`,
+        transform: "translateY(-50%) translateX(0px)",
+        willChange: "transform, width",
+      }}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
       ref={ref}
