@@ -30,6 +30,9 @@ import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
+import { AIInsightsWrapper } from "./AIInsightsWrapper";
+import { buildTableContext, buildChainContext } from "@/hooks/useAIInsights";
+import { TableInsightContext, ChainInsightContext } from "@/types/api/AIInsightsResponse";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -237,8 +240,31 @@ export default memo(function LandingMetricsTable({
     return "NA";
   }, [monthsSinceLaunch]);
 
+  // Build table-level insight context
+  const tableInsightContext: TableInsightContext = useMemo(() => {
+    return buildTableContext(rows, master, sort);
+  }, [rows, master, sort]);
+
+  // Build chain insight context for each row
+  const buildRowInsightContext = useCallback((item: LandingRow): ChainInsightContext => {
+    const rankings = landing?.data.metrics.table_visual[item.chain.key]?.[focusEnabled ? "ranking" : "ranking_w_eth"];
+    return buildChainContext(
+      item,
+      master,
+      rankings as { [metric: string]: { rank: number | null; out_of: number | null } } | undefined
+    );
+  }, [landing, focusEnabled, master]);
+
   return (
-    <>
+    <AIInsightsWrapper
+      placement="top-end"
+      placementOffset={{ mainAxis: 7, crossAxis: 30 }}
+      hideDelay={300}
+      title="Chains in the Ecosystem"
+      size="sm"
+      insightType="table"
+      insightContext={tableInsightContext}
+    >
       <GridTableHeader
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
         className="mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
@@ -370,61 +396,73 @@ export default memo(function LandingMetricsTable({
             const maturityKey = master.chains[item.chain.key].maturity || "NA";
             const showMaturityTooltip = maturityKey !== "NA" && maturityKey !== "";
 
+            const chainInsightContext = buildRowInsightContext(item);
             return (
-              <GridTableRow
-                key={`${index}-${theme}`}
-                gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
-                className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !select-none h-[34px] !pb-0 !pt-0"
-                theme={theme}
-                bar={{
-                  origin_key: item.chain.key,
-                  width: lastValsByChainKey[item.chain.key] / maxVal,
-                  transitionClass: sort.metric === "users" ? "transition-[width] duration-300" : "transition-opacity duration-[100ms]",
-                  containerStyle: {
-                    left: 22,
-                    right: 1,
-                    top: 0,
-                    bottom: 0,
-                    borderRadius: "0 9999px 9999px 0",
-                    zIndex: -1,
-                    overflow: "hidden",
-                    opacity: sort.metric === "users" ? 1 : 0,
-                  },
-                }}
-                onClick={() => router.push(`/chains/${item.chain.urlKey}`)}
+              <AIInsightsWrapper
+                key={`ai-${index}-${theme}`}
+                placement="right"
+                placementOffset={{ mainAxis: 8 }}
+                hideDelay={500}
+                showDelay={500}
+                title={`Get AI insights for ${data.chains[item.chain.key].chain_name}`}
+                size="sm"
+                insightType="chain"
+                insightContext={chainInsightContext}
               >
-                <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
-                  <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]">
-                    <GridTableChainIcon key={`${item.chain.key}-${theme}`} origin_key={item.chain.key} theme={theme} />
-                  </div>
-                </div>
-                <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>
-                <div className="text-xs w-full">{data.chains[item.chain.key].purpose || ""}</div>
-                <div className="justify-start w-full items-center group rounded-full">
-                  <MaturityWithTooltip maturityKey={maturityKey} showTooltip={showMaturityTooltip} />
-                </div>
-                <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
-                <div className="flex justify-end items-center">
-                  <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
-                    <div className="w-1/2 flex justify-end text-right numbers-xs text-[#5A6462]">
-                      {(data.chains[item.chain.key].user_share * 100).toFixed(2)}%
+                <GridTableRow
+                  gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
+                  className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !select-none h-[34px] !pb-0 !pt-0"
+                  theme={theme}
+                  bar={{
+                    origin_key: item.chain.key,
+                    width: lastValsByChainKey[item.chain.key] / maxVal,
+                    transitionClass: sort.metric === "users" ? "transition-[width] duration-300" : "transition-opacity duration-[100ms]",
+                    containerStyle: {
+                      left: 22,
+                      right: 1,
+                      top: 0,
+                      bottom: 0,
+                      borderRadius: "0 9999px 9999px 0",
+                      zIndex: -1,
+                      overflow: "hidden",
+                      opacity: sort.metric === "users" ? 1 : 0,
+                    },
+                  }}
+                  onClick={() => router.push(`/chains/${item.chain.urlKey}`)}
+                >
+                  <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
+                    <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]">
+                      <GridTableChainIcon key={`${item.chain.key}-${theme}`} origin_key={item.chain.key} theme={theme} />
                     </div>
-                    <div className="w-1/2 text-right flex justify-end items-center numbers-xs">
-                      {Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(lastValsByChainKey[item.chain.key])}
+                  </div>
+                  <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>
+                  <div className="text-xs w-full">{data.chains[item.chain.key].purpose || ""}</div>
+                  <div className="justify-start w-full items-center group rounded-full">
+                    <MaturityWithTooltip maturityKey={maturityKey} showTooltip={showMaturityTooltip} />
+                  </div>
+                  <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
+                  <div className="flex justify-end items-center">
+                    <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
+                      <div className="w-1/2 flex justify-end text-right numbers-xs text-[#5A6462]">
+                        {(data.chains[item.chain.key].user_share * 100).toFixed(2)}%
+                      </div>
+                      <div className="w-1/2 text-right flex justify-end items-center numbers-xs">
+                        {Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(lastValsByChainKey[item.chain.key])}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex justify-end items-center numbers-xs">
-                  {d3Format(data.chains[item.chain.key].cross_chain_activity > 0.01 ? ".1%" : ".1%")(data.chains[item.chain.key].cross_chain_activity)}
-                </div>
-                <div className="flex justify-end items-center numbers-xs">
-                  {formatAge(item.chain.key)}
-                </div>
-              </GridTableRow>
+                  <div className="flex justify-end items-center numbers-xs">
+                    {d3Format(data.chains[item.chain.key].cross_chain_activity > 0.01 ? ".1%" : ".1%")(data.chains[item.chain.key].cross_chain_activity)}
+                  </div>
+                  <div className="flex justify-end items-center numbers-xs">
+                    {formatAge(item.chain.key)}
+                  </div>
+                </GridTableRow>
+              </AIInsightsWrapper>
             );
           })}
       </div>
-    </>
+    </AIInsightsWrapper>
   );
 });
 
