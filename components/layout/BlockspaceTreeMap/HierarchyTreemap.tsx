@@ -66,7 +66,9 @@ const METRIC_FORMAT: Record<MetricValueKey, Intl.NumberFormatOptions> = {
 };
 
 const DEFAULT_COLOR = "#5A6462";
-const MAX_DEPTH = 3;
+const DEFAULT_DEPTH = 3;
+const MIN_DEPTH = 2;
+const MAX_DEPTH = 5;
 const MAX_CHILDREN_PER_PARENT = 12;
 
 const keyToTitle = (value: string) =>
@@ -193,6 +195,7 @@ export default function HierarchyTreemap() {
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("txcount");
   const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
   const [showUsd] = useLocalStorage("showUsd", true);
+  const [selectedDepth, setSelectedDepth] = useState<number>(DEFAULT_DEPTH);
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -474,7 +477,7 @@ export default function HierarchyTreemap() {
         sharePct: parsed.totalValue > 0 ? (node.value / parsed.totalValue) * 100 : 0,
       };
 
-      if (depth >= MAX_DEPTH) return current;
+      if (depth >= selectedDepth) return current;
 
       const children = parsed.childrenByParent[id] ?? [];
       const minShareOfParent = depth === 1 ? 0.002 : depth === 2 ? 0.008 : 0.015;
@@ -545,7 +548,7 @@ export default function HierarchyTreemap() {
       sharePct: 100,
       children: rootChildren,
     } as DisplayNode;
-  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue]);
+  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue, selectedDepth]);
 
   const laidOutNodes = useMemo(() => {
     const fallbackWidth =
@@ -595,6 +598,7 @@ export default function HierarchyTreemap() {
     const metricKey = resolveMetricValueKey(selectedMetric, showUsd);
     return new Intl.NumberFormat("en-US", METRIC_FORMAT[metricKey]);
   }, [selectedMetric, showUsd]);
+
 
   const hasSourceData = (displayTree.children?.length ?? 0) > 0;
 
@@ -653,7 +657,8 @@ export default function HierarchyTreemap() {
 
       <div className="rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px] -mt-[4px]">
         <div className="flex flex-col gap-y-[6px]">
-          <div className="heading-md flex items-center gap-x-[5px]">
+          <div className="flex items-center justify-between gap-[12px]">
+            <div className="heading-md flex items-center gap-x-[5px]">
             <button
               type="button"
               className="hover:underline"
@@ -687,6 +692,33 @@ export default function HierarchyTreemap() {
                 />
               </button>
             )}
+            </div>
+            <div className="flex items-center gap-[8px]">
+              <div className="text-[12px] text-color-text-secondary">Depth</div>
+              <div className="flex items-center gap-[6px] rounded-full bg-color-bg-medium p-[4px]">
+                <button
+                  type="button"
+                  className="size-[28px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40"
+                  onClick={() => setSelectedDepth((prev) => Math.max(MIN_DEPTH, prev - 1))}
+                  disabled={selectedDepth <= MIN_DEPTH}
+                  aria-label="Decrease depth"
+                >
+                  <GTPIcon icon={"feather:chevron-down" as any} size="sm" />
+                </button>
+                <div className="text-[12px] font-semibold text-color-text-primary min-w-[18px] text-center">
+                  {selectedDepth}
+                </div>
+                <button
+                  type="button"
+                  className="size-[28px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40"
+                  onClick={() => setSelectedDepth((prev) => Math.min(MAX_DEPTH, prev + 1))}
+                  disabled={selectedDepth >= MAX_DEPTH}
+                  aria-label="Increase depth"
+                >
+                  <GTPIcon icon={"feather:chevron-up" as any} size="sm" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -732,6 +764,7 @@ export default function HierarchyTreemap() {
                     : node.depth === 3
                       ? "rgba(124, 140, 164, 0.26)"
                       : "rgba(124, 140, 164, 0.3)";
+
 
               return (
                 <div
@@ -861,6 +894,15 @@ export default function HierarchyTreemap() {
                   {(() => {
                     const chainOutlineColor = getChainColorForNode(hoveredNode.data.id, AllChainsByKeys as any);
                     const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(hoveredNode.data.id);
+                    const contractAddress = getContractAddressFromId(hoveredNode.data.id);
+                    const shortContract = contractAddress ? shortAddress(contractAddress) : "";
+                    const isContract = hoveredNode.data.id.startsWith("contract:");
+                    const displayName =
+                      isContract && shortContract
+                        ? hoveredNode.data.name && hoveredNode.data.name !== shortContract
+                          ? `${hoveredNode.data.name} (${shortContract})`
+                          : shortContract
+                        : hoveredNode.data.name;
 
                     return (
                       <>
@@ -889,7 +931,7 @@ export default function HierarchyTreemap() {
                             className="text-[#F4F6F5] shrink-0"
                           />
                         ) : null}
-                        <span className="font-semibold">{hoveredNode.data.name}</span>
+                        <span className="font-semibold">{displayName}</span>
                       </>
                     );
                   })()}
@@ -897,7 +939,18 @@ export default function HierarchyTreemap() {
                 <div>{getMetricLabel(selectedMetric, showUsd)}: {metricFormatter.format(hoveredNode.data.value)}</div>
                 <div>Level: {hoveredNode.data.hierarchyLevel}</div>
                 <div>Share of total: {hoveredNode.data.sharePct.toFixed(2)}%</div>
-                <div className="opacity-90 mt-[2px]">Path: {hoveredNode.data.fullPath}</div>
+                {(() => {
+                  const parentId = parsed.nodeById[hoveredNode.data.id]?.parent;
+                  const parentNode = parentId ? parsed.nodeById[parentId] : null;
+                  if (!parentNode || parentNode.value <= 0) return null;
+                  const parentShare = (hoveredNode.data.value / parentNode.value) * 100;
+                  return (
+                    <div>
+                      Share of {parentNode.name}: {parentShare.toFixed(2)}%
+                    </div>
+                  );
+                })()}
+                <div className="opacity-90 mt-[2px]"> {hoveredNode.data.fullPath}</div>
               </div>
             )}
             {laidOutNodes.length === 0 && (
