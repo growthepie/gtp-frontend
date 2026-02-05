@@ -599,6 +599,26 @@ export default function HierarchyTreemap() {
     return new Intl.NumberFormat("en-US", METRIC_FORMAT[metricKey]);
   }, [selectedMetric, showUsd]);
 
+  const contractCountById = useMemo(() => {
+    const cache: Record<string, number> = {};
+    const count = (id: string): number => {
+      if (cache[id] !== undefined) return cache[id];
+      if (id.startsWith("contract:")) {
+        cache[id] = 1;
+        return 1;
+      }
+      const children = parsed.childrenByParent[id] ?? [];
+      if (!children.length) {
+        cache[id] = 0;
+        return 0;
+      }
+      const total = children.reduce((sum, child) => sum + count(child.id), 0);
+      cache[id] = total;
+      return total;
+    };
+    return { count };
+  }, [parsed.childrenByParent]);
+
 
   const hasSourceData = (displayTree.children?.length ?? 0) > 0;
 
@@ -936,8 +956,11 @@ export default function HierarchyTreemap() {
                     );
                   })()}
                 </div>
+                {hoveredNode.data.fullPath.includes(" > ") && (
+                  <div className="opacity-90 mb-[4px]">{hoveredNode.data.fullPath}</div>
+                )}
                 <div>{getMetricLabel(selectedMetric, showUsd)}: {metricFormatter.format(hoveredNode.data.value)}</div>
-                <div>Level: {hoveredNode.data.hierarchyLevel}</div>
+                <div>Number of contracts: {contractCountById.count(hoveredNode.data.id)}</div>
                 <div>Share of total: {hoveredNode.data.sharePct.toFixed(2)}%</div>
                 {(() => {
                   const parentId = parsed.nodeById[hoveredNode.data.id]?.parent;
@@ -950,7 +973,6 @@ export default function HierarchyTreemap() {
                     </div>
                   );
                 })()}
-                <div className="opacity-90 mt-[2px]"> {hoveredNode.data.fullPath}</div>
               </div>
             )}
             {laidOutNodes.length === 0 && (
