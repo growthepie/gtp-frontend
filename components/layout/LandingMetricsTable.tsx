@@ -256,15 +256,15 @@ export default memo(function LandingMetricsTable({
   }, [landing, focusEnabled, master]);
 
   return (
-    <AIInsightsWrapper
-      placement="top-end"
-      placementOffset={{ mainAxis: 7, crossAxis: 30 }}
-      hideDelay={300}
-      title="Chains in the Ecosystem"
-      size="sm"
-      insightType="table"
-      insightContext={tableInsightContext}
-    >
+<AIInsightsWrapper
+  placement="top-end"
+  placementOffset={{ mainAxis: 0, crossAxis: 50 }}
+  hideDelay={300}
+  title="Chains in the Ecosystem"
+  size="sm"
+  insightType="table"
+  insightContext={tableInsightContext}
+>
       <GridTableHeader
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
         className="mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"

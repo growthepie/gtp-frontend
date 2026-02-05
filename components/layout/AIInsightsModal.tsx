@@ -68,15 +68,17 @@ function ChainBadge({
   return (
     <Link
       href={`/chains/${chainUrlKey}`}
-      className="inline-flex items-center gap-x-[5px] pl-[2px] pr-[5px] py-[2px] rounded-full border border-color-ui-hover/30 hover:border-color-ui-hover hover:bg-color-ui-hover/10 transition-colors text-xxs whitespace-nowrap align-middle"
+      className="!text-md inline-flex gap-x-[5px] px-[2px] hover:underline transition-colors whitespace-nowrap underline-offset-2 align-top"
     >
       <GTPIcon
         icon={`${chainUrlKey}-logo-monochrome` as GTPIconName}
-        className="w-[15px] h-[15px]"
         size="sm"
+        containerClassName="!mt-1"
         style={{ color }}
       />
+      <div>
       {children}
+      </div>
     </Link>
   );
 }
@@ -566,7 +568,7 @@ function InsightContent({
       )}
 
       {/* 5. Animated response */}
-      <div className="text-md leading-relaxed [&_p]:my-[10px] [&_strong]:font-semibold [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:pl-[20px] [&_li]:my-[5px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:pl-[20px]">
+      <div className="!text-md !leading-relaxed [&_p]:my-[10px] [&_strong]:font-semibold [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:pl-[20px] [&_li]:my-[5px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:pl-[20px]">
         <Streamdown components={streamdownComponents}>
           {displayed}
         </Streamdown>

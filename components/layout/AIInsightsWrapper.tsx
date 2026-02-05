@@ -65,7 +65,7 @@ export type AIInsightsWrapperProps = {
 };
 
 const sizeMap = {
-  sm: "size-[24px]",
+  sm: "size-[34px]",
   md: "size-[32px]",
   lg: "size-[40px]",
 };
@@ -204,9 +204,10 @@ export const AIInsightsWrapper = forwardRef<HTMLDivElement, AIInsightsWrapperPro
               type="button"
               disabled={disabled}
               className={`
+                p-[5px]
                 flex items-center justify-center
-                rounded-full
-                bg-transparent hover:bg-color-ui-hover
+                rounded-[5px]
+                bg-transparent hover:bg-color-ui-hover/50
                 active:scale-95
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-color-bg-medium
                 ${sizeMap[size]}

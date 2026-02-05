@@ -22,7 +22,7 @@ import {
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // Model to use
-const MODEL = "gemini-3-flash-preview";
+const MODEL = "gemini-2.5-flash";
 
 // Max agentic tool turns before forcing a final answer
 const MAX_TOOL_TURNS = 3;
