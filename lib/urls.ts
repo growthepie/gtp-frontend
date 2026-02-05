@@ -79,6 +79,7 @@ export const BlockspaceURLs = {
   "chain-overview": "https://api.growthepie.com/v1/blockspace/overview.json",
   "category-comparison":
     "https://api.growthepie.com/v1/blockspace/category_comparison.json",
+  "tree-map": "https://api.growthepie.com/v1/blockspace/tree_map.json",
 };
 
 export const DAOverviewURL = "https://api.growthepie.com/v1/da_overview.json";
@@ -139,4 +140,3 @@ export const IconLibraryURLs = {
   index: "https://api.growthepie.com/v1/icon-library/index.json",
   base: "https://api.growthepie.com/v1/icon-library/",
 };
-

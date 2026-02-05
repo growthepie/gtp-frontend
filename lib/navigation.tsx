@@ -576,6 +576,22 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "category-comparison",
         url: "/blockspace/category-comparison",
       },
+      {
+        label: "Treemap",
+        category: "blockspace-categories",
+        page: {
+          title: "Treemap",
+          description:
+            "Explore blockspace usage as a nested treemap from chains to categories and applications.",
+        },
+        icon: "gtp-map",
+        key: "treemap",
+        rootKey: "treemap",
+        urlKey: "treemap",
+        url: "/blockspace/treemap",
+        hide: IS_PRODUCTION,
+        excludeFromSitemap: IS_PRODUCTION,
+      },
       // {
       //   label: "Applications",
       //   category: "blockspace-applications",
