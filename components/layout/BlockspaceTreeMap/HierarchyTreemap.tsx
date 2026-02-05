@@ -14,6 +14,8 @@ import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import dayjs from "@/lib/dayjs";
+import { useLocalStorage } from "usehooks-ts";
 
 type RawTreeMapResponse = {
   data?: {
@@ -22,7 +24,8 @@ type RawTreeMapResponse = {
   };
 };
 
-type MetricKey = "fees_paid_usd" | "fees_paid_eth" | "txcount" | "daa";
+type MetricKey = "txcount" | "fees" | "daa";
+type MetricValueKey = "txcount" | "fees_paid_usd" | "fees_paid_eth" | "daa";
 
 type NodeData = {
   id: string;
@@ -44,13 +47,18 @@ type DisplayNode = {
 };
 
 const METRIC_LABELS: Record<MetricKey, string> = {
-  fees_paid_usd: "Fees Paid (USD)",
-  fees_paid_eth: "Fees Paid (ETH)",
   txcount: "Transaction Count",
-  daa: "Daily Active Addresses",
+  fees: "Gas Fees",
+  daa: "Active Addresses",
 };
 
-const METRIC_FORMAT: Record<MetricKey, Intl.NumberFormatOptions> = {
+const METRIC_LONG_LABELS: Record<MetricKey, string> = {
+  txcount: "Transaction Count",
+  fees: "Fees Paid",
+  daa: "Active Addresses",
+};
+
+const METRIC_FORMAT: Record<MetricValueKey, Intl.NumberFormatOptions> = {
   fees_paid_usd: { maximumFractionDigits: 2 },
   fees_paid_eth: { maximumFractionDigits: 6 },
   txcount: { maximumFractionDigits: 0 },
@@ -71,6 +79,12 @@ const keyToTitle = (value: string) =>
 const shortAddress = (address: string) => {
   if (!address || address.length < 12) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+const getContractAddressFromId = (nodeId: string) => {
+  const idParts = nodeId.split(":");
+  if (idParts[0] !== "contract") return "";
+  return idParts[5] ?? "";
 };
 
 const toNumber = (value: string | number | null | undefined) => {
@@ -98,9 +112,38 @@ const getHierarchyLevel = (id: string) => {
 };
 
 const getHeaderHeight = (boxHeight: number) => {
-  if (boxHeight < 80) return 14;
-  if (boxHeight < 130) return 18;
+  if (boxHeight < 60) return 0;
+  if (boxHeight < 110) return 14;
+  if (boxHeight < 170) return 18;
   return 22;
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const getPaddingOuter = (node: { depth: number; x0: number; x1: number; y0: number; y1: number }) => {
+  const size = Math.min(node.x1 - node.x0, node.y1 - node.y0);
+  if (node.depth <= 1) {
+    if (size < 180) return 0;
+    return clamp(Math.floor(size / 70), 1, 6);
+  }
+  if (node.depth === 2) {
+    if (size < 120) return 0;
+    return clamp(Math.floor(size / 90), 1, 4);
+  }
+  return clamp(Math.floor(size / 90), 1, 3);
+};
+
+const getPaddingInner = (node: { depth: number; x0: number; x1: number; y0: number; y1: number }) => {
+  const size = Math.min(node.x1 - node.x0, node.y1 - node.y0);
+  if (node.depth <= 1) {
+    if (size < 180) return 0;
+    return clamp(Math.floor(size / 90), 1, 4);
+  }
+  if (node.depth === 2) {
+    if (size < 120) return 0;
+    return clamp(Math.floor(size / 120), 1, 3);
+  }
+  return clamp(Math.floor(size / 120), 1, 3);
 };
 
 const getChainColorForNode = (
@@ -130,13 +173,26 @@ const MAIN_CATEGORY_ICONS: Record<string, string> = {
   unlabeled: "gtp-unlabeled",
 };
 
+const resolveMetricValueKey = (metric: MetricKey, showUsd: boolean): MetricValueKey => {
+  if (metric === "fees") return showUsd ? "fees_paid_usd" : "fees_paid_eth";
+  return metric;
+};
+
+const getMetricLabel = (metric: MetricKey, showUsd: boolean) => {
+  if (metric === "fees") {
+    return `${METRIC_LONG_LABELS[metric]} (${showUsd ? "USD" : "ETH"})`;
+  }
+  return METRIC_LONG_LABELS[metric];
+};
+
 export default function HierarchyTreemap() {
   const { AllChainsByKeys } = useMaster();
   const { data, isLoading, isValidating } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
   const { data: projectsData } = useSWR<any>(LabelsURLS.projectsFiltered);
 
-  const [selectedMetric, setSelectedMetric] = useState<MetricKey>("fees_paid_usd");
-  const [selectedDate, setSelectedDate] = useState<string>("latest");
+  const [selectedMetric, setSelectedMetric] = useState<MetricKey>("txcount");
+  const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
+  const [showUsd] = useLocalStorage("showUsd", true);
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -178,7 +234,8 @@ export default function HierarchyTreemap() {
     const ownerIndex = fieldIndex.owner_project;
     const addressIndex = fieldIndex.address;
     const contractNameIndex = fieldIndex.contract_name;
-    const metricIndex = fieldIndex[selectedMetric];
+    const metricKey = resolveMetricValueKey(selectedMetric, showUsd);
+    const metricIndex = fieldIndex[metricKey];
 
     if (
       [
@@ -211,7 +268,13 @@ export default function HierarchyTreemap() {
     ).sort((a, b) => b.localeCompare(a));
 
     const latestDate = dates[0] ?? null;
-    const effectiveDate = selectedDate === "latest" ? latestDate : selectedDate;
+    const dateSet = new Set<string>();
+    if (latestDate) {
+      const maxDays = selectedTimespan === "7d" ? 6 : 0;
+      for (let offset = 0; offset <= maxDays; offset += 1) {
+        dateSet.add(dayjs(latestDate).subtract(offset, "day").format("YYYY-MM-DD"));
+      }
+    }
 
     const chainNodes = new Map<string, NodeData>();
     const mainCategoryNodes = new Map<string, NodeData>();
@@ -220,7 +283,7 @@ export default function HierarchyTreemap() {
     const contractNodes = new Map<string, NodeData>();
 
     rows.forEach((row) => {
-      if (effectiveDate && String(row[dateIndex]) !== effectiveDate) return;
+      if (dateSet.size > 0 && !dateSet.has(String(row[dateIndex]))) return;
 
       const chainKey = String(row[chainIndex] ?? "unknown");
       const mainCategoryKey = String(row[mainCategoryIndex] ?? "unknown");
@@ -329,7 +392,7 @@ export default function HierarchyTreemap() {
       nodeById,
       childrenByParent,
     };
-  }, [data, selectedDate, selectedMetric, AllChainsByKeys]);
+  }, [data, selectedTimespan, selectedMetric, showUsd, AllChainsByKeys]);
 
   const effectiveRootId = rootId && parsed.nodeById[rootId] ? rootId : null;
 
@@ -442,6 +505,22 @@ export default function HierarchyTreemap() {
       }
 
       if (mappedChildren.length > 0) {
+        const childrenSum = mappedChildren.reduce((sum, child) => sum + child.value, 0);
+        const missingValue = node.value - childrenSum;
+        if (missingValue > 0.0001) {
+          mappedChildren.push({
+            id: `unlabeled:${id}:${depth}`,
+            name: "Unlabeled",
+            value: missingValue,
+            color: addAlpha(node.color ?? DEFAULT_COLOR, 0.25),
+            hierarchyLevel: "Unlabeled",
+            fullPath: `${getFullPath(id)} > Unlabeled`,
+            sharePct: parsed.totalValue > 0 ? (missingValue / parsed.totalValue) * 100 : 0,
+          });
+        }
+      }
+
+      if (mappedChildren.length > 0) {
         current.children = mappedChildren;
       }
 
@@ -478,7 +557,7 @@ export default function HierarchyTreemap() {
     if (!width || !displayTree.children?.length) return [];
 
     const root = hierarchy(displayTree)
-      .sum((node) => node.value)
+      .sum((node) => (node.children ? 0 : node.value))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
     const hybridTile = (node: any, x0: number, y0: number, x1: number, y1: number) => {
@@ -492,95 +571,123 @@ export default function HierarchyTreemap() {
     const treemapRoot = treemap<DisplayNode>()
       .size([width, height])
       .tile(hybridTile)
-      .paddingOuter((node) => (node.depth <= 1 ? 8 : node.depth === 2 ? 4 : 2))
-      .paddingInner((node) => (node.depth <= 1 ? 6 : node.depth === 2 ? 4 : 2))
+      .paddingOuter((node) => getPaddingOuter(node))
+      .paddingInner((node) => getPaddingInner(node))
       .paddingTop((node) => {
         if (node.depth === 0 || !node.children) return 0;
         const boxHeight = node.y1 - node.y0;
-        if (boxHeight < 34) return 0;
-        return getHeaderHeight(boxHeight) + 4;
+        const headerHeight = getHeaderHeight(boxHeight);
+        if (!headerHeight) return 0;
+        return headerHeight + 4;
       })(root as any) as HierarchyRectangularNode<DisplayNode>;
 
     return treemapRoot.descendants().filter((node) => node.depth > 0);
   }, [containerWidth, displayTree]);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
   const hoveredNode = useMemo(
     () => laidOutNodes.find((node) => node.data.id === hoveredId) ?? null,
     [hoveredId, laidOutNodes],
   );
 
-  const metricFormatter = useMemo(
-    () => new Intl.NumberFormat("en-US", METRIC_FORMAT[selectedMetric]),
-    [selectedMetric],
-  );
+  const metricFormatter = useMemo(() => {
+    const metricKey = resolveMetricValueKey(selectedMetric, showUsd);
+    return new Intl.NumberFormat("en-US", METRIC_FORMAT[metricKey]);
+  }, [selectedMetric, showUsd]);
 
   const hasSourceData = (displayTree.children?.length ?? 0) > 0;
+
+  // Debug logging removed
 
   return (
     <div className="flex flex-col gap-y-[15px]">
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
-      <div className="rounded-[15px] bg-color-bg-container p-[12px] md:p-[15px] flex flex-col md:flex-row md:items-center md:justify-between gap-[10px]">
-        <div className="flex items-center gap-[8px]">
-          <div className="heading-small-sm">Metric</div>
-          <select
-            className="bg-color-bg-medium rounded-full px-[12px] h-[34px] text-sm border border-color-border"
-            value={selectedMetric}
-            onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}
-          >
-            {Object.entries(METRIC_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-[8px]">
-          <div className="heading-small-sm">Date</div>
-          <select
-            className="bg-color-bg-medium rounded-full px-[12px] h-[34px] text-sm border border-color-border"
-            value={selectedDate}
-            onChange={(event) => setSelectedDate(event.target.value)}
-          >
-            <option value="latest">Latest ({parsed.latestDate ?? "n/a"})</option>
-            {parsed.dates.map((date) => (
-              <option key={date} value={date}>
-                {date}
-              </option>
-            ))}
-          </select>
+      <div className="rounded-[15px] bg-color-bg-container p-[10px] md:p-[12px]">
+        <div className="flex flex-col lg:flex-row w-full justify-between items-center rounded-full bg-color-bg-medium p-[6px] gap-[8px] text-[12px] lg:text-[14px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-start items-stretch lg:items-center mx-[6px] space-x-[6px]">
+            {Object.entries(METRIC_LABELS).map(([key, label]) => {
+              const metricKey = key as MetricKey;
+              const isActive = selectedMetric === metricKey;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelectedMetric(metricKey)}
+                  className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
+                    isActive
+                      ? "bg-color-ui-active text-color-text-primary"
+                      : "text-color-text-primary hover:bg-color-ui-hover"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex w-full lg:w-auto justify-between lg:justify-end items-stretch lg:items-center mx-[6px] space-x-[6px]">
+            {[
+              { id: "1d", label: "Yesterday" },
+              { id: "7d", label: "Last 7 Days" },
+            ].map((option) => {
+              const isActive = selectedTimespan === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSelectedTimespan(option.id as "1d" | "7d")}
+                  className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
+                    isActive
+                      ? "bg-color-ui-active text-color-text-primary"
+                      : "text-color-text-primary hover:bg-color-ui-hover"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="sticky top-[72px] z-20 rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px]">
-        <div className="flex items-center gap-[8px] flex-wrap">
-          <button
-            type="button"
-            className={`rounded-full px-[14px] h-[34px] text-sm border transition-colors ${
-              !effectiveRootId
-                ? "bg-color-ui-active text-color-text-primary border-color-ui-active"
-                : "bg-color-bg-medium text-color-text-primary border-color-border hover:bg-color-ui-hover"
-            }`}
-            onClick={() => setRootId(null)}
-          >
-            All chains
-          </button>
-          {currentPath.map((node, index) => (
+      <div className="rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px] -mt-[4px]">
+        <div className="flex flex-col gap-y-[6px]">
+          <div className="heading-md flex items-center gap-x-[5px]">
             <button
-              key={node.id}
               type="button"
-              className={`rounded-full px-[14px] h-[34px] text-sm border transition-colors ${
-                index === currentPath.length - 1
-                  ? "bg-color-ui-active text-color-text-primary border-color-ui-active"
-                  : "bg-color-bg-medium text-color-text-primary border-color-border hover:bg-color-ui-hover"
-              }`}
-              onClick={() => setRootId(node.id)}
+              className="hover:underline"
+              onClick={() => setRootId(null)}
             >
-              {node.name}
+              All chains
             </button>
-          ))}
+            {currentPath.map((node, index) => (
+              <span key={node.id} className="flex items-center gap-x-[5px]">
+                <span className="text-color-text-secondary">&gt;</span>
+                <button
+                  type="button"
+                  className={`hover:underline ${index === currentPath.length - 1 ? "text-color-text-primary" : "text-color-text-secondary"}`}
+                  onClick={() => setRootId(node.id)}
+                >
+                  {node.name}
+                </button>
+              </span>
+            ))}
+            {effectiveRootId && (
+              <button
+                className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center"
+                onClick={() => setRootId(null)}
+              >
+                <Image
+                  src="/In-Button-Close.svg"
+                  alt="Close"
+                  className="relative left-[0.5px] bottom-[0.5px]"
+                  width={16}
+                  height={16}
+                />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -589,7 +696,17 @@ export default function HierarchyTreemap() {
           <div
             ref={setContainerEl}
             className="relative w-full h-[720px] overflow-hidden bg-color-bg-default"
-            onMouseLeave={() => setHoveredId(null)}
+            onMouseMove={(event) => {
+              const rect = event.currentTarget.getBoundingClientRect();
+              setTooltipPos({
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+              });
+            }}
+            onMouseLeave={() => {
+              setHoveredId(null);
+              setTooltipPos(null);
+            }}
           >
             {laidOutNodes.map((node) => {
               const width = Math.max(0, node.x1 - node.x0);
@@ -600,7 +717,9 @@ export default function HierarchyTreemap() {
               const canDrill = !node.data.id.startsWith("other:") && (isContainer || hasRawChildren);
               const isHovered = hoveredId === node.data.id;
               const canShowHeader = isContainer && width >= 84 && height >= 34;
+              const canShowHeaderShare = canShowHeader && width >= 150;
               const canShowLeafLabel = !isContainer && width * height > 2800 && width >= 70 && height >= 18;
+              const canShowContractAddress = width >= 120;
               const maxRadius = node.depth <= 1 ? 15 : node.depth === 2 ? 10 : 6;
               const borderRadius = Math.max(0, Math.min(maxRadius, Math.floor(width / 5), Math.floor(height / 5)));
               const headerHeight = canShowHeader ? getHeaderHeight(height) : 0;
@@ -636,7 +755,9 @@ export default function HierarchyTreemap() {
                 >
                   {canShowHeader && (
                     <div
-                      className="absolute left-0 top-0 w-full border-b border-[#FFFFFF33] bg-[#0C100F66] px-[8px] flex items-center overflow-hidden"
+                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[8px] flex items-center overflow-hidden ${
+                        isHovered ? "bg-[#0C100F85]" : "bg-[#0C100F66]"
+                      }`}
                       style={{ height: `${headerHeight}px` }}
                     >
                       {(() => {
@@ -668,6 +789,11 @@ export default function HierarchyTreemap() {
                             <span className="text-[12px] font-semibold text-[#F4F6F5] truncate">
                               {node.data.name}
                             </span>
+                            {canShowHeaderShare && (
+                              <span className="text-[11px] text-[#D7DEDC] shrink-0">
+                                {node.data.sharePct.toFixed(1)}%
+                              </span>
+                            )}
                           </div>
                         );
                       })()}
@@ -677,6 +803,16 @@ export default function HierarchyTreemap() {
                   {canShowLeafLabel && (
                     (() => {
                       const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.data.id);
+                      const contractAddress = getContractAddressFromId(node.data.id);
+                      const shortContract = contractAddress ? shortAddress(contractAddress) : "";
+                      const isContract = node.data.id.startsWith("contract:");
+                      const showAddressInline = isContract && shortContract && canShowContractAddress;
+                      const displayName =
+                        isContract && showAddressInline
+                          ? node.data.name && node.data.name !== shortContract
+                            ? `${node.data.name} (${shortContract})`
+                            : shortContract
+                          : node.data.name;
 
                       return (
                         <div className="absolute top-[6px] left-[8px] right-[8px] text-[#F4F6F5] text-[11px] leading-tight truncate overflow-hidden">
@@ -702,20 +838,63 @@ export default function HierarchyTreemap() {
                                 className="text-[#F4F6F5] shrink-0"
                               />
                             ) : null}
-                            <span className="truncate">{node.data.name}</span>
+                            <span className="truncate">{displayName}</span>
                           </div>
                         </div>
                       );
                     })()
                   )}
+
                 </div>
               );
             })}
 
-            {hoveredNode && (
-              <div className="absolute right-[12px] bottom-[12px] z-30 rounded-[12px] border border-[#3B4342] bg-[rgba(18,24,23,0.96)] px-[10px] py-[8px] text-[12px] text-[#F4F6F5] max-w-[520px]">
-                <div className="font-semibold mb-[2px]">{hoveredNode.data.name}</div>
-                <div>{METRIC_LABELS[selectedMetric]}: {metricFormatter.format(hoveredNode.data.value)}</div>
+            {hoveredNode && tooltipPos && (
+              <div
+                className="absolute z-30 rounded-[12px] border border-[#3B4342] bg-[rgba(18,24,23,0.96)] px-[10px] py-[8px] text-[12px] text-[#F4F6F5] max-w-[520px] pointer-events-none"
+                style={{
+                  left: `${Math.min(tooltipPos.x + 16, Math.max(8, containerWidth - 280))}px`,
+                  top: `${Math.min(tooltipPos.y + 16, 720 - 120)}px`,
+                }}
+              >
+                <div className="flex items-center gap-[6px] mb-[2px]">
+                  {(() => {
+                    const chainOutlineColor = getChainColorForNode(hoveredNode.data.id, AllChainsByKeys as any);
+                    const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(hoveredNode.data.id);
+
+                    return (
+                      <>
+                        <span
+                          className="size-[8px] rounded-full inline-block"
+                          style={{ backgroundColor: chainOutlineColor }}
+                        />
+                        {ownerProjectLogo ? (
+                          <Image
+                            src={ownerProjectLogo}
+                            alt={hoveredNode.data.name}
+                            className="w-[14px] h-[14px] rounded-[3px] object-cover shrink-0"
+                            width={14}
+                            height={14}
+                          />
+                        ) : chainIcon ? (
+                          <GTPIcon
+                            icon={chainIcon as any}
+                            size="sm"
+                            className="text-[#F4F6F5] shrink-0"
+                          />
+                        ) : mainCategoryIcon ? (
+                          <GTPIcon
+                            icon={mainCategoryIcon as any}
+                            size="sm"
+                            className="text-[#F4F6F5] shrink-0"
+                          />
+                        ) : null}
+                        <span className="font-semibold">{hoveredNode.data.name}</span>
+                      </>
+                    );
+                  })()}
+                </div>
+                <div>{getMetricLabel(selectedMetric, showUsd)}: {metricFormatter.format(hoveredNode.data.value)}</div>
                 <div>Level: {hoveredNode.data.hierarchyLevel}</div>
                 <div>Share of total: {hoveredNode.data.sharePct.toFixed(2)}%</div>
                 <div className="opacity-90 mt-[2px]">Path: {hoveredNode.data.fullPath}</div>
