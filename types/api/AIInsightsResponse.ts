@@ -52,6 +52,8 @@ export interface AIInsightsRequest {
   context: TableInsightContext | ChainInsightContext;
   /** Optional custom prompt to guide the analysis */
   customPrompt?: string;
+  /** Conversation history for multi-turn follow-ups */
+  messages?: { role: "user" | "assistant"; content: string }[];
 }
 
 /**

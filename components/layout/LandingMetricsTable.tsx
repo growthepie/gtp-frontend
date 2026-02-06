@@ -32,7 +32,7 @@ import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
 import { AIInsightsWrapper } from "./AIInsightsWrapper";
 import { buildTableContext, buildChainContext } from "@/hooks/useAIInsights";
-import { TableInsightContext, ChainInsightContext } from "@/types/api/AIInsightsResponse";
+import { TableInsightContext } from "@/types/api/AIInsightsResponse";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -245,15 +245,6 @@ export default memo(function LandingMetricsTable({
     return buildTableContext(rows, master, sort);
   }, [rows, master, sort]);
 
-  // Build chain insight context for each row
-  const buildRowInsightContext = useCallback((item: LandingRow): ChainInsightContext => {
-    const rankings = landing?.data.metrics.table_visual[item.chain.key]?.[focusEnabled ? "ranking" : "ranking_w_eth"];
-    return buildChainContext(
-      item,
-      master,
-      rankings as { [metric: string]: { rank: number | null; out_of: number | null } } | undefined
-    );
-  }, [landing, focusEnabled, master]);
 
   return (
 <AIInsightsWrapper
@@ -396,7 +387,6 @@ export default memo(function LandingMetricsTable({
             const maturityKey = master.chains[item.chain.key].maturity || "NA";
             const showMaturityTooltip = maturityKey !== "NA" && maturityKey !== "";
 
-            const chainInsightContext = buildRowInsightContext(item);
             return (
               <AIInsightsWrapper
                 key={`ai-${index}-${theme}`}
@@ -407,7 +397,14 @@ export default memo(function LandingMetricsTable({
                 title={`Get AI insights for ${data.chains[item.chain.key].chain_name}`}
                 size="sm"
                 insightType="chain"
-                insightContext={chainInsightContext}
+                getInsightContext={() => {
+                  const rankings = landing?.data.metrics.table_visual[item.chain.key]?.[focusEnabled ? "ranking" : "ranking_w_eth"];
+                  return buildChainContext(
+                    item,
+                    master,
+                    rankings as { [metric: string]: { rank: number | null; out_of: number | null } } | undefined,
+                  );
+                }}
               >
                 <GridTableRow
                   gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"

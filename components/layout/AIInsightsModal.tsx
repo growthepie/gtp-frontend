@@ -11,23 +11,14 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import {
-  AIInsightsResponse,
   InsightComponentType,
   ChainInsightContext,
   TableInsightContext,
 } from "@/types/api/AIInsightsResponse";
-
-export interface AIInsightsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  data: AIInsightsResponse | null;
-  isLoading: boolean;
-  error: Error | null;
-  title?: string;
-  onRetry?: () => void;
-  componentType?: InsightComponentType;
-  context?: TableInsightContext | ChainInsightContext;
-}
+import {
+  useAIInsightsContext,
+  type StreamPhase,
+} from "@/contexts/AIInsightsContext";
 
 /**
  * Chain badge component rendered inline when a chain link is detected
@@ -42,16 +33,14 @@ function ChainBadge({
   const { AllChainsByKeys } = useMaster();
   const { resolvedTheme } = useTheme();
 
-  // Find the chain by urlKey
   const chainEntry = Object.entries(AllChainsByKeys).find(
-    ([, chain]) => chain.urlKey === chainUrlKey
+    ([, chain]) => chain.urlKey === chainUrlKey,
   );
 
   const originKey = chainEntry?.[0];
   const chain = chainEntry?.[1];
 
   if (!chain || !originKey) {
-    // Fallback to a plain link if chain not found
     return (
       <Link
         href={`/chains/${chainUrlKey}`}
@@ -76,132 +65,94 @@ function ChainBadge({
         containerClassName="!mt-1"
         style={{ color }}
       />
-      <div>
-      {children}
-      </div>
+      <div>{children}</div>
     </Link>
   );
 }
 
 /**
- * Fixed bottom-right panel for displaying AI insights
+ * Custom streamdown components with chain badge support
  */
-export function AIInsightsModal({
-  isOpen,
-  onClose,
-  data,
-  isLoading,
-  error,
-  title = "AI Insights",
-  onRetry,
-  componentType,
-  context,
-}: AIInsightsModalProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showDebug, setShowDebug] = useState(false);
-  const [showThinking, setShowThinking] = useState(false);
-  const [showToolCalls, setShowToolCalls] = useState(false);
+const streamdownComponents = {
+  a: ({
+    href,
+    children,
+  }: {
+    href?: string;
+    children?: ReactNode;
+  }) => {
+    const chainMatch = href?.match(/^\/chains\/(.+)/);
+    if (chainMatch) {
+      const chainUrlKey = chainMatch[1];
+      return <ChainBadge chainUrlKey={chainUrlKey}>{children}</ChainBadge>;
+    }
 
-  // Close on Escape key
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-color-accent-petrol hover:underline"
+      >
+        {children}
+      </a>
+    );
+  },
+};
+
+const componentTypeLabels: Record<
+  InsightComponentType,
+  { label: string; icon: string }
+> = {
+  table: { label: "Table", icon: "feather:grid" },
+  chart: { label: "Chart", icon: "feather:bar-chart-2" },
+  card: { label: "Card", icon: "feather:square" },
+  chain: { label: "Chain", icon: "feather:link" },
+};
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function PhaseIndicator({ phase }: { phase: StreamPhase }) {
+  if (phase === "idle" || phase === "done" || phase === "error") return null;
+
+  const labels: Record<string, string> = {
+    thinking: "Thinking",
+    fetching: "Fetching data",
+    streaming: "Writing",
+  };
 
   return (
-    <FloatingPortal id="ai-insights-modal-portal">
-      <CSSTransition
-        in={isOpen}
-        nodeRef={panelRef}
-        timeout={{ enter: 200, exit: 150 }}
-        classNames="ai-modal"
-        mountOnEnter
-        unmountOnExit
-      >
-        <div
-          ref={panelRef}
-          className="fixed bottom-4 right-4 z-[100] w-[420px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-32px)] bg-color-bg-default rounded-[15px] shadow-standard overflow-hidden flex flex-col"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-[15px] py-[15px] flex-shrink-0">
-            <div className="flex items-center gap-[10px]">
-              <AISparkleIcon className="size-5" />
-              <span className="heading-small-xs text-color-text-primary">{title}</span>
-              {data?.cached && (
-                <span className="text-xxs text-color-text-secondary border border-color-ui-hover/40 px-[8px] py-[2px] rounded-full">
-                  cached
-                </span>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center size-[28px] rounded-full text-color-text-secondary hover:text-color-text-primary hover:bg-color-ui-hover/50 transition-colors"
-              aria-label="Close"
-            >
-              <Icon icon="feather:x" className="size-4" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div
-            ref={scrollRef}
-            className="px-[15px] py-[15px] min-h-[80px] max-h-[500px] overflow-y-auto flex-1 scrollbar-utility"
-          >
-            {/* Inline loading indicator - shown alongside content area */}
-            {/* {isLoading && !data && <ThinkingIndicator />} */}
-            {error && <ErrorState error={error} onRetry={onRetry} />}
-            {/* {data && ( */}
-              <InsightContent
-                data={data}
-                scrollRef={scrollRef}
-                showDebug={showDebug}
-                setShowDebug={setShowDebug}
-                showThinking={showThinking}
-                setShowThinking={setShowThinking}
-                showToolCalls={showToolCalls}
-                setShowToolCalls={setShowToolCalls}
-                componentType={componentType}
-                context={context}
-              />
-            {/* )} */}
-          </div>
-
-          {/* Footer input bar */}
-          <div className="flex items-center gap-[10px] px-[15px] py-[10px] flex-shrink-0">
-            <input
-              type="text"
-              placeholder="Ask anything"
-              className="flex-1 bg-color-ui-active rounded-full px-[15px] py-[6px] text-sm text-color-text-primary placeholder:text-color-text-secondary outline-none"
-              disabled
-            />
-            <button
-              className="flex items-center justify-center size-[32px] rounded-full bg-color-accent-petrol text-white transition-colors hover:opacity-90 disabled:opacity-30"
-              disabled
-              aria-label="Send"
-            >
-              <Icon icon="feather:arrow-up" className="size-4" />
-            </button>
-          </div>
-        </div>
-      </CSSTransition>
-    </FloatingPortal>
+    <div className="flex items-center gap-[10px] py-[5px]">
+      <div className="flex gap-[5px]">
+        <span
+          className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse"
+          style={{ animationDelay: "0ms" }}
+        />
+        <span
+          className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse"
+          style={{ animationDelay: "150ms" }}
+        />
+        <span
+          className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse"
+          style={{ animationDelay: "300ms" }}
+        />
+      </div>
+      <span className="text-sm text-color-text-secondary">
+        {labels[phase] || "Processing"}...
+      </span>
+    </div>
   );
 }
 
-function ThinkingIndicator() {
+function ContentSkeleton() {
   return (
-    <div className="flex items-center gap-[10px] py-[10px]">
-      <div className="flex gap-[5px]">
-        <span className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse" style={{ animationDelay: "0ms" }} />
-        <span className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse" style={{ animationDelay: "150ms" }} />
-        <span className="size-1.5 rounded-full bg-color-accent-turquoise/70 animate-pulse" style={{ animationDelay: "300ms" }} />
-      </div>
-      <span className="text-sm text-color-text-secondary">Analyzing...</span>
+    <div className="space-y-[12px] py-[10px]">
+      <div className="h-[14px] w-[90%] rounded-full bg-color-ui-hover/20 animate-pulse" />
+      <div className="h-[14px] w-[75%] rounded-full bg-color-ui-hover/20 animate-pulse" />
+      <div className="h-[14px] w-[85%] rounded-full bg-color-ui-hover/20 animate-pulse" />
+      <div className="h-[14px] w-[60%] rounded-full bg-color-ui-hover/20 animate-pulse" />
     </div>
   );
 }
@@ -210,20 +161,23 @@ function ErrorState({
   error,
   onRetry,
 }: {
-  error: Error;
+  error: string;
   onRetry?: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-[30px] gap-[15px] text-center">
       <div className="size-10 rounded-full border border-color-accent-red/30 flex items-center justify-center">
-        <Icon icon="feather:alert-circle" className="size-5 text-color-accent-red" />
+        <Icon
+          icon="feather:alert-circle"
+          className="size-5 text-color-accent-red"
+        />
       </div>
       <div>
         <p className="text-sm font-medium text-color-text-primary">
           Failed to generate insights
         </p>
         <p className="text-xs text-color-text-secondary mt-1">
-          {error.message || "Something went wrong"}
+          {error || "Something went wrong"}
         </p>
       </div>
       {onRetry && (
@@ -297,48 +251,6 @@ function CollapsibleSection({
   );
 }
 
-/**
- * Custom streamdown components with chain badge support
- */
-const streamdownComponents = {
-  a: ({
-    href,
-    children,
-  }: {
-    href?: string;
-    children?: ReactNode;
-  }) => {
-    // Check if this is a chain link
-    const chainMatch = href?.match(/^\/chains\/(.+)/);
-    if (chainMatch) {
-      const chainUrlKey = chainMatch[1];
-      return <ChainBadge chainUrlKey={chainUrlKey}>{children}</ChainBadge>;
-    }
-
-    // Regular external link
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-color-accent-petrol hover:underline"
-      >
-        {children}
-      </a>
-    );
-  },
-};
-
-const componentTypeLabels: Record<InsightComponentType, { label: string; icon: string }> = {
-  table: { label: "Table", icon: "feather:grid" },
-  chart: { label: "Chart", icon: "feather:bar-chart-2" },
-  card: { label: "Card", icon: "feather:square" },
-  chain: { label: "Chain", icon: "feather:link" },
-};
-
-/**
- * Small card summarising what context the AI was given
- */
 function ContextCard({
   componentType,
   context,
@@ -362,8 +274,13 @@ function ContextCard({
 
   return (
     <div className="flex items-center gap-[10px] px-[15px] py-[10px] rounded-lg border border-color-ui-hover/40 text-xs text-color-text-secondary">
-      <Icon icon={meta.icon} className="size-3.5 flex-shrink-0 text-color-accent-petrol" />
-      <span className="font-medium text-color-text-primary">{meta.label}</span>
+      <Icon
+        icon={meta.icon}
+        className="size-3.5 flex-shrink-0 text-color-accent-petrol"
+      />
+      <span className="font-medium text-color-text-primary">
+        {meta.label}
+      </span>
       {details.length > 0 && (
         <>
           <span className="text-color-ui-hover">&middot;</span>
@@ -374,289 +291,342 @@ function ContextCard({
   );
 }
 
-/**
- * Hook that reveals text progressively to simulate streaming.
- * Returns the portion of `fullText` to show so far, plus whether it's still animating.
- */
-function useTypewriter(fullText: string, charsPerTick = 3, tickMs = 16) {
-  const [displayed, setDisplayed] = useState("");
-  const [animating, setAnimating] = useState(false);
-
-  useEffect(() => {
-    if (!fullText) {
-      setDisplayed("");
-      setAnimating(false);
-      return;
-    }
-
-    let index = 0;
-    setDisplayed("");
-    setAnimating(true);
-
-    const id = setInterval(() => {
-      index += charsPerTick;
-      if (index >= fullText.length) {
-        setDisplayed(fullText);
-        setAnimating(false);
-        clearInterval(id);
-      } else {
-        setDisplayed(fullText.slice(0, index));
-      }
-    }, tickMs);
-
-    return () => clearInterval(id);
-  }, [fullText, charsPerTick, tickMs]);
-
-  return { displayed, animating };
+function UserMessage({ content }: { content: string }) {
+  return (
+    <div className="flex justify-end">
+      <div className="bg-color-ui-active rounded-[15px] px-[15px] py-[10px] max-w-[85%]">
+        <p className="text-sm text-color-text-primary">{content}</p>
+      </div>
+    </div>
+  );
 }
 
-function InsightContent({
-  data,
-  scrollRef,
-  showDebug,
-  setShowDebug,
-  showThinking,
-  setShowThinking,
-  showToolCalls,
-  setShowToolCalls,
-  componentType,
-  context,
-}: {
-  data: AIInsightsResponse | null;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-  showDebug: boolean;
-  setShowDebug: (show: boolean) => void;
-  showThinking: boolean;
-  setShowThinking: (show: boolean) => void;
-  showToolCalls: boolean;
-  setShowToolCalls: (show: boolean) => void;
-  componentType?: InsightComponentType;
-  context?: TableInsightContext | ChainInsightContext;
-}) {
-  const { displayed, animating } = useTypewriter(data ? data.insight : "", 3, 16);
+// ---------------------------------------------------------------------------
+// Main modal component — reads everything from AIInsightsContext
+// ---------------------------------------------------------------------------
 
-  // Auto-scroll while animating
-  const autoScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
-  }, [scrollRef]);
+export function AIInsightsModal() {
+  const {
+    isOpen,
+    phase,
+    thinking,
+    insightText,
+    toolCalls,
+    sources,
+    debug,
+    error,
+    cached,
+    currentConfig,
+    messages,
+    closeInsights,
+    sendFollowUp,
+    openInsights,
+  } = useAIInsightsContext();
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [showDebug, setShowDebug] = useState(false);
+  const [showThinking, setShowThinking] = useState(false);
+  const [showToolCalls, setShowToolCalls] = useState(false);
+  const [followUpText, setFollowUpText] = useState("");
+
+  // Close on Escape key
   useEffect(() => {
-    if (animating) autoScroll();
-  }, [displayed, animating, autoScroll]);
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeInsights();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, closeInsights]);
+
+  // Auto-scroll while streaming
+  useEffect(() => {
+    if (phase === "streaming" || phase === "thinking") {
+      const el = scrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  }, [insightText, thinking, phase]);
+
+  const handleRetry = useCallback(() => {
+    if (currentConfig) {
+      openInsights(currentConfig);
+    }
+  }, [currentConfig, openInsights]);
+
+  const handleFollowUp = useCallback(async () => {
+    const text = followUpText.trim();
+    if (!text || phase !== "done") return;
+    setFollowUpText("");
+    await sendFollowUp(text);
+  }, [followUpText, phase, sendFollowUp]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleFollowUp();
+      }
+    },
+    [handleFollowUp],
+  );
+
+  const title = currentConfig?.title ?? "AI Insights";
+  const isStreaming = phase !== "idle" && phase !== "done" && phase !== "error";
+  const showSkeleton = phase === "thinking" && !insightText && !thinking;
 
   return (
-    <div className="space-y-[15px]">
-      {/* 1. Debug section (top — sent first) */}
-      {data && data.debug && (
-        <CollapsibleSection
-          title="Debug Info (MVP)"
-          icon="feather:terminal"
-          isOpen={showDebug}
-          onToggle={() => setShowDebug(!showDebug)}
-          variant="debug"
+    <FloatingPortal id="ai-insights-modal-portal">
+      <CSSTransition
+        in={isOpen}
+        nodeRef={panelRef}
+        timeout={{ enter: 200, exit: 150 }}
+        classNames="ai-modal"
+        mountOnEnter
+        unmountOnExit
+      >
+        <div
+          ref={panelRef}
+          className="fixed bottom-4 right-4 z-[100] w-[420px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-32px)] bg-color-bg-default rounded-[15px] shadow-standard overflow-hidden flex flex-col"
         >
-          <div className="space-y-[10px]">
-            <div>
-              <p className="text-[10px] font-medium text-color-text-secondary mb-[5px]">
-                Model
-              </p>
-              <code className="text-[11px] bg-color-bg-default px-2 py-1 rounded block">
-                {data && data.debug.model}
-              </code>
-            </div>
-            <div>
-              <p className="text-[10px] font-medium text-color-text-secondary mb-1">
-                System Prompt
-              </p>
-              <pre className="text-[11px] bg-color-bg-default p-2 rounded overflow-x-auto max-h-[100px] overflow-y-auto whitespace-pre-wrap">
-                {data && data.debug.systemPrompt}
-              </pre>
-            </div>
-            <div>
-              <p className="text-[10px] font-medium text-color-text-secondary mb-1">
-                User Prompt
-              </p>
-              <pre className="text-[11px] bg-color-bg-default p-2 rounded overflow-x-auto max-h-[150px] overflow-y-auto whitespace-pre-wrap">
-                {data && data.debug.prompt}
-              </pre>
-            </div>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* 2. Context card */}
-      {componentType && context && (
-        <ContextCard componentType={componentType} context={context} />
-      )}
-
-      {/* 3. Thinking section */}
-      {data && data.thinking && (
-        <CollapsibleSection
-          title="Model Thinking"
-          icon="feather:cpu"
-          isOpen={showThinking}
-          onToggle={() => setShowThinking(!showThinking)}
-          variant="thinking"
-        >
-          <div className="text-xs text-color-text-primary whitespace-pre-wrap font-mono leading-relaxed max-h-[200px] overflow-y-auto">
-            <Streamdown>
-            {data.thinking}
-            </Streamdown>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* 4. Tool Calls section */}
-      {data && data.debug?.toolCalls && data.debug.toolCalls.length > 0 && (
-        <CollapsibleSection
-          title={`Tool Calls (${data.debug.toolCalls.length})`}
-          icon="feather:tool"
-          isOpen={showToolCalls}
-          onToggle={() => setShowToolCalls(!showToolCalls)}
-          variant="default"
-        >
-          <div className="space-y-[8px]">
-            {data.debug.agenticTurns && (
-              <p className="text-[10px] text-color-text-secondary">
-                {data.debug.agenticTurns} agentic turn{data.debug.agenticTurns > 1 ? "s" : ""}
-              </p>
-            )}
-            {data.debug.toolCalls.map((call, index) => (
-              <div
-                key={index}
-                className="bg-color-bg-default rounded p-2 space-y-1"
-              >
-                <div className="flex items-center justify-between">
-                  <code className="text-[11px] font-semibold">
-                    {call.name}
-                  </code>
-                  <span className="text-[10px] text-color-text-secondary">
-                    Turn {call.turn} &middot; {call.durationMs}ms
-                  </span>
-                </div>
-                {Object.keys(call.args).length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-color-text-secondary">
-                      Args
-                    </p>
-                    <pre className="text-[10px] bg-color-bg-medium p-1 rounded overflow-x-auto whitespace-pre-wrap">
-                      {JSON.stringify(call.args, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                <div>
-                  <p className="text-[10px] text-color-text-secondary">
-                    {call.error ? "Error" : "Result"}
-                  </p>
-                  <pre
-                    className={`text-[10px] p-1 rounded overflow-x-auto max-h-[80px] overflow-y-auto whitespace-pre-wrap ${
-                      call.error
-                        ? "bg-color-accent-red/10 text-color-accent-red"
-                        : "bg-color-bg-medium"
-                    }`}
-                  >
-                    {JSON.stringify(call.result, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* 5. Animated response */}
-      <div className="!text-md !leading-relaxed [&_p]:my-[10px] [&_strong]:font-semibold [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:pl-[20px] [&_li]:my-[5px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:pl-[20px]">
-        <Streamdown components={streamdownComponents}>
-          {displayed}
-        </Streamdown>
-      </div>
-
-      {/* Sources from Google Search grounding */}
-      {!animating && data && data.sources && data.sources.length > 0 && (
-        <div>
-          <p className="heading-small-xxs text-color-text-secondary mb-[10px] flex items-center gap-[5px]">
-            <Icon icon="feather:globe" className="size-3" />
-            Sources
-          </p>
-          <div className="flex flex-wrap gap-[5px]">
-            {data.sources.map((source, index) => (
-              <a
-                key={index}
-                href={source.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] px-[10px] py-[4px] border border-color-ui-hover/40 hover:border-color-ui-hover hover:bg-color-ui-hover/10 rounded-full transition-colors flex items-center gap-[5px] max-w-[200px] truncate"
-                title={source.title}
-              >
-                <Icon
-                  icon="feather:external-link"
-                  className="size-3 flex-shrink-0"
-                />
-                <span className="truncate">{source.title}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Highlighted metrics */}
-      {!animating && data && data.highlightedMetrics && data.highlightedMetrics.length > 0 && (
-        <div className="flex flex-wrap gap-[8px]">
-          {data.highlightedMetrics.map((metric, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-[5px] px-[10px] py-[4px] border border-color-ui-hover/40 rounded-full"
-            >
-              <span className="text-xs text-color-text-secondary">
-                {metric.metric}:
+          {/* Header */}
+          <div className="flex items-center justify-between px-[15px] py-[15px] flex-shrink-0">
+            <div className="flex items-center gap-[10px]">
+              <AISparkleIcon className="size-5" />
+              <span className="heading-small-xs text-color-text-primary">
+                {title}
               </span>
-              <span className="numbers-xs">{metric.value}</span>
-              {metric.trend && (
-                <Icon
-                  icon={
-                    metric.trend === "up"
-                      ? "feather:trending-up"
-                      : metric.trend === "down"
-                        ? "feather:trending-down"
-                        : "feather:minus"
-                  }
-                  className={`size-3 ${
-                    metric.trend === "up"
-                      ? "text-color-positive"
-                      : metric.trend === "down"
-                        ? "text-color-negative"
-                        : "text-color-text-secondary"
-                  }`}
-                />
+              {cached && (
+                <span className="text-xxs text-color-text-secondary border border-color-ui-hover/40 px-[8px] py-[2px] rounded-full">
+                  cached
+                </span>
               )}
             </div>
-          ))}
-        </div>
-      )}
+            <button
+              onClick={closeInsights}
+              className="flex items-center justify-center size-[28px] rounded-full text-color-text-secondary hover:text-color-text-primary hover:bg-color-ui-hover/50 transition-colors"
+              aria-label="Close"
+            >
+              <Icon icon="feather:x" className="size-4" />
+            </button>
+          </div>
 
-      {/* Suggestions */}
-      {!animating && data && data.suggestions && data.suggestions.length > 0 && (
-        <div>
-          <p className="heading-small-xxs text-color-text-secondary mb-[10px]">
-            Key points
-          </p>
-          <ul className="space-y-[8px]">
-            {data.suggestions.map((suggestion, index) => (
-              <li
-                key={index}
-                className="text-sm text-color-text-primary flex items-start gap-[10px] leading-relaxed"
-              >
-                <span className="text-color-accent-turquoise mt-1 text-[8px]">●</span>
-                {suggestion}
-              </li>
-            ))}
-          </ul>
+          {/* Content */}
+          <div
+            ref={scrollRef}
+            className="px-[15px] py-[15px] min-h-[80px] max-h-[500px] overflow-y-auto flex-1 scrollbar-utility"
+          >
+            <div className="space-y-[15px]">
+              {/* Debug section (gated by env flag) */}
+              {process.env.NEXT_PUBLIC_AI_DEBUG === "true" &&
+                debug && (
+                  <CollapsibleSection
+                    title="Debug Info"
+                    icon="feather:terminal"
+                    isOpen={showDebug}
+                    onToggle={() => setShowDebug(!showDebug)}
+                    variant="debug"
+                  >
+                    <div className="space-y-[10px]">
+                      <div>
+                        <p className="text-[10px] font-medium text-color-text-secondary mb-[5px]">
+                          Model
+                        </p>
+                        <code className="text-[11px] bg-color-bg-default px-2 py-1 rounded block">
+                          {debug.model}
+                        </code>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium text-color-text-secondary mb-1">
+                          System Prompt
+                        </p>
+                        <pre className="text-[11px] bg-color-bg-default p-2 rounded overflow-x-auto max-h-[100px] overflow-y-auto whitespace-pre-wrap">
+                          {debug.systemPrompt}
+                        </pre>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium text-color-text-secondary mb-1">
+                          User Prompt
+                        </p>
+                        <pre className="text-[11px] bg-color-bg-default p-2 rounded overflow-x-auto max-h-[150px] overflow-y-auto whitespace-pre-wrap">
+                          {debug.prompt}
+                        </pre>
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+                )}
+
+              {/* Context card */}
+              {currentConfig && (
+                <ContextCard
+                  componentType={currentConfig.componentType}
+                  context={currentConfig.context}
+                />
+              )}
+
+              {/* Thinking section */}
+              {thinking && (
+                <CollapsibleSection
+                  title="Model Thinking"
+                  icon="feather:cpu"
+                  isOpen={showThinking}
+                  onToggle={() => setShowThinking(!showThinking)}
+                  variant="thinking"
+                >
+                  <div className="text-xs text-color-text-primary whitespace-pre-wrap font-mono leading-relaxed max-h-[200px] overflow-y-auto">
+                    <Streamdown>{thinking}</Streamdown>
+                  </div>
+                </CollapsibleSection>
+              )}
+
+              {/* Tool Calls section (gated by env flag) */}
+              {process.env.NEXT_PUBLIC_AI_DEBUG === "true" &&
+                toolCalls.length > 0 && (
+                  <CollapsibleSection
+                    title={`Tool Calls (${toolCalls.length})`}
+                    icon="feather:tool"
+                    isOpen={showToolCalls}
+                    onToggle={() => setShowToolCalls(!showToolCalls)}
+                    variant="default"
+                  >
+                    <div className="space-y-[8px]">
+                      {toolCalls.map((call, index) => (
+                        <div
+                          key={index}
+                          className="bg-color-bg-default rounded p-2 space-y-1"
+                        >
+                          <div className="flex items-center justify-between">
+                            <code className="text-[11px] font-semibold">
+                              {call.name}
+                            </code>
+                            <span className="text-[10px] text-color-text-secondary">
+                              {call.durationMs > 0
+                                ? `Turn ${call.turn} · ${call.durationMs}ms`
+                                : "Running..."}
+                            </span>
+                          </div>
+                          {Object.keys(call.args).length > 0 && (
+                            <div>
+                              <p className="text-[10px] text-color-text-secondary">
+                                Args
+                              </p>
+                              <pre className="text-[10px] bg-color-bg-medium p-1 rounded overflow-x-auto whitespace-pre-wrap">
+                                {JSON.stringify(call.args, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                          {call.durationMs > 0 && (
+                            <div>
+                              <p className="text-[10px] text-color-text-secondary">
+                                {call.error ? "Error" : "Result"}
+                              </p>
+                              <pre
+                                className={`text-[10px] p-1 rounded overflow-x-auto max-h-[80px] overflow-y-auto whitespace-pre-wrap ${
+                                  call.error
+                                    ? "bg-color-accent-red/10 text-color-accent-red"
+                                    : "bg-color-bg-medium"
+                                }`}
+                              >
+                                {JSON.stringify(call.result, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleSection>
+                )}
+
+              {/* Phase indicator */}
+              <PhaseIndicator phase={phase} />
+
+              {/* Skeleton while waiting for first content */}
+              {showSkeleton && <ContentSkeleton />}
+
+              {/* Previous conversation messages */}
+              {messages.map((msg, i) => (
+                <div key={i}>
+                  {msg.role === "user" ? (
+                    <UserMessage content={msg.content} />
+                  ) : (
+                    <div className="!text-md !leading-relaxed [&_p]:my-[10px] [&_strong]:font-semibold [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:pl-[20px] [&_li]:my-[5px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:pl-[20px]">
+                      <Streamdown components={streamdownComponents}>
+                        {msg.content}
+                      </Streamdown>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Current streamed response */}
+              {insightText && (
+                <div className="!text-md !leading-relaxed [&_p]:my-[10px] [&_strong]:font-semibold [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:pl-[20px] [&_li]:my-[5px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:pl-[20px]">
+                  <Streamdown components={streamdownComponents}>
+                    {insightText}
+                  </Streamdown>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <ErrorState error={error} onRetry={handleRetry} />
+              )}
+
+              {/* Sources from Google Search grounding */}
+              {phase === "done" && sources.length > 0 && (
+                <div>
+                  <p className="heading-small-xxs text-color-text-secondary mb-[10px] flex items-center gap-[5px]">
+                    <Icon icon="feather:globe" className="size-3" />
+                    Sources
+                  </p>
+                  <div className="flex flex-wrap gap-[5px]">
+                    {sources.map((source, index) => (
+                      <a
+                        key={index}
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] px-[10px] py-[4px] border border-color-ui-hover/40 hover:border-color-ui-hover hover:bg-color-ui-hover/10 rounded-full transition-colors flex items-center gap-[5px] max-w-[200px] truncate"
+                        title={source.title}
+                      >
+                        <Icon
+                          icon="feather:external-link"
+                          className="size-3 flex-shrink-0"
+                        />
+                        <span className="truncate">{source.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer input bar */}
+          <div className="flex items-center gap-[10px] px-[15px] py-[10px] flex-shrink-0">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Ask anything"
+              className="flex-1 bg-color-ui-active rounded-full px-[15px] py-[6px] text-sm text-color-text-primary placeholder:text-color-text-secondary outline-none"
+              disabled={phase !== "done"}
+              value={followUpText}
+              onChange={(e) => setFollowUpText(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button
+              className="flex items-center justify-center size-[32px] rounded-full bg-color-accent-petrol text-white transition-colors hover:opacity-90 disabled:opacity-30"
+              disabled={phase !== "done" || !followUpText.trim()}
+              onClick={handleFollowUp}
+              aria-label="Send"
+            >
+              <Icon icon="feather:arrow-up" className="size-4" />
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+      </CSSTransition>
+    </FloatingPortal>
   );
 }
 
@@ -685,19 +655,47 @@ function AISparkleIcon({ className }: { className?: string }) {
         fill="url(#paint3)"
       />
       <defs>
-        <linearGradient id="paint0" x1="5" y1="24" x2="12" y2="3" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint0"
+          x1="5"
+          y1="24"
+          x2="12"
+          y2="3"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="var(--icon-accent-petrol)" />
           <stop offset="1" stopColor="var(--icon-accent-turquoise)" />
         </linearGradient>
-        <linearGradient id="paint1" x1="5" y1="24" x2="12" y2="3" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint1"
+          x1="5"
+          y1="24"
+          x2="12"
+          y2="3"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="var(--icon-accent-petrol)" />
           <stop offset="1" stopColor="var(--icon-accent-turquoise)" />
         </linearGradient>
-        <linearGradient id="paint2" x1="5" y1="24" x2="12" y2="3" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint2"
+          x1="5"
+          y1="24"
+          x2="12"
+          y2="3"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="var(--icon-accent-petrol)" />
           <stop offset="1" stopColor="var(--icon-accent-turquoise)" />
         </linearGradient>
-        <linearGradient id="paint3" x1="5" y1="24" x2="12" y2="3" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint3"
+          x1="5"
+          y1="24"
+          x2="12"
+          y2="3"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="var(--icon-accent-petrol)" />
           <stop offset="1" stopColor="var(--icon-accent-turquoise)" />
         </linearGradient>

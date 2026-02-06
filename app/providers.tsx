@@ -9,6 +9,7 @@ import { MasterProvider } from "@/contexts/MasterContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
 // import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { AIInsightsProvider } from "@/contexts/AIInsightsContext";
 import { useEffect } from "react";
 import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
 
@@ -145,11 +146,13 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
         >
             <MasterProvider>
                 <UIContextProvider>
-                <ToastProvider>
-                  {/* <ConfettiProvider> */}
-                    {children}
-                  {/* </ConfettiProvider> */}
-                </ToastProvider>
+                <AIInsightsProvider>
+                  <ToastProvider>
+                    {/* <ConfettiProvider> */}
+                      {children}
+                    {/* </ConfettiProvider> */}
+                  </ToastProvider>
+                </AIInsightsProvider>
               </UIContextProvider>
             </MasterProvider>
         </SWRConfig>

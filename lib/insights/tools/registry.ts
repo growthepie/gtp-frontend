@@ -7,10 +7,29 @@ import { allTools } from "./growthepie";
  * Maps component types to the subset of tools they can use.
  */
 const toolsByContext: Record<InsightComponentType, string[]> = {
-  table: ["get_chain_timeseries", "get_landing_summary", "get_economics_data"],
-  chain: ["get_chain_timeseries", "get_chain_overview", "get_economics_data"],
-  chart: ["get_chain_timeseries", "get_landing_summary"],
-  card: ["get_landing_summary", "get_economics_data", "get_fees_table"],
+  table: [
+    "get_landing_summary",
+    "get_metric_comparison",
+    "get_economics_data",
+    "get_blockspace_breakdown",
+    "get_top_apps",
+  ],
+  chain: [
+    "get_chain_overview",
+    "get_chain_timeseries",
+    "get_blockspace_breakdown",
+    "get_da_metrics",
+    "get_top_apps",
+  ],
+  chart: [
+    "get_chain_timeseries",
+    "get_metric_comparison",
+  ],
+  card: [
+    "get_landing_summary",
+    "get_economics_data",
+    "get_fees_table",
+  ],
 };
 
 /**

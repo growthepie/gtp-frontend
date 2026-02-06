@@ -4,10 +4,10 @@ import {
   Content,
   Part,
   FunctionCallingConfigMode,
+  FunctionCall,
 } from "@google/genai";
 import {
   AIInsightsRequest,
-  AIInsightsResponse,
   ChainInsightContext,
   TableInsightContext,
 } from "@/types/api/AIInsightsResponse";
@@ -18,7 +18,7 @@ import {
   getToolByName,
 } from "@/lib/insights/tools/registry";
 
-// Initialize Gemini client - reads GEMINI_API_KEY from environment automatically
+// Initialize Gemini client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // Model to use
@@ -56,260 +56,336 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Check rate limit
-    const rateLimitKey = getRateLimitKey(request);
-    const rateLimit = checkRateLimit(rateLimitKey);
+  // Check rate limit
+  const rateLimitKey = getRateLimitKey(request);
+  const rateLimit = checkRateLimit(rateLimitKey);
 
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Remaining": "0",
-            "Retry-After": "60",
-          },
-        },
-      );
-    }
-
-    // Parse request body
-    const body: AIInsightsRequest = await request.json();
-    const { componentType, title, context, customPrompt } = body;
-
-    // Validate required fields
-    if (!componentType || !context) {
-      return NextResponse.json(
-        { error: "Missing required fields: componentType and context" },
-        { status: 400 },
-      );
-    }
-
-    // Check for API key
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is not configured");
-      return NextResponse.json(
-        { error: "AI service is not configured" },
-        { status: 503 },
-      );
-    }
-
-    // Determine the insight type based on component type
-    const insightType = componentType === "chain" ? "chain" : "table";
-
-    // Build the system prompt (includes current date)
-    const systemPrompt = getSystemPrompt();
-
-    // Build the prompt
-    const userPrompt = buildInsightPrompt(
-      insightType,
-      context as TableInsightContext | ChainInsightContext,
-      customPrompt,
-    );
-
-    // Build function declarations for this context
-    const functionDeclarations = getFunctionDeclarations(componentType);
-
-    // Build tools config — this model does not support mixing Google Search
-    // with function calling in the same request, so we pick one or the other.
-    // When function declarations are available, prefer them (the tools fetch
-    // live data from the growthepie API). Fall back to Google Search otherwise.
-    const tools =
-      functionDeclarations.length > 0
-        ? [{ functionDeclarations }]
-        : [{ googleSearch: {} }];
-
-    // Initialize conversation contents
-    const contents: Content[] = [{ role: "user", parts: [{ text: userPrompt }] }];
-
-    // Track tool calls for debug
-    const toolCallRecords: ToolCallRecord[] = [];
-    let agenticTurns = 0;
-
-    // Agentic loop: max MAX_TOOL_TURNS tool-calling turns
-    let thinking = "";
-    let answer = "";
-    let sources: { title: string; url: string }[] = [];
-
-    for (let turn = 0; turn < MAX_TOOL_TURNS + 1; turn++) {
-      const response = await ai.models.generateContent({
-        model: MODEL,
-        contents,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.7,
-          topP: 0.8,
-          topK: 40,
-          maxOutputTokens: 4096,
-          tools,
-          toolConfig: {
-            functionCallingConfig: {
-              mode: FunctionCallingConfigMode.AUTO,
-            },
-          },
-          thinkingConfig: {
-            includeThoughts: true,
-          },
-        },
-      });
-
-      // Extract the model's response parts
-      const candidate = response.candidates?.[0];
-      const modelParts = candidate?.content?.parts ?? [];
-
-      // Append the model's response to conversation history
-      contents.push({ role: "model", parts: modelParts });
-
-      // Check if the model made any function calls
-      const functionCalls = response.functionCalls;
-
-      if (!functionCalls || functionCalls.length === 0) {
-        // No function calls — extract text/thinking/sources and break
-        for (const part of modelParts) {
-          if (!part.text) continue;
-          if (part.thought) {
-            thinking += part.text + "\n";
-          } else {
-            answer += part.text;
-          }
-        }
-
-        // Extract grounding sources if available
-        const groundingMetadata = (response as any).candidates?.[0]
-          ?.groundingMetadata;
-        if (groundingMetadata?.groundingChunks) {
-          for (const chunk of groundingMetadata.groundingChunks) {
-            if (chunk.web?.uri && chunk.web?.title) {
-              sources.push({
-                title: chunk.web.title,
-                url: chunk.web.uri,
-              });
-            }
-          }
-        }
-        break;
-      }
-
-      // We have function calls — execute them in parallel
-      agenticTurns++;
-      const functionResponseParts: Part[] = await Promise.all(
-        functionCalls.map(async (fc) => {
-          const name = fc.name ?? "unknown";
-          const args = (fc.args ?? {}) as Record<string, unknown>;
-          const start = Date.now();
-
-          const tool = getToolByName(name);
-          let result: Record<string, unknown>;
-          let error: string | undefined;
-
-          if (!tool) {
-            result = { error: `Unknown tool: ${name}` };
-            error = `Unknown tool: ${name}`;
-          } else {
-            try {
-              result = await tool.execute(args);
-              if (result.error) {
-                error = String(result.error);
-              }
-            } catch (e) {
-              error = e instanceof Error ? e.message : String(e);
-              result = { error };
-            }
-          }
-
-          const durationMs = Date.now() - start;
-          toolCallRecords.push({ turn: agenticTurns, name, args, result, durationMs, error });
-
-          return {
-            functionResponse: {
-              id: fc.id,
-              name,
-              response: result,
-            },
-          } as Part;
-        }),
-      );
-
-      // Append function responses to conversation
-      contents.push({ role: "user", parts: functionResponseParts });
-    }
-
-    // Fallback if no answer was extracted (shouldn't happen but just in case)
-    if (!answer) {
-      // Try to get text from the last model message
-      const lastModel = contents
-        .filter((c) => c.role === "model")
-        .pop();
-      if (lastModel?.parts) {
-        for (const part of lastModel.parts) {
-          if (part.text && !part.thought) {
-            answer += part.text;
-          }
-        }
-      }
-    }
-
-    if (!answer) {
-      return NextResponse.json(
-        { error: "No response generated" },
-        { status: 500 },
-      );
-    }
-
-    // Build the response
-    const aiResponse: AIInsightsResponse = {
-      insight: answer.trim(),
-      cached: false,
-      thinking: thinking.trim() || undefined,
-      sources: sources.length > 0 ? sources : undefined,
-      debug: {
-        prompt: userPrompt,
-        systemPrompt: systemPrompt,
-        model: MODEL,
-        toolCalls: toolCallRecords.length > 0 ? toolCallRecords : undefined,
-        agenticTurns: agenticTurns > 0 ? agenticTurns : undefined,
-      },
-    };
-
-    return NextResponse.json(aiResponse, {
-      headers: {
-        "X-RateLimit-Remaining": rateLimit.remaining.toString(),
-      },
-    });
-  } catch (error) {
-    console.error("Error generating AI insights:", error);
-
-    // Handle specific Gemini API errors
-    if (error instanceof Error) {
-      if (error.message.includes("API_KEY")) {
-        return NextResponse.json(
-          { error: "Invalid API configuration" },
-          { status: 503 },
-        );
-      }
-      if (error.message.includes("SAFETY")) {
-        return NextResponse.json(
-          { error: "Content was filtered for safety reasons" },
-          { status: 400 },
-        );
-      }
-      if (
-        error.message.includes("quota") ||
-        error.message.includes("RESOURCE_EXHAUSTED")
-      ) {
-        return NextResponse.json(
-          { error: "AI service quota exceeded. Please try again later." },
-          { status: 429 },
-        );
-      }
-    }
-
+  if (!rateLimit.allowed) {
     return NextResponse.json(
-      { error: "Failed to generate insights" },
-      { status: 500 },
+      { error: "Rate limit exceeded. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Remaining": "0",
+          "Retry-After": "60",
+        },
+      },
     );
   }
+
+  // Parse request body
+  let body: AIInsightsRequest;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 },
+    );
+  }
+
+  const { componentType, context, customPrompt, messages } = body;
+
+  // Validate required fields
+  if (!componentType || !context) {
+    return NextResponse.json(
+      { error: "Missing required fields: componentType and context" },
+      { status: 400 },
+    );
+  }
+
+  // Check for API key
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY is not configured");
+    return NextResponse.json(
+      { error: "AI service is not configured" },
+      { status: 503 },
+    );
+  }
+
+  // Build prompts and tools before opening the stream
+  const insightType = componentType === "chain" ? "chain" : "table";
+  const systemPrompt = getSystemPrompt();
+  const userPrompt = buildInsightPrompt(
+    insightType,
+    context as TableInsightContext | ChainInsightContext,
+    customPrompt,
+  );
+  const functionDeclarations = getFunctionDeclarations(componentType);
+  const tools =
+    functionDeclarations.length > 0
+      ? [{ functionDeclarations }]
+      : [{ googleSearch: {} }];
+  const isDebug = process.env.NEXT_PUBLIC_AI_DEBUG === "true";
+
+  // Build initial conversation contents
+  const contents: Content[] = [];
+
+  if (messages && messages.length > 0) {
+    // Multi-turn: reconstruct history
+    // First message is always the original context prompt
+    contents.push({ role: "user", parts: [{ text: userPrompt }] });
+    for (const msg of messages) {
+      if (msg.role === "user") {
+        contents.push({ role: "user", parts: [{ text: msg.content }] });
+      } else {
+        contents.push({ role: "model", parts: [{ text: msg.content }] });
+      }
+    }
+  } else {
+    contents.push({ role: "user", parts: [{ text: userPrompt }] });
+  }
+
+  // Create SSE stream
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      function send(event: string, data: unknown) {
+        controller.enqueue(
+          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+        );
+      }
+
+      try {
+        const toolCallRecords: ToolCallRecord[] = [];
+        let agenticTurns = 0;
+        let thinking = "";
+        let answer = "";
+        let sources: { title: string; url: string }[] = [];
+
+        for (let turn = 0; turn < MAX_TOOL_TURNS + 1; turn++) {
+          // Emit status
+          send("status", {
+            phase: turn === 0 ? "thinking" : "fetching",
+            message: turn === 0 ? "Thinking..." : "Analyzing data...",
+          });
+
+          // Use streaming Gemini call
+          const streamResponse = await ai.models.generateContentStream({
+            model: MODEL,
+            contents,
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.7,
+              topP: 0.8,
+              topK: 40,
+              maxOutputTokens: 4096,
+              tools,
+              toolConfig: {
+                functionCallingConfig: {
+                  mode:
+                    turn === 0
+                      ? FunctionCallingConfigMode.ANY
+                      : FunctionCallingConfigMode.AUTO,
+                },
+              },
+              thinkingConfig: {
+                includeThoughts: true,
+              },
+            },
+          });
+
+          // Collect all parts for conversation history + detect function calls
+          const modelParts: Part[] = [];
+          const detectedFunctionCalls: FunctionCall[] = [];
+          let lastChunkResponse: unknown = null;
+
+          for await (const chunk of streamResponse) {
+            lastChunkResponse = chunk;
+            const parts = chunk.candidates?.[0]?.content?.parts ?? [];
+
+            for (const part of parts) {
+              modelParts.push(part);
+
+              if (part.thought && part.text) {
+                send("thinking", { text: part.text });
+                thinking += part.text;
+              }
+
+              if (!part.thought && part.text) {
+                send("text", { chunk: part.text });
+                answer += part.text;
+              }
+
+              if (part.functionCall) {
+                detectedFunctionCalls.push(part.functionCall);
+              }
+            }
+          }
+
+          // Append model response to conversation history
+          contents.push({ role: "model", parts: modelParts });
+
+          // If no function calls, extract sources and break
+          if (detectedFunctionCalls.length === 0) {
+            // Extract grounding sources if available
+            const groundingMetadata = (lastChunkResponse as any)
+              ?.candidates?.[0]?.groundingMetadata;
+            if (groundingMetadata?.groundingChunks) {
+              for (const chunk of groundingMetadata.groundingChunks) {
+                if (chunk.web?.uri && chunk.web?.title) {
+                  sources.push({
+                    title: chunk.web.title,
+                    url: chunk.web.uri,
+                  });
+                }
+              }
+            }
+            break;
+          }
+
+          // Execute function calls
+          agenticTurns++;
+          send("status", {
+            phase: "fetching",
+            message: "Fetching data...",
+          });
+
+          // Execute all tool calls concurrently for better performance
+          const functionResponseParts: Part[] = [];
+          const toolPromises = detectedFunctionCalls.map(async (fc) => {
+            const name = fc.name ?? "unknown";
+            const args = (fc.args ?? {}) as Record<string, unknown>;
+            const start = Date.now();
+
+            send("tool_start", { name, args, turn: agenticTurns });
+
+            const tool = getToolByName(name);
+            let result: Record<string, unknown>;
+            let error: string | undefined;
+
+            if (!tool) {
+              result = {
+                error: `Unknown tool: ${name}`,
+                suggestion: "Use one of the available tools",
+                partial_data: null,
+              };
+              error = `Unknown tool: ${name}`;
+            } else {
+              try {
+                result = await tool.execute(args);
+                if (result.error) {
+                  error = String(result.error);
+                }
+              } catch (e) {
+                error = e instanceof Error ? e.message : String(e);
+                result = {
+                  error,
+                  suggestion: "Try a different parameter or tool",
+                  partial_data: null,
+                };
+              }
+            }
+
+            const durationMs = Date.now() - start;
+            toolCallRecords.push({
+              turn: agenticTurns,
+              name,
+              args,
+              result,
+              durationMs,
+              error,
+            });
+
+            send("tool_end", {
+              name,
+              durationMs,
+              error: error || null,
+              result,
+            });
+
+            return {
+              functionResponse: {
+                id: fc.id,
+                name,
+                response: result,
+              },
+            } as Part;
+          });
+
+          // Wait for all tool calls — partial success: even if some fail,
+          // we still return all results so the model can work with what succeeded
+          const settledResults = await Promise.allSettled(toolPromises);
+          for (const settled of settledResults) {
+            if (settled.status === "fulfilled") {
+              functionResponseParts.push(settled.value);
+            }
+          }
+
+          // Append function responses to conversation
+          contents.push({ role: "user", parts: functionResponseParts });
+        }
+
+        // Fallback: extract text from last model message if answer is empty
+        if (!answer) {
+          const lastModel = contents
+            .filter((c) => c.role === "model")
+            .pop();
+          if (lastModel?.parts) {
+            for (const part of lastModel.parts) {
+              if (part.text && !part.thought) {
+                answer += part.text;
+                send("text", { chunk: part.text });
+              }
+            }
+          }
+        }
+
+        if (!answer) {
+          send("error", { message: "No response generated" });
+          controller.close();
+          return;
+        }
+
+        // Send done event with metadata
+        send("done", {
+          sources: sources.length > 0 ? sources : undefined,
+          debug: isDebug
+            ? {
+                prompt: userPrompt,
+                systemPrompt,
+                model: MODEL,
+                toolCalls:
+                  toolCallRecords.length > 0 ? toolCallRecords : undefined,
+                agenticTurns:
+                  agenticTurns > 0 ? agenticTurns : undefined,
+              }
+            : undefined,
+          cached: false,
+        });
+
+        controller.close();
+      } catch (error) {
+        console.error("Error generating AI insights:", error);
+
+        let message = "Failed to generate insights";
+        if (error instanceof Error) {
+          if (error.message.includes("API_KEY")) {
+            message = "Invalid API configuration";
+          } else if (error.message.includes("SAFETY")) {
+            message = "Content was filtered for safety reasons";
+          } else if (
+            error.message.includes("quota") ||
+            error.message.includes("RESOURCE_EXHAUSTED")
+          ) {
+            message = "AI service quota exceeded. Please try again later.";
+          }
+        }
+
+        send("error", { message });
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+    },
+  });
 }
 
 // Handle OPTIONS for CORS preflight if needed
