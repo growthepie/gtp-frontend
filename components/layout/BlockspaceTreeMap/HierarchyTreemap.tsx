@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   hierarchy,
@@ -14,6 +14,7 @@ import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import ExpandableMenu, { ExpandableMenuItem } from "@/components/layout/FloatingBar/ExpandableMenu";
 import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -67,9 +68,17 @@ const METRIC_FORMAT: Record<MetricValueKey, Intl.NumberFormatOptions> = {
 
 const DEFAULT_COLOR = "#5A6462";
 const DEFAULT_DEPTH = 3;
-const MIN_DEPTH = 2;
+const MIN_DEPTH = 1;
 const MAX_DEPTH = 5;
 const MAX_CHILDREN_PER_PARENT = 12;
+const HEADER_VERTICAL_PADDING = 2;
+const DEPTH_LEVELS: Array<{ depth: number; label: string; icon: string }> = [
+  { depth: 1, label: "Chain", icon: "gtp-chain" },
+  { depth: 2, label: "Category", icon: "gtp-categories" },
+  { depth: 3, label: "Subcategory", icon: "gtp-subcategories" },
+  { depth: 4, label: "App", icon: "gtp-project" },
+  { depth: 5, label: "Contract", icon: "gtp-file-text" },
+];
 
 const keyToTitle = (value: string) =>
   value
@@ -113,11 +122,52 @@ const getHierarchyLevel = (id: string) => {
   return "Contract";
 };
 
+const HIERARCHY_DEPTH_BY_PREFIX: Record<string, number> = {
+  chain: 1,
+  main: 2,
+  sub: 3,
+  owner: 4,
+  contract: 5,
+};
+
+const getNodeDepthFromId = (id: string) => {
+  const prefix = id.split(":")[0];
+  return HIERARCHY_DEPTH_BY_PREFIX[prefix] ?? 0;
+};
+
+const getIdAtDepthFromNodeId = (nodeId: string, targetDepth: number): string | null => {
+  const parts = nodeId.split(":");
+  const chainKey = parts[1];
+  if (!chainKey) return null;
+
+  if (targetDepth === 1) return `chain:${chainKey}`;
+  const mainCategoryKey = parts[2];
+  if (!mainCategoryKey) return null;
+
+  if (targetDepth === 2) return `main:${chainKey}:${mainCategoryKey}`;
+  const subCategoryKey = parts[3];
+  if (!subCategoryKey) return null;
+
+  if (targetDepth === 3) return `sub:${chainKey}:${mainCategoryKey}:${subCategoryKey}`;
+  const ownerKey = parts[4];
+  if (!ownerKey) return null;
+
+  if (targetDepth === 4) return `owner:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}`;
+  const address = parts[5];
+  if (!address) return null;
+
+  if (targetDepth === 5) {
+    return `contract:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}:${address}`;
+  }
+
+  return null;
+};
+
 const getHeaderHeight = (boxHeight: number) => {
   if (boxHeight < 60) return 0;
-  if (boxHeight < 110) return 14;
-  if (boxHeight < 170) return 18;
-  return 22;
+  if (boxHeight < 110) return 18;
+  if (boxHeight < 170) return 22;
+  return 26;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -196,9 +246,13 @@ export default function HierarchyTreemap() {
   const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedDepth, setSelectedDepth] = useState<number>(DEFAULT_DEPTH);
+  const [depthMenuOpen, setDepthMenuOpen] = useState(false);
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
+
+  const selectedDepthLevel =
+    DEPTH_LEVELS.find((level) => level.depth === selectedDepth) ?? DEPTH_LEVELS[DEFAULT_DEPTH - 1];
 
   useEffect(() => {
     if (!containerEl || typeof ResizeObserver === "undefined") return;
@@ -397,6 +451,46 @@ export default function HierarchyTreemap() {
     };
   }, [data, selectedTimespan, selectedMetric, showUsd, AllChainsByKeys]);
 
+  const applyDepthSelection = useCallback((nextDepth: number) => {
+    const clampedDepth = clamp(nextDepth, MIN_DEPTH, MAX_DEPTH);
+    setSelectedDepth(clampedDepth);
+
+    setRootId((prev) => {
+      if (!prev) return prev;
+
+      const prevDepth = getNodeDepthFromId(prev);
+      if (!prevDepth || prevDepth === clampedDepth) return prev;
+
+      if (clampedDepth < prevDepth) {
+        return getIdAtDepthFromNodeId(prev, clampedDepth) ?? prev;
+      }
+
+      let cursorId = prev;
+      let cursorDepth = prevDepth;
+
+      while (cursorDepth < clampedDepth) {
+        const nextChild = (parsed.childrenByParent[cursorId] ?? []).find(
+          (child) => !child.id.startsWith("other:") && !child.id.startsWith("unlabeled:"),
+        );
+        if (!nextChild) break;
+        cursorId = nextChild.id;
+        cursorDepth = getNodeDepthFromId(cursorId);
+        if (!cursorDepth) break;
+      }
+
+      return cursorId;
+    });
+  }, [parsed.childrenByParent]);
+
+  const depthMenuItems: ExpandableMenuItem[] = useMemo(() =>
+    DEPTH_LEVELS.map((level) => ({
+      id: `depth-${level.depth}`,
+      label: level.label,
+      icon: <GTPIcon icon={level.icon as any} size="sm" />,
+      onSelect: () => applyDepthSelection(level.depth),
+      disabled: level.depth < MIN_DEPTH || level.depth > MAX_DEPTH,
+    })), [applyDepthSelection]);
+
   const effectiveRootId = rootId && parsed.nodeById[rootId] ? rootId : null;
 
   const currentPath = useMemo(() => {
@@ -414,6 +508,15 @@ export default function HierarchyTreemap() {
 
     return path;
   }, [effectiveRootId, parsed.nodeById]);
+
+  useEffect(() => {
+    if (!rootId) return;
+    const rootDepth = getNodeDepthFromId(rootId);
+    if (!rootDepth) return;
+    if (rootDepth !== selectedDepth) {
+      setSelectedDepth(rootDepth);
+    }
+  }, [rootId, selectedDepth]);
 
   const ownerProjectToLogo = useMemo(() => {
     if (!projectsData?.data?.types || !projectsData?.data?.data) return {} as Record<string, string>;
@@ -477,7 +580,11 @@ export default function HierarchyTreemap() {
         sharePct: parsed.totalValue > 0 ? (node.value / parsed.totalValue) * 100 : 0,
       };
 
-      if (depth >= selectedDepth) return current;
+      const absoluteDepth = getNodeDepthFromId(node.id);
+      const shouldStop = effectiveRootId
+        ? absoluteDepth > selectedDepth
+        : absoluteDepth >= selectedDepth;
+      if (shouldStop) return current;
 
       const children = parsed.childrenByParent[id] ?? [];
       const minShareOfParent = depth === 1 ? 0.002 : depth === 2 ? 0.008 : 0.015;
@@ -581,7 +688,7 @@ export default function HierarchyTreemap() {
         const boxHeight = node.y1 - node.y0;
         const headerHeight = getHeaderHeight(boxHeight);
         if (!headerHeight) return 0;
-        return headerHeight + 4;
+        return headerHeight + HEADER_VERTICAL_PADDING * 2 + 4;
       })(root as any) as HierarchyRectangularNode<DisplayNode>;
 
     return treemapRoot.descendants().filter((node) => node.depth > 0);
@@ -628,9 +735,9 @@ export default function HierarchyTreemap() {
     <div className="flex flex-col gap-y-[15px]">
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
-      <div className="rounded-[15px] bg-color-bg-container p-[10px] md:p-[12px]">
-        <div className="flex flex-col lg:flex-row w-full justify-between items-center rounded-full bg-color-bg-medium p-[6px] gap-[8px] text-[12px] lg:text-[14px]">
-          <div className="flex w-full lg:w-auto justify-between lg:justify-start items-stretch lg:items-center mx-[6px] space-x-[6px]">
+      <div className="rounded-[15px] bg-color-bg-container p-[0px] md:p-[0px]">
+        <div className="flex flex-col lg:flex-row w-full justify-between items-center rounded-full bg-color-bg-medium p-[3px] gap-[8px] text-[12px] lg:text-[14px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-start items-stretch lg:items-center mx-[0px] space-x-[5px]">
             {Object.entries(METRIC_LABELS).map(([key, label]) => {
               const metricKey = key as MetricKey;
               const isActive = selectedMetric === metricKey;
@@ -650,7 +757,7 @@ export default function HierarchyTreemap() {
               );
             })}
           </div>
-          <div className="flex w-full lg:w-auto justify-between lg:justify-end items-stretch lg:items-center mx-[6px] space-x-[6px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-end items-stretch lg:items-center mx-[0px] space-x-[5px]">
             {[
               { id: "1d", label: "Yesterday" },
               { id: "7d", label: "Last 7 Days" },
@@ -675,10 +782,10 @@ export default function HierarchyTreemap() {
         </div>
       </div>
 
-      <div className="rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px] -mt-[4px]">
+      <div className="relative z-[140] rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px] -mt-[4px]">
         <div className="flex flex-col gap-y-[6px]">
-          <div className="flex items-center justify-between gap-[12px]">
-            <div className="heading-md flex items-center gap-x-[5px]">
+          <div className="flex items-center justify-between gap-[12px] flex-nowrap">
+            <div className="heading-md flex items-center gap-x-[5px] min-w-0">
             <button
               type="button"
               className="hover:underline"
@@ -713,41 +820,84 @@ export default function HierarchyTreemap() {
               </button>
             )}
             </div>
-            <div className="flex items-center gap-[8px]">
-              <div className="text-[12px] text-color-text-secondary">Depth</div>
-              <div className="flex items-center gap-[6px] rounded-full bg-color-bg-medium p-[4px]">
-                <button
-                  type="button"
-                  className="size-[28px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40"
-                  onClick={() => setSelectedDepth((prev) => Math.max(MIN_DEPTH, prev - 1))}
-                  disabled={selectedDepth <= MIN_DEPTH}
-                  aria-label="Decrease depth"
-                >
-                  <GTPIcon icon={"feather:chevron-down" as any} size="sm" />
-                </button>
-                <div className="text-[12px] font-semibold text-color-text-primary min-w-[18px] text-center">
-                  {selectedDepth}
-                </div>
-                <button
-                  type="button"
-                  className="size-[28px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40"
-                  onClick={() => setSelectedDepth((prev) => Math.min(MAX_DEPTH, prev + 1))}
-                  disabled={selectedDepth >= MAX_DEPTH}
-                  aria-label="Increase depth"
-                >
-                  <GTPIcon icon={"feather:chevron-up" as any} size="sm" />
-                </button>
+            <div className="flex items-center gap-[8px] ml-auto shrink-0">
+              <div className="flex items-center gap-[6px]">
+              <div className="relative h-[44px] w-[330px]">
+                <ExpandableMenu
+                  items={depthMenuItems}
+                  open={depthMenuOpen}
+                  onOpenChange={setDepthMenuOpen}
+                  openOn="click"
+                  placement="bottom-start"
+                  collapsedSize={{ width: "100%", height: 44 }}
+                  expandedSize={{ width: "100%", height: "auto" }}
+                  showCollapsedPanel={false}
+                  className="!z-[150]"
+                  triggerClassName="!px-0 !z-[170] !bg-color-bg-default !bottom-0"
+                  panelClassName="!rounded-b-[18px] !bg-color-bg-default !z-[160]"
+                  contentPadding="30px 0 8px 0"
+                  renderTrigger={({ props }) => (
+                    <div
+                      className="relative flex items-center w-full h-full rounded-full overflow-hidden px-[4px] gap-x-[4px]"
+                    >
+                      <button
+                        type="button"
+                        className="size-[30px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          applyDepthSelection(selectedDepth - 1);
+                        }}
+                        disabled={selectedDepth <= MIN_DEPTH}
+                        aria-label="Previous depth"
+                      >
+                        <GTPIcon icon={"gtp-chevronleft-monochrome" as any} size="sm" />
+                      </button>
+
+                      <button
+                        {...props}
+                        type="button"
+                        className="flex items-center min-w-0 flex-1 h-[36px] rounded-full px-[4px] hover:bg-color-ui-hover text-left"
+                        aria-label="Depth menu"
+                      >
+                      <GTPIcon
+                        icon={selectedDepthLevel.icon as any}
+                        size="md"
+                        containerClassName="!size-[44px] min-w-[44px] flex items-center justify-center"
+                      />
+                      <div className="heading-small-sm whitespace-nowrap min-w-0">
+                        {selectedDepthLevel.label}
+                      </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="size-[30px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          applyDepthSelection(selectedDepth + 1);
+                        }}
+                        disabled={selectedDepth >= MAX_DEPTH}
+                        aria-label="Next depth"
+                      >
+                        <GTPIcon icon={"gtp-chevronright-monochrome" as any} size="sm" />
+                      </button>
+                    </div>
+                  )}
+                />
+              </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[15px] bg-color-bg-default overflow-hidden p-[10px] md:p-[14px]">
+      <div className="relative z-[10] overflow-hidden p-[0px] md:p-[0px]">
         {hasSourceData ? (
           <div
             ref={setContainerEl}
-            className="relative w-full h-[720px] overflow-hidden bg-color-bg-default"
+            className="relative w-full h-[720px] overflow-hidden"
             onMouseMove={(event) => {
               const rect = event.currentTarget.getBoundingClientRect();
               setTooltipPos({
@@ -765,8 +915,8 @@ export default function HierarchyTreemap() {
               const height = Math.max(0, node.y1 - node.y0);
 
               const isContainer = !!node.children?.length;
-              const hasRawChildren = (parsed.childrenByParent[node.data.id]?.length ?? 0) > 0;
-              const canDrill = !node.data.id.startsWith("other:") && (isContainer || hasRawChildren);
+              const canSelectNode =
+                !node.data.id.startsWith("other:") && !node.data.id.startsWith("unlabeled:");
               const isHovered = hoveredId === node.data.id;
               const canShowHeader = isContainer && width >= 84 && height >= 34;
               const canShowHeaderShare = canShowHeader && width >= 150;
@@ -778,18 +928,18 @@ export default function HierarchyTreemap() {
               const chainOutlineColor = getChainColorForNode(node.data.id, AllChainsByKeys as any);
               const neutralBg =
                 node.depth <= 1
-                  ? "rgba(124, 140, 164, 0.14)"
+                  ? "rgb(var(--bg-medium) / 0.14)"
                   : node.depth === 2
-                    ? "rgba(124, 140, 164, 0.2)"
+                    ? "rgb(var(--bg-medium) / 0.2)"
                     : node.depth === 3
-                      ? "rgba(124, 140, 164, 0.26)"
-                      : "rgba(124, 140, 164, 0.3)";
+                      ? "rgb(var(--bg-medium) / 0.26)"
+                      : "rgb(var(--bg-medium) / 0.3)";
 
 
               return (
                 <div
                   key={node.data.id}
-                  className={`absolute border overflow-hidden ${canDrill ? "cursor-pointer" : "cursor-default"}`}
+                  className={`absolute border overflow-hidden ${canSelectNode ? "cursor-pointer" : "cursor-default"}`}
                   style={{
                     left: `${node.x0}px`,
                     top: `${node.y0}px`,
@@ -802,27 +952,27 @@ export default function HierarchyTreemap() {
                     borderRadius: `${borderRadius}px`,
                   }}
                   onClick={() => {
-                    if (canDrill) setRootId(node.data.id);
+                    if (canSelectNode) setRootId(node.data.id);
                   }}
                   onMouseEnter={() => setHoveredId(node.data.id)}
                 >
                   {canShowHeader && (
                     <div
-                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[8px] flex items-center overflow-hidden ${
+                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[10px] py-[2px] flex items-center overflow-hidden ${
                         isHovered ? "bg-[#0C100F85]" : "bg-[#0C100F66]"
                       }`}
-                      style={{ height: `${headerHeight}px` }}
+                      style={{ height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px` }}
                     >
                       {(() => {
                         const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.data.id);
 
                         return (
-                          <div className="flex items-center gap-[6px] min-w-0">
+                          <div className="flex items-center gap-[5px] min-w-0">
                             {ownerProjectLogo ? (
                               <Image
                                 src={ownerProjectLogo}
                                 alt={node.data.name}
-                                className="w-[14px] h-[14px] rounded-[3px] object-cover shrink-0"
+                                className="w-[14px] rounded-[3px] object-cover shrink-0"
                                 width={14}
                                 height={14}
                               />
