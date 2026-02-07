@@ -203,7 +203,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
 
 
-  console.log(tableChainKeys);
   return (
     <>
       <ShowLoading
