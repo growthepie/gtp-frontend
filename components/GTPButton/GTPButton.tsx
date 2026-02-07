@@ -16,7 +16,7 @@ interface GTPButtonProps {
 export const GTPButton = ({ label, rightIcon, leftIcon, isSelected = false, disabled = false, clickHandler }: GTPButtonProps) => {
   return (
     <button
-     className={`flex gap-x-[8px] items-center rounded-full px-[15px] py-[5px] ${isSelected ? "bg-color-ui-active" : "bg-color-bg-medium hover:bg-color-ui-hover"}`}
+     className={`flex  gap-x-[8px] items-center rounded-full px-[15px] py-[5px] ${isSelected ? "bg-color-ui-active" : "bg-color-bg-medium hover:bg-color-ui-hover"}`}
      onClick={clickHandler}
      disabled={disabled}
     >
