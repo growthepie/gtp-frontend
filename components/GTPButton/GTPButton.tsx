@@ -9,21 +9,32 @@ interface GTPButtonProps {
   leftIcon?: GTPIconName;
   isSelected?: boolean;
   disabled?: boolean;
+  gradientOutline?: boolean;
+  rightIconClickHandler?: () => void;
+  leftIconClickHandler?: () => void;
   clickHandler?: () => void;
 }
 
 
-export const GTPButton = ({ label, rightIcon, leftIcon, isSelected = false, disabled = false, clickHandler }: GTPButtonProps) => {
+export const GTPButton = ({ label, rightIcon, leftIcon, isSelected = false, disabled = false, gradientOutline = false, rightIconClickHandler, leftIconClickHandler, clickHandler }: GTPButtonProps) => {
   return (
-    <button
-     className={`flex  gap-x-[8px] items-center rounded-full px-[15px] py-[5px] ${isSelected ? "bg-color-ui-active" : "bg-color-bg-medium hover:bg-color-ui-hover"}`}
-     onClick={clickHandler}
-     disabled={disabled}
+    <div 
+      className="w-full lg:w-auto rounded-full"
+      style={{
+        padding: gradientOutline ? "1px" : "0px",
+        background: gradientOutline ? "linear-gradient(144.58deg, #FE5468 20.78%, #FFDF27 104.18%)" : "transparent",
+      }}
     >
-      {leftIcon && <GTPButtonIcon icon={leftIcon} disabled={disabled} />}
-      <GTPButtonLabel label={label} disabled={disabled} />
-      {rightIcon && <GTPButtonIcon icon={rightIcon} disabled={disabled} />}
-    </button>
+      <button
+        className={`flex w-full gap-x-[8px] items-center rounded-full px-[15px] py-[5px] ${isSelected ? "bg-color-ui-active" : "bg-color-bg-medium hover:bg-color-ui-hover"}`}
+        onClick={clickHandler}
+        disabled={disabled}
+      >
+        {leftIcon && <GTPButtonIcon icon={leftIcon} disabled={disabled} />}
+        <GTPButtonLabel label={label} disabled={disabled} />
+        {rightIcon && <GTPButtonIcon icon={rightIcon} disabled={disabled} />}
+      </button>
+    </div>
   );
 };
 
