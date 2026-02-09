@@ -3,7 +3,7 @@
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import { EChartsOption } from "echarts";
-import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { iconNames } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
@@ -30,6 +30,7 @@ const TABLE_GRID_SIDE_PADDING = 10;
 const TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE = 158;
 const TABLE_BOTTOM_FADE_HEIGHT = 54;
 const TABLE_BOTTOM_SCROLL_PADDING = 56;
+const MOBILE_LAYOUT_BREAKPOINT = 768;
 
 const DEFAULT_TOP_LEFT_ITEMS = [
   { id: "daily", label: "Daily" },
@@ -1259,10 +1260,20 @@ export default function GTPUniversalChart({
     };
   }, [chartSeriesData, contentHeight, displayRows, isPercentageMode, isStackedMode]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!contentRef.current) {
       return;
     }
+
+    const contentElement = contentRef.current;
+    const syncContentMetrics = () => {
+      const rect = contentElement.getBoundingClientRect();
+      setContentWidth(rect.width);
+      setContentHeight(rect.height);
+    };
+
+    syncContentMetrics();
+    const frame = window.requestAnimationFrame(syncContentMetrics);
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -1273,11 +1284,14 @@ export default function GTPUniversalChart({
       setContentHeight(entry.contentRect.height);
     });
 
-    observer.observe(contentRef.current);
-    return () => observer.disconnect();
+    observer.observe(contentElement);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!tablePaneRef.current) {
       return;
     }
@@ -1523,9 +1537,18 @@ export default function GTPUniversalChart({
       : "in-button-down-monochrome";
   const isTableSortKeyActive = (key: TableSortKey) => tableSort.key === key;
 
-  const availableWidth = Math.max(contentWidth - DIVIDER_WIDTH, 0);
-  const tableWidth = availableWidth * splitRatio;
-  const chartWidth = availableWidth - tableWidth;
+  const isMobileLayout = contentWidth > 0 && contentWidth < MOBILE_LAYOUT_BREAKPOINT;
+  const availableWidth = isMobileLayout
+    ? Math.max(contentWidth, 0)
+    : Math.max(contentWidth - DIVIDER_WIDTH, 0);
+  const tableWidth = isMobileLayout ? availableWidth : availableWidth * splitRatio;
+  const chartWidth = isMobileLayout ? availableWidth : availableWidth - tableWidth;
+  const tablePaneWidth = isMobileLayout
+    ? "100%"
+    : `calc(${(splitRatio * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`;
+  const chartPaneWidth = isMobileLayout
+    ? "100%"
+    : `calc(${((1 - splitRatio) * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`;
   const tableGridAvailableWidth = Math.max(tableWidth - TABLE_GRID_SIDE_PADDING, 0);
   const requiredWidthFor3ChangeColumns = getTableGridRequiredWidth(3, TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE);
   const requiredWidthFor2ChangeColumns = getTableGridRequiredWidth(2, TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE);
@@ -1567,7 +1590,11 @@ export default function GTPUniversalChart({
     columns.push(`${TABLE_CHECK_COLUMN_WIDTH}px`);
     return columns.join(" ");
   }, [show1yColumn, show24hColumn, show30dColumn]);
-  const chartRenderHeight = tablePaneHeight > 0 ? `${Math.floor(tablePaneHeight)}px` : "100%";
+  const chartRenderHeight = isMobileLayout
+    ? `${Math.max(Math.floor((contentHeight || 420) * 0.46), 210)}px`
+    : tablePaneHeight > 0
+      ? `${Math.floor(tablePaneHeight)}px`
+      : "100%";
   const metricLabel = metricData?.metric_name ?? "Market Cap";
   const metricInfo =
     metricContextType === "data-availability" ? da_metrics?.[metricId] : metrics?.[metricId];
@@ -1673,11 +1700,14 @@ export default function GTPUniversalChart({
               </div>
             </div>
 
-            <div ref={contentRef} className="flex items-stretch flex-1 min-h-0 gap-[5px]">
             <div
-              className="flex min-w-0 h-full"
+              ref={contentRef}
+              className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobileLayout ? "flex-col" : ""}`}
+            >
+            <div
+              className={`flex min-w-0 h-full ${isMobileLayout ? "order-2 flex-1" : ""}`}
               style={{
-                width: tableWidth > 0 ? `${tableWidth}px` : undefined,
+                width: tablePaneWidth,
               }}
             >
               <div
@@ -1847,40 +1877,45 @@ export default function GTPUniversalChart({
               </div>
             </div>
 
-            <div className="w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
-              <div className="cursor-col-resize" onPointerDown={handleDividerPointerDown}>
-                <GTPButton size="xs" variant="primary" leftIcon="gtp-move-side-monochrome" />
-              </div>
-              <div
-                ref={tableScrollbarTrackRef}
-                className={`w-[8px] flex-1 rounded-full bg-color-bg-medium p-[1px] ${
-                  tableCanScroll ? "cursor-row-resize" : "cursor-default opacity-60"
-                }`}
-                onPointerDown={handleTableScrollbarPointerDown}
-              >
+            {!isMobileLayout ? (
+              <div className="w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
+                <div className="cursor-col-resize mt-[1px]" onPointerDown={handleDividerPointerDown}>
+                  <GTPButton size="xs" variant="primary" leftIcon="gtp-move-side-monochrome" />
+                </div>
                 <div
-                  className="w-[6px] rounded-full bg-color-ui-active"
-                  style={{
-                    height: `${tableScrollbarThumbHeight}px`,
-                    transform: `translateY(${tableScrollbarThumbTop}px)`,
-                  }}
-                />
+                  ref={tableScrollbarTrackRef}
+                  className={`w-[8px] flex-1 rounded-full bg-color-bg-medium p-[1px] ${
+                    tableCanScroll ? "cursor-row-resize" : "cursor-default opacity-60"
+                  }`}
+                  onPointerDown={handleTableScrollbarPointerDown}
+                >
+                  <div
+                    className="w-[6px] rounded-full bg-color-ui-active"
+                    style={{
+                      height: `${tableScrollbarThumbHeight}px`,
+                      transform: `translateY(${tableScrollbarThumbTop}px)`,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div
-              className="flex min-w-0 h-full"
+              className={`flex min-w-0 ${isMobileLayout ? "order-1 w-full shrink-0" : "h-full"}`}
               style={{
-                width: chartWidth > 0 ? `${chartWidth}px` : undefined,
+                width: chartPaneWidth,
               }}
             >
-              <div className="min-w-0 flex-1 h-full min-h-0 pl-[5px]">
-                <div className="relative h-full w-full rounded-[14px] overflow-hidden">
+              <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : "h-full pl-[5px]"}`}>
+                <div
+                  className="relative w-full rounded-[14px] overflow-hidden"
+                  style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
+                >
                   <ReactECharts
                     option={chartOption}
                     notMerge
                     lazyUpdate
-                    style={{ width: "100%", height: chartRenderHeight }}
+                    style={{ width: "100%", height: "100%" }}
                   />
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <ChartWatermark className="h-auto w-[145px] text-color-text-secondary opacity-[0.18] mix-blend-darken dark:mix-blend-lighten" />

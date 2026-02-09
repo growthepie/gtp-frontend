@@ -83,17 +83,17 @@ const ICON_LAYOUTS: Array<{
   label: string;
   buttonLabel?: string;
   leftIcon?: "gtp-filter";
-  rightIcon?: "gtp-chevronright";
+  rightIcon?: "in-button-right-monochrome";
 }> = [
   { id: "none", label: "None", buttonLabel: "Label" },
   { id: "left", label: "Left", buttonLabel: "Label", leftIcon: "gtp-filter" as const },
-  { id: "right", label: "Right", buttonLabel: "Label", rightIcon: "gtp-chevronright" as const },
+  { id: "right", label: "Right", buttonLabel: "Label", rightIcon: "in-button-right-monochrome" as const },
   {
     id: "both",
     label: "Both",
     buttonLabel: "Label",
     leftIcon: "gtp-filter" as const,
-    rightIcon: "gtp-chevronright" as const,
+    rightIcon: "in-button-right-monochrome" as const,
   },
   { id: "alone", label: "Alone", leftIcon: "gtp-filter" as const },
 ];
@@ -148,7 +148,7 @@ export default function GTPButtonShowcasePage() {
     () => ({
       label: playHasLabel ? "Playground" : undefined,
       leftIcon: playHasLeftIcon ? "gtp-filter" : undefined,
-      rightIcon: playHasRightIcon ? "gtp-chevronright" : undefined,
+      rightIcon: playHasRightIcon ? "in-button-right-monochrome" : undefined,
       variant: playVariant,
       visualState: playVisualState,
       size: playSize,
@@ -173,7 +173,7 @@ export default function GTPButtonShowcasePage() {
         <header className="space-y-2">
           <h1 className="heading-small-md lg:heading-small-lg">GTPButton Showcase</h1>
           <p className="text-sm text-color-text-secondary">
-            Route: <code>/gtpbutton</code>. This page demonstrates every current prop and behavior in{" "}
+            Routes: <code>/gtpbutton</code> and <code>/debug/gtpbutton</code>. This page demonstrates every current prop and behavior in{" "}
             <code>components/GTPButton/GTPButton.tsx</code>.
           </p>
         </header>
@@ -194,7 +194,7 @@ export default function GTPButtonShowcasePage() {
                       variant={variant}
                       visualState={state}
                       size="md"
-                      rightIcon="gtp-chevronright"
+                      rightIcon="in-button-right-monochrome"
                     />
                   ))}
                 </div>
@@ -340,7 +340,7 @@ export default function GTPButtonShowcasePage() {
                 <GTPButton
                   label={playHasLabel ? `Playground (${playClickCount})` : undefined}
                   leftIcon={playHasLeftIcon ? "gtp-filter" : undefined}
-                  rightIcon={playHasRightIcon ? "gtp-chevronright" : undefined}
+                  rightIcon={playHasRightIcon ? "in-button-right-monochrome" : undefined}
                   variant={playVariant}
                   visualState={playVisualState}
                   size={playSize}
@@ -450,7 +450,7 @@ export default function GTPButtonShowcasePage() {
             <GTPButton
               label={`main:${iconMainClicks} left:${iconLeftClicks} right:${iconRightClicks}`}
               leftIcon="gtp-filter"
-              rightIcon="gtp-chevronright"
+              rightIcon="in-button-right-monochrome"
               variant="highlight"
               size="sm"
               clickHandler={() => setIconMainClicks((value) => value + 1)}
