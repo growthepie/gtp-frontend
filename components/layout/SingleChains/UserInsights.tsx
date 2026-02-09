@@ -188,9 +188,9 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
   return (
     <>
       <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
-        <div className="flex gap-x-[8px] items-center scroll-mt-8" id="user-insights">
-          <GTPIcon icon="gtp-users" size="lg" className="!w-[36px] !h-[36px]" containerClassName="w-[36px] h-[36px]" />
-          <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
+        <div className="flex gap-x-[8px] items-center scroll-mt-8 mt-[10px]" id="user-insights">
+          <GTPIcon icon="gtp-users" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
+          <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
             {master?.chains?.[chainKey]?.name} User Insights
           </Heading>
         </div>

@@ -1676,12 +1676,12 @@ export default function ChainChartECharts({
   }
 
   return (
-    <div className="w-full flex-col relative" id="chains-content-container">
+    <div className="w-full flex-col relative " id="chains-content-container">
       {/* Title and Compare Section */}
       <div className="flex items-center justify-between mb-[15px]">
         <div className="flex gap-x-[8px] items-center scroll-mt-8" id="fundamentals">
           <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
-          <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
+          <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
             Fundamental Metrics
           </Heading>
         </div>
