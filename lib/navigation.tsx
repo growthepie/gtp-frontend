@@ -563,20 +563,6 @@ export const navigationItems: NavigationItem[] = [
         url: "/blockspace/chain-overview",
       },
       {
-        label: "Category Comparison",
-        category: "blockspace-categories",
-        page: {
-          title: "Category Comparison",
-          description:
-            "How are certain blockspace categories used on different chains? Explore the varied applications of blockspace categories across Ethereum Layer-2s.",
-        },
-        icon: "gtp-compare",
-        key: "category-comparison",
-        rootKey: "categoryComparison",
-        urlKey: "category-comparison",
-        url: "/blockspace/category-comparison",
-      },
-      {
         label: "Treemap",
         category: "blockspace-categories",
         page: {
@@ -591,6 +577,21 @@ export const navigationItems: NavigationItem[] = [
         url: "/blockspace/treemap",
         hide: IS_PRODUCTION,
         excludeFromSitemap: IS_PRODUCTION,
+        showNew: true,
+      },
+      {
+        label: "Category Comparison",
+        category: "blockspace-categories",
+        page: {
+          title: "Category Comparison",
+          description:
+            "How are certain blockspace categories used on different chains? Explore the varied applications of blockspace categories across Ethereum Layer-2s.",
+        },
+        icon: "gtp-compare",
+        key: "category-comparison",
+        rootKey: "categoryComparison",
+        urlKey: "category-comparison",
+        url: "/blockspace/category-comparison",
       },
       // {
       //   label: "Applications",

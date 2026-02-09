@@ -18,6 +18,7 @@ import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
 import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
+import BlockspaceTreemapSection from "./BlockspaceTreeMap/BlockspaceTreemapSection";
 import {
   TopRowContainer,
   TopRowChild,
@@ -566,6 +567,15 @@ export default function OverviewMetrics({
               </ContractProvider>
             </ProjectsMetadataProvider>
           </HorizontalScrollContainer>
+          {isSingleChainView && (
+            <Container className="mt-[30px]">
+              <BlockspaceTreemapSection
+                titleAs="h2"
+                descriptionClassName="text-[14px]"
+                chainKey={forceSelectedChain ?? selectedChain}
+              />
+            </Container>
+          )}
         </div>
       )}
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   hierarchy,
@@ -14,7 +14,7 @@ import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import ExpandableMenu, { ExpandableMenuItem } from "@/components/layout/FloatingBar/ExpandableMenu";
+import { Icon } from "@iconify/react";
 import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -25,8 +25,8 @@ type RawTreeMapResponse = {
   };
 };
 
-type MetricKey = "txcount" | "fees" | "daa";
-type MetricValueKey = "txcount" | "fees_paid_usd" | "fees_paid_eth" | "daa";
+type MetricKey = "txcount" | "fees";
+type MetricValueKey = "txcount" | "fees_paid_usd" | "fees_paid_eth";
 
 type NodeData = {
   id: string;
@@ -50,35 +50,25 @@ type DisplayNode = {
 const METRIC_LABELS: Record<MetricKey, string> = {
   txcount: "Transaction Count",
   fees: "Gas Fees",
-  daa: "Active Addresses",
 };
 
 const METRIC_LONG_LABELS: Record<MetricKey, string> = {
   txcount: "Transaction Count",
   fees: "Fees Paid",
-  daa: "Active Addresses",
 };
 
 const METRIC_FORMAT: Record<MetricValueKey, Intl.NumberFormatOptions> = {
   fees_paid_usd: { maximumFractionDigits: 2 },
   fees_paid_eth: { maximumFractionDigits: 6 },
   txcount: { maximumFractionDigits: 0 },
-  daa: { maximumFractionDigits: 0 },
 };
 
 const DEFAULT_COLOR = "#5A6462";
 const DEFAULT_DEPTH = 3;
-const MIN_DEPTH = 1;
+const MIN_DEPTH = 2;
 const MAX_DEPTH = 5;
 const MAX_CHILDREN_PER_PARENT = 12;
 const HEADER_VERTICAL_PADDING = 2;
-const DEPTH_LEVELS: Array<{ depth: number; label: string; icon: string }> = [
-  { depth: 1, label: "Chain", icon: "gtp-chain" },
-  { depth: 2, label: "Category", icon: "gtp-categories" },
-  { depth: 3, label: "Subcategory", icon: "gtp-subcategories" },
-  { depth: 4, label: "App", icon: "gtp-project" },
-  { depth: 5, label: "Contract", icon: "gtp-file-text" },
-];
 
 const keyToTitle = (value: string) =>
   value
@@ -92,11 +82,22 @@ const shortAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
+const normalizeHierarchyKey = (value: string | number | null | undefined) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "unlabeled";
+  const lower = raw.toLowerCase();
+  if (["-", "null", "unknown", "unlabeled", "unlabelled"].includes(lower)) return "unlabeled";
+  return raw;
+};
+
 const getContractAddressFromId = (nodeId: string) => {
   const idParts = nodeId.split(":");
   if (idParts[0] !== "contract") return "";
   return idParts[5] ?? "";
 };
+
+const isAggregatedContractAddress = (address: string) =>
+  address.toLowerCase() === "all others";
 
 const toNumber = (value: string | number | null | undefined) => {
   const parsed = Number(value ?? 0);
@@ -122,46 +123,6 @@ const getHierarchyLevel = (id: string) => {
   return "Contract";
 };
 
-const HIERARCHY_DEPTH_BY_PREFIX: Record<string, number> = {
-  chain: 1,
-  main: 2,
-  sub: 3,
-  owner: 4,
-  contract: 5,
-};
-
-const getNodeDepthFromId = (id: string) => {
-  const prefix = id.split(":")[0];
-  return HIERARCHY_DEPTH_BY_PREFIX[prefix] ?? 0;
-};
-
-const getIdAtDepthFromNodeId = (nodeId: string, targetDepth: number): string | null => {
-  const parts = nodeId.split(":");
-  const chainKey = parts[1];
-  if (!chainKey) return null;
-
-  if (targetDepth === 1) return `chain:${chainKey}`;
-  const mainCategoryKey = parts[2];
-  if (!mainCategoryKey) return null;
-
-  if (targetDepth === 2) return `main:${chainKey}:${mainCategoryKey}`;
-  const subCategoryKey = parts[3];
-  if (!subCategoryKey) return null;
-
-  if (targetDepth === 3) return `sub:${chainKey}:${mainCategoryKey}:${subCategoryKey}`;
-  const ownerKey = parts[4];
-  if (!ownerKey) return null;
-
-  if (targetDepth === 4) return `owner:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}`;
-  const address = parts[5];
-  if (!address) return null;
-
-  if (targetDepth === 5) {
-    return `contract:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}:${address}`;
-  }
-
-  return null;
-};
 
 const getHeaderHeight = (boxHeight: number) => {
   if (boxHeight < 60) return 0;
@@ -237,7 +198,7 @@ const getMetricLabel = (metric: MetricKey, showUsd: boolean) => {
   return METRIC_LONG_LABELS[metric];
 };
 
-export default function HierarchyTreemap() {
+export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const { AllChainsByKeys } = useMaster();
   const { data, isLoading, isValidating } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
   const { data: projectsData } = useSWR<any>(LabelsURLS.projectsFiltered);
@@ -245,14 +206,12 @@ export default function HierarchyTreemap() {
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("txcount");
   const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
   const [showUsd] = useLocalStorage("showUsd", true);
+  const [showUnlabeled, setShowUnlabeled] = useState<boolean>(false);
   const [selectedDepth, setSelectedDepth] = useState<number>(DEFAULT_DEPTH);
-  const [depthMenuOpen, setDepthMenuOpen] = useState(false);
+  const [hoverSettings, setHoverSettings] = useState<boolean>(false);
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
-
-  const selectedDepthLevel =
-    DEPTH_LEVELS.find((level) => level.depth === selectedDepth) ?? DEPTH_LEVELS[DEFAULT_DEPTH - 1];
 
   useEffect(() => {
     if (!containerEl || typeof ResizeObserver === "undefined") return;
@@ -342,23 +301,25 @@ export default function HierarchyTreemap() {
     rows.forEach((row) => {
       if (dateSet.size > 0 && !dateSet.has(String(row[dateIndex]))) return;
 
-      const chainKey = String(row[chainIndex] ?? "unknown");
-      const mainCategoryKey = String(row[mainCategoryIndex] ?? "unknown");
-      const subCategoryKey = String(row[subCategoryIndex] ?? "unknown");
-      const ownerKey = String(row[ownerIndex] ?? "unknown");
+      const rowChainKey = String(row[chainIndex] ?? "unknown");
+      if (chainKey && rowChainKey !== chainKey) return;
+      const mainCategoryKey = normalizeHierarchyKey(row[mainCategoryIndex]);
+      const subCategoryKey = normalizeHierarchyKey(row[subCategoryIndex]);
+      if (!showUnlabeled && subCategoryKey === "unlabeled") return;
+      const ownerKey = normalizeHierarchyKey(row[ownerIndex]);
       const address = String(row[addressIndex] ?? "unknown").toLowerCase();
       const contractName = String(row[contractNameIndex] ?? "Unknown Contract");
       const metricValue = toNumber(row[metricIndex]);
       if (metricValue <= 0) return;
 
-      const chainLabel = AllChainsByKeys[chainKey]?.label ?? keyToTitle(chainKey);
-      const chainColor = AllChainsByKeys[chainKey]?.colors.dark?.[0] ?? DEFAULT_COLOR;
+      const chainLabel = AllChainsByKeys[rowChainKey]?.label ?? keyToTitle(rowChainKey);
+      const chainColor = AllChainsByKeys[rowChainKey]?.colors.dark?.[0] ?? DEFAULT_COLOR;
 
-      const chainId = `chain:${chainKey}`;
-      const mainCategoryId = `main:${chainKey}:${mainCategoryKey}`;
-      const subCategoryId = `sub:${chainKey}:${mainCategoryKey}:${subCategoryKey}`;
-      const ownerId = `owner:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}`;
-      const contractId = `contract:${chainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}:${address}`;
+      const chainId = `chain:${rowChainKey}`;
+      const mainCategoryId = `main:${rowChainKey}:${mainCategoryKey}`;
+      const subCategoryId = `sub:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}`;
+      const ownerId = `owner:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}`;
+      const contractId = `contract:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}:${address}`;
 
       if (!chainNodes.has(chainId)) {
         chainNodes.set(chainId, { id: chainId, name: chainLabel, value: 0, color: chainColor });
@@ -391,10 +352,12 @@ export default function HierarchyTreemap() {
         });
       }
       if (!contractNodes.has(contractId)) {
+        const resolvedContractName =
+          contractName === "-" ? shortAddress(address) : contractName;
         contractNodes.set(contractId, {
           id: contractId,
           parent: ownerId,
-          name: contractName === "-" ? shortAddress(address) : contractName,
+          name: resolvedContractName,
           value: 0,
           color: addAlpha(chainColor, 0.6),
         });
@@ -449,49 +412,12 @@ export default function HierarchyTreemap() {
       nodeById,
       childrenByParent,
     };
-  }, [data, selectedTimespan, selectedMetric, showUsd, AllChainsByKeys]);
-
-  const applyDepthSelection = useCallback((nextDepth: number) => {
-    const clampedDepth = clamp(nextDepth, MIN_DEPTH, MAX_DEPTH);
-    setSelectedDepth(clampedDepth);
-
-    setRootId((prev) => {
-      if (!prev) return prev;
-
-      const prevDepth = getNodeDepthFromId(prev);
-      if (!prevDepth || prevDepth === clampedDepth) return prev;
-
-      if (clampedDepth < prevDepth) {
-        return getIdAtDepthFromNodeId(prev, clampedDepth) ?? prev;
-      }
-
-      let cursorId = prev;
-      let cursorDepth = prevDepth;
-
-      while (cursorDepth < clampedDepth) {
-        const nextChild = (parsed.childrenByParent[cursorId] ?? []).find(
-          (child) => !child.id.startsWith("other:") && !child.id.startsWith("unlabeled:"),
-        );
-        if (!nextChild) break;
-        cursorId = nextChild.id;
-        cursorDepth = getNodeDepthFromId(cursorId);
-        if (!cursorDepth) break;
-      }
-
-      return cursorId;
-    });
-  }, [parsed.childrenByParent]);
-
-  const depthMenuItems: ExpandableMenuItem[] = useMemo(() =>
-    DEPTH_LEVELS.map((level) => ({
-      id: `depth-${level.depth}`,
-      label: level.label,
-      icon: <GTPIcon icon={level.icon as any} size="sm" />,
-      onSelect: () => applyDepthSelection(level.depth),
-      disabled: level.depth < MIN_DEPTH || level.depth > MAX_DEPTH,
-    })), [applyDepthSelection]);
+  }, [data, selectedTimespan, selectedMetric, showUsd, showUnlabeled, AllChainsByKeys, chainKey]);
 
   const effectiveRootId = rootId && parsed.nodeById[rootId] ? rootId : null;
+  const chainLabel = chainKey
+    ? AllChainsByKeys[chainKey]?.label ?? keyToTitle(chainKey)
+    : null;
 
   const currentPath = useMemo(() => {
     if (!effectiveRootId) return [] as Array<{ id: string; name: string }>;
@@ -508,15 +434,6 @@ export default function HierarchyTreemap() {
 
     return path;
   }, [effectiveRootId, parsed.nodeById]);
-
-  useEffect(() => {
-    if (!rootId) return;
-    const rootDepth = getNodeDepthFromId(rootId);
-    if (!rootDepth) return;
-    if (rootDepth !== selectedDepth) {
-      setSelectedDepth(rootDepth);
-    }
-  }, [rootId, selectedDepth]);
 
   const ownerProjectToLogo = useMemo(() => {
     if (!projectsData?.data?.types || !projectsData?.data?.data) return {} as Record<string, string>;
@@ -554,6 +471,15 @@ export default function HierarchyTreemap() {
   };
 
   const displayTree = useMemo(() => {
+    const shouldHideUnlabeled = !showUnlabeled;
+    const isSubcategoryUnlabeled = (id: string) => {
+      if (id.startsWith("unlabeled:")) return true;
+      const parts = id.split(":");
+      const prefix = parts[0];
+      if (!["sub", "owner", "contract"].includes(prefix)) return false;
+      return (parts[3] ?? "") === "unlabeled";
+    };
+
     const getFullPath = (id: string) => {
       const names: string[] = [];
       let cursor: string | undefined = id;
@@ -566,39 +492,77 @@ export default function HierarchyTreemap() {
       return names.join(" > ");
     };
 
-    const makeNode = (id: string, depth: number): DisplayNode | null => {
+    const makeNode = (
+      id: string,
+      depth: number,
+      valueOverrides?: Map<string, number>,
+    ): DisplayNode | null => {
       const node = parsed.nodeById[id];
       if (!node) return null;
+      if (shouldHideUnlabeled && isSubcategoryUnlabeled(id)) return null;
+      const nodeValue = valueOverrides?.get(id) ?? node.value;
 
       const current: DisplayNode = {
         id: node.id,
         name: node.name,
-        value: node.value,
+        value: nodeValue,
         color: node.color ?? DEFAULT_COLOR,
         hierarchyLevel: getHierarchyLevel(node.id),
         fullPath: getFullPath(node.id),
-        sharePct: parsed.totalValue > 0 ? (node.value / parsed.totalValue) * 100 : 0,
+        sharePct: parsed.totalValue > 0 ? (nodeValue / parsed.totalValue) * 100 : 0,
       };
 
-      const absoluteDepth = getNodeDepthFromId(node.id);
-      const shouldStop = effectiveRootId
-        ? absoluteDepth > selectedDepth
-        : absoluteDepth >= selectedDepth;
-      if (shouldStop) return current;
+      if (depth >= selectedDepth) return current;
 
-      const children = parsed.childrenByParent[id] ?? [];
+      const childrenRaw = parsed.childrenByParent[id] ?? [];
+      const children = shouldHideUnlabeled
+        ? childrenRaw.filter((child) => !isSubcategoryUnlabeled(child.id))
+        : childrenRaw;
       const minShareOfParent = depth === 1 ? 0.002 : depth === 2 ? 0.008 : 0.015;
-      const minValue = node.value * minShareOfParent;
+      const minValue = nodeValue * minShareOfParent;
       const primaryChildren = children.filter((child) => child.value >= minValue);
       const tinyChildren = children.filter((child) => child.value < minValue);
+      const isExplicitUnlabeled = (child: NodeData) =>
+        child.id.includes(":unlabeled") && !child.id.startsWith("unlabeled:");
+      const isAggregatedOthers = (child: NodeData) => child.id.includes(":all others");
+
       const keptChildren = primaryChildren.slice(0, MAX_CHILDREN_PER_PARENT);
       const hiddenChildren = [
         ...tinyChildren,
         ...primaryChildren.slice(MAX_CHILDREN_PER_PARENT),
       ];
 
+      const unlabeledChild = children.find(isExplicitUnlabeled);
+      if (unlabeledChild && !keptChildren.some((child) => child.id === unlabeledChild.id)) {
+        keptChildren.push(unlabeledChild);
+        const overflow = keptChildren.length - MAX_CHILDREN_PER_PARENT;
+        if (overflow > 0) {
+          keptChildren
+            .filter((child) => !isExplicitUnlabeled(child))
+            .sort((a, b) => a.value - b.value)
+            .slice(0, overflow)
+            .forEach((child) => {
+              const idx = keptChildren.findIndex((item) => item.id === child.id);
+              if (idx >= 0) keptChildren.splice(idx, 1);
+              hiddenChildren.push(child);
+            });
+        }
+      }
+
+      const aggregatedChild = children.find(isAggregatedOthers);
+      if (aggregatedChild && !keptChildren.some((child) => child.id === aggregatedChild.id)) {
+        keptChildren.push(aggregatedChild);
+      }
+
+      const overrides = new Map<string, number>();
+      if (aggregatedChild && hiddenChildren.length > 0) {
+        const hiddenValue = hiddenChildren.reduce((sum, child) => sum + child.value, 0);
+        overrides.set(aggregatedChild.id, aggregatedChild.value + hiddenValue);
+        hiddenChildren.length = 0;
+      }
+
       const mappedChildren = keptChildren
-        .map((child) => makeNode(child.id, depth + 1))
+        .map((child) => makeNode(child.id, depth + 1, overrides))
         .filter(Boolean) as DisplayNode[];
 
       if (hiddenChildren.length > 0) {
@@ -616,7 +580,7 @@ export default function HierarchyTreemap() {
 
       if (mappedChildren.length > 0) {
         const childrenSum = mappedChildren.reduce((sum, child) => sum + child.value, 0);
-        const missingValue = node.value - childrenSum;
+        const missingValue = nodeValue - childrenSum;
         if (missingValue > 0.0001) {
           mappedChildren.push({
             id: `unlabeled:${id}:${depth}`,
@@ -642,20 +606,23 @@ export default function HierarchyTreemap() {
       : parsed.childrenByParent["__root__"] ?? [];
 
     const rootChildren = rootChildrenSource
+      .filter((node) => (shouldHideUnlabeled ? !isSubcategoryUnlabeled(node.id) : true))
       .map((node) => makeNode(node.id, 1))
       .filter(Boolean) as DisplayNode[];
+
+    const displayTotalValue = rootChildren.reduce((sum, node) => sum + node.value, 0);
 
     return {
       id: "__root__",
       name: "All chains",
-      value: rootChildren.reduce((sum, node) => sum + node.value, 0),
+      value: displayTotalValue,
       color: "transparent",
       hierarchyLevel: "Root",
       fullPath: "All chains",
       sharePct: 100,
       children: rootChildren,
     } as DisplayNode;
-  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue, selectedDepth]);
+  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue, selectedDepth, showUnlabeled]);
 
   const laidOutNodes = useMemo(() => {
     const fallbackWidth =
@@ -737,7 +704,7 @@ export default function HierarchyTreemap() {
 
       <div className="rounded-[15px] bg-color-bg-container p-[0px] md:p-[0px]">
         <div className="flex flex-col lg:flex-row w-full justify-between items-center rounded-full bg-color-bg-medium p-[3px] gap-[8px] text-[12px] lg:text-[14px]">
-          <div className="flex w-full lg:w-auto justify-between lg:justify-start items-stretch lg:items-center mx-[0px] space-x-[5px]">
+          <div className="flex w-full lg:w-auto justify-center lg:justify-start items-stretch lg:items-center mx-[0px] space-x-[5px]">
             {Object.entries(METRIC_LABELS).map(([key, label]) => {
               const metricKey = key as MetricKey;
               const isActive = selectedMetric === metricKey;
@@ -757,7 +724,7 @@ export default function HierarchyTreemap() {
               );
             })}
           </div>
-          <div className="flex w-full lg:w-auto justify-between lg:justify-end items-stretch lg:items-center mx-[0px] space-x-[5px]">
+          <div className="flex w-full lg:w-auto justify-center lg:justify-end items-stretch lg:items-center mx-[0px] space-x-[5px]">
             {[
               { id: "1d", label: "Yesterday" },
               { id: "7d", label: "Last 7 Days" },
@@ -778,6 +745,127 @@ export default function HierarchyTreemap() {
                 </button>
               );
             })}
+            <div
+              className="relative z-[300]"
+              onMouseEnter={() => setHoverSettings(true)}
+              onMouseLeave={() => setHoverSettings(false)}
+            >
+              <div
+                className={`flex items-center relative h-[44px] bg-color-bg-default gap-x-[10px] rounded-full px-[15px] py-[10px] transition-all z-[2] duration-300 hover:cursor-pointer ${
+                  hoverSettings ? "w-[336px] justify-start" : "w-[128px] justify-start"
+                }`}
+              >
+                <div className={`transition-all ${hoverSettings ? "hidden" : "block"}`}>
+                  <Icon
+                    icon="gtp:gtp-settings"
+                    className="h-6 w-6 text-color-text-primary"
+                  />
+                </div>
+                <div className={`transition-all ${hoverSettings ? "block" : "hidden"}`}>
+                  <Icon
+                    icon="feather:chevron-down"
+                    className="h-5 w-5 mt-1 text-color-text-primary"
+                  />
+                </div>
+                <div className="font-semibold transition-all">Settings</div>
+              </div>
+
+              <div
+                className={`absolute top-6 min-h-0 bg-color-ui-active right-0 rounded-b-2xl z-[1] transition-all duration-300 overflow-hidden ${
+                  hoverSettings ? "shadow-[0px_4px_46.2px_0px_#000000]" : "shadow-transparent"
+                }`}
+                style={{
+                  width: hoverSettings ? "336px" : 0,
+                  height: hoverSettings ? "140px" : 0,
+                  backdropFilter: "none",
+                  WebkitBackdropFilter: "none",
+                }}
+                onMouseEnter={() => setHoverSettings(true)}
+                onMouseLeave={() => setHoverSettings(false)}
+              >
+                <div className="pt-[22px] pb-[12px] flex flex-col">
+                  <div className="flex flex-col w-full">
+                    <div className="flex items-center w-full">
+                      <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
+                        <div className="font-normal text-color-text-primary/50 text-right">
+                          Treemap settings
+                        </div>
+                        <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
+                          <div className="flex flex-1 items-center place-self-end">
+                            <div className="font-semibold text-right pl-[8px]">
+                              Unlabeled
+                            </div>
+                          </div>
+                          <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
+                          <div
+                            className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                            onClick={() => setShowUnlabeled((prev) => !prev)}
+                          >
+                            <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
+                              <div className="w-full flex items-start justify-center">
+                                Show
+                              </div>
+                              <div className={`w-full text-center ${showUnlabeled && "opacity-50"}`}>
+                                Hide
+                              </div>
+                            </div>
+                            <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                              <div
+                                className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                style={{
+                                  transform: showUnlabeled ? "translateX(0%)" : "translateX(100%)",
+                                }}
+                              >
+                                {showUnlabeled ? "Show" : "Hide"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
+                          <div className="flex flex-1 items-center place-self-end">
+                            <div className="font-semibold text-right pl-[8px]">
+                              Visualized levels
+                            </div>
+                          </div>
+                          <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
+                          <div className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5">
+                            <div className="absolute inset-0 w-full p-[1.36px] rounded-full">
+                              <div className="w-full h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-between px-[6px] text-[11px] text-color-text-primary">
+                                <button
+                                  type="button"
+                                  className="flex items-center justify-center disabled:opacity-40 mt-[4px]"
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    setSelectedDepth((prev) => Math.max(MIN_DEPTH, prev - 1));
+                                  }}
+                                  disabled={selectedDepth <= MIN_DEPTH}
+                                  aria-label="Decrease depth"
+                                >
+                                  <GTPIcon icon={"feather:chevron-left" as any} size="sm" className="!w-[10px] !h-[10px]" />
+                                </button>
+                                <span className="font-semibold">{selectedDepth}</span>
+                                <button
+                                  type="button"
+                                  className="flex items-center justify-center disabled:opacity-40 mt-[4px]"
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    setSelectedDepth((prev) => Math.min(MAX_DEPTH, prev + 1));
+                                  }}
+                                  disabled={selectedDepth >= MAX_DEPTH}
+                                  aria-label="Increase depth"
+                                >
+                                  <GTPIcon icon={"feather:chevron-right" as any} size="sm" className="!w-[10px] !h-[10px]" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -786,13 +874,15 @@ export default function HierarchyTreemap() {
         <div className="flex flex-col gap-y-[6px]">
           <div className="flex items-center justify-between gap-[12px] flex-nowrap">
             <div className="heading-md flex items-center gap-x-[5px] min-w-0">
-            <button
-              type="button"
-              className="hover:underline"
-              onClick={() => setRootId(null)}
-            >
-              All chains
-            </button>
+            {!chainLabel && (
+              <button
+                type="button"
+                className="hover:underline"
+                onClick={() => setRootId(null)}
+              >
+                All chains
+              </button>
+            )}
             {currentPath.map((node, index) => (
               <span key={node.id} className="flex items-center gap-x-[5px]">
                 <span className="text-color-text-secondary">&gt;</span>
@@ -819,75 +909,6 @@ export default function HierarchyTreemap() {
                 />
               </button>
             )}
-            </div>
-            <div className="flex items-center gap-[8px] ml-auto shrink-0">
-              <div className="flex items-center gap-[6px]">
-              <div className="relative h-[44px] w-[330px]">
-                <ExpandableMenu
-                  items={depthMenuItems}
-                  open={depthMenuOpen}
-                  onOpenChange={setDepthMenuOpen}
-                  openOn="click"
-                  placement="bottom-start"
-                  collapsedSize={{ width: "100%", height: 44 }}
-                  expandedSize={{ width: "100%", height: "auto" }}
-                  showCollapsedPanel={false}
-                  className="!z-[150]"
-                  triggerClassName="!px-0 !z-[170] !bg-color-bg-default !bottom-0"
-                  panelClassName="!rounded-b-[18px] !bg-color-bg-default !z-[160]"
-                  contentPadding="30px 0 8px 0"
-                  renderTrigger={({ props }) => (
-                    <div
-                      className="relative flex items-center w-full h-full rounded-full overflow-hidden px-[4px] gap-x-[4px]"
-                    >
-                      <button
-                        type="button"
-                        className="size-[30px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          applyDepthSelection(selectedDepth - 1);
-                        }}
-                        disabled={selectedDepth <= MIN_DEPTH}
-                        aria-label="Previous depth"
-                      >
-                        <GTPIcon icon={"gtp-chevronleft-monochrome" as any} size="sm" />
-                      </button>
-
-                      <button
-                        {...props}
-                        type="button"
-                        className="flex items-center min-w-0 flex-1 h-[36px] rounded-full px-[4px] hover:bg-color-ui-hover text-left"
-                        aria-label="Depth menu"
-                      >
-                      <GTPIcon
-                        icon={selectedDepthLevel.icon as any}
-                        size="md"
-                        containerClassName="!size-[44px] min-w-[44px] flex items-center justify-center"
-                      />
-                      <div className="heading-small-sm whitespace-nowrap min-w-0">
-                        {selectedDepthLevel.label}
-                      </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        className="size-[30px] rounded-full bg-color-bg-default hover:bg-color-ui-hover flex items-center justify-center text-color-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          applyDepthSelection(selectedDepth + 1);
-                        }}
-                        disabled={selectedDepth >= MAX_DEPTH}
-                        aria-label="Next depth"
-                      >
-                        <GTPIcon icon={"gtp-chevronright-monochrome" as any} size="sm" />
-                      </button>
-                    </div>
-                  )}
-                />
-              </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1009,7 +1030,11 @@ export default function HierarchyTreemap() {
                       const contractAddress = getContractAddressFromId(node.data.id);
                       const shortContract = contractAddress ? shortAddress(contractAddress) : "";
                       const isContract = node.data.id.startsWith("contract:");
-                      const showAddressInline = isContract && shortContract && canShowContractAddress;
+                      const showAddressInline =
+                        isContract &&
+                        shortContract &&
+                        canShowContractAddress &&
+                        !isAggregatedContractAddress(contractAddress);
                       const displayName =
                         isContract && showAddressInline
                           ? node.data.name && node.data.name !== shortContract
@@ -1068,7 +1093,7 @@ export default function HierarchyTreemap() {
                     const shortContract = contractAddress ? shortAddress(contractAddress) : "";
                     const isContract = hoveredNode.data.id.startsWith("contract:");
                     const displayName =
-                      isContract && shortContract
+                      isContract && shortContract && !isAggregatedContractAddress(contractAddress)
                         ? hoveredNode.data.name && hoveredNode.data.name !== shortContract
                           ? `${hoveredNode.data.name} (${shortContract})`
                           : shortContract
