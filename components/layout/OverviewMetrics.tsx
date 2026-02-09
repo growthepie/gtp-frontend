@@ -572,7 +572,7 @@ export default function OverviewMetrics({
               <BlockspaceTreemapSection
                 titleAs="h2"
                 descriptionClassName="text-[14px]"
-                chainKey={forceSelectedChain ?? selectedChain}
+                chainKey={forceSelectedChain ?? selectedChain ?? undefined}
               />
             </Container>
           )}
