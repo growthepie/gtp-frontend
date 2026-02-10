@@ -67,9 +67,14 @@ const percentile = (values: number[], p: number) => {
 };
 
 const parseDate = (date: string) => new Date(`${date}T00:00:00Z`);
+const parseDateByMode = (date: string, timeZone: "utc" | "local") =>
+  new Date(`${date}T00:00:00${timeZone === "utc" ? "Z" : ""}`);
 
-const getDayLabel = (date: string) =>
-  new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(parseDate(date));
+const getDayLabel = (date: string, timeZone: "utc" | "local") =>
+  new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: timeZone === "utc" ? "UTC" : undefined,
+  }).format(parseDateByMode(date, timeZone));
 
 const formatDateLabel = (date: string) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -78,6 +83,29 @@ const formatDateLabel = (date: string) =>
     year: "2-digit",
     timeZone: "UTC",
   }).format(parseDate(date));
+
+const formatDateLabelLong = (date: string, timeZone: "utc" | "local") => {
+  const parsed = parseDateByMode(date, timeZone);
+  if (Number.isNaN(parsed.getTime())) return date;
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: timeZone === "utc" ? "UTC" : undefined,
+  }).format(parsed);
+  const month = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    timeZone: timeZone === "utc" ? "UTC" : undefined,
+  }).format(parsed);
+  const day = timeZone === "utc" ? parsed.getUTCDate() : parsed.getDate();
+  const suffix = (() => {
+    if (day >= 11 && day <= 13) return "th";
+    const mod = day % 10;
+    if (mod === 1) return "st";
+    if (mod === 2) return "nd";
+    if (mod === 3) return "rd";
+    return "th";
+  })();
+  return `${weekday}, ${month} ${day}${suffix}`;
+};
 
 const formatDelta = (value: number, avg: number) => {
   if (!avg) return "N/A";
@@ -112,16 +140,28 @@ const formatLastUpdated = (value?: string) => {
   }).format(date);
 };
 
-const buildLast7Dates = (lastUpdatedUtc?: string) => {
-  const base = lastUpdatedUtc
-    ? new Date(`${lastUpdatedUtc.replace(" ", "T")}Z`)
-    : new Date();
-  const endDate = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()));
+const toLocalDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const buildLast7Dates = (baseDate: Date, timeZone: "utc" | "local") => {
+  const endDate =
+    timeZone === "utc"
+      ? new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), baseDate.getUTCDate()))
+      : new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
   const dates: string[] = [];
   for (let i = 6; i >= 0; i -= 1) {
     const d = new Date(endDate);
-    d.setUTCDate(endDate.getUTCDate() - i);
-    dates.push(d.toISOString().slice(0, 10));
+    if (timeZone === "utc") {
+      d.setUTCDate(endDate.getUTCDate() - i);
+      dates.push(d.toISOString().slice(0, 10));
+    } else {
+      d.setDate(endDate.getDate() - i);
+      dates.push(toLocalDateKey(d));
+    }
   }
   return dates;
 };
@@ -129,6 +169,7 @@ const buildLast7Dates = (lastUpdatedUtc?: string) => {
 const ActivityHeatmapPanel = () => {
   const { theme } = useTheme();
   const [metric, setMetric] = useState<MetricKey>("active_addresses");
+  const [timeMode, setTimeMode] = useState<"utc" | "local">("utc");
   const [rows, setRows] = useState<HeatmapPoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -180,6 +221,7 @@ const ActivityHeatmapPanel = () => {
     textPrimary: getCssVarAsRgb("--text-primary"),
     textSecondary: getCssVarAsRgb("--text-secondary"),
     bgDefault: getCssVarAsRgb("--bg-default"),
+    bgMedium: getCssVarAsRgb("--bg-medium"),
     uiShadow: getCssVarAsRgb("--ui-shadow"),
   });
 
@@ -192,29 +234,58 @@ const ActivityHeatmapPanel = () => {
     return () => cancelAnimationFrame(raf);
   }, [theme]);
 
-  const last7Dates = useMemo(() => buildLast7Dates(lastUpdated), [lastUpdated]);
+  const baseDate = useMemo(
+    () => (lastUpdated ? new Date(`${lastUpdated.replace(" ", "T")}Z`) : new Date()),
+    [lastUpdated],
+  );
+  const last7Dates = useMemo(() => buildLast7Dates(baseDate, timeMode), [baseDate, timeMode]);
   const last7Set = useMemo(() => new Set(last7Dates), [last7Dates]);
   const partialLastDate = useMemo(() => {
     if (!last7Dates.length) return null;
     const now = new Date();
     const todayUtc = now.toISOString().slice(0, 10);
     const currentHourUtc = now.getUTCHours();
+    const todayLocal = toLocalDateKey(now);
+    const currentHourLocal = now.getHours();
     const lastDate = last7Dates[last7Dates.length - 1];
-    if (lastDate === todayUtc && currentHourUtc < 23) {
+    if (
+      (timeMode === "utc" && lastDate === todayUtc && currentHourUtc < 23) ||
+      (timeMode === "local" && lastDate === todayLocal && currentHourLocal < 23)
+    ) {
       return lastDate;
     }
     return null;
-  }, [last7Dates]);
+  }, [last7Dates, timeMode]);
 
   const dataByDateHour = useMemo(() => {
     const map = new Map<string, HeatmapPoint>();
     rows.forEach((row) => {
-      if (last7Set.has(row.date)) {
-        map.set(`${row.date}-${row.hour}`, row);
+      let dateKey = row.date;
+      let hourKey = row.hour;
+      if (timeMode === "local") {
+        const utcBase = new Date(`${row.date}T00:00:00Z`);
+        utcBase.setUTCHours(row.hour);
+        dateKey = toLocalDateKey(utcBase);
+        hourKey = utcBase.getHours();
+      }
+
+      if (!last7Set.has(dateKey)) return;
+      const key = `${dateKey}-${hourKey}`;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, {
+          date: dateKey,
+          hour: hourKey,
+          values: { ...row.values },
+        });
+      } else {
+        existing.values.active_addresses += row.values.active_addresses;
+        existing.values.transaction_count += row.values.transaction_count;
+        existing.values.gas_fees_paid += row.values.gas_fees_paid;
       }
     });
     return map;
-  }, [rows, last7Set]);
+  }, [rows, last7Set, timeMode]);
 
   const hourlyAverages = useMemo(() => {
     const totals = new Array(24).fill(0);
@@ -238,23 +309,29 @@ const ActivityHeatmapPanel = () => {
     const now = new Date();
     const todayUtc = now.toISOString().slice(0, 10);
     const currentHourUtc = now.getUTCHours();
+    const todayLocal = toLocalDateKey(now);
+    const currentHourLocal = now.getHours();
 
     last7Dates.forEach((date) => {
-      const isFutureDate = date > todayUtc;
+      const isFutureDate = timeMode === "utc" ? date > todayUtc : date > todayLocal;
       for (let hour = 0; hour < 24; hour += 1) {
         const entry = dataByDateHour.get(`${date}-${hour}`);
         const value = entry ? entry.values[metric] : 0;
         const hourLabel = hour.toString();
-        const isFuture = isFutureDate || (date === todayUtc && hour > currentHourUtc);
+        const isFuture =
+          isFutureDate ||
+          (timeMode === "utc"
+            ? date === todayUtc && hour > currentHourUtc
+            : date === todayLocal && hour > currentHourLocal);
         data.push({
-          value: [date, hourLabel, isFuture ? null : value],
+          value: [hourLabel, date, isFuture ? null : value],
           isFuture,
         });
       }
     });
 
     return data;
-  }, [dataByDateHour, last7Dates, metric]);
+  }, [dataByDateHour, last7Dates, metric, timeMode]);
 
   const metricValues = useMemo(
     () =>
@@ -294,26 +371,26 @@ const ActivityHeatmapPanel = () => {
       formatter: (params: any) => {
         if (!params || !params.data) return "";
         const dataPoint = params.data as { value: [string, string, number | null]; isFuture?: boolean };
-        const [date, hourValue, value] = dataPoint.value;
+        const [hourValue, date, value] = dataPoint.value;
         const hour = Number(hourValue);
         const hourStart = formatHour(hour);
         const hourEnd = formatHour((hour + 1) % 24);
-        const dayLabel = getDayLabel(date);
+        const dayLabel = getDayLabel(date, timeMode);
         const avg = hourlyAverages[hour] || 0;
         const delta = formatDelta(value ?? 0, avg);
 
         if (dataPoint.isFuture) {
           return `
             <div class="text-xs font-raleway flex flex-col gap-y-[6px]">
-              <div class="heading-small-xs">${dayLabel} · ${hourStart}:00–${hourEnd}:00 UTC</div>
-              <div class="text-xs text-color-text-secondary">No data yet</div>
+              <div class="heading-small-xs">${dayLabel} · ${hourStart}:00–${hourEnd}:00 ${timeMode === "utc" ? "UTC" : "Local"}</div>
+              <div class="text-xs">No data yet</div>
             </div>
           `;
         }
 
         return `
           <div class="text-xs font-raleway flex flex-col gap-y-[6px]">
-            <div class="heading-small-xs">${dayLabel} · ${hourStart}:00–${hourEnd}:00 UTC</div>
+            <div class="heading-small-xs">${dayLabel} · ${hourStart}:00–${hourEnd}:00 ${timeMode === "utc" ? "UTC" : "Local"}</div>
             <div class="flex justify-between gap-x-[12px]">
               <span class="text-xs">${tooltipMetricLabel}</span>
               <span class="numbers-xs">${formatValue(value ?? 0, metric)}</span>
@@ -329,25 +406,11 @@ const ActivityHeatmapPanel = () => {
 
     return {
       backgroundColor: "transparent",
-      grid: { left: 40, right: 60, top: 30, bottom: 30 },
+      grid: { left: 80, right: 120, top: 30, bottom: 30 },
       tooltip,
       xAxis: {
         type: "category",
-        data: last7Dates,
-        axisLabel: {
-          color: palette.textPrimary,
-          fontSize: 11,
-          fontWeight: 600,
-          fontFamily: "var(--font-raleway), var(--font-fira-sans), sans-serif",
-          formatter: (value: string) => formatDateLabel(value),
-        },
-        axisTick: { show: false },
-        axisLine: { show: false },
-        name: "",
-      },
-      yAxis: {
-        type: "category",
-        data: Array.from({ length: 24 }, (_, i) => (23 - i).toString()),
+        data: Array.from({ length: 24 }, (_, i) => i.toString()),
         axisLabel: {
           color: palette.textPrimary,
           fontSize: 11,
@@ -358,7 +421,22 @@ const ActivityHeatmapPanel = () => {
         },
         axisTick: { show: false },
         axisLine: { show: false },
-        name: "Hour (UTC)",
+        name: "",
+      },
+      yAxis: {
+        type: "category",
+        data: last7Dates,
+        inverse: true,
+        axisLabel: {
+          color: palette.textPrimary,
+          fontSize: 11,
+          fontWeight: 600,
+          fontFamily: "var(--font-raleway), var(--font-fira-sans), sans-serif",
+          formatter: (value: string) => formatDateLabelLong(value, timeMode),
+        },
+        axisTick: { show: false },
+        axisLine: { show: false },
+        name: "",
         nameLocation: "middle",
         nameGap: 40,
         nameTextStyle: {
@@ -378,14 +456,20 @@ const ActivityHeatmapPanel = () => {
         right: 10,
         top: 30,
         bottom: 30,
-        itemHeight: 90,
-        text: ["", ""],
-        textGap: 0,
+        itemWidth: 10,
+        itemHeight: 160,
+        text: ["High Activity", "Low Activity"],
+        textGap: 8,
         textStyle: {
-          color: "transparent",
+          color: palette.textPrimary,
           fontSize: 10,
           fontWeight: 600,
         },
+        handleLabel: {
+          show: false,
+        },
+        formatter: () => "",
+        precision: 0,
         inRange: {
           color: [palette.turquoise, palette.yellow, palette.red],
         },
@@ -407,20 +491,21 @@ const ActivityHeatmapPanel = () => {
             },
           },
           itemStyle: {
-            borderColor: withOpacity(palette.bgDefault, 0.4),
-            borderWidth: 1,
+            borderColor: palette.bgMedium,
+            borderWidth: 2,
+            borderRadius: 6,
           },
           markArea: partialLastDate
             ? {
                 silent: true,
                 itemStyle: { color: withOpacity(palette.textPrimary, 0.06) },
-                data: [[{ xAxis: partialLastDate }, { xAxis: partialLastDate }]],
+                data: [[{ yAxis: partialLastDate }, { yAxis: partialLastDate }]],
               }
             : undefined,
         },
       ],
     };
-  }, [heatmapData, hourlyAverages, metric, palette, colorRange, theme, last7Dates, partialLastDate]);
+  }, [heatmapData, hourlyAverages, metric, palette, colorRange, theme, last7Dates, partialLastDate, timeMode]);
 
   const lastUpdatedLabel = useMemo(() => formatLastUpdated(lastUpdated), [lastUpdated]);
   return (
@@ -445,23 +530,47 @@ const ActivityHeatmapPanel = () => {
         </div>
       ) : (
         <div className="rounded-full bg-color-bg-medium p-[3px]">
-          <div className="flex w-full justify-center lg:justify-start items-stretch lg:items-center mx-[0px] space-x-[5px] text-[12px] lg:text-[14px]">
-            {(Object.keys(METRICS) as MetricKey[]).map((key) => {
-              const isActive = metric === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setMetric(key)}
-                  className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
-                    isActive
-                      ? "bg-color-ui-active text-color-text-primary"
-                      : "text-color-text-primary hover:bg-color-ui-hover"
-                  }`}
-                >
-                  {METRICS[key].label}
-                </button>
-              );
-            })}
+          <div className="flex w-full flex-wrap justify-center lg:justify-between items-stretch lg:items-center gap-[6px] text-[12px] lg:text-[14px]">
+            <div className="flex items-stretch lg:items-center space-x-[5px]">
+              {(Object.keys(METRICS) as MetricKey[]).map((key) => {
+                const isActive = metric === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setMetric(key)}
+                    className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
+                      isActive
+                        ? "bg-color-ui-active text-color-text-primary"
+                        : "text-color-text-primary hover:bg-color-ui-hover"
+                    }`}
+                  >
+                    {METRICS[key].label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-stretch lg:items-center space-x-[5px]">
+              {[
+                { key: "utc", label: "UTC" },
+                { key: "local", label: "Local time" },
+              ].map((option) => {
+                const isActive = timeMode === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setTimeMode(option.key as "utc" | "local")}
+                    className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
+                      isActive
+                        ? "bg-color-ui-active text-color-text-primary"
+                        : "text-color-text-primary hover:bg-color-ui-hover"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
