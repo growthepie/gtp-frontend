@@ -14,15 +14,16 @@ import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
 import ChainMetricTableRow from "../layout/ChainMetricTableRow";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { GTPIcon } from "../layout/GTPIcon";
-import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { GTPButton, GTPButtonSize } from "./GTPButton";
+import GTPButtonDropdown from "./GTPButtonDropdown";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
 
 const DIVIDER_WIDTH = 18;
 const DEFAULT_SPLIT_RATIO = 506 / (506 + 650);
 const BOTTOM_TAB_OVERLAY_HEIGHT = 38;
+const CHART_TO_BOTTOM_TAB_GAP = 15;
 const TABLE_CHAIN_COLUMN_WIDTH = 174;
 const TABLE_SIDE_SPACER_WIDTH = 8;
 const TABLE_ABSOLUTE_COLUMN_WIDTH = 76;
@@ -43,8 +44,6 @@ const UNIVERSAL_CHART_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 const UNIVERSAL_CHART_WATERMARK_CLASS =
   "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
 const HTML2CANVAS_CDN_URL = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
-const SHARE_DROPDOWN_CONTAINER_CLASS =
-  "z-[120] min-w-[236px] overflow-hidden rounded-t-[22px] rounded-b-none bg-color-ui-active shadow-standard";
 
 const DEFAULT_TOP_LEFT_ITEMS = [
   { id: "daily", label: "Daily" },
@@ -133,113 +132,6 @@ declare global {
   }
 }
 
-const MOCK_TABLE_ROWS: Omit<UniversalChartTableRow, "series">[] = [
-  {
-    chain: "ethereum",
-    label: "Ethereum",
-    icon: "ethereum-logo-monochrome",
-    value: 375_600_000_000,
-    change1d: 2.3,
-    change7d: 3.9,
-    change28d: 16.7,
-    change30d: 18.2,
-    change180d: 37.6,
-    change365d: 64.1,
-    accentColor: "#8E97BF",
-  },
-  {
-    chain: "base",
-    label: "Base",
-    icon: "base-logo-monochrome",
-    value: 86_400_000_000,
-    change1d: 4.1,
-    change7d: 8.2,
-    change28d: 21.5,
-    change30d: 23.8,
-    change180d: 58.4,
-    change365d: 119.3,
-    accentColor: "#4E7BFF",
-  },
-  {
-    chain: "arbitrum",
-    label: "Arbitrum",
-    icon: "arbitrum-logo-monochrome",
-    value: 73_200_000_000,
-    change1d: 1.2,
-    change7d: 2.1,
-    change28d: 9.1,
-    change30d: 9.8,
-    change180d: 21.4,
-    change365d: 41.4,
-    accentColor: "#4EC6FF",
-  },
-  {
-    chain: "optimism",
-    label: "Optimism",
-    icon: "optimism-logo-monochrome",
-    value: 58_100_000_000,
-    change1d: -0.6,
-    change7d: -1.5,
-    change28d: 3.5,
-    change30d: 4.9,
-    change180d: 19.2,
-    change365d: 36.8,
-    accentColor: "#FF5A67",
-  },
-  {
-    chain: "zksync_era",
-    label: "ZKsync Era",
-    icon: "zksync-era-logo-monochrome",
-    value: 22_900_000_000,
-    change1d: 3.4,
-    change7d: 5.2,
-    change28d: 10.8,
-    change30d: 11.1,
-    change180d: 18.7,
-    change365d: 28.7,
-    accentColor: "#A095FF",
-  },
-  {
-    chain: "starknet",
-    label: "Starknet",
-    icon: "starknet-logo-monochrome",
-    value: 19_700_000_000,
-    change1d: 0.8,
-    change7d: 1.7,
-    change28d: 6.8,
-    change30d: 7.3,
-    change180d: 14.6,
-    change365d: 22.2,
-    accentColor: "#FF9163",
-  },
-  {
-    chain: "scroll",
-    label: "Scroll",
-    icon: "scroll-logo-monochrome",
-    value: 11_500_000_000,
-    change1d: 5.9,
-    change7d: 10.1,
-    change28d: 14.1,
-    change30d: 14.9,
-    change180d: 17.2,
-    change365d: 18.1,
-    accentColor: "#FFD861",
-  },
-];
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-const SERIES_POINTS = 180;
-const SERIES_START = Date.UTC(2025, 6, 1);
-
-const TOTAL_MARKET_CAP_SERIES: [number, number][] = Array.from({ length: SERIES_POINTS }, (_, index) => {
-  const timestamp = SERIES_START + index * DAY_MS;
-  const trend = 155_000_000_000 + index * 1_250_000_000;
-  const waveA = Math.sin(index / 8) * 11_000_000_000;
-  const waveB = Math.cos(index / 19) * 5_200_000_000;
-
-  return [timestamp, Math.max(trend + waveA + waveB, 32_000_000_000)];
-});
-
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const getTableGridRequiredWidth = (changeColumns: number, chainMinWidth: number) => {
@@ -320,7 +212,56 @@ const formatCompactEth = (value: number) => `${formatCompactNumber(value)} ETH`;
 
 const formatPercentValue = (value: number) => `${value.toFixed(1)}%`;
 const formatSignedPercent = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
-const NUMBER_FONT_FAMILY = "var(--font-fira-sans), sans-serif";
+type TailwindTypographyStyle = {
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  lineHeight: number;
+  letterSpacing: string;
+  fontFeatureSettings?: string;
+};
+
+const readTailwindTypographyStyle = (
+  className: string,
+  fallback: TailwindTypographyStyle,
+): TailwindTypographyStyle => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return fallback;
+  }
+
+  const probe = document.createElement("span");
+  probe.className = className;
+  probe.textContent = "0";
+  probe.style.position = "fixed";
+  probe.style.visibility = "hidden";
+  probe.style.pointerEvents = "none";
+  probe.style.left = "-9999px";
+  probe.style.top = "-9999px";
+  document.body.appendChild(probe);
+
+  const computed = window.getComputedStyle(probe);
+  const parsedFontSize = Number.parseFloat(computed.fontSize);
+  const parsedFontWeight = Number.parseInt(computed.fontWeight, 10);
+  const parsedLineHeight = Number.parseFloat(computed.lineHeight);
+  const parsedFontFeatureSettings = computed.fontFeatureSettings?.trim();
+
+  const result = {
+    fontFamily: computed.fontFamily || fallback.fontFamily,
+    fontSize: Number.isFinite(parsedFontSize) ? parsedFontSize : fallback.fontSize,
+    fontWeight: Number.isFinite(parsedFontWeight) ? parsedFontWeight : fallback.fontWeight,
+    lineHeight: Number.isFinite(parsedLineHeight) ? parsedLineHeight : fallback.lineHeight,
+    letterSpacing:
+      computed.letterSpacing && computed.letterSpacing !== "normal" ? computed.letterSpacing : fallback.letterSpacing,
+    fontFeatureSettings:
+      parsedFontFeatureSettings && parsedFontFeatureSettings !== "normal"
+        ? parsedFontFeatureSettings
+        : fallback.fontFeatureSettings,
+  } satisfies TailwindTypographyStyle;
+
+  probe.remove();
+  return result;
+};
+
 const formatTableNumber = (value: number) =>
   new Intl.NumberFormat("en-US", {
     notation: Math.abs(value) >= 1_000_000 ? "compact" : "standard",
@@ -562,7 +503,6 @@ export default function GTPUniversalChart({
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
   const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
-  const shareButtonTriggerRef = useRef<HTMLDivElement | null>(null);
   const html2CanvasLoaderPromiseRef = useRef<Promise<Html2CanvasFn | null> | null>(null);
   const hasAutoSelectedContextChainsRef = useRef(false);
   const [contentWidth, setContentWidth] = useState(0);
@@ -612,9 +552,7 @@ export default function GTPUniversalChart({
   const [bottomRightSelection, setBottomRightSelection] = useState(() =>
     resolveTabSelection(undefined, bottomRightItems, bottomRightFallback),
   );
-  const [localSelectedChains, setLocalSelectedChains] = useState<string[]>(() =>
-    MOCK_TABLE_ROWS.map((row) => row.chain),
-  );
+  const [localSelectedChains, setLocalSelectedChains] = useState<string[]>([]);
   const [tableSort, setTableSort] = useState<{ key: TableSortKey; direction: TableSortDirection }>({
     key: "absolute",
     direction: "desc",
@@ -888,23 +826,6 @@ export default function GTPUniversalChart({
       ? resolveTabSelection(contextBottomRightId, bottomRightItems, bottomRightFallback)
       : selectedBottomRightId;
 
-  const mockRows = useMemo<UniversalChartTableRow[]>(() => {
-    const totalBaseValue = MOCK_TABLE_ROWS.reduce((sum, row) => sum + row.value, 0);
-
-    return MOCK_TABLE_ROWS.map((row, rowIndex) => {
-      const baseShare = row.value / Math.max(totalBaseValue, 1);
-      const series = TOTAL_MARKET_CAP_SERIES.map(([timestamp, total], pointIndex) => {
-        const seasonalDrift =
-          1 + Math.sin(pointIndex / 13 + rowIndex * 0.9) * 0.07 + Math.cos(pointIndex / 29 + rowIndex * 0.55) * 0.04;
-        const momentum = 1 + (row.change1d / 100) * ((pointIndex / SERIES_POINTS) - 0.5);
-        const value = Math.max(total * baseShare * seasonalDrift * momentum, 0);
-        return [timestamp, value] as [number, number];
-      });
-
-      return { ...row, series };
-    });
-  }, []);
-
   const contextRows = useMemo<UniversalChartTableRow[]>(() => {
     if (!isMetricContextActive || !metricData) {
       return [];
@@ -988,10 +909,7 @@ export default function GTPUniversalChart({
     return rows.sort((a, b) => b.value - a.value);
   }, [AllChainsByKeys, AllDALayersByKeys, contextTimeIntervalKey, isMetricContextActive, metricAllChainsByKeys, metricChainKeys, metricData]);
 
-  const sourceRows =
-    isMetricContextActive && contextRows.length > 0
-      ? contextRows
-      : mockRows;
+  const sourceRows = contextRows;
   const displayRows = useMemo(() => {
     if (isMetricContextActive) {
       return sourceRows;
@@ -1296,20 +1214,52 @@ export default function GTPUniversalChart({
     [],
   );
 
+  const textXxsTypography = useMemo(
+    () =>
+      readTailwindTypographyStyle("text-xxs", {
+        fontFamily: "var(--font-raleway), sans-serif",
+        fontSize: 10,
+        fontWeight: 500,
+        lineHeight: 15,
+        letterSpacing: "normal",
+      }),
+    [],
+  );
+  const numbersXxsTypography = useMemo(
+    () =>
+      readTailwindTypographyStyle("numbers-xxs", {
+        fontFamily: "var(--font-fira-sans), sans-serif",
+        fontSize: 10,
+        fontWeight: 500,
+        lineHeight: 10,
+        letterSpacing: "0.05em",
+        fontFeatureSettings: '"tnum" on, "lnum" on',
+      }),
+    [],
+  );
+
   const chartOption = useMemo<EChartsOption>(() => {
     const textPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
     const textSecondary = getCssVarAsRgb("--text-secondary", "rgb(121, 139, 137)");
 
     const splitCount = clamp(Math.round((contentHeight || 512) / 88), 3, 7);
+    const shouldStackSeries = isStackedMode || isPercentageMode;
+    const sortedSeries = isPercentageMode
+      ? [...chartSeriesData].sort((a, b) => {
+          const aLast = [...a.data].reverse().find((point) => typeof point[1] === "number")?.[1] ?? 0;
+          const bLast = [...b.data].reverse().find((point) => typeof point[1] === "number")?.[1] ?? 0;
+          return aLast - bLast;
+        })
+      : chartSeriesData;
     const allValues = chartSeriesData.flatMap((series) =>
       series.data
         .map((point) => point[1])
         .filter((value): value is number => typeof value === "number" && Number.isFinite(value)),
     );
     const maxSeriesValue =
-      isStackedMode && chartSeriesData.length > 0
+      shouldStackSeries && chartSeriesData.length > 0
         ? chartSeriesData[0].data.reduce((maxValue, _, index) => {
-            const stackedValue = chartSeriesData.reduce((sum, series) => {
+          const stackedValue = chartSeriesData.reduce((sum, series) => {
               const pointValue = series.data[index]?.[1];
               return typeof pointValue === "number" && Number.isFinite(pointValue) ? sum + pointValue : sum;
             }, 0);
@@ -1323,7 +1273,7 @@ export default function GTPUniversalChart({
     const normalizedStep = rawStep / Math.max(magnitude, 1);
     const niceStepBase = normalizedStep > 5 ? 10 : normalizedStep > 2 ? 5 : normalizedStep > 1 ? 2 : 1;
     const absoluteStep = niceStepBase * Math.max(magnitude, 1);
-    const yAxisStep = isPercentageMode ? 20 : absoluteStep;
+    const yAxisStep = isPercentageMode ? 25 : absoluteStep;
     const yAxisMin = 0;
     const yAxisMax = isPercentageMode
       ? 100
@@ -1360,16 +1310,17 @@ export default function GTPUniversalChart({
         boundaryGap: false,
         axisLine: {
           lineStyle: {
-            color: withOpacity(textSecondary, 0.45),
+            color: withOpacity(textPrimary, 0.45),
           },
         },
         axisTick: {
           show: false,
         },
         axisLabel: {
-          color: textSecondary,
-          fontSize: 10,
-          fontFamily: "var(--font-raleway), sans-serif",
+          color: textPrimary,
+          fontSize: textXxsTypography.fontSize,
+          fontFamily: textXxsTypography.fontFamily,
+          fontWeight: textXxsTypography.fontWeight,
           hideOverlap: true,
           margin: 8,
           formatter: (value: number) =>
@@ -1396,14 +1347,27 @@ export default function GTPUniversalChart({
           show: false,
         },
         axisLabel: {
-          color: textSecondary,
-          fontSize: 10,
-          fontFamily: NUMBER_FONT_FAMILY,
-          formatter: (value: number) => formatChartMetricValue(value, { compact: true }),
+          color: textPrimary,
+          fontSize: numbersXxsTypography.fontSize,
+          fontFamily: numbersXxsTypography.fontFamily,
+          fontWeight: numbersXxsTypography.fontWeight,
+          formatter: (value: number) =>
+            `{num|${isPercentageMode ? `${Math.round(value)}%` : formatChartMetricValue(value, { compact: true })}}`,
+          rich: {
+            num: {
+              color: textPrimary,
+              fontSize: numbersXxsTypography.fontSize,
+              fontFamily: numbersXxsTypography.fontFamily,
+              fontWeight: numbersXxsTypography.fontWeight,
+              lineHeight: numbersXxsTypography.lineHeight,
+              letterSpacing: numbersXxsTypography.letterSpacing,
+              fontFeatureSettings: numbersXxsTypography.fontFeatureSettings,
+            },
+          },
         },
         splitLine: {
           lineStyle: {
-            color: withOpacity(textSecondary, 0.11),
+            color: withOpacity(textPrimary, 0.11),
             width: 1,
           },
         },
@@ -1503,28 +1467,25 @@ export default function GTPUniversalChart({
           `;
         },
       },
-      series: chartSeriesData.map((series) => ({
+      series: sortedSeries.map((series, index) => ({
         name: series.row.label,
         type: "line" as const,
         data: series.data,
-        stack: isStackedMode ? "total" : undefined,
+        stack: shouldStackSeries ? "total" : undefined,
         showSymbol: false,
         smooth: false,
         lineStyle: {
           width: 2,
           color: series.row.accentColor,
         },
-        areaStyle:
-          isPercentageMode && !isStackedMode
-            ? undefined
-            : {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: withHexOpacity(series.row.accentColor, isStackedMode ? 0.36 : 0.22) },
-                  { offset: 1, color: withHexOpacity(series.row.accentColor, 0.04) },
-                ]),
-              },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: withHexOpacity(series.row.accentColor, shouldStackSeries ? 0.36 : 0.22) },
+            { offset: 1, color: withHexOpacity(series.row.accentColor, 0.04) },
+          ]),
+        },
         markLine:
-          series.row.chain === chartSeriesData[0]?.row.chain
+          index === 0
             ? {
                 silent: true,
                 symbol: "none",
@@ -1547,6 +1508,8 @@ export default function GTPUniversalChart({
     isPercentageMode,
     isStackedMode,
     metricLabel,
+    numbersXxsTypography,
+    textXxsTypography,
   ]);
 
   useLayoutEffect(() => {
@@ -1861,7 +1824,6 @@ export default function GTPUniversalChart({
     : showTablePane
       ? availableWidth * splitRatio
       : 0;
-  const chartWidth = isMobileLayout ? availableWidth : availableWidth - tableWidth;
   const tablePaneWidth = isMobileLayout
     ? "100%"
     : showTablePane
@@ -1937,26 +1899,31 @@ export default function GTPUniversalChart({
     <GTPTabButtonSet size={tabSize}>
       <div title={showTablePane ? "Close table" : "Show table"}>
         <GTPButton
+          label={showTablePane ? undefined : "Open Table"}
           leftIcon={showTablePane ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
           size={tabSize}
-          variant={showTablePane ? "no-background" : "primary"}
-          visualState={showTablePane ? "default" : "active"}
+          variant={showTablePane ? "no-background" : "highlight"}
+          visualState="default"
           clickHandler={() => {
             setIsTableCollapsed((current) => !current);
             setIsSharePopoverOpen(false);
           }}
         />
       </div>
-      <div
-        ref={shareButtonTriggerRef}
-        title="Share"
-      >
-        <GTPButton
-          leftIcon="gtp-share-monochrome"
-          size={tabSize}
-          variant="no-background"
-          visualState={isSharePopoverOpen ? "active" : "default"}
-          clickHandler={() => setIsSharePopoverOpen((current) => !current)}
+      <div title="Share">
+        <GTPButtonDropdown
+          openDirection="top"
+          matchTriggerWidthToDropdown
+          buttonProps={{
+            label: "Share",
+            labelDisplay: "active",
+            leftIcon: "gtp-share-monochrome",
+            size: tabSize,
+            variant: "no-background",
+          }}
+          isOpen={isSharePopoverOpen}
+          onOpenChange={setIsSharePopoverOpen}
+          dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
         />
       </div>
       <div title="Download image">
@@ -2012,18 +1979,6 @@ export default function GTPUniversalChart({
         ref={cardRef}
         className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
       >
-        <GTPTooltipNew
-          triggerElement={shareButtonTriggerRef.current}
-          isOpen={isSharePopoverOpen}
-          onOpenChange={setIsSharePopoverOpen}
-          enableHover={false}
-          allowInteract
-          unstyled
-          placement={isMobileLayout ? "top" : "top-start"}
-          containerClass={SHARE_DROPDOWN_CONTAINER_CLASS}
-        >
-          <ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />
-        </GTPTooltipNew>
         <GTPTabBar
           mobileVariant="stacked"
           className="border-[0.5px] border-color-bg-default"
@@ -2089,7 +2044,14 @@ export default function GTPUniversalChart({
         />
 
         <div className="relative px-[5px] pb-0 h-[538px] overflow-hidden">
-          <div className="flex h-full flex-col gap-[5px]" style={{ paddingBottom: isMobileLayout ? "0px" : `${BOTTOM_TAB_OVERLAY_HEIGHT}px` }}>
+          <div
+            className="flex h-full flex-col gap-[5px]"
+            style={{
+              paddingBottom: isMobileLayout
+                ? "0px"
+                : `${hasBottomTabBar ? BOTTOM_TAB_OVERLAY_HEIGHT + CHART_TO_BOTTOM_TAB_GAP : 0}px`,
+            }}
+          >
             <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
               <div className="flex items-center gap-x-[6px]">
                 <GTPIcon
@@ -2359,7 +2321,10 @@ export default function GTPUniversalChart({
               </div>
             </div>
             {isMobileLayout && hasBottomTabBar ? (
-              <div className="order-2 -mx-[5px] w-[calc(100%+10px)]">
+              <div
+                className="order-2 -mx-[5px] w-[calc(100%+10px)]"
+                style={{ marginTop: `${Math.max(CHART_TO_BOTTOM_TAB_GAP - 5, 0)}px` }}
+              >
                 {bottomTabBar}
               </div>
             ) : null}

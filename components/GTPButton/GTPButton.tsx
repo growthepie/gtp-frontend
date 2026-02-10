@@ -11,6 +11,7 @@ type GTPButtonIconVariant = "none" | "left" | "right" | "both" | "alone";
 
 export interface GTPButtonProps {
   label?: string;
+  labelDisplay?: "always" | "active";
   rightIcon?: GTPIconName;
   leftIcon?: GTPIconName;
   isSelected?: boolean;
@@ -124,6 +125,7 @@ const getFillClassName = (variant: GTPButtonVariant, state: GTPButtonState) => {
 
 export const GTPButton = ({
   label,
+  labelDisplay = "always",
   rightIcon,
   leftIcon,
   isSelected = false,
@@ -140,16 +142,17 @@ export const GTPButton = ({
   clickHandler,
 }: GTPButtonProps) => {
   const hasLabel = Boolean(label);
-  const iconVariant = resolveIconVariant({
-    hasLabel,
-    hasLeftIcon: Boolean(leftIcon),
-    hasRightIcon: Boolean(rightIcon),
-  });
-
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
   const resolvedState: GTPButtonState = disabled
     ? "disabled"
     : visualState ?? (isSelected ? "active" : "default");
+  const isActiveLabelMode = hasLabel && labelDisplay === "active";
+  const shouldShowLabel = hasLabel && (!isActiveLabelMode || resolvedState === "active");
+  const iconVariant = resolveIconVariant({
+    hasLabel: shouldShowLabel,
+    hasLeftIcon: Boolean(leftIcon),
+    hasRightIcon: Boolean(rightIcon),
+  });
 
   const buttonSize = FIGMA_BUTTON_SIZE[size];
   const isDisabled = resolvedState === "disabled";
@@ -169,6 +172,7 @@ export const GTPButton = ({
     iconVariant === "left" || iconVariant === "both" || (iconVariant === "alone" && Boolean(leftIcon ?? rightIcon));
   const displayRightIcon = iconVariant === "right" || iconVariant === "both";
   const iconForAlone = leftIcon ?? rightIcon;
+  const buttonGap = shouldShowLabel ? buttonSize.gap : 0;
   const wrapperFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
   const buttonFillClassName = fill === "full" ? "w-full justify-center" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
 
@@ -182,15 +186,16 @@ export const GTPButton = ({
     >
       <button
         type={buttonType}
-        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-colors ${buttonFillClassName} ${
+        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
         }`}
+        aria-label={isActiveLabelMode && !shouldShowLabel ? label : undefined}
         onClick={clickHandler}
         disabled={isDisabled}
         style={{
-          gap: `${buttonSize.gap}px`,
+          gap: `${buttonGap}px`,
           padding: buttonSize.paddingByIconVariant[iconVariant],
         }}
       >
@@ -203,7 +208,12 @@ export const GTPButton = ({
           />
         )}
         {hasLabel && (
-          <GTPButtonLabel label={label ?? ""} textClassName={buttonSize.textClassName} />
+          <GTPButtonAnimatedLabel
+            label={label ?? ""}
+            textClassName={buttonSize.textClassName}
+            show={shouldShowLabel}
+            animate={isActiveLabelMode}
+          />
         )}
         {displayRightIcon && (
           <GTPButtonIcon
@@ -271,10 +281,39 @@ const GTPButtonIcon = ({
   );
 };
 
-const GTPButtonLabel = ({ label, textClassName }: { label: string; textClassName: string }) => {
+const GTPButtonAnimatedLabel = ({
+  label,
+  textClassName,
+  show,
+  animate,
+}: {
+  label: string;
+  textClassName: string;
+  show: boolean;
+  animate: boolean;
+}) => {
+  if (!animate && !show) {
+    return null;
+  }
+
+  if (!animate) {
+    return (
+      <span className={`${textClassName}`}>
+        {label}
+      </span>
+    );
+  }
+
   return (
-    <span className={`${textClassName}`}>
-      {label}
+    <span
+      className={`inline-flex overflow-hidden transition-[max-width,opacity] duration-200 ease-out ${
+        show ? "max-w-[24rem] opacity-100" : "max-w-0 opacity-0"
+      }`}
+      aria-hidden={!show}
+    >
+      <span className={`${textClassName} whitespace-nowrap`}>
+        {label}
+      </span>
     </span>
   );
 };
