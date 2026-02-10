@@ -302,7 +302,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
-              {!IS_PRODUCTION && (
+             
                 <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
                   <div className="flex items-center gap-x-[10px]">
                     <ViewToggle
@@ -311,7 +311,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                     />
                   </div>
                 </TopRowParent>
-              )}
+      
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
