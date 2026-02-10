@@ -396,11 +396,13 @@ export default function GTPButtonShowcasePage() {
             </div>
 
             <GTPTabBar
+              mobileVariant="stacked"
               left={(
                 <GTPTabButtonSet
                   items={TAB_SET_LEFT_ITEMS}
                   selectedId={leftTabSelection}
                   size={tabSetSize}
+                  fill="mobile"
                   onChange={(id) => setLeftTabSelection(id)}
                 />
               )}
@@ -409,6 +411,7 @@ export default function GTPButtonShowcasePage() {
                   items={TAB_SET_RIGHT_ITEMS}
                   selectedId={rightTabSelection}
                   size={tabSetSize}
+                  fill="mobile"
                   onChange={(id) => setRightTabSelection(id)}
                 />
               )}

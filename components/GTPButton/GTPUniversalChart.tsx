@@ -28,9 +28,13 @@ const TABLE_CHECK_COLUMN_WIDTH = 22;
 const TABLE_GRID_GAP = 6;
 const TABLE_GRID_SIDE_PADDING = 10;
 const TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE = 158;
+const TABLE_TOP_FADE_HEIGHT = 36;
 const TABLE_BOTTOM_FADE_HEIGHT = 54;
 const TABLE_BOTTOM_SCROLL_PADDING = 56;
+const TABLE_BOTTOM_SCROLL_PADDING_MOBILE = 8;
 const MOBILE_LAYOUT_BREAKPOINT = 768;
+const TOOLTIP_VIEWPORT_PADDING = 12;
+const TOOLTIP_CURSOR_OFFSET = 14;
 
 const DEFAULT_TOP_LEFT_ITEMS = [
   { id: "daily", label: "Daily" },
@@ -522,6 +526,7 @@ export default function GTPUniversalChart({
   const tablePaneRef = useRef<HTMLDivElement | null>(null);
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
+  const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
   const hasAutoSelectedContextChainsRef = useRef(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
@@ -534,6 +539,8 @@ export default function GTPUniversalChart({
   const [tableScrollHeight, setTableScrollHeight] = useState(1);
   const [tableClientHeight, setTableClientHeight] = useState(1);
   const [tableScrollbarTrackHeight, setTableScrollbarTrackHeight] = useState(0);
+  const tableScrollSyncRafRef = useRef<number | null>(null);
+  const isMobileLayout = contentWidth > 0 && contentWidth < MOBILE_LAYOUT_BREAKPOINT;
 
   const topLeftConfig = tabSets?.topLeft;
   const topRightConfig = tabSets?.topRight;
@@ -579,10 +586,25 @@ export default function GTPUniversalChart({
       return;
     }
 
-    setTableScrollTop(scrollElement.scrollTop);
-    setTableScrollHeight(Math.max(scrollElement.scrollHeight, 1));
-    setTableClientHeight(Math.max(scrollElement.clientHeight, 1));
+    const nextScrollTop = scrollElement.scrollTop;
+    const nextScrollHeight = Math.max(scrollElement.scrollHeight, 1);
+    const nextClientHeight = Math.max(scrollElement.clientHeight, 1);
+
+    setTableScrollTop((current) => (Math.abs(current - nextScrollTop) < 0.5 ? current : nextScrollTop));
+    setTableScrollHeight((current) => (current === nextScrollHeight ? current : nextScrollHeight));
+    setTableClientHeight((current) => (current === nextClientHeight ? current : nextClientHeight));
   }, []);
+
+  const scheduleTableScrollMetricsSync = useCallback(() => {
+    if (tableScrollSyncRafRef.current !== null) {
+      return;
+    }
+
+    tableScrollSyncRafRef.current = window.requestAnimationFrame(() => {
+      tableScrollSyncRafRef.current = null;
+      syncTableScrollMetrics();
+    });
+  }, [syncTableScrollMetrics]);
 
   const { AllChainsByKeys, AllDALayersByKeys, metrics, da_metrics } = useMaster();
   const {
@@ -1140,6 +1162,56 @@ export default function GTPUniversalChart({
         renderMode: "html",
         appendToBody: true,
         confine: false,
+        position: (point, _params, _el, _rect, size) => {
+          const pointX = Array.isArray(point) ? Number(point[0] ?? 0) : Number(point ?? 0);
+          const pointY = Array.isArray(point) ? Number(point[1] ?? 0) : 0;
+          const contentWidth = Array.isArray(size?.contentSize) ? Number(size.contentSize[0] ?? 0) : 0;
+          const contentHeight = Array.isArray(size?.contentSize) ? Number(size.contentSize[1] ?? 0) : 0;
+          const tooltipHostRect = chartTooltipHostRef.current?.getBoundingClientRect();
+          const hostLeft = tooltipHostRect?.left ?? 0;
+          const hostTop = tooltipHostRect?.top ?? 0;
+          const anchorAbsX = hostLeft + pointX;
+          const anchorAbsY = hostTop + pointY;
+          const viewportWidth = Math.max(
+            typeof window !== "undefined"
+              ? window.innerWidth
+              : Array.isArray(size?.viewSize)
+                ? Number(size.viewSize[0] ?? contentWidth)
+                : contentWidth,
+            1,
+          );
+          const viewportHeight = Math.max(
+            typeof window !== "undefined"
+              ? window.innerHeight
+              : Array.isArray(size?.viewSize)
+                ? Number(size.viewSize[1] ?? contentHeight)
+              : contentHeight,
+            1,
+          );
+
+          const maxX = Math.max(viewportWidth - contentWidth - TOOLTIP_VIEWPORT_PADDING, TOOLTIP_VIEWPORT_PADDING);
+          const maxY = Math.max(viewportHeight - contentHeight - TOOLTIP_VIEWPORT_PADDING, TOOLTIP_VIEWPORT_PADDING);
+
+          let xAbs = anchorAbsX + TOOLTIP_CURSOR_OFFSET;
+          if (xAbs + contentWidth > viewportWidth - TOOLTIP_VIEWPORT_PADDING) {
+            xAbs = anchorAbsX - contentWidth - TOOLTIP_CURSOR_OFFSET;
+          }
+          xAbs = clamp(xAbs, TOOLTIP_VIEWPORT_PADDING, maxX);
+
+          const spaceBelow = viewportHeight - TOOLTIP_VIEWPORT_PADDING - (anchorAbsY + TOOLTIP_CURSOR_OFFSET);
+          const spaceAbove = anchorAbsY - TOOLTIP_CURSOR_OFFSET - TOOLTIP_VIEWPORT_PADDING;
+          let yAbs = anchorAbsY + TOOLTIP_CURSOR_OFFSET;
+
+          if (contentHeight > spaceBelow && contentHeight <= spaceAbove) {
+            yAbs = anchorAbsY - contentHeight - TOOLTIP_CURSOR_OFFSET;
+          } else if (contentHeight > spaceBelow && contentHeight > spaceAbove) {
+            yAbs = anchorAbsY - contentHeight / 2;
+          }
+
+          yAbs = clamp(yAbs, TOOLTIP_VIEWPORT_PADDING, maxY);
+
+          return [xAbs - hostLeft, yAbs - hostTop];
+        },
         axisPointer: {
           type: "line",
           lineStyle: {
@@ -1212,7 +1284,7 @@ export default function GTPUniversalChart({
             .join("");
 
           return `
-            <div class="flex flex-col gap-y-[5px] w-fit min-w-[230px] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard">
+            <div class="flex flex-col gap-y-[5px] w-fit min-w-[230px] max-w-[min(92vw,420px)] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard">
               <div class="flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center">
                 <div class="heading-small-xs h-[18px] flex items-center">${dateLabel}</div>
               </div>
@@ -1316,43 +1388,55 @@ export default function GTPUniversalChart({
 
     const scrollElement = tableScrollRef.current;
     const observer = new ResizeObserver(() => {
-      syncTableScrollMetrics();
+      scheduleTableScrollMetricsSync();
     });
 
     observer.observe(scrollElement);
-    scrollElement.addEventListener("scroll", syncTableScrollMetrics, { passive: true });
-    const frame = window.requestAnimationFrame(syncTableScrollMetrics);
+    scheduleTableScrollMetricsSync();
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      if (tableScrollSyncRafRef.current !== null) {
+        window.cancelAnimationFrame(tableScrollSyncRafRef.current);
+        tableScrollSyncRafRef.current = null;
+      }
       observer.disconnect();
-      scrollElement.removeEventListener("scroll", syncTableScrollMetrics);
     };
-  }, [syncTableScrollMetrics]);
+  }, [scheduleTableScrollMetricsSync]);
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(syncTableScrollMetrics);
-    return () => window.cancelAnimationFrame(frame);
-  }, [contentWidth, hasSelectionDivider, splitRatio, syncTableScrollMetrics, tablePaneHeight, tableRows.length]);
+    scheduleTableScrollMetricsSync();
+  }, [contentWidth, hasSelectionDivider, scheduleTableScrollMetricsSync, splitRatio, tablePaneHeight, tableRows.length]);
 
   useEffect(() => {
-    if (!tableScrollbarTrackRef.current) {
+    if (isMobileLayout || !tableScrollbarTrackRef.current) {
       return;
     }
 
     const trackElement = tableScrollbarTrackRef.current;
+    const syncTrackHeight = () => {
+      const rect = trackElement.getBoundingClientRect();
+      setTableScrollbarTrackHeight((current) => (Math.abs(current - rect.height) < 0.5 ? current : rect.height));
+    };
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) {
         return;
       }
 
-      setTableScrollbarTrackHeight(entry.contentRect.height);
+      setTableScrollbarTrackHeight((current) =>
+        Math.abs(current - entry.contentRect.height) < 0.5 ? current : entry.contentRect.height,
+      );
     });
 
+    syncTrackHeight();
     observer.observe(trackElement);
-    return () => observer.disconnect();
-  }, []);
+    window.addEventListener("resize", syncTrackHeight);
+
+    return () => {
+      window.removeEventListener("resize", syncTrackHeight);
+      observer.disconnect();
+    };
+  }, [isMobileLayout]);
 
   const updateSplitFromClientX = (clientX: number) => {
     const rect = contentRef.current?.getBoundingClientRect();
@@ -1410,6 +1494,10 @@ export default function GTPUniversalChart({
     tableCanScroll && tableScrollbarTrackHeight > tableScrollbarThumbHeight
       ? (tableScrollTop / tableScrollMax) * (tableScrollbarTrackHeight - tableScrollbarThumbHeight)
       : 0;
+  const tableScrollBottom = tableScrollTop + tableClientHeight;
+  const tableHasMoreRowsAbove = tableCanScroll && tableScrollTop > 1;
+  const tableHasMoreRowsBelow = tableCanScroll && tableScrollBottom < tableScrollHeight - 1;
+  const tableBottomScrollPadding = isMobileLayout ? TABLE_BOTTOM_SCROLL_PADDING_MOBILE : TABLE_BOTTOM_SCROLL_PADDING;
 
   const updateTableScrollFromPointer = useCallback(
     (clientY: number, dragOffset: number) => {
@@ -1537,7 +1625,6 @@ export default function GTPUniversalChart({
       : "in-button-down-monochrome";
   const isTableSortKeyActive = (key: TableSortKey) => tableSort.key === key;
 
-  const isMobileLayout = contentWidth > 0 && contentWidth < MOBILE_LAYOUT_BREAKPOINT;
   const availableWidth = isMobileLayout
     ? Math.max(contentWidth, 0)
     : Math.max(contentWidth - DIVIDER_WIDTH, 0);
@@ -1613,11 +1700,45 @@ export default function GTPUniversalChart({
         marginRight: "calc(50% - 50vw)",
       }
     : undefined;
+  const hasBottomTabBar = bottomRightItems.length > 0;
+  const bottomTabBar = hasBottomTabBar ? (
+    <GTPTabBar
+      mobileVariant="inline"
+      leftClassName="hidden"
+      rightClassName={isMobileLayout ? "w-full" : undefined}
+      className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
+      left={null}
+      right={(
+        <GTPTabButtonSet
+          items={bottomRightItems}
+          selectedId={effectiveBottomRightSelectedId}
+          size={tabSize}
+          fill={isMobileLayout ? "full" : "none"}
+          onChange={(id, item) => {
+            if (bottomRightConfig?.selectedId === undefined) {
+              setBottomRightSelection(id);
+            }
+
+            if (
+              isMetricContextActive &&
+              bottomRightConfig?.selectedId === undefined &&
+              ["absolute", "percentage", "stacked"].includes(id)
+            ) {
+              setContextSelectedScale(id);
+            }
+
+            bottomRightConfig?.onChange?.(id, item);
+          }}
+        />
+      )}
+    />
+  ) : null;
 
   return (
     <div className={`${wrapperClassName} ${className ?? ""}`} style={wrapperStyle}>
       <div className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden">
         <GTPTabBar
+          mobileVariant="stacked"
           className="border-[0.5px] border-color-bg-default"
           left={
             topLeftItems.length > 0 ? (
@@ -1625,6 +1746,7 @@ export default function GTPUniversalChart({
                 items={topLeftItems}
                 selectedId={effectiveTopLeftSelectedId}
                 size={tabSize}
+                fill="mobile"
                 onChange={(id, item) => {
                   if (topLeftConfig?.selectedId === undefined) {
                     setTopLeftSelection(id);
@@ -1663,6 +1785,7 @@ export default function GTPUniversalChart({
                 items={effectiveTopRightItems}
                 selectedId={selectedTopRightId}
                 size={tabSize}
+                fill="mobile"
                 onChange={(id, item) => {
                   if (topRightConfig?.selectedId === undefined) {
                     if (usesContextTimeframeTabs) {
@@ -1679,7 +1802,7 @@ export default function GTPUniversalChart({
         />
 
         <div className="relative px-[5px] pb-0 h-[538px] overflow-hidden">
-          <div className="flex h-full flex-col gap-[5px]" style={{ paddingBottom: `${BOTTOM_TAB_OVERLAY_HEIGHT}px` }}>
+          <div className="flex h-full flex-col gap-[5px]" style={{ paddingBottom: isMobileLayout ? "0px" : `${BOTTOM_TAB_OVERLAY_HEIGHT}px` }}>
             <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
               <div className="flex items-center gap-x-[6px]">
                 <GTPIcon
@@ -1705,14 +1828,14 @@ export default function GTPUniversalChart({
               className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobileLayout ? "flex-col" : ""}`}
             >
             <div
-              className={`flex min-w-0 h-full ${isMobileLayout ? "order-2 flex-1" : ""}`}
+              className={`flex min-w-0 h-full min-h-0 ${isMobileLayout ? "order-3 flex-1" : ""}`}
               style={{
                 width: tablePaneWidth,
               }}
             >
               <div
                 ref={tablePaneRef}
-                className="relative h-full w-full min-w-[160px] rounded-[14px] overflow-hidden"
+                className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden"
               >
                 <div className="h-[37px] px-[6px] py-[4px]">
                   <div
@@ -1801,96 +1924,113 @@ export default function GTPUniversalChart({
                     </div>
                   </div>
                 </div>
-                <div
-                  ref={tableScrollRef}
-                  className="h-[calc(100%-37px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px]"
-                  style={{ paddingBottom: `${TABLE_BOTTOM_SCROLL_PADDING}px` }}
-                >
-                  {selectedTableRows.map((row) => (
-                    <ChainMetricTableRow
-                      key={row.chain}
-                      id={row.chain}
-                      label={row.label}
-                      icon={row.icon}
-                      accentColor={row.accentColor}
-                      selected={row.selected}
-                      gridTemplateColumns={tableGridTemplateColumns}
-                      truncateChainLabel={truncateChainLabel}
-                      show24h={show24hColumn}
-                      show30d={show30dColumn}
-                      show1y={show1yColumn}
-                      barWidth={row.barWidth}
-                      yesterdayValue={row.absoluteLabel}
-                      hours24Value={row.change1Label}
-                      hours24Change={row.change1}
-                      days30Value={row.change2Label}
-                      days30Change={row.change2}
-                      year1Value={row.change3Label}
-                      year1Change={row.change3}
-                      onToggle={toggleChainSelection}
-                    />
-                  ))}
-                  {hasSelectionDivider ? (
-                    <div className="h-[18px] flex items-center gap-x-[8px] px-[2px]">
-                      <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
-                      <span className="text-[10px] font-semibold tracking-[0.06em] text-color-text-secondary">
-                        NOT SHOWING IN CHART
-                      </span>
-                      <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
-                    </div>
-                  ) : null}
-                  {deselectedTableRows.map((row) => (
-                    <ChainMetricTableRow
-                      key={row.chain}
-                      id={row.chain}
-                      label={row.label}
-                      icon={row.icon}
-                      accentColor={row.accentColor}
-                      selected={row.selected}
-                      gridTemplateColumns={tableGridTemplateColumns}
-                      truncateChainLabel={truncateChainLabel}
-                      show24h={show24hColumn}
-                      show30d={show30dColumn}
-                      show1y={show1yColumn}
-                      barWidth={row.barWidth}
-                      yesterdayValue={row.absoluteLabel}
-                      hours24Value={row.change1Label}
-                      hours24Change={row.change1}
-                      days30Value={row.change2Label}
-                      days30Change={row.change2}
-                      year1Value={row.change3Label}
-                      year1Change={row.change3}
-                      onToggle={toggleChainSelection}
-                    />
-                  ))}
-                </div>
-                {tableRows.length > 0 && tableCanScroll ? (
+                <div className="relative h-[calc(100%-37px)]">
                   <div
-                    className="pointer-events-none absolute inset-x-0 bottom-[-1px] z-[20]"
-                    style={{
-                      height: `${TABLE_BOTTOM_FADE_HEIGHT}px`,
-                      background:
-                        "linear-gradient(to top, rgb(var(--bg-default) / 1) 0%, rgb(var(--bg-default) / 0.9) 34%, rgb(var(--bg-default) / 0.58) 64%, rgb(var(--bg-default) / 0) 100%)",
-                    }}
-                  />
-                ) : null}
+                    ref={tableScrollRef}
+                    onScroll={scheduleTableScrollMetricsSync}
+                    className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px]"
+                    style={{ paddingBottom: `${tableBottomScrollPadding}px` }}
+                  >
+                    {selectedTableRows.map((row) => (
+                      <ChainMetricTableRow
+                        key={row.chain}
+                        id={row.chain}
+                        label={row.label}
+                        icon={row.icon}
+                        accentColor={row.accentColor}
+                        selected={row.selected}
+                        gridTemplateColumns={tableGridTemplateColumns}
+                        truncateChainLabel={truncateChainLabel}
+                        show24h={show24hColumn}
+                        show30d={show30dColumn}
+                        show1y={show1yColumn}
+                        barWidth={row.barWidth}
+                        yesterdayValue={row.absoluteLabel}
+                        hours24Value={row.change1Label}
+                        hours24Change={row.change1}
+                        days30Value={row.change2Label}
+                        days30Change={row.change2}
+                        year1Value={row.change3Label}
+                        year1Change={row.change3}
+                        onToggle={toggleChainSelection}
+                      />
+                    ))}
+                    {hasSelectionDivider ? (
+                      <div className="h-[18px] flex items-center gap-x-[8px] px-[2px]">
+                        <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
+                        <span className="text-[10px] font-semibold tracking-[0.06em] text-color-text-secondary">
+                          NOT SHOWING IN CHART
+                        </span>
+                        <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
+                      </div>
+                    ) : null}
+                    {deselectedTableRows.map((row) => (
+                      <ChainMetricTableRow
+                        key={row.chain}
+                        id={row.chain}
+                        label={row.label}
+                        icon={row.icon}
+                        accentColor={row.accentColor}
+                        selected={row.selected}
+                        gridTemplateColumns={tableGridTemplateColumns}
+                        truncateChainLabel={truncateChainLabel}
+                        show24h={show24hColumn}
+                        show30d={show30dColumn}
+                        show1y={show1yColumn}
+                        barWidth={row.barWidth}
+                        yesterdayValue={row.absoluteLabel}
+                        hours24Value={row.change1Label}
+                        hours24Change={row.change1}
+                        days30Value={row.change2Label}
+                        days30Change={row.change2}
+                        year1Value={row.change3Label}
+                        year1Change={row.change3}
+                        onToggle={toggleChainSelection}
+                      />
+                    ))}
+                  </div>
+                  {tableRows.length > 0 && tableHasMoreRowsAbove ? (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-0 z-[30]"
+                      style={{
+                        height: `${TABLE_TOP_FADE_HEIGHT}px`,
+                        background:
+                          "linear-gradient(to bottom, rgb(var(--bg-default) / 1) 0%, rgb(var(--bg-default) / 0.9) 38%, rgb(var(--bg-default) / 0) 100%)",
+                      }}
+                    />
+                  ) : null}
+                  {tableRows.length > 0 && tableHasMoreRowsBelow ? (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 bottom-0 z-[30]"
+                      style={{
+                        height: `${TABLE_BOTTOM_FADE_HEIGHT}px`,
+                        background:
+                          "linear-gradient(to top, rgb(var(--bg-default) / 1) 0%, rgb(var(--bg-default) / 0.94) 36%, rgb(var(--bg-default) / 0.64) 68%, rgb(var(--bg-default) / 0) 100%)",
+                      }}
+                    />
+                  ) : null}
+                </div>
               </div>
             </div>
 
             {!isMobileLayout ? (
-              <div className="w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
+              <div className="relative z-[35] w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
                 <div className="cursor-col-resize mt-[1px]" onPointerDown={handleDividerPointerDown}>
                   <GTPButton size="xs" variant="primary" leftIcon="gtp-move-side-monochrome" />
                 </div>
                 <div
                   ref={tableScrollbarTrackRef}
-                  className={`w-[8px] flex-1 rounded-full bg-color-bg-medium p-[1px] ${
-                    tableCanScroll ? "cursor-row-resize" : "cursor-default opacity-60"
+                  className={`group w-[8px] flex-1 rounded-full bg-color-bg-medium p-[1px] transition-colors ${
+                    tableCanScroll ? "cursor-pointer hover:bg-color-ui-hover/35" : "cursor-default opacity-60"
                   }`}
                   onPointerDown={handleTableScrollbarPointerDown}
                 >
                   <div
-                    className="w-[6px] rounded-full bg-color-ui-active"
+                    className={`w-[6px] rounded-full transition-colors ${
+                      tableCanScroll
+                        ? "bg-color-ui-active group-hover:bg-color-ui-hover"
+                        : "bg-color-ui-active/70"
+                    }`}
                     style={{
                       height: `${tableScrollbarThumbHeight}px`,
                       transform: `translateY(${tableScrollbarThumbTop}px)`,
@@ -1908,6 +2048,7 @@ export default function GTPUniversalChart({
             >
               <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : "h-full pl-[5px]"}`}>
                 <div
+                  ref={chartTooltipHostRef}
                   className="relative w-full rounded-[14px] overflow-hidden"
                   style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
                 >
@@ -1923,39 +2064,18 @@ export default function GTPUniversalChart({
                 </div>
               </div>
             </div>
+            {isMobileLayout && hasBottomTabBar ? (
+              <div className="order-2 -mx-[5px] w-[calc(100%+10px)]">
+                {bottomTabBar}
+              </div>
+            ) : null}
             </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 z-[30]">
-            <GTPTabBar
-              leftClassName="hidden"
-              className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
-              left={null}
-              right={
-                bottomRightItems.length > 0 ? (
-                  <GTPTabButtonSet
-                    items={bottomRightItems}
-                    selectedId={effectiveBottomRightSelectedId}
-                    size={tabSize}
-                    onChange={(id, item) => {
-                      if (bottomRightConfig?.selectedId === undefined) {
-                        setBottomRightSelection(id);
-                      }
-
-                      if (
-                        isMetricContextActive &&
-                        bottomRightConfig?.selectedId === undefined &&
-                        ["absolute", "percentage", "stacked"].includes(id)
-                      ) {
-                        setContextSelectedScale(id);
-                      }
-
-                      bottomRightConfig?.onChange?.(id, item);
-                    }}
-                  />
-                ) : null
-              }
-            />
-          </div>
+          {!isMobileLayout && hasBottomTabBar ? (
+            <div className="absolute inset-x-0 bottom-0 z-[30]">
+              {bottomTabBar}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

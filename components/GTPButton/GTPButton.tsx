@@ -20,6 +20,7 @@ export interface GTPButtonProps {
   visualState?: GTPButtonState;
   size?: GTPButtonSize;
   className?: string;
+  fill?: "none" | "full" | "mobile";
   buttonType?: "button" | "submit" | "reset";
   rightIconClickHandler?: () => void;
   leftIconClickHandler?: () => void;
@@ -132,6 +133,7 @@ export const GTPButton = ({
   visualState,
   size = "xs",
   className,
+  fill = "none",
   buttonType = "button",
   rightIconClickHandler,
   leftIconClickHandler,
@@ -167,10 +169,12 @@ export const GTPButton = ({
     iconVariant === "left" || iconVariant === "both" || (iconVariant === "alone" && Boolean(leftIcon ?? rightIcon));
   const displayRightIcon = iconVariant === "right" || iconVariant === "both";
   const iconForAlone = leftIcon ?? rightIcon;
+  const wrapperFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
+  const buttonFillClassName = fill === "full" ? "w-full justify-center" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
 
   return (
     <div
-      className={`inline-flex rounded-full ${className ?? ""}`}
+      className={`inline-flex rounded-full ${wrapperFillClassName} ${className ?? ""}`}
       style={{
         padding: hasOutline ? "1px" : "0px",
         background: wrapperBackground,
@@ -178,7 +182,7 @@ export const GTPButton = ({
     >
       <button
         type={buttonType}
-        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-colors ${
+        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-colors ${buttonFillClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"

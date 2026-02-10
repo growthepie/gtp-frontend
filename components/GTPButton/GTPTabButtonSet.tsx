@@ -17,6 +17,7 @@ interface GTPTabButtonSetProps {
   items?: GTPTabButtonSetItem[];
   selectedId?: string;
   size?: GTPButtonSize;
+  fill?: "none" | "full" | "mobile";
   onChange?: (id: string, item: GTPTabButtonSetItem) => void;
   className?: string;
   children?: ReactNode;
@@ -26,13 +27,17 @@ export default function GTPTabButtonSet({
   items,
   selectedId,
   size = "sm",
+  fill = "none",
   onChange,
   className,
   children,
 }: GTPTabButtonSetProps) {
+  const containerFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
+  const buttonFillClassName = fill === "full" ? "flex-1" : fill === "mobile" ? "flex-1 md:flex-none" : "";
+
   return (
     <div
-      className={`inline-flex items-center gap-[2px] rounded-full border-[0.5px] border-color-bg-default py-[2px] px-[3px] ${
+      className={`inline-flex items-center gap-[2px] rounded-full border-[0.5px] border-color-bg-default py-[2px] px-[3px] ${containerFillClassName} ${
         className ?? ""
       }`}
     >
@@ -47,6 +52,8 @@ export default function GTPTabButtonSet({
             leftIcon={item.leftIcon}
             rightIcon={item.rightIcon}
             size={size}
+            fill={fill}
+            className={buttonFillClassName}
             variant={isSelected ? "primary" : "no-background"}
             visualState={isSelected ? "active" : "default"}
             disabled={item.disabled}
