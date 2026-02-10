@@ -1213,55 +1213,56 @@ export default function LandingChart({
           </div>
         </div>
         {(IS_PREVIEW || IS_DEVELOPMENT) && (
-        <GTPButtonContainer className="mb-[10px]">
-          <GTPButtonRow>
-            <GTPButton
-              label={isLessThan2xl ? "ETH Ecosystem" : "Total Ethereum Ecosystem"}
-              rightIcon="gtp-metrics-ethereum-ecosystem"
-              isSelected={showTotalUsers}
-              clickHandler={() => {
-                setShowTotalUsers(true);
-                setSelectedScale("absolute");
-                setSelectedMetric("Total Ethereum Ecosystem");
-              }}
-            />
-            <GTPButton
-              label="Composition"
-              rightIcon="gtp-metrics-chaincomposition"
-              isSelected={"absolute" === selectedScale && !showTotalUsers}
-              clickHandler={() => {
-                setShowTotalUsers(false);
-                setSelectedScale("absolute");
-                setSelectedMetric("Composition");
-              }}
-            />
-            <GTPButton
-              label={isLessThan2xl ? "Comp. Split" : "Composition Split"}
-              rightIcon="gtp-metrics-chains-percentage"
-              isSelected={selectedScale === "percentage"}
-              clickHandler={() => {
-                setShowTotalUsers(false);
-                setSelectedScale("percentage");
-                setSelectedMetric("Composition Split");
-              }}
-            />
-          </GTPButtonRow>
+          <></>
+        // <GTPButtonContainer className="mb-[10px]">
+        //   <GTPButtonRow>
+        //     <GTPButton
+        //       label={isLessThan2xl ? "ETH Ecosystem" : "Total Ethereum Ecosystem"}
+        //       rightIcon="gtp-metrics-ethereum-ecosystem"
+        //       isSelected={showTotalUsers}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(true);
+        //         setSelectedScale("absolute");
+        //         setSelectedMetric("Total Ethereum Ecosystem");
+        //       }}
+        //     />
+        //     <GTPButton
+        //       label="Composition"
+        //       rightIcon="gtp-metrics-chaincomposition"
+        //       isSelected={"absolute" === selectedScale && !showTotalUsers}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(false);
+        //         setSelectedScale("absolute");
+        //         setSelectedMetric("Composition");
+        //       }}
+        //     />
+        //     <GTPButton
+        //       label={isLessThan2xl ? "Comp. Split" : "Composition Split"}
+        //       rightIcon="gtp-metrics-chains-percentage"
+        //       isSelected={selectedScale === "percentage"}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(false);
+        //         setSelectedScale("percentage");
+        //         setSelectedMetric("Composition Split");
+        //       }}
+        //     />
+        //   </GTPButtonRow>
 
-          <GTPButtonRow>
-          {Object.keys(timespans).map((timespan) => (
-            <GTPButton
-              label={timespans[timespan].label}
-              isSelected={selectedTimespan === timespan}
-              clickHandler={() => {
-                setSelectedTimespan(timespan);
-              }}
-            />
-          ))}
+        //   <GTPButtonRow>
+        //   {Object.keys(timespans).map((timespan) => (
+        //     <GTPButton
+        //       label={timespans[timespan].label}
+        //       isSelected={selectedTimespan === timespan}
+        //       clickHandler={() => {
+        //         setSelectedTimespan(timespan);
+        //       }}
+        //     />
+        //   ))}
 
-          </GTPButtonRow>
-        </GTPButtonContainer>
+        //   </GTPButtonRow>
+        // </GTPButtonContainer>
         )}
-        {IS_PRODUCTION && (
+     
         <TopRowContainer className={`!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex ${!isSidebarOpen ? "lg:!flex-row" : "xl:!flex-row"} ${!isSidebarOpen ? "lg:!rounded-full" : "xl:!rounded-full"}`}>
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 lg:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
             <TopRowChild
@@ -1420,7 +1421,7 @@ export default function LandingChart({
             )}
           </TopRowParent>
         </TopRowContainer>
-        )}
+        
       </div>
       <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] "
          
