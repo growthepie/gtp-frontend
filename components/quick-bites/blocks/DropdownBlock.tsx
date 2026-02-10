@@ -118,7 +118,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
           </label>
         )}
         <div className="w-full">
-          <div className="flex items-center justify-center p-4 text-forest-600 dark:text-forest-400 border rounded-lg">
+          <div className="flex items-center justify-center p-4 text-color-text-secondary border rounded-lg">
             Loading options...
           </div>
         </div>

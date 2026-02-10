@@ -266,6 +266,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   <Badge
                     label={selectedOption.label.split('|')[0]}
                     leftIcon="feather:tag"
+                    leftIconColor="rgb(var(--text-primary))"
                     rightIcon="in-button-close-monochrome"
                     rightIconColor="#FE5468"
                     onClick={() => handleSelect(null)}
@@ -279,7 +280,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   value={searchTerm}
                   onChange={handleInputChange}
                   placeholder={getPlaceholderText()}
-                  className={`w-full bg-transparent text-color-text-primary placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
+                  className={`w-full bg-transparent text-color-text-primary  border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
                   disabled={disabled}
                 />
               ) : (

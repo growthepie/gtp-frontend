@@ -195,11 +195,53 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
   const tableChainKeys = useMemo(() => {
     if (!landing || !master) return [];
 
-    return Object.keys(landing.data.metrics.table_visual)
+    const supportedChainKeys = Get_SupportedChainKeys(master);
 
-      .filter((chainKey) => { return selectedChainTypes.includes(AllChainsByKeys[chainKey]?.chainType ?? "")})
-      
-  }, [EnabledChainsByKeys, focusEnabled, landing, master, selectedChainTypes]);
+    return Object.keys(landing.data.metrics.table_visual)
+      .filter((chainKey) => {
+        const chainData = landing.data.metrics.table_visual[chainKey] as any;
+        const chain = EnabledChainsByKeys[chainKey];
+
+        // Only enabled chains
+        if (!chain) return false;
+        // Only supported (deployed) chains
+        if (!supportedChainKeys.includes(chainKey)) return false;
+        // Exclude ethereum when focus mode is enabled
+        if (focusEnabled && chainKey === "ethereum") return false;
+        // Only chains with users > 0
+        if (!chainData?.users || chainData.users <= 0) return false;
+        // Must have a valid chainType
+        if (!chain.chainType) return false;
+        // Filter by selected chain types
+        if (!selectedChainTypes.includes(chain.chainType)) return false;
+
+        return true;
+      })
+      .sort((a, b) => {
+        const aData = landing.data.metrics.table_visual[a] as any;
+        const bData = landing.data.metrics.table_visual[b] as any;
+
+        if (sort.metric === "chain_name") {
+          const aVal = aData?.chain_name ?? "";
+          const bVal = bData?.chain_name ?? "";
+          return sort.sortOrder === "desc"
+            ? bVal.localeCompare(aVal)
+            : aVal.localeCompare(bVal);
+        }
+
+        if (sort.metric === "age") {
+          const aVal = master.chains[a]?.launch_date ? dayjs(master.chains[a].launch_date).valueOf() : 0;
+          const bVal = master.chains[b]?.launch_date ? dayjs(master.chains[b].launch_date).valueOf() : 0;
+          return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
+        }
+
+        // Numeric sort for users, user_share, cross_chain_activity, etc.
+        const aVal = aData?.[sort.metric] ?? 0;
+        const bVal = bData?.[sort.metric] ?? 0;
+        return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
+      });
+
+  }, [EnabledChainsByKeys, focusEnabled, landing, master, selectedChainTypes, sort]);
 
 
 
@@ -260,7 +302,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   onChange={setSelectedChainTypes}
                 />
               </TopRowParent>
-              {!IS_PRODUCTION && (
+             
                 <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
                   <div className="flex items-center gap-x-[10px]">
                     <ViewToggle
@@ -269,7 +311,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                     />
                   </div>
                 </TopRowParent>
-              )}
+      
             </TopRowContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
