@@ -432,10 +432,9 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
       newSearchParams.set(key, updatedQuery[key].join(","));
     }
 
-    // create new url
-    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-    // router.replace(url, { scroll: false });
-    window.history.replaceState(null, "", url);
+    const queryString = newSearchParams.toString();
+    const url = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(url, { scroll: false });
   };
   /* </ Query Params > */
 

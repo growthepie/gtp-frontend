@@ -163,7 +163,7 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
   const chainInfo = master?.chains?.[chainKey];
   
   return (
-    <div className="mt-[-5px]">
+    <div className="mt-[5px]">
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",
@@ -253,13 +253,13 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
     <>
         <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
           <div
-            className="flex gap-x-[8px] items-center scroll-mt-8"
+            className="flex gap-x-[8px] items-center scroll-mt-[30px] mt-[10px]"
             id="blockspace"
           >
 
-            <GTPIcon icon="gtp-package" size="lg" className="!w-[36px] !h-[36px]" containerClassName="w-[36px] h-[36px]" />
+            <GTPIcon icon="gtp-blockspace" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
             <Heading
-              className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
+              className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid"
               as="h2"
             >
               {master.chains[chainKey].name} Blockspace
