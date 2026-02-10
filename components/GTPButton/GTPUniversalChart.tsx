@@ -10,9 +10,12 @@ import { useMaster } from "@/contexts/MasterContext";
 import { useMetricChartControls } from "@/components/metric/MetricChartControlsContext";
 import { useMetricData } from "@/components/metric/MetricDataContext";
 import { daMetricItems, metricItems } from "@/lib/metrics";
+import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
 import ChainMetricTableRow from "../layout/ChainMetricTableRow";
-import ChartWatermark from "../layout/ChartWatermark";
+import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { GTPIcon } from "../layout/GTPIcon";
+import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { GTPButton, GTPButtonSize } from "./GTPButton";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
@@ -33,8 +36,15 @@ const TABLE_BOTTOM_FADE_HEIGHT = 54;
 const TABLE_BOTTOM_SCROLL_PADDING = 56;
 const TABLE_BOTTOM_SCROLL_PADDING_MOBILE = 8;
 const MOBILE_LAYOUT_BREAKPOINT = 768;
-const TOOLTIP_VIEWPORT_PADDING = 12;
-const TOOLTIP_CURSOR_OFFSET = 14;
+const UNIVERSAL_CHART_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
+  "fit",
+  "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[10px] pr-[12px] bg-color-bg-default/80",
+);
+const UNIVERSAL_CHART_WATERMARK_CLASS =
+  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+const HTML2CANVAS_CDN_URL = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+const SHARE_DROPDOWN_CONTAINER_CLASS =
+  "z-[120] min-w-[236px] overflow-hidden rounded-t-[22px] rounded-b-none bg-color-ui-active shadow-standard";
 
 const DEFAULT_TOP_LEFT_ITEMS = [
   { id: "daily", label: "Daily" },
@@ -104,6 +114,24 @@ type ChartSeriesEntry = {
   row: UniversalChartTableRow;
   data: ChartSeriesPoint[];
 };
+
+type Html2CanvasFn = (
+  element: HTMLElement,
+  options?: {
+    backgroundColor?: string | null;
+    useCORS?: boolean;
+    logging?: boolean;
+    scale?: number;
+    removeContainer?: boolean;
+    onclone?: (documentClone: Document) => void;
+  },
+) => Promise<HTMLCanvasElement>;
+
+declare global {
+  interface Window {
+    html2canvas?: Html2CanvasFn;
+  }
+}
 
 const MOCK_TABLE_ROWS: Omit<UniversalChartTableRow, "series">[] = [
   {
@@ -283,6 +311,12 @@ const formatCompactCurrency = (value: number) =>
     notation: "compact",
     maximumFractionDigits: value >= 100_000_000_000 ? 0 : 1,
   }).format(value)}`;
+const formatCompactNumber = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: Math.abs(value) >= 100_000_000_000 ? 0 : 1,
+  }).format(value);
+const formatCompactEth = (value: number) => `${formatCompactNumber(value)} ETH`;
 
 const formatPercentValue = (value: number) => `${value.toFixed(1)}%`;
 const formatSignedPercent = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
@@ -522,16 +556,22 @@ export default function GTPUniversalChart({
   fullBleed?: boolean;
   tabSets?: GTPUniversalChartTabSetsConfig;
 }) {
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const tablePaneRef = useRef<HTMLDivElement | null>(null);
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
   const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
+  const shareButtonTriggerRef = useRef<HTMLDivElement | null>(null);
+  const html2CanvasLoaderPromiseRef = useRef<Promise<Html2CanvasFn | null> | null>(null);
   const hasAutoSelectedContextChainsRef = useRef(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [tablePaneHeight, setTablePaneHeight] = useState(0);
   const [splitRatio, setSplitRatio] = useState(DEFAULT_SPLIT_RATIO);
+  const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+  const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [tableScrollbarDragging, setTableScrollbarDragging] = useState(false);
   const [tableScrollbarDragOffset, setTableScrollbarDragOffset] = useState(0);
@@ -606,6 +646,48 @@ export default function GTPUniversalChart({
     });
   }, [syncTableScrollMetrics]);
 
+  const loadHtml2Canvas = useCallback(async (): Promise<Html2CanvasFn | null> => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    if (window.html2canvas) {
+      return window.html2canvas;
+    }
+
+    if (html2CanvasLoaderPromiseRef.current) {
+      return html2CanvasLoaderPromiseRef.current;
+    }
+
+    html2CanvasLoaderPromiseRef.current = new Promise<Html2CanvasFn | null>((resolve) => {
+      const scriptId = "gtp-html2canvas-loader";
+      let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+      const resolveFromWindow = () => resolve(window.html2canvas ?? null);
+
+      if (!script) {
+        script = document.createElement("script");
+        script.id = scriptId;
+        script.src = HTML2CANVAS_CDN_URL;
+        script.async = true;
+        script.onload = resolveFromWindow;
+        script.onerror = () => resolve(null);
+        document.head.appendChild(script);
+        return;
+      }
+
+      if (window.html2canvas) {
+        resolve(window.html2canvas);
+        return;
+      }
+
+      script.addEventListener("load", resolveFromWindow, { once: true });
+      script.addEventListener("error", () => resolve(null), { once: true });
+    });
+
+    return html2CanvasLoaderPromiseRef.current;
+  }, []);
+
   const { AllChainsByKeys, AllDALayersByKeys, metrics, da_metrics } = useMaster();
   const {
     data: metricData,
@@ -626,6 +708,97 @@ export default function GTPUniversalChart({
     selectedScale: contextSelectedScale,
     setSelectedScale: setContextSelectedScale,
   } = useMetricChartControls();
+  const metricInfo =
+    metricContextType === "data-availability" ? da_metrics?.[metricId] : metrics?.[metricId];
+  const metricLabel = metricData?.metric_name ?? "Market Cap";
+  const handleDownloadChartSnapshot = useCallback(async () => {
+    if (isDownloadingChartSnapshot) {
+      return;
+    }
+
+    const cardElement = cardRef.current;
+    if (!cardElement || typeof window === "undefined") {
+      return;
+    }
+
+    setIsDownloadingChartSnapshot(true);
+
+    try {
+      if (typeof document !== "undefined" && "fonts" in document) {
+        await document.fonts.ready;
+      }
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
+
+      const html2canvas = await loadHtml2Canvas();
+      if (!html2canvas) {
+        return;
+      }
+
+      const canvas = await html2canvas(cardElement, {
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+        scale: Math.min(Math.max(window.devicePixelRatio || 1, 1), 2),
+        removeContainer: true,
+        onclone: (documentClone) => {
+          const style = documentClone.createElement("style");
+          style.textContent = `
+            *, *::before, *::after {
+              animation: none !important;
+              transition: none !important;
+              caret-color: transparent !important;
+            }
+            span[class*="text-"],
+            span[class*="heading-"],
+            span[class*="numbers-"],
+            div[class*="text-"],
+            div[class*="heading-"],
+            div[class*="numbers-"],
+            a[class*="text-"],
+            a[class*="heading-"],
+            a[class*="numbers-"],
+            th,
+            td,
+            label {
+              position: relative !important;
+              top: -8px !important;
+            }
+          `;
+          documentClone.head.appendChild(style);
+        },
+      });
+      const imageBlob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      });
+
+      if (!imageBlob) {
+        return;
+      }
+
+      const metricSlug = metricLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "metric";
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      const objectUrl = URL.createObjectURL(imageBlob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `growthepie-${metricSlug}-${dateStamp}.png`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+    } finally {
+      setIsDownloadingChartSnapshot(false);
+    }
+  }, [isDownloadingChartSnapshot, loadHtml2Canvas, metricLabel]);
+  const metricCatalogIcon =
+    (metricContextType === "data-availability" ? daMetricItems : metricItems).find((item) => item.key === metricId)?.icon;
+  const metricIcon =
+    normalizeMetricIcon(metricInfo?.icon) ??
+    normalizeMetricIcon(metricCatalogIcon) ??
+    (metricContextType === "data-availability" ? "gtp-data-availability" : "gtp-metrics-marketcap");
 
   const isMetricContextActive = useMemo(
     () =>
@@ -1044,6 +1217,84 @@ export default function GTPUniversalChart({
   const selectedTableRows = useMemo(() => tableRows.filter((row) => row.selected), [tableRows]);
   const deselectedTableRows = useMemo(() => tableRows.filter((row) => !row.selected), [tableRows]);
   const hasSelectionDivider = selectedTableRows.length > 0 && deselectedTableRows.length > 0;
+  const metricValueUnitKey = useMemo(() => {
+    if (!isMetricContextActive || !metricData || metricChainKeys.length === 0) {
+      return "usd";
+    }
+
+    const intervalKey = contextTimeIntervalKey || "daily";
+    for (const chainKey of metricChainKeys) {
+      const chainData = (metricData.chains as Record<string, any>)?.[chainKey];
+      const intervalData = (chainData?.[intervalKey] as { types?: string[] } | undefined) ?? chainData?.daily;
+      const types = intervalData?.types ?? [];
+      if (types.includes("usd")) {
+        return "usd";
+      }
+      if (types.includes("eth")) {
+        return "eth";
+      }
+    }
+
+    const availableUnits = metricInfo?.units ? Object.keys(metricInfo.units) : [];
+    if (availableUnits.includes("usd")) {
+      return "usd";
+    }
+    if (availableUnits.includes("eth")) {
+      return "eth";
+    }
+    return availableUnits[0] ?? "value";
+  }, [contextTimeIntervalKey, isMetricContextActive, metricChainKeys, metricData, metricInfo]);
+  const formatChartMetricValue = useCallback(
+    (value: number, { compact = false }: { compact?: boolean } = {}) => {
+      if (isPercentageMode) {
+        return formatPercentValue(value);
+      }
+
+      const unitConfig = metricInfo?.units?.[metricValueUnitKey];
+      if (unitConfig) {
+        const absValue = Math.abs(value);
+        const useCompact = compact || absValue >= 1_000_000;
+        const decimals = useCompact ? Math.min(unitConfig.decimals ?? 1, 1) : (unitConfig.decimals_tooltip ?? unitConfig.decimals ?? 2);
+        const numberFormatter = new Intl.NumberFormat("en-US", {
+          notation: useCompact ? "compact" : "standard",
+          minimumFractionDigits: useCompact ? 0 : decimals,
+          maximumFractionDigits: decimals,
+        });
+        return `${unitConfig.prefix ?? ""}${numberFormatter.format(value)}${unitConfig.suffix ?? ""}`;
+      }
+
+      if (metricValueUnitKey === "eth") {
+        return formatCompactEth(value);
+      }
+      if (metricValueUnitKey === "usd") {
+        return formatCompactCurrency(value);
+      }
+      return formatCompactNumber(value);
+    },
+    [isPercentageMode, metricInfo, metricValueUnitKey],
+  );
+  const chartTooltipPosition = useCallback(
+    (
+      point: number | number[],
+      _params: unknown,
+      _el: unknown,
+      _rect: unknown,
+      size?: { contentSize?: number[] },
+    ) => {
+      const pointX = Array.isArray(point) ? Number(point[0] ?? 0) : Number(point ?? 0);
+      const pointY = Array.isArray(point) ? Number(point[1] ?? 0) : 0;
+      const contentWidth = Array.isArray(size?.contentSize) ? Number(size.contentSize[0] ?? 0) : 0;
+      const contentHeight = Array.isArray(size?.contentSize) ? Number(size.contentSize[1] ?? 0) : 0;
+      return getViewportAwareTooltipLocalPosition({
+        anchorLocalX: pointX,
+        anchorLocalY: pointY,
+        contentWidth,
+        contentHeight,
+        hostRect: chartTooltipHostRef.current?.getBoundingClientRect(),
+      });
+    },
+    [],
+  );
 
   const chartOption = useMemo<EChartsOption>(() => {
     const textPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
@@ -1148,7 +1399,7 @@ export default function GTPUniversalChart({
           color: textSecondary,
           fontSize: 10,
           fontFamily: NUMBER_FONT_FAMILY,
-          formatter: (value: number) => (isPercentageMode ? formatPercentValue(value) : formatCompactCurrency(value)),
+          formatter: (value: number) => formatChartMetricValue(value, { compact: true }),
         },
         splitLine: {
           lineStyle: {
@@ -1162,56 +1413,7 @@ export default function GTPUniversalChart({
         renderMode: "html",
         appendToBody: true,
         confine: false,
-        position: (point, _params, _el, _rect, size) => {
-          const pointX = Array.isArray(point) ? Number(point[0] ?? 0) : Number(point ?? 0);
-          const pointY = Array.isArray(point) ? Number(point[1] ?? 0) : 0;
-          const contentWidth = Array.isArray(size?.contentSize) ? Number(size.contentSize[0] ?? 0) : 0;
-          const contentHeight = Array.isArray(size?.contentSize) ? Number(size.contentSize[1] ?? 0) : 0;
-          const tooltipHostRect = chartTooltipHostRef.current?.getBoundingClientRect();
-          const hostLeft = tooltipHostRect?.left ?? 0;
-          const hostTop = tooltipHostRect?.top ?? 0;
-          const anchorAbsX = hostLeft + pointX;
-          const anchorAbsY = hostTop + pointY;
-          const viewportWidth = Math.max(
-            typeof window !== "undefined"
-              ? window.innerWidth
-              : Array.isArray(size?.viewSize)
-                ? Number(size.viewSize[0] ?? contentWidth)
-                : contentWidth,
-            1,
-          );
-          const viewportHeight = Math.max(
-            typeof window !== "undefined"
-              ? window.innerHeight
-              : Array.isArray(size?.viewSize)
-                ? Number(size.viewSize[1] ?? contentHeight)
-              : contentHeight,
-            1,
-          );
-
-          const maxX = Math.max(viewportWidth - contentWidth - TOOLTIP_VIEWPORT_PADDING, TOOLTIP_VIEWPORT_PADDING);
-          const maxY = Math.max(viewportHeight - contentHeight - TOOLTIP_VIEWPORT_PADDING, TOOLTIP_VIEWPORT_PADDING);
-
-          let xAbs = anchorAbsX + TOOLTIP_CURSOR_OFFSET;
-          if (xAbs + contentWidth > viewportWidth - TOOLTIP_VIEWPORT_PADDING) {
-            xAbs = anchorAbsX - contentWidth - TOOLTIP_CURSOR_OFFSET;
-          }
-          xAbs = clamp(xAbs, TOOLTIP_VIEWPORT_PADDING, maxX);
-
-          const spaceBelow = viewportHeight - TOOLTIP_VIEWPORT_PADDING - (anchorAbsY + TOOLTIP_CURSOR_OFFSET);
-          const spaceAbove = anchorAbsY - TOOLTIP_CURSOR_OFFSET - TOOLTIP_VIEWPORT_PADDING;
-          let yAbs = anchorAbsY + TOOLTIP_CURSOR_OFFSET;
-
-          if (contentHeight > spaceBelow && contentHeight <= spaceAbove) {
-            yAbs = anchorAbsY - contentHeight - TOOLTIP_CURSOR_OFFSET;
-          } else if (contentHeight > spaceBelow && contentHeight > spaceAbove) {
-            yAbs = anchorAbsY - contentHeight / 2;
-          }
-
-          yAbs = clamp(yAbs, TOOLTIP_VIEWPORT_PADDING, maxY);
-
-          return [xAbs - hostLeft, yAbs - hostTop];
-        },
+        position: chartTooltipPosition,
         axisPointer: {
           type: "line",
           lineStyle: {
@@ -1239,7 +1441,7 @@ export default function GTPUniversalChart({
             })
             .filter((point) => {
               const value = Number(point.value?.[1]);
-              return Number.isFinite(value);
+              return Number.isFinite(value) && Math.abs(value) > 0;
             }) as Array<{
               value: [number, number];
               seriesName: string;
@@ -1263,6 +1465,7 @@ export default function GTPUniversalChart({
               numericValue: Number(point.value[1]),
             }))
             .sort((a, b) => b.numericValue - a.numericValue);
+          const maxTooltipValue = Math.max(...sortedPoints.map((point) => Math.abs(point.numericValue)), 0);
 
           const rows = sortedPoints
             .map((point) => {
@@ -1272,21 +1475,26 @@ export default function GTPUniversalChart({
               }
               const rowMeta = displayRows.find((row) => row.label === point.seriesName);
               const lineColor = rowMeta?.accentColor ?? point.color ?? textPrimary;
-              const formattedValue = isPercentageMode ? formatPercentValue(value) : formatCompactCurrency(value);
+              const formattedValue = formatChartMetricValue(value);
+              const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(value) / maxTooltipValue) * 100, 0, 100) : 0;
               return `
-                <div class="flex w-full items-center space-x-2 font-medium mb-0.5 pl-[20px]">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color:${lineColor}"></div>
+                <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
+                  <div class="w-3 h-1 rounded-r-full" style="background-color:${lineColor}"></div>
                   <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
-                  <div class="flex-1 text-right justify-end numbers-xs flex">${formattedValue}</div>
+                  <div class="flex-1 text-right justify-end flex numbers-xs">${formattedValue}</div>
+                </div>
+                <div class="ml-[18px] mr-[1px] h-px relative mb-[2px] overflow-hidden">
+                  <div class="h-px rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
                 </div>
               `;
             })
             .join("");
 
           return `
-            <div class="flex flex-col gap-y-[5px] w-fit min-w-[230px] max-w-[min(92vw,420px)] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard">
-              <div class="flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center">
-                <div class="heading-small-xs h-[18px] flex items-center">${dateLabel}</div>
+            <div class="${UNIVERSAL_CHART_TOOLTIP_CONTAINER_CLASS}">
+              <div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1 flex justify-between">
+                <span>${dateLabel}</span>
+                <span class="text-xs font-medium text-color-text-primary">${escapeHtml(metricLabel)}</span>
               </div>
               <div class="flex flex-col w-full">
                 ${rows}
@@ -1330,7 +1538,16 @@ export default function GTPUniversalChart({
             : undefined,
       })),
     };
-  }, [chartSeriesData, contentHeight, displayRows, isPercentageMode, isStackedMode]);
+  }, [
+    chartSeriesData,
+    chartTooltipPosition,
+    contentHeight,
+    displayRows,
+    formatChartMetricValue,
+    isPercentageMode,
+    isStackedMode,
+    metricLabel,
+  ]);
 
   useLayoutEffect(() => {
     if (!contentRef.current) {
@@ -1606,6 +1823,16 @@ export default function GTPUniversalChart({
   const clearSelectedChains = () => {
     setActiveSelectedChains([]);
   };
+  const getChainPageHref = useCallback(
+    (chainKey: string) => {
+      const chainMeta =
+        (AllChainsByKeys as Record<string, any>)?.[chainKey] ??
+        (AllDALayersByKeys as Record<string, any>)?.[chainKey];
+      const urlKey = chainMeta?.urlKey ?? chainMeta?.url_key ?? chainKey.replace(/_/g, "-");
+      return `/chains/${urlKey}`;
+    },
+    [AllChainsByKeys, AllDALayersByKeys],
+  );
   const handleTableSortClick = (key: TableSortKey) => {
     setTableSort((current) =>
       current.key === key
@@ -1624,18 +1851,27 @@ export default function GTPUniversalChart({
       ? "in-button-up-monochrome"
       : "in-button-down-monochrome";
   const isTableSortKeyActive = (key: TableSortKey) => tableSort.key === key;
+  const showTablePane = !isTableCollapsed;
 
   const availableWidth = isMobileLayout
     ? Math.max(contentWidth, 0)
     : Math.max(contentWidth - DIVIDER_WIDTH, 0);
-  const tableWidth = isMobileLayout ? availableWidth : availableWidth * splitRatio;
+  const tableWidth = isMobileLayout
+    ? availableWidth
+    : showTablePane
+      ? availableWidth * splitRatio
+      : 0;
   const chartWidth = isMobileLayout ? availableWidth : availableWidth - tableWidth;
   const tablePaneWidth = isMobileLayout
     ? "100%"
-    : `calc(${(splitRatio * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`;
+    : showTablePane
+      ? `calc(${(splitRatio * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`
+      : "0px";
   const chartPaneWidth = isMobileLayout
     ? "100%"
-    : `calc(${((1 - splitRatio) * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`;
+    : showTablePane
+      ? `calc(${((1 - splitRatio) * 100).toFixed(4)}% - ${DIVIDER_WIDTH / 2}px)`
+      : "100%";
   const tableGridAvailableWidth = Math.max(tableWidth - TABLE_GRID_SIDE_PADDING, 0);
   const requiredWidthFor3ChangeColumns = getTableGridRequiredWidth(3, TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE);
   const requiredWidthFor2ChangeColumns = getTableGridRequiredWidth(2, TABLE_CHAIN_MIN_WIDTH_NO_TRUNCATE);
@@ -1679,18 +1915,13 @@ export default function GTPUniversalChart({
   }, [show1yColumn, show24hColumn, show30dColumn]);
   const chartRenderHeight = isMobileLayout
     ? `${Math.max(Math.floor((contentHeight || 420) * 0.46), 210)}px`
-    : tablePaneHeight > 0
+    : showTablePane && tablePaneHeight > 0
       ? `${Math.floor(tablePaneHeight)}px`
       : "100%";
-  const metricLabel = metricData?.metric_name ?? "Market Cap";
-  const metricInfo =
-    metricContextType === "data-availability" ? da_metrics?.[metricId] : metrics?.[metricId];
-  const metricCatalogIcon =
-    (metricContextType === "data-availability" ? daMetricItems : metricItems).find((item) => item.key === metricId)?.icon;
-  const metricIcon =
-    normalizeMetricIcon(metricInfo?.icon) ??
-    normalizeMetricIcon(metricCatalogIcon) ??
-    (metricContextType === "data-availability" ? "gtp-data-availability" : "gtp-metrics-marketcap");
+  const tableWatermarkOverlayClassName = "pointer-events-none absolute inset-0 z-[40] flex items-center justify-center";
+  const chartWatermarkOverlayClassName = isMobileLayout
+    ? "pointer-events-none absolute inset-0 z-[40] flex items-center justify-center"
+    : "pointer-events-none absolute inset-y-0 left-[52px] right-0 z-[40] flex items-center justify-center";
   const freshnessLabel = isMetricContextActive ? "Sourced from growthepie data" : "Updated 32 minutes ago";
 
   const wrapperClassName = fullBleed ? "relative w-screen" : "relative w-full";
@@ -1700,43 +1931,99 @@ export default function GTPUniversalChart({
         marginRight: "calc(50% - 50vw)",
       }
     : undefined;
-  const hasBottomTabBar = bottomRightItems.length > 0;
+  const hasBottomLeftControls = true;
+  const hasBottomTabBar = hasBottomLeftControls || bottomRightItems.length > 0;
+  const bottomLeftControls = hasBottomLeftControls ? (
+    <GTPTabButtonSet size={tabSize}>
+      <div title={showTablePane ? "Close table" : "Show table"}>
+        <GTPButton
+          leftIcon={showTablePane ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
+          size={tabSize}
+          variant={showTablePane ? "no-background" : "primary"}
+          visualState={showTablePane ? "default" : "active"}
+          clickHandler={() => {
+            setIsTableCollapsed((current) => !current);
+            setIsSharePopoverOpen(false);
+          }}
+        />
+      </div>
+      <div
+        ref={shareButtonTriggerRef}
+        title="Share"
+      >
+        <GTPButton
+          leftIcon="gtp-share-monochrome"
+          size={tabSize}
+          variant="no-background"
+          visualState={isSharePopoverOpen ? "active" : "default"}
+          clickHandler={() => setIsSharePopoverOpen((current) => !current)}
+        />
+      </div>
+      <div title="Download image">
+        <GTPButton
+          leftIcon="gtp-download-monochrome"
+          size={tabSize}
+          variant="no-background"
+          visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+          disabled={isDownloadingChartSnapshot}
+          clickHandler={handleDownloadChartSnapshot}
+        />
+      </div>
+    </GTPTabButtonSet>
+  ) : null;
   const bottomTabBar = hasBottomTabBar ? (
     <GTPTabBar
       mobileVariant="inline"
-      leftClassName="hidden"
-      rightClassName={isMobileLayout ? "w-full" : undefined}
+      leftClassName="!flex-none shrink-0"
+      rightClassName={isMobileLayout ? "min-w-0 flex-1" : undefined}
       className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
-      left={null}
+      left={bottomLeftControls}
       right={(
-        <GTPTabButtonSet
-          items={bottomRightItems}
-          selectedId={effectiveBottomRightSelectedId}
-          size={tabSize}
-          fill={isMobileLayout ? "full" : "none"}
-          onChange={(id, item) => {
-            if (bottomRightConfig?.selectedId === undefined) {
-              setBottomRightSelection(id);
-            }
+        bottomRightItems.length > 0 ? (
+          <GTPTabButtonSet
+            items={bottomRightItems}
+            selectedId={effectiveBottomRightSelectedId}
+            size={tabSize}
+            fill={isMobileLayout ? "full" : "none"}
+            onChange={(id, item) => {
+              if (bottomRightConfig?.selectedId === undefined) {
+                setBottomRightSelection(id);
+              }
 
-            if (
-              isMetricContextActive &&
-              bottomRightConfig?.selectedId === undefined &&
-              ["absolute", "percentage", "stacked"].includes(id)
-            ) {
-              setContextSelectedScale(id);
-            }
+              if (
+                isMetricContextActive &&
+                bottomRightConfig?.selectedId === undefined &&
+                ["absolute", "percentage", "stacked"].includes(id)
+              ) {
+                setContextSelectedScale(id);
+              }
 
-            bottomRightConfig?.onChange?.(id, item);
-          }}
-        />
+              bottomRightConfig?.onChange?.(id, item);
+            }}
+          />
+        ) : null
       )}
     />
   ) : null;
 
   return (
     <div className={`${wrapperClassName} ${className ?? ""}`} style={wrapperStyle}>
-      <div className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden">
+      <div
+        ref={cardRef}
+        className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
+      >
+        <GTPTooltipNew
+          triggerElement={shareButtonTriggerRef.current}
+          isOpen={isSharePopoverOpen}
+          onOpenChange={setIsSharePopoverOpen}
+          enableHover={false}
+          allowInteract
+          unstyled
+          placement={isMobileLayout ? "top" : "top-start"}
+          containerClass={SHARE_DROPDOWN_CONTAINER_CLASS}
+        >
+          <ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />
+        </GTPTooltipNew>
         <GTPTabBar
           mobileVariant="stacked"
           className="border-[0.5px] border-color-bg-default"
@@ -1827,17 +2114,21 @@ export default function GTPUniversalChart({
               ref={contentRef}
               className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobileLayout ? "flex-col" : ""}`}
             >
-            <div
-              className={`flex min-w-0 h-full min-h-0 ${isMobileLayout ? "order-3 flex-1" : ""}`}
-              style={{
-                width: tablePaneWidth,
-              }}
-            >
+            {showTablePane ? (
+              <div
+                className={`flex min-w-0 h-full min-h-0 ${isMobileLayout ? "order-3 flex-1" : ""}`}
+                style={{
+                  width: tablePaneWidth,
+                }}
+              >
               <div
                 ref={tablePaneRef}
                 className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden"
               >
-                <div className="h-[37px] px-[6px] py-[4px]">
+                <div className={tableWatermarkOverlayClassName}>
+                  <ChartWatermarkWithMetricName metricName={metricLabel} className={UNIVERSAL_CHART_WATERMARK_CLASS} />
+                </div>
+                <div className="relative z-[1] h-[37px] px-[6px] py-[4px]">
                   <div
                     className="relative grid h-full items-center gap-x-[6px] text-[12px] font-semibold text-color-text-primary"
                     style={{ gridTemplateColumns: tableGridTemplateColumns }}
@@ -1928,7 +2219,7 @@ export default function GTPUniversalChart({
                   <div
                     ref={tableScrollRef}
                     onScroll={scheduleTableScrollMetricsSync}
-                    className="h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px]"
+                    className="relative z-[1] h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px]"
                     style={{ paddingBottom: `${tableBottomScrollPadding}px` }}
                   >
                     {selectedTableRows.map((row) => (
@@ -1937,6 +2228,7 @@ export default function GTPUniversalChart({
                         id={row.chain}
                         label={row.label}
                         icon={row.icon}
+                        chainHref={getChainPageHref(row.chain)}
                         accentColor={row.accentColor}
                         selected={row.selected}
                         gridTemplateColumns={tableGridTemplateColumns}
@@ -1970,6 +2262,7 @@ export default function GTPUniversalChart({
                         id={row.chain}
                         label={row.label}
                         icon={row.icon}
+                        chainHref={getChainPageHref(row.chain)}
                         accentColor={row.accentColor}
                         selected={row.selected}
                         gridTemplateColumns={tableGridTemplateColumns}
@@ -2011,9 +2304,10 @@ export default function GTPUniversalChart({
                   ) : null}
                 </div>
               </div>
-            </div>
+              </div>
+            ) : null}
 
-            {!isMobileLayout ? (
+            {!isMobileLayout && showTablePane ? (
               <div className="relative z-[35] w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
                 <div className="cursor-col-resize mt-[1px]" onPointerDown={handleDividerPointerDown}>
                   <GTPButton size="xs" variant="primary" leftIcon="gtp-move-side-monochrome" />
@@ -2046,7 +2340,7 @@ export default function GTPUniversalChart({
                 width: chartPaneWidth,
               }}
             >
-              <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : "h-full pl-[5px]"}`}>
+              <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}>
                 <div
                   ref={chartTooltipHostRef}
                   className="relative w-full rounded-[14px] overflow-hidden"
@@ -2058,8 +2352,8 @@ export default function GTPUniversalChart({
                     lazyUpdate
                     style={{ width: "100%", height: "100%" }}
                   />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <ChartWatermark className="h-auto w-[145px] text-color-text-secondary opacity-[0.18] mix-blend-darken dark:mix-blend-lighten" />
+                  <div className={chartWatermarkOverlayClassName}>
+                    <ChartWatermarkWithMetricName metricName={metricLabel} className={UNIVERSAL_CHART_WATERMARK_CLASS} />
                   </div>
                 </div>
               </div>

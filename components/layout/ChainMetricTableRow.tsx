@@ -4,11 +4,13 @@ import { KeyboardEvent, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "./GTPIcon";
 import { GTPButton } from "../GTPButton/GTPButton";
+import Link from "next/link";
 
 type ChainMetricTableRowProps = {
   id: string;
   label: string;
   icon: GTPIconName;
+  chainHref?: string;
   accentColor: string;
   selected: boolean;
   gridTemplateColumns: string;
@@ -31,6 +33,7 @@ export default function ChainMetricTableRow({
   id,
   label,
   icon,
+  chainHref,
   accentColor,
   selected,
   gridTemplateColumns,
@@ -51,6 +54,10 @@ export default function ChainMetricTableRow({
   const [isRowHovered, setIsRowHovered] = useState(false);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       onToggle(id);
@@ -125,13 +132,27 @@ export default function ChainMetricTableRow({
             style={{ color: accentColor }}
           />
         </div>
-        <div
-          className={`${truncateChainLabel ? "truncate" : "whitespace-nowrap"} ${
-            selected ? "text-[11px] font-medium text-color-text-primary" : "text-[11px] text-color-text-secondary"
-          }`}
-        >
-          {label}
-        </div>
+        {chainHref ? (
+          <Link
+            href={chainHref}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+            className={`${truncateChainLabel ? "truncate" : "whitespace-nowrap"} hover:underline ${
+              selected ? "text-[11px] font-medium text-color-text-primary" : "text-[11px] text-color-text-secondary"
+            }`}
+          >
+            {label}
+          </Link>
+        ) : (
+          <div
+            className={`${truncateChainLabel ? "truncate" : "whitespace-nowrap"} ${
+              selected ? "text-[11px] font-medium text-color-text-primary" : "text-[11px] text-color-text-secondary"
+            }`}
+          >
+            {label}
+          </div>
+        )}
       </div>
       <div
         aria-hidden
