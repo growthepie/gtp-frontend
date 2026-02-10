@@ -1,6 +1,6 @@
 "use client"
 import { useMediaQuery } from "usehooks-ts";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, forwardRef } from "react"
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, forwardRef, startTransition } from "react"
 import { GrayOverlay } from "../layout/Backgrounds"
 import { GTPIcon } from "../layout/GTPIcon"
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -26,6 +26,7 @@ import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
+import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery } from "@/lib/searchExpansions";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -275,24 +276,65 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
   // Use searchbar_items from master JSON if available, otherwise fall back to default options
   const defaultOptions = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
   const searchbarItems = masterData?.['searchbar_items'] as string[] | undefined;
-  const options = useMemo(() => {
-    if (searchbarItems && searchbarItems.length > 0) {
-      return searchbarItems.map(item => ` ${item}`);
+  
+  // Get most recent quick bite shortTitle once (memoized to avoid re-checking on each loop)
+  const mostRecentQuickBiteTitle = useMemo(() => {
+    try {
+      const allQuickBites = getAllQuickBites()
+        .filter(qb => qb.showInMenu !== false && qb.date) // Filter out hidden bites and ones without dates
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
+      
+      if (allQuickBites.length > 0) {
+        return ` ${allQuickBites[0].shortTitle}`; // Return shortTitle (same as used in menu items)
+      }
+    } catch (error) {
+      console.error('Error getting most recent quick bite:', error);
     }
-    return defaultOptions;
-  }, [searchbarItems]);
+    return null;
+  }, []); // Empty deps array - only check once on mount
+  
+  const options = useMemo(() => {
+    const searchbarItemsFromMaster = masterData?.searchbar_items;
+    let baseOptions: string[];
+    if (searchbarItemsFromMaster && searchbarItemsFromMaster.length > 0) {
+      baseOptions = searchbarItemsFromMaster.map(item => ` ${item}`);
+    } else {
+      baseOptions = defaultOptions;
+    }
+    
+    // Append most recent quick bite title before wrapping back to start
+    if (mostRecentQuickBiteTitle) {
+      return [...baseOptions, mostRecentQuickBiteTitle];
+    }
+    
+    return baseOptions;
+  }, [masterData, mostRecentQuickBiteTitle, defaultOptions]);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const prevActiveRef = useRef<boolean>(false);
+
+  // Separate effect to handle reset when transitioning from active to inactive
+  useEffect(() => {
+    const wasActive = prevActiveRef.current;
+    const isCurrentlyActive = isMounted && isActive;
+    
+    // Only reset when transitioning from active to inactive
+    if (wasActive && !isCurrentlyActive) {
+      startTransition(() => {
+        setCurrentIndex(0);
+        setCurrentText("");
+        setIsDeleting(false);
+      });
+    }
+    
+    prevActiveRef.current = isCurrentlyActive;
+  }, [isMounted, isActive]);
 
   useEffect(() => {
     // Don't animate on server-side or before mount to prevent hydration mismatch
     if (!isMounted || !isActive) {
-      // Reset when not active
-      setCurrentIndex(0);
-      setCurrentText("");
-      setIsDeleting(false);
       return;
     }
 
@@ -684,6 +726,28 @@ export const useSearchBuckets = () => {
         color: undefined
       })) || [];
     
+    // Group quick bites by topic for groupOptions (similar to chains by stack)
+    const topicMap = new Map<string, typeof allQuickBites>();
+    
+    allQuickBites.forEach(quickBite => {
+      quickBite.topics?.forEach(topic => {
+        if (!topicMap.has(topic.name)) {
+          topicMap.set(topic.name, []);
+        }
+        topicMap.get(topic.name)!.push(quickBite);
+      });
+    });
+    
+    const quickBitesByTopic = Array.from(topicMap.entries()).map(([topicName, quickBites]) => ({
+      label: topicName,
+      options: quickBites.map(quickBite => ({
+        label: quickBite.shortTitle, // Use shortTitle for menu consistency
+        url: `/quick-bites/${quickBite.slug}`,
+        icon: "gtp-quick-bites",
+        color: undefined
+      }))
+    })).filter(group => group.options.length > 0); // Filter out empty topic groups
+    
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
       .filter(navItem => navItem.name !== "Quick Bites")
@@ -701,40 +765,184 @@ export const useSearchBuckets = () => {
                 color: undefined
               })),
               ...publicGoodsTrackers
-            ]
+            ],
+            groupOptions: quickBitesByTopic // Add topic-based grouping
           });
         }
         
         // Add the current navigation item
-        acc.push({
-          label: navItem.name,
-          icon: navItem.icon,
-          options: navItem.name === "Applications" 
-            ? [
-                ...navItem.options.map(option => ({
-                  label: option.label,
-                  url: option.url || "",
-                  icon: `gtp:${option.icon}`,
+        if (navItem.name === "Applications") {
+          // Group applications by main_category for groupOptions
+          const categoryMap = new Map<string, typeof ownerProjectToProjectData[string][]>();
+          
+          Object.entries(ownerProjectToProjectData)
+            .filter(([owner, project]) => project.on_apps_page && project.main_category)
+            .forEach(([owner, project]) => {
+              const category = project.main_category;
+              if (category) { // Type guard for null check
+                if (!categoryMap.has(category)) {
+                  categoryMap.set(category, []);
+                }
+                categoryMap.get(category)!.push(project);
+              }
+            });
+          
+          // Group applications by sub_category for groupOptions
+          const subCategoryMap = new Map<string, typeof ownerProjectToProjectData[string][]>();
+          
+          Object.entries(ownerProjectToProjectData)
+            .filter(([owner, project]) => project.on_apps_page && project.sub_categories && project.sub_categories.length > 0)
+            .forEach(([owner, project]) => {
+              // Handle both sub_categories array and sub_category single value
+              const subCategories = project.sub_categories || (project.sub_category ? [project.sub_category] : []);
+              
+              subCategories.forEach(subCategory => {
+                if (subCategory) { // Type guard for null check
+                  if (!subCategoryMap.has(subCategory)) {
+                    subCategoryMap.set(subCategory, []);
+                  }
+                  // Only add if not already in this subcategory's list (avoid duplicates)
+                  if (!subCategoryMap.get(subCategory)!.some(p => p.owner_project === project.owner_project)) {
+                    subCategoryMap.get(subCategory)!.push(project);
+                  }
+                }
+              });
+            });
+          
+          // Get category labels from master data
+          const applicationsByCategory = Array.from(categoryMap.entries())
+            .map(([categoryKey, projects]) => {
+              // Get category label from master data, fallback to categoryKey if not found
+              const categoryLabel = master?.blockspace_categories?.main_categories?.[categoryKey] || categoryKey;
+              
+              return {
+                label: categoryLabel,
+                categoryKey: categoryKey, // Store the category key for URL navigation
+                options: projects.map(project => ({
+                  label: project.display_name,
+                  url: `/applications/${project.owner_project}`,
+                  icon: project.logo_path 
+                    ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
+                    : "gtp-project-monochrome",
                   color: undefined
-                })),
-                ...Object.entries(ownerProjectToProjectData)
-                  .filter(([owner, project]) => project.on_apps_page)
-                  .map(([owner, project]) => ({
-                    label: project.display_name,
-                    url: `/applications/${project.owner_project}`,
-                    icon: project.logo_path 
-                      ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
-                      : "gtp-project-monochrome",
-                    color: undefined
-                  }))
-              ]
-            : navItem.options.map(option => ({
+                }))
+              };
+            })
+            .filter(group => group.options.length > 0); // Filter out empty category groups
+          
+          // Get subcategory labels from master data
+          const applicationsBySubCategory = Array.from(subCategoryMap.entries())
+            .map(([subCategoryKey, projects]) => {
+              // Get subcategory label from master data, fallback to subCategoryKey if not found
+              const subCategoryLabel = master?.blockspace_categories?.sub_categories?.[subCategoryKey] || subCategoryKey;
+              
+              return {
+                label: subCategoryLabel,
+                options: projects.map(project => ({
+                  label: project.display_name,
+                  url: `/applications/${project.owner_project}`,
+                  icon: project.logo_path 
+                    ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
+                    : "gtp-project-monochrome",
+                  color: undefined
+                }))
+              };
+            })
+            .filter(group => group.options.length > 0); // Filter out empty subcategory groups
+          
+          // Combine main categories and subcategories
+          const allApplicationGroups = [...applicationsByCategory, ...applicationsBySubCategory];
+          
+          acc.push({
+            label: navItem.name,
+            icon: navItem.icon,
+            options: [
+              ...navItem.options.map(option => ({
                 label: option.label,
                 url: option.url || "",
                 icon: `gtp:${option.icon}`,
                 color: undefined
+              })),
+              ...Object.entries(ownerProjectToProjectData)
+                .filter(([owner, project]) => project.on_apps_page)
+                .map(([owner, project]) => ({
+                  label: project.display_name,
+                  url: `/applications/${project.owner_project}`,
+                  icon: project.logo_path 
+                    ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
+                    : "gtp-project-monochrome",
+                  color: undefined
+                }))
+            ],
+            groupOptions: allApplicationGroups // Add category and subcategory-based grouping
+          });
+        } else if (navItem.name === "Blockspace") {
+          // Add category-based groupOptions for Blockspace (main categories -> chain overview)
+          const blockspaceCategoryGroups = master?.blockspace_categories?.main_categories
+            ? Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, categoryLabel]) => ({
+                label: categoryLabel,
+                categoryKey: categoryKey,
+                options: [{
+                  label: `Chain Overview: ${categoryLabel}`,
+                  url: `/blockspace/chain-overview/${categoryKey}`,
+                  icon: "gtp-chain",
+                  color: undefined
+                }]
               }))
-        });
+            : [];
+          
+          // Add subcategory-based groupOptions for Blockspace (subcategories -> category comparison)
+          // Find parent main category for each subcategory via mapping (main_category -> subcategory_keys[])
+          const mapping = master?.blockspace_categories?.mapping;
+          const getParentCategoryKey = (subKey: string): string | undefined => {
+            if (!mapping) return undefined;
+            return Object.entries(mapping).find(([, subKeys]) => subKeys?.includes(subKey))?.[0];
+          };
+          const blockspaceSubCategoryGroups = master?.blockspace_categories?.sub_categories
+            ? Object.entries(master.blockspace_categories.sub_categories).map(([subCategoryKey, subCategoryLabel]) => {
+                const parentCategoryKey = getParentCategoryKey(subCategoryKey);
+                const url = parentCategoryKey
+                  ? `/blockspace/category-comparison?category=${parentCategoryKey}&subcategories=${subCategoryKey}`
+                  : `/blockspace/category-comparison?subcategories=${subCategoryKey}`;
+                return {
+                  label: subCategoryLabel,
+                  subCategoryKey: subCategoryKey,
+                  options: [{
+                    label: `Category Comparison: ${subCategoryLabel}`,
+                    url,
+                    icon: "gtp-compare",
+                    color: undefined
+                  }]
+                };
+              })
+            : [];
+          
+          // Combine main categories and subcategories
+          const allBlockspaceGroups = [...blockspaceCategoryGroups, ...blockspaceSubCategoryGroups];
+          
+          acc.push({
+            label: navItem.name,
+            icon: navItem.icon,
+            options: navItem.options.map(option => ({
+              label: option.label,
+              url: option.url || "",
+              icon: `gtp:${option.icon}`,
+              color: undefined
+            })),
+            groupOptions: allBlockspaceGroups
+          });
+        } else {
+          acc.push({
+            label: navItem.name,
+            icon: navItem.icon,
+            options: navItem.options.map(option => ({
+              label: option.label,
+              url: option.url || "",
+              icon: `gtp:${option.icon}`,
+              color: undefined
+            }))
+          });
+        }
         
         return acc;
       }, [] as SearchBucket[]);
@@ -780,8 +988,10 @@ export const useSearchBuckets = () => {
 
 
   const allFilteredData = useMemo(() => {
+    const normalizedQuery = normalizeString(query || "");
+
     // Check if the query matches at least 40% of a bucket name from the beginning
-    const bucketMatch = query ? searchBuckets.find(bucket => {
+    let bucketMatch = query ? searchBuckets.find(bucket => {
       const bucketName = normalizeString(bucket.label);
       const searchQuery = normalizeString(query);
   
@@ -792,42 +1002,44 @@ export const useSearchBuckets = () => {
       return searchQuery.length >= minQueryLength &&
         bucketName.startsWith(searchQuery);
     }) : null;
+    // Short-query override: e.g. "da" -> full Data Availability bucket (no subheading)
+    if (!bucketMatch && query) {
+      const shortQueryBucketLabel = getBucketLabelForShortQuery(normalizedQuery);
+      if (shortQueryBucketLabel) {
+        bucketMatch = searchBuckets.find(b => b.label === shortQueryBucketLabel) ?? null;
+      }
+    }
   
-    // Get regular search results
+    // Main option lists use only the raw query (no expansion)
+    const lowerQuery = normalizedQuery;
     const regularSearchResults = searchBuckets.map(bucket => {
       const bucketOptions = bucket.options;
-      const lowerQuery = normalizeString(query || "");
   
-      // Split into three categories
       const exactMatches = bucketOptions.filter(option =>
         normalizeString(option.label) === lowerQuery
       );
   
       const startsWithMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
-        return lowerLabel !== lowerQuery && // not an exact match
-          lowerLabel.startsWith(lowerQuery);
+        return lowerLabel !== lowerQuery && lowerLabel.startsWith(lowerQuery);
       });
   
       const containsMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
-        return lowerLabel !== lowerQuery && // not an exact match
-          !lowerLabel.startsWith(lowerQuery) && // not a starts with match
+        return lowerLabel !== lowerQuery &&
+          !lowerLabel.startsWith(lowerQuery) &&
           lowerLabel.includes(lowerQuery);
       });
   
       const groupOptions = bucket.groupOptions;
-  
+      // Expansion only for grouped results (subheading sections), per-bucket config in searchExpansions.ts
+      const expandedTermsForBucket = getExpandedSearchTermsForBucket(normalizedQuery, bucket.label);
+      const excludedLabelsForBucket = getExcludedGroupLabelsForBucket(normalizedQuery, bucket.label);
       const groupOptionsMatches = groupOptions?.filter(group => {
         const lowerLabel = normalizeString(group.label);
-        const normalizedQuery = normalizeString(query || "");
-        
-        // Only search stacks if query is 3 characters or more
-        if (normalizedQuery.length < 3) {
-          return false;
-        }
-        
-        return lowerLabel.includes(normalizedQuery);
+        if (normalizedQuery.length < 3) return false;
+        if (excludedLabelsForBucket.includes(lowerLabel)) return false;
+        return expandedTermsForBucket.some(term => lowerLabel.includes(term));
       });
   
       return {
@@ -840,9 +1052,14 @@ export const useSearchBuckets = () => {
     });
   
     // Filter out empty buckets from regular results first
-    const filteredRegularResults = regularSearchResults.filter(bucket =>
+    let filteredRegularResults = regularSearchResults.filter(bucket =>
       bucket.filteredData.length > 0 || (bucket.filteredGroupData && bucket.filteredGroupData.length > 0)
     );
+    // For short-query bucket match (e.g. "da" -> Data Availability), show only the single bucket row
+    const shortQueryBucketLabel = getBucketLabelForShortQuery(normalizedQuery);
+    if (bucketMatch && shortQueryBucketLabel === bucketMatch.label) {
+      filteredRegularResults = filteredRegularResults.filter(b => b.type !== bucketMatch.label);
+    }
   
     // Sort regular results
     const sortedRegularResults = filteredRegularResults.sort((a, b) => {
@@ -1101,7 +1318,7 @@ export const SearchBadge = memo(({
 SearchBadge.displayName = 'SearchBadge';
 
 const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, data: masterData } = useMaster();
   const [viewportHeight, setViewportHeight] = useState<number>(0);
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
@@ -1528,13 +1745,46 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                   <div ref={groupRef} className="flex flex-col gap-[5px]">
                     {filteredGroupData.map((group) => {
                       const isShowMore = showMore[`${group.label}::${type}`];
+                      const isQuickBitesTopic = type === "Quick Bites";
+                      const isApplicationsCategory = type === "Applications";
+                      const isBlockspaceCategory = type === "Blockspace";
+                      
+                      // Check if this is a subcategory for Applications
+                      const isApplicationsSubcategory = isApplicationsCategory && masterData?.blockspace_categories?.sub_categories && 
+                        Object.values(masterData.blockspace_categories.sub_categories).includes(group.label);
+                      
+                      // Check if this is a subcategory for Blockspace by checking if the label exists in sub_categories
+                      const isBlockspaceSubcategory = isBlockspaceCategory && masterData?.blockspace_categories?.sub_categories && 
+                        Object.values(masterData.blockspace_categories.sub_categories).includes(group.label);
                       
                       return (
                         <div key={group.label} className="flex flex-col gap-[5px]">
                           <div className="text-xxs" style={{ color: 'rgb(var(--ui-hover))' }}>
-                            <span>Chains that are part of the &quot;</span>
-                            <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
-                            <span>&quot;:</span>
+                            {isQuickBitesTopic ? (
+                              <>
+                                <span>Quick Bites about &quot;</span>
+                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <span>&quot;:</span>
+                              </>
+                            ) : isApplicationsCategory ? (
+                              <>
+                                <span>Applications in {isApplicationsSubcategory ? "Subcategory" : "Category"}: &quot;</span>
+                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <span>&quot;:</span>
+                              </>
+                            ) : isBlockspaceCategory ? (
+                              <>
+                                <span>Explore Blockspace{isBlockspaceSubcategory ? " Subcategory" : ""}: &quot;</span>
+                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <span>&quot;:</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Chains that are part of the &quot;</span>
+                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <span>&quot;:</span>
+                              </>
+                            )}
                           </div>
                           {/* Stack results in separate container with height constraints */}
                           <div className={`overflow-y-hidden ${
@@ -1563,6 +1813,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                                     setShowMore={setShowMore}
                                     setKeyboardExpandedStacks={setKeyboardExpandedStacks}
                                     keyboardClickItemKeyRef={keyboardClickItemKeyRef}
+                                    categoryKey={isApplicationsCategory && !isApplicationsSubcategory ? (group as any).categoryKey : undefined}
                                   />
                                 );
                               })}
@@ -1595,7 +1846,8 @@ export const BucketItem = ({
   setShowMore,
   setKeyboardExpandedStacks,
   keyboardClickItemKeyRef,
-  onClose
+  onClose,
+  categoryKey
 }: {
   item: any,
   itemKey: string,
@@ -1608,7 +1860,8 @@ export const BucketItem = ({
   setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
   setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>,
   keyboardClickItemKeyRef: React.MutableRefObject<string | null>,
-  onClose?: () => void
+  onClose?: () => void,
+  categoryKey?: string
 }) => {
   // Handle bucket match with trailing space
   const cleanBucket = bucket.trim();
@@ -1624,24 +1877,45 @@ export const BucketItem = ({
   // For stack results, check if the item matches the query
   const shouldGreyOut = isStackResult && query && !normalizeString(item.label).includes(normalizeString(query));
 
-  const targetUrl = lastBucketIndeces[itemKey] && !showMore[bucket] 
-  ? isApps 
-    ? isBucketMatch 
-      ? `/applications` // No search params for Applications bucket match
-      : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
-    : isQuickBites 
-      ? `/quick-bites` 
-      : ``
-  : item.url;
+  // Local ref to store the element
+  const localRef = useRef<HTMLAnchorElement | null>(null);
+  // Store childRefs in a ref to avoid prop modification warnings
+  const childRefsRef = useRef<typeof childRefs | null>(null);
+
+  // Sync local ref to parent ref when element changes
+  useLayoutEffect(() => {
+    // Update the ref wrapper to point to the latest childRefs prop
+    childRefsRef.current = childRefs;
+    
+    const element = localRef.current;
+    if (element && childRefsRef.current) {
+      childRefsRef.current.current[itemKey] = element;
+    } else if (childRefsRef.current) {
+      delete childRefsRef.current.current[itemKey];
+    }
+  }, [childRefs, itemKey]);
+
+  // For main category "See more" links, navigate to applications page with category filter
+  const isMainCategorySeeMore = categoryKey && lastBucketIndeces[itemKey] && !showMore[bucket];
+  
+  const targetUrl = isMainCategorySeeMore
+    ? `/applications?main_category=${categoryKey}`
+    : lastBucketIndeces[itemKey] && !showMore[bucket] 
+      ? isApps 
+        ? isBucketMatch 
+          ? `/applications` // No search params for Applications bucket match
+          : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
+        : isQuickBites 
+          ? `/quick-bites` 
+          : ``
+      : item.url;
 
   return (
     <Link
       data-selected={isSelected ? "true" : "false"}
       href={targetUrl}
       key={item.label}
-      ref={(el) => {
-        childRefs.current[itemKey] = el;
-      }}
+      ref={localRef}
 
       onClick={(e) => {
         // Stop event propagation to prevent parent click handlers from firing
@@ -1658,6 +1932,15 @@ export const BucketItem = ({
         
         if (lastBucketIndeces[itemKey] && !bucketShowMore) {
           // console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
+          // For main category "See more" links, navigate to applications page
+          if (categoryKey) {
+            track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+            // Close the menu if onClose callback is provided (mobile menu)
+            if (onClose) {
+              onClose();
+            }
+            return; // Don't prevent default, let Link handle navigation
+          }
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {
             track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
