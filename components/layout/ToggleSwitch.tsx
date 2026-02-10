@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 interface ToggleValue {
@@ -8,10 +8,7 @@ interface ToggleValue {
 }
 
 interface ToggleProps {
-  values: {
-    left: ToggleValue;
-    right: ToggleValue;
-  };
+  values: ToggleValue[];
   value: string;
   onChange: (value: string) => void;
   leftComponent?: React.ReactNode;
@@ -19,9 +16,9 @@ interface ToggleProps {
   className?: string;
   disabled?: boolean;
   ariaLabel?: string;
-  textColor?: string;
-  containerColor?: string;
-  sliderColor?: string;
+  textClassName?: string;
+  bgClassName?: string;
+  fgClassName?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
@@ -35,9 +32,9 @@ export function ToggleSwitch({
   disabled = false,
   size = "md",
   ariaLabel = "Toggle option",
-  textColor = "text-color-text-primary",
-  containerColor = "bg-color-bg-medium",
-  sliderColor = "bg-color-ui-active",
+  textClassName = "text-color-text-primary",
+  bgClassName = "bg-color-bg-medium",
+  fgClassName = "bg-color-ui-active",
 }: ToggleProps) {
   const [mounted, setMounted] = useState(false);
   const [
@@ -50,19 +47,33 @@ export function ToggleSwitch({
     setMounted(true);
   }, []);
 
-  const handleToggle = () => {
+  const count = values.length;
+  const selectedIndex = values.findIndex((v) => v.value === value);
+  const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+  const isToggle = count === 2;
+
+  const handleSelect = (selectedValue: string) => {
     if (disabled) return;
-    onChange(value === values.left.value ? values.right.value : values.left.value);
+    onChange(selectedValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleToggle();
+      if (isToggle) {
+        onChange(values[activeIndex === 0 ? 1 : 0].value);
+      }
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = Math.min(activeIndex + 1, count - 1);
+      onChange(values[nextIndex].value);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const nextIndex = Math.max(activeIndex - 1, 0);
+      onChange(values[nextIndex].value);
     }
   };
-
-  const isLeftActive = value === values.left.value;
 
   // Refactored size configurations for consistent padding and dynamic calculations
   const sizeConfig = {
@@ -110,24 +121,25 @@ export function ToggleSwitch({
 
   const config = sizeConfig[size];
 
-  // Calculate the transform - handle undefined containerWidth gracefully
-  const getSliderTransform = () => {
-    const baseTransform = 'translateY(-50%)';
-
-    if (isLeftActive) {
-      return `${baseTransform} translateX(0%)`;
-    }
-
-    // For right position, use pixel calculation if we have containerWidth,
-    // otherwise use percentage-based fallback (90% of slider width ≈ 45% of container)
+  const getSliderStyle = (): React.CSSProperties => {
     if (!containerWidth || containerWidth === 0) {
-      // Fallback: approximate right position without exact measurements
-      return `${baseTransform} translateX(90%)`;
+      // Fallback before resize observer fires
+      return {
+        width: `calc(${100 / count}% - ${config.containerPaddingPx - config.containerPaddingPx / count}px)`,
+        left: `${config.containerPaddingPx / 2}px`,
+        transform: `translateY(-50%) translateX(${activeIndex * 100}%)`,
+      };
     }
 
-    // Calculate right position: total width minus slider width minus padding
-    const rightOffset = containerWidth - (containerWidth / 2) - config.containerPaddingPx;
-    return `${baseTransform} translateX(${rightOffset}px)`;
+    const usableWidth = containerWidth - config.containerPaddingPx;
+    const sliderWidth = usableWidth / count;
+    const offset = config.containerPaddingPx / 2 + activeIndex * sliderWidth;
+
+    return {
+      width: `${sliderWidth}px`,
+      left: `${offset}px`,
+      transform: 'translateY(-50%)',
+    };
   };
 
   if (!mounted) {
@@ -141,61 +153,57 @@ export function ToggleSwitch({
           {leftComponent}
         </div>
       )}
-      
+
       <div
         ref={containerRef}
         className={`
           relative flex items-center rounded-full cursor-pointer
-          ${config.container} ${config.minWidth} ${containerColor}
+          ${config.container} ${config.minWidth} ${bgClassName}
           ${disabled ? 'opacity-50 cursor-default' : ''}
           transition-all duration-200 ease-out
         `}
-        onClick={handleToggle}
+        onClick={isToggle ? () => handleSelect(values[activeIndex === 0 ? 1 : 0].value) : undefined}
         onKeyDown={handleKeyDown}
-        role="switch"
-        aria-checked={isLeftActive}
+        role={isToggle ? "switch" : "radiogroup"}
+        aria-checked={isToggle ? activeIndex === 0 : undefined}
         aria-label={ariaLabel}
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : 0}
       >
-        {/* Left option background area - uses consistent padding */}
-        <div className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}>
-          <span className={`
-            ${config.font} ${textColor} font-semibold select-none 
-            whitespace-nowrap leading-none tracking-wide
-          `}>
-            {values.left.label}
-          </span>
-        </div>
+        {/* Option labels */}
+        {values.map((option, index) => (
+          <div
+            key={option.value}
+            className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}
+            onClick={!isToggle ? (e) => { e.stopPropagation(); handleSelect(option.value); } : undefined}
+            role={!isToggle ? "radio" : undefined}
+            aria-checked={!isToggle ? index === activeIndex : undefined}
+          >
+            <span className={`
+              ${config.font} ${textClassName} font-semibold select-none
+              whitespace-nowrap leading-none tracking-wide
+            `}>
+              {option.label}
+            </span>
+          </div>
+        ))}
 
-        {/* Right option background area - uses consistent padding */}
-        <div className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}>
-          <span className={`
-            ${config.font} ${textColor} font-semibold select-none 
-            whitespace-nowrap leading-none tracking-wide
-          `}>
-            {values.right.label}
-          </span>
-        </div>
-
-        {/* Sliding indicator - uses consistent padding and dynamic transform */}
+        {/* Sliding indicator */}
         <div
           className={`
-            absolute top-1/2 z-20 w-1/2
-            ${config.slider} ${config.labelPadding} ${sliderColor}
+            absolute top-1/2 z-20
+            ${config.slider} ${config.labelPadding} ${fgClassName}
             rounded-full flex items-center justify-center
             transition-all duration-300 ease-out
+            ${!isToggle ? "pointer-events-none" : ""}
           `}
-          style={{
-            left: `${config.containerPaddingPx / 2}px`,
-            transform: getSliderTransform()
-          }}
+          style={getSliderStyle()}
         >
           <span className={`
-            ${config.font} ${textColor} font-semibold select-none 
+            ${config.font} ${textClassName} font-semibold select-none
             whitespace-nowrap leading-none tracking-wide
           `}>
-            {isLeftActive ? values.left.label : values.right.label}
+            {values[activeIndex]?.label}
           </span>
         </div>
       </div>

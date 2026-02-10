@@ -68,16 +68,10 @@ export default function EthUsdSwitchSimple({
   return (
     <div className="relative">
       <ToggleSwitch
-        values={{
-          left: {
-            value: "eth",
-            label: "ETH"
-          },
-          right: {
-            value: "usd",
-            label: "USD"
-          }
-        }}
+        values={[
+          { value: "eth", label: "ETH" },
+          { value: "usd", label: "USD" },
+        ]}
         value={showUsd ? "usd" : "eth"}
         onChange={handleToggle}
         size={isMobile ? "xl" : "md"}

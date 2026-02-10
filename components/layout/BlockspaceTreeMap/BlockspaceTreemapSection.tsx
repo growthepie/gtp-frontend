@@ -14,7 +14,7 @@ type BlockspaceTreemapSectionProps = {
 
 export default function BlockspaceTreemapSection({
   titleAs = "h2",
-  descriptionClassName = "text-[14px] w-[99%] mx-auto",
+  descriptionClassName = "text-md w-[99%] mx-auto",
   className = "",
   chainKey,
 }: BlockspaceTreemapSectionProps) {
@@ -32,7 +32,7 @@ export default function BlockspaceTreemapSection({
         </div>
       </div>
       <div className={descriptionClassName}>
-        Explore blockspace usage accross {chainLabel} as a nested treemap from chain level down to specific contract addresses.
+        Explore blockspace usage across {chainLabel} as a nested treemap from chain level down to specific contract addresses.
       </div>
       <HierarchyTreemap chainKey={chainKey} />
     </div>

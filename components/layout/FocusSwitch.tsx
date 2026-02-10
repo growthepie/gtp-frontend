@@ -94,16 +94,10 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
         </div>
       )}
       <ToggleSwitch
-        values={{
-          left: {
-            value: "totalEcosystem",
-            label: "Ecosystem"
-          },
-          right: {
-            value: "l2Focus",
-            label: "L2 Focus"
-          }
-        }}
+        values={[
+          { value: "totalEcosystem", label: "Ecosystem" },
+          { value: "l2Focus", label: "L2 Focus" },
+        ]}
         value={focusEnabled ? "l2Focus" : "totalEcosystem"}
         onChange={handleChange}
         size={isMobile ? "sm" : "md"}

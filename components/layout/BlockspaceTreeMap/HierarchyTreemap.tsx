@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import useSWR from "swr";
 import {
   hierarchy,
@@ -13,8 +13,12 @@ import Image from "next/image";
 import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
+import { StepSwitch } from "@/components/layout/StepSwitch";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Icon } from "@iconify/react";
+import { FloatingPortal } from "@floating-ui/react";
 import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -47,9 +51,9 @@ type DisplayNode = {
   children?: DisplayNode[];
 };
 
-const METRIC_LABELS: Record<MetricKey, string> = {
-  txcount: "Transaction Count",
-  fees: "Gas Fees",
+const METRIC_LABELS: Record<MetricKey, { label: string; shortLabel: string }> = {
+  txcount: { label: "Transaction Count", shortLabel: "Tx Count" },
+  fees: { label: "Gas Fees", shortLabel: "Fees" },
 };
 
 const METRIC_LONG_LABELS: Record<MetricKey, string> = {
@@ -197,6 +201,209 @@ const getMetricLabel = (metric: MetricKey, showUsd: boolean) => {
   }
   return METRIC_LONG_LABELS[metric];
 };
+
+const TOOLTIP_OFFSET = 16;
+const TOOLTIP_MARGIN = 8;
+
+function TreemapTooltip({
+  hoveredNode,
+  tooltipPos,
+  selectedMetric,
+  showUsd,
+  metricFormatter,
+  contractCountById,
+  parsed,
+  AllChainsByKeys,
+  getNodeIcons,
+  getChainIconForId,
+}: {
+  hoveredNode: HierarchyRectangularNode<DisplayNode> | null;
+  tooltipPos: { x: number; y: number } | null;
+  selectedMetric: MetricKey;
+  showUsd: boolean;
+  metricFormatter: Intl.NumberFormat;
+  contractCountById: { count: (id: string) => number };
+  parsed: { nodeById: Record<string, NodeData> };
+  AllChainsByKeys: Record<string, any>;
+  getNodeIcons: (nodeId: string) => { mainCategoryIcon?: string; ownerProjectLogo?: string; chainIcon: string | null };
+  getChainIconForId: (nodeId: string) => string | null;
+}) {
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [adjustedPos, setAdjustedPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+
+  useEffect(() => {
+    if (!tooltipPos || !tooltipRef.current) return;
+    const el = tooltipRef.current;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    let left = tooltipPos.x + TOOLTIP_OFFSET;
+    let top = tooltipPos.y + TOOLTIP_OFFSET;
+
+    if (left + w + TOOLTIP_MARGIN > vw) {
+      left = tooltipPos.x - w - TOOLTIP_OFFSET;
+    }
+    if (top + h + TOOLTIP_MARGIN > vh) {
+      top = tooltipPos.y - h - TOOLTIP_OFFSET;
+    }
+
+    left = Math.max(TOOLTIP_MARGIN, left);
+    top = Math.max(TOOLTIP_MARGIN, top);
+
+    setAdjustedPos({ left, top });
+  }, [tooltipPos]);
+
+  if (!hoveredNode || !tooltipPos) return null;
+
+  const chainOutlineColor = getChainColorForNode(hoveredNode.data.id, AllChainsByKeys);
+  const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(hoveredNode.data.id);
+  const nodeChainIcon = getChainIconForId(hoveredNode.data.id);
+  const isChainNode = hoveredNode.data.id.startsWith("chain:");
+  const contractAddress = getContractAddressFromId(hoveredNode.data.id);
+  const shortContract = contractAddress ? shortAddress(contractAddress) : "";
+  const isContract = hoveredNode.data.id.startsWith("contract:");
+  const displayName =
+    isContract && shortContract && !isAggregatedContractAddress(contractAddress)
+      ? hoveredNode.data.name && hoveredNode.data.name !== shortContract
+        ? `${hoveredNode.data.name} (${shortContract})`
+        : shortContract
+      : hoveredNode.data.name;
+  const parentId = parsed.nodeById[hoveredNode.data.id]?.parent;
+  const parentNode = parentId ? parsed.nodeById[parentId] : null;
+  const parentShare = parentNode && parentNode.value > 0
+    ? (hoveredNode.data.value / parentNode.value) * 100
+    : null;
+
+  // Chain share: what % of the chain's total does this node represent?
+  const idParts = hoveredNode.data.id.split(":");
+  const nodeChainKey = ["chain", "main", "sub", "owner", "contract"].includes(idParts[0])
+    ? (idParts[1] ?? "") : "";
+  const chainNodeId = nodeChainKey ? `chain:${nodeChainKey}` : "";
+  const chainNode = chainNodeId ? parsed.nodeById[chainNodeId] : null;
+  const parentIsChain = parentNode?.id?.startsWith("chain:");
+  const chainShare = !isChainNode && !parentIsChain && chainNode && chainNode.value > 0
+    ? (hoveredNode.data.value / chainNode.value) * 100
+    : null;
+  const chainLabel = chainNode?.name ?? nodeChainKey;
+
+  // Smart value formatting: drop unnecessary decimals at scale
+  const formatValue = (value: number): string => {
+    if (selectedMetric === "fees") {
+      if (showUsd) {
+        if (value >= 1000) return Math.round(value).toLocaleString("en-US");
+        return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      // ETH
+      if (value >= 100) return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      if (value >= 1) return value.toLocaleString("en-US", { maximumFractionDigits: 4 });
+      return value.toLocaleString("en-US", { maximumFractionDigits: 6 });
+    }
+    return metricFormatter.format(value);
+  };
+
+  // Breadcrumb: show ancestors only (exclude the current node name)
+  const ancestorPath = (() => {
+    const parts = hoveredNode.data.fullPath.split(" > ");
+    if (parts.length <= 1) return null; // chain-level, no ancestors to show
+    const ancestors = parts.slice(0, -1);
+    if (ancestors.length >= 5) {
+      return [ancestors[0], "...", ...ancestors.slice(-2)].join(" > ");
+    }
+    return ancestors.join(" > ");
+  })();
+
+  return (
+    <FloatingPortal>
+      <div
+        ref={tooltipRef}
+        className="fixed z-50 rounded-[15px] border border-[#3B4342] bg-color-bg-default px-[15px] py-[10px] text-color-text-primary shadow-standard pointer-events-none flex flex-col gap-y-[6px] min-w-[220px] w-max"
+        style={{
+          left: `${adjustedPos.left}px`,
+          top: `${adjustedPos.top}px`,
+        }}
+      >
+        {/* Header: name + ancestor breadcrumb */}
+        <div>
+          <div className="flex items-center gap-x-[6px]">
+            {!isChainNode && nodeChainIcon && (
+              <GTPIcon icon={nodeChainIcon as any} size="sm" className="shrink-0" style={{ color: chainOutlineColor }} />
+            )}
+            {ownerProjectLogo ? (
+              <Image
+                src={ownerProjectLogo}
+                alt={hoveredNode.data.name}
+                className="w-[14px] h-[14px] rounded-[3px] object-cover shrink-0"
+                width={14}
+                height={14}
+              />
+            ) : chainIcon ? (
+              <GTPIcon icon={chainIcon as any} size="sm" className="shrink-0" style={{ color: chainOutlineColor }} />
+            ) : mainCategoryIcon ? (
+              <GTPIcon icon={mainCategoryIcon as any} size="sm" className="shrink-0" />
+            ) : null}
+            <span className="heading-small-sm">{displayName}</span>
+          </div>
+          {ancestorPath
+            ? <div className="text-color-text-secondary heading-small-xxxs tracking-wide">{ancestorPath}</div>
+            : <div className="heading-small-xxxs">&nbsp;</div>
+          }
+        </div>
+        {/* Value + contracts */}
+        <div className="text-xxs text-color-text-secondary leading-[1.4]">
+          <span className="numbers-md text-color-text-primary">{selectedMetric === "fees" && (showUsd ? "$" : "Ξ")}{formatValue(hoveredNode.data.value)}</span>
+          {" "}{selectedMetric === "fees" ? "in gas fees" : "transactions"} across{" "}
+          <span className="numbers-xs text-color-text-primary">{contractCountById.count(hoveredNode.data.id).toLocaleString()}</span> contract{contractCountById.count(hoveredNode.data.id) !== 1 ? "s" : ""}
+        </div>
+        {/* Share percentages with data bars */}
+        <div className="flex flex-col gap-y-[5px] min-w-[180px]">
+          {parentShare !== null && (
+            <div>
+              <div className="flex items-baseline gap-x-[5px]">
+                <span className="numbers-sm text-color-text-primary">{parentShare.toFixed(2)}%</span>
+                <span className="text-xxs text-color-text-secondary">of {parentNode!.name}</span>
+              </div>
+              <div className="h-[3px] rounded-full bg-color-bg-medium mt-[3px]">
+                <div
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{ width: `${Math.min(parentShare, 100)}%`, backgroundColor: chainOutlineColor }}
+                />
+              </div>
+            </div>
+          )}
+          {chainShare !== null ? (
+            <div>
+              <div className="flex items-baseline gap-x-[5px]">
+                <span className="numbers-xs text-color-text-primary">{chainShare.toFixed(2)}%</span>
+                <span className="text-xxs text-color-text-secondary">of {chainLabel}</span>
+              </div>
+              <div className="h-[3px] rounded-full bg-color-bg-medium mt-[3px]">
+                <div
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{ width: `${Math.min(chainShare, 100)}%`, backgroundColor: `color-mix(in srgb, ${chainOutlineColor} 50%, transparent)` }}
+                />
+              </div>
+            </div>
+          ) : isChainNode && (
+            <div>
+              <div className="flex items-baseline gap-x-[5px]">
+                <span className="numbers-sm text-color-text-primary">{hoveredNode.data.sharePct.toFixed(2)}%</span>
+                <span className="text-xxs text-color-text-secondary">of all chains</span>
+              </div>
+              <div className="h-[3px] rounded-full bg-color-bg-medium mt-[3px]">
+                <div
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{ width: `${Math.min(hoveredNode.data.sharePct, 100)}%`, backgroundColor: chainOutlineColor }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </FloatingPortal>
+  );
+}
 
 export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const { AllChainsByKeys } = useMaster();
@@ -454,14 +661,25 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     }, {} as Record<string, string>);
   }, [projectsData]);
 
+  const getChainIconForId = (nodeId: string): string | null => {
+    const idParts = nodeId.split(":");
+    const prefix = idParts[0];
+    const chainKey = ["chain", "main", "sub", "owner", "contract"].includes(prefix)
+      ? (idParts[1] ?? "")
+      : prefix === "other" ? (idParts[2] ?? "") : "";
+    if (!chainKey || !AllChainsByKeys[chainKey]) return null;
+    const chainUrlKey = AllChainsByKeys[chainKey]?.urlKey ?? chainKey.replace(/_/g, "-");
+    return `${chainUrlKey}-logo-monochrome`;
+  };
+
   const getNodeIcons = (nodeId: string) => {
     const idParts = nodeId.split(":");
     const prefix = idParts[0];
     const chainKey = idParts[1] ?? "";
     const isMainCategory = prefix === "main";
-    const isOwnerProject = prefix === "owner";
+    const hasOwnerProject = prefix === "owner" || prefix === "contract";
     const mainCategoryKey = isMainCategory ? idParts[2] : "";
-    const ownerProjectKey = isOwnerProject ? idParts[4] : "";
+    const ownerProjectKey = hasOwnerProject ? (idParts[4] ?? "") : "";
     const mainCategoryIcon = MAIN_CATEGORY_ICONS[mainCategoryKey];
     const ownerProjectLogo = ownerProjectToLogo[ownerProjectKey];
     const chainUrlKey = AllChainsByKeys[chainKey]?.urlKey ?? chainKey.replace(/_/g, "-");
@@ -702,164 +920,108 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     <div className="flex flex-col gap-y-[15px]">
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
-      <div className="rounded-[15px] bg-color-bg-container p-[0px] md:p-[0px]">
-        <div className="flex flex-col lg:flex-row w-full justify-between items-center rounded-full bg-color-bg-medium p-[3px] gap-[8px] text-[12px] lg:text-[14px]">
-          <div className="flex w-full lg:w-auto justify-center lg:justify-start items-stretch lg:items-center mx-[0px] space-x-[5px]">
-            {Object.entries(METRIC_LABELS).map(([key, label]) => {
-              const metricKey = key as MetricKey;
-              const isActive = selectedMetric === metricKey;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSelectedMetric(metricKey)}
-                  className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
-                    isActive
-                      ? "bg-color-ui-active text-color-text-primary"
-                      : "text-color-text-primary hover:bg-color-ui-hover"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex w-full lg:w-auto justify-center lg:justify-end items-stretch lg:items-center mx-[0px] space-x-[5px]">
-            {[
-              { id: "1d", label: "Yesterday" },
-              { id: "7d", label: "Last 7 Days" },
-            ].map((option) => {
-              const isActive = selectedTimespan === option.id;
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setSelectedTimespan(option.id as "1d" | "7d")}
-                  className={`rounded-full px-[16px] py-[8px] lg:py-[11px] font-medium transition ${
-                    isActive
-                      ? "bg-color-ui-active text-color-text-primary"
-                      : "text-color-text-primary hover:bg-color-ui-hover"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+      <TopRowContainer className="gap-y-[10px]">
+        <TopRowParent>
+          {Object.entries(METRIC_LABELS).map(([key, { label, shortLabel }]) => (
+            <TopRowChild
+              key={key}
+              className="flex items-center justify-center h-[28px] lg:h-[44px]"
+              isSelected={selectedMetric === (key as MetricKey)}
+              onClick={() => setSelectedMetric(key as MetricKey)}
+            >
+              <span className="hidden sm:block">{label}</span>
+              <span className="block sm:hidden">{shortLabel}</span>
+            </TopRowChild>
+          ))}
+        </TopRowParent>
+        <TopRowParent>
+          {[
+            { id: "1d", label: "Yesterday", shortLabel: "1d" },
+            { id: "7d", label: "Last 7 Days", shortLabel: "7d" },
+          ].map((option) => (
+            <TopRowChild
+              key={option.id}
+              className="flex items-center justify-center h-[28px] lg:h-[44px]"
+              isSelected={selectedTimespan === option.id}
+              onClick={() => setSelectedTimespan(option.id as "1d" | "7d")}
+            >
+              <span className="hidden sm:block">{option.label}</span>
+              <span className="block sm:hidden">{option.shortLabel}</span>
+            </TopRowChild>
+          ))}
+          <div
+            className="relative z-[50]"
+            onMouseEnter={() => setHoverSettings(true)}
+            onMouseLeave={() => setHoverSettings(false)}
+          >
             <div
-              className="relative z-[300]"
+              className={`flex items-center relative h-[28px] lg:h-[44px] bg-color-ui-active gap-x-[10px] rounded-full px-[7px] overflow-clip md:px-[15px] py-[10px] transition-all z-[2] duration-300 hover:cursor-pointer ${hoverSettings ? "w-[190px] md:w-[336px] justify-start" : "w-[28px] md:w-[128px] justify-start"
+                }`}
+            >
+              <GTPIcon
+                icon="gtp-settings"
+                size="sm"
+                className="!size-[15px] lg:!size-[24px]"
+                containerClassName="!size-[28px] flex items-center jusity-center lg:!size-[24px]"
+              />
+
+              <div className="font-semibold transition-all">Settings</div>
+            </div>
+
+            <div
+              className={`absolute top-1/2 min-h-0 w-[190px] md:w-[336px] bg-color-bg-default right-0 rounded-b-2xl z-[1] transition-all duration-300 overflow-hidden ${hoverSettings ? "shadow-standard" : "shadow-transparent"
+                }`}
+              style={{
+                width: hoverSettings ? undefined : 0,
+                height: hoverSettings ? "140px" : 0,
+                backdropFilter: "none",
+                WebkitBackdropFilter: "none",
+              }}
               onMouseEnter={() => setHoverSettings(true)}
               onMouseLeave={() => setHoverSettings(false)}
             >
-              <div
-                className={`flex items-center relative h-[44px] bg-color-bg-default gap-x-[10px] rounded-full px-[15px] py-[10px] transition-all z-[2] duration-300 hover:cursor-pointer ${
-                  hoverSettings ? "w-[336px] justify-start" : "w-[128px] justify-start"
-                }`}
-              >
-                <div className={`transition-all ${hoverSettings ? "hidden" : "block"}`}>
-                  <Icon
-                    icon="gtp:gtp-settings"
-                    className="h-6 w-6 text-color-text-primary"
-                  />
-                </div>
-                <div className={`transition-all ${hoverSettings ? "block" : "hidden"}`}>
-                  <Icon
-                    icon="feather:chevron-down"
-                    className="h-5 w-5 mt-1 text-color-text-primary"
-                  />
-                </div>
-                <div className="font-semibold transition-all">Settings</div>
-              </div>
-
-              <div
-                className={`absolute top-6 min-h-0 bg-color-ui-active right-0 rounded-b-2xl z-[1] transition-all duration-300 overflow-hidden ${
-                  hoverSettings ? "shadow-[0px_4px_46.2px_0px_#000000]" : "shadow-transparent"
-                }`}
-                style={{
-                  width: hoverSettings ? "336px" : 0,
-                  height: hoverSettings ? "140px" : 0,
-                  backdropFilter: "none",
-                  WebkitBackdropFilter: "none",
-                }}
-                onMouseEnter={() => setHoverSettings(true)}
-                onMouseLeave={() => setHoverSettings(false)}
-              >
-                <div className="pt-[22px] pb-[12px] flex flex-col">
-                  <div className="flex flex-col w-full">
-                    <div className="flex items-center w-full">
-                      <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
-                        <div className="font-normal text-color-text-primary/50 text-right">
-                          Treemap settings
-                        </div>
-                        <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
-                          <div className="flex flex-1 items-center place-self-end">
-                            <div className="font-semibold text-right pl-[8px]">
-                              Unlabeled
-                            </div>
-                          </div>
-                          <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
-                          <div
-                            className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                            onClick={() => setShowUnlabeled((prev) => !prev)}
-                          >
-                            <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
-                              <div className="w-full flex items-start justify-center">
-                                Show
-                              </div>
-                              <div className={`w-full text-center ${showUnlabeled && "opacity-50"}`}>
-                                Hide
-                              </div>
-                            </div>
-                            <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                              <div
-                                className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                                style={{
-                                  transform: showUnlabeled ? "translateX(0%)" : "translateX(100%)",
-                                }}
-                              >
-                                {showUnlabeled ? "Show" : "Hide"}
-                              </div>
-                            </div>
+              <div className={`pt-[22px] pb-[12px] flex flex-col w-[190px] md:w-[336px] ${hoverSettings ? "opacity-100" : "opacity-0"} transition-opacity`}>
+                <div className="flex flex-col w-full">
+                  <div className="flex items-center w-full">
+                    <div className="flex flex-col gap-y-[5px] text-[12px] md:pt-[10px] w-full pl-[15px] pr-[15px]">
+                      <div className="font-normal text-color-text-primary/50 md:text-right">
+                        Treemap settings
+                      </div>
+                      <div className="grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] items-center w-full place-items-center whitespace-nowrap">
+                        <div className="flex flex-1 items-center place-self-start md:place-self-end">
+                          <div className="font-semibold text-right">
+                            Unlabeled
                           </div>
                         </div>
-                        <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
-                          <div className="flex flex-1 items-center place-self-end">
-                            <div className="font-semibold text-right pl-[8px]">
-                              Visualized levels
-                            </div>
-                          </div>
-                          <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium" />
-                          <div className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5">
-                            <div className="absolute inset-0 w-full p-[1.36px] rounded-full">
-                              <div className="w-full h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-between px-[6px] text-[11px] text-color-text-primary">
-                                <button
-                                  type="button"
-                                  className="flex items-center justify-center disabled:opacity-40 mt-[4px]"
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    setSelectedDepth((prev) => Math.max(MIN_DEPTH, prev - 1));
-                                  }}
-                                  disabled={selectedDepth <= MIN_DEPTH}
-                                  aria-label="Decrease depth"
-                                >
-                                  <GTPIcon icon={"feather:chevron-left" as any} size="sm" className="!w-[10px] !h-[10px]" />
-                                </button>
-                                <span className="font-semibold">{selectedDepth}</span>
-                                <button
-                                  type="button"
-                                  className="flex items-center justify-center disabled:opacity-40 mt-[4px]"
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    setSelectedDepth((prev) => Math.min(MAX_DEPTH, prev + 1));
-                                  }}
-                                  disabled={selectedDepth >= MAX_DEPTH}
-                                  aria-label="Increase depth"
-                                >
-                                  <GTPIcon icon={"feather:chevron-right" as any} size="sm" className="!w-[10px] !h-[10px]" />
-                                </button>
-                              </div>
-                            </div>
+                        <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium hidden md:block" />
+                        <ToggleSwitch
+                          size="sm"
+                          values={[
+                            { value: "show", label: "Show" },
+                            { value: "hide", label: "Hide" },
+                          ]}
+                          value={showUnlabeled ? "show" : "hide"}
+                          onChange={(v) => setShowUnlabeled(v === "show")}
+                          ariaLabel="Toggle unlabeled data visibility"
+                          className="w-full [&>div]:w-full"
+                        />
+                      </div>
+                      <div className="grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] pt-[5px] md:pt-0 items-center w-full place-items-center whitespace-nowrap">
+                        <div className="flex flex-1 items-center place-self-start md:place-self-end">
+                          <div className="font-semibold text-right">
+                            Visualized levels
                           </div>
                         </div>
+                        <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium hidden md:block" />
+                        <StepSwitch
+                          size="sm"
+                          min={MIN_DEPTH}
+                          max={MAX_DEPTH}
+                          value={selectedDepth}
+                          onChange={setSelectedDepth}
+                          ariaLabel="Select visualization depth"
+                          className="w-full"
+                        />
                       </div>
                     </div>
                   </div>
@@ -867,63 +1029,78 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </TopRowParent>
+      </TopRowContainer>
 
-      <div className="relative z-[140] rounded-[15px] bg-color-bg-container/95 backdrop-blur p-[10px] md:p-[12px] -mt-[4px]">
-        <div className="flex flex-col gap-y-[6px]">
-          <div className="flex items-center justify-between gap-[12px] flex-nowrap">
-            <div className="heading-md flex items-center gap-x-[5px] min-w-0">
-            {!chainLabel && (
-              <button
-                type="button"
-                className="hover:underline"
-                onClick={() => setRootId(null)}
-              >
-                All chains
-              </button>
-            )}
-            {currentPath.map((node, index) => (
-              <span key={node.id} className="flex items-center gap-x-[5px]">
+      <div className="flex flex-col gap-y-[5px]">
+        <div className="text-sm md:heading-lg flex items-center gap-x-[5px] w-full flex-wrap">
+          {!chainLabel && (
+            <button
+              type="button"
+              className="hover:underline whitespace-nowrap"
+              onClick={() => setRootId(null)}
+            >
+              All chains
+            </button>
+          )}
+          {currentPath.map((node, index) => {
+            const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.id);
+            const isLast = index === currentPath.length - 1;
+            return (
+              <div key={node.id} className="flex items-center gap-x-[5px] whitespace-nowrap">
                 <span className="text-color-text-secondary">&gt;</span>
+                {chainIcon ? (
+                  <GTPIcon icon={chainIcon as any} size="sm" className="shrink-0" />
+                ) : ownerProjectLogo ? (
+                  <Image
+                    src={ownerProjectLogo}
+                    alt={node.name}
+                    className="w-[16px] h-[16px] rounded-[3px] object-cover shrink-0"
+                    width={16}
+                    height={16}
+                  />
+                ) : mainCategoryIcon ? (
+                  <GTPIcon icon={mainCategoryIcon as any} size="sm" className="shrink-0" />
+                ) : null}
                 <button
                   type="button"
-                  className={`hover:underline ${index === currentPath.length - 1 ? "text-color-text-primary" : "text-color-text-secondary"}`}
+                  className={`hover:underline ${isLast ? "text-color-text-primary" : "text-color-text-secondary"} whitespace-nowrap`}
                   onClick={() => setRootId(node.id)}
                 >
                   {node.name}
                 </button>
-              </span>
-            ))}
-            {effectiveRootId && (
-              <button
-                className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center"
-                onClick={() => setRootId(null)}
-              >
-                <Image
-                  src="/In-Button-Close.svg"
-                  alt="Close"
-                  className="relative left-[0.5px] bottom-[0.5px]"
-                  width={16}
-                  height={16}
-                />
-              </button>
-            )}
-            </div>
-          </div>
+              </div>
+            );
+          })}
+          {effectiveRootId && (
+            <button
+              className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center"
+              onClick={() => setRootId(null)}
+            >
+              <Image
+                src="/In-Button-Close.svg"
+                alt="Close"
+                className="relative left-[0.5px] bottom-[0.5px]"
+                width={16}
+                height={16}
+              />
+            </button>
+          )}
+        </div>
+        <div className="text-xs">
+          Blockspace usage by {getMetricLabel(selectedMetric, showUsd)}{selectedTimespan === "7d" ? " over the last 7 days" : ""}
         </div>
       </div>
 
-      <div className="relative z-[10] overflow-hidden p-[0px] md:p-[0px]">
+      <div className="relative z-[10] overflow-hidden">
         {hasSourceData ? (
           <div
             ref={setContainerEl}
             className="relative w-full h-[720px] overflow-hidden"
             onMouseMove={(event) => {
-              const rect = event.currentTarget.getBoundingClientRect();
               setTooltipPos({
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top,
+                x: event.clientX,
+                y: event.clientY,
               });
             }}
             onMouseLeave={() => {
@@ -968,7 +1145,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                     height: `${height}px`,
                     background: neutralBg,
                     borderColor: isHovered ? "#F4F6F5" : chainOutlineColor,
-                    borderWidth: isHovered ? "3px" : width < 4 || height < 4 ? "0px" : node.depth <= 2 ? "2px" : "1px",
+                    borderWidth: isHovered ? node.depth <= 2 ? "2px" : "1px" : width < 4 || height < 4 ? "0px" : node.depth <= 2 ? "2px" : "1px",
                     boxShadow: isHovered ? "inset 0 0 0 1px #FFFFFF88" : undefined,
                     borderRadius: `${borderRadius}px`,
                   }}
@@ -979,9 +1156,8 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                 >
                   {canShowHeader && (
                     <div
-                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[10px] py-[2px] flex items-center overflow-hidden ${
-                        isHovered ? "bg-[#0C100F85]" : "bg-[#0C100F66]"
-                      }`}
+                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[10px] py-[2px] flex items-center overflow-hidden ${isHovered ? "bg-[#0C100F85]" : "bg-[#0C100F66]"
+                        }`}
                       style={{ height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px` }}
                     >
                       {(() => {
@@ -1077,79 +1253,18 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               );
             })}
 
-            {hoveredNode && tooltipPos && (
-              <div
-                className="absolute z-30 rounded-[12px] border border-[#3B4342] bg-[rgba(18,24,23,0.96)] px-[10px] py-[8px] text-[12px] text-[#F4F6F5] max-w-[520px] pointer-events-none"
-                style={{
-                  left: `${Math.min(tooltipPos.x + 16, Math.max(8, containerWidth - 280))}px`,
-                  top: `${Math.min(tooltipPos.y + 16, 720 - 120)}px`,
-                }}
-              >
-                <div className="flex items-center gap-[6px] mb-[2px]">
-                  {(() => {
-                    const chainOutlineColor = getChainColorForNode(hoveredNode.data.id, AllChainsByKeys as any);
-                    const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(hoveredNode.data.id);
-                    const contractAddress = getContractAddressFromId(hoveredNode.data.id);
-                    const shortContract = contractAddress ? shortAddress(contractAddress) : "";
-                    const isContract = hoveredNode.data.id.startsWith("contract:");
-                    const displayName =
-                      isContract && shortContract && !isAggregatedContractAddress(contractAddress)
-                        ? hoveredNode.data.name && hoveredNode.data.name !== shortContract
-                          ? `${hoveredNode.data.name} (${shortContract})`
-                          : shortContract
-                        : hoveredNode.data.name;
-
-                    return (
-                      <>
-                        <span
-                          className="size-[8px] rounded-full inline-block"
-                          style={{ backgroundColor: chainOutlineColor }}
-                        />
-                        {ownerProjectLogo ? (
-                          <Image
-                            src={ownerProjectLogo}
-                            alt={hoveredNode.data.name}
-                            className="w-[14px] h-[14px] rounded-[3px] object-cover shrink-0"
-                            width={14}
-                            height={14}
-                          />
-                        ) : chainIcon ? (
-                          <GTPIcon
-                            icon={chainIcon as any}
-                            size="sm"
-                            className="text-[#F4F6F5] shrink-0"
-                          />
-                        ) : mainCategoryIcon ? (
-                          <GTPIcon
-                            icon={mainCategoryIcon as any}
-                            size="sm"
-                            className="text-[#F4F6F5] shrink-0"
-                          />
-                        ) : null}
-                        <span className="font-semibold">{displayName}</span>
-                      </>
-                    );
-                  })()}
-                </div>
-                {hoveredNode.data.fullPath.includes(" > ") && (
-                  <div className="opacity-90 mb-[4px]">{hoveredNode.data.fullPath}</div>
-                )}
-                <div>{getMetricLabel(selectedMetric, showUsd)}: {metricFormatter.format(hoveredNode.data.value)}</div>
-                <div>Number of contracts: {contractCountById.count(hoveredNode.data.id)}</div>
-                <div>Share of total: {hoveredNode.data.sharePct.toFixed(2)}%</div>
-                {(() => {
-                  const parentId = parsed.nodeById[hoveredNode.data.id]?.parent;
-                  const parentNode = parentId ? parsed.nodeById[parentId] : null;
-                  if (!parentNode || parentNode.value <= 0) return null;
-                  const parentShare = (hoveredNode.data.value / parentNode.value) * 100;
-                  return (
-                    <div>
-                      Share of {parentNode.name}: {parentShare.toFixed(2)}%
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+            {laidOutNodes.length > 0 && <TreemapTooltip
+              hoveredNode={hoveredNode}
+              tooltipPos={tooltipPos}
+              selectedMetric={selectedMetric}
+              showUsd={showUsd}
+              metricFormatter={metricFormatter}
+              contractCountById={contractCountById}
+              parsed={parsed}
+              AllChainsByKeys={AllChainsByKeys}
+              getNodeIcons={getNodeIcons}
+              getChainIconForId={getChainIconForId}
+            />}
             {laidOutNodes.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center text-color-text-secondary text-sm">
                 Preparing layout...

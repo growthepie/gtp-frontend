@@ -58,16 +58,10 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
 
   return (
     <ToggleSwitch
-      values={{
-        left: {
-          value: "eth",
-          label: "ETH"
-        },
-        right: {
-          value: "usd",
-          label: "USD"
-        }
-      }}
+      values={[
+        { value: "eth", label: "ETH" },
+        { value: "usd", label: "USD" },
+      ]}
       value={showUsd ? "usd" : "eth"}
       onChange={handleToggle}
       size={isMobile ? "sm" : "xl"}
