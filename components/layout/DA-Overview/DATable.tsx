@@ -91,18 +91,18 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
       if (isOpen) {
         if (openLight) {
           return (
-            "border-bg-medium border-y-[1px]" +
+            "border-color-bg-medium border-y-[1px]" +
             (metric === "name" ? " border-l-[1px] rounded-l-full" : "")
           );
         } else if (openDark) {
           return (
-            "border-bg-medium-50 border-y-[1px]" +
+            "border-color-bg-medium-50 border-y-[1px]" +
             (metric === "fixed_parameters" ? " border-r-[1px] rounded-r-full" : "")
           );
         }
       } else {
         return (
-          "border-bg-medium border-y-[1px]" +
+          "border-color-bg-medium border-y-[1px]" +
           (metric === "name"
             ? " border-l-[1px] rounded-l-full"
             : metric === "fixed_parameters"
@@ -895,12 +895,12 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
           >
             <div className="inline-flex items-center"><div className="2xl:heading-large-xs heading-large-xxs ">TOTAL &nbsp;</div><div className="2xl:heading-large-xs heading-large-xxs  text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase())}</div></div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs  ">
+              <div className="flex rounded-full w-full h-[34px] border-color-bg-medium border-[1px] items-center justify-center numbers-xs  ">
                 {formatBytes(breakdown_data["totals"][selectedTimespan].size.total[0], 2)}
               </div>
             </div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
+              <div className="flex rounded-full w-full h-[34px] border-color-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                 {formatNumber(
                   breakdown_data["totals"][selectedTimespan].fees.total[
                   breakdown_data["totals"][selectedTimespan].fees.types.findIndex(
@@ -911,7 +911,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </div>
             </div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs ">
+              <div className="flex rounded-full w-full h-[34px] border-color-bg-medium border-[1px] items-center justify-center numbers-xs ">
                 {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-GB", {
                   notation: "compact",
                   maximumFractionDigits: 2,
@@ -920,7 +920,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </div>
             </div>
             <div className="w-full h-[34px] px-[2px]">
-              <div className="flex rounded-full w-full h-[34px] border-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
+              <div className="flex rounded-full w-full h-[34px] border-color-bg-medium border-[1px] items-center justify-center numbers-xs bg-color-bg-medium-50">
                 {totalDAConsumers}
               </div>
             </div>
