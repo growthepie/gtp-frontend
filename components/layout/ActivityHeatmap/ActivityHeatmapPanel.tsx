@@ -282,11 +282,15 @@ const ActivityHeatmapPanel = () => {
       appendToBody: true,
       confine: false,
       backgroundColor: palette.bgDefault,
+      borderWidth: 0,
+      borderColor: "transparent",
+      extraCssText: "border: none;",
       shadowColor: palette.uiShadow,
       shadowBlur: 27,
       borderRadius: 12,
       padding: [10, 12],
       textStyle: { color: palette.textPrimary, fontFamily: "var(--font-raleway), var(--font-fira-sans), sans-serif" },
+      axisPointer: { type: "none" },
       formatter: (params: any) => {
         if (!params || !params.data) return "";
         const dataPoint = params.data as { value: [string, string, number | null]; isFuture?: boolean };
@@ -311,11 +315,11 @@ const ActivityHeatmapPanel = () => {
           <div class="text-xs font-raleway flex flex-col gap-y-[6px]">
             <div class="heading-small-xs">${dayLabel} · ${hourStart}:00–${hourEnd}:00 UTC</div>
             <div class="flex justify-between gap-x-[12px]">
-              <span class="text-xs text-color-text-secondary">${tooltipMetricLabel}</span>
+              <span class="text-xs">${tooltipMetricLabel}</span>
               <span class="numbers-xs">${formatValue(value ?? 0, metric)}</span>
             </div>
             <div class="flex justify-between gap-x-[12px]">
-              <span class="text-xs text-color-text-secondary">Δ vs 7-day hourly avg</span>
+              <span class="text-xs">Δ vs 7-day hourly avg</span>
               <span class="numbers-xs">${delta}</span>
             </div>
           </div>
@@ -349,6 +353,7 @@ const ActivityHeatmapPanel = () => {
           fontSize: 11,
           fontWeight: 600,
           fontFamily: "var(--font-raleway), var(--font-fira-sans), sans-serif",
+          interval: (_: number, value: string) => Number(value) % 2 === 0,
           formatter: (value: string) => `${value.padStart(2, "0")}:00`,
         },
         axisTick: { show: false },
