@@ -17,7 +17,6 @@ import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/
 import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 import { StepSwitch } from "@/components/layout/StepSwitch";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { Icon } from "@iconify/react";
 import { FloatingPortal } from "@floating-ui/react";
 import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
@@ -31,6 +30,8 @@ type RawTreeMapResponse = {
 
 type MetricKey = "txcount" | "fees";
 type MetricValueKey = "txcount" | "fees_paid_usd" | "fees_paid_eth";
+type GroupByKey = "chain" | "category" | "owner";
+type HierarchyDimension = "chain" | "main" | "sub" | "owner" | "contract";
 
 type NodeData = {
   id: string;
@@ -74,6 +75,149 @@ const MAX_DEPTH = 5;
 const MAX_CHILDREN_PER_PARENT = 12;
 const HEADER_VERTICAL_PADDING = 2;
 
+const GROUP_BY_LABELS: Record<GroupByKey, { label: string; shortLabel: string }> = {
+  chain: { label: "By Chains", shortLabel: "Chains" },
+  category: { label: "By Categories", shortLabel: "Categories" },
+  owner: { label: "By Apps", shortLabel: "Apps" },
+};
+
+const GROUP_BY_DIMENSIONS: Record<GroupByKey, HierarchyDimension[]> = {
+  chain: ["chain", "main", "sub", "owner", "contract"],
+  category: ["main", "chain", "sub", "owner", "contract"],
+  owner: ["owner", "chain", "main", "sub", "contract"],
+};
+
+const getRootScopeLabel = (groupBy: GroupByKey, chainLabel: string | null) => {
+  const baseLabel =
+    groupBy === "chain"
+      ? "All Chains"
+      : groupBy === "category"
+        ? "All Categories"
+        : "All Apps";
+
+  if (!chainLabel) return baseLabel;
+  if (groupBy === "chain") return chainLabel;
+  return `${groupBy === "category" ? "Categories" : "Apps"} in ${chainLabel}`;
+};
+
+type SettingsDropdownOption = {
+  value: string;
+  label: string;
+};
+
+function SettingsDropdown({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+  isOpen,
+  onOpenChange,
+  disabled = false,
+}: {
+  value: string;
+  options: SettingsDropdownOption[];
+  onChange: (nextValue: string) => void;
+  ariaLabel: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  disabled?: boolean;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (target && containerRef.current && !containerRef.current.contains(target)) {
+        onOpenChange(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onOpenChange(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onOpenChange]);
+
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative w-full ${isOpen ? "z-[120]" : "z-0"}`}
+    >
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) onOpenChange(!isOpen);
+        }}
+        className={`relative w-full h-[24px] rounded-full  heading-small-xxs font-semibold pl-[10px] pr-[24px] text-left transition-colors ${
+          disabled
+            ? "cursor-default opacity-50 bg-color-bg-medium text-color-text-primary"
+            : "bg-color-bg-medium hover:bg-color-ui-hover text-color-text-primary"
+        }`}
+      >
+        <span className="truncate">{selectedOption?.label}</span>
+        <GTPIcon
+          icon="gtp-chevronright-monochrome"
+          size="sm"
+          className={`!size-[10px] text-color-text-primary/70 transition-transform duration-200 ${
+            isOpen ? "-rotate-90" : "rotate-90"
+          }`}
+          containerClassName="!h-full pointer-events-none absolute right-[8px] inset-y-0 flex items-center"
+        />
+      </button>
+
+      <div
+        role="listbox"
+        aria-label={ariaLabel}
+        className={`absolute left-0 right-0 top-[calc(100%+4px)] flex flex-col whitespace-normal rounded-[12px] bg-color-bg-default shadow-standard overflow-hidden origin-top transition-all duration-150 ${
+          isOpen ? "opacity-100 translate-y-0 pointer-events-auto z-[200]" : "opacity-0 -translate-y-[2px] pointer-events-none z-[-1]"
+        }`}
+      >
+        {options.map((option, index) => {
+          const isSelected = option.value === value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => {
+                onChange(option.value);
+                onOpenChange(false);
+              }}
+              className={`block w-full h-[30px] shrink-0 px-[10px] text-left heading-small-xxs font-semibold transition-colors ${
+                index > 0 ? "" : ""
+              } ${
+                isSelected
+                  ? "bg-color-ui-active text-color-text-primary"
+                  : "bg-color-bg-default text-color-text-primary/80 hover:bg-color-ui-hover hover:text-color-text-primary"
+              }`}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const keyToTitle = (value: string) =>
   value
     .split("_")
@@ -94,10 +238,29 @@ const normalizeHierarchyKey = (value: string | number | null | undefined) => {
   return raw;
 };
 
+const encodeNodeValue = (value: string) => encodeURIComponent(value);
+const decodeNodeValue = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const buildNodeId = (
+  nodeType: HierarchyDimension,
+  context: Array<[HierarchyDimension, string]>,
+) => `${nodeType}:${context.map(([key, value]) => `${key}=${encodeNodeValue(value)}`).join("|")}`;
+
+const extractNodeDimension = (nodeId: string, dimension: HierarchyDimension) => {
+  const match = nodeId.match(new RegExp(`${dimension}=([^|:]+)`));
+  if (!match) return null;
+  return decodeNodeValue(match[1]);
+};
+
 const getContractAddressFromId = (nodeId: string) => {
-  const idParts = nodeId.split(":");
-  if (idParts[0] !== "contract") return "";
-  return idParts[5] ?? "";
+  if (!nodeId.startsWith("contract:")) return "";
+  return extractNodeDimension(nodeId, "contract") ?? "";
 };
 
 const isAggregatedContractAddress = (address: string) =>
@@ -167,24 +330,19 @@ const getChainColorForNode = (
   nodeId: string,
   allChainsByKeys: Record<string, { colors?: { dark?: string[] } }>,
 ) => {
-  const idParts = nodeId.split(":");
-  const prefix = idParts[0];
-  let chainKey = "";
-
-  if (["chain", "main", "sub", "owner", "contract"].includes(prefix)) {
-    chainKey = idParts[1] ?? "";
-  } else if (prefix === "other") {
-    chainKey = idParts[2] ?? "";
-  }
+  const chainKey = extractNodeDimension(nodeId, "chain") ?? "";
 
   return allChainsByKeys[chainKey]?.colors?.dark?.[0] ?? "#4A5A58";
 };
 
 const MAIN_CATEGORY_ICONS: Record<string, string> = {
+  defi: "gtp-defi",
   finance: "gtp-defi",
+  nft: "gtp-nft",
   token_transfers: "gtp-tokentransfers",
   utility: "gtp-utilities",
   social: "gtp-socials",
+  cefi: "gtp-cefi",
   cross_chain: "gtp-crosschain",
   collectibles: "gtp-nft",
   unlabeled: "gtp-unlabeled",
@@ -211,6 +369,7 @@ function TreemapTooltip({
   selectedMetric,
   selectedTimespan,
   showUsd,
+  rootScopeLabel,
   metricFormatter,
   contractCountById,
   parsed,
@@ -223,9 +382,15 @@ function TreemapTooltip({
   selectedMetric: MetricKey;
   selectedTimespan: "1d" | "7d";
   showUsd: boolean;
+  rootScopeLabel: string;
   metricFormatter: Intl.NumberFormat;
   contractCountById: { count: (id: string) => number };
-  parsed: { nodeById: Record<string, NodeData>; childrenByParent: Record<string, NodeData[]>; totalValue: number };
+  parsed: {
+    nodeById: Record<string, NodeData>;
+    childrenByParent: Record<string, NodeData[]>;
+    totalValue: number;
+    chainTotals: Record<string, number>;
+  };
   AllChainsByKeys: Record<string, any>;
   getNodeIcons: (nodeId: string) => { mainCategoryIcon?: string; ownerProjectLogo?: string; chainIcon: string | null };
   getChainIconForId: (nodeId: string) => string | null;
@@ -279,16 +444,15 @@ function TreemapTooltip({
     : null;
 
   // Chain share: what % of the chain's total does this node represent?
-  const idParts = hoveredNode.data.id.split(":");
-  const nodeChainKey = ["chain", "main", "sub", "owner", "contract"].includes(idParts[0])
-    ? (idParts[1] ?? "") : "";
-  const chainNodeId = nodeChainKey ? `chain:${nodeChainKey}` : "";
-  const chainNode = chainNodeId ? parsed.nodeById[chainNodeId] : null;
+  const nodeChainKey = extractNodeDimension(hoveredNode.data.id, "chain") ?? "";
+  const chainTotal = nodeChainKey ? parsed.chainTotals[nodeChainKey] ?? 0 : 0;
   const parentIsChain = parentNode?.id?.startsWith("chain:");
-  const chainShare = !isChainNode && !parentIsChain && chainNode && chainNode.value > 0
-    ? (hoveredNode.data.value / chainNode.value) * 100
+  const chainShare = !isChainNode && !parentIsChain && chainTotal > 0
+    ? (hoveredNode.data.value / chainTotal) * 100
     : null;
-  const chainLabel = chainNode?.name ?? nodeChainKey;
+  const chainLabel = nodeChainKey
+    ? (AllChainsByKeys[nodeChainKey]?.label ?? keyToTitle(nodeChainKey))
+    : "";
 
   // Smart value formatting: drop unnecessary decimals at scale
   const formatValue = (value: number): string => {
@@ -318,11 +482,20 @@ function TreemapTooltip({
     return `${prefix}${Math.round(value).toLocaleString("en-US")}`;
   };
 
+  const pathParts = hoveredNode.data.fullPath.split(" > ").filter(Boolean);
+  const parentNameFromPath = pathParts.length > 1 ? pathParts[pathParts.length - 2] : null;
+  const parentContextPathFromPath = pathParts.length > 2 ? pathParts.slice(0, -2).join(" > ") : null;
+  const compactPath = (path: string | null) => {
+    if (!path) return "";
+    const parts = path.split(" > ").filter(Boolean);
+    if (parts.length <= 2) return parts.join(" > ");
+    return `... > ${parts.slice(-2).join(" > ")}`;
+  };
+
   // Breadcrumb: show ancestors only (exclude the current node name)
   const ancestorPath = (() => {
-    const parts = hoveredNode.data.fullPath.split(" > ");
-    if (parts.length <= 1) return null;
-    const ancestors = parts.slice(0, -1);
+    if (pathParts.length <= 1) return null;
+    const ancestors = pathParts.slice(0, -1);
     if (ancestors.length >= 5) {
       return [ancestors[0], "...", ...ancestors.slice(-2)].join(" > ");
     }
@@ -332,27 +505,39 @@ function TreemapTooltip({
   const timespanLabel = selectedTimespan === "7d" ? "Last 7d" : "Yesterday";
   const contractCount = contractCountById.count(hoveredNode.data.id);
 
-  // Shares array: always "of all chains" first, then chain, then parent
-  const shares: { pct: number; label: string; barColor: string }[] = [];
-  shares.push({
-    pct: hoveredNode.data.sharePct,
-    label: "of All Chains",
-    barColor: chainOutlineColor,
-  });
-  if (chainShare !== null) {
-    shares.push({
-      pct: chainShare,
-      label: `of ${chainLabel}`,
-      barColor: `color-mix(in srgb, ${chainOutlineColor} 70%, transparent)`,
-    });
-  }
-  if (parentShare !== null) {
-    shares.push({
-      pct: parentShare,
-      label: `of ${parentNode!.name}`,
-      barColor: `color-mix(in srgb, ${chainOutlineColor} 50%, transparent)`,
-    });
-  }
+  // Single share line to reduce tooltip noise: parent > chain > global.
+  const primaryShare: {
+    pct: number;
+    denominator: string;
+    barColor: string;
+  } = (() => {
+    if (parentShare !== null) {
+      const parentName = parentNameFromPath ?? parentNode!.name;
+      const hasParentContext =
+        !!parentContextPathFromPath && parentContextPathFromPath !== rootScopeLabel;
+      return {
+        pct: parentShare,
+        denominator: hasParentContext
+          ? `${parentName} in ${compactPath(parentContextPathFromPath)}`
+          : parentName,
+        barColor: `color-mix(in srgb, ${chainOutlineColor} 50%, transparent)`,
+      };
+    }
+
+    if (chainShare !== null) {
+      return {
+        pct: chainShare,
+        denominator: `${chainLabel} total`,
+        barColor: `color-mix(in srgb, ${chainOutlineColor} 70%, transparent)`,
+      };
+    }
+
+    return {
+      pct: hoveredNode.data.sharePct,
+      denominator: rootScopeLabel,
+      barColor: chainOutlineColor,
+    };
+  })();
 
   // Top children helper
   const getTopChildren = (nodeId: string, n: number): { name: string; value: number; pct: number }[] => {
@@ -435,22 +620,21 @@ function TreemapTooltip({
           </div>
         </div>
 
-        {/* C) Shares with explicit denominators */}
-        <div className="flex flex-col gap-y-[5px]">
-          {shares.map((share) => (
-            <div key={share.label}>
-              <div className="flex items-baseline gap-x-[5px]">
-                <span className="numbers-xs">{share.pct.toFixed(2)}%</span>
-                <span className="text-xxs">{share.label}</span>
-              </div>
-              <div className="h-[3px] rounded-full bg-color-bg-medium mt-[2px]">
-                <div
-                  className="h-full rounded-full transition-all duration-200"
-                  style={{ width: `${Math.min(share.pct, 100)}%`, backgroundColor: share.barColor }}
-                />
-              </div>
-            </div>
-          ))}
+        {/* C) Share (single denominator) */}
+        <div className="flex flex-col gap-y-[3px]">
+          <div className="flex items-baseline justify-between gap-x-[10px]">
+            <span className="text-xxs font-semibold text-color-text-primary/90">Share</span>
+            <span className="numbers-xs">{primaryShare.pct.toFixed(2)}%</span>
+          </div>
+          <div className="text-xxs text-color-text-secondary truncate" title={primaryShare.denominator}>
+            {`of ${primaryShare.denominator}`}
+          </div>
+          <div className="h-[3px] rounded-full bg-color-bg-medium mt-[2px]">
+            <div
+              className="h-full rounded-full transition-all duration-200"
+              style={{ width: `${Math.min(primaryShare.pct, 100)}%`, backgroundColor: primaryShare.barColor }}
+            />
+          </div>
         </div>
 
         {/* D) Context stats grid */}
@@ -490,13 +674,28 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("txcount");
   const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
+  const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByKey>("chain");
+  const [includeChainBreakdown, setIncludeChainBreakdown] = useState<boolean>(true);
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showUnlabeled, setShowUnlabeled] = useState<boolean>(false);
   const [selectedDepth, setSelectedDepth] = useState<number>(DEFAULT_DEPTH);
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
+  const [isGroupByDropdownOpen, setIsGroupByDropdownOpen] = useState<boolean>(false);
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
+
+  useEffect(() => {
+    if (selectedGroupBy === "chain" && !includeChainBreakdown) {
+      setIncludeChainBreakdown(true);
+    }
+  }, [selectedGroupBy, includeChainBreakdown]);
+
+  useEffect(() => {
+    if (!hoverSettings) {
+      setIsGroupByDropdownOpen(false);
+    }
+  }, [hoverSettings]);
 
   useEffect(() => {
     if (!containerEl || typeof ResizeObserver === "undefined") return;
@@ -522,6 +721,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
         latestDate: null as string | null,
         chartData: [] as NodeData[],
         totalValue: 0,
+        chainTotals: {} as Record<string, number>,
         nodeById: {} as Record<string, NodeData>,
         childrenByParent: {} as Record<string, NodeData[]>,
       };
@@ -555,6 +755,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
         latestDate: null as string | null,
         chartData: [] as NodeData[],
         totalValue: 0,
+        chainTotals: {} as Record<string, number>,
         nodeById: {} as Record<string, NodeData>,
         childrenByParent: {} as Record<string, NodeData[]>,
       };
@@ -577,11 +778,13 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       }
     }
 
-    const chainNodes = new Map<string, NodeData>();
-    const mainCategoryNodes = new Map<string, NodeData>();
-    const subCategoryNodes = new Map<string, NodeData>();
-    const ownerNodes = new Map<string, NodeData>();
-    const contractNodes = new Map<string, NodeData>();
+    const hierarchyOrder = (
+      selectedGroupBy === "chain" || includeChainBreakdown
+        ? GROUP_BY_DIMENSIONS[selectedGroupBy]
+        : GROUP_BY_DIMENSIONS[selectedGroupBy].filter((dimension) => dimension !== "chain")
+    ) as HierarchyDimension[];
+    const nodes = new Map<string, NodeData>();
+    const chainTotals: Record<string, number> = {};
 
     rows.forEach((row) => {
       if (dateSet.size > 0 && !dateSet.has(String(row[dateIndex]))) return;
@@ -590,8 +793,9 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       if (chainKey && rowChainKey !== chainKey) return;
       const mainCategoryKey = normalizeHierarchyKey(row[mainCategoryIndex]);
       const subCategoryKey = normalizeHierarchyKey(row[subCategoryIndex]);
-      if (!showUnlabeled && subCategoryKey === "unlabeled") return;
       const ownerKey = normalizeHierarchyKey(row[ownerIndex]);
+      if (!showUnlabeled && subCategoryKey === "unlabeled") return;
+      if (!showUnlabeled && selectedGroupBy === "owner" && ownerKey === "unlabeled") return;
       const address = String(row[addressIndex] ?? "unknown").toLowerCase();
       const contractName = String(row[contractNameIndex] ?? "Unknown Contract");
       const metricValue = toNumber(row[metricIndex]);
@@ -599,69 +803,56 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
       const chainLabel = AllChainsByKeys[rowChainKey]?.label ?? keyToTitle(rowChainKey);
       const chainColor = AllChainsByKeys[rowChainKey]?.colors.dark?.[0] ?? DEFAULT_COLOR;
+      const resolvedContractName = contractName === "-" ? shortAddress(address) : contractName;
 
-      const chainId = `chain:${rowChainKey}`;
-      const mainCategoryId = `main:${rowChainKey}:${mainCategoryKey}`;
-      const subCategoryId = `sub:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}`;
-      const ownerId = `owner:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}`;
-      const contractId = `contract:${rowChainKey}:${mainCategoryKey}:${subCategoryKey}:${ownerKey}:${address}`;
+      const dimensionValues: Record<HierarchyDimension, string> = {
+        chain: rowChainKey,
+        main: mainCategoryKey,
+        sub: subCategoryKey,
+        owner: ownerKey,
+        contract: address,
+      };
+      const dimensionNames: Record<HierarchyDimension, string> = {
+        chain: chainLabel,
+        main: keyToTitle(mainCategoryKey),
+        sub: keyToTitle(subCategoryKey),
+        owner: keyToTitle(ownerKey),
+        contract: resolvedContractName,
+      };
+      const dimensionColors: Record<HierarchyDimension, string> = {
+        chain: chainColor,
+        main: addAlpha(chainColor, 0.9),
+        sub: addAlpha(chainColor, 0.8),
+        owner: addAlpha(chainColor, 0.7),
+        contract: addAlpha(chainColor, 0.6),
+      };
 
-      if (!chainNodes.has(chainId)) {
-        chainNodes.set(chainId, { id: chainId, name: chainLabel, value: 0, color: chainColor });
-      }
-      if (!mainCategoryNodes.has(mainCategoryId)) {
-        mainCategoryNodes.set(mainCategoryId, {
-          id: mainCategoryId,
-          parent: chainId,
-          name: keyToTitle(mainCategoryKey),
-          value: 0,
-          color: addAlpha(chainColor, 0.9),
-        });
-      }
-      if (!subCategoryNodes.has(subCategoryId)) {
-        subCategoryNodes.set(subCategoryId, {
-          id: subCategoryId,
-          parent: mainCategoryId,
-          name: keyToTitle(subCategoryKey),
-          value: 0,
-          color: addAlpha(chainColor, 0.8),
-        });
-      }
-      if (!ownerNodes.has(ownerId)) {
-        ownerNodes.set(ownerId, {
-          id: ownerId,
-          parent: subCategoryId,
-          name: keyToTitle(ownerKey),
-          value: 0,
-          color: addAlpha(chainColor, 0.7),
-        });
-      }
-      if (!contractNodes.has(contractId)) {
-        const resolvedContractName =
-          contractName === "-" ? shortAddress(address) : contractName;
-        contractNodes.set(contractId, {
-          id: contractId,
-          parent: ownerId,
-          name: resolvedContractName,
-          value: 0,
-          color: addAlpha(chainColor, 0.6),
-        });
-      }
+      let parentId: string | undefined;
+      const context: Array<[HierarchyDimension, string]> = [];
 
-      chainNodes.get(chainId)!.value += metricValue;
-      mainCategoryNodes.get(mainCategoryId)!.value += metricValue;
-      subCategoryNodes.get(subCategoryId)!.value += metricValue;
-      ownerNodes.get(ownerId)!.value += metricValue;
-      contractNodes.get(contractId)!.value += metricValue;
+      hierarchyOrder.forEach((dimension) => {
+        const value = dimensionValues[dimension];
+        context.push([dimension, value]);
+        const nodeId = buildNodeId(dimension, context);
+
+        if (!nodes.has(nodeId)) {
+          nodes.set(nodeId, {
+            id: nodeId,
+            parent: parentId,
+            name: dimensionNames[dimension],
+            value: 0,
+            color: dimensionColors[dimension],
+          });
+        }
+
+        nodes.get(nodeId)!.value += metricValue;
+        parentId = nodeId;
+      });
+
+      chainTotals[rowChainKey] = (chainTotals[rowChainKey] ?? 0) + metricValue;
     });
 
-    const chartData: NodeData[] = [
-      ...Array.from(chainNodes.values()),
-      ...Array.from(mainCategoryNodes.values()),
-      ...Array.from(subCategoryNodes.values()),
-      ...Array.from(ownerNodes.values()),
-      ...Array.from(contractNodes.values()),
-    ];
+    const chartData = Array.from(nodes.values());
 
     const nodeById = chartData.reduce(
       (acc, node) => {
@@ -687,22 +878,24 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       childrenByParent[key].sort((a, b) => b.value - a.value);
     });
 
-    const totalValue = Array.from(chainNodes.values()).reduce((sum, node) => sum + node.value, 0);
+    const totalValue = Object.values(chainTotals).reduce((sum, value) => sum + value, 0);
 
     return {
       dates,
       latestDate,
       chartData,
       totalValue,
+      chainTotals,
       nodeById,
       childrenByParent,
     };
-  }, [data, selectedTimespan, selectedMetric, showUsd, showUnlabeled, AllChainsByKeys, chainKey]);
+  }, [data, selectedTimespan, selectedMetric, selectedGroupBy, includeChainBreakdown, showUsd, showUnlabeled, AllChainsByKeys, chainKey]);
 
   const effectiveRootId = rootId && parsed.nodeById[rootId] ? rootId : null;
   const chainLabel = chainKey
     ? AllChainsByKeys[chainKey]?.label ?? keyToTitle(chainKey)
     : null;
+  const rootScopeLabel = getRootScopeLabel(selectedGroupBy, chainLabel);
 
   const currentPath = useMemo(() => {
     if (!effectiveRootId) return [] as Array<{ id: string; name: string }>;
@@ -740,28 +933,25 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   }, [projectsData]);
 
   const getChainIconForId = (nodeId: string): string | null => {
-    const idParts = nodeId.split(":");
-    const prefix = idParts[0];
-    const chainKey = ["chain", "main", "sub", "owner", "contract"].includes(prefix)
-      ? (idParts[1] ?? "")
-      : prefix === "other" ? (idParts[2] ?? "") : "";
+    const chainKey = extractNodeDimension(nodeId, "chain") ?? "";
     if (!chainKey || !AllChainsByKeys[chainKey]) return null;
     const chainUrlKey = AllChainsByKeys[chainKey]?.urlKey ?? chainKey.replace(/_/g, "-");
     return `${chainUrlKey}-logo-monochrome`;
   };
 
   const getNodeIcons = (nodeId: string) => {
-    const idParts = nodeId.split(":");
-    const prefix = idParts[0];
-    const chainKey = idParts[1] ?? "";
+    const prefix = nodeId.split(":")[0];
+    const chainKey = extractNodeDimension(nodeId, "chain") ?? "";
     const isMainCategory = prefix === "main";
     const hasOwnerProject = prefix === "owner" || prefix === "contract";
-    const mainCategoryKey = isMainCategory ? idParts[2] : "";
-    const ownerProjectKey = hasOwnerProject ? (idParts[4] ?? "") : "";
+    const mainCategoryKey = isMainCategory ? (extractNodeDimension(nodeId, "main") ?? "") : "";
+    const ownerProjectKey = hasOwnerProject ? (extractNodeDimension(nodeId, "owner") ?? "") : "";
     const mainCategoryIcon = MAIN_CATEGORY_ICONS[mainCategoryKey];
     const ownerProjectLogo = ownerProjectToLogo[ownerProjectKey];
-    const chainUrlKey = AllChainsByKeys[chainKey]?.urlKey ?? chainKey.replace(/_/g, "-");
-    const chainIcon = prefix === "chain" ? `${chainUrlKey}-logo-monochrome` : null;
+    const chainUrlKey = chainKey
+      ? (AllChainsByKeys[chainKey]?.urlKey ?? chainKey.replace(/_/g, "-"))
+      : null;
+    const chainIcon = prefix === "chain" && chainUrlKey ? `${chainUrlKey}-logo-monochrome` : null;
 
     return { mainCategoryIcon, ownerProjectLogo, chainIcon };
   };
@@ -770,10 +960,17 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     const shouldHideUnlabeled = !showUnlabeled;
     const isSubcategoryUnlabeled = (id: string) => {
       if (id.startsWith("unlabeled:")) return true;
-      const parts = id.split(":");
-      const prefix = parts[0];
+      const prefix = id.split(":")[0];
       if (!["sub", "owner", "contract"].includes(prefix)) return false;
-      return (parts[3] ?? "") === "unlabeled";
+
+      const isUnlabeledSubcategory = (extractNodeDimension(id, "sub") ?? "") === "unlabeled";
+      if (isUnlabeledSubcategory) return true;
+
+      if (selectedGroupBy === "owner" && ["owner", "contract"].includes(prefix)) {
+        return (extractNodeDimension(id, "owner") ?? "") === "unlabeled";
+      }
+
+      return false;
     };
 
     const getFullPath = (id: string) => {
@@ -818,9 +1015,17 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       const minValue = nodeValue * minShareOfParent;
       const primaryChildren = children.filter((child) => child.value >= minValue);
       const tinyChildren = children.filter((child) => child.value < minValue);
-      const isExplicitUnlabeled = (child: NodeData) =>
-        child.id.includes(":unlabeled") && !child.id.startsWith("unlabeled:");
-      const isAggregatedOthers = (child: NodeData) => child.id.includes(":all others");
+      const isExplicitUnlabeled = (child: NodeData) => {
+        if (child.id.startsWith("unlabeled:")) return false;
+        const isUnlabeledSubcategory = (extractNodeDimension(child.id, "sub") ?? "") === "unlabeled";
+        if (isUnlabeledSubcategory) return true;
+        if (selectedGroupBy === "owner") {
+          return (extractNodeDimension(child.id, "owner") ?? "") === "unlabeled";
+        }
+        return false;
+      };
+      const isAggregatedOthers = (child: NodeData) =>
+        (extractNodeDimension(child.id, "contract") ?? "") === "all others";
 
       const keptChildren = primaryChildren.slice(0, MAX_CHILDREN_PER_PARENT);
       const hiddenChildren = [
@@ -910,15 +1115,15 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
     return {
       id: "__root__",
-      name: "All Chains",
+      name: rootScopeLabel,
       value: displayTotalValue,
       color: "transparent",
       hierarchyLevel: "Root",
-      fullPath: "All Chains",
+      fullPath: rootScopeLabel,
       sharePct: 100,
       children: rootChildren,
     } as DisplayNode;
-  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue, selectedDepth, showUnlabeled]);
+  }, [effectiveRootId, parsed.childrenByParent, parsed.nodeById, parsed.totalValue, rootScopeLabel, selectedDepth, selectedGroupBy, showUnlabeled]);
 
   const laidOutNodes = useMemo(() => {
     const fallbackWidth =
@@ -964,6 +1169,13 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     () => laidOutNodes.find((node) => node.data.id === hoveredId) ?? null,
     [hoveredId, laidOutNodes],
   );
+
+  useEffect(() => {
+    setRootId(null);
+    setHoveredId(null);
+    setTappedId(null);
+    setTooltipPos(null);
+  }, [selectedGroupBy]);
 
   const metricFormatter = useMemo(() => {
     const metricKey = resolveMetricValueKey(selectedMetric, showUsd);
@@ -1048,11 +1260,11 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
             </div>
 
             <div
-              className={`absolute top-1/2 min-h-0 w-[190px] md:w-[336px] bg-color-bg-default right-0 rounded-b-2xl z-[1] transition-all duration-300 overflow-hidden ${hoverSettings ? "shadow-standard" : "shadow-transparent"
+              className={`absolute top-1/2 min-h-0 w-[190px] md:w-[336px] bg-color-bg-default right-0 rounded-b-2xl z-[1] transition-all duration-300 ${isGroupByDropdownOpen ? "overflow-visible" : "overflow-hidden"} ${hoverSettings ? "shadow-standard" : "shadow-transparent"
                 }`}
               style={{
                 width: hoverSettings ? undefined : 0,
-                height: hoverSettings ? "140px" : 0,
+                height: hoverSettings ? "220px" : 0,
                 backdropFilter: "none",
                 WebkitBackdropFilter: "none",
               }}
@@ -1066,7 +1278,47 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                       <div className="font-normal text-color-text-primary/50 md:text-right">
                         Treemap settings
                       </div>
-                      <div className="grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] items-center w-full place-items-center whitespace-nowrap">
+                      <div className="relative z-[40] grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] items-center w-full place-items-center whitespace-nowrap">
+                        <div className="flex flex-1 items-center place-self-start md:place-self-end">
+                          <div className="font-semibold text-right">
+                            Group by
+                          </div>
+                        </div>
+                        <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium hidden md:block" />
+                        <SettingsDropdown
+                          value={selectedGroupBy}
+                          options={[
+                            { value: "chain", label: GROUP_BY_LABELS.chain.label },
+                            { value: "category", label: GROUP_BY_LABELS.category.label },
+                            { value: "owner", label: GROUP_BY_LABELS.owner.label },
+                          ]}
+                          onChange={(nextValue) => setSelectedGroupBy(nextValue as GroupByKey)}
+                          ariaLabel="Select primary grouping"
+                          isOpen={isGroupByDropdownOpen}
+                          onOpenChange={setIsGroupByDropdownOpen}
+                        />
+                      </div>
+                      <div className="relative z-0 grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] pt-[5px] md:pt-0 items-center w-full place-items-center whitespace-nowrap">
+                        <div className="flex flex-1 items-center place-self-start md:place-self-end">
+                          <div className="font-semibold text-right">
+                            Chain breakdown
+                          </div>
+                        </div>
+                        <div className="rounded-full w-[6px] h-[6px] bg-color-bg-medium hidden md:block" />
+                        <ToggleSwitch
+                          size="sm"
+                          values={[
+                            { value: "include", label: "Include" },
+                            { value: "exclude", label: "Exclude" },
+                          ]}
+                          value={includeChainBreakdown ? "include" : "exclude"}
+                          onChange={(v) => setIncludeChainBreakdown(v === "include")}
+                          ariaLabel="Toggle chain breakdown"
+                          disabled={selectedGroupBy === "chain"}
+                          className="w-full [&>div]:w-full"
+                        />
+                      </div>
+                      <div className="relative z-0 grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] items-center w-full place-items-center whitespace-nowrap">
                         <div className="flex flex-1 items-center place-self-start md:place-self-end">
                           <div className="font-semibold text-right">
                             Unlabeled
@@ -1085,7 +1337,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                           className="w-full [&>div]:w-full"
                         />
                       </div>
-                      <div className="grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] pt-[5px] md:pt-0 items-center w-full place-items-center whitespace-nowrap">
+                      <div className="relative z-0 grid grid-rows md:grid-cols-[140px,6px,1fr] gap-[5px] md:gap-[10px] pt-[5px] md:pt-0 items-center w-full place-items-center whitespace-nowrap">
                         <div className="flex flex-1 items-center place-self-start md:place-self-end">
                           <div className="font-semibold text-right">
                             Visualized levels
@@ -1116,21 +1368,19 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
         <div
           className="grid transition-all duration-300 ease-in-out"
           style={{
-            gridTemplateRows: (currentPath.length > 1 || (!chainLabel && effectiveRootId)) ? "1fr" : "0fr",
-            opacity: (currentPath.length > 1 || (!chainLabel && effectiveRootId)) ? 1 : 0,
+            gridTemplateRows: (currentPath.length > 1 || effectiveRootId) ? "1fr" : "0fr",
+            opacity: (currentPath.length > 1 || effectiveRootId) ? 1 : 0,
           }}
         >
           <div className="overflow-hidden">
             <div className="heading-small-xxs text-color-text-primary flex items-center gap-x-[5px] flex-wrap pb-[3px]">
-              {!chainLabel && (
-                <button
-                  type="button"
-                  className="hover:underline whitespace-nowrap"
-                  onClick={() => setRootId(null)}
-                >
-                  All Chains
-                </button>
-              )}
+              <button
+                type="button"
+                className="hover:underline whitespace-nowrap"
+                onClick={() => setRootId(null)}
+              >
+                {rootScopeLabel}
+              </button>
               {currentPath.slice(0, -1).map((node) => {
                 const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.id);
                 const chainColor = getChainColorForNode(node.id, AllChainsByKeys as any);
@@ -1172,9 +1422,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
           {(() => {
             const lastNode = currentPath[currentPath.length - 1];
             if (!lastNode) {
-              return !chainLabel ? (
-                <span className="text-sm md:heading-lg whitespace-nowrap">All Chains</span>
-              ) : null;
+              return <span className="text-sm md:heading-lg whitespace-nowrap">{rootScopeLabel}</span>;
             }
             const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(lastNode.id);
             const chainColor = getChainColorForNode(lastNode.id, AllChainsByKeys as any);
@@ -1403,6 +1651,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               selectedMetric={selectedMetric}
               selectedTimespan={selectedTimespan}
               showUsd={showUsd}
+              rootScopeLabel={rootScopeLabel}
               metricFormatter={metricFormatter}
               contractCountById={contractCountById}
               parsed={parsed}

@@ -32,7 +32,7 @@ export default function BlockspaceTreemapSection({
         </div>
       </div>
       <div className={descriptionClassName}>
-        Explore blockspace usage across {chainLabel} as a nested treemap from chain level down to specific contract addresses.
+        Explore blockspace usage across {chainLabel} as a nested treemap from top-level groups down to specific contract addresses.
       </div>
       <HierarchyTreemap chainKey={chainKey} />
     </div>
