@@ -1419,6 +1419,24 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
           className="flex items-center gap-x-[5px]"
           style={{ animation: "breadcrumbFadeIn 300ms ease-in-out" }}
         >
+          {effectiveRootId && (
+            <button
+              className="shrink-0 flex items-center justify-center rounded-full w-[28px] h-[28px] bg-color-bg-medium hover:bg-color-ui-hover transition-colors cursor-pointer"
+              onClick={() => {
+                const parentId = parsed.nodeById[effectiveRootId]?.parent ?? null;
+                setRootId(parentId ?? null);
+              }}
+              aria-label="Go up one level"
+              title="Go up one level"
+            >
+              <GTPIcon
+                icon={"feather:corner-left-up" as any}
+                size="sm"
+                className="!size-[15px] text-color-text-primary"
+                containerClassName="!size-[15px]"
+              />
+            </button>
+          )}
           {(() => {
             const lastNode = currentPath[currentPath.length - 1];
             if (!lastNode) {
@@ -1445,18 +1463,6 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </div>
             );
           })()}
-          <button
-            className={`bg-color-bg-default rounded-full size-[26px] flex items-center justify-center transition-opacity duration-300 ease-in-out ${effectiveRootId ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-            onClick={() => setRootId(null)}
-          >
-            <Image
-              src="/In-Button-Close.svg"
-              alt="Close"
-              className="relative left-[0.5px] bottom-[0.5px]"
-              width={16}
-              height={16}
-            />
-          </button>
         </div>
         <div className="text-xs">
           Blockspace usage by {getMetricLabel(selectedMetric, showUsd)}{selectedTimespan === "7d" ? " over the last 7 days" : ""}
@@ -1517,7 +1523,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               return (
                 <div
                   key={node.data.id}
-                  className={`absolute border overflow-hidden ${canSelectNode ? "cursor-pointer" : "cursor-default"}`}
+                  className={`absolute border overflow-hidden transition-[left,top,width,height,border-color,box-shadow,opacity] duration-300 ease-out ${canSelectNode ? "cursor-pointer" : "cursor-default"}`}
                   style={{
                     left: `${node.x0}px`,
                     top: `${node.y0}px`,
