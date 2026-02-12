@@ -294,38 +294,48 @@ const getHierarchyLevel = (id: string) => {
 
 
 const getHeaderHeight = (boxHeight: number) => {
-  if (boxHeight < 60) return 0;
-  if (boxHeight < 110) return 18;
-  if (boxHeight < 170) return 22;
+  if (boxHeight < 42) return 0;
+  if (boxHeight < 80) return 16;
+  if (boxHeight < 130) return 18;
+  if (boxHeight < 180) return 22;
   return 26;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const getSpacingBase = (size: number) => {
+  if (size < 56) return 0;
+  if (size < 96) return 1;
+  if (size < 160) return 2;
+  if (size < 260) return 3;
+  return 4;
+};
+
 const getPaddingOuter = (node: { depth: number; x0: number; x1: number; y0: number; y1: number }) => {
   const size = Math.min(node.x1 - node.x0, node.y1 - node.y0);
-  if (node.depth <= 1) {
-    if (size < 180) return 0;
-    return clamp(Math.floor(size / 70), 1, 6);
-  }
-  if (node.depth === 2) {
-    if (size < 120) return 0;
-    return clamp(Math.floor(size / 90), 1, 4);
-  }
-  return clamp(Math.floor(size / 90), 1, 3);
+  const base = getSpacingBase(size);
+  const depthOffset = node.depth <= 1 ? 1 : node.depth === 2 ? 0 : 0;
+  const maxByDepth = node.depth <= 1 ? 6 : node.depth === 2 ? 4 : 3;
+  return clamp(base + depthOffset, 0, maxByDepth);
 };
 
 const getPaddingInner = (node: { depth: number; x0: number; x1: number; y0: number; y1: number }) => {
   const size = Math.min(node.x1 - node.x0, node.y1 - node.y0);
-  if (node.depth <= 1) {
-    if (size < 180) return 0;
-    return clamp(Math.floor(size / 90), 1, 4);
-  }
-  if (node.depth === 2) {
-    if (size < 120) return 0;
-    return clamp(Math.floor(size / 120), 1, 3);
-  }
-  return clamp(Math.floor(size / 120), 1, 3);
+  const base = getSpacingBase(size);
+  const depthPenalty = node.depth <= 1 ? 1 : node.depth === 2 ? 2 : 1;
+  const maxByDepth = node.depth <= 1 ? 4 : node.depth === 2 ? 3 : 3;
+  return clamp(base - depthPenalty, 0, maxByDepth);
+};
+
+const getNodeBorderRadius = (depth: number, width: number, height: number) => {
+  const minSide = Math.min(width, height);
+  if (minSide < 8) return 0;
+
+  const depthCap = depth <= 1 ? 14 : depth === 2 ? 10 : depth === 3 ? 8 : 6;
+  const scaledBySize = Math.floor(minSide / 6);
+  const radius = Math.min(depthCap, scaledBySize);
+
+  return radius >= 2 ? radius : 0;
 };
 
 const getChainColorForNode = (
@@ -1168,7 +1178,8 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
         const boxHeight = node.y1 - node.y0;
         const headerHeight = getHeaderHeight(boxHeight);
         if (!headerHeight) return 0;
-        return headerHeight + HEADER_VERTICAL_PADDING * 2 + 4;
+        const headerGap = node.depth <= 1 ? 5 : 4;
+        return headerHeight + HEADER_VERTICAL_PADDING * 2 + headerGap;
       })(root as any) as HierarchyRectangularNode<DisplayNode>;
 
     return treemapRoot.descendants().filter((node) => node.depth > 0);
@@ -1514,13 +1525,33 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               const canSelectNode =
                 !node.data.id.startsWith("other:") && !node.data.id.startsWith("unlabeled:");
               const isHovered = hoveredId === node.data.id;
-              const canShowHeader = isContainer && width >= 84 && height >= 34;
-              const canShowHeaderShare = canShowHeader && width >= 150;
+              const headerHeight = isContainer ? getHeaderHeight(height) : 0;
+              const canShowHeader = isContainer && headerHeight > 0;
+              const canShowHeaderIcon = canShowHeader && width >= 52;
+              const canShowHeaderShare = canShowHeader && width >= 140;
+              const headerPaddingX = width < 56 ? 4 : width < 84 ? 6 : 10;
+              const headerContentGap = width < 56 ? 3 : 5;
+              const isNarrowHeader = width < 72;
               const canShowLeafLabel = !isContainer && width * height > 2800 && width >= 70 && height >= 18;
               const canShowContractAddress = width >= 120;
-              const maxRadius = node.depth <= 1 ? 15 : node.depth === 2 ? 10 : 6;
-              const borderRadius = Math.max(0, Math.min(maxRadius, Math.floor(width / 5), Math.floor(height / 5)));
-              const headerHeight = canShowHeader ? getHeaderHeight(height) : 0;
+              const minSide = Math.min(width, height);
+              const borderRadius = getNodeBorderRadius(node.depth, width, height);
+              const isTinyDeepNode = node.depth >= 3 && minSide < 10;
+              const isSmallDeepNode = node.depth >= 3 && minSide < 14;
+              const defaultBorderWidth = minSide < 4
+                ? "0px"
+                : node.depth <= 2
+                  ? "2px"
+                  : isTinyDeepNode
+                    ? "0px"
+                    : isSmallDeepNode
+                      ? "0.5px"
+                      : "1px";
+              const hoveredBorderWidth = node.depth <= 2
+                ? "2px"
+                : isTinyDeepNode
+                  ? "0px"
+                  : "1px";
               const chainOutlineColor = getChainColorForNode(node.data.id, AllChainsByKeys as any, colorTheme);
               const neutralBg =
                 node.depth <= 1
@@ -1543,7 +1574,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                     height: `${height}px`,
                     background: neutralBg,
                     borderColor: isHovered ? "rgb(var(--text-primary))" : chainOutlineColor,
-                    borderWidth: isHovered ? node.depth <= 2 ? "2px" : "1px" : width < 4 || height < 4 ? "0px" : node.depth <= 2 ? "2px" : "1px",
+                    borderWidth: isHovered ? hoveredBorderWidth : defaultBorderWidth,
                     boxShadow: isHovered ? "inset 0 0 0 1px rgb(var(--text-primary) / 0.4)" : undefined,
                     borderRadius: `${borderRadius}px`,
                   }}
@@ -1566,16 +1597,22 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                 >
                   {canShowHeader && (
                     <div
-                      className={`absolute left-0 top-0 w-full border-b border-color-text-primary/20 px-[10px] py-[2px] flex items-center overflow-hidden ${isHovered ? "bg-color-bg-default/80" : "bg-color-bg-default/65"
-                        }`}
-                      style={{ height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px` }}
+                      className="absolute left-0 top-0 w-full border-b border-color-text-primary/20 py-[2px] flex items-center overflow-hidden bg-color-ui-active/60"
+                      style={{
+                        height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px`,
+                        paddingLeft: `${headerPaddingX}px`,
+                        paddingRight: `${headerPaddingX}px`,
+                      }}
                     >
                       {(() => {
                         const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.data.id);
 
                         return (
-                          <div className="flex items-center gap-[5px] min-w-0">
-                            {ownerProjectLogo ? (
+                          <div
+                            className="flex items-center min-w-0 w-full"
+                            style={{ gap: `${headerContentGap}px` }}
+                          >
+                            {canShowHeaderIcon && ownerProjectLogo ? (
                               <Image
                                 src={ownerProjectLogo}
                                 alt={node.data.name}
@@ -1583,20 +1620,23 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                                 width={14}
                                 height={14}
                               />
-                            ) : chainIcon ? (
+                            ) : canShowHeaderIcon && chainIcon ? (
                               <GTPIcon
                                 icon={chainIcon as any}
                                 size="sm"
                                 className="text-color-text-primary shrink-0"
                               />
-                            ) : mainCategoryIcon ? (
+                            ) : canShowHeaderIcon && mainCategoryIcon ? (
                               <GTPIcon
                                 icon={mainCategoryIcon as any}
                                 size="sm"
                                 className="text-color-text-primary shrink-0"
                               />
                             ) : null}
-                            <div className="text-[12px] font-semibold text-color-text-primary truncate">
+                            <div
+                              className={`min-w-0 flex-1 font-semibold text-color-text-primary truncate ${isNarrowHeader ? "text-[11px]" : "text-[12px]"
+                                }`}
+                            >
                               {node.data.name}
                             </div>
                             {canShowHeaderShare && (
