@@ -623,7 +623,7 @@ export const navigationItems: NavigationItem[] = [
         url: "https://labels.growthepie.com/",
       },
     ],
-
+    newChild: true,
     // href: "",
   },
   ...[dataAvailabilityGroup],
