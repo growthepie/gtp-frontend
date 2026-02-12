@@ -1178,7 +1178,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
         const boxHeight = node.y1 - node.y0;
         const headerHeight = getHeaderHeight(boxHeight);
         if (!headerHeight) return 0;
-        const headerGap = node.depth <= 1 ? 5 : 4;
+        const headerGap = node.depth <= 1 ? 4 : 3;
         return headerHeight + HEADER_VERTICAL_PADDING * 2 + headerGap;
       })(root as any) as HierarchyRectangularNode<DisplayNode>;
 
@@ -1597,7 +1597,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                 >
                   {canShowHeader && (
                     <div
-                      className="absolute left-0 top-0 w-full border-b border-color-text-primary/20 py-[2px] flex items-center overflow-hidden bg-color-ui-active/60"
+                      className="absolute left-0 top-0 w-full border-b border-color-text-primary/20 py-[2px] flex items-center overflow-hidden bg-color-ui-active/80"
                       style={{
                         height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px`,
                         paddingLeft: `${headerPaddingX}px`,
@@ -1609,7 +1609,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
                         return (
                           <div
-                            className="flex items-center min-w-0 w-full"
+                            className="flex items-center justify-start min-w-0 w-full"
                             style={{ gap: `${headerContentGap}px` }}
                           >
                             {canShowHeaderIcon && ownerProjectLogo ? (
@@ -1634,7 +1634,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                               />
                             ) : null}
                             <div
-                              className={`min-w-0 flex-1 font-semibold text-color-text-primary truncate ${isNarrowHeader ? "text-[11px]" : "text-[12px]"
+                              className={`min-w-0 font-semibold text-color-text-primary truncate ${isNarrowHeader ? "text-[11px]" : "text-[12px]"
                                 }`}
                             >
                               {node.data.name}
