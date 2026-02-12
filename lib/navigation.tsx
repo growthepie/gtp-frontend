@@ -575,8 +575,8 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "treemap",
         urlKey: "treemap",
         url: "/blockspace/treemap",
-        hide: IS_PRODUCTION,
-        excludeFromSitemap: IS_PRODUCTION,
+        //hide: IS_PRODUCTION,
+        //excludeFromSitemap: IS_PRODUCTION,
         showNew: true,
       },
       {
