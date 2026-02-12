@@ -20,6 +20,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { FloatingPortal } from "@floating-ui/react";
 import dayjs from "@/lib/dayjs";
 import { useLocalStorage } from "usehooks-ts";
+import { useTheme } from "next-themes";
 
 type RawTreeMapResponse = {
   data?: {
@@ -32,6 +33,7 @@ type MetricKey = "txcount" | "fees";
 type MetricValueKey = "txcount" | "fees_paid_usd" | "fees_paid_eth";
 type GroupByKey = "chain" | "category" | "owner";
 type HierarchyDimension = "chain" | "main" | "sub" | "owner" | "contract";
+type ColorTheme = "dark" | "light";
 
 type NodeData = {
   id: string;
@@ -328,11 +330,17 @@ const getPaddingInner = (node: { depth: number; x0: number; x1: number; y0: numb
 
 const getChainColorForNode = (
   nodeId: string,
-  allChainsByKeys: Record<string, { colors?: { dark?: string[] } }>,
+  allChainsByKeys: Record<string, { colors?: { dark?: string[]; light?: string[] } }>,
+  colorTheme: ColorTheme = "dark",
 ) => {
   const chainKey = extractNodeDimension(nodeId, "chain") ?? "";
-
-  return allChainsByKeys[chainKey]?.colors?.dark?.[0] ?? "#4A5A58";
+  const colors = allChainsByKeys[chainKey]?.colors;
+  return (
+    colors?.[colorTheme]?.[0]
+    ?? colors?.dark?.[0]
+    ?? colors?.light?.[0]
+    ?? "#4A5A58"
+  );
 };
 
 const MAIN_CATEGORY_ICONS: Record<string, string> = {
@@ -574,7 +582,7 @@ function TreemapTooltip({
     <FloatingPortal>
       <div
         ref={tooltipRef}
-        className="fixed z-50 rounded-[15px]  bg-color-bg-default px-[15px] py-[10px] text-color-text-primary shadow-standard pointer-events-none flex flex-col gap-y-[8px] max-w-[380px] min-w-[240px] w-max"
+        className="fixed z-50 rounded-[15px]  bg-color-bg-default px-[15px] py-[10px] text-color-text-primary shadow-standard pointer-events-none flex flex-col gap-y-[8px] max-w-[380px] min-w-[260px] w-max"
         style={{
           left: `${adjustedPos.left}px`,
           top: `${adjustedPos.top}px`,
@@ -622,12 +630,9 @@ function TreemapTooltip({
 
         {/* C) Share (single denominator) */}
         <div className="flex flex-col gap-y-[3px]">
-          <div className="flex items-baseline justify-between gap-x-[10px]">
-            <span className="text-xxs font-semibold text-color-text-primary/90">Share</span>
-            <span className="numbers-xs">{primaryShare.pct.toFixed(2)}%</span>
-          </div>
-          <div className="text-xxs text-color-text-secondary truncate" title={primaryShare.denominator}>
-            {`of ${primaryShare.denominator}`}
+          <div className="flex items-end justify-between gap-x-[10px]">
+            <div className="text-xxs font-semibold text-color-text-primary/90">Share {`of ${primaryShare.denominator}`}</div>
+            <div className="numbers-xs">{primaryShare.pct.toFixed(2)}%</div>
           </div>
           <div className="h-[3px] rounded-full bg-color-bg-medium mt-[2px]">
             <div
@@ -671,6 +676,8 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const { AllChainsByKeys } = useMaster();
   const { data, isLoading, isValidating } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
   const { data: projectsData } = useSWR<any>(LabelsURLS.projectsFiltered);
+  const { resolvedTheme } = useTheme();
+  const colorTheme: ColorTheme = resolvedTheme === "light" ? "light" : "dark";
 
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("txcount");
   const [selectedTimespan, setSelectedTimespan] = useState<"1d" | "7d">("1d");
@@ -802,7 +809,12 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       if (metricValue <= 0) return;
 
       const chainLabel = AllChainsByKeys[rowChainKey]?.label ?? keyToTitle(rowChainKey);
-      const chainColor = AllChainsByKeys[rowChainKey]?.colors.dark?.[0] ?? DEFAULT_COLOR;
+      const chainColor = (
+        AllChainsByKeys[rowChainKey]?.colors?.[colorTheme]?.[0]
+        ?? AllChainsByKeys[rowChainKey]?.colors?.dark?.[0]
+        ?? AllChainsByKeys[rowChainKey]?.colors?.light?.[0]
+        ?? DEFAULT_COLOR
+      );
       const resolvedContractName = contractName === "-" ? shortAddress(address) : contractName;
 
       const dimensionValues: Record<HierarchyDimension, string> = {
@@ -889,7 +901,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
       nodeById,
       childrenByParent,
     };
-  }, [data, selectedTimespan, selectedMetric, selectedGroupBy, includeChainBreakdown, showUsd, showUnlabeled, AllChainsByKeys, chainKey]);
+  }, [data, selectedTimespan, selectedMetric, selectedGroupBy, includeChainBreakdown, showUsd, showUnlabeled, AllChainsByKeys, chainKey, colorTheme]);
 
   const effectiveRootId = rootId && parsed.nodeById[rootId] ? rootId : null;
   const chainLabel = chainKey
@@ -1383,7 +1395,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </button>
               {currentPath.slice(0, -1).map((node) => {
                 const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(node.id);
-                const chainColor = getChainColorForNode(node.id, AllChainsByKeys as any);
+                const chainColor = getChainColorForNode(node.id, AllChainsByKeys as any, colorTheme);
                 return (
                   <div key={node.id} className="flex items-center gap-x-[5px] whitespace-nowrap">
                     <span>&gt;</span>
@@ -1443,7 +1455,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               return <span className="text-sm md:heading-lg whitespace-nowrap">{rootScopeLabel}</span>;
             }
             const { mainCategoryIcon, ownerProjectLogo, chainIcon } = getNodeIcons(lastNode.id);
-            const chainColor = getChainColorForNode(lastNode.id, AllChainsByKeys as any);
+            const chainColor = getChainColorForNode(lastNode.id, AllChainsByKeys as any, colorTheme);
             return (
               <div className="text-sm md:heading-lg flex items-center gap-x-[5px] whitespace-nowrap">
                 {chainIcon ? (
@@ -1509,7 +1521,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               const maxRadius = node.depth <= 1 ? 15 : node.depth === 2 ? 10 : 6;
               const borderRadius = Math.max(0, Math.min(maxRadius, Math.floor(width / 5), Math.floor(height / 5)));
               const headerHeight = canShowHeader ? getHeaderHeight(height) : 0;
-              const chainOutlineColor = getChainColorForNode(node.data.id, AllChainsByKeys as any);
+              const chainOutlineColor = getChainColorForNode(node.data.id, AllChainsByKeys as any, colorTheme);
               const neutralBg =
                 node.depth <= 1
                   ? "rgb(var(--bg-medium) / 0.14)"
@@ -1530,9 +1542,9 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                     width: `${width}px`,
                     height: `${height}px`,
                     background: neutralBg,
-                    borderColor: isHovered ? "#F4F6F5" : chainOutlineColor,
+                    borderColor: isHovered ? "rgb(var(--text-primary))" : chainOutlineColor,
                     borderWidth: isHovered ? node.depth <= 2 ? "2px" : "1px" : width < 4 || height < 4 ? "0px" : node.depth <= 2 ? "2px" : "1px",
-                    boxShadow: isHovered ? "inset 0 0 0 1px #FFFFFF88" : undefined,
+                    boxShadow: isHovered ? "inset 0 0 0 1px rgb(var(--text-primary) / 0.4)" : undefined,
                     borderRadius: `${borderRadius}px`,
                   }}
                   onClick={(e) => {
@@ -1554,7 +1566,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                 >
                   {canShowHeader && (
                     <div
-                      className={`absolute left-0 top-0 w-full border-b border-[#FFFFFF33] px-[10px] py-[2px] flex items-center overflow-hidden ${isHovered ? "bg-[#0C100F85]" : "bg-[#0C100F66]"
+                      className={`absolute left-0 top-0 w-full border-b border-color-text-primary/20 px-[10px] py-[2px] flex items-center overflow-hidden ${isHovered ? "bg-color-bg-default/80" : "bg-color-bg-default/65"
                         }`}
                       style={{ height: `${headerHeight + HEADER_VERTICAL_PADDING * 2}px` }}
                     >
@@ -1575,22 +1587,22 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                               <GTPIcon
                                 icon={chainIcon as any}
                                 size="sm"
-                                className="text-[#F4F6F5] shrink-0"
+                                className="text-color-text-primary shrink-0"
                               />
                             ) : mainCategoryIcon ? (
                               <GTPIcon
                                 icon={mainCategoryIcon as any}
                                 size="sm"
-                                className="text-[#F4F6F5] shrink-0"
+                                className="text-color-text-primary shrink-0"
                               />
                             ) : null}
-                            <span className="text-[12px] font-semibold text-[#F4F6F5] truncate">
+                            <div className="text-[12px] font-semibold text-color-text-primary truncate">
                               {node.data.name}
-                            </span>
+                            </div>
                             {canShowHeaderShare && (
-                              <span className="text-[11px] text-[#D7DEDC] shrink-0">
+                              <div className="numbers-xxs !font-normal text-color-text-primary shrink-0">
                                 {node.data.sharePct.toFixed(1)}%
-                              </span>
+                              </div>
                             )}
                           </div>
                         );
@@ -1617,7 +1629,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                           : node.data.name;
 
                       return (
-                        <div className="absolute top-[6px] left-[8px] right-[8px] text-[#F4F6F5] text-[11px] leading-tight truncate overflow-hidden">
+                        <div className="absolute top-[6px] left-[8px] right-[8px] text-color-text-primary text-[11px] leading-tight truncate overflow-hidden">
                           <div className="flex items-center gap-[6px] min-w-0">
                             {ownerProjectLogo ? (
                               <Image
@@ -1631,13 +1643,13 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                               <GTPIcon
                                 icon={chainIcon as any}
                                 size="sm"
-                                className="text-[#F4F6F5] shrink-0"
+                                className="text-color-text-primary shrink-0"
                               />
                             ) : mainCategoryIcon ? (
                               <GTPIcon
                                 icon={mainCategoryIcon as any}
                                 size="sm"
-                                className="text-[#F4F6F5] shrink-0"
+                                className="text-color-text-primary shrink-0"
                               />
                             ) : null}
                             <span className="truncate">{displayName}</span>
