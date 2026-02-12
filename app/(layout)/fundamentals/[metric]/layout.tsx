@@ -192,7 +192,7 @@ const { metric } = await params;
               }
             />
           </div>
-          <Description className="pb-[15px]">
+          <Description>
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

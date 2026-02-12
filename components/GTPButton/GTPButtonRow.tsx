@@ -1,8 +1,15 @@
+import GTPTabButtonSet from "./GTPTabButtonSet";
 
-export default function GTPButtonRow({ children }: { children: React.ReactNode }) {
+export default function GTPButtonRow({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center w-full lg:w-auto gap-x-[5px] border-[0.5px] rounded-full border-color-bg-default">
+    <GTPTabButtonSet className={`w-full lg:w-auto ${className ?? ""}`}>
       {children}
-    </div>
+    </GTPTabButtonSet>
   );
 }

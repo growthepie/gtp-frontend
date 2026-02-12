@@ -17,7 +17,6 @@ import { useMaster } from "@/contexts/MasterContext";
 import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import { useMetrics } from "../_contexts/MetricsContext";
 import { useTimespan } from "../_contexts/TimespanContext";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useLocalStorage } from "usehooks-ts";
  
 import { useSearchParamState } from "@/hooks/useSearchParamState";
