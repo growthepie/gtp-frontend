@@ -176,28 +176,8 @@ function GeneralizedLayoutDemo() {
         fullBleed={false}
         isMobile={isMobile}
         topBar={
-          <GTPTabBar
-            mobileVariant="stacked"
-            className="border-[0.5px] border-color-bg-default"
-            left={
-              <GTPTabButtonSet
-                items={SPLIT_PANE_TOP_LEFT_ITEMS}
-                selectedId={splitTopLeft}
-                size="sm"
-                fill="mobile"
-                onChange={(id) => setSplitTopLeft(id)}
-              />
-            }
-            right={
-              <GTPTabButtonSet
-                items={SPLIT_PANE_TOP_RIGHT_ITEMS}
-                selectedId={splitTopRight}
-                size="sm"
-                fill="mobile"
-                onChange={(id) => setSplitTopRight(id)}
-              />
-            }
-          />
+          <>
+          </>
         }
         header={
           <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
@@ -206,35 +186,8 @@ function GeneralizedLayoutDemo() {
           </div>
         }
         bottomBar={
-          <GTPTabBar
-            mobileVariant="inline"
-            leftClassName="!flex-none shrink-0"
-            rightClassName={isMobile ? "min-w-0 flex-1" : undefined}
-            className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
-            left={
-              <GTPTabButtonSet size="sm">
-                <div title={isTableCollapsed ? "Show table" : "Close table"}>
-                  <GTPButton
-                    label={isTableCollapsed ? "Open Table" : undefined}
-                    leftIcon={isTableCollapsed ? "gtp-side-open-monochrome" : "gtp-side-close-monochrome"}
-                    size="sm"
-                    variant={isTableCollapsed ? "highlight" : "no-background"}
-                    visualState="default"
-                    clickHandler={() => setIsTableCollapsed((current) => !current)}
-                  />
-                </div>
-              </GTPTabButtonSet>
-            }
-            right={
-              <GTPTabButtonSet
-                items={SPLIT_PANE_BOTTOM_RIGHT_ITEMS}
-                selectedId={splitBottomRight}
-                size="sm"
-                fill={isMobile ? "full" : "none"}
-                onChange={(id) => setSplitBottomRight(id)}
-              />
-            }
-          />
+          <>
+          </>
         }
       >
         <GTPSplitPane
