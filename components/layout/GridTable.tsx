@@ -8,6 +8,7 @@ import { useWindowSize } from "usehooks-ts";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -51,6 +52,7 @@ export type GridTableRowProps = {
     transitionClass?: string;
   };
   onClick?: () => void;
+  href?: string;
 };
 
 // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
@@ -62,6 +64,7 @@ export const GridTableRow = ({
   style,
   bar,
   onClick,
+  href,
   theme: themeProp,
 }: GridTableRowProps & { theme?: string }) => {
   const { AllChainsByKeys } = useMaster();
@@ -83,16 +86,12 @@ export const GridTableRow = ({
   }
 
 
+  const rowClassName = `select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-color-bg-medium grid ${gridDefinitionColumns || ""} ${className || ""} ${(onClick || href) ? "cursor-pointer hover:bg-forest-500/10" : ""} ${href ? "no-underline" : ""}`;
+
   if (bar) {
-    if(!bar.transitionClass) {
-      bar.transitionClass = "all 0.3s ease-in-out";
-    }
-    return (
-      <div
-        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-color-bg-medium grid ${gridDefinitionColumns || ""} ${className || ""} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
-        style={style}
-        onClick={onClick}
-      >
+    const transitionClass = bar.transitionClass || "all 0.3s ease-in-out";
+    const rowChildren = (
+      <>
         {children}
         <div
           className={`absolute flex flex-col items-start justify-end`}
@@ -101,7 +100,7 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20 ${bar.transitionClass} duration-300`}
+            className={`z-20 ${transitionClass} duration-300`}
             style={{
               background: getBarColor(),
               width: bar.width * 100 + "%",
@@ -109,13 +108,49 @@ export const GridTableRow = ({
             }}
           ></div>
         </div>
+      </>
+    );
+
+    if (href) {
+      return (
+        <Link
+          href={href}
+          className={rowClassName}
+          style={style}
+          onClick={onClick}
+        >
+          {rowChildren}
+        </Link>
+      );
+    }
+
+    return (
+      <div
+        className={rowClassName}
+        style={style}
+        onClick={onClick}
+      >
+        {rowChildren}
       </div >
+    );
+  }
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={rowClassName}
+        style={style}
+        onClick={onClick}
+      >
+        {children}
+      </Link>
     );
   }
 
   return (
     <div
-      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-color-bg-medium grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
+      className={rowClassName}
       style={style}
       onClick={onClick}
     >
@@ -300,28 +335,28 @@ export function GridTableContainer(
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-  const [horizontalScrollPercentage, setHorizontalScrollPercentage] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  useEffect(() => {
-    if (contentAreaRef.current) {
+  // Compute derived values directly instead of using state + effect
+  const { horizontalScrollPercentage, canScrollLeft, canScrollRight } = useMemo(() => {
+    if (contentAreaWidth > 0 && windowWidth > 0) {
       const scrollableWidth = contentAreaWidth - windowWidth;
       const scrollLeft = windowHorizontalScroll;
-      setHorizontalScrollPercentage((scrollLeft / scrollableWidth) * 100);
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollableWidth);
+      const percentage = scrollableWidth > 0 ? (scrollLeft / scrollableWidth) * 100 : 0;
+      return {
+        horizontalScrollPercentage: percentage,
+        canScrollLeft: scrollLeft > 0,
+        canScrollRight: scrollLeft < scrollableWidth,
+      };
     }
-  }, [contentAreaRef, contentAreaWidth, windowHorizontalScroll, windowWidth]);
+    return {
+      horizontalScrollPercentage: 0,
+      canScrollLeft: false,
+      canScrollRight: false,
+    };
+  }, [contentAreaWidth, windowHorizontalScroll, windowWidth]);
 
-
-  const showLeftGradient = useMemo(() => {
-    return canScrollLeft;
-  }, [canScrollLeft]);
-
-  const showRightGradient = useMemo(() => {
-    return canScrollRight;
-  }, [canScrollRight]);
+  const showLeftGradient = canScrollLeft;
+  const showRightGradient = canScrollRight;
 
   return (
     <div
