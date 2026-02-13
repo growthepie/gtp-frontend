@@ -1833,10 +1833,10 @@ export default function ChainChartECharts({
           </Heading>
           {mounted && !IS_PRODUCTION && (
             <ToggleSwitch
-              values={{
-                left: { value: "simple", label: "simple" },
-                right: { value: "complex", label: "complex" },
-              }}
+              values={[
+                { value: "simple", label: "simple" },
+                { value: "complex", label: "complex" },
+              ]}
               value={lineType}
               onChange={handleLineTypeChange}
               size="sm"
