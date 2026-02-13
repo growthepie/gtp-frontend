@@ -16,6 +16,7 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import { TopRowContainer, TopRowChild, TopRowParent } from "@/components/layout/TopRow";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { metricItems, getFundamentalsByKey, metricCategories } from "@/lib/metrics";
+import { IS_PRODUCTION } from "@/lib/helpers";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
@@ -69,23 +70,12 @@ const transformMetricDetails = (details: MetricDetails): MetricData => {
   };
 };
 
-// Calculate "nice" Y-axis maximum and interval to match Highcharts behavior
-// Returns { max, interval } that divides evenly into nice tick intervals with some headroom
-function calculateNiceYAxis(maxValue: number, tickCount: number = 4): { max: number; interval: number } {
-  if (maxValue <= 0) return { max: 1, interval: 0.25 };
+const getNiceInterval = (rawInterval: number): number => {
+  if (!Number.isFinite(rawInterval) || rawInterval <= 0) return 1;
 
-  // Add ~10% headroom like Highcharts does
-  const paddedMax = maxValue * 1.1;
-
-  // Calculate nice tick interval first, then derive max from it
-  const rawInterval = paddedMax / tickCount;
-
-  // Calculate the order of magnitude for the interval
   const magnitude = Math.pow(10, Math.floor(Math.log10(rawInterval)));
   const normalized = rawInterval / magnitude;
 
-  // Round up to a nice interval value (1, 2, 2.5, 5, 10)
-  // These values ensure even division on the axis
   let niceInterval: number;
   if (normalized <= 1) niceInterval = 1;
   else if (normalized <= 2) niceInterval = 2;
@@ -93,12 +83,44 @@ function calculateNiceYAxis(maxValue: number, tickCount: number = 4): { max: num
   else if (normalized <= 5) niceInterval = 5;
   else niceInterval = 10;
 
-  const interval = niceInterval * magnitude;
+  return niceInterval * magnitude;
+};
 
-  // Calculate max as a multiple of the interval that covers the padded data
+// Calculate "nice" Y-axis range and interval to match Highcharts-like spacing,
+// while supporting negative-only and mixed-sign datasets.
+function calculateNiceYAxisRange(
+  minValue: number,
+  maxValue: number,
+  tickCount: number = 4
+): { min: number; max: number; interval: number } {
+  const hasNegative = minValue < 0;
+  const hasPositive = maxValue > 0;
+
+  if (!hasNegative && !hasPositive) {
+    return { min: 0, max: 1, interval: 0.25 };
+  }
+
+  if (!hasNegative) {
+    const paddedMax = maxValue * 1.1;
+    const interval = getNiceInterval(paddedMax / tickCount);
+    const niceMax = Math.ceil(paddedMax / interval) * interval;
+    return { min: 0, max: Math.max(interval, niceMax), interval };
+  }
+
+  if (!hasPositive) {
+    const paddedMin = minValue * 1.1; // More negative.
+    const interval = getNiceInterval(Math.abs(paddedMin) / tickCount);
+    const niceMin = Math.floor(paddedMin / interval) * interval;
+    return { min: Math.min(-interval, niceMin), max: 0, interval };
+  }
+
+  const paddedMin = minValue * 1.1;
+  const paddedMax = maxValue * 1.1;
+  const interval = getNiceInterval((paddedMax - paddedMin) / tickCount);
+  const niceMin = Math.floor(paddedMin / interval) * interval;
   const niceMax = Math.ceil(paddedMax / interval) * interval;
 
-  return { max: niceMax, interval };
+  return { min: niceMin, max: niceMax, interval };
 }
 
 // Format number with SI suffix - matches Highcharts format (e.g., "1.0M", "750k")
@@ -377,8 +399,8 @@ const MetricChart = memo(
       [selectedTimeInterval]
     );
 
-    // Pre-compute filtered data and max value to avoid duplicate filtering in option
-    const { filteredDataMap, maxDataValue, xMin, xMax } = useMemo(() => {
+    // Pre-compute filtered data and y-axis bounds to avoid duplicate filtering in option.
+    const { filteredDataMap, minDataValue, maxDataValue, xMin, xMax } = useMemo(() => {
       const xMinRaw = zoomed ? zoomMin : activeTimespan?.xMin;
       const xMaxVal = zoomed ? zoomMax : activeTimespan?.xMax;
 
@@ -388,7 +410,9 @@ const MetricChart = memo(
       const xMinVal = xMinRaw ? xMinRaw - leftPaddingMs : xMinRaw;
 
       const filtered: { [chainId: string]: [number, number][] } = {};
-      let maxVal = 0;
+      let maxVal = Number.NEGATIVE_INFINITY;
+      let minVal = Number.POSITIVE_INFINITY;
+      let hasValues = false;
 
       data.forEach((item) => {
         const seriesDataObj = seriesDataMap[item.chain_id];
@@ -404,13 +428,27 @@ const MetricChart = memo(
 
         filtered[item.chain_id] = chainFiltered;
 
-        // Calculate max in same pass
+        // Calculate min/max in same pass
         for (let i = 0; i < chainFiltered.length; i++) {
-          if (chainFiltered[i][1] > maxVal) maxVal = chainFiltered[i][1];
+          const currentVal = chainFiltered[i][1];
+          if (currentVal > maxVal) maxVal = currentVal;
+          if (currentVal < minVal) minVal = currentVal;
+          hasValues = true;
         }
       });
 
-      return { filteredDataMap: filtered, maxDataValue: maxVal, xMin: xMinVal, xMax: xMaxVal };
+      if (!hasValues) {
+        minVal = 0;
+        maxVal = 0;
+      }
+
+      return {
+        filteredDataMap: filtered,
+        minDataValue: minVal,
+        maxDataValue: maxVal,
+        xMin: xMinVal,
+        xMax: xMaxVal,
+      };
     }, [data, seriesDataMap, zoomed, zoomMin, zoomMax, activeTimespan?.xMin, activeTimespan?.xMax]);
     const echartsColors = useMemo(() => {
       const colors = theme === 'dark' ? ECHARTS_COLORS.dark : ECHARTS_COLORS.light;
@@ -426,7 +464,7 @@ const MetricChart = memo(
       const series: any[] = [];
       const isComparing = chainKey.length > 1;
 
-      const { max: niceYMax, interval: niceYInterval } = calculateNiceYAxis(maxDataValue, 4);
+      const { min: niceYMin, max: niceYMax, interval: niceYInterval } = calculateNiceYAxisRange(minDataValue, maxDataValue, 4);
 
       data.forEach((item, index) => {
         const chainColors = AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"] || ["#FF0000", "#FF0000"];
@@ -457,6 +495,19 @@ const MetricChart = memo(
           },
           z: 10 - index,
         };
+
+        const getBarBorderRadius = (value: number): [number, number, number, number] =>
+          value < 0 ? [0, 0, 2, 2] : [2, 2, 0, 0];
+        const getBarGradient = (value: number) =>
+          value < 0
+            ? new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: chainColors[0] + "00" },
+                { offset: 1, color: chainColors[0] + "FF" },
+              ], false)
+            : new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                { offset: 0, color: chainColors[0] + "00" },
+                { offset: 1, color: chainColors[0] + "FF" },
+              ], false);
 
         if (chartType === "line" && !isComparing) {
           // Area chart styling with shadow/glow effect
@@ -592,11 +643,8 @@ const MetricChart = memo(
             baseSeries.itemStyle = {
               // global: false makes gradient relative to each bar, not the whole chart
               // Gradient: bottom (transparent) to top (opaque)
-              color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-                { offset: 0, color: chainColors[0] + "00" },
-                { offset: 1, color: chainColors[0] + "FF" },
-              ], false),
-              borderRadius: [2, 2, 0, 0],
+              color: getBarGradient(1),
+              borderRadius: getBarBorderRadius(1),
               shadowColor: chainColors[0] + "44",
               shadowBlur: 8,
               shadowOffsetX: 0,
@@ -606,22 +654,20 @@ const MetricChart = memo(
             // Generate the pattern using the primary chain color
             const incompletePattern = createDiagonalPattern(chainColors[0]);
 
-            // Pattern for incomplete data
-            if (isIncomplete && processedData.length > 1) {
+            // Apply per-bar styling so negative bars keep matching rounded edges.
+            if (processedData.length > 0) {
               const lastIndex = processedData.length - 1;
               baseSeries.data = processedData.map((d, i) => {
-                if (i === lastIndex) {
-                  return {
-                    value: d,
-                    itemStyle: {
-                      // Lighter gradient for incomplete bar (global: false)
-                      // Gradient: bottom (transparent) to top (semi-opaque)
-                      color: incompletePattern,
-                      borderRadius: [2, 2, 0, 0],
-                    },
-                  };
-                }
-                return d;
+                const isLastAndIncomplete = isIncomplete && i === lastIndex;
+                return {
+                  value: d,
+                  itemStyle: {
+                    color: isLastAndIncomplete
+                      ? incompletePattern
+                      : getBarGradient(d[1]),
+                    borderRadius: getBarBorderRadius(d[1]),
+                  },
+                };
               });
             }
           // }
@@ -729,8 +775,8 @@ const MetricChart = memo(
         },
         yAxis: {
           type: "value",
-          min: 0, // Always start from 0 like Highcharts
-          max: isAllZeroValues && data.length === 1 ? 1 : niceYMax, // Use "nice" max like Highcharts
+          min: isAllZeroValues && data.length === 1 ? 0 : niceYMin,
+          max: isAllZeroValues && data.length === 1 ? 1 : niceYMax,
           z: 1000,
           position: "left",
           axisLine: { show: false },
@@ -946,6 +992,7 @@ const MetricChart = memo(
       chainKey,
       seriesDataMap,
       filteredDataMap,
+      minDataValue,
       maxDataValue,
       chartType,
       theme,
@@ -1492,13 +1539,18 @@ export default function ChainChartECharts({
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  const [lineType, setLineType] = useLocalStorage<"complex" | "simple">("fundamentalsLineTypeV2", "complex");
+  const [lineType, setLineType] = useLocalStorage<"complex" | "simple">("fundamentalsLineTypeV2", "simple");
   const [mounted, setMounted] = useState(false);
   
   // Ensure component is mounted before rendering toggle to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Reset to simple whenever the fundamentals tab is opened
+  useEffect(() => {
+    setLineType("simple");
+  }, [setLineType]);
   
   const handleLineTypeChange = useCallback((value: string) => {
     setLineType(value as "complex" | "simple");
@@ -1779,7 +1831,7 @@ export default function ChainChartECharts({
           <Heading className="text-[20px] leading-snug md:text-[30px] !z-[-1]" as="h2">
             Fundamental Metrics
           </Heading>
-          {mounted && (
+          {mounted && !IS_PRODUCTION && (
             <ToggleSwitch
               values={{
                 left: { value: "simple", label: "simple" },
