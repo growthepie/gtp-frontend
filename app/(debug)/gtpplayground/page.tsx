@@ -195,58 +195,12 @@ function GeneralizedLayoutDemo() {
           onLayoutChange={setIsMobile}
           left={
             <div className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden">
-              <div className="relative z-[1] h-[37px] px-[6px] py-[4px]">
-                <div className="grid h-full items-center gap-x-[6px] text-[12px] font-semibold text-color-text-primary"
-                  style={{ gridTemplateColumns: "minmax(0, 174px) 8px minmax(76px, 1fr)" }}
-                >
-                  <div className="flex h-full items-center pl-[10px]">Chain</div>
-                  <div />
-                  <div className="flex h-full w-full items-center justify-end pr-[2px]">Value</div>
-                </div>
-              </div>
-              <GTPScrollPane
-                scrollRef={scrollRef}
-                bottomScrollPadding={56}
-                onScrollMetricsChange={setScrollMetrics}
-                className="px-[6px] pt-[1px] space-y-[2px]"
-              >
-                {SPLIT_PANE_DEMO_ITEMS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="group relative flex items-center rounded-[10px] h-[30px] px-[10px] gap-x-[8px] cursor-pointer hover:bg-color-bg-medium/40 transition-colors"
-                  >
-                    <div
-                      className="absolute inset-y-[2px] left-[2px] rounded-[8px] opacity-20"
-                      style={{
-                        width: `${Math.max((item.value / maxValue) * 100, 8)}%`,
-                        backgroundColor: item.color,
-                      }}
-                    />
-                    <div
-                      className="relative z-[1] w-[8px] h-[8px] rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="relative z-[1] text-xs text-color-text-primary truncate flex-1">
-                      {item.label}
-                    </span>
-                    <span className="relative z-[1] text-xs text-color-text-primary tabular-nums">
-                      {item.value.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </GTPScrollPane>
+
             </div>
           }
           right={
             <div className="min-w-0 flex-1 min-h-0 h-full">
-              <div className="relative w-full h-full rounded-[14px] overflow-hidden bg-color-bg-medium/20 flex items-center justify-center">
-                <div className="text-center space-y-2 px-4">
-                  <div className="text-sm text-color-text-secondary">Chart Area</div>
-                  <div className="text-xxs text-color-text-secondary/60">
-                    Interval: {splitTopLeft} / Range: {splitTopRight} / Scale: {splitBottomRight}
-                  </div>
-                </div>
-              </div>
+
             </div>
           }
           divider={({ onDragStart, isMobile: isMobileLayout }) =>
