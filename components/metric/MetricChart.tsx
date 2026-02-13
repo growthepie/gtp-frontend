@@ -124,7 +124,7 @@ const baseOptions: Highcharts.Options = {
         },
       },
       groupPadding: 0,
-      // pointPadding: 0.1,
+      pointPadding: 0.15,
       animation: false,
     },
     series: {
@@ -401,17 +401,21 @@ function MetricChart({
       case "stacked":
         return {
           column: {
-            stacking: "normal",
+            stacking: "normal" as const,
             crisp: false,
+            groupPadding: 0,
+            pointPadding: 0.15,
           },
           area: {
-            stacking: "normal",
+            stacking: "normal" as const,
           },
         };
       default:
         return {
           column: {
             stacking: undefined,
+            groupPadding: 0,
+            pointPadding: 0.15,
           },
           line: {
             stacking: undefined,
@@ -434,6 +438,7 @@ function MetricChart({
         },
       },
       groupPadding: 0,
+      pointPadding: 0.15,
       animation: false,
     },
     series: {
