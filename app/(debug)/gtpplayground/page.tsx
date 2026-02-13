@@ -1,12 +1,16 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import GTPTabBar from "@/components/GTPButton/GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPButton/GTPTabButtonSet";
 import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPButton/GTPUniversalChart";
 import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
+import GTPCardLayout from "@/components/GTPButton/GTPCardLayout";
+import GTPSplitPane from "@/components/GTPButton/GTPSplitPane";
+import GTPResizeDivider from "@/components/GTPButton/GTPResizeDivider";
+import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPButton/GTPScrollPane";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
 
 type ButtonVariant = "primary" | "highlight" | "no-background";
@@ -78,6 +82,43 @@ const UNIVERSAL_CHART_TAB_SETS: GTPUniversalChartTabSetsConfig = {
   },
 };
 
+const SPLIT_PANE_DEMO_ITEMS = [
+  { id: "ethereum", label: "Ethereum", color: "#1C1CFF", value: 42500 },
+  { id: "arbitrum", label: "Arbitrum", color: "#12AAFF", value: 31200 },
+  { id: "optimism", label: "Optimism", color: "#FF0420", value: 28700 },
+  { id: "base", label: "Base", color: "#0052FF", value: 24100 },
+  { id: "polygon-zkevm", label: "Polygon zkEVM", color: "#7B3FE4", value: 18900 },
+  { id: "zksync-era", label: "zkSync Era", color: "#4E529A", value: 16800 },
+  { id: "starknet", label: "Starknet", color: "#EC796B", value: 14500 },
+  { id: "linea", label: "Linea", color: "#61DFFF", value: 12300 },
+  { id: "scroll", label: "Scroll", color: "#FFEEDA", value: 10100 },
+  { id: "mantle", label: "Mantle", color: "#000000", value: 8400 },
+  { id: "blast", label: "Blast", color: "#FCFC03", value: 7200 },
+  { id: "mode", label: "Mode", color: "#DFFE00", value: 5800 },
+  { id: "manta", label: "Manta Pacific", color: "#15B2E5", value: 4600 },
+  { id: "metis", label: "Metis", color: "#00DACC", value: 3200 },
+  { id: "loopring", label: "Loopring", color: "#1C60FF", value: 2100 },
+];
+
+const SPLIT_PANE_TOP_LEFT_ITEMS: GTPTabButtonSetItem[] = [
+  { id: "daily", label: "Daily" },
+  { id: "weekly", label: "Weekly" },
+  { id: "monthly", label: "Monthly" },
+];
+
+const SPLIT_PANE_TOP_RIGHT_ITEMS: GTPTabButtonSetItem[] = [
+  { id: "7d", label: "7 days" },
+  { id: "30d", label: "30 days" },
+  { id: "90d", label: "90 days" },
+  { id: "max", label: "Max" },
+];
+
+const SPLIT_PANE_BOTTOM_RIGHT_ITEMS: GTPTabButtonSetItem[] = [
+  { id: "absolute", label: "Absolute" },
+  { id: "percentage", label: "Percentage" },
+  { id: "stacked", label: "Stacked" },
+];
+
 const ICON_LAYOUTS: Array<{
   id: "none" | "left" | "right" | "both" | "alone";
   label: string;
@@ -115,6 +156,159 @@ function ShowcaseSection({
       </header>
       {children}
     </section>
+  );
+}
+
+function GeneralizedLayoutDemo() {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
+  const [isTableCollapsed, setIsTableCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [splitTopLeft, setSplitTopLeft] = useState("daily");
+  const [splitTopRight, setSplitTopRight] = useState("max");
+  const [splitBottomRight, setSplitBottomRight] = useState("absolute");
+
+  const maxValue = Math.max(...SPLIT_PANE_DEMO_ITEMS.map((item) => item.value), 1);
+
+  return (
+    <div className="mx-auto w-full max-w-[1280px]">
+      <GTPCardLayout
+        fullBleed={false}
+        isMobile={isMobile}
+        topBar={
+          <GTPTabBar
+            mobileVariant="stacked"
+            className="border-[0.5px] border-color-bg-default"
+            left={
+              <GTPTabButtonSet
+                items={SPLIT_PANE_TOP_LEFT_ITEMS}
+                selectedId={splitTopLeft}
+                size="sm"
+                fill="mobile"
+                onChange={(id) => setSplitTopLeft(id)}
+              />
+            }
+            right={
+              <GTPTabButtonSet
+                items={SPLIT_PANE_TOP_RIGHT_ITEMS}
+                selectedId={splitTopRight}
+                size="sm"
+                fill="mobile"
+                onChange={(id) => setSplitTopRight(id)}
+              />
+            }
+          />
+        }
+        header={
+          <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
+            <span className="text-xxs text-color-text-primary/85">Demo Metric</span>
+            <span className="text-xxs text-color-text-primary/75">Example data</span>
+          </div>
+        }
+        bottomBar={
+          <GTPTabBar
+            mobileVariant="inline"
+            leftClassName="!flex-none shrink-0"
+            rightClassName={isMobile ? "min-w-0 flex-1" : undefined}
+            className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
+            left={
+              <GTPTabButtonSet size="sm">
+                <div title={isTableCollapsed ? "Show table" : "Close table"}>
+                  <GTPButton
+                    label={isTableCollapsed ? "Open Table" : undefined}
+                    leftIcon={isTableCollapsed ? "gtp-side-open-monochrome" : "gtp-side-close-monochrome"}
+                    size="sm"
+                    variant={isTableCollapsed ? "highlight" : "no-background"}
+                    visualState="default"
+                    clickHandler={() => setIsTableCollapsed((current) => !current)}
+                  />
+                </div>
+              </GTPTabButtonSet>
+            }
+            right={
+              <GTPTabButtonSet
+                items={SPLIT_PANE_BOTTOM_RIGHT_ITEMS}
+                selectedId={splitBottomRight}
+                size="sm"
+                fill={isMobile ? "full" : "none"}
+                onChange={(id) => setSplitBottomRight(id)}
+              />
+            }
+          />
+        }
+      >
+        <GTPSplitPane
+          leftCollapsed={isTableCollapsed}
+          onLayoutChange={setIsMobile}
+          left={
+            <div className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden">
+              <div className="relative z-[1] h-[37px] px-[6px] py-[4px]">
+                <div className="grid h-full items-center gap-x-[6px] text-[12px] font-semibold text-color-text-primary"
+                  style={{ gridTemplateColumns: "minmax(0, 174px) 8px minmax(76px, 1fr)" }}
+                >
+                  <div className="flex h-full items-center pl-[10px]">Chain</div>
+                  <div />
+                  <div className="flex h-full w-full items-center justify-end pr-[2px]">Value</div>
+                </div>
+              </div>
+              <GTPScrollPane
+                scrollRef={scrollRef}
+                bottomScrollPadding={56}
+                onScrollMetricsChange={setScrollMetrics}
+                className="px-[6px] pt-[1px] space-y-[2px]"
+              >
+                {SPLIT_PANE_DEMO_ITEMS.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group relative flex items-center rounded-[10px] h-[30px] px-[10px] gap-x-[8px] cursor-pointer hover:bg-color-bg-medium/40 transition-colors"
+                  >
+                    <div
+                      className="absolute inset-y-[2px] left-[2px] rounded-[8px] opacity-20"
+                      style={{
+                        width: `${Math.max((item.value / maxValue) * 100, 8)}%`,
+                        backgroundColor: item.color,
+                      }}
+                    />
+                    <div
+                      className="relative z-[1] w-[8px] h-[8px] rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="relative z-[1] text-xs text-color-text-primary truncate flex-1">
+                      {item.label}
+                    </span>
+                    <span className="relative z-[1] text-xs text-color-text-primary tabular-nums">
+                      {item.value.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </GTPScrollPane>
+            </div>
+          }
+          right={
+            <div className="min-w-0 flex-1 min-h-0 h-full">
+              <div className="relative w-full h-full rounded-[14px] overflow-hidden bg-color-bg-medium/20 flex items-center justify-center">
+                <div className="text-center space-y-2 px-4">
+                  <div className="text-sm text-color-text-secondary">Chart Area</div>
+                  <div className="text-xxs text-color-text-secondary/60">
+                    Interval: {splitTopLeft} / Range: {splitTopRight} / Scale: {splitBottomRight}
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+          divider={({ onDragStart, isMobile: isMobileLayout }) =>
+            !isMobileLayout && !isTableCollapsed ? (
+              <GTPResizeDivider
+                onDragStart={onDragStart}
+                showScrollbar
+                scrollMetrics={scrollMetrics}
+                scrollTargetRef={scrollRef}
+              />
+            ) : null
+          }
+        />
+      </GTPCardLayout>
+    </div>
   );
 }
 
@@ -171,9 +365,9 @@ export default function GTPButtonShowcasePage() {
     <main className="min-h-screen bg-color-bg-default text-color-text-primary px-4 py-6 lg:px-8 font-raleway [&_code]:font-raleway [&_pre]:font-raleway [&_select]:font-raleway [&_input]:font-raleway">
       <div className="mx-auto w-full max-w-[1280px] space-y-6">
         <header className="space-y-2">
-          <h1 className="heading-small-md lg:heading-small-lg">GTPButton Showcase</h1>
+          <h1 className="heading-small-md lg:heading-small-lg">GTP Playground</h1>
           <p className="text-sm text-color-text-secondary">
-            Routes: <code>/gtpbutton</code> and <code>/debug/gtpbutton</code>. This page demonstrates every current prop and behavior in{" "}
+            Routes: <code>/gtpplayground</code> and <code>/debug/gtpplayground</code>. This page demonstrates every current prop and behavior in{" "}
             <code>components/GTPButton/GTPButton.tsx</code>.
           </p>
         </header>
@@ -443,6 +637,19 @@ export default function GTPButtonShowcasePage() {
               <GTPUniversalChart fullBleed={false} tabSets={UNIVERSAL_CHART_TAB_SETS} />
             </MetricContextWrapper>
           </div>
+        </ShowcaseSection>
+
+        <ShowcaseSection
+          title="Generalized Layout Components"
+          description={
+            <>
+              Composable layout primitives extracted from <code>GTPUniversalChart</code>: <code>GTPCardLayout</code>,{" "}
+              <code>GTPSplitPane</code>, <code>GTPResizeDivider</code>, and <code>GTPScrollPane</code>. Drag the
+              divider handle to resize. The scrollbar in the divider tracks the left pane scroll position.
+            </>
+          }
+        >
+          <GeneralizedLayoutDemo />
         </ShowcaseSection>
 
         <ShowcaseSection
