@@ -24,7 +24,6 @@ import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { useRouter } from 'next/navigation'
 import { metricItems } from "@/lib/metrics";
 import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
@@ -145,10 +144,6 @@ export default memo(function LandingMetricsTable({
   const [centerMetric, setCenterMetric] = useState("daa");
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   // const [maxVal, setMaxVal] = useState(0);
-  const router = useRouter();
-
-
-
   // useEffect(() => {
   //   if (!data) return;
   //   setMaxVal(
@@ -391,7 +386,7 @@ export default memo(function LandingMetricsTable({
                     opacity: sort.metric === "users" ? 1 : 0,
                   },
                 }}
-                onClick={() => router.push(`/chains/${item.chain.urlKey}`)}
+                href={`/chains/${item.chain.urlKey}`}
               >
                 <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
                   <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]">
@@ -584,7 +579,6 @@ const ChainRankCell = memo(function ChainRankCell({
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
   const { data: master } = useMaster();
 
-  const router = useRouter();
   const isMobile = useUIContext((state) => state.isMobile);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
@@ -686,6 +680,7 @@ const ChainRankCell = memo(function ChainRankCell({
                   }}
                   onMouseLeave={() => setHoveredMetric(null)}
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     setCenterMetric(metric);
                     setSort({
@@ -697,6 +692,10 @@ const ChainRankCell = memo(function ChainRankCell({
                             : "desc"
                           : "asc", // Default sort order when changing metrics
                     });
+                  }}
+                  onAuxClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                   }}
 
                   // }}

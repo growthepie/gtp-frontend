@@ -293,7 +293,8 @@ export default function HorizontalScrollContainer({
 
   const resetCursor = (node: HTMLDivElement | null) => {
     if (node) {
-      node.style.cursor = "grab";
+      // Only show grab cursor if scrolling is possible
+      node.style.cursor = isScrollable ? "grab" : "default";
     }
     document.body.style.removeProperty("user-select");
   };
@@ -377,11 +378,13 @@ export default function HorizontalScrollContainer({
     };
 
     const onMouseDown = (e: MouseEvent) => {
+      // Only allow dragging if content is scrollable
+      if (!contentScrollAreaRef.current || !isScrollable) return;
+      
       // Prevent text selection and initiate dragging
       e.stopPropagation();
       e.stopImmediatePropagation();
       e.preventDefault();
-      if (!contentScrollAreaRef.current) return;
       isContentDragging = true;
       hasDragged = false; // Reset drag state
       startX = e.clientX;
@@ -398,7 +401,17 @@ export default function HorizontalScrollContainer({
       document.removeEventListener("mouseup", onMouseUp);
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [enableDragScroll, contentScrollAreaRef, updateThumbOnly, updateScrollableAreaScroll]);
+  }, [enableDragScroll, contentScrollAreaRef, updateThumbOnly, updateScrollableAreaScroll, isScrollable]);
+
+  // Update cursor style when scrollability changes
+  useEffect(() => {
+    if (!enableDragScroll) return;
+    const area = contentScrollAreaRef.current;
+    if (!area) return;
+    
+    // Set cursor based on scrollability
+    area.style.cursor = isScrollable ? "grab" : "default";
+  }, [enableDragScroll, isScrollable, contentScrollAreaRef]);
 
   // Listen to scroll events and rAF-throttle updates to the thumb position
   useEffect(() => {
