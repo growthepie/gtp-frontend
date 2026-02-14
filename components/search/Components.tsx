@@ -26,11 +26,44 @@ import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
-import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery } from "@/lib/searchExpansions";
+import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 
 function normalizeString(str: string) {
-  return str.toLowerCase().replace(/\s+/g, '');
+  return str.toLowerCase().replace(/[\s-]+/g, '');
 }
+
+const SEARCH_RESULT_CONTEXT_MAX_CHARS = 32;
+
+const buildContextSnippet = (
+  text: string,
+  matchStart: number,
+  matchEnd: number,
+  maxChars = SEARCH_RESULT_CONTEXT_MAX_CHARS,
+) => {
+  const safeStart = Math.max(0, Math.min(matchStart, text.length));
+  const safeEnd = Math.max(safeStart, Math.min(matchEnd, text.length));
+  const match = text.slice(safeStart, safeEnd).trim();
+  if (!match) return null;
+
+  const ellipsis = "...";
+  const reserved = match.length + ellipsis.length * 2;
+  // Keep extra room so the full match segment remains visible in narrow badge widths.
+  const visualSafetyBuffer = 4;
+  const maxStartChars = Math.max(8, Math.floor(maxChars * 0.5));
+  const availableForStart = Math.min(
+    Math.max(0, maxChars - reserved - visualSafetyBuffer),
+    maxStartChars,
+  );
+  const startLength = Math.min(safeStart, availableForStart);
+  const start = text.slice(0, startLength).trimEnd();
+
+  return {
+    start,
+    match,
+    showMiddleEllipsis: safeStart > start.length,
+    showEndEllipsis: safeEnd < text.length,
+  };
+};
 
 function isTypingInTextField(active: Element | null) {
   if (!active) return false;
@@ -1010,25 +1043,27 @@ export const useSearchBuckets = () => {
       }
     }
   
-    // Main option lists use only the raw query (no expansion)
-    const lowerQuery = normalizedQuery;
+    // Main option lists: use raw query + normal-search expansions (e.g. tvs/tvl -> total value secured)
+    const normalSearchTerms = getNormalSearchTerms(normalizedQuery);
     const regularSearchResults = searchBuckets.map(bucket => {
       const bucketOptions = bucket.options;
-  
+
       const exactMatches = bucketOptions.filter(option =>
-        normalizeString(option.label) === lowerQuery
+        normalSearchTerms.includes(normalizeString(option.label))
       );
-  
+
       const startsWithMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
-        return lowerLabel !== lowerQuery && lowerLabel.startsWith(lowerQuery);
+        if (normalSearchTerms.includes(lowerLabel)) return false;
+        return normalSearchTerms.some(term => lowerLabel.startsWith(term));
       });
-  
+
       const containsMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
-        return lowerLabel !== lowerQuery &&
-          !lowerLabel.startsWith(lowerQuery) &&
-          lowerLabel.includes(lowerQuery);
+        if (normalSearchTerms.includes(lowerLabel)) return false;
+        const startsAny = normalSearchTerms.some(term => lowerLabel.startsWith(term));
+        if (startsAny) return false;
+        return normalSearchTerms.some(term => lowerLabel.includes(term));
       });
   
       const groupOptions = bucket.groupOptions;
@@ -1037,9 +1072,13 @@ export const useSearchBuckets = () => {
       const excludedLabelsForBucket = getExcludedGroupLabelsForBucket(normalizedQuery, bucket.label);
       const groupOptionsMatches = groupOptions?.filter(group => {
         const lowerLabel = normalizeString(group.label);
-        if (normalizedQuery.length < 3) return false;
+        if (normalizedQuery.length < 3 && !shouldShowSubheadingForShortQuery(normalizedQuery)) return false;
         if (excludedLabelsForBucket.includes(lowerLabel)) return false;
-        return expandedTermsForBucket.some(term => lowerLabel.includes(term));
+        // For short-query exceptions (e.g. "ai"), match only when label equals the term so we don't hit "chain", "main", etc.
+        const matchExpansionExactly = shouldShowSubheadingForShortQuery(normalizedQuery);
+        return matchExpansionExactly
+          ? expandedTermsForBucket.some(term => lowerLabel === term)
+          : expandedTermsForBucket.some(term => lowerLabel.includes(term));
       });
   
       return {
@@ -1133,7 +1172,8 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
     if (spanRef.current && matchRef.current) {
       const parentRect = spanRef.current.getBoundingClientRect();
       const matchRect = matchRef.current.getBoundingClientRect();
-      setMatchIsHidden(matchRect.right > parentRect.right);
+      const hidden = matchRect.right > parentRect.right;
+      setMatchIsHidden(hidden);
     } else {
       setMatchIsHidden(false);
     }
@@ -1153,21 +1193,43 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
   }
 
   // Map normalized match index back to original string indices
+  const isIgnoredChar = (char: string) => /[\s-]/.test(char);
+
   let origStart = 0, normCount = 0;
   while (origStart < text.length && normCount < matchIndex) {
-    if (text[origStart] !== ' ') normCount++;
+    if (!isIgnoredChar(text[origStart])) normCount++;
     origStart++;
   }
 
   let origEnd = origStart, normMatchCount = 0;
-  while (origEnd < text.length && normMatchCount < query.replace(/\s+/g, '').length) {
-    if (text[origEnd] !== ' ') normMatchCount++;
+  while (origEnd < text.length && normMatchCount < normalizedQuery.length) {
+    if (!isIgnoredChar(text[origEnd])) normMatchCount++;
     origEnd++;
   }
 
   const before = text.slice(0, origStart);
   const match = text.slice(origStart, origEnd);
   const after = text.slice(origEnd);
+  const contextSnippet = buildContextSnippet(text, origStart, origEnd);
+  const shouldUseContextSnippet =
+    !!contextSnippet &&
+    text.length > SEARCH_RESULT_CONTEXT_MAX_CHARS &&
+    matchIndex > Math.floor(SEARCH_RESULT_CONTEXT_MAX_CHARS * 0.45);
+
+  if (shouldUseContextSnippet && contextSnippet) {
+    return (
+      <span
+        ref={spanRef}
+        className="truncate inline-block max-w-full align-bottom text-color-text-secondary"
+        style={{ position: "relative" }}
+      >
+        {contextSnippet.start && <span>{contextSnippet.start}</span>}
+        {contextSnippet.showMiddleEllipsis && <span>...</span>}
+        <span className="text-color-text-primary">{contextSnippet.match}</span>
+        {contextSnippet.showEndEllipsis && <span>...</span>}
+      </span>
+    );
+  }
 
   // If the match is hidden, use solid color for parent (and thus ellipsis)
   const parentColorClass =

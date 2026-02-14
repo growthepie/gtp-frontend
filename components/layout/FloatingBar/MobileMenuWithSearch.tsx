@@ -18,31 +18,33 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import Sidebar from "@/components/sidebar/Sidebar";
 
 function normalizeString(str: string) {
-  return str.toLowerCase().replace(/\s+/g, '');
+  return str.toLowerCase().replace(/[\s-]+/g, '');
 }
 
 // Text highlighting component (simplified from original)
 const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
   if (!query) return <>{text}</>;
 
-  const normalizedText = text.toLowerCase().replace(/\s+/g, '');
-  const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+  const normalizedText = text.toLowerCase().replace(/[\s-]+/g, '');
+  const normalizedQuery = query.toLowerCase().replace(/[\s-]+/g, '');
   const matchIndex = normalizedText.indexOf(normalizedQuery);
 
   if (matchIndex === -1) {
     return <span className="opacity-50">{text}</span>;
   }
 
-  // Map normalized match index back to original string indices
+  // Map normalized match index back to original string indices (ignore spaces and hyphens)
+  const isIgnoredChar = (c: string) => c === ' ' || c === '-';
   let origStart = 0, normCount = 0;
   while (origStart < text.length && normCount < matchIndex) {
-    if (text[origStart] !== ' ') normCount++;
+    if (!isIgnoredChar(text[origStart])) normCount++;
     origStart++;
   }
 
   let origEnd = origStart, normMatchCount = 0;
-  while (origEnd < text.length && normMatchCount < query.replace(/\s+/g, '').length) {
-    if (text[origEnd] !== ' ') normMatchCount++;
+  const normalizedQueryLen = query.replace(/[\s-]+/g, '').length;
+  while (origEnd < text.length && normMatchCount < normalizedQueryLen) {
+    if (!isIgnoredChar(text[origEnd])) normMatchCount++;
     origEnd++;
   }
 
