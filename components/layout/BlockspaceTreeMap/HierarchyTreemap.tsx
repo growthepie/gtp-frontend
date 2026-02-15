@@ -701,6 +701,8 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const [rootId, setRootId] = useState<string | null>(null);
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
+  const [copiedContractId, setCopiedContractId] = useState<string | null>(null);
+  const copyContractTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (selectedGroupBy === "chain" && !includeChainBreakdown) {
@@ -727,6 +729,14 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     observer.observe(containerEl);
     return () => observer.disconnect();
   }, [containerEl]);
+
+  useEffect(() => {
+    return () => {
+      if (copyContractTimeout.current) {
+        clearTimeout(copyContractTimeout.current);
+      }
+    };
+  }, []);
 
   const parsed = useMemo(() => {
     const types = data?.data?.types ?? [];
@@ -1193,6 +1203,21 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     [hoveredId, laidOutNodes],
   );
 
+  const copyContractAddress = (nodeId: string) => {
+    const address = getContractAddressFromId(nodeId);
+    if (!address || isAggregatedContractAddress(address)) return false;
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(address);
+      setCopiedContractId(nodeId);
+      if (copyContractTimeout.current) clearTimeout(copyContractTimeout.current);
+      copyContractTimeout.current = setTimeout(() => {
+        setCopiedContractId(null);
+      }, 900);
+      return true;
+    }
+    return false;
+  };
+
   useEffect(() => {
     setRootId(null);
     setHoveredId(null);
@@ -1580,6 +1605,16 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                   }}
                   onClick={(e) => {
                     if (!canSelectNode) return;
+                    const isContractNode = node.data.id.startsWith("contract:");
+                    if (isContractNode && !isContainer) {
+                      const copied = copyContractAddress(node.data.id);
+                      if (copied) {
+                        setTappedId(null);
+                        setHoveredId(node.data.id);
+                        setTooltipPos({ x: e.clientX, y: e.clientY });
+                        return;
+                      }
+                    }
                     // Desktop (already hovered via mouseEnter) or second tap: drill down
                     if (hoveredId === node.data.id && tappedId === node.data.id || hoveredId === node.data.id && tappedId === null) {
                       setTappedId(null);
@@ -1661,6 +1696,9 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                         shortContract &&
                         canShowContractAddress &&
                         !isAggregatedContractAddress(contractAddress);
+                      const canShowCopyIcon =
+                        isContract &&
+                        !isAggregatedContractAddress(contractAddress);
                       const displayName =
                         isContract && showAddressInline
                           ? node.data.name && node.data.name !== shortContract
@@ -1669,7 +1707,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                           : node.data.name;
 
                       return (
-                        <div className="absolute top-[6px] left-[8px] right-[8px] text-color-text-primary text-[11px] leading-tight truncate overflow-hidden">
+                        <div className="absolute top-[6px] left-[8px] right-[8px] text-color-text-primary text-[11px] leading-tight truncate overflow-hidden py-[1px]">
                           <div className="flex items-center gap-[6px] min-w-0">
                             {ownerProjectLogo ? (
                               <Image
@@ -1692,7 +1730,17 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
                                 className="text-color-text-primary shrink-0"
                               />
                             ) : null}
-                            <span className="truncate">{displayName}</span>
+                            <span className="truncate leading-tight">{displayName}</span>
+                            {canShowCopyIcon && (
+                              <GTPIcon
+                                icon={"feather:copy" as any}
+                                size="sm"
+                                className="!size-[10px] text-color-text-primary/60 shrink-0 inline-flex items-center justify-center align-middle hover:text-color-text-primary transition-colors cursor-pointer"
+                              />
+                            )}
+                            {copiedContractId === node.data.id && (
+                              <span className="text-color-text-primary/70 shrink-0">Copied</span>
+                            )}
                           </div>
                         </div>
                       );
