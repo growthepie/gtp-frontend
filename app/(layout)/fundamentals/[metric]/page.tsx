@@ -9,7 +9,8 @@ import { useParams } from "next/navigation";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMemo, use } from "react";
-import GTPUniversalChart from "@/components/GTPButton/GTPUniversalChart";
+
+import MetricsContainer from "@/components/metric/MetricsContainer";
 
 const Fundamentals = ({ params }) => {
   const { metric } = use(params as Promise<{ metric: string }>);
@@ -23,6 +24,7 @@ const Fundamentals = ({ params }) => {
   } = useSWR<MasterResponse>(MasterURL);
 
   const { SupportedChainKeys, AllChains } = useMaster();
+
 
   // Determine which chains to fetch
   const chainsToFetch = useMemo(() => {
@@ -62,7 +64,7 @@ const FundamentalsContent = ({ metric }: FundamentalsContentProps) => {
     <>
       <MetricContextWrapper metric={metric} metric_type="fundamentals">
         <PageContainer className="" paddingY="none">
-          <GTPUniversalChart fullBleed={false} />
+          <MetricsContainer metric={metric} />
         </PageContainer>
       </MetricContextWrapper>
     </>

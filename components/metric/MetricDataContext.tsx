@@ -13,7 +13,7 @@ type Timespans = {
     xMin: number;
     xMax: number;
   };
-} | {};
+};
 
 type MetricDataContextType = {
   data: MetricData | undefined;

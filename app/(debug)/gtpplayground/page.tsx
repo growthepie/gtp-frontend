@@ -182,8 +182,8 @@ function GeneralizedLayoutDemo() {
         }
         header={
           <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
-            <span className="text-xxs text-color-text-primary/85">Demo Metric</span>
-            <span className="text-xxs text-color-text-primary/75">Example data</span>
+            <span className="text-xxs text-color-text-secondary">Demo Metric</span>
+            <span className="text-xxs text-color-text-secondary">Example data</span>
           </div>
         }
         bottomBar={

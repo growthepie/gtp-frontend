@@ -19,7 +19,7 @@ export interface GTPButtonProps {
   gradientOutline?: boolean;
   variant?: GTPButtonVariant;
   visualState?: GTPButtonState;
-  size?: GTPButtonSize;
+  size?: GTPButtonSize | null;
   className?: string;
   fill?: "none" | "full" | "mobile";
   buttonType?: "button" | "submit" | "reset";
@@ -79,6 +79,21 @@ const FIGMA_BUTTON_SIZE = {
   },
 } as const;
 
+const RESPONSIVE_BUTTON_CLASSES = {
+  textClassName: "text-xxs sm:text-sm md:text-md lg:text-lg",
+  iconClassName:
+    "!w-[12px] !h-[12px] sm:!w-[16px] sm:!h-[16px] md:!w-[24px] md:!h-[24px] lg:!w-[28px] lg:!h-[28px]",
+  gapClassName: "gap-[5px] sm:gap-[10px] md:gap-[8px] lg:gap-[10px]",
+  paddingByIconVariant: {
+    none: "p-[2px_5px] sm:p-[5px_15px] md:p-[5px_15px] lg:p-[8px_15px]",
+    left: "p-[2px_5px] sm:p-[5px_15px] md:p-[5px_15px] lg:p-[8px_15px]",
+    right:
+      "p-[2px_3px_2px_5px] sm:p-[5px_5px_5px_15px] md:p-[5px_5px_5px_15px] lg:p-[8px_5px_8px_15px]",
+    both: "p-[2px_3px_2px_5px] sm:p-[5px_5px_5px_15px] md:p-[5px_5px_5px_15px] lg:p-[8px_5px_8px_15px]",
+    alone: "p-[3px] sm:p-[5px] md:p-[5px] lg:p-[8px]",
+  } as Record<GTPButtonIconVariant, string>,
+};
+
 const resolveIconVariant = ({
   hasLabel,
   hasLeftIcon,
@@ -133,7 +148,7 @@ export const GTPButton = ({
   gradientOutline = false,
   variant,
   visualState,
-  size = "xs",
+  size = null,
   className,
   fill = "none",
   buttonType = "button",
@@ -154,7 +169,8 @@ export const GTPButton = ({
     hasRightIcon: Boolean(rightIcon),
   });
 
-  const buttonSize = FIGMA_BUTTON_SIZE[size];
+  const isResponsive = size === null;
+  const buttonSize = isResponsive ? null : FIGMA_BUTTON_SIZE[size];
   const isDisabled = resolvedState === "disabled";
   const hasOutline = resolvedVariant === "highlight";
 
@@ -172,7 +188,24 @@ export const GTPButton = ({
     iconVariant === "left" || iconVariant === "both" || (iconVariant === "alone" && Boolean(leftIcon ?? rightIcon));
   const displayRightIcon = iconVariant === "right" || iconVariant === "both";
   const iconForAlone = leftIcon ?? rightIcon;
-  const buttonGap = shouldShowLabel ? buttonSize.gap : 0;
+
+  const textClassName = isResponsive
+    ? RESPONSIVE_BUTTON_CLASSES.textClassName
+    : buttonSize!.textClassName;
+  const iconSizeClassName = isResponsive
+    ? RESPONSIVE_BUTTON_CLASSES.iconClassName
+    : buttonSize!.iconClassName;
+  const gapClassName = isResponsive && shouldShowLabel
+    ? RESPONSIVE_BUTTON_CLASSES.gapClassName
+    : "";
+  const paddingClassName = isResponsive
+    ? RESPONSIVE_BUTTON_CLASSES.paddingByIconVariant[iconVariant]
+    : "";
+  const buttonGapStyle = !isResponsive ? (shouldShowLabel ? buttonSize!.gap : 0) : undefined;
+  const buttonPaddingStyle = !isResponsive
+    ? buttonSize!.paddingByIconVariant[iconVariant]
+    : undefined;
+
   const wrapperFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
   const buttonFillClassName = fill === "full" ? "w-full justify-center" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
 
@@ -186,7 +219,7 @@ export const GTPButton = ({
     >
       <button
         type={buttonType}
-        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${
+        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
@@ -195,14 +228,14 @@ export const GTPButton = ({
         onClick={clickHandler}
         disabled={isDisabled}
         style={{
-          gap: `${buttonGap}px`,
-          padding: buttonSize.paddingByIconVariant[iconVariant],
+          ...(buttonGapStyle !== undefined && { gap: `${buttonGapStyle}px` }),
+          ...(buttonPaddingStyle !== undefined && { padding: buttonPaddingStyle }),
         }}
       >
         {displayLeftIcon && (
           <GTPButtonIcon
             icon={iconVariant === "alone" ? iconForAlone : leftIcon}
-            iconClassName={buttonSize.iconClassName}
+            iconClassName={iconSizeClassName}
             disabled={isDisabled}
             clickHandler={leftIconClickHandler}
           />
@@ -210,7 +243,7 @@ export const GTPButton = ({
         {hasLabel && (
           <GTPButtonAnimatedLabel
             label={label ?? ""}
-            textClassName={buttonSize.textClassName}
+            textClassName={textClassName}
             show={shouldShowLabel}
             animate={isActiveLabelMode}
           />
@@ -218,7 +251,7 @@ export const GTPButton = ({
         {displayRightIcon && (
           <GTPButtonIcon
             icon={rightIcon}
-            iconClassName={buttonSize.iconClassName}
+            iconClassName={iconSizeClassName}
             disabled={isDisabled}
             clickHandler={rightIconClickHandler}
           />
