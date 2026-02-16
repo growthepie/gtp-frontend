@@ -19,11 +19,11 @@ type MetricChartProps = {
 
 const getSeriesType = (
   selectedScale: string,
-  selectedTimeInterval: string,
+  timeIntervalKey: string,
 ): GTPChartSeries["seriesType"] => {
   if (selectedScale === "absolute") return "line";
   if (selectedScale === "percentage") return "area";
-  return selectedTimeInterval === "daily" ? "area" : "bar";
+  return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
 export default function MetricChart({ metric_type }: MetricChartProps) {
@@ -34,7 +34,6 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
   const { data, metric_id, chainKeys, timespans } = useMetricData();
   const {
     selectedScale,
-    selectedTimeInterval,
     selectedTimespan,
     timeIntervalKey,
     selectedChains,
@@ -65,7 +64,7 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
 
     const metadataByKey =
       metric_type === "fundamentals" ? master?.chains : master?.da_layers;
-    const seriesType = getSeriesType(selectedScale, selectedTimeInterval);
+    const seriesType = getSeriesType(selectedScale, timeIntervalKey);
 
     return chainKeys
       .filter((chainKey) => selectedChains.includes(chainKey))
@@ -117,7 +116,6 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
     metric_type,
     selectedChains,
     selectedScale,
-    selectedTimeInterval,
     showEthereumMainnet,
     showGwei,
     showUsd,

@@ -1216,11 +1216,22 @@ export default function GTPUniversalChart({
 
   const textXxsTypography = useMemo(
     () =>
-      readTailwindTypographyStyle("text-xxs", {
+      readTailwindTypographyStyle("text-xs", {
         fontFamily: "var(--font-raleway), sans-serif",
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 500,
-        lineHeight: 15,
+        lineHeight: 16,
+        letterSpacing: "normal",
+      }),
+    [],
+  );
+  const textSmTypography = useMemo(
+    () =>
+      readTailwindTypographyStyle("text-sm", {
+        fontFamily: "var(--font-raleway), sans-serif",
+        fontSize: 14,
+        fontWeight: 500,
+        lineHeight: 20,
         letterSpacing: "normal",
       }),
     [],
@@ -1241,6 +1252,7 @@ export default function GTPUniversalChart({
   const chartOption = useMemo<EChartsOption>(() => {
     const textPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
     const textSecondary = getCssVarAsRgb("--text-secondary", "rgb(121, 139, 137)");
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
     const splitCount = clamp(Math.round((contentHeight || 512) / 88), 3, 7);
     const shouldStackSeries = isStackedMode || isPercentageMode;
@@ -1278,6 +1290,40 @@ export default function GTPUniversalChart({
     const yAxisMax = isPercentageMode
       ? 100
       : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
+    const allTimestamps = chartSeriesData.flatMap((series) =>
+      series.data
+        .map((point) => Number(point[0]))
+        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
+    );
+    const minTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : undefined;
+    const maxTimestamp = allTimestamps.length > 0 ? Math.max(...allTimestamps) : undefined;
+    const xAxisRangeMs =
+      minTimestamp !== undefined && maxTimestamp !== undefined ? maxTimestamp - minTimestamp : undefined;
+    const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
+
+    const formatXAxisTick = (value: number | string) => {
+      const numValue = typeof value === "string" ? Number(value) : value;
+      if (!Number.isFinite(numValue)) {
+        return String(value);
+      }
+
+      const date = new Date(numValue);
+      const isJanFirst = date.getUTCMonth() === 0 && date.getUTCDate() === 1;
+
+      if (isLongerThan7Days && isJanFirst) {
+        const yearLabel = new Intl.DateTimeFormat("en-GB", {
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(numValue);
+        return `{yearBold|${yearLabel}}`;
+      }
+
+      return new Intl.DateTimeFormat("en-GB", {
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(numValue);
+    };
 
     return {
       animation: false,
@@ -1323,12 +1369,16 @@ export default function GTPUniversalChart({
           fontWeight: textXxsTypography.fontWeight,
           hideOverlap: true,
           margin: 8,
-          formatter: (value: number) =>
-            new Intl.DateTimeFormat("en-GB", {
-              month: "short",
-              year: "2-digit",
-              timeZone: "UTC",
-            }).format(value),
+          formatter: (value: number) => formatXAxisTick(value),
+          rich: {
+            yearBold: {
+              color: textPrimary,
+              fontSize: textSmTypography.fontSize,
+              fontFamily: textSmTypography.fontFamily,
+              fontWeight: 700,
+              lineHeight: textSmTypography.lineHeight,
+            },
+          },
         },
         splitLine: {
           show: false,
@@ -1509,6 +1559,7 @@ export default function GTPUniversalChart({
     isStackedMode,
     metricLabel,
     numbersXxsTypography,
+    textSmTypography,
     textXxsTypography,
   ]);
 

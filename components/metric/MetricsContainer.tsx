@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, ReactNode } from "react";
+import { useMemo, ReactNode, useRef } from "react";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
@@ -8,6 +8,7 @@ import GTPSplitPane from "../GTPButton/GTPSplitPane";
 import { useMediaQuery } from "@react-hook/media-query";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
+import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
 import { Switch } from "@/components/Switch";
@@ -16,9 +17,21 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import MetricTable from "./MetricTable";
 import MetricChart from "./MetricChart";
+import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
+import GTPButtonDropdown from "../GTPButton/GTPButtonDropdown";
+import GTPResizeDivider from "../GTPButton/GTPResizeDivider";
+import { GTPScrollPaneScrollMetrics } from "../GTPButton/GTPScrollPane";
+import { GTPIcon } from "../layout/GTPIcon";
+import { findMetricConfig } from "@/lib/fundamentals/seo";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 767px)");
+    const [collapseTable, setCollapseTable] = useState(false);
+    const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
+    
 
     const {
         timespans,
@@ -26,6 +39,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         sources,
         metric_id,
         chainKeys,
+        data: metricData,
     } = useMetricData();
 
     const {
@@ -42,6 +56,13 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
     const { data: master } = useMaster();
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
+    const metricConfig = findMetricConfig(metric);
+
+    const pageData = metricConfig?.page ?? {
+        title: metricConfig?.label ?? "",
+        description: "",
+        icon: "",
+      };
 
     const shouldDisableStacking = useMemo(() => {
         if (!master || !metric_id) return false;
@@ -57,6 +78,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
         return metricInfo.all_l2s_aggregate !== 'sum';
     }, [master, metric_id]);
+    
 
     const SourcesDisplay = useMemo(() => {
         return sources && sources.length > 0 ? (
@@ -82,6 +104,23 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         <GTPCardLayout
             fullBleed={false}
             contentHeight={538}
+            header={
+                <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
+                  <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
+                    <GTPIcon icon={pageData?.icon as GTPIconName} className="!w-[12px] !h-[12px]" containerClassName="!h-[12px] !w-[12px]" />
+                    <span className="">{metricData?.metric_name}</span>
+                   
+                  </div>
+                  <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
+                    <GTPIcon
+                        icon="gtp-realtime"
+                        className="!w-[12px] !h-[12px] text-color-text-primary"
+                        containerClassName="!w-[12px] !h-[12px]"
+                    />
+                    <span className="text-xxs text-color-text-secondary">Example data</span>
+                  </div>
+                </div>
+              }
             topBar={
                 <GTPButtonContainer className="mt-[2px]">
                     <GTPButtonRow>
@@ -209,64 +248,87 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             }
             bottomBar={
                 <GTPButtonContainer>
-                    {chainKeys.includes("ethereum") && focusEnabled && (
-                        <div className="flex items-center gap-2 px-2">
-                            <Switch
-                                checked={showEthereumMainnet}
-                                onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-                            />
-                            <span className="hidden xl:block text-sm font-medium">
-                                Compare Ethereum Mainnet
-                            </span>
-                            <span className="hidden md:block xl:hidden text-sm font-medium">
-                                Compare ETH
-                            </span>
-                        </div>
-                    )}
-                    <div className="flex items-center gap-[3px] ml-auto">
-                        <GTPButtonRow>
-                            <GTPButton
-                                label="Absolute"
-                                variant="primary"
-                                size={isMobile ? "xs" : "sm"}
-                                isSelected={selectedScale === "absolute"}
-                                clickHandler={() => setSelectedScale("absolute")}
-                            />
-                            {!shouldDisableStacking && (
-                                <>
-                                    <GTPButton
-                                        label="Stacked"
-                                        variant="primary"
-                                        size={isMobile ? "xs" : "sm"}
-                                        isSelected={selectedScale === "stacked"}
-                                        disabled={metric_id === "txcosts"}
-                                        clickHandler={() => setSelectedScale("stacked")}
-                                    />
-                                    <GTPButton
-                                        label="Percentage"
-                                        variant="primary"
-                                        size={isMobile ? "xs" : "sm"}
-                                        isSelected={selectedScale === "percentage"}
-                                        clickHandler={() => setSelectedScale("percentage")}
-                                    />
-                                </>
-                            )}
-                        </GTPButtonRow>
+                    
+                    <GTPButtonRow>
+                        <GTPButton
+                            label={!collapseTable ? undefined : "Open Table"}
+                            leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
+                            size={isMobile ? "xs" : "sm"}
+                            variant={!collapseTable ? "no-background" : "highlight"}
+                            visualState="default"
+                            clickHandler={() => setCollapseTable(!collapseTable)}
+                        />
+                        <GTPButtonDropdown
+                            openDirection="top"
+                            matchTriggerWidthToDropdown
+                            buttonProps={{
+                                label: "Share",
+                                labelDisplay: "active",
+                                leftIcon: "gtp-share-monochrome",
+                                size: isMobile ? "xs" : "sm",
+                                variant: "no-background",
+                            }}
+                            isOpen={isSharePopoverOpen}
+                            onOpenChange={setIsSharePopoverOpen}
+                            dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                        />
+                        
+                    </GTPButtonRow>
+                   
+                    <GTPButtonRow>
+                        <GTPButton
+                            label="Absolute"
+                            variant="primary"
+                            size={isMobile ? "xs" : "sm"}
+                            isSelected={selectedScale === "absolute"}
+                            clickHandler={() => setSelectedScale("absolute")}
+                        />
+                        {!shouldDisableStacking && (
+                            <>
+                                <GTPButton
+                                    label="Stacked"
+                                    variant="primary"
+                                    size={isMobile ? "xs" : "sm"}
+                                    isSelected={selectedScale === "stacked"}
+                                    disabled={metric_id === "txcosts"}
+                                    clickHandler={() => setSelectedScale("stacked")}
+                                />
+                                <GTPButton
+                                    label="Percentage"
+                                    variant="primary"
+                                    size={isMobile ? "xs" : "sm"}
+                                    isSelected={selectedScale === "percentage"}
+                                    clickHandler={() => setSelectedScale("percentage")}
+                                />
+                            </>
+                        )}
+                    </GTPButtonRow>
 
-                    </div>
+                    
                 </GTPButtonContainer>
             }
         >
             <GTPSplitPane
+                leftCollapsed={collapseTable}
+                divider={({ onDragStart, isMobile: isMobileLayout }) =>
+                    !isMobileLayout && !collapseTable ? (
+                      <GTPResizeDivider
+                        onDragStart={onDragStart}
+                        showScrollbar
+                        scrollMetrics={scrollMetrics}
+                        scrollTargetRef={scrollRef}
+                      />
+                    ) : null
+                  }
                 left={
-                    <div className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden">
+                    <div className={`relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
                         <MetricTable metric_type="fundamentals" />
                     </div>
                 }
                 right={
-                <div className="w-full h-full flex items-center justify-center">
-                    <MetricChart metric_type="fundamentals" />
-                </div>
+                    <div className=" w-full h-full items-center justify-center">
+                        <MetricChart metric_type="fundamentals" />
+                    </div>
                 }
             />
         </GTPCardLayout>

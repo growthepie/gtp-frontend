@@ -106,8 +106,55 @@ export default function GTPChart({
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
 
+  const normalizedSeries = useMemo(() => {
+    if (xAxisType !== "time" || series.length <= 1) {
+      return series;
+    }
+
+    // Align all series to a shared timestamp domain so stacked/percentage math compares
+    // values at the same x-coordinate, not just the same array index.
+    const sharedTimestamps = Array.from(
+      new Set(
+        series.flatMap((entry) =>
+          entry.data
+            .map(([timestamp]) => Number(timestamp))
+            .filter((timestamp) => Number.isFinite(timestamp)),
+        ),
+      ),
+    ).sort((a, b) => a - b);
+
+    if (sharedTimestamps.length === 0) {
+      return series;
+    }
+
+    return series.map((entry) => {
+      const valueByTimestamp = new Map<number, number | null>();
+      entry.data.forEach(([timestamp, value]) => {
+        const numericTimestamp = Number(timestamp);
+        if (!Number.isFinite(numericTimestamp)) {
+          return;
+        }
+
+        if (typeof value === "number" && Number.isFinite(value)) {
+          valueByTimestamp.set(numericTimestamp, value);
+          return;
+        }
+
+        valueByTimestamp.set(numericTimestamp, null);
+      });
+
+      return {
+        ...entry,
+        data: sharedTimestamps.map((timestamp) => [
+          timestamp,
+          valueByTimestamp.has(timestamp) ? (valueByTimestamp.get(timestamp) ?? null) : null,
+        ]),
+      };
+    });
+  }, [series, xAxisType]);
+
   // Check if any series is a bar (affects x-axis boundaryGap)
-  const hasBarSeries = series.some((s) => s.seriesType === "bar");
+  const hasBarSeries = normalizedSeries.some((s) => s.seriesType === "bar");
 
   // Track container height for dynamic split count
   useLayoutEffect(() => {
@@ -136,11 +183,22 @@ export default function GTPChart({
   // Typography
   const textXxsTypography = useMemo(
     () =>
-      readTailwindTypographyStyle("text-xxs", {
+      readTailwindTypographyStyle("text-xs", {
         fontFamily: "var(--font-raleway), sans-serif",
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: 500,
-        lineHeight: 15,
+        lineHeight: 16,
+        letterSpacing: "normal",
+      }),
+    [],
+  );
+  const textSmTypography = useMemo(
+    () =>
+      readTailwindTypographyStyle("text-sm", {
+        fontFamily: "var(--font-raleway), sans-serif",
+        fontSize: 14,
+        fontWeight: 500,
+        lineHeight: 20,
         letterSpacing: "normal",
       }),
     [],
@@ -185,14 +243,14 @@ export default function GTPChart({
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
-    return series.map((s) => {
+    return normalizedSeries.map((s) => {
       let paired = s.data;
 
       // Percentage mode transformation
       if (percentageMode) {
         paired = paired.map(([x, value], i) => {
           if (value === null || !Number.isFinite(value)) return [x, null];
-          const total = series.reduce((sum, other) => {
+          const total = normalizedSeries.reduce((sum, other) => {
             const otherY = other.data[i]?.[1] ?? null;
             return typeof otherY === "number" && Number.isFinite(otherY) ? sum + otherY : sum;
           }, 0);
@@ -202,7 +260,7 @@ export default function GTPChart({
 
       return { ...s, pairedData: paired };
     });
-  }, [percentageMode, series]);
+  }, [normalizedSeries, percentageMode]);
 
   // Build ECharts option
   const chartOption = useMemo<EChartsOption>(() => {
@@ -211,6 +269,7 @@ export default function GTPChart({
 
     const shouldStack = stack || percentageMode;
     const grid = { ...DEFAULT_GRID, ...gridOverride };
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
     // Y-axis smart scaling
     const splitCount = clamp(Math.round((containerHeight || 512) / 88), 3, 7);
@@ -218,6 +277,43 @@ export default function GTPChart({
     const allValues = pairedSeries.flatMap((s) =>
       s.pairedData.map((p) => p[1]).filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
     );
+    const allTimestamps = pairedSeries.flatMap((s) =>
+      s.pairedData
+        .map((p) => Number(p[0]))
+        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
+    );
+    const minTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : undefined;
+    const maxTimestamp = allTimestamps.length > 0 ? Math.max(...allTimestamps) : undefined;
+    const inferredRangeMs =
+      minTimestamp !== undefined && maxTimestamp !== undefined ? maxTimestamp - minTimestamp : undefined;
+    const explicitRangeMs =
+      Number.isFinite(xAxisMin) && Number.isFinite(xAxisMax) ? Number(xAxisMax) - Number(xAxisMin) : undefined;
+    const xAxisRangeMs = explicitRangeMs ?? inferredRangeMs;
+    const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
+
+    const formatXAxisTick = (value: number | string) => {
+      const numValue = typeof value === "string" ? Number(value) : value;
+      if (!Number.isFinite(numValue)) {
+        return String(value);
+      }
+
+      const date = new Date(numValue);
+      const isJanFirst = date.getUTCMonth() === 0 && date.getUTCDate() === 1;
+
+      if (isLongerThan7Days && isJanFirst) {
+        const yearLabel = new Intl.DateTimeFormat("en-GB", {
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(numValue);
+        return `{yearBold|${yearLabel}}`;
+      }
+
+      return new Intl.DateTimeFormat("en-GB", {
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(numValue);
+    };
 
     const maxSeriesValue =
       shouldStack && pairedSeries.length > 0
@@ -374,14 +470,7 @@ export default function GTPChart({
     });
 
     // Default X-axis formatter
-    const defaultXFormatter = (value: number | string) => {
-      const numValue = typeof value === "string" ? Number(value) : value;
-      return new Intl.DateTimeFormat("en-GB", {
-        month: "short",
-        year: "2-digit",
-        timeZone: "UTC",
-      }).format(numValue);
-    };
+    const defaultXFormatter = (value: number | string) => formatXAxisTick(value);
 
     // Default Y-axis formatter
     const defaultYFormatter = (value: number) =>
@@ -427,7 +516,7 @@ export default function GTPChart({
         .map((point) => {
           const v = point.numericValue;
           if (!Number.isFinite(v)) return "";
-          const meta = series.find((s) => s.name === point.seriesName);
+          const meta = normalizedSeries.find((s) => s.name === point.seriesName);
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
           const formattedValue = percentageMode ? `${v.toFixed(1)}%` : formatCompactNumber(v);
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
@@ -492,6 +581,15 @@ export default function GTPChart({
           hideOverlap: true,
           margin: 8,
           formatter: (xAxisLabelFormatter ?? defaultXFormatter) as (value: number | string) => string,
+          rich: {
+            yearBold: {
+              color: textPrimary,
+              fontSize: textSmTypography.fontSize,
+              fontFamily: textSmTypography.fontFamily,
+              fontWeight: 600,
+              lineHeight: textSmTypography.lineHeight,
+            },
+          },
         },
         splitLine: { show: false },
       } as any,
@@ -571,10 +669,11 @@ export default function GTPChart({
     optionOverrides,
     percentageMode,
     pairedSeries,
-    series,
+    normalizedSeries,
     seriesOverrides,
     smooth,
     stack,
+    textSmTypography,
     textXxsTypography,
     tooltipFormatter,
     xAxisLabelFormatter,

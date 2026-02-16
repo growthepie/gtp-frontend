@@ -57,7 +57,9 @@ export default function GTPSplitPane({
   const [internalSplitRatio, setInternalSplitRatio] = useState(defaultSplitRatio);
   const [dragging, setDragging] = useState(false);
   const onLayoutChangeRef = useRef(onLayoutChange);
-  onLayoutChangeRef.current = onLayoutChange;
+  useEffect(() => {
+    onLayoutChangeRef.current = onLayoutChange;
+  }, [onLayoutChange]);
 
   const activeSplitRatio = controlledSplitRatio ?? internalSplitRatio;
   const isMobile = contentWidth > 0 && contentWidth < mobileBreakpoint;
@@ -159,12 +161,12 @@ export default function GTPSplitPane({
       ? `calc(${((1 - activeSplitRatio) * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
       : "100%";
 
-  const dividerNode = divider?.({ onDragStart: handleDividerPointerDown, isMobile }) ?? null;
+  const DividerRenderer = divider;
 
   return (
     <div
       ref={contentRef}
-      className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
+      className={`flex items-stretch flex-1 min-h-0 gap-[5px] pl-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
     >
       {showLeft ? (
         <div
@@ -177,7 +179,9 @@ export default function GTPSplitPane({
           {left}
         </div>
       ) : null}
-      {!isMobile && showLeft ? dividerNode : null}
+      {!isMobile && showLeft && DividerRenderer ? (
+        <DividerRenderer onDragStart={handleDividerPointerDown} isMobile={isMobile} />
+      ) : null}
       <div
         className={`flex min-w-0 ${isMobile ? "w-full shrink-0" : "h-full"}`}
         style={{
