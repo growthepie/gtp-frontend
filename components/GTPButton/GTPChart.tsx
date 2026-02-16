@@ -22,7 +22,7 @@ import {
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
-  "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[10px] pr-[12px] bg-color-bg-default/80",
+  "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[15px] pr-[15px] bg-color-bg-default",
 );
 
 const WATERMARK_CLASS =
@@ -433,12 +433,12 @@ export default function GTPChart({
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
           return `
             <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
-              <div class="w-3 h-1 rounded-r-full" style="background-color:${lineColor}"></div>
+              <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${lineColor}"></div>
               <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
               <div class="flex-1 text-right justify-end flex numbers-xs">${formattedValue}</div>
             </div>
-            <div class="ml-[18px] mr-[1px] h-px relative mb-[2px] overflow-hidden">
-              <div class="h-px rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
+            <div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
+              <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
             </div>
           `;
         })
