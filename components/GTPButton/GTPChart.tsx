@@ -6,92 +6,19 @@ import { EChartsOption } from "echarts";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
-
-// --- Utility helpers (matching GTPUniversalChart patterns) ---
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const getCssVarAsRgb = (name: string, fallback: string) => {
-  if (typeof window === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  if (!value) return fallback;
-  const parts = value.split(" ").filter(Boolean);
-  return `rgb(${parts.join(", ")})`;
-};
-
-const withOpacity = (color: string, opacity: number) => {
-  if (!color.startsWith("rgb(")) return color;
-  return color.replace("rgb(", "rgba(").replace(")", `, ${opacity})`);
-};
-
-const withHexOpacity = (color: string, opacity: number) => {
-  if (!color.startsWith("#") || (color.length !== 7 && color.length !== 9)) return color;
-  if (color.length === 9) return color;
-  const alpha = Math.round(clamp(opacity, 0, 1) * 255).toString(16).padStart(2, "0");
-  return `${color}${alpha}`;
-};
-
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-type TailwindTypographyStyle = {
-  fontFamily: string;
-  fontSize: number;
-  fontWeight: number;
-  lineHeight: number;
-  letterSpacing: string;
-  fontFeatureSettings?: string;
-};
-
-const readTailwindTypographyStyle = (
-  className: string,
-  fallback: TailwindTypographyStyle,
-): TailwindTypographyStyle => {
-  if (typeof window === "undefined" || typeof document === "undefined") return fallback;
-
-  const probe = document.createElement("span");
-  probe.className = className;
-  probe.textContent = "0";
-  probe.style.position = "fixed";
-  probe.style.visibility = "hidden";
-  probe.style.pointerEvents = "none";
-  probe.style.left = "-9999px";
-  probe.style.top = "-9999px";
-  document.body.appendChild(probe);
-
-  const computed = window.getComputedStyle(probe);
-  const parsedFontSize = Number.parseFloat(computed.fontSize);
-  const parsedFontWeight = Number.parseInt(computed.fontWeight, 10);
-  const parsedLineHeight = Number.parseFloat(computed.lineHeight);
-  const parsedFontFeatureSettings = computed.fontFeatureSettings?.trim();
-
-  const result = {
-    fontFamily: computed.fontFamily || fallback.fontFamily,
-    fontSize: Number.isFinite(parsedFontSize) ? parsedFontSize : fallback.fontSize,
-    fontWeight: Number.isFinite(parsedFontWeight) ? parsedFontWeight : fallback.fontWeight,
-    lineHeight: Number.isFinite(parsedLineHeight) ? parsedLineHeight : fallback.lineHeight,
-    letterSpacing:
-      computed.letterSpacing && computed.letterSpacing !== "normal" ? computed.letterSpacing : fallback.letterSpacing,
-    fontFeatureSettings:
-      parsedFontFeatureSettings && parsedFontFeatureSettings !== "normal"
-        ? parsedFontFeatureSettings
-        : fallback.fontFeatureSettings,
-  } satisfies TailwindTypographyStyle;
-
-  probe.remove();
-  return result;
-};
-
-const formatCompactNumber = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: Math.abs(value) >= 100_000_000_000 ? 0 : 1,
-  }).format(value);
+import ChartWatermark from "@/components/layout/ChartWatermark";
+import {
+  clamp,
+  getCssVarAsRgb,
+  withOpacity,
+  withHexOpacity,
+  escapeHtml,
+  readTailwindTypographyStyle,
+  formatCompactNumber,
+  resolveSeriesColors,
+  DEFAULT_COLORS,
+  DEFAULT_GRID,
+} from "@/lib/echarts-utils";
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -101,18 +28,17 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 const WATERMARK_CLASS =
   "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
 
-const DEFAULT_GRID = { left: 52, right: 0, top: 4, bottom: 22 };
-const DEFAULT_COLORS = [
-  "#1C1CFF", "#12AAFF", "#FF0420", "#0052FF", "#7B3FE4",
-  "#4E529A", "#EC796B", "#61DFFF", "#FFEEDA", "#00DACC",
-];
-
 // --- Public types ---
+
+export type GTPChartSeriesType = "line" | "area" | "bar";
 
 export interface GTPChartSeries {
   name: string;
   data: [number, number | null][];
-  color?: string;
+  seriesType: GTPChartSeriesType;
+  color?: string | [string, string];
+  /** When set, bar values below 0 use this color instead of the primary color. */
+  negativeColor?: string | [string, string];
 }
 
 export interface GTPChartTooltipParams {
@@ -123,19 +49,19 @@ export interface GTPChartTooltipParams {
 
 export interface GTPChartProps {
   series: GTPChartSeries[];
-  chartType?: "line" | "bar";
-  showArea?: boolean;
   stack?: boolean;
   percentageMode?: boolean;
   xAxisType?: "time" | "category";
   xAxisLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
+  xAxisMin?: number;
+  xAxisMax?: number;
   yAxisMin?: number;
   yAxisMax?: number;
   grid?: { left?: number; right?: number; top?: number; bottom?: number };
   tooltipFormatter?: (params: GTPChartTooltipParams[]) => string;
   showWatermark?: boolean;
-  watermarkMetricName?: string;
+  watermarkMetricName?: string | null;
   emptyStateMessage?: string;
   animation?: boolean;
   smooth?: boolean;
@@ -152,19 +78,19 @@ export interface GTPChartProps {
 
 export default function GTPChart({
   series,
-  chartType = "line",
-  showArea = true,
   stack = false,
   percentageMode = false,
   xAxisType = "time",
+  xAxisMin,
+  xAxisMax,
   xAxisLabelFormatter,
   yAxisLabelFormatter,
   yAxisMin = 0,
   yAxisMax: yAxisMaxOverride,
   grid: gridOverride,
   tooltipFormatter,
-  showWatermark = false,
-  watermarkMetricName,
+  showWatermark = true,
+  watermarkMetricName = null,
   emptyStateMessage = "No data to display",
   animation = false,
   smooth = false,
@@ -179,6 +105,9 @@ export default function GTPChart({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
+
+  // Check if any series is a bar (affects x-axis boundaryGap)
+  const hasBarSeries = series.some((s) => s.seriesType === "bar");
 
   // Track container height for dynamic split count
   useLayoutEffect(() => {
@@ -254,21 +183,25 @@ export default function GTPChart({
     [],
   );
 
-  // Percentage mode data transformation
-  const processedSeries = useMemo(() => {
-    if (!percentageMode) return series;
+  // Apply percentage mode transformation if needed
+  const pairedSeries = useMemo(() => {
+    return series.map((s) => {
+      let paired = s.data;
 
-    return series.map((s) => ({
-      ...s,
-      data: s.data.map(([x, value], index) => {
-        if (value === null || !Number.isFinite(value)) return [x, null] as [number, number | null];
-        const total = series.reduce((sum, other) => {
-          const otherValue = other.data[index]?.[1];
-          return typeof otherValue === "number" && Number.isFinite(otherValue) ? sum + otherValue : sum;
-        }, 0);
-        return [x, total > 0 ? (value / total) * 100 : null] as [number, number | null];
-      }),
-    }));
+      // Percentage mode transformation
+      if (percentageMode) {
+        paired = paired.map(([x, value], i) => {
+          if (value === null || !Number.isFinite(value)) return [x, null];
+          const total = series.reduce((sum, other) => {
+            const otherY = other.data[i]?.[1] ?? null;
+            return typeof otherY === "number" && Number.isFinite(otherY) ? sum + otherY : sum;
+          }, 0);
+          return [x, total > 0 ? (value / total) * 100 : null];
+        });
+      }
+
+      return { ...s, pairedData: paired };
+    });
   }, [percentageMode, series]);
 
   // Build ECharts option
@@ -282,15 +215,15 @@ export default function GTPChart({
     // Y-axis smart scaling
     const splitCount = clamp(Math.round((containerHeight || 512) / 88), 3, 7);
 
-    const allValues = processedSeries.flatMap((s) =>
-      s.data.map((p) => p[1]).filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
+    const allValues = pairedSeries.flatMap((s) =>
+      s.pairedData.map((p) => p[1]).filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
     );
 
     const maxSeriesValue =
-      shouldStack && processedSeries.length > 0
-        ? processedSeries[0].data.reduce((maxVal, _, index) => {
-            const stackedValue = processedSeries.reduce((sum, s) => {
-              const pointValue = s.data[index]?.[1];
+      shouldStack && pairedSeries.length > 0
+        ? pairedSeries[0].pairedData.reduce((maxVal, _, index) => {
+            const stackedValue = pairedSeries.reduce((sum, s) => {
+              const pointValue = s.pairedData[index]?.[1];
               return typeof pointValue === "number" && Number.isFinite(pointValue) ? sum + pointValue : sum;
             }, 0);
             return Math.max(maxVal, stackedValue);
@@ -299,76 +232,138 @@ export default function GTPChart({
           ? Math.max(...allValues)
           : 0;
 
+    // Detect whether the data contains negative values
+    const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+    const hasNegativeValues = minSeriesValue < 0;
+
     const rawStep = Math.max(maxSeriesValue, 1) / splitCount;
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
     const normalizedStep = rawStep / Math.max(magnitude, 1);
     const niceStepBase = normalizedStep > 5 ? 10 : normalizedStep > 2 ? 5 : normalizedStep > 1 ? 2 : 1;
     const absoluteStep = niceStepBase * Math.max(magnitude, 1);
-    const yAxisStep = percentageMode ? 25 : absoluteStep;
-    const computedYAxisMin = yAxisMin;
-    const computedYAxisMax =
-      yAxisMaxOverride !== undefined
-        ? yAxisMaxOverride
-        : percentageMode
-          ? 100
-          : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
+    let yAxisStep = percentageMode ? 25 : absoluteStep;
+
+    // For data with negatives, compute symmetrical min/max rounded to nice numbers
+    let computedYAxisMin: number;
+    let computedYAxisMax: number;
+
+    if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
+      // Recompute step from the absolute max so the symmetrical range gets ~splitCount labels
+      const maxAbsValue = Math.max(Math.abs(minSeriesValue), Math.abs(maxSeriesValue), 1);
+      const symRawStep = maxAbsValue / Math.max(Math.floor(splitCount / 2), 1);
+      const symMagnitude = Math.pow(10, Math.floor(Math.log10(symRawStep || 1)));
+      const symNormalized = symRawStep / Math.max(symMagnitude, 1);
+      const symNiceBase = symNormalized > 5 ? 10 : symNormalized > 2 ? 5 : symNormalized > 1 ? 2 : 1;
+      const symStep = symNiceBase * Math.max(symMagnitude, 1);
+      const roundedMax = Math.max(symStep, Math.ceil((maxAbsValue * 1.06) / symStep) * symStep);
+      computedYAxisMin = -roundedMax;
+      computedYAxisMax = roundedMax;
+      // Override the step so the tick count stays reasonable across the full range
+      yAxisStep = symStep;
+    } else {
+      computedYAxisMin = yAxisMin;
+      computedYAxisMax =
+        yAxisMaxOverride !== undefined
+          ? yAxisMaxOverride
+          : percentageMode
+            ? 100
+            : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
+    }
 
     // Sort series for percentage mode (ascending by last value so smallest is on top)
     const sortedSeries = percentageMode
-      ? [...processedSeries].sort((a, b) => {
-          const aLast = [...a.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
-          const bLast = [...b.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
+      ? [...pairedSeries].sort((a, b) => {
+          const aLast = [...a.pairedData].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
+          const bLast = [...b.pairedData].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
           return (aLast ?? 0) - (bLast ?? 0);
         })
-      : processedSeries;
+      : pairedSeries;
 
     const defaultAreaOpacity = shouldStack ? 0.36 : 0.22;
     const resolvedAreaOpacity = areaOpacityOverride ?? defaultAreaOpacity;
 
-    // Build series configs
+    // Build series configs — each series determines its own type
     const echartsSeriesConfigs = sortedSeries.map((s, index) => {
-      const seriesColor = s.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+      const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+      const [primary, secondary] = resolveSeriesColors(s.color, fallbackColor);
+      const type = s.seriesType;
 
       let config: Record<string, unknown> = {
         name: s.name,
-        type: chartType,
-        data: s.data,
+        data: s.pairedData,
         stack: shouldStack ? "total" : undefined,
-        showSymbol: false,
         smooth,
       };
 
-      if (chartType === "line") {
-        config.lineStyle = { width: lineWidth, color: seriesColor };
+      if (type === "line" || type === "area") {
+        config.type = "line";
+        config.lineStyle = { width: lineWidth, color: primary };
 
-        if (showArea) {
+        // Hover halo — invisible symbols normally, visible circle on emphasis
+        config.symbol = "circle";
+        config.symbolSize = 8;
+        config.showSymbol = true;
+        config.itemStyle = { color: "transparent", borderWidth: 0 };
+        config.emphasis = {
+          symbolSize: 8,
+          symbol: "circle",
+          itemStyle: {
+            color: withHexOpacity(secondary, 0.5),
+            borderWidth: 0,
+            shadowBlur: 0,
+          },
+        };
+
+        if (type === "area") {
           config.areaStyle = {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: withHexOpacity(seriesColor, resolvedAreaOpacity) },
-              { offset: 1, color: withHexOpacity(seriesColor, 0.04) },
+              { offset: 0, color: withHexOpacity(primary, resolvedAreaOpacity) },
+              { offset: 1, color: withHexOpacity(secondary, 0.04) },
             ]),
           };
         }
       } else {
-        // Bar chart
+        // Bar
+        config.type = "bar";
         config.barMaxWidth = barMaxWidth;
-        config.itemStyle = {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: withHexOpacity(seriesColor, 0.85) },
-            { offset: 1, color: withHexOpacity(seriesColor, 0.25) },
-          ]),
-        };
-      }
 
-      // Mark line on first series only
-      if (index === 0) {
-        config.markLine = {
-          silent: true,
-          symbol: "none",
-          label: { show: false },
-          lineStyle: { color: withOpacity(textPrimary, 0.35), width: 1 },
-          data: [{ yAxis: 0 }],
-        };
+        const posGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: withHexOpacity(primary, 0.85) },
+          { offset: 0.5, color: withHexOpacity(primary, 0.6) },
+          { offset: 1, color: withHexOpacity(secondary, 0.4) },
+        ]);
+        const posGradientEmphasis = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: withHexOpacity(primary, 1.0) },
+          { offset: 1, color: withHexOpacity(secondary, 0.5) },
+        ]);
+
+        // Zone-based coloring: if negativeColor is set, apply per-data-point styles
+        if (s.negativeColor) {
+          const [negPrimary, negSecondary] = resolveSeriesColors(s.negativeColor, primary);
+          const negGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: withHexOpacity(negPrimary, 1.0) },
+            { offset: 1, color: withHexOpacity(negSecondary, 1.0) },
+          ]);
+          const negGradientEmphasis = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: withHexOpacity(negPrimary, 1.0) },
+            { offset: 1, color: withHexOpacity(negSecondary, 0.7) },
+          ]);
+
+          config.data = s.pairedData.map((point) => {
+            const yVal = point[1];
+            const isNeg = typeof yVal === "number" && yVal < 0;
+            return {
+              value: point,
+              itemStyle: { color: isNeg ? negGradient : posGradient },
+              emphasis: { itemStyle: { color: isNeg ? negGradientEmphasis : posGradientEmphasis } },
+            };
+          });
+          // Default itemStyle as fallback
+          config.itemStyle = { color: posGradient };
+        } else {
+          config.itemStyle = { color: posGradient };
+          config.emphasis = { itemStyle: { color: posGradientEmphasis } };
+        }
       }
 
       if (seriesOverrides) {
@@ -433,7 +428,7 @@ export default function GTPChart({
           const v = point.numericValue;
           if (!Number.isFinite(v)) return "";
           const meta = series.find((s) => s.name === point.seriesName);
-          const lineColor = meta?.color ?? point.color ?? textPrimary;
+          const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
           const formattedValue = percentageMode ? `${v.toFixed(1)}%` : formatCompactNumber(v);
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
           return `
@@ -465,7 +460,7 @@ export default function GTPChart({
       animation,
       backgroundColor: "transparent",
       graphic:
-        processedSeries.length === 0
+        pairedSeries.length === 0
           ? [
               {
                 type: "text",
@@ -484,7 +479,9 @@ export default function GTPChart({
       xAxis: {
         type: xAxisType,
         show: true,
-        boundaryGap: chartType === "bar" ? true : false,
+        min: xAxisMin,
+        max: xAxisMax,
+        boundaryGap: hasBarSeries ? true : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
         axisTick: { show: false },
         axisLabel: {
@@ -565,23 +562,24 @@ export default function GTPChart({
     areaOpacityOverride,
     barMaxWidth,
     chartTooltipPosition,
-    chartType,
     containerHeight,
     emptyStateMessage,
     gridOverride,
+    hasBarSeries,
     lineWidth,
     numbersXxsTypography,
     optionOverrides,
     percentageMode,
-    processedSeries,
+    pairedSeries,
     series,
     seriesOverrides,
-    showArea,
     smooth,
     stack,
     textXxsTypography,
     tooltipFormatter,
     xAxisLabelFormatter,
+    xAxisMin,
+    xAxisMax,
     xAxisType,
     yAxisLabelFormatter,
     yAxisMaxOverride,
@@ -593,7 +591,7 @@ export default function GTPChart({
   };
 
   const watermarkOverlayClassName =
-    "pointer-events-none absolute inset-y-0 left-[52px] right-0 z-[40] flex items-center justify-center";
+    "pointer-events-none absolute inset-y-0 left-[52px] bottom-[5%] right-0 z-[40] flex items-center justify-center";
 
   return (
     <div
@@ -610,9 +608,16 @@ export default function GTPChart({
         />
       </div>
       {showWatermark ? (
-        <div className={watermarkOverlayClassName}>
-          <ChartWatermarkWithMetricName metricName={watermarkMetricName} className={WATERMARK_CLASS} />
-        </div>
+
+        watermarkMetricName ? (
+          <div className={watermarkOverlayClassName}>
+            <ChartWatermarkWithMetricName metricName={watermarkMetricName} className={WATERMARK_CLASS} />
+          </div>
+        ) : (
+          <div className={watermarkOverlayClassName}>
+            <ChartWatermark className={WATERMARK_CLASS} />
+          </div>
+        )
       ) : null}
     </div>
   );
