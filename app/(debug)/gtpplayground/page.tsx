@@ -12,6 +12,7 @@ import GTPSplitPane from "@/components/GTPButton/GTPSplitPane";
 import GTPResizeDivider from "@/components/GTPButton/GTPResizeDivider";
 import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPButton/GTPScrollPane";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
+import GTPChart from "@/components/GTPButton/GTPChart";
 
 type ButtonVariant = "primary" | "highlight" | "no-background";
 type ButtonVisualState = "default" | "hover" | "active" | "disabled";
@@ -187,6 +188,7 @@ function GeneralizedLayoutDemo() {
         }
         bottomBar={
           <>
+
           </>
         }
       >
@@ -199,8 +201,14 @@ function GeneralizedLayoutDemo() {
             </div>
           }
           right={
-            <div className="min-w-0 flex-1 min-h-0 h-full">
-
+            <div className="w-full h-full flex items-center justify-center">
+                          <GTPChart
+              series={[{
+                data: [[1, 100], [2, 200], [3, 300], [4, 400], [5, 500]],
+                seriesType: "area",
+                name: "Demo Metric",
+              }]}
+            />
             </div>
           }
           divider={({ onDragStart, isMobile: isMobileLayout }) =>
