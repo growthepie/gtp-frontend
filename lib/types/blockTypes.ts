@@ -88,6 +88,14 @@ export interface TableBlock extends BaseBlock {
   };
   columnSortBy: "value" | "name" | undefined;
   scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
+  cardView?: {
+    titleColumn: string; // Column key for card title (middle section, displayed prominently)
+    imageColumn?: string; // Column key for avatar/icon (middle section)
+    linkColumn?: string; // Column key whose value is used as arrow link (middle section)
+    topColumns?: string[]; // Explicit column keys for top metric rows (auto-detected if omitted)
+    bottomColumns?: string[]; // Explicit column keys for bottom tag row (auto-detected if omitted)
+    hiddenColumns?: string[]; // Columns to suppress entirely in card view
+  };
   readFromJSON: boolean;
   filterOnStateKey?: {
     stateKey: string;

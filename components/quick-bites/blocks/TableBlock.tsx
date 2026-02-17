@@ -268,6 +268,215 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     <span className="text-[#5A6462] text-xs">—</span>
   );
 
+  // Shared cell content renderer — used by both table rows and card view
+  const renderCellContent = (cellData: any, columnKey: string): React.ReactNode => {
+    const columnType = columnDefinitions?.[columnKey]?.type;
+
+    if (columnType === "chain") {
+      const chainKeys = parseChainKeys(cellData?.value);
+      const colDef = columnDefinitions?.[columnKey];
+      const showIcon = colDef?.showIcon !== false;
+      const showLabel = colDef?.showLabel === true;
+      if (chainKeys.length === 0) return <EmptyCell />;
+      return (
+        <div className="flex items-center w-full gap-x-[5px]">
+          {chainKeys.map((chainKey) => {
+            const chainInfo = AllChainsByKeys[chainKey];
+            if (!chainInfo) return null;
+            return (
+              <React.Fragment key={chainKey}>
+                {showIcon && (
+                  <Icon icon={`gtp:${chainInfo.urlKey}-logo-monochrome`} className="w-[15px] h-[15px] flex-shrink-0" style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }} />
+                )}
+                {showLabel && (
+                  <span className="text-xs truncate">{chainInfo.name_short}</span>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      );
+    } else if (columnType === "image") {
+      const imageSrc = typeof cellData?.value === "string" ? cellData.value.trim() : "";
+      return (
+        <div className="flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] overflow-hidden">
+          {imageSrc && (
+            <img src={imageSrc} alt="" className="rounded-full w-[26px] h-[26px] object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          )}
+        </div>
+      );
+    } else if (columnType === "metric" && typeof cellData?.value === "string") {
+      const metricIcon = cellData.value === "supply_bridged" ? "gtp-crosschain" : cellData.value === "supply_direct" ? "gtp-tokentransfers" : cellData.value === "locked_supply" ? "gtp-lock" : null;
+      return metricIcon ? (
+        <div className="flex items-center justify-center w-full text-color-ui-hover"><GTPIcon icon={metricIcon as GTPIconName} size="sm" /></div>
+      ) : (
+        <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
+      );
+    } else if (columnType === "boolean") {
+      const raw = cellData?.value;
+      const normalized = raw === true || raw === "true" ? true : raw === false || raw === "false" ? false : null;
+      if (normalized === null) return <EmptyCell />;
+      return (
+        <div className="flex items-center justify-center w-full">
+          <Icon icon={normalized ? "feather:check" : "feather:x"} className={`w-[14px] h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`} />
+        </div>
+      );
+    } else if (columnType === "link") {
+      const linkValue = typeof cellData?.value === "string" ? cellData.value.trim() : "";
+      if (!linkValue) return <EmptyCell />;
+      return (
+        <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
+          <Icon icon="feather:external-link" className="w-[12px] h-[12px] text-[#5A6462] flex-shrink-0" />
+          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+        </div>
+      );
+    } else if (columnType === "badges") {
+      const badges = cellData?.badges as Array<{ label: string; color: string; url: string }> | undefined;
+      const activeBadges = badges?.filter(b => b.url) ?? [];
+      if (activeBadges.length === 0) return <EmptyCell />;
+      return (
+        <div className="flex items-center gap-x-[5px] w-full flex-wrap">
+          {activeBadges.map((badge) => (
+            <a key={badge.label} href={badge.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity" style={{ borderColor: badge.color, color: badge.color }}>
+              <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+              {badge.label}
+            </a>
+          ))}
+        </div>
+      );
+    } else {
+      const formatted = formatValue(cellData?.value, columnKey);
+      if (formatted === null) return <EmptyCell />;
+      return (
+        <>
+          {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
+          <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>{formatted}</span>
+        </>
+      );
+    }
+  };
+
+  // Card view for mobile when cardView config is present
+  if (isMobile && block.cardView) {
+    const { titleColumn, imageColumn, linkColumn, topColumns: explicitTop, bottomColumns: explicitBottom, hiddenColumns = [] } = block.cardView;
+    // Columns consumed by the middle section or explicitly hidden
+    const reservedInCard = new Set([titleColumn, ...(imageColumn ? [imageColumn] : []), ...(linkColumn ? [linkColumn] : []), ...hiddenColumns]);
+    const visibleColumns = columnKeyOrder.filter(key => !reservedInCard.has(key));
+    // Split into top (metrics) and bottom (tags) — explicit config or auto-detect
+    const TAG_TYPES = new Set(["chain", "badges", "boolean", "link", "image"]);
+    const topColumns = explicitTop ?? visibleColumns.filter(key => !TAG_TYPES.has(columnDefinitions?.[key]?.type || ""));
+    const bottomColumns = explicitBottom ?? visibleColumns.filter(key => TAG_TYPES.has(columnDefinitions?.[key]?.type || ""));
+    const titleColIndex = columnKeyOrder.indexOf(titleColumn);
+    const imageColIndex = imageColumn ? columnKeyOrder.indexOf(imageColumn) : -1;
+    const linkColIndex = linkColumn ? columnKeyOrder.indexOf(linkColumn) : -1;
+    const titleColType = columnDefinitions?.[titleColumn]?.type;
+
+    const isScrollable = block.scrollable !== false;
+    const cardGrid = (
+      <div className="grid grid-cols-1 gap-[10px]">
+        {sortedRows.map((rowData, rowIndex) => {
+          const titleCell = titleColIndex >= 0 ? rowData[titleColIndex] : null;
+          const imageCell = imageColIndex >= 0 ? rowData[imageColIndex] : null;
+          const imageSrc = typeof imageCell?.value === "string" ? imageCell.value.trim() : "";
+
+          // For chain-type title columns, resolve chain info for header rendering
+          const titleChainKeys = titleColType === "chain" ? parseChainKeys(titleCell?.value) : [];
+          const titleChainInfo = titleChainKeys.length > 0 ? AllChainsByKeys[titleChainKeys[0]] : null;
+
+          const linkCell = linkColIndex >= 0 ? rowData[linkColIndex] : null;
+          const cardLink = typeof linkCell?.value === "string" ? linkCell.value.trim() : "";
+
+          return (
+            <div key={`card-${rowIndex}`} className="flex flex-col gap-y-[20px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] pt-[5px] pb-[10px] hover:bg-forest-500/10">
+              {/* Top: metric rows */}
+              {topColumns.length > 0 && (
+                <div className="flex flex-row justify-between">
+                  {topColumns.map((colKey) => {
+                    if(!colKey){
+                      return <div key={Math.random()} />
+                    }
+                    const colIdx = columnKeyOrder.indexOf(colKey);
+                    const cell = rowData[colIdx];
+                    const colDef = columnDefinitions[colKey];
+                    const label = colDef?.label ?? formatLabel(colKey);
+                    return (
+                      <div key={colKey} className="flex items-center h-[20px] gap-x-[5px]">
+                        <span className={`${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} text-color-text-primary text-right truncate`}>
+                          {renderCellContent(cell, colKey)}
+                        </span>
+                        {!["origin_key", "chain_key"].includes(colKey) && (<span className="text-xs text-color-text-secondary flex-shrink-0">{label}</span>)}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Middle: image/icon + title + optional arrow link */}
+              <div className="flex items-center gap-x-[8px]">
+                {imageColumn && (
+                  <div className="flex-shrink-0 bg-color-ui-active rounded-full size-[36px] overflow-hidden">
+                    {imageSrc && (
+                      <img src={imageSrc} alt="" className="rounded-full w-[36px] h-[36px] object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    )}
+                  </div>
+                )}
+                {titleColType === "chain" && titleChainInfo ? (
+                  <div className="flex items-center gap-x-[8px] flex-1 min-w-0">
+                    <Icon icon={`gtp:${titleChainInfo.urlKey}-logo-monochrome`} className="w-[24px] h-[24px] flex-shrink-0" style={{ color: titleChainInfo.colors[resolvedTheme ?? "dark"][0] }} />
+                    <span className="heading-large-md truncate">{titleChainInfo.name_short}</span>
+                  </div>
+                ) : (
+                  <div className="heading-large-md truncate flex-1">
+                    {titleCell ? (typeof titleCell.value === "string" ? titleCell.value : renderCellContent(titleCell, titleColumn)) : <EmptyCell />}
+                  </div>
+                )}
+                {cardLink && (
+                  <a href={cardLink} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 size-[24px] bg-color-bg-medium rounded-full flex justify-center items-center hover:bg-forest-500/10">
+                    <Icon icon="feather:arrow-right" className="w-[17px] h-[17px] text-color-text-primary" />
+                  </a>
+                )}
+              </div>
+              {/* Bottom: tag columns (chain, badges, etc.) */}
+              {bottomColumns.length > 0 && (
+                <div className="flex items-center justify-between gap-x-[5px]">
+                  {bottomColumns.map((colKey) => {
+                    const colIdx = columnKeyOrder.indexOf(colKey);
+                    const cell = rowData[colIdx];
+                    const colDef = columnDefinitions[colKey];
+                    const label = colDef?.label ?? formatLabel(colKey);
+                    return (
+                      <div key={colKey} className="flex items-center h-[20px] gap-x-[5px]">
+                        <span className={`${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} text-color-text-primary text-right truncate`}>
+                          {renderCellContent(cell, colKey)}
+                        </span>
+                        {!["origin_key", "chain_key"].includes(colKey) && (<span className="text-xs text-color-text-secondary flex-shrink-0">{label}</span>)}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+
+    return (
+      <div className={`my-8 ${block.className || ''}`}>
+        {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
+        {isScrollable ? (
+          <VerticalScrollContainer
+            height={340}
+            // scrollbarAbsolute={true}
+            // scrollbarPosition="right"
+            paddingRight={0}
+          >
+            {cardGrid}
+          </VerticalScrollContainer>
+        ) : cardGrid}
+      </div>
+    );
+  }
+
   // Build grid template:
   // - expand column gets 2fr (primary flex column)
   // - compact columns (image, icon-only chain, boolean) stay fixed px

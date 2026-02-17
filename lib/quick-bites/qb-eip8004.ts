@@ -99,13 +99,18 @@ const Agents: QuickBiteData = createQuickBite({
       },
       columnOrder: [
         "image",
-        "rank",
         "agent",
         "origin_key",
         "endpoints",
         "events"
       ],
       columnSortBy: "value",
+      cardView: {
+        titleColumn: "agent",
+        imageColumn: "image",
+        topColumns: ["", "events"],
+        bottomColumns: ["endpoints", "origin_key"],
+      },
     }),
     "```",
 
@@ -277,6 +282,11 @@ const Agents: QuickBiteData = createQuickBite({
         "agents_per_owner"
       ],
       columnSortBy: "value",
+      cardView: {
+        titleColumn: "origin_key",
+        topColumns: [null, "total_registered", "valid_registrations"],
+        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"]
+      },
     }),
     "```",
 
