@@ -358,6 +358,47 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle EIP-8004 data placeholders
+      if (processedItem.includes('{{eip8004_')) {
+        const eip8004KpisRaw = await fetchData('eip8004_kpis', "https://api.growthepie.com/v1/quick-bites/eip8004/kpis.json");
+        const eip8004UriQualityRaw = await fetchData('eip8004_uri_quality', "https://api.growthepie.com/v1/quick-bites/eip8004/uri_quality.json");
+
+        const kpis = (eip8004KpisRaw?.data ?? {}) as Record<string, any>;
+        const uriQualityRows = (eip8004UriQualityRaw?.data?.uri_quality?.rows ?? []) as any[][];
+        const emptyUriRow = uriQualityRows[0] ?? [];
+        const validUriRow = uriQualityRows[1] ?? [];
+
+        const formatNumber = (value: any, decimals: number = 0): string => {
+          const num = Number(value);
+          if (!Number.isFinite(num)) return 'N/A';
+          return num.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          });
+        };
+
+        const totalAgents = kpis.total_agents;
+        const agentsWithFeedback = kpis.agents_with_feedback;
+        const uniqueOwners = kpis.unique_owners;
+        const emptyUriCount = emptyUriRow[1];
+        const emptyUriShare = emptyUriRow[2];
+        const validUriCount = validUriRow[1];
+        const validUriShare = validUriRow[2];
+
+        processedItem = processedItem
+          .replace('{{eip8004_total_agents}}', formatNumber(totalAgents, 0))
+          .replace('{{eip8004_agents_with_feedback}}', formatNumber(agentsWithFeedback, 0))
+          .replace('{{eip8004_unique_owners}}', formatNumber(uniqueOwners, 0))
+          .replace('{{eip8004_empty_uri_count}}', formatNumber(emptyUriCount, 0))
+          .replace('{{eip8004_empty_uri_share}}', formatNumber(emptyUriShare, 2))
+          .replace('{{eip8004_valid_uri_count}}', formatNumber(validUriCount, 0))
+          .replace('{{eip8004_valid_uri_share}}', formatNumber(validUriShare, 2))
+          // Backward-compatible replacements for old placeholders
+          .replace('{{eip8004_invalid_uri_latest}}', formatNumber(emptyUriCount, 0))
+          .replace('{{eip8004_invalid_uri_share_latest}}', formatNumber(emptyUriShare, 2))
+          .replace('{{eip8004_invalid_uri_7d_avg}}', 'N/A');
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

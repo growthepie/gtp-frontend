@@ -443,7 +443,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           </div>
         </div>
         <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart chart={chartRef.current} options={options}
+          <HighchartsChart chart={chartRef.current} options={options || {}}
               plotOptions={{
                 line: {
                   lineWidth: 3,

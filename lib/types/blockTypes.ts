@@ -65,6 +65,8 @@ export interface TableBlock extends BaseBlock {
       copyable?: boolean; // Add this line
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
+      sourceKey?: string; // Map display column key to a source key from JSON columns
+      sourceIndex?: number; // Map display column key to a fixed source index
       units?: {
         [key: string]: {
           decimals?: number;

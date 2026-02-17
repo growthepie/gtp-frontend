@@ -77,7 +77,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       return keysObject;
     }
     return columns || block.columnDefinitions || {};
-  }, [block.readFromJSON, block.columnDefinitions, jsonData]);
+  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData]);
 
   const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
   const hiddenKeys = useMemo(() => {
@@ -96,21 +96,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const orderedKeys: string[] = [];
 
     block.columnOrder.forEach((key) => {
-      if (dynamicColumnKeys[key] && !seen.has(key) && !hiddenKeys.has(key)) {
+      const columnDef = block.columnDefinitions?.[key];
+      const mappedKey = columnDef?.sourceKey || key;
+      const keyIsPresentInData = Boolean(dynamicColumnKeys[mappedKey]);
+      const hasFixedSourceIndex = typeof columnDef?.sourceIndex === "number";
+      if ((keyIsPresentInData || hasFixedSourceIndex) && !seen.has(key) && !hiddenKeys.has(key)) {
         orderedKeys.push(key);
         seen.add(key);
       }
     });
-
-    visibleDefault.forEach((key) => {
-      if (!seen.has(key)) {
-        orderedKeys.push(key);
-        seen.add(key);
-      }
-    });
-
-    return orderedKeys;
-  }, [block.columnOrder, defaultColumnKeyOrder, dynamicColumnKeys, hiddenKeys]);
+    
+    // When columnOrder is provided, use it as explicit visible set.
+    // Fallback to visible defaults only if none of the requested keys exist.
+    return orderedKeys.length > 0 ? orderedKeys : visibleDefault;
+  }, [block.columnOrder, block.columnDefinitions, defaultColumnKeyOrder, dynamicColumnKeys, hiddenKeys]);
 
   const hasLeadingLogo = columnKeyOrder[0] && block.columnDefinitions?.[columnKeyOrder[0]]?.type === "image";
 
@@ -126,7 +125,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       return block.columnDefinitions;
     }
     return {};
-  }, [block.readFromJSON, block.columnDefinitions]);
+  }, [block.columnDefinitions]);
 
   const processedRows = useMemo(() => {
     if (!block.readFromJSON || !jsonData) {
@@ -139,11 +138,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     }
     const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
-    return rowsArray.map(row => columnKeyOrder.map((columnKey) => {
-      const sourceIndex = columnIndexMap[columnKey];
-      const cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
-      const cellObject: { value: any; link?: string; icon?: string; color?: string; } = { value: cellValue };
+    return rowsArray.map((row, rowIndex) => columnKeyOrder.map((columnKey) => {
       const columnDef = columnDefinitions[columnKey];
+      const mappedKey = columnDef?.sourceKey || columnKey;
+      const sourceIndex = typeof columnDef?.sourceIndex === "number" ? columnDef.sourceIndex : columnIndexMap[mappedKey];
+      let cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
+
+      // Derive rank from row order if API does not provide a dedicated rank field.
+      if ((cellValue === undefined || cellValue === null) && columnKey === "rank") {
+        cellValue = rowIndex + 1;
+      }
+
+      const cellObject: { value: any; link?: string; icon?: string; color?: string; } = { value: cellValue };
       
       // Generate link if add_url is defined in column definition
       if (columnDef?.add_url && typeof cellValue === 'string') {
@@ -152,7 +158,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       
       return cellObject;
     }));
-  }, [block.readFromJSON, block.rowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
+  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
 
   const sortedRows = useMemo(() => {
     const dataToSort = [...processedRows];
@@ -213,11 +219,19 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   };
 
   const formatValue = (value: any, columnKey: string) => {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
     // get units if exists
     const units = columnDefinitions[columnKey]?.units;
     if (units) {
       const unit = Object.values(units)[0];
-      return `${unit.prefix??''}${(value).toLocaleString("en-GB", { minimumFractionDigits: unit.decimals??0, maximumFractionDigits: unit.decimals??0 })}${unit.suffix??''}`;
+      const numericValue = typeof value === 'number' ? value : Number(value);
+      if (!Number.isFinite(numericValue)) {
+        return '-';
+      }
+      return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
     }
     if (typeof value === 'number') {
       return value.toLocaleString();
@@ -225,6 +239,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     if (typeof value === 'string') {
       return String(value || '');
     }
+    return String(value);
   }
 
   const gridTemplateColumns = columnKeyOrder.map((columnKey) => {
@@ -249,13 +264,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           header={
             <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'}  select-none h-[34px] !pt-0 !pb-0 !items-end -mr-[17px]`}>
               {columnKeyOrder.map(columnKey => {
-                const randColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+                const mappedKey = columnDefinitions[columnKey]?.sourceKey || columnKey;
+                const canSort = dynamicColumnKeys[mappedKey]?.sortByValue ?? columnDefinitions[columnKey]?.sortByValue;
                 return <GridTableHeaderCell
                   key={columnKey}
                   justify={columnDefinitions[columnKey]?.isNumeric ? 'end' : 'start'}
                   metric={columnKey}
                   sort={{ metric: sortConfig?.key || '', sortOrder: sortConfig?.direction || 'desc' }}
-                  onSort={() => dynamicColumnKeys[columnKey]?.sortByValue && handleSort(columnKey)}
+                  onSort={() => canSort && handleSort(columnKey)}
                   className={` ${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
                 >
                   {columnDefinitions[columnKey]?.label ?? formatLabel(columnKey)}
@@ -292,15 +308,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       </div>
                     );
                   } else if (columnType === "image" && typeof cellData?.value === "string") {
-                    cellMainContent = (
+                    const imageSrc = cellData.value.trim();
+                    cellMainContent = imageSrc ? (
                       <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] ${columnKey === columnKeyOrder[0] ? "-ml-[5px]" : ""}`}>
                         <img
-                          src={cellData.value}
+                          src={imageSrc}
                           alt={`${columnKey} logo`}
                           className="rounded-full w-[26px] h-[26px] object-cover"
                           loading="lazy"
                         />
                       </div>
+                    ) : (
+                      <span className="text-xs">-</span>
                     );
                   } else if (columnType === "metric" && typeof cellData?.value === "string") {
                     const metricIcon =
@@ -317,6 +336,27 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       </div>
                     ) : (
                       <span className="text-xs">{formatValue(cellData?.value, columnKey)}</span>
+                    );
+                  } else if (columnType === "boolean") {
+                    const raw = cellData?.value;
+                    const normalized = raw === true || raw === "true"
+                      ? true
+                      : raw === false || raw === "false"
+                        ? false
+                        : null;
+                    cellMainContent = (
+                      <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
+                        {normalized === null ? "null" : normalized ? "True" : "False"}
+                      </span>
+                    );
+                  } else if (columnType === "link") {
+                    const hasLink = typeof cellData?.value === "string" && cellData.value.length > 0;
+                    cellMainContent = hasLink ? (
+                      <div className="flex items-center justify-center w-full text-color-ui-hover">
+                        <Icon icon="feather:external-link" className="w-[13px] h-[13px]" />
+                      </div>
+                    ) : (
+                      <span className="text-xs">-</span>
                     );
                   } else {
                     // default cell content
