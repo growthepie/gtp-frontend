@@ -10,7 +10,6 @@ import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import {
   clamp,
-  getCssVarAsRgb,
   withOpacity,
   withHexOpacity,
   escapeHtml,
@@ -107,6 +106,9 @@ export default function GTPChart({
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const { theme } = useTheme();
+
+  const textPrimary = theme === "light" ? "rgb(31, 39, 38)" : "rgb(205, 216, 211)";
+  const textSecondary = theme === "light" ? "rgb(121, 139, 137)" : "rgb(75, 83, 79)";
 
   const normalizedSeries = useMemo(() => {
     if (xAxisType !== "time" || series.length <= 1) {
@@ -266,9 +268,6 @@ export default function GTPChart({
 
   // Build ECharts option
   const chartOption = useMemo<EChartsOption>(() => {
-    const textPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
-    const textSecondary = getCssVarAsRgb("--text-secondary", "rgb(121, 139, 137)");
-
     const shouldStack = stack || percentageMode;
     const grid = { ...DEFAULT_GRID, ...gridOverride };
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
@@ -666,7 +665,8 @@ export default function GTPChart({
     emptyStateMessage,
     gridOverride,
     hasBarSeries,
-    theme,
+    textPrimary,
+    textSecondary,
     lineWidth,
     numbersXxsTypography,
     optionOverrides,

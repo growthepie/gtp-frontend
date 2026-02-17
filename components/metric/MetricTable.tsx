@@ -15,6 +15,7 @@ import { GTPButton } from "../GTPButton/GTPButton";
 import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPButton/GTPScrollPane";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
+import ChartWatermark from "../layout/ChartWatermark";
 
 const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
   "minmax(0, 174px) 8px minmax(76px, 1fr) minmax(66px, 1fr) minmax(66px, 1fr) minmax(66px, 1fr) 22px";
@@ -548,7 +549,10 @@ const MetricTable = ({
 
   return (
     <HorizontalScrollContainer hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
-      <div className="w-full min-w-[503px]" style={{ height: `${tableViewportHeight}px` }}>
+      <div className="w-full min-w-[503px] relative" style={{ height: `${tableViewportHeight}px` }}>
+        <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center">
+          <ChartWatermark className="w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten" />
+        </div>
         <div className="hidden lg:block">
           <div className="relative px-[6px]">
             <GridTableHeader

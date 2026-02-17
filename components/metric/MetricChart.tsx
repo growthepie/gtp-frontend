@@ -107,7 +107,12 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
         };
         return series;
       })
-      .filter((item): item is GTPChartSeries => Boolean(item));
+      .filter((item): item is GTPChartSeries => Boolean(item))
+      .sort((a, b) => {
+        const aFirst = a.data.find((p) => p[1] !== null)?.[0] ?? Infinity;
+        const bFirst = b.data.find((p) => p[1] !== null)?.[0] ?? Infinity;
+        return aFirst - bFirst;
+      });
   }, [
     theme,
     chainKeys,
