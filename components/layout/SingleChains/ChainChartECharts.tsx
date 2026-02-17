@@ -68,16 +68,22 @@ const transformMetricDetails = (details: MetricDetails): MetricData => {
   };
 };
 
-// Calculate "nice" Y-axis maximum and interval to match Highcharts behavior
-// Returns { max, interval } that divides evenly into nice tick intervals with some headroom
-function calculateNiceYAxis(maxValue: number, tickCount: number = 4): { max: number; interval: number } {
-  if (maxValue <= 0) return { max: 1, interval: 0.25 };
+// Calculate "nice" Y-axis max/min and interval to match Highcharts behavior
+// Returns { max, min, interval } that divides evenly into nice tick intervals with some headroom
+function calculateNiceYAxis(maxValue: number, tickCount: number = 4, minValue: number = 0): { max: number; min: number; interval: number } {
+  // All values are zero or no data
+  if (maxValue <= 0 && minValue >= 0) return { max: 1, min: 0, interval: 0.25 };
+
+  // Determine the range we need to cover (use whichever extent is larger for interval calc)
+  const absMax = Math.abs(maxValue);
+  const absMin = Math.abs(minValue);
+  const extent = Math.max(absMax, absMin);
 
   // Add ~10% headroom like Highcharts does
-  const paddedMax = maxValue * 1.1;
+  const paddedExtent = extent * 1.1;
 
-  // Calculate nice tick interval first, then derive max from it
-  const rawInterval = paddedMax / tickCount;
+  // Calculate nice tick interval first, then derive max/min from it
+  const rawInterval = paddedExtent / tickCount;
 
   // Calculate the order of magnitude for the interval
   const magnitude = Math.pow(10, Math.floor(Math.log10(rawInterval)));
@@ -95,9 +101,12 @@ function calculateNiceYAxis(maxValue: number, tickCount: number = 4): { max: num
   const interval = niceInterval * magnitude;
 
   // Calculate max as a multiple of the interval that covers the padded data
-  const niceMax = Math.ceil(paddedMax / interval) * interval;
+  const niceMax = maxValue > 0 ? Math.ceil(maxValue * 1.1 / interval) * interval : 0;
 
-  return { max: niceMax, interval };
+  // Calculate min: snap down to a nice interval multiple (or 0 if no negatives)
+  const niceMin = minValue < 0 ? -Math.ceil(Math.abs(minValue) * 1.1 / interval) * interval : 0;
+
+  return { max: niceMax || interval, min: niceMin, interval };
 }
 
 // Format number with SI suffix - matches Highcharts format (e.g., "1.0M", "750k")
@@ -332,7 +341,8 @@ const MetricChart = memo(
         // When showing Gwei, don't show prefix (no $ sign)
         const prefix = showGwei(metricKey) ? "" : (unitInfo?.prefix || "");
         const suffix = showGwei(metricKey) ? " Gwei" : (unitInfo?.suffix || "");
-        return `${prefix}${formatNumberWithSI(value)} ${suffix}`;
+        const sign = value < 0 ? "-" : "";
+        return `${sign}${prefix}${formatNumberWithSI(Math.abs(value))} ${suffix}`;
       },
       [master, metricKey, showUsd, showGwei]
     );
@@ -374,7 +384,7 @@ const MetricChart = memo(
     );
 
     // Pre-compute filtered data and max value to avoid duplicate filtering in option
-    const { filteredDataMap, maxDataValue, xMin, xMax } = useMemo(() => {
+    const { filteredDataMap, maxDataValue, minDataValue, xMin, xMax } = useMemo(() => {
       const xMinRaw = zoomed ? zoomMin : activeTimespan?.xMin;
       const xMaxVal = zoomed ? zoomMax : activeTimespan?.xMax;
 
@@ -385,6 +395,7 @@ const MetricChart = memo(
 
       const filtered: { [chainId: string]: [number, number][] } = {};
       let maxVal = 0;
+      let minVal = 0;
 
       data.forEach((item) => {
         const seriesDataObj = seriesDataMap[item.chain_id];
@@ -400,13 +411,14 @@ const MetricChart = memo(
 
         filtered[item.chain_id] = chainFiltered;
 
-        // Calculate max in same pass
+        // Calculate max and min in same pass
         for (let i = 0; i < chainFiltered.length; i++) {
           if (chainFiltered[i][1] > maxVal) maxVal = chainFiltered[i][1];
+          if (chainFiltered[i][1] < minVal) minVal = chainFiltered[i][1];
         }
       });
 
-      return { filteredDataMap: filtered, maxDataValue: maxVal, xMin: xMinVal, xMax: xMaxVal };
+      return { filteredDataMap: filtered, maxDataValue: maxVal, minDataValue: minVal, xMin: xMinVal, xMax: xMaxVal };
     }, [data, seriesDataMap, zoomed, zoomMin, zoomMax, activeTimespan?.xMin, activeTimespan?.xMax]);
     const echartsColors = useMemo(() => {
       const colors = theme === 'dark' ? ECHARTS_COLORS.dark : ECHARTS_COLORS.light;
@@ -422,7 +434,7 @@ const MetricChart = memo(
       const series: any[] = [];
       const isComparing = chainKey.length > 1;
 
-      const { max: niceYMax, interval: niceYInterval } = calculateNiceYAxis(maxDataValue, 4);
+      const { max: niceYMax, min: niceYMin, interval: niceYInterval } = calculateNiceYAxis(maxDataValue, 4, minDataValue);
 
       data.forEach((item, index) => {
         const chainColors = AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"] || ["#FF0000", "#FF0000"];
@@ -722,7 +734,7 @@ const MetricChart = memo(
         },
         yAxis: {
           type: "value",
-          min: 0, // Always start from 0 like Highcharts
+          min: niceYMin, // Start from 0 or negative "nice" floor when data has negatives
           max: isAllZeroValues && data.length === 1 ? 1 : niceYMax, // Use "nice" max like Highcharts
           z: 1000,
           position: "left",
@@ -888,7 +900,8 @@ const MetricChart = memo(
                 const barWidth = maxValue > 0 && chainKey.length > 1 ? Math.min(100, (value / maxValue) * 100) : 0;
                 const showBar = chainKey.length > 1;
 
-                const valueStr = value.toLocaleString("en-GB", {
+                const sign = value < 0 ? "-" : "";
+                const valueStr = Math.abs(value).toLocaleString("en-GB", {
                   minimumFractionDigits: decimals,
                   maximumFractionDigits: decimals,
                 });
@@ -897,7 +910,7 @@ const MetricChart = memo(
                   <div style="display: flex; width: 100%; gap: 8px; align-items: center; font-weight: 500; margin-bottom: 2px;">
                     <div style="width: 16px; height: 6px; border-radius: 0 4px 4px 0; background: ${gradient};"></div>
                     <div style="font-size: 12px;" class="tooltip-point-name">${label || chainId}</div>
-                    <div style="flex: 1; text-align: right; font-size: 12px;" class="numbers-xs">${prefix}${valueStr}${suffix ? " " + suffix : ""}</div>
+                    <div style="flex: 1; text-align: right; font-size: 12px;" class="numbers-xs">${sign}${prefix}${valueStr}${suffix ? " " + suffix : ""}</div>
                   </div>
                   ${
                     showBar
@@ -940,6 +953,7 @@ const MetricChart = memo(
       seriesDataMap,
       filteredDataMap,
       maxDataValue,
+      minDataValue,
       chartType,
       theme,
       AllChainsByKeys,
