@@ -79,7 +79,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
       )}
       <div
         // className={`rounded-[15px] px-[30px] py-[15px] bg-color-bg-default w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
-        className={`w-full h-full transition-height duration-300 flex-1 ${topCard ? " relative md:absolute " : "relative"} ${isHidden ? "hidden" : ""}`}
+        className={`w-full h-full transition-height duration-300 flex-1 ${topCard ? " relative @[1040px]:absolute " : "relative"} ${isHidden ? "hidden" : ""}`}
        
       >
             {/* <div className="heading-large-md ">Events</div> */}
