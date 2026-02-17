@@ -52,6 +52,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         selectedTimespan,
         setSelectedTimespan,
         setZoomed,
+        timeIntervalKey,
     } = useMetricChartControls();
 
     const { data: master } = useMaster();
@@ -100,6 +101,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         );
     }, [sources]);
 
+
+
     return (
         <GTPCardLayout
             fullBleed={false}
@@ -111,14 +114,20 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     <span className="">{metricData?.metric_name}</span>
                    
                   </div>
-                  <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
-                    <GTPIcon
-                        icon="gtp-realtime"
-                        className="!w-[12px] !h-[12px] text-color-text-primary"
-                        containerClassName="!w-[12px] !h-[12px]"
-                    />
-                    <span className="text-xxs text-color-text-secondary">Sourced from the growthepie.com</span>
-                  </div>
+                  {(() => {
+                    const show7dRolling = timeIntervalKey === "daily_7d_rolling";
+                 
+                    return show7dRolling ? (
+                      <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
+                        <GTPIcon
+                          icon="gtp-realtime"
+                          className="!w-[12px] !h-[12px] text-color-text-primary"
+                          containerClassName="!w-[12px] !h-[12px]"
+                        />
+                        <span className="text-xxs text-color-text-secondary">7-day rolling average</span>
+                      </div>
+                    ) : <></>;
+                  })()}
                 </div>
               }
             topBar={
@@ -310,6 +319,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         >
             <GTPSplitPane
                 leftCollapsed={collapseTable}
+                maxLeftPanePercent={50}
                 divider={({ onDragStart, isMobile: isMobileLayout }) =>
                     !isMobileLayout && !collapseTable ? (
                       <GTPResizeDivider

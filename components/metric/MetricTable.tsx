@@ -547,7 +547,7 @@ const MetricTable = ({
   };
 
   return (
-    <HorizontalScrollContainer includeMargin={isMobile ? true : false}>
+    <HorizontalScrollContainer hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
       <div className="w-full min-w-[503px]" style={{ height: `${tableViewportHeight}px` }}>
         <div className="hidden lg:block">
           <div className="relative px-[6px]">
