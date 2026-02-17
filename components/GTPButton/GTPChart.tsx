@@ -39,6 +39,8 @@ export interface GTPChartSeries {
   color?: string | [string, string];
   /** When set, bar values below 0 use this color instead of the primary color. */
   negativeColor?: string | [string, string];
+  /** When set to 'dashed', bars render with a diagonal stripe decal over the gradient fill. */
+  pattern?: "dashed";
 }
 
 export interface GTPChartTooltipParams {
@@ -427,12 +429,26 @@ export default function GTPChart({
         const posGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: withHexOpacity(primary, 0.85) },
           { offset: 0.5, color: withHexOpacity(primary, 0.6) },
-          { offset: 1, color: withHexOpacity(secondary, 0.4) },
+          { offset: 1, color: "transparent" },
         ]);
         const posGradientEmphasis = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: withHexOpacity(primary, 1.0) },
           { offset: 1, color: withHexOpacity(secondary, 0.5) },
         ]);
+
+        const decal = s.pattern === "dashed"
+          ? {
+              symbol: "rect" as const,
+              symbolSize: 0.7,
+              color: withHexOpacity(primary, 1.0),
+              backgroundColor: "transparent",
+              dashArrayX: [1, 0] as [number, number],
+              dashArrayY: [2, 5] as [number, number],
+              rotation: Math.PI / 4,
+            }
+          : undefined;
+
+        const lastIdx = s.pairedData.length - 1;
 
         // Zone-based coloring: if negativeColor is set, apply per-data-point styles
         if (s.negativeColor) {
@@ -446,16 +462,40 @@ export default function GTPChart({
             { offset: 1, color: withHexOpacity(negSecondary, 0.7) },
           ]);
 
-          config.data = s.pairedData.map((point) => {
+          config.data = s.pairedData.map((point, idx) => {
             const yVal = point[1];
             const isNeg = typeof yVal === "number" && yVal < 0;
+            const applyPattern = s.pattern === "dashed" && idx === lastIdx;
             return {
               value: point,
-              itemStyle: { color: isNeg ? negGradient : posGradient },
-              emphasis: { itemStyle: { color: isNeg ? negGradientEmphasis : posGradientEmphasis } },
+              itemStyle: {
+                color: applyPattern ? "transparent" : (isNeg ? negGradient : posGradient),
+                decal: applyPattern ? decal : undefined,
+              },
+              emphasis: {
+                itemStyle: applyPattern
+                  ? { color: "transparent", shadowBlur: 12, shadowColor: withHexOpacity(isNeg ? negPrimary : primary, 0.5) }
+                  : { color: isNeg ? negGradientEmphasis : posGradientEmphasis },
+              },
             };
           });
-          // Default itemStyle as fallback
+          config.itemStyle = { color: posGradient };
+        } else if (s.pattern === "dashed") {
+          config.data = s.pairedData.map((point, idx) => {
+            const isLast = idx === lastIdx;
+            return {
+              value: point,
+              itemStyle: {
+                color: isLast ? "transparent" : posGradient,
+                decal: isLast ? decal : undefined,
+              },
+              emphasis: {
+                itemStyle: isLast
+                  ? { color: "transparent", shadowBlur: 12, shadowColor: withHexOpacity(primary, 0.5) }
+                  : { color: posGradientEmphasis },
+              },
+            };
+          });
           config.itemStyle = { color: posGradient };
         } else {
           config.itemStyle = { color: posGradient };

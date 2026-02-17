@@ -104,6 +104,7 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
           data: points,
           seriesType,
           color: colors ? [colors[0], colors[1]] : undefined,
+          pattern: "dashed",
         };
         return series;
       })
