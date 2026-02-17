@@ -594,13 +594,19 @@ const MetricChart = memo(
           //   };
           // } else {
             // For small datasets, use per-bar gradients (better visual quality)
+            // Gradient: bottom (transparent) to top (opaque) — for positive bars
+            const posGradient = new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+              { offset: 0, color: chainColors[0] + "00" },
+              { offset: 1, color: chainColors[0] + "FF" },
+            ], false);
+            // Reversed gradient for negative bars: top (transparent) to bottom (opaque)
+            const negGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: chainColors[0] + "00" },
+              { offset: 1, color: chainColors[0] + "FF" },
+            ], false);
+
             baseSeries.itemStyle = {
-              // global: false makes gradient relative to each bar, not the whole chart
-              // Gradient: bottom (transparent) to top (opaque)
-              color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-                { offset: 0, color: chainColors[0] + "00" },
-                { offset: 1, color: chainColors[0] + "FF" },
-              ], false),
+              color: posGradient,
               borderRadius: [2, 2, 0, 0],
               shadowColor: chainColors[0] + "44",
               shadowBlur: 8,
@@ -611,18 +617,20 @@ const MetricChart = memo(
             // Generate the pattern using the primary chain color
             const incompletePattern = createDiagonalPattern(chainColors[0]);
 
-            // Pattern for incomplete data
-            if (isIncomplete && processedData.length > 1) {
+            // Apply per-bar styling when data has negatives or incomplete bars
+            const hasNegatives = minDataValue < 0;
+            if (hasNegatives || (isIncomplete && processedData.length > 1)) {
               const lastIndex = processedData.length - 1;
               baseSeries.data = processedData.map((d, i) => {
-                if (i === lastIndex) {
+                const isNeg = d[1] < 0;
+                const isLastIncomplete = isIncomplete && i === lastIndex;
+
+                if (isNeg || isLastIncomplete) {
                   return {
                     value: d,
                     itemStyle: {
-                      // Lighter gradient for incomplete bar (global: false)
-                      // Gradient: bottom (transparent) to top (semi-opaque)
-                      color: incompletePattern,
-                      borderRadius: [2, 2, 0, 0],
+                      color: isLastIncomplete ? incompletePattern : negGradient,
+                      borderRadius: isNeg ? [0, 0, 2, 2] : [2, 2, 0, 0],
                     },
                   };
                 }
