@@ -19,6 +19,20 @@ export interface GTPSplitPaneDividerProps {
   isMobile: boolean;
 }
 
+// Stable component that renders the divider render-prop without causing
+// remounts when the render function reference changes between parent renders.
+function DividerSlot({
+  render,
+  onDragStart,
+  isMobile,
+}: {
+  render: (props: GTPSplitPaneDividerProps) => ReactNode;
+  onDragStart: (event: ReactPointerEvent) => void;
+  isMobile: boolean;
+}) {
+  return <>{render({ onDragStart, isMobile })}</>;
+}
+
 export interface GTPSplitPaneProps {
   left: ReactNode;
   right: ReactNode;
@@ -161,12 +175,10 @@ export default function GTPSplitPane({
       ? `calc(${((1 - activeSplitRatio) * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
       : "100%";
 
-  const DividerRenderer = divider;
-
   return (
     <div
       ref={contentRef}
-      className={`flex items-stretch flex-1 min-h-0 gap-[5px] pl-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
+      className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
     >
       {showLeft ? (
         <div
@@ -179,8 +191,8 @@ export default function GTPSplitPane({
           {left}
         </div>
       ) : null}
-      {!isMobile && showLeft && DividerRenderer ? (
-        <DividerRenderer onDragStart={handleDividerPointerDown} isMobile={isMobile} />
+      {!isMobile && showLeft && divider ? (
+        <DividerSlot render={divider} onDragStart={handleDividerPointerDown} isMobile={isMobile} />
       ) : null}
       <div
         className={`flex min-w-0 ${isMobile ? "w-full shrink-0" : "h-full"}`}

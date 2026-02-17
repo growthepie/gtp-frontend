@@ -23,6 +23,8 @@ export interface GTPButtonProps {
   className?: string;
   fill?: "none" | "full" | "mobile";
   buttonType?: "button" | "submit" | "reset";
+  rightIconClassname?: string;
+  leftIconClassname?: string;
   rightIconClickHandler?: () => void;
   leftIconClickHandler?: () => void;
   clickHandler?: () => void;
@@ -152,6 +154,8 @@ export const GTPButton = ({
   className,
   fill = "none",
   buttonType = "button",
+  leftIconClassname = "",
+  rightIconClassname = "",
   rightIconClickHandler,
   leftIconClickHandler,
   clickHandler,
@@ -238,6 +242,7 @@ export const GTPButton = ({
             iconClassName={iconSizeClassName}
             disabled={isDisabled}
             clickHandler={leftIconClickHandler}
+            classNameModifier={leftIconClassname}
           />
         )}
         {hasLabel && (
@@ -254,6 +259,7 @@ export const GTPButton = ({
             iconClassName={iconSizeClassName}
             disabled={isDisabled}
             clickHandler={rightIconClickHandler}
+            classNameModifier={rightIconClassname}
           />
         )}
       </button>
@@ -266,11 +272,13 @@ const GTPButtonIcon = ({
   iconClassName,
   disabled,
   clickHandler,
+  classNameModifier,
 }: {
   icon?: GTPIconName;
   iconClassName: string;
   disabled: boolean;
   clickHandler?: () => void;
+  classNameModifier?: string;
 }) => {
   if (!icon) {
     return null;
@@ -279,8 +287,8 @@ const GTPButtonIcon = ({
   const iconNode = (
     <GTPIcon
       icon={icon}
-      className={`${iconClassName} text-current`}
-      containerClassName={iconClassName}
+      className={`${iconClassName} ${classNameModifier ?? ""} text-current`}
+      containerClassName={`${iconClassName} ${classNameModifier ?? ""}`}
     />
   );
 

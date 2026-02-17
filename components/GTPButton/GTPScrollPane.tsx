@@ -44,6 +44,8 @@ export default function GTPScrollPane({
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
   const [hasContent, setHasContent] = useState(false);
 
+  const lastMetricsRef = useRef<GTPScrollPaneScrollMetrics | null>(null);
+
   const syncScrollMetrics = useCallback(() => {
     const el = externalScrollRef?.current ?? internalScrollRef.current;
     if (!el) return;
@@ -60,15 +62,27 @@ export default function GTPScrollPane({
     setHasMoreBelow(nextHasMoreBelow);
     setHasContent(nextScrollHeight > nextClientHeight || nextClientHeight > 0);
 
-    onScrollMetricsChangeRef.current?.({
-      scrollTop: nextScrollTop,
-      scrollHeight: nextScrollHeight,
-      clientHeight: nextClientHeight,
-      scrollMax: nextScrollMax,
-      canScroll: nextCanScroll,
-      hasMoreAbove: nextHasMoreAbove,
-      hasMoreBelow: nextHasMoreBelow,
-    });
+    const prev = lastMetricsRef.current;
+    if (
+      !prev ||
+      prev.scrollTop !== nextScrollTop ||
+      prev.scrollHeight !== nextScrollHeight ||
+      prev.clientHeight !== nextClientHeight ||
+      prev.scrollMax !== nextScrollMax ||
+      prev.canScroll !== nextCanScroll
+    ) {
+      const nextMetrics: GTPScrollPaneScrollMetrics = {
+        scrollTop: nextScrollTop,
+        scrollHeight: nextScrollHeight,
+        clientHeight: nextClientHeight,
+        scrollMax: nextScrollMax,
+        canScroll: nextCanScroll,
+        hasMoreAbove: nextHasMoreAbove,
+        hasMoreBelow: nextHasMoreBelow,
+      };
+      lastMetricsRef.current = nextMetrics;
+      onScrollMetricsChangeRef.current?.(nextMetrics);
+    }
   }, [externalScrollRef]);
 
   const scheduleSync = useCallback(() => {

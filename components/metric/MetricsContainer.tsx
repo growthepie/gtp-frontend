@@ -117,7 +117,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         className="!w-[12px] !h-[12px] text-color-text-primary"
                         containerClassName="!w-[12px] !h-[12px]"
                     />
-                    <span className="text-xxs text-color-text-secondary">Example data</span>
+                    <span className="text-xxs text-color-text-secondary">Sourced from the growthepie.com</span>
                   </div>
                 </div>
               }
@@ -322,7 +322,11 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                   }
                 left={
                     <div className={`relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
-                        <MetricTable metric_type="fundamentals" />
+                        <MetricTable
+                            metric_type="fundamentals"
+                            scrollRef={scrollRef}
+                            onScrollMetricsChange={setScrollMetrics}
+                        />
                     </div>
                 }
                 right={

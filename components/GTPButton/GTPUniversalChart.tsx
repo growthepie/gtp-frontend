@@ -1225,17 +1225,6 @@ export default function GTPUniversalChart({
       }),
     [],
   );
-  const textSmTypography = useMemo(
-    () =>
-      readTailwindTypographyStyle("text-sm", {
-        fontFamily: "var(--font-raleway), sans-serif",
-        fontSize: 14,
-        fontWeight: 500,
-        lineHeight: 20,
-        letterSpacing: "normal",
-      }),
-    [],
-  );
   const numbersXxsTypography = useMemo(
     () =>
       readTailwindTypographyStyle("numbers-xxs", {
@@ -1373,10 +1362,10 @@ export default function GTPUniversalChart({
           rich: {
             yearBold: {
               color: textPrimary,
-              fontSize: textSmTypography.fontSize,
-              fontFamily: textSmTypography.fontFamily,
+              fontSize: textXxsTypography.fontSize,
+              fontFamily: textXxsTypography.fontFamily,
               fontWeight: 700,
-              lineHeight: textSmTypography.lineHeight,
+              lineHeight: textXxsTypography.lineHeight,
             },
           },
         },
@@ -1559,7 +1548,6 @@ export default function GTPUniversalChart({
     isStackedMode,
     metricLabel,
     numbersXxsTypography,
-    textSmTypography,
     textXxsTypography,
   ]);
 
