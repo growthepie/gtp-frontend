@@ -6,6 +6,7 @@ import { EChartsOption } from "echarts";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
+import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import {
   clamp,
@@ -105,6 +106,7 @@ export default function GTPChart({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
+  const { theme } = useTheme();
 
   const normalizedSeries = useMemo(() => {
     if (xAxisType !== "time" || series.length <= 1) {
@@ -664,6 +666,7 @@ export default function GTPChart({
     emptyStateMessage,
     gridOverride,
     hasBarSeries,
+    theme,
     lineWidth,
     numbersXxsTypography,
     optionOverrides,
@@ -695,7 +698,7 @@ export default function GTPChart({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full rounded-[14px] overflow-hidden ${className ?? ""}`}
+      className={`relative w-full overflow-hidden ${className ?? ""}`}
       style={containerStyle}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">

@@ -7,6 +7,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { daMetricItems, metricItems } from "@/lib/metrics";
+import { useTheme } from "next-themes";
 
 type MetricChartProps = {
   metric_type: "fundamentals" | "data-availability";
@@ -30,7 +31,7 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
   const { data: master } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-
+  const { theme } = useTheme();
   const { data, metric_id, chainKeys, timespans } = useMetricData();
   const {
     selectedScale,
@@ -96,7 +97,7 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
         });
 
         const chainMeta = metadataByKey?.[chainKey];
-        const colors = chainMeta?.colors?.dark;
+        const colors = chainMeta?.colors?.[theme ?? "dark"];
 
         const series: GTPChartSeries = {
           name: chainMeta?.name ?? chainKey,
@@ -108,6 +109,7 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
       })
       .filter((item): item is GTPChartSeries => Boolean(item));
   }, [
+    theme,
     chainKeys,
     data,
     focusEnabled,
@@ -122,10 +124,10 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
     timeIntervalKey,
   ]);
 
-  const activeTimespan = timespans[selectedTimespan] ?? timespans.max ?? undefined;
+  const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full ">
       <GTPChart
         series={chartSeries}
         stack={selectedScale === "stacked"}

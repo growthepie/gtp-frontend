@@ -38,6 +38,8 @@ export interface GTPSplitPaneProps {
   right: ReactNode;
   divider?: (props: GTPSplitPaneDividerProps) => ReactNode;
   leftCollapsed?: boolean;
+  maxLeftPanePercent?: number;
+  maxRightPanePercent?: number;
   dividerWidth?: number;
   defaultSplitRatio?: number;
   splitRatio?: number;
@@ -55,6 +57,8 @@ export default function GTPSplitPane({
   right,
   divider,
   leftCollapsed = false,
+  maxLeftPanePercent,
+  maxRightPanePercent,
   dividerWidth = DEFAULT_DIVIDER_WIDTH,
   defaultSplitRatio = DEFAULT_SPLIT_RATIO,
   splitRatio: controlledSplitRatio,
@@ -78,6 +82,45 @@ export default function GTPSplitPane({
   const activeSplitRatio = controlledSplitRatio ?? internalSplitRatio;
   const isMobile = contentWidth > 0 && contentWidth < mobileBreakpoint;
   const showLeft = !leftCollapsed;
+
+  const getRatioBounds = useCallback(
+    (totalWidth: number) => {
+      if (totalWidth <= 0) {
+        return { minRatio: 0, maxRatio: 1 };
+      }
+
+      const availableWidth = Math.max(totalWidth - dividerWidth, 1);
+      const minPaneWidth = getMinPaneWidth(availableWidth);
+      const minimumPaneRatio = clamp(minPaneWidth / availableWidth, 0, 1);
+
+      let minRatio = minimumPaneRatio;
+      let maxRatio = 1 - minimumPaneRatio;
+
+      if (maxLeftPanePercent !== undefined) {
+        const leftMaxRatio = clamp(maxLeftPanePercent, 0, 100) / 100 + dividerWidth / (2 * totalWidth);
+        maxRatio = Math.min(maxRatio, leftMaxRatio);
+      }
+
+      if (maxRightPanePercent !== undefined) {
+        const rightMinRatio = 1 - (clamp(maxRightPanePercent, 0, 100) / 100 + dividerWidth / (2 * totalWidth));
+        minRatio = Math.max(minRatio, rightMinRatio);
+      }
+
+      minRatio = clamp(minRatio, 0, 1);
+      maxRatio = clamp(maxRatio, 0, 1);
+
+      if (minRatio > maxRatio) {
+        const fixedRatio = clamp((minRatio + maxRatio) / 2, 0, 1);
+        return { minRatio: fixedRatio, maxRatio: fixedRatio };
+      }
+
+      return { minRatio, maxRatio };
+    },
+    [dividerWidth, getMinPaneWidth, maxLeftPanePercent, maxRightPanePercent],
+  );
+
+  const ratioBounds = getRatioBounds(contentWidth);
+  const clampedActiveSplitRatio = clamp(activeSplitRatio, ratioBounds.minRatio, ratioBounds.maxRatio);
 
   useLayoutEffect(() => {
     if (!contentRef.current) return;
@@ -119,9 +162,7 @@ export default function GTPSplitPane({
       if (!rect) return;
 
       const availableWidth = Math.max(rect.width - dividerWidth, 1);
-      const minPaneWidth = getMinPaneWidth(availableWidth);
-      const minRatio = minPaneWidth / availableWidth;
-      const maxRatio = 1 - minPaneWidth / availableWidth;
+      const { minRatio, maxRatio } = getRatioBounds(rect.width);
       const rawRatio = (clientX - rect.left - dividerWidth / 2) / availableWidth;
       const nextRatio = clamp(rawRatio, minRatio, maxRatio);
 
@@ -130,7 +171,7 @@ export default function GTPSplitPane({
       }
       onSplitRatioChange?.(nextRatio);
     },
-    [controlledSplitRatio, dividerWidth, getMinPaneWidth, onSplitRatioChange],
+    [controlledSplitRatio, dividerWidth, getRatioBounds, onSplitRatioChange],
   );
 
   const handleDividerPointerDown = useCallback(
@@ -167,12 +208,12 @@ export default function GTPSplitPane({
   const leftPaneWidth = isMobile
     ? "100%"
     : showLeft
-      ? `calc(${(activeSplitRatio * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
+      ? `calc(${(clampedActiveSplitRatio * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
       : "0px";
   const rightPaneWidth = isMobile
     ? "100%"
     : showLeft
-      ? `calc(${((1 - activeSplitRatio) * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
+      ? `calc(${((1 - clampedActiveSplitRatio) * 100).toFixed(4)}% - ${dividerWidth / 2}px)`
       : "100%";
 
   return (
