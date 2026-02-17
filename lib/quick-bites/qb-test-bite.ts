@@ -19,6 +19,9 @@ const testBite: QuickBiteData = createQuickBite({
   shortTitle: "Test Quick Bite",
   content: [
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
+    "## ETH/USD Switch (Quick Bites)",
+    "By default, the global ETH/USD switch is disabled on all `/quick-bites` pages, it has been enabled for this quick bite.",
+    "To enable it for a specific quick bite, set `ethUsdSwitchEnabled: true` in that quick bite config.",
     "```kpi-cards",JSON.stringify(
       [
           {
@@ -740,7 +743,8 @@ const testBite: QuickBiteData = createQuickBite({
     name: "Base",
     url: "/chains/base"
   }],
-  showInMenu: false
+  showInMenu: false,
+  ethUsdSwitchEnabled: true
 });
 
 export default testBite;
