@@ -24,9 +24,21 @@ const getNestedValue = (obj: any, path: string) => {
 
 const formatLabel = (key: string) => key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
+/** Extract hostname from a URL string for display. */
+const getHostname = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
+/** Fixed-content column types that should never flex. */
+const FIXED_COLUMN_TYPES = new Set(["image", "chain", "boolean", "metric"]);
+
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ metric: string; sortOrder: string }>({ metric: '', sortOrder: 'desc' });
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const { AllChainsByKeys } = useMaster();
   const { resolvedTheme } = useTheme();
@@ -100,18 +112,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const mappedKey = columnDef?.sourceKey || key;
       const keyIsPresentInData = Boolean(dynamicColumnKeys[mappedKey]);
       const hasFixedSourceIndex = typeof columnDef?.sourceIndex === "number";
-      if ((keyIsPresentInData || hasFixedSourceIndex) && !seen.has(key) && !hiddenKeys.has(key)) {
+      const hasAutoIndex = columnDef?.autoIndex === true;
+      const hasBadgeSources = Array.isArray(columnDef?.badgeSources) && columnDef.badgeSources.length > 0;
+      if ((keyIsPresentInData || hasFixedSourceIndex || hasAutoIndex || hasBadgeSources) && !seen.has(key) && !hiddenKeys.has(key)) {
         orderedKeys.push(key);
         seen.add(key);
       }
     });
-    
+
     // When columnOrder is provided, use it as explicit visible set.
     // Fallback to visible defaults only if none of the requested keys exist.
     return orderedKeys.length > 0 ? orderedKeys : visibleDefault;
   }, [block.columnOrder, block.columnDefinitions, defaultColumnKeyOrder, dynamicColumnKeys, hiddenKeys]);
-
-  const hasLeadingLogo = columnKeyOrder[0] && block.columnDefinitions?.[columnKeyOrder[0]]?.type === "image";
 
   const columnIndexMap = useMemo(() => {
     return defaultColumnKeyOrder.reduce((acc, key, index) => {
@@ -144,18 +156,31 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const sourceIndex = typeof columnDef?.sourceIndex === "number" ? columnDef.sourceIndex : columnIndexMap[mappedKey];
       let cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
 
-      // Derive rank from row order if API does not provide a dedicated rank field.
-      if ((cellValue === undefined || cellValue === null) && columnKey === "rank") {
+      // Auto-generate 1-based row index when value is missing and autoIndex is set.
+      if ((cellValue === undefined || cellValue === null) && columnDef?.autoIndex) {
         cellValue = rowIndex + 1;
       }
 
-      const cellObject: { value: any; link?: string; icon?: string; color?: string; } = { value: cellValue };
-      
+      const cellObject: { value: any; link?: string; icon?: string; color?: string; badges?: Array<{ label: string; color: string; url: string }> } = { value: cellValue };
+
+      // For badges type: collect values from multiple source keys
+      if (columnDef?.type === "badges" && columnDef.badgeSources) {
+        cellObject.badges = columnDef.badgeSources.map((source) => {
+          const srcIdx = columnIndexMap[source.sourceKey];
+          const srcValue = srcIdx !== undefined ? row[srcIdx] : undefined;
+          return {
+            label: source.label,
+            color: source.color,
+            url: typeof srcValue === "string" ? srcValue.trim() : "",
+          };
+        });
+      }
+
       // Generate link if add_url is defined in column definition
       if (columnDef?.add_url && typeof cellValue === 'string') {
         cellObject.link = columnDef.add_url.replace('${cellValue}', cellValue);
       }
-      
+
       return cellObject;
     }));
   }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
@@ -165,10 +190,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     // Filter based on shared state if configured
     if (block.filterOnStateKey) {
-      
+
       const { stateKey, columnKey } = block.filterOnStateKey;
       const filterValue = sharedState[stateKey] || exclusiveFilterKeys.valueKey || inclusiveFilterKeys.valueKey;
-      
+
       const filteredData = (filterValue && filterValue !== 'all')
         ? dataToSort.filter(row => {
           const filterIndex = columnKeyOrder.indexOf(columnKey);
@@ -181,9 +206,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         })
         : dataToSort;
 
-      if (!sortConfig) return filteredData;
+      if (!sortConfig.metric) return filteredData;
 
-      const sortIndex = columnKeyOrder.indexOf(sortConfig.key);
+      const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
       if (sortIndex === -1) return filteredData;
 
       return filteredData.sort((a, b) => {
@@ -192,13 +217,13 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         const result = typeof aValue === 'number' && typeof bValue === 'number'
           ? aValue - bValue
           : String(aValue).localeCompare(String(bValue));
-        return sortConfig.direction === 'asc' ? result : -result;
+        return sortConfig.sortOrder === 'asc' ? result : -result;
       });
     }
 
     // Default sorting if no filtering is configured
-    if (!sortConfig) return dataToSort;
-    const sortIndex = columnKeyOrder.indexOf(sortConfig.key);
+    if (!sortConfig.metric) return dataToSort;
+    const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
     if (sortIndex === -1) return dataToSort;
     return dataToSort.sort((a, b) => {
       const aValue = a[sortIndex]?.value ?? 0;
@@ -206,7 +231,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const result = typeof aValue === 'number' && typeof bValue === 'number'
         ? aValue - bValue
         : String(aValue).localeCompare(String(bValue));
-      return sortConfig.direction === 'asc' ? result : -result;
+      return sortConfig.sortOrder === 'asc' ? result : -result;
     });
   }, [processedRows, sortConfig, columnKeyOrder, sharedState, block.filterOnStateKey, exclusiveFilterKeys, inclusiveFilterKeys]);
 
@@ -214,13 +239,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
 
-  const handleSort = (key: string) => {
-    setSortConfig(prev => ({ key, direction: (prev?.key === key && prev.direction === 'desc') ? 'asc' : 'desc' }));
-  };
-
   const formatValue = (value: any, columnKey: string) => {
     if (value === null || value === undefined || value === '') {
-      return '-';
+      return null; // Return null so we can render the empty placeholder component
     }
 
     // get units if exists
@@ -229,7 +250,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const unit = Object.values(units)[0];
       const numericValue = typeof value === 'number' ? value : Number(value);
       if (!Number.isFinite(numericValue)) {
-        return '-';
+        return null;
       }
       return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
     }
@@ -240,86 +261,135 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       return String(value || '');
     }
     return String(value);
-  }
+  };
+
+  // Empty value placeholder — matches platform pattern (em dash, muted)
+  const EmptyCell = () => (
+    <span className="text-[#5A6462] text-xs">—</span>
+  );
+
+  // Build grid template:
+  // - expand column gets 2fr (primary flex column)
+  // - compact columns (image, icon-only chain, boolean) stay fixed px
+  // - all other columns get 1fr to share remaining space
+  const expandColumnKey = columnKeyOrder.find(k => columnDefinitions[k]?.expand) ||
+    columnKeyOrder.find(k => columnDefinitions[k]?.type === "string" && !columnDefinitions[k]?.isNumeric);
 
   const gridTemplateColumns = columnKeyOrder.map((columnKey) => {
-    const minWidth = columnDefinitions[columnKey]?.minWidth || 120;
-    return `minmax(${minWidth}px, 1fr)`;
-  }).join(' ');
+    const colDef = columnDefinitions[columnKey];
+    const minWidth = colDef?.minWidth || 120;
+    const colType = colDef?.type;
+    const isCompactCol = colType === "image" || (colType === "chain" && !colDef?.showLabel) || colType === "boolean";
 
-  
-  
+    const maxWidth = colDef?.maxWidth;
+
+    if (columnKey === expandColumnKey) {
+      return maxWidth ? `minmax(${minWidth}px, ${maxWidth}px)` : `minmax(${minWidth}px, 2fr)`;
+    }
+    if (isCompactCol) {
+      return `${minWidth}px`;
+    }
+    return maxWidth ? `minmax(${minWidth}px, ${maxWidth}px)` : `minmax(${minWidth}px, 1fr)`;
+  }).join(' ');
 
     return (
     <div className={`my-8 ${block.className || ''}`}>
       {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
 
       <HorizontalScrollContainer includeMargin={isMobile}>
-        <VerticalScrollContainer
-          height={340}
-          scrollbarAbsolute={true}
-          scrollbarPosition="right"
-          paddingRight={30}
-          className="w-full min-w-[600px]"
-          header={
-            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'}  select-none h-[34px] !pt-0 !pb-0 !items-end -mr-[17px]`}>
-              {columnKeyOrder.map(columnKey => {
+        {(() => {
+          const isScrollable = block.scrollable !== false;
+          const tableHeader = (
+            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs !gap-x-0 !px-[5px] !pr-[15px] select-none h-[34px] !pt-0 !pb-0 !items-end`}>
+              {columnKeyOrder.map((columnKey, colIdx) => {
                 const mappedKey = columnDefinitions[columnKey]?.sourceKey || columnKey;
-                const canSort = dynamicColumnKeys[mappedKey]?.sortByValue ?? columnDefinitions[columnKey]?.sortByValue;
+                const canSort = columnDefinitions[columnKey]?.sortByValue ?? dynamicColumnKeys[mappedKey]?.sortByValue;
+                const colType = columnDefinitions[columnKey]?.type;
+                const isFirst = colIdx === 0;
+                const isImage = colType === "image";
+                const isCompact = (colType === "chain" && !columnDefinitions[columnKey]?.showLabel) || colType === "boolean";
+                const cellPadding = isImage
+                    ? ''
+                    : isCompact
+                      ? `${isFirst ? 'pl-[5px]' : 'pl-[3px]'} pr-[3px]`
+                      : `${isFirst ? 'pl-[5px]' : 'pl-[15px]'} pr-[15px]`;
                 return <GridTableHeaderCell
                   key={columnKey}
                   justify={columnDefinitions[columnKey]?.isNumeric ? 'end' : 'start'}
-                  metric={columnKey}
-                  sort={{ metric: sortConfig?.key || '', sortOrder: sortConfig?.direction || 'desc' }}
-                  onSort={() => canSort && handleSort(columnKey)}
-                  className={` ${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
+                  metric={canSort ? columnKey : undefined}
+                  sort={canSort ? sortConfig : undefined}
+                  setSort={canSort ? setSortConfig : undefined}
+                  className={`${cellPadding} ${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
                 >
                   {columnDefinitions[columnKey]?.label ?? formatLabel(columnKey)}
                 </GridTableHeaderCell>
               })}
             </GridTableHeader>
-          }
-        >
-          <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
+          );
+          const tableRows = (
+            <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
             {sortedRows.map((rowData, rowIndex) => (
-              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`group text-xs gap-x-[15px] ${hasLeadingLogo ? '!pl-[5px]' : '!pl-[15px]'} !pr-[15px] select-none h-[34px] !pt-0 !pb-0`}>
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`group text-xs !gap-x-0 !px-[5px] !pr-[15px] select-none h-[34px] !pt-0 !pb-0`}>
                 {rowData.map((cellData, colIndex) => {
                   const columnKey = columnKeyOrder[colIndex];
                   let cellMainContent: React.ReactNode | null = null;
                   let cellLeftContent: React.ReactNode | null = null;
                   let cellRightContent: React.ReactNode | null = null;
                   const columnType = columnDefinitions?.[columnKey]?.type;
+                  const isFirst = colIndex === 0;
+                  const isImage = columnType === "image";
+                  const isCompact = (columnType === "chain" && !columnDefinitions[columnKey]?.showLabel) || columnType === "boolean";
+                  const cellPadding = isImage
+                    ? ''
+                    : isCompact
+                      ? `${isFirst ? 'pl-[5px]' : 'pl-[3px]'} pr-[3px]`
+                      : `${isFirst ? 'pl-[5px]' : 'pl-[15px]'} pr-[15px]`;
+
                   if (columnType === "chain") {
                     const chainKeys = parseChainKeys(cellData?.value);
+                    const colDef = columnDefinitions?.[columnKey];
+                    const showIcon = colDef?.showIcon !== false; // default true
+                    const showLabel = colDef?.showLabel === true; // default false
+                    if (chainKeys.length === 0) {
+                      cellMainContent = <EmptyCell />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center w-full gap-x-[5px]">
+                          {chainKeys.map((chainKey) => {
+                            const chainInfo = AllChainsByKeys[chainKey];
+                            if (!chainInfo) return null;
+                            return (
+                              <React.Fragment key={chainKey}>
+                                {showIcon && (
+                                  <Icon
+                                    icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
+                                    className="w-[15px] h-[15px] flex-shrink-0"
+                                    style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
+                                  />
+                                )}
+                                {showLabel && (
+                                  <span className="text-xs truncate">{chainInfo.name_short}</span>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                  } else if (columnType === "image") {
+                    const imageSrc = typeof cellData?.value === "string" ? cellData.value.trim() : "";
                     cellMainContent = (
-                      <div className="flex items-center justify-center w-full gap-x-[5px]">
-                        {chainKeys.map((chainKey) => {
-                          const chainInfo = AllChainsByKeys[chainKey];
-                          if (!chainInfo) return null;
-                          return (
-                            <Icon
-                              key={chainKey}
-                              icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
-                              className="w-[15px] h-[15px]"
-                              style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
-                            />
-                          );
-                        })}
+                      <div className="flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] overflow-hidden">
+                        {imageSrc && (
+                          <img
+                            src={imageSrc}
+                            alt=""
+                            className="rounded-full w-[26px] h-[26px] object-cover"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
                       </div>
-                    );
-                  } else if (columnType === "image" && typeof cellData?.value === "string") {
-                    const imageSrc = cellData.value.trim();
-                    cellMainContent = imageSrc ? (
-                      <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] ${columnKey === columnKeyOrder[0] ? "-ml-[5px]" : ""}`}>
-                        <img
-                          src={imageSrc}
-                          alt={`${columnKey} logo`}
-                          className="rounded-full w-[26px] h-[26px] object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-xs">-</span>
                     );
                   } else if (columnType === "metric" && typeof cellData?.value === "string") {
                     const metricIcon =
@@ -335,7 +405,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         <GTPIcon icon={metricIcon as GTPIconName} size="sm" />
                       </div>
                     ) : (
-                      <span className="text-xs">{formatValue(cellData?.value, columnKey)}</span>
+                      <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
                     );
                   } else if (columnType === "boolean") {
                     const raw = cellData?.value;
@@ -344,30 +414,65 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       : raw === false || raw === "false"
                         ? false
                         : null;
-                    cellMainContent = (
-                      <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
-                        {normalized === null ? "null" : normalized ? "True" : "False"}
-                      </span>
-                    );
+                    if (normalized === null) {
+                      cellMainContent = <EmptyCell />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center justify-center w-full">
+                          <Icon
+                            icon={normalized ? "feather:check" : "feather:x"}
+                            className={`w-[14px] h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`}
+                          />
+                        </div>
+                      );
+                    }
                   } else if (columnType === "link") {
-                    const hasLink = typeof cellData?.value === "string" && cellData.value.length > 0;
-                    cellMainContent = hasLink ? (
-                      <div className="flex items-center justify-center w-full text-color-ui-hover">
-                        <Icon icon="feather:external-link" className="w-[13px] h-[13px]" />
-                      </div>
-                    ) : (
-                      <span className="text-xs">-</span>
-                    );
+                    const linkValue = typeof cellData?.value === "string" ? cellData.value.trim() : "";
+                    if (linkValue) {
+                      cellMainContent = (
+                        <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
+                          <Icon icon="feather:external-link" className="w-[12px] h-[12px] text-[#5A6462] flex-shrink-0" />
+                          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+                        </div>
+                      );
+                    } else {
+                      cellMainContent = <EmptyCell />;
+                    }
+                  } else if (columnType === "badges") {
+                    const badges = cellData?.badges as Array<{ label: string; color: string; url: string }> | undefined;
+                    const activeBadges = badges?.filter(b => b.url) ?? [];
+                    if (activeBadges.length === 0) {
+                      cellMainContent = <EmptyCell />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center gap-x-[5px] w-full">
+                          {activeBadges.map((badge) => (
+                            <a
+                              key={badge.label}
+                              href={badge.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity"
+                              style={{ borderColor: badge.color, color: badge.color }}
+                            >
+                              <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+                              {badge.label}
+                            </a>
+                          ))}
+                        </div>
+                      );
+                    }
                   } else {
                     // default cell content
-                    cellMainContent = (
+                    const formatted = formatValue(cellData?.value, columnKey);
+                    cellMainContent = formatted !== null ? (
                       <>
                         {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
                         <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
-                          {formatValue(cellData?.value, columnKey)}
+                          {formatted}
                         </span>
                       </>
-                    );
+                    ) : <EmptyCell />;
                   }
 
 
@@ -378,7 +483,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent numbers-xs"
                           onDoubleClick={(e) => {
-                            e.preventDefault(); // Prevent default double-click behavior
+                            e.preventDefault();
                             const selection = window.getSelection();
                             const range = document.createRange();
                             range.selectNodeContents(e.currentTarget);
@@ -413,7 +518,6 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
                   // if copyable boolean set to true, add copy button
                   if (columnDefinitions?.[columnKey]?.copyable) {
-                    // add copy to the right
                     cellRightContent = (
                       <div className="pr-[10px]">
                         <CopyButton value={cellData?.value} />
@@ -437,7 +541,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
 
                   return (
-                    <div key={`${rowIndex}-${columnKey}`} className={`flex items-center gap-[5px] w-full ${columnDefinitions?.[columnKey]?.isNumeric ? 'justify-end' : 'justify-start'}`}>
+                    <div key={`${rowIndex}-${columnKey}`} className={`flex items-center gap-[5px] w-full ${cellPadding} ${columnDefinitions?.[columnKey]?.isNumeric ? 'justify-end' : 'justify-start'}`}>
                       {cellLeftContent && cellLeftContent}
                       {cellMainContent && cellMainContent}
                       {cellRightContent && cellRightContent}
@@ -446,8 +550,26 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                 })}
               </GridTableRow>
             ))}
-          </div>
-        </VerticalScrollContainer>
+            </div>
+          );
+          return isScrollable ? (
+            <VerticalScrollContainer
+              height={340}
+              scrollbarAbsolute={true}
+              scrollbarPosition="right"
+              paddingRight={30}
+              className="w-full min-w-[600px]"
+              header={tableHeader}
+            >
+              {tableRows}
+            </VerticalScrollContainer>
+          ) : (
+            <div className="w-full min-w-[600px]">
+              {tableHeader}
+              {tableRows}
+            </div>
+          );
+        })()}
       </HorizontalScrollContainer>
     </div>
   );

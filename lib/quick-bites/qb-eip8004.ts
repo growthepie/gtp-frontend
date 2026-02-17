@@ -50,57 +50,44 @@ const Agents: QuickBiteData = createQuickBite({
         image: {
           label: "",
           type: "image",
-          minWidth: 36,
+          minWidth: 26,
           isNumeric: false,
           sortByValue: false,
-        },
-        rank: {
-          label: "#",
-          type: "number",
-          minWidth: 40,
-          isNumeric: true,
-          sortByValue: true,
-          units: {
-            value: {
-              decimals: 0,
-            },
-          },
         },
         agent: {
           label: "Agent",
           type: "string",
           sourceKey: "name",
-          minWidth: 180,
+          expand: true,
+          minWidth: 150,
+          maxWidth: 200,
           isNumeric: false,
           sortByValue: true,
         },
         origin_key: {
-          label: "Origin",
+          label: "Origin Chain",
           type: "chain",
-          minWidth: 70,
+          minWidth: 200,
           isNumeric: false,
           sortByValue: true,
+          showLabel: true,
         },
-        x402_support: {
-          label: "x402",
-          type: "boolean",
-          minWidth: 70,
-          isNumeric: false,
-          sortByValue: true,
-        },
-        service_mcp_endpoint: {
-          label: "MCP Endpoint",
-          type: "link",
-          sourceKey: "service_mcp_endpoint",
-          minWidth: 95,
+        endpoints: {
+          label: "Endpoints",
+          type: "badges",
+          minWidth: 140,
           isNumeric: false,
           sortByValue: false,
-          add_url: "${cellValue}",
+          badgeSources: [
+            { sourceKey: "service_web_endpoint", label: "Web", color: "#4A90D9" },
+            { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
+          ],
         },
         events: {
           label: "Events",
           type: "number",
-          minWidth: 90,
+          sourceKey: "feedback_count_all",
+          minWidth: 80,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -115,8 +102,7 @@ const Agents: QuickBiteData = createQuickBite({
         "rank",
         "agent",
         "origin_key",
-        "x402_support",
-        "service_mcp_endpoint",
+        "endpoints",
         "events"
       ],
       columnSortBy: "value",
@@ -187,21 +173,45 @@ const Agents: QuickBiteData = createQuickBite({
     JSON.stringify({
       readFromJSON: true,
       content: "Distribution of registered agents by chain.",
+      scrollable: false,
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",
         pathToRowData: "data.origin_breakdown.rows",
         pathToColumnKeys: "data.origin_breakdown.columns",
       },
       columnDefinitions: {
-        chain: {
+        chain_icon: {
+          label: "",
+          type: "chain",
+          sourceKey: "origin_key",
+          minWidth: 26,
+          isNumeric: false,
+          sortByValue: false,
+        },
+        origin_key: {
           label: "Chain",
           type: "chain",
           minWidth: 120,
           isNumeric: false,
           sortByValue: true,
+          showIcon: false,
+          showLabel: true,
+          expand: true,
         },
-        agents: {
-          label: "Agents",
+        total_registered: {
+          label: "Total Registered",
+          type: "number",
+          minWidth: 200,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: {
+              decimals: 0,
+            },
+          },
+        },
+        valid_registrations: {
+          label: "Valid",
           type: "number",
           minWidth: 100,
           isNumeric: true,
@@ -212,8 +222,32 @@ const Agents: QuickBiteData = createQuickBite({
             },
           },
         },
-        share: {
-          label: "Share",
+        total_feedback: {
+          label: "Feedback",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: {
+              decimals: 0,
+            },
+          },
+        },
+        unique_owners: {
+          label: "Owners",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: {
+              decimals: 0,
+            },
+          },
+        },
+        agents_per_owner: {
+          label: "Agents\n/Owner",
           type: "number",
           minWidth: 100,
           isNumeric: true,
@@ -221,11 +255,27 @@ const Agents: QuickBiteData = createQuickBite({
           units: {
             value: {
               decimals: 2,
-              suffix: "%",
             },
           },
         },
+        first_registered_date: {
+          label: "First Registered",
+          type: "string",
+          minWidth: 100,
+          isNumeric: false,
+          sortByValue: true,
+          hidden: true,
+        },
       },
+      columnOrder: [
+        "chain_icon",
+        "origin_key",
+        "total_registered",
+        "valid_registrations",
+        "total_feedback",
+        "unique_owners",
+        "agents_per_owner"
+      ],
       columnSortBy: "value",
     }),
     "```",

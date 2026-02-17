@@ -27,7 +27,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "linea-burn": lineaTokenBurn,
   "fusaka": Fusaka,
   "stablecoin": Stablecoin,
-  "eip8004": Agents
+  "eip-8004": Agents
 };
 
 export default QUICK_BITES_DATA; 

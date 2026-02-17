@@ -60,20 +60,7 @@ interface JsonMeta {
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { sharedState } = useQuickBite();
-  const dynamicSeriesConfig = (block.dataAsJson as any)?.dynamicSeries as
-    | {
-        url: string;
-        pathToData: string;
-        pathToTypes?: string;
-        ystartIndex?: number;
-        names?: string | string[];
-        colors: string | string[];
-        type?: string;
-        stacking?: "normal" | "percent" | null;
-        xIndex?: number;
-        tooltipDecimals?: number;
-      }
-    | undefined;
+  const dynamicSeriesConfig = block.dataAsJson?.dynamicSeries;
 
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.

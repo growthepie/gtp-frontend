@@ -744,6 +744,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
           pathToRowData,
           pathToColumnKeys // Optional - component will auto-discover if not provided
         },
+        scrollable: tableConfig.scrollable,
         showInMenu: parseShowInMenu(tableConfig),
         filterOnStateKey: tableConfig.filterOnStateKey || undefined
       };
@@ -778,6 +779,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: false,
         rowData: tableConfig.rowData,
+        scrollable: tableConfig.scrollable,
         showInMenu: parseShowInMenu(tableConfig),
         filterOnStateKey: tableConfig.filterOnStateKey || undefined
       };
