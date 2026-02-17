@@ -53,16 +53,10 @@ export default function FocusSwitchSimple({
             Total Ecosystem
           </span>
           <ToggleSwitch
-            values={{
-              left: {
-                value: "totalEcosystem",
-                label: "ON",
-              },
-              right: {
-                value: "l2Focus",
-                label: "OFF",
-              },
-            }}
+            values={[
+              { value: "totalEcosystem", label: "ON" },
+              { value: "l2Focus", label: "OFF" },
+            ]}
             value={focusEnabled ? "l2Focus" : "totalEcosystem"}
             onChange={handleChange}
             size={isMobile ? "sm" : "sm"}

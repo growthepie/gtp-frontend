@@ -23,7 +23,7 @@ import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
-import { BASE_URL } from "@/lib/helpers";
+import { BASE_URL, IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
 import {
@@ -37,6 +37,9 @@ import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
+import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
+import GTPButtonRow from "../GTPButton/GTPButtonRow";
+import { GTPButton } from "../GTPButton/GTPButton";
 
 
 const COLORS = {
@@ -1180,7 +1183,7 @@ export default function LandingChart({
     >
       <div
         id="content-container"
-        className={`h-[225px] lg:h-[81px] 2xl:h-[60px]  ${isMobile ? "mb-[30px]" : "mb-0"
+        className={`h-fit  ${isMobile ? "mb-[30px]" : "mb-0"
           }`}   
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
@@ -1209,6 +1212,57 @@ export default function LandingChart({
             />
           </div>
         </div>
+        {(IS_PREVIEW || IS_DEVELOPMENT) && (
+          <></>
+        // <GTPButtonContainer className="mb-[10px]">
+        //   <GTPButtonRow>
+        //     <GTPButton
+        //       label={isLessThan2xl ? "ETH Ecosystem" : "Total Ethereum Ecosystem"}
+        //       rightIcon="gtp-metrics-ethereum-ecosystem"
+        //       isSelected={showTotalUsers}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(true);
+        //         setSelectedScale("absolute");
+        //         setSelectedMetric("Total Ethereum Ecosystem");
+        //       }}
+        //     />
+        //     <GTPButton
+        //       label="Composition"
+        //       rightIcon="gtp-metrics-chaincomposition"
+        //       isSelected={"absolute" === selectedScale && !showTotalUsers}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(false);
+        //         setSelectedScale("absolute");
+        //         setSelectedMetric("Composition");
+        //       }}
+        //     />
+        //     <GTPButton
+        //       label={isLessThan2xl ? "Comp. Split" : "Composition Split"}
+        //       rightIcon="gtp-metrics-chains-percentage"
+        //       isSelected={selectedScale === "percentage"}
+        //       clickHandler={() => {
+        //         setShowTotalUsers(false);
+        //         setSelectedScale("percentage");
+        //         setSelectedMetric("Composition Split");
+        //       }}
+        //     />
+        //   </GTPButtonRow>
+
+        //   <GTPButtonRow>
+        //   {Object.keys(timespans).map((timespan) => (
+        //     <GTPButton
+        //       label={timespans[timespan].label}
+        //       isSelected={selectedTimespan === timespan}
+        //       clickHandler={() => {
+        //         setSelectedTimespan(timespan);
+        //       }}
+        //     />
+        //   ))}
+
+        //   </GTPButtonRow>
+        // </GTPButtonContainer>
+        )}
+     
         <TopRowContainer className={`!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex ${!isSidebarOpen ? "lg:!flex-row" : "xl:!flex-row"} ${!isSidebarOpen ? "lg:!rounded-full" : "xl:!rounded-full"}`}>
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 lg:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
             <TopRowChild
@@ -1367,6 +1421,7 @@ export default function LandingChart({
             )}
           </TopRowParent>
         </TopRowContainer>
+        
       </div>
       <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] "
          

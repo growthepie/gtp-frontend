@@ -13,7 +13,17 @@ import { LinkButton } from '@/components/layout/LinkButton';
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 
-export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent, isHidden }: { children: React.ReactNode, totalHeight: number, customTitleArea?: React.ReactNode, minHeight?: number, tooltipContent?: string, isHidden?: boolean }) {
+interface EventsCardProps {
+    children: React.ReactNode;
+    totalHeight: number;
+    customTitleArea?: React.ReactNode;
+    minHeight?: number;
+    tooltipContent?: string;
+    isHidden?: boolean;
+    topCard?: boolean;
+}
+
+export default function EventsCard({ children, totalHeight, customTitleArea, minHeight, tooltipContent, isHidden, topCard = false }: EventsCardProps) {
     const [expanded, setExpanded] = useState(false);
     const [measuredContentHeight, setMeasuredContentHeight] = useState<number>(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -69,7 +79,7 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
       )}
       <div
         // className={`rounded-[15px] px-[30px] py-[15px] bg-color-bg-default w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
-        className={`w-full h-full relative transition-height duration-300 flex-1 ${isHidden ? "hidden" : ""}`}
+        className={`w-full h-full transition-height duration-300 flex-1 ${topCard ? " relative md:absolute " : "relative"} ${isHidden ? "hidden" : ""}`}
        
       >
             {/* <div className="heading-large-md ">Events</div> */}

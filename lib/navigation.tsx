@@ -563,6 +563,23 @@ export const navigationItems: NavigationItem[] = [
         url: "/blockspace/chain-overview",
       },
       {
+        label: "Treemap",
+        category: "blockspace-categories",
+        page: {
+          title: "Treemap",
+          description:
+            "Explore blockspace usage as a nested treemap from chains to categories and applications.",
+        },
+        icon: "gtp-map",
+        key: "treemap",
+        rootKey: "treemap",
+        urlKey: "treemap",
+        url: "/blockspace/treemap",
+        //hide: IS_PRODUCTION,
+        //excludeFromSitemap: IS_PRODUCTION,
+        showNew: true,
+      },
+      {
         label: "Category Comparison",
         category: "blockspace-categories",
         page: {
@@ -606,7 +623,7 @@ export const navigationItems: NavigationItem[] = [
         url: "https://labels.growthepie.com/",
       },
     ],
-
+    newChild: true,
     // href: "",
   },
   ...[dataAvailabilityGroup],

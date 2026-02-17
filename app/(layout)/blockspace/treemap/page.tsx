@@ -1,19 +1,13 @@
-import Treemap from "@/components/charts/Treemap";
 import Container from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
+import BlockspaceTreemapSection from "@/components/layout/BlockspaceTreeMap/BlockspaceTreemapSection";
 import React from "react";
 
-const Imprint = () => {
+const BlockspaceTreemap = () => {
   return (
-    <Container className="mt-[65px]">
-      <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
-        Blockspace Treemap
-      </Heading>
-      <div className="text-lg mb-6">Experimental</div>
-
-      <Treemap />
+    <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]" isPageRoot>
+      <BlockspaceTreemapSection titleAs="h1" />
     </Container>
   );
 };
 
-export default Imprint;
+export default BlockspaceTreemap;

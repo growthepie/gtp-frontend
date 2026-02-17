@@ -54,6 +54,7 @@ export type ExpandableMenuProps = {
   panelClassName?: string;
   contentClassName?: string;
   contentPadding?: string;
+  showCollapsedPanel?: boolean;
 };
 
 // ============= Helper Functions =============
@@ -382,6 +383,7 @@ export default function ExpandableMenu({
   panelClassName = "",
   contentClassName = "",
   contentPadding,
+  showCollapsedPanel = true,
 }: ExpandableMenuProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -510,10 +512,10 @@ export default function ExpandableMenu({
       
       {/* Expandable Panel */}
       <div 
-        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 bg-color-ui-active rounded-b-2xl rounded-t-0 z-20 ${panelClassName} ${open ? "shadow-standard" : ""}`}
+        className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300 rounded-b-2xl rounded-t-0 z-20 ${!showCollapsedPanel && !open ? "bg-transparent shadow-none" : "bg-color-ui-active"} ${panelClassName} ${open ? "shadow-standard" : ""}`}
         style={{
           ...placementStyles.position,
-          height: open ? hExpanded : panelHeightCollapsed,
+          height: open ? hExpanded : showCollapsedPanel ? panelHeightCollapsed : "0px",
           width: open ? wExpanded : panelWidthCollapsed,
           transformOrigin: placementStyles.transformOrigin,
           borderRadius: placementStyles.borderRadius,

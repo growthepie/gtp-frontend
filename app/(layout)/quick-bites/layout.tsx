@@ -1,6 +1,7 @@
 // File: app/(layout)/quick-bites/layout.tsx
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
+import QuickBitesUiFlags from "./QuickBitesUiFlags";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       images: [
         {
-          url: `https://api.growthepie.com/v1/og_images/landing.png`,
+          url: `https://api.growthepie.com/v1/og_images/landing.jpg`,
           width: 1200,
           height: 627,
           alt: "Quick Bites - growthepie.com",
@@ -24,5 +25,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <QuickBitesUiFlags />
+      {children}
+    </>
+  );
 }

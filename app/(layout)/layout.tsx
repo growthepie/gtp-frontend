@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     url: "https://www.growthepie.com",
     images: [
       {
-        url: `https://api.growthepie.com/v1/og_images/landing.png?date=${current_date}`,
+        url: `https://api.growthepie.com/v1/og_images/landing.jpg?date=${current_date}`,
         width: 1200,
         height: 627,
         alt: "growthepie.com",
