@@ -1358,10 +1358,12 @@ const MetricChart = memo(
         minimumFractionDigits: decimals,
       });
 
+      const isNegative = value < 0;
       return {
-        value: valueFormat.format(value),
+        value: valueFormat.format(Math.abs(value)),
         prefix: showGwei(metricKey) ? "" : unitInfo?.prefix || "",
         suffix: showGwei(metricKey) ? "Gwei" : unitInfo?.suffix || "",
+        sign: isNegative ? "-" : "",
       };
     }, [seriesDataMap, data, master, metricKey, showUsd, showGwei]);
 
@@ -1407,10 +1409,12 @@ const MetricChart = memo(
         minimumFractionDigits: decimals,
       });
 
+      const isNegative = value < 0;
       return {
-        value: valueFormat.format(value),
+        value: valueFormat.format(Math.abs(value)),
         prefix: showGwei(metricKey) ? "" : unitInfo?.prefix || "",
         suffix: showGwei(metricKey) ? "Gwei" : unitInfo?.suffix || "",
+        sign: isNegative ? "-" : "",
       };
     }, [seriesDataMap, data, master, metricKey, showUsd, showGwei]);
 
@@ -1445,6 +1449,7 @@ const MetricChart = memo(
               </div>
             )}
             <div className="flex numbers-lg">
+              {displayValue.sign && <div>{displayValue.sign}</div>}
               <div>{displayValue.prefix}</div>
               <div>{displayValue.value}</div>
               {displayValue.suffix && <div className="pl-0.5">{displayValue.suffix}</div>}
@@ -1453,6 +1458,7 @@ const MetricChart = memo(
           {displayValue2 && (
             <div className="absolute top-[28px] w-full flex justify-end items-center pl-[23px] pr-[25px] text-[#5A6462]">
               <div className="numbers-sm flex gap-x-[2px]">
+                {displayValue2.sign && <div>{displayValue2.sign}</div>}
                 <div>{displayValue2.prefix}</div>
                 <div>{displayValue2.value}</div>
                 {displayValue2.suffix && <div className="numbers-sm pl-0.5">{displayValue2.suffix}</div>}
