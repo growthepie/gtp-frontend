@@ -358,7 +358,8 @@ const MetricChart = memo(
         // When showing Gwei, don't show prefix (no $ sign)
         const prefix = showGwei(metricKey) ? "" : (unitInfo?.prefix || "");
         const suffix = showGwei(metricKey) ? " Gwei" : (unitInfo?.suffix || "");
-        return `${prefix}${formatNumberWithSI(value)} ${suffix}`;
+        const sign = value < 0 ? "-" : "";
+        return `${sign}${prefix}${formatNumberWithSI(Math.abs(value))} ${suffix}`;
       },
       [master, metricKey, showUsd, showGwei]
     );
@@ -640,6 +641,17 @@ const MetricChart = memo(
           //   };
           // } else {
             // For small datasets, use per-bar gradients (better visual quality)
+            // Gradient: bottom (transparent) to top (opaque) — for positive bars
+            const posGradient = new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+              { offset: 0, color: chainColors[0] + "00" },
+              { offset: 1, color: chainColors[0] + "FF" },
+            ], false);
+            // Reversed gradient for negative bars: top (transparent) to bottom (opaque)
+            const negGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: chainColors[0] + "00" },
+              { offset: 1, color: chainColors[0] + "FF" },
+            ], false);
+
             baseSeries.itemStyle = {
               // global: false makes gradient relative to each bar, not the whole chart
               // Gradient: bottom (transparent) to top (opaque)
@@ -941,7 +953,8 @@ const MetricChart = memo(
                 const barWidth = maxValue > 0 && chainKey.length > 1 ? Math.min(100, (value / maxValue) * 100) : 0;
                 const showBar = chainKey.length > 1;
 
-                const valueStr = value.toLocaleString("en-GB", {
+                const sign = value < 0 ? "-" : "";
+                const valueStr = Math.abs(value).toLocaleString("en-GB", {
                   minimumFractionDigits: decimals,
                   maximumFractionDigits: decimals,
                 });
@@ -950,7 +963,7 @@ const MetricChart = memo(
                   <div style="display: flex; width: 100%; gap: 8px; align-items: center; font-weight: 500; margin-bottom: 2px;">
                     <div style="width: 16px; height: 6px; border-radius: 0 4px 4px 0; background: ${gradient};"></div>
                     <div style="font-size: 12px;" class="tooltip-point-name">${label || chainId}</div>
-                    <div style="flex: 1; text-align: right; font-size: 12px;" class="numbers-xs">${prefix}${valueStr}${suffix ? " " + suffix : ""}</div>
+                    <div style="flex: 1; text-align: right; font-size: 12px;" class="numbers-xs">${sign}${prefix}${valueStr}${suffix ? " " + suffix : ""}</div>
                   </div>
                   ${
                     showBar
@@ -994,6 +1007,7 @@ const MetricChart = memo(
       filteredDataMap,
       minDataValue,
       maxDataValue,
+      minDataValue,
       chartType,
       theme,
       AllChainsByKeys,
