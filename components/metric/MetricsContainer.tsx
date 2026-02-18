@@ -60,10 +60,12 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
     const { data: master } = useMaster();
     const valueKey = Object.keys(master?.metrics?.[metric_id]?.units ?? {}).find(key => key !== "usd" && key !== "eth");
+    
 
     const suffix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
     const prefix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
     const decimals = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
+    const gweiOverrides = decimals && decimals > 6;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const metricConfig = findMetricConfig(metric);
 
@@ -373,7 +375,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart metric_type="fundamentals" suffix={suffix ?? undefined} prefix={prefix ?? undefined} decimals={decimals ?? undefined} />
+                        <MetricChart metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? 2 : decimals ?? undefined} />
                     </div>
                 }
             />
