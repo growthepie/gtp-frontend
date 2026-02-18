@@ -533,7 +533,7 @@ const MetricTable = ({
 
   if (!data || !timespanLabels[timeIntervalKey]) return timeIntervalKey;
   const tableViewportHeight =
-    !isMobile ? 434 : chainKeys.filter((chain) => chain !== "ethereum").length * 39 + 45;
+    !isMobile ? 470 : chainKeys.filter((chain) => chain !== "ethereum").length * 39 + 45;
 
   const getHeaderSortIcon = (metric: string) => {
     if (sort.metric !== metric) return "gtp-chevrondown-monochrome";
@@ -547,9 +547,10 @@ const MetricTable = ({
     }));
   };
 
+
   return (
-    <HorizontalScrollContainer hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
-      <div className="w-full min-w-[503px] relative" style={{ height: `${tableViewportHeight}px` }}>
+    <HorizontalScrollContainer className="h-full" hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
+      <div className="w-full min-w-[503px] relative " style={{ height: `${tableViewportHeight}px` }}>
         <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center">
           <ChartWatermark className="w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten" />
         </div>

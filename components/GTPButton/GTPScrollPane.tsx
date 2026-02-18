@@ -35,10 +35,11 @@ export default function GTPScrollPane({
   className,
 }: GTPScrollPaneProps) {
   const internalScrollRef = useRef<HTMLDivElement | null>(null);
-  const scrollElement = externalScrollRef?.current ?? internalScrollRef.current;
   const rafRef = useRef<number | null>(null);
   const onScrollMetricsChangeRef = useRef(onScrollMetricsChange);
-  onScrollMetricsChangeRef.current = onScrollMetricsChange;
+  useEffect(() => {
+    onScrollMetricsChangeRef.current = onScrollMetricsChange;
+  }, [onScrollMetricsChange]);
 
   const [hasMoreAbove, setHasMoreAbove] = useState(false);
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
@@ -107,7 +108,7 @@ export default function GTPScrollPane({
     const el = externalScrollRef?.current ?? internalScrollRef.current;
     if (!el) return;
 
-    syncScrollMetrics();
+    scheduleSync();
 
     const observer = new ResizeObserver(() => {
       scheduleSync();
@@ -121,7 +122,7 @@ export default function GTPScrollPane({
       }
       observer.disconnect();
     };
-  }, [externalScrollRef, scheduleSync, syncScrollMetrics]);
+  }, [externalScrollRef, scheduleSync]);
 
   useEffect(() => {
     scheduleSync();

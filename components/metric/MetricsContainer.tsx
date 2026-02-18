@@ -107,7 +107,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         );
     }, [sources]);
     
-    console.log("suffix", suffix, prefix, decimals);
+ 
 
 
     return (
@@ -337,8 +337,10 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                       />
                     ) : null
                   }
+
+                leftClassName="!pb-[0px]"
                 left={
-                    <div className={`relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
+                    <div className={`relative h-full min-h-0 w-full min-w-[160px]  rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
                         <MetricTable
                             metric_type="fundamentals"
                             scrollRef={scrollRef}

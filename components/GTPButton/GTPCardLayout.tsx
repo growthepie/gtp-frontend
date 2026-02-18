@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 
 const DEFAULT_CONTENT_HEIGHT = 538;
-const DEFAULT_BOTTOM_BAR_OVERLAY_HEIGHT = 38;
+const DEFAULT_BOTTOM_BAR_OVERLAY_HEIGHT = 0;
 const DEFAULT_BOTTOM_BAR_GAP = 15;
 
 export interface GTPCardLayoutProps {
@@ -50,7 +50,7 @@ export default function GTPCardLayout({
     <div className={`${wrapperClassName} ${className ?? ""}`} style={wrapperStyle}>
       <div
         ref={cardRef}
-        className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
+        className="w-full  rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
       >
         {topBar}
         <div

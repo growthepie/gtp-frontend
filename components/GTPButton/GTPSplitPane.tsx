@@ -30,7 +30,7 @@ function DividerSlot({
   onDragStart: (event: ReactPointerEvent) => void;
   isMobile: boolean;
 }) {
-  return <>{render({ onDragStart, isMobile })}</>;
+  return <div className="pb-[30px]">{render({ onDragStart, isMobile })}</div>;
 }
 
 export interface GTPSplitPaneProps {
@@ -50,6 +50,8 @@ export interface GTPSplitPaneProps {
   mobileLeftOrder?: number;
   mobileRightOrder?: number;
   className?: string;
+  leftClassName?: string;
+  rightClassName?: string;
 }
 
 export default function GTPSplitPane({
@@ -69,6 +71,8 @@ export default function GTPSplitPane({
   mobileLeftOrder = 3,
   mobileRightOrder = 1,
   className,
+  leftClassName,
+  rightClassName,
 }: GTPSplitPaneProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentWidth, setContentWidth] = useState(0);
@@ -223,7 +227,7 @@ export default function GTPSplitPane({
     >
       {showLeft ? (
         <div
-          className={`flex min-w-0 h-full min-h-0 ${isMobile ? `flex-1` : ""}`}
+          className={`flex min-w-0 h-full min-h-0 pb-[30px] ${isMobile ? `flex-1` : ""} ${leftClassName ?? ""}`}
           style={{
             width: leftPaneWidth,
             ...(isMobile ? { order: mobileLeftOrder } : {}),
@@ -236,7 +240,7 @@ export default function GTPSplitPane({
         <DividerSlot render={divider} onDragStart={handleDividerPointerDown} isMobile={isMobile} />
       ) : null}
       <div
-        className={`flex min-w-0 ${isMobile ? "w-full shrink-0" : "h-full"}`}
+        className={`flex min-w-0 pb-[30px] ${isMobile ? "w-full shrink-0 " : "h-full"} ${rightClassName ?? ""}`}
         style={{
           width: rightPaneWidth,
           ...(isMobile ? { order: mobileRightOrder } : {}),
