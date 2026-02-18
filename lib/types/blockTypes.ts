@@ -62,9 +62,21 @@ export interface TableBlock extends BaseBlock {
       type?: string;
       isNumeric?: boolean;
       minWidth?: number;
+      maxWidth?: number;
       copyable?: boolean; // Add this line
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
+      sourceKey?: string; // Map display column key to a source key from JSON columns
+      sourceIndex?: number; // Map display column key to a fixed source index
+      autoIndex?: boolean; // Auto-generate 1-based row index when value is missing
+      expand?: boolean; // Column absorbs remaining space (1fr). Only one column should have this.
+      showIcon?: boolean; // For chain type: show chain icon (default true)
+      showLabel?: boolean; // For chain type: show chain name from AllChainsByKeys (default false)
+      badgeSources?: Array<{ // For badges type: render color-coded pills from multiple source keys
+        sourceKey: string;
+        label: string;
+        color: string;
+      }>;
       units?: {
         [key: string]: {
           decimals?: number;
@@ -75,6 +87,15 @@ export interface TableBlock extends BaseBlock {
     };
   };
   columnSortBy: "value" | "name" | undefined;
+  scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
+  cardView?: {
+    titleColumn: string; // Column key for card title (middle section, displayed prominently)
+    imageColumn?: string; // Column key for avatar/icon (middle section)
+    linkColumn?: string; // Column key whose value is used as arrow link (middle section)
+    topColumns?: string[]; // Explicit column keys for top metric rows (auto-detected if omitted)
+    bottomColumns?: string[]; // Explicit column keys for bottom tag row (auto-detected if omitted)
+    hiddenColumns?: string[]; // Columns to suppress entirely in card view
+  };
   readFromJSON: boolean;
   filterOnStateKey?: {
     stateKey: string;
@@ -136,6 +157,18 @@ export interface ChartBlock extends BaseBlock {
       makeNegative?: boolean;
       aggregation?: "daily" | "weekly" | "monthly";
     }[];
+    dynamicSeries?: {
+      url: string;
+      pathToData: string;
+      pathToTypes?: string;
+      ystartIndex?: number;
+      names?: string | string[];
+      colors: string | string[];
+      type?: string;
+      stacking?: "normal" | "percent" | null;
+      xIndex?: number;
+      tooltipDecimals?: number;
+    };
   } | null;
   seeMetricURL?: string | null;
   yAxisLine?: {

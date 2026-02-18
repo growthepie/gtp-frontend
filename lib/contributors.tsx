@@ -31,7 +31,7 @@ export const Contributors = [
     name: "Lorenz Lehmann",
     image: "/contributors/lorenz.png",
     role: "Research",
-    twitter: "https://www.x.com/lorenz234",
+    twitter: "https://www.x.com/LehmannLorenz",
     linkedin: "https://www.linkedin.com/in/lorenz-lehmann",
   },
   {

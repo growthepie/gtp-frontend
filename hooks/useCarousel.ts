@@ -107,23 +107,19 @@ export function useCarousel(
 
     onInit?.(emblaApi);
 
-    // Disable pointer events during drag, allow taps through
-    let didScroll = false;
+    // Disable pointer events during drag, allow taps/clicks through
     const onPointerDown = () => {
-      didScroll = false;
-      setIsScrolling(true);
+      // Don't set isScrolling here - let scroll event handle it
+      // so that simple clicks aren't blocked by the overlay
     };
     const onPointerUp = () => {
-      // If no scroll happened, it was a tap - briefly re-enable to trigger click
-      if (!didScroll) {
-        setIsScrolling(false);
-      } else {
-        setIsScrolling(false);
-      }
-      didScroll = false;
+      setIsScrolling(false);
     };
     const onScroll = () => {
-      didScroll = true;
+      setIsScrolling(true);
+    };
+    const onSettle = () => {
+      setIsScrolling(false);
     };
 
     emblaApi.on("select", onSelect);
@@ -134,6 +130,7 @@ export function useCarousel(
     emblaApi.on("pointerDown", onPointerDown);
     emblaApi.on("pointerUp", onPointerUp);
     emblaApi.on("scroll", onScroll);
+    emblaApi.on("settle", onSettle);
 
     return () => {
       emblaApi.off("select", onSelect);
@@ -144,6 +141,7 @@ export function useCarousel(
       emblaApi.off("pointerDown", onPointerDown);
       emblaApi.off("pointerUp", onPointerUp);
       emblaApi.off("scroll", onScroll);
+      emblaApi.off("settle", onSettle);
     };
   }, [emblaApi, onSelect, checkOverflow, updateSlidesInView, onInit]);
 
