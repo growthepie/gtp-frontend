@@ -416,7 +416,7 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/eip8004.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/eip-8004.png",
   og_image: "",
   date: "2026-02-17",
   related: [],
