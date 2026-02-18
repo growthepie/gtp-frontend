@@ -27,11 +27,11 @@ const Agents: QuickBiteData = createQuickBite({
         info: "Number of unique owners that registered agents.",
       },
       {
-        title: "Agents with Feedback",
+        title: "Agents with Reviews",
         value: "{{eip8004_agents_with_feedback}}",
         description: "latest cumulative",
         icon: "gtp-realtime",
-        info: "Number of registered agents that have feedback attached.",
+        info: "Number of registered agents that received at least one review.",
       },
     ]),
     "```",
@@ -65,12 +65,33 @@ const Agents: QuickBiteData = createQuickBite({
           sortByValue: true,
         },
         origin_key: {
-          label: "Origin Chain",
+          label: "Chain",
           type: "chain",
-          minWidth: 200,
+          minWidth: 150,
           isNumeric: false,
           sortByValue: true,
           showLabel: true,
+        },
+        x402_support: {
+          label: "x402 Support",
+          type: "boolean",
+          minWidth: 100,
+          isNumeric: false,
+          sortByValue: false,
+        },
+        feedback_count_valid: {
+          label: "Valid Reviews",
+          type: "number",
+          minWidth: 80,
+          isNumeric: true,
+          sortByValue: true
+        },
+        unique_clients: {
+          label: "Unique Reviewers",
+          type: "number",
+          minWidth: 80,
+          isNumeric: true,
+          sortByValue: true
         },
         endpoints: {
           label: "Endpoints",
@@ -83,16 +104,16 @@ const Agents: QuickBiteData = createQuickBite({
             { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
           ],
         },
-        events: {
-          label: "Events",
+        rating: {
+          label: "Overall Rating",
           type: "number",
-          sourceKey: "feedback_count_all",
+          sourceKey: "avg_rating",
           minWidth: 80,
           isNumeric: true,
           sortByValue: true,
           units: {
             value: {
-              decimals: 0,
+              decimals: 2,
             },
           },
         },
@@ -101,15 +122,18 @@ const Agents: QuickBiteData = createQuickBite({
         "image",
         "agent",
         "origin_key",
+        "x402_support",
         "endpoints",
-        "events"
+        "feedback_count_valid",
+        "unique_clients",
+        "rating"
       ],
       columnSortBy: "value",
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        topColumns: ["", "events"],
-        bottomColumns: ["endpoints", "origin_key"],
+        topColumns: ["", "rating"],
+        bottomColumns: ["endpoints", "origin_key", "x402_support"],
       },
     }),
     "```",
@@ -173,11 +197,11 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
-    "## Agent Breakdown by Chain",
+    "## AI Agents by Chain",
     "```table",
     JSON.stringify({
       readFromJSON: true,
-      content: "Distribution of registered agents by chain.",
+      content: "Distribution of registered AI agents by chain.",
       scrollable: false,
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",

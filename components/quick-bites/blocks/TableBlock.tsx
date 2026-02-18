@@ -264,8 +264,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   };
 
   // Empty value placeholder — matches platform pattern (em dash, muted)
-  const EmptyCell = () => (
-    <span className="text-[#5A6462] text-xs">—</span>
+  const EmptyCell = ({ centered = false }: { centered?: boolean }) => (
+    centered ? (
+      <div className="flex items-center justify-center w-full">
+        <span className="text-[#5A6462] text-xs">—</span>
+      </div>
+    ) : (
+      <span className="text-[#5A6462] text-xs">—</span>
+    )
   );
 
   // Shared cell content renderer — used by both table rows and card view
@@ -315,7 +321,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     } else if (columnType === "boolean") {
       const raw = cellData?.value;
       const normalized = raw === true || raw === "true" ? true : raw === false || raw === "false" ? false : null;
-      if (normalized === null) return <EmptyCell />;
+      if (normalized === null) return <EmptyCell centered />;
       return (
         <div className="flex items-center justify-center w-full">
           <Icon icon={normalized ? "feather:check" : "feather:x"} className={`w-[14px] h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`} />
@@ -624,7 +630,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         ? false
                         : null;
                     if (normalized === null) {
-                      cellMainContent = <EmptyCell />;
+                      cellMainContent = <EmptyCell centered />;
                     } else {
                       cellMainContent = (
                         <div className="flex items-center justify-center w-full">
