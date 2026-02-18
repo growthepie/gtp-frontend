@@ -56,6 +56,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     } = useMetricChartControls();
 
     const { data: master } = useMaster();
+    const suffix = master?.metrics?.[metric_id]?.units?.value?.suffix;
+    const prefix = master?.metrics?.[metric_id]?.units?.value?.prefix;
+    const decimals = master?.metrics?.[metric_id]?.units?.value?.decimals_tooltip;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const metricConfig = findMetricConfig(metric);
 

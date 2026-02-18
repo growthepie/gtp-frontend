@@ -275,10 +275,16 @@ export default function GTPChart({
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
     // Y-axis smart scaling
-    const splitCount = clamp(Math.round((containerHeight || 512) / 88), 3, 7);
+    const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
+    const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
+    const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
+    const isWithinVisibleRange = (timestamp: number) => timestamp >= visibleMinTs && timestamp <= visibleMaxTs;
 
     const allValues = pairedSeries.flatMap((s) =>
-      s.pairedData.map((p) => p[1]).filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
+      s.pairedData
+        .filter(([timestamp]) => Number.isFinite(Number(timestamp)) && isWithinVisibleRange(Number(timestamp)))
+        .map((p) => p[1])
+        .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
     );
     const allTimestamps = pairedSeries.flatMap((s) =>
       s.pairedData
@@ -367,7 +373,9 @@ export default function GTPChart({
 
     const maxSeriesValue =
       shouldStack && pairedSeries.length > 0
-        ? pairedSeries[0].pairedData.reduce((maxVal, _, index) => {
+        ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
+            const pointTimestamp = Number(point[0]);
+            if (!Number.isFinite(pointTimestamp) || !isWithinVisibleRange(pointTimestamp)) return maxVal;
             const stackedValue = pairedSeries.reduce((sum, s) => {
               const pointValue = s.pairedData[index]?.[1];
               return typeof pointValue === "number" && Number.isFinite(pointValue) ? sum + pointValue : sum;
@@ -381,31 +389,78 @@ export default function GTPChart({
     // Detect whether the data contains negative values
     const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
     const hasNegativeValues = minSeriesValue < 0;
+    const maxPositiveOvershootRatio = 1.15;
 
-    const rawStep = Math.max(maxSeriesValue, 1) / splitCount;
-    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
-    const normalizedStep = rawStep / Math.max(magnitude, 1);
-    const niceStepBase = normalizedStep > 5 ? 10 : normalizedStep > 2 ? 5 : normalizedStep > 1 ? 2 : 1;
-    const absoluteStep = niceStepBase * Math.max(magnitude, 1);
+    const getNiceStep = (raw: number) => {
+      const safeRaw = Math.max(raw, Number.EPSILON);
+      const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
+      const normalized = safeRaw / magnitude;
+
+      if (normalized <= 1.5) return 1 * magnitude;
+      if (normalized <= 2.25) return 2 * magnitude;
+      if (normalized <= 3.75) return 2.5 * magnitude;
+      if (normalized <= 7.5) return 5 * magnitude;
+      return 10 * magnitude;
+    };
+
+    const tightenPositiveHeadroom = ({
+      paddedPosMax,
+      positiveBaseline,
+      initialStep,
+      minAllowedStep,
+    }: {
+      paddedPosMax: number;
+      positiveBaseline: number;
+      initialStep: number;
+      minAllowedStep: number;
+    }) => {
+      let step = initialStep;
+      let roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+      let previousStep = step;
+
+      while (roundedPosMax / positiveBaseline > maxPositiveOvershootRatio && step > minAllowedStep) {
+        const tightenedStep = getNiceStep(step / 1.6);
+        if (tightenedStep >= previousStep) break;
+        previousStep = step;
+        step = Math.max(tightenedStep, minAllowedStep);
+        roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+      }
+
+      return {
+        step,
+        roundedPosMax: Math.min(roundedPosMax, positiveBaseline * maxPositiveOvershootRatio),
+      };
+    };
+
+    const axisPaddingMultiplier = 1.03;
+    const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
+    const absoluteStep = getNiceStep(rawStep);
     let yAxisStep = percentageMode ? 25 : absoluteStep;
 
-    // For data with negatives, compute symmetrical min/max rounded to nice numbers
+    // For data with negatives, compute independent min/max with capped positive headroom.
     let computedYAxisMin: number;
     let computedYAxisMax: number;
 
     if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
-      // Recompute step from the absolute max so the symmetrical range gets ~splitCount labels
-      const maxAbsValue = Math.max(Math.abs(minSeriesValue), Math.abs(maxSeriesValue), 1);
-      const symRawStep = maxAbsValue / Math.max(Math.floor(splitCount / 2), 1);
-      const symMagnitude = Math.pow(10, Math.floor(Math.log10(symRawStep || 1)));
-      const symNormalized = symRawStep / Math.max(symMagnitude, 1);
-      const symNiceBase = symNormalized > 5 ? 10 : symNormalized > 2 ? 5 : symNormalized > 1 ? 2 : 1;
-      const symStep = symNiceBase * Math.max(symMagnitude, 1);
-      const roundedMax = Math.max(symStep, Math.ceil((maxAbsValue * 1.06) / symStep) * symStep);
-      computedYAxisMin = -roundedMax;
-      computedYAxisMax = roundedMax;
-      // Override the step so the tick count stays reasonable across the full range
-      yAxisStep = symStep;
+      const posMax = Math.max(maxSeriesValue, 0);
+      const negMin = Math.min(minSeriesValue, 0);
+      const totalRange = posMax - negMin;
+      const rangeRawStep = totalRange / Math.max(splitCount, 1);
+      const initialStep = getNiceStep(rangeRawStep);
+      const minAllowedStep = getNiceStep(totalRange / Math.max(splitCount * 16, 1));
+      const paddedPosMax = posMax * axisPaddingMultiplier;
+      const positiveBaseline = Math.max(posMax, Number.EPSILON);
+
+      const tightened = tightenPositiveHeadroom({
+        paddedPosMax,
+        positiveBaseline,
+        initialStep,
+        minAllowedStep,
+      });
+
+      yAxisStep = tightened.step;
+      computedYAxisMax = posMax > 0 ? tightened.roundedPosMax : 0;
+      computedYAxisMin = Math.floor((negMin * axisPaddingMultiplier) / yAxisStep) * yAxisStep;
     } else {
       computedYAxisMin = yAxisMin;
       computedYAxisMax =
@@ -413,7 +468,22 @@ export default function GTPChart({
           ? yAxisMaxOverride
           : percentageMode
             ? 100
-            : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
+            : (() => {
+                const posMax = Math.max(maxSeriesValue, 0);
+                if (posMax <= 0) return 0;
+
+                const paddedPosMax = posMax * axisPaddingMultiplier;
+                const minAllowedStep = getNiceStep(posMax / Math.max(splitCount * 16, 1));
+                const tightened = tightenPositiveHeadroom({
+                  paddedPosMax,
+                  positiveBaseline: posMax,
+                  initialStep: yAxisStep,
+                  minAllowedStep,
+                });
+
+                yAxisStep = tightened.step;
+                return tightened.roundedPosMax;
+              })();
     }
 
     // Sort series for percentage mode (ascending by last value so smallest is on top)
