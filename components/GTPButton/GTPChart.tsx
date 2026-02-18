@@ -294,6 +294,53 @@ export default function GTPChart({
     const xAxisRangeMs = explicitRangeMs ?? inferredRangeMs;
     const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
 
+    // For time-based bar series, bars are centered on the timestamp. If the axis min/max sits
+    // exactly on the first/last point, edge bars can protrude outside the grid. We pad the
+    // internal bounds using edge intervals computed across all bar series.
+    let effectiveXMin = xAxisMin;
+    let effectiveXMax = xAxisMax;
+    if (hasBarSeries && xAxisType === "time") {
+      const sortedBarTs = Array.from(
+        new Set(
+          pairedSeries
+            .filter((s) => s.seriesType === "bar")
+            .flatMap((s) =>
+              s.pairedData
+                .filter((p) => typeof p[1] === "number" && Number.isFinite(p[1]))
+                .map((p) => Number(p[0]))
+                .filter((timestamp) => Number.isFinite(timestamp)),
+            ),
+        ),
+      ).sort((a, b) => a - b);
+
+      if (sortedBarTs.length > 0) {
+        const intervals: number[] = [];
+        for (let i = 1; i < sortedBarTs.length; i += 1) {
+          const diff = sortedBarTs[i] - sortedBarTs[i - 1];
+          if (diff > 0 && Number.isFinite(diff)) intervals.push(diff);
+        }
+
+        const inferredEdgeInterval =
+          intervals.length > 0
+            ? intervals[Math.floor(intervals.length / 2)]
+            : typeof xAxisRangeMs === "number" && xAxisRangeMs > 0
+              ? xAxisRangeMs / 20
+              : undefined;
+
+        const firstInterval = intervals[0] ?? inferredEdgeInterval;
+        const lastInterval = intervals[intervals.length - 1] ?? inferredEdgeInterval;
+        const minBase = Number(xAxisMin ?? sortedBarTs[0]);
+        const maxBase = Number(xAxisMax ?? sortedBarTs[sortedBarTs.length - 1]);
+
+        if (Number.isFinite(minBase) && Number.isFinite(maxBase)) {
+          const leftPad = Number.isFinite(firstInterval) ? Number(firstInterval) / 2 : 0;
+          const rightPad = Number.isFinite(lastInterval) ? Number(lastInterval) / 2 : 0;
+          effectiveXMin = minBase - leftPad;
+          effectiveXMax = maxBase + rightPad;
+        }
+      }
+    }
+
     const formatXAxisTick = (value: number | string) => {
       const numValue = typeof value === "string" ? Number(value) : value;
       if (!Number.isFinite(numValue)) {
@@ -424,6 +471,7 @@ export default function GTPChart({
       } else {
         // Bar
         config.type = "bar";
+        config.clip = true;
         config.barMaxWidth = barMaxWidth;
 
         const posGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -605,13 +653,15 @@ export default function GTPChart({
               },
             ]
           : undefined,
-      grid,
+      grid: {
+        ...grid,
+      },
       xAxis: {
         type: xAxisType,
         show: true,
-        min: xAxisMin,
-        max: xAxisMax,
-        boundaryGap: hasBarSeries ? true : false,
+        min: effectiveXMin,
+        max: effectiveXMax,
+        boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
         axisTick: { show: false },
         axisLabel: {
