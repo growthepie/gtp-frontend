@@ -43,7 +43,7 @@ const Agents: QuickBiteData = createQuickBite({
     ]),
     "```",
     
-    "Since its launch in late January 2026, we have seen explosive growth in the number of registered AI agents, with over {{eip8004_total_agents}} agents registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for AI agents.",
+    "Since the launch of the EIP-8004 standard in late January 2026, we have seen explosive growth in the number of registered AI agents, with over {{eip8004_total_agents}} agents registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for AI agents.",
 
     "## Most Popular AI Agents",
     "```table",
@@ -147,7 +147,7 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
-    "AI agents come in a wide variety of flavors, ranging from deterministic task-specific bots such as automated arbitrageurs or liquidators, to autonomous agentic systems capable of long-term planning and complex DeFi strategy execution. As shown in the table above, each agent supports different payment or communication solutions, such as x402 payment protocols for real-time microtransactions or MCP (Model Context Protocol) endpoints for standardized tool and data integration.",
+    "AI agents come in a wide variety of flavors, ranging from deterministic task-specific bots such as automated arbitrageurs or liquidators, to autonomous agentic systems capable of long-term planning and complex DeFi strategy execution. As shown in the table above, each agent supports different payment or communication solutions, such as x402 payment protocols for real-time microtransactions or MCP (Model Context Protocol) endpoints for standardized tool and data integrations.",
 
     "```chart",
     JSON.stringify({
@@ -353,7 +353,7 @@ const Agents: QuickBiteData = createQuickBite({
 
     "# Estimating AI Agents Slop",
 
-    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the number of AI agent slop that are registered but non-functional by measuring URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, indicating a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
+    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the amount of AI agent slop by counting the non-functional URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, which totals to a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
 
     "```kpi-cards",
     JSON.stringify([
