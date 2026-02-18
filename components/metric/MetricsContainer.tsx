@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, ReactNode, useRef } from "react";
+import { useMemo, ReactNode, useRef, useCallback } from "react";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
@@ -21,6 +21,7 @@ import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
 import GTPButtonDropdown from "../GTPButton/GTPButtonDropdown";
 import GTPResizeDivider from "../GTPButton/GTPResizeDivider";
 import { GTPScrollPaneScrollMetrics } from "../GTPButton/GTPScrollPane";
+import { downloadElementAsImage } from "../GTPButton/chartSnapshotHelpers";
 import { GTPIcon } from "../layout/GTPIcon";
 import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -29,6 +30,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 767px)");
     const [collapseTable, setCollapseTable] = useState(false);
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+    const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+    const cardRef = useRef<HTMLDivElement | null>(null);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -106,14 +109,25 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             <>Unavailable</>
         );
     }, [sources]);
-    
- 
+
+    const handleDownloadChartSnapshot = useCallback(async () => {
+        if (isDownloadingChartSnapshot) return;
+        const cardElement = cardRef.current;
+        if (!cardElement || typeof window === "undefined") return;
+        setIsDownloadingChartSnapshot(true);
+        try {
+            await downloadElementAsImage(cardElement, metricData?.metric_name ?? "metric");
+        } finally {
+            setIsDownloadingChartSnapshot(false);
+        }
+    }, [isDownloadingChartSnapshot, metricData?.metric_name]);
 
 
     return (
         <GTPCardLayout
             fullBleed={false}
             contentHeight={538}
+            cardRef={cardRef}
             header={
                 <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
@@ -288,7 +302,16 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             onOpenChange={setIsSharePopoverOpen}
                             dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                         />
-                        
+                        <div title="Download image">
+                            <GTPButton
+                                leftIcon="gtp-download-monochrome"
+                                size={isMobile ? "xs" : "sm"}
+                                variant="no-background"
+                                visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                                disabled={isDownloadingChartSnapshot}
+                                clickHandler={handleDownloadChartSnapshot}
+                            />
+                        </div>
                     </GTPButtonRow>
                    
                     <GTPButtonRow>
