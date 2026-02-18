@@ -68,6 +68,7 @@ export interface TableBlock extends BaseBlock {
       add_url?: string; // URL template with ${cellValue} placeholder
       sourceKey?: string; // Map display column key to a source key from JSON columns
       sourceIndex?: number; // Map display column key to a fixed source index
+      infoTooltip?: { sourceKey?: string; text?: string }; // Optional info icon tooltip content
       autoIndex?: boolean; // Auto-generate 1-based row index when value is missing
       expand?: boolean; // Column absorbs remaining space (1fr). Only one column should have this.
       showIcon?: boolean; // For chain type: show chain icon (default true)

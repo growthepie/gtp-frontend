@@ -2,45 +2,53 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 const Agents: QuickBiteData = createQuickBite({
-  title: "AI Agents in the Ethereum Ecosystem",
+  title: "AI Agents in the Ethereum Ecosystem (EIP-8004)",
   shortTitle: "AI Agents",
   subtitle: "Exploring EIP8004 and the role of AI agents in Ethereum",
   content: [
     "# Introduction:",
-    "EIP-8004 introduces a common registration surface for onchain AI agents. This quick bite tracks current adoption, event activity, and URI quality over time.",
-
-    "# EIP-8004 Metrics",
+    "[EIP-8004](https://eips.ethereum.org/EIPS/eip-8004) (a.k.a. \"Trustless Agents\" standard) is the emerging backbone for the \"Agentic Economy\" on EVM chains. It solves the \"trust gap\" that occurs when autonomous AI agents from different organizations need to work together without a central middleman to verify who they are or if they are any good.",
+    "The protocol is built around three registries. Think of them as the Identity, Review System and Notary of the AI world.",
+    "### 1. Identity Registry",
+    "Agents can register and mint an [ERC-721 NFTs](https://etherscan.io/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) that serves as their digital passport. Each agent receives a unique ID and sets a metadata URI detailing its skills, communication protocols (e.g., MCP/A2A) and wallet address ensuring global discoverability.",
+    "### 2. Reputation Registry",
+    "A decentralized [feedback system](https://etherscan.io/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63) for clients to rate their AI agents on a score of 0–100 and assign performance tags.",
+    "### 3. Validation Registry (Under Development)",
+    "It allows agents to request audits from external validators (like TEEs or zkML proofs). Unlike the subjective Reputation Registry, this is for objective proofs. However, the reliability depends entirely on the specific validator chosen, not the registry itself.",
+    
+    "# Overview",
     "```kpi-cards",
     JSON.stringify([
       {
-        title: "Registered Agents",
+        title: "Registered AI Agents",
         value: "{{eip8004_total_agents}}",
         description: "latest cumulative",
         icon: "gtp-settings",
-        info: "Total number of agents registered under EIP-8004.",
+        info: "Total number of AI agents registered under EIP-8004.",
       },
       {
         title: "Unique Owners",
         value: "{{eip8004_unique_owners}}",
         description: "latest snapshot",
         icon: "gtp-users",
-        info: "Number of unique owners that registered agents.",
+        info: "Number of unique owners that registered AI agents.",
       },
       {
-        title: "Agents with Feedback",
+        title: "Agents with Reviews",
         value: "{{eip8004_agents_with_feedback}}",
         description: "latest cumulative",
         icon: "gtp-realtime",
-        info: "Number of registered agents that have feedback attached.",
+        info: "Number of registered AI agents that received at least one review.",
       },
     ]),
     "```",
+    
+    "Since the launch of the EIP-8004 standard in late January 2026, we have seen explosive growth in the number of registered AI agents, with over {{eip8004_total_agents}} agents registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for AI agents.",
 
-    "## Top 200 Agents",
+    "## Most Popular AI Agents",
     "```table",
     JSON.stringify({
       readFromJSON: true,
-      content: "Most active agents by observed EIP-8004 activity.",
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/top_agents.json",
         pathToRowData: "data.top_agents.rows",
@@ -55,9 +63,10 @@ const Agents: QuickBiteData = createQuickBite({
           sortByValue: false,
         },
         agent: {
-          label: "Agent",
+          label: "Agent Name",
           type: "string",
           sourceKey: "name",
+          infoTooltip: { sourceKey: "description" },
           expand: true,
           minWidth: 150,
           maxWidth: 200,
@@ -65,12 +74,33 @@ const Agents: QuickBiteData = createQuickBite({
           sortByValue: true,
         },
         origin_key: {
-          label: "Origin Chain",
+          label: "Chain",
           type: "chain",
-          minWidth: 200,
+          minWidth: 150,
           isNumeric: false,
           sortByValue: true,
           showLabel: true,
+        },
+        x402_support: {
+          label: "x402 Support",
+          type: "boolean",
+          minWidth: 100,
+          isNumeric: false,
+          sortByValue: false,
+        },
+        feedback_count_valid: {
+          label: "Valid Reviews",
+          type: "number",
+          minWidth: 80,
+          isNumeric: true,
+          sortByValue: true
+        },
+        unique_clients: {
+          label: "Unique Reviewers",
+          type: "number",
+          minWidth: 80,
+          isNumeric: true,
+          sortByValue: true
         },
         endpoints: {
           label: "Endpoints",
@@ -83,16 +113,16 @@ const Agents: QuickBiteData = createQuickBite({
             { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
           ],
         },
-        events: {
-          label: "Events",
+        rating: {
+          label: "Overall Rating",
           type: "number",
-          sourceKey: "feedback_count_all",
+          sourceKey: "avg_rating",
           minWidth: 80,
           isNumeric: true,
           sortByValue: true,
           units: {
             value: {
-              decimals: 0,
+              decimals: 2,
             },
           },
         },
@@ -101,34 +131,40 @@ const Agents: QuickBiteData = createQuickBite({
         "image",
         "agent",
         "origin_key",
+        "x402_support",
         "endpoints",
-        "events"
+        "feedback_count_valid",
+        "unique_clients",
+        "rating"
       ],
       columnSortBy: "value",
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        topColumns: ["", "events"],
-        bottomColumns: ["endpoints", "origin_key"],
+        topColumns: ["", "rating"],
+        bottomColumns: ["endpoints", "origin_key", "x402_support"],
       },
     }),
     "```",
 
+    "AI agents come in a wide variety of flavors, ranging from deterministic task-specific bots such as automated arbitrageurs or liquidators, to autonomous agentic systems capable of long-term planning and complex DeFi strategy execution. As shown in the table above, each agent supports different payment or communication solutions, such as x402 payment protocols for real-time microtransactions or MCP (Model Context Protocol) endpoints for standardized tool and data integrations.",
+
     "```chart",
     JSON.stringify({
       type: "line",
-      title: "Agent Registrations & Feedbacks Over Time",
+      title: "AI Agent Registrations & Reviews Over Time",
       subtitle: "Two key event series over time.",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
-            name: "Total Feedbacks",
+            name: "Total Reviews",
             oppositeYAxis: true,
             color: "#AEEFED",
             type: "line",
             xIndex: 0,
             yIndex: 1,
+            dashStyle: "Dash",
             tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/eip8004/events_cumulative.json",
             pathToData: "data.timeseries.values",
@@ -140,6 +176,7 @@ const Agents: QuickBiteData = createQuickBite({
             type: "line",
             xIndex: 0,
             yIndex: 2,
+            dashStyle: "Dash",
             tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/eip8004/events_cumulative.json",
             pathToData: "data.timeseries.values",
@@ -156,7 +193,7 @@ const Agents: QuickBiteData = createQuickBite({
             pathToData: "data.timeseries.values",
           },
           {
-            name: "Feedbacks",
+            name: "Reviews",
             oppositeYAxis: false,
             color: "#19D9D6",
             type: "column",
@@ -169,15 +206,15 @@ const Agents: QuickBiteData = createQuickBite({
         ],
       },
       height: 500,
-      caption: "EIP-8004 event activity over time in the Ethereum Ecosystem.",
+      caption: "EIP-8004 event activity over time for the whole Ethereum Ecosystem.",
     }),
     "```",
 
-    "## Agent Breakdown by Chain",
+    "## AI Agent Distribution by Chain",
     "```table",
     JSON.stringify({
       readFromJSON: true,
-      content: "Distribution of registered agents by chain.",
+      content: "As EIP-8004 is an application-layer standard, any EVM-compatible chain can simply deploy the registry contracts without requiring a network hard fork. Because of this permissionless design, many chains across the Ethereum ecosystem have already adopted the standard to support the growing agentic economy.",
       scrollable: false,
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",
@@ -203,8 +240,15 @@ const Agents: QuickBiteData = createQuickBite({
           showLabel: true,
           expand: true,
         },
+        first_registered_date: {
+          label: "First Registered Date",
+          type: "string",
+          minWidth: 100,
+          isNumeric: false,
+          sortByValue: true,
+        },
         total_registered: {
-          label: "Total Registered",
+          label: "Total AI Agents",
           type: "number",
           minWidth: 200,
           isNumeric: true,
@@ -216,7 +260,7 @@ const Agents: QuickBiteData = createQuickBite({
           },
         },
         valid_registrations: {
-          label: "Valid",
+          label: "Valid AI Agents",
           type: "number",
           minWidth: 100,
           isNumeric: true,
@@ -228,7 +272,7 @@ const Agents: QuickBiteData = createQuickBite({
           },
         },
         total_feedback: {
-          label: "Feedback",
+          label: "Reviews",
           type: "number",
           minWidth: 100,
           isNumeric: true,
@@ -262,19 +306,12 @@ const Agents: QuickBiteData = createQuickBite({
               decimals: 2,
             },
           },
-        },
-        first_registered_date: {
-          label: "First Registered",
-          type: "string",
-          minWidth: 100,
-          isNumeric: false,
-          sortByValue: true,
-          hidden: true,
-        },
+        }
       },
       columnOrder: [
         "chain_icon",
         "origin_key",
+        "first_registered_date",
         "total_registered",
         "valid_registrations",
         "total_feedback",
@@ -294,7 +331,7 @@ const Agents: QuickBiteData = createQuickBite({
     JSON.stringify({
       type: "column",
       title: "Registered Agents Over Time by Chain",
-      subtitle: "Stacked cumulative registrations split by origin chain.",
+      subtitle: "Stacked registrations split by origin chain.",
       showXAsDate: true,
       showTotalTooltip: true,
       dataAsJson: {
@@ -310,33 +347,36 @@ const Agents: QuickBiteData = createQuickBite({
         },
       },
       height: 440,
-      caption: "Cumulative registrations across chains under EIP-8004.",
+      caption: "New registrations of AI agents over time, broken down by chain.",
     }),
     "```",
 
     "# Estimating AI Agents Slop",
+
+    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the amount of AI agent slop by counting the non-functional URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, which totals to a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
+
     "```kpi-cards",
     JSON.stringify([
       {
-        title: "Valid Agents",
+        title: "Valid AI Agents",
         value: "{{eip8004_valid_uri_count}}",
         description: "latest snapshot",
         icon: "gtp-realtime",
-        info: "Count of agents with a valid URI.",
+        info: "Count of agents with a valid URI set.",
       },
       {
-        title: "Invalid Agents",
+        title: "Invalid AI Agents",
         value: "{{eip8004_empty_uri_count}}",
         description: "latest snapshot",
         icon: "gtp-message",
-        info: "Count of agents with an invalid URI.",
+        info: "Count of agents with an invalid URI set.",
       },
       {
-        title: "Valid URI Share",
+        title: "Valid AI Agents Share",
         value: "{{eip8004_valid_uri_share}}%",
         description: "latest snapshot",
         icon: "gtp-metrics-chains-percentage",
-        info: "Share of agents with a valid URI.",
+        info: "Share of agents with a valid URI set.",
       },
     ]),
     "```",
@@ -344,7 +384,7 @@ const Agents: QuickBiteData = createQuickBite({
     "```chart",
     JSON.stringify({
       type: "area",
-      title: "URI Quality Over Time",
+      title: "AI Agent Quality Over Time",
       subtitle: "100% stacked view of valid vs invalid AI-agent URIs.",
       showXAsDate: true,
       dataAsJson: {
@@ -372,21 +412,17 @@ const Agents: QuickBiteData = createQuickBite({
         ],
       },
       height: 420,
-      caption: "URI quality mix over time (normalized to 100%).",
+      caption: "Share of AI agents who provided a valid URI over time, as a proxy for quality and slop in the ecosystem.",
     }),
     "```",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/eip8004.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/eip-8004.png",
   og_image: "",
   date: "2026-02-17",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
     xUsername: "LehmannLorenz",
-  },
-  {
-    name: "ETH Wave",
-    xUsername: "TrueWaveBreak"
   }],
   topics: [
     {
@@ -396,14 +432,9 @@ const Agents: QuickBiteData = createQuickBite({
       url: "/chains/ethereum"
     },
     {
-      icon: "gtp-metrics-economics",
-      name: "Economics",
-      url: "/economics"
-    },
-    {
-      icon: "gtp-data-availability",
-      name: "Data Availability",
-      url: "/data-availability"
+      icon: "gtp-compare",
+      name: "AI",
+      url: "/blockspace/category-comparison"
     },
   ],
   icon: "ethereum-logo-monochrome",
