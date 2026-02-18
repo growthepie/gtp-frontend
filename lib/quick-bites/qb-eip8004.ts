@@ -353,7 +353,7 @@ const Agents: QuickBiteData = createQuickBite({
 
     "# Estimating AI Agents Slop",
 
-    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the number of AI slop—agents that are registered but non-functional by measuring URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, indicating a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
+    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the number of AI agent slop that are registered but non-functional by measuring URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, indicating a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
 
     "```kpi-cards",
     JSON.stringify([
