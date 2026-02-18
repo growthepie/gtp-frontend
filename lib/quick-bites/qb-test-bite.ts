@@ -422,6 +422,7 @@ const testBite: QuickBiteData = createQuickBite({
           label: "Ticker",
           type: "string",
           minWidth: 80,
+          maxWidth: 120,
           isNumeric: false,
           sortByValue: true
         },
@@ -435,7 +436,7 @@ const testBite: QuickBiteData = createQuickBite({
         usd_outstanding: {
           label: "USD Outstanding",
           type: "number",
-          minWidth: 100,
+          minWidth: 150,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -448,7 +449,7 @@ const testBite: QuickBiteData = createQuickBite({
         stocks_tokenized: {
           label: "Stocks Tokenized",
           type: "number",
-          minWidth: 100,
+          minWidth: 150,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -460,7 +461,7 @@ const testBite: QuickBiteData = createQuickBite({
         usd_stock_price: {
           label: "USD Stock Price",
           type: "number",
-          minWidth: 100,
+          minWidth: 150,
           isNumeric: true,
           sortByValue: true,
           units: {
@@ -479,6 +480,194 @@ const testBite: QuickBiteData = createQuickBite({
       
     }),
     "```",
+
+    "## Table with Card View, Badges & Chain Columns",
+    "This table demonstrates card view (resize to mobile), badges column, chain columns with icon/label options, expand, maxWidth, and auto-index.",
+    "```table",
+    JSON.stringify({
+      readFromJSON: true,
+      content: "Top agents by EIP-8004 activity — with responsive card view.",
+      jsonData: {
+        url: "https://api.growthepie.com/v1/quick-bites/eip8004/top_agents.json",
+        pathToRowData: "data.top_agents.rows",
+        pathToColumnKeys: "data.top_agents.columns",
+      },
+      columnDefinitions: {
+        image: {
+          label: "",
+          type: "image",
+          minWidth: 26,
+          isNumeric: false,
+          sortByValue: false,
+        },
+        agent: {
+          label: "Agent",
+          type: "string",
+          sourceKey: "name",
+          expand: true,
+          minWidth: 150,
+          maxWidth: 200,
+          isNumeric: false,
+          sortByValue: true,
+        },
+        origin_key: {
+          label: "Origin Chain",
+          type: "chain",
+          minWidth: 200,
+          isNumeric: false,
+          sortByValue: true,
+          showLabel: true,
+        },
+        endpoints: {
+          label: "Endpoints",
+          type: "badges",
+          minWidth: 140,
+          isNumeric: false,
+          sortByValue: false,
+          badgeSources: [
+            { sourceKey: "service_web_endpoint", label: "Web", color: "#4A90D9" },
+            { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
+          ],
+        },
+        events: {
+          label: "Events",
+          type: "number",
+          sourceKey: "feedback_count_all",
+          minWidth: 80,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: {
+              decimals: 0,
+            },
+          },
+        },
+      },
+      columnOrder: [
+        "image",
+        "agent",
+        "origin_key",
+        "endpoints",
+        "events"
+      ],
+      columnSortBy: "value",
+      cardView: {
+        titleColumn: "agent",
+        imageColumn: "image",
+        topColumns: ["", "events"],
+        bottomColumns: ["endpoints", "origin_key"],
+      },
+    }),
+    "```",
+
+    "## Non-Scrollable Table with Card View",
+    "This table uses `scrollable: false` to show all rows, and a card view with all metrics split across top/bottom.",
+    "```table",
+    JSON.stringify({
+      readFromJSON: true,
+      content: "Agent breakdown by chain — all rows visible.",
+      scrollable: false,
+      jsonData: {
+        url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",
+        pathToRowData: "data.origin_breakdown.rows",
+        pathToColumnKeys: "data.origin_breakdown.columns",
+      },
+      columnDefinitions: {
+        chain_icon: {
+          label: "",
+          type: "chain",
+          sourceKey: "origin_key",
+          minWidth: 26,
+          isNumeric: false,
+          sortByValue: false,
+        },
+        origin_key: {
+          label: "Chain",
+          type: "chain",
+          minWidth: 120,
+          isNumeric: false,
+          sortByValue: true,
+          showIcon: false,
+          showLabel: true,
+          expand: true,
+        },
+        total_registered: {
+          label: "Total Registered",
+          type: "number",
+          minWidth: 200,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: { decimals: 0 },
+          },
+        },
+        valid_registrations: {
+          label: "Valid",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: { decimals: 0 },
+          },
+        },
+        total_feedback: {
+          label: "Feedback",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: { decimals: 0 },
+          },
+        },
+        unique_owners: {
+          label: "Owners",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: { decimals: 0 },
+          },
+        },
+        agents_per_owner: {
+          label: "Agents/Owner",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            value: { decimals: 2 },
+          },
+        },
+        first_registered_date: {
+          label: "First Registered",
+          type: "string",
+          minWidth: 100,
+          isNumeric: false,
+          sortByValue: true,
+          hidden: true,
+        },
+      },
+      columnOrder: [
+        "chain_icon",
+        "origin_key",
+        "total_registered",
+        "valid_registrations",
+        "total_feedback",
+        "unique_owners",
+        "agents_per_owner"
+      ],
+      columnSortBy: "value",
+      cardView: {
+        titleColumn: "origin_key",
+        topColumns: [null, "total_registered", "valid_registrations"],
+        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"],
+      },
+    }),
+    "```",
+
     "# Main Header",
     "Some Text. This is a normal text block. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "Now there was a line break. I can also use **bold** text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",

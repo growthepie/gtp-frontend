@@ -466,9 +466,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         {isScrollable ? (
           <VerticalScrollContainer
             height={340}
-            // scrollbarAbsolute={true}
-            // scrollbarPosition="right"
-            paddingRight={0}
+            scrollbarAbsolute={true}
+            scrollbarPosition="right"
+            paddingRight={30}
           >
             {cardGrid}
           </VerticalScrollContainer>
@@ -509,7 +509,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         {(() => {
           const isScrollable = block.scrollable !== false;
           const tableHeader = (
-            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs !gap-x-0 !px-[5px] !pr-[15px] select-none h-[34px] !pt-0 !pb-0 !items-end`}>
+            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs !gap-x-0 !px-[5px] !pr-[15px] select-none min-h-[34px] !pt-0 !pb-0 !items-end`}>
               {columnKeyOrder.map((columnKey, colIdx) => {
                 const mappedKey = columnDefinitions[columnKey]?.sourceKey || columnKey;
                 const canSort = columnDefinitions[columnKey]?.sortByValue ?? dynamicColumnKeys[mappedKey]?.sortByValue;
