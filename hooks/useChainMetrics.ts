@@ -13,6 +13,7 @@ type AggregatedMetricData = {
   source: string[];
   avg?: boolean;
   monthly_agg: "sum" | "maa" | "avg" | "unique";
+  last_updated_utc: string;
   chains: {
     [chainKey: string]: ChainData;
   };
@@ -121,6 +122,8 @@ export function useChainMetrics(
     }
   );
 
+ 
+
   // Aggregate all the responses with progressive loading
   const aggregatedData = useMemo(() => {
     // Return early if not a valid metric
@@ -154,6 +157,8 @@ export function useChainMetrics(
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
 
+    console.log(firstResponse);
+
     successfulChains.forEach((chainKey) => {
       const responseData = chainDataMap[chainKey];
       if (responseData) {
@@ -170,8 +175,14 @@ export function useChainMetrics(
       avg: metricsDict[metricKey].avg || false, // Default value, can be overridden
       monthly_agg: metricsDict[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
       chains,
+      last_updated_utc:
+        firstResponse.last_updated_utc instanceof Date
+          ? firstResponse.last_updated_utc.toISOString()
+          : String(firstResponse.last_updated_utc),
     };
   }, [chainDataMap, validChainKeys, isLoading, metricKey, metricsDict]);
+
+  console.log(aggregatedData);
 
   if (!metricsDict[metricKey]) {
     console.error(`Metric not found in ${metricType}`, metricKey);

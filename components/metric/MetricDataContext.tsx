@@ -36,6 +36,8 @@ type MetricDataContextType = {
   selectedChains: string[];
   setSelectedChainsInDataContext: (chains: string[]) => void;
 
+  lastUpdatedUtc: string | null;
+
   // Loading states
   isLoading: boolean;
   isValidating: boolean;
@@ -60,6 +62,7 @@ const MetricDataContext = createContext<MetricDataContextType>({
   allChainsByKeys: {},
   selectedChains: [],
   setSelectedChainsInDataContext: () => {},
+  lastUpdatedUtc: null,
   isLoading: false,
   isValidating: false,
 });
@@ -297,6 +300,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
         selectedChains,
         setSelectedChainsInDataContext,
+        lastUpdatedUtc: data?.last_updated_utc ?? null,
         isLoading,
         isValidating,
       }}
