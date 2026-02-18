@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 
-const DEFAULT_CONTENT_HEIGHT = 538;
+const DEFAULT_CONTENT_HEIGHT = "100%";
 const DEFAULT_BOTTOM_BAR_OVERLAY_HEIGHT = 0;
 const DEFAULT_BOTTOM_BAR_GAP = 15;
 
@@ -35,27 +35,26 @@ export default function GTPCardLayout({
 }: GTPCardLayoutProps) {
   const hasBottomBar = Boolean(bottomBar);
 
-  const wrapperClassName = fullBleed ? "relative w-screen" : "relative w-full";
-  const wrapperStyle = fullBleed
-    ? { marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }
-    : undefined;
+
 
   const contentHeightValue = typeof contentHeight === "number" ? `${contentHeight}px` : contentHeight;
+  const shouldMatchParentHeight = contentHeightValue === "100%";
 
   const innerPaddingBottom = isMobile
     ? "0px"
     : `${hasBottomBar ? bottomBarOverlayHeight + bottomBarGap : 0}px`;
 
   return (
-    <div className={`${wrapperClassName} ${className ?? ""}`} style={wrapperStyle}>
+    <div className={`h-full w-full ${className ?? ""}`} 
+    >
+
       <div
         ref={cardRef}
-        className="w-full  rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
+        className="w-full h-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
       >
         {topBar}
         <div
-          className="relative px-[5px] pb-0 overflow-hidden"
-          style={{ height: contentHeightValue }}
+          className={`relative px-[5px] pb-0 overflow-hidden min-h-0 h-full `}
         >
           <div
             className="flex h-full flex-col gap-[5px]"
@@ -79,6 +78,7 @@ export default function GTPCardLayout({
           ) : null}
         </div>
       </div>
+
     </div>
   );
 }

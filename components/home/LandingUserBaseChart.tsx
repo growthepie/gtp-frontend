@@ -27,6 +27,7 @@ import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import LandingEventsChart from "./LandingEventsChart";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -255,24 +256,14 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
       {data && landing && master && AllChainsByKeys ? (
         <>
+        {!IS_PRODUCTION && (
           <Container
             className={`w-full`}
           >
-            <LandingChart
-              data={data}
-              master={master}
-              sources={landing.data.metrics.engagement.source}
-              cross_chain_users={data.cross_chain_users}
-              cross_chain_users_comparison={data.cross_chain_users_comparison}
-              latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}
-              latest_total_comparison={focusEnabled ? data.latest_total_comparison_l2 : data.latest_total_comparison}
-              l2_dominance={data.l2_dominance}
-              l2_dominance_comparison={data.l2_dominance_comparison}
-              selectedMetric={selectedMetric}
-              metric={selectedTimeInterval}
-              setSelectedMetric={setSelectedMetric}
-            />
+            <LandingEventsChart /> 
           </Container>
+          )}
+          {IS_PRODUCTION && (
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -293,6 +284,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               Overview of the chains being part of the (wider) Ethereum ecosystem.
             </Subheading>
           </Container>
+          )}
           <Container className="pt-[15px]">
             <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
               <TopRowParent className="!justify-center lg:!justify-normal">

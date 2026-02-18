@@ -223,11 +223,11 @@ export default function GTPSplitPane({
   return (
     <div
       ref={contentRef}
-      className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
+      className={`flex items-stretch h-full flex-1 min-h-0 self-stretch gap-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
     >
       {showLeft ? (
         <div
-          className={`flex min-w-0 h-full min-h-0 pb-[30px] ${isMobile ? `flex-1` : ""} ${leftClassName ?? ""}`}
+          className={`flex min-w-0 min-h-0 self-stretch pb-[30px] ${isMobile ? `flex-1` : ""} ${leftClassName ?? ""}`}
           style={{
             width: leftPaneWidth,
             ...(isMobile ? { order: mobileLeftOrder } : {}),
@@ -240,7 +240,7 @@ export default function GTPSplitPane({
         <DividerSlot render={divider} onDragStart={handleDividerPointerDown} isMobile={isMobile} />
       ) : null}
       <div
-        className={`flex min-w-0 pb-[30px] ${isMobile ? "w-full shrink-0 " : "h-full"} ${rightClassName ?? ""}`}
+        className={`flex min-w-0 pb-[30px] min-h-0 self-stretch ${isMobile ? "flex-1 w-full" : "shrink-0"} ${rightClassName ?? ""}`}
         style={{
           width: rightPaneWidth,
           ...(isMobile ? { order: mobileRightOrder } : {}),
