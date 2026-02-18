@@ -14,6 +14,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import Mustache from 'mustache';
 
 
@@ -56,6 +57,36 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     if (value === null || value === undefined) return [];
     return [String(value).trim()].filter(Boolean);
   };
+
+  const toTooltipText = (value: unknown): string | undefined => {
+    if (value === null || value === undefined) return undefined;
+    const text = String(value).trim();
+    return text.length > 0 ? text : undefined;
+  };
+
+  const getCellInfoTooltipText = (cellData: any): string | undefined => toTooltipText(cellData?.infoTooltipText);
+
+  const InfoTooltipIcon = ({ text }: { text: string }) => (
+    <GTPTooltipNew
+      placement="top-end"
+      allowInteract={true}
+      size="md"
+      trigger={
+        <button
+          type="button"
+          className="inline-flex items-center justify-center text-[#5A6462] hover:text-color-text-primary cursor-pointer"
+          aria-label="Show info"
+          onClick={(e) => e.preventDefault()}
+        >
+          <GTPIcon icon="gtp-info-monochrome" size="sm" className="!size-[11px]" containerClassName="!size-[11px]" />
+        </button>
+      }
+      containerClass="flex flex-col gap-y-[10px]"
+      positionOffset={{ mainAxis: 10, crossAxis: 15 }}
+    >
+      <div className="px-[15px]">{text}</div>
+    </GTPTooltipNew>
+  );
 
   const url = useMemo(() => {
     if (!block.readFromJSON) return null;
@@ -142,8 +173,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const processedRows = useMemo(() => {
     if (!block.readFromJSON || !jsonData) {
       if (block.rowData) {
-        return Object.values(block.rowData).map(rowObject =>
-          columnKeyOrder.map(key => rowObject[key])
+        return Object.values(block.rowData).map((rowObject: any) =>
+          columnKeyOrder.map((key) => {
+            const columnDef = columnDefinitions[key];
+            const infoSourceKey = columnDef?.infoTooltip?.sourceKey;
+            const infoValue = infoSourceKey
+              ? (rowObject?.[infoSourceKey]?.value ?? rowObject?.[infoSourceKey])
+              : columnDef?.infoTooltip?.text;
+            const infoTooltipText = toTooltipText(infoValue);
+            const rawCell = rowObject?.[key];
+            const baseCell = rawCell && typeof rawCell === "object" ? rawCell : { value: rawCell };
+            return infoTooltipText ? { ...baseCell, infoTooltipText } : baseCell;
+          })
         );
       }
       return [];
@@ -161,7 +202,12 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         cellValue = rowIndex + 1;
       }
 
-      const cellObject: { value: any; link?: string; icon?: string; color?: string; badges?: Array<{ label: string; color: string; url: string }> } = { value: cellValue };
+      const infoSourceKey = columnDef?.infoTooltip?.sourceKey;
+      const infoSourceIndex = infoSourceKey ? columnIndexMap[infoSourceKey] : undefined;
+      const infoValue = infoSourceIndex !== undefined ? row[infoSourceIndex] : columnDef?.infoTooltip?.text;
+      const infoTooltipText = toTooltipText(infoValue);
+
+      const cellObject: { value: any; link?: string; icon?: string; color?: string; badges?: Array<{ label: string; color: string; url: string }>; infoTooltipText?: string } = { value: cellValue };
 
       // For badges type: collect values from multiple source keys
       if (columnDef?.type === "badges" && columnDef.badgeSources) {
@@ -179,6 +225,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       // Generate link if add_url is defined in column definition
       if (columnDef?.add_url && typeof cellValue === 'string') {
         cellObject.link = columnDef.add_url.replace('${cellValue}', cellValue);
+      }
+      if (infoTooltipText) {
+        cellObject.infoTooltipText = infoTooltipText;
       }
 
       return cellObject;
@@ -754,6 +803,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     );
                   }
 
+                  const infoTooltipText = getCellInfoTooltipText(cellData);
+                  if (infoTooltipText) {
+                    const infoIcon = <InfoTooltipIcon text={infoTooltipText} />;
+                    if (cellRightContent) {
+                      cellRightContent = (
+                        <div className="flex items-center gap-x-[6px]">
+                          {cellRightContent}
+                          {infoIcon}
+                        </div>
+                      );
+                    } else {
+                      cellRightContent = infoIcon;
+                    }
+                  }
 
                   return (
                     <div key={`${rowIndex}-${columnKey}`} className={`flex items-center gap-[5px] w-full ${cellPadding} ${columnDefinitions?.[columnKey]?.isNumeric ? 'justify-end' : 'justify-start'}`}>

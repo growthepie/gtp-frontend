@@ -58,6 +58,7 @@ const Agents: QuickBiteData = createQuickBite({
           label: "Agent",
           type: "string",
           sourceKey: "name",
+          infoTooltip: { sourceKey: "description" },
           expand: true,
           minWidth: 150,
           maxWidth: 200,
