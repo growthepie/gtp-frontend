@@ -82,10 +82,10 @@ export const readTailwindTypographyStyle = (
   return result;
 };
 
-export const formatCompactNumber = (value: number) =>
+export const formatCompactNumber = (value: number, decimals?: number) =>
   new Intl.NumberFormat("en-US", {
     notation: "compact",
-    maximumFractionDigits: Math.abs(value) >= 100_000_000_000 ? 0 : 1,
+    maximumFractionDigits: decimals ?? (Math.abs(value) >= 100_000_000_000 ? 0 : 1),
   }).format(value);
 
 export const DEFAULT_COLORS = [

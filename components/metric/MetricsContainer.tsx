@@ -31,7 +31,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
-    
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const {
         timespans,
@@ -56,11 +56,14 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     } = useMetricChartControls();
 
     const { data: master } = useMaster();
-    const suffix = master?.metrics?.[metric_id]?.units?.value?.suffix;
-    const prefix = master?.metrics?.[metric_id]?.units?.value?.prefix;
-    const decimals = master?.metrics?.[metric_id]?.units?.value?.decimals_tooltip;
+    const valueKey = Object.keys(master?.metrics?.[metric_id]?.units ?? {}).find(key => key !== "usd" && key !== "eth");
+
+    const suffix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
+    const prefix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
+    const decimals = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const metricConfig = findMetricConfig(metric);
+
 
     const pageData = metricConfig?.page ?? {
         title: metricConfig?.label ?? "",
@@ -103,7 +106,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             <>Unavailable</>
         );
     }, [sources]);
-
+    
+    console.log("suffix", suffix, prefix, decimals);
 
 
     return (
@@ -344,7 +348,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart metric_type="fundamentals" />
+                        <MetricChart metric_type="fundamentals" suffix={suffix ?? undefined} prefix={prefix ?? undefined} decimals={decimals ?? undefined} />
                     </div>
                 }
             />

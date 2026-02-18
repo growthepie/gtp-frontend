@@ -10,6 +10,9 @@ import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
 
 type MetricChartProps = {
+  suffix?: string;
+  prefix?: string;
+  decimals?: number;
   metric_type: "fundamentals" | "data-availability";
   is_embed?: boolean;
   embed_zoomed?: boolean;
@@ -27,7 +30,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals }: MetricChartProps) {
   const { data: master } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
@@ -141,6 +144,11 @@ export default function MetricChart({ metric_type }: MetricChartProps) {
         xAxisType="time"
         xAxisMin={activeTimespan?.xMin}
         xAxisMax={activeTimespan?.xMax}
+        suffix={suffix}
+        prefix={prefix}
+        tooltipTitle={metricMeta?.name ?? undefined}
+        decimals={decimals}
+        limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
       />
