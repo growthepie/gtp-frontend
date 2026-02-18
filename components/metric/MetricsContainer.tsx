@@ -60,10 +60,12 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
     const { data: master } = useMaster();
     const valueKey = Object.keys(master?.metrics?.[metric_id]?.units ?? {}).find(key => key !== "usd" && key !== "eth");
+    
 
     const suffix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
     const prefix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
     const decimals = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
+    const gweiOverrides = decimals && decimals > 6;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const metricConfig = findMetricConfig(metric);
 
@@ -122,6 +124,26 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         }
     }, [isDownloadingChartSnapshot, metricData?.metric_name]);
 
+    const lastUpdatedString = useMemo(() => {
+        if (!metricData?.last_updated_utc) return "N/A";
+
+        const lastUpdatedDate = new Date(metricData.last_updated_utc);
+        if (Number.isNaN(lastUpdatedDate.getTime())) return "N/A";
+
+        const diffMs = Math.max(Date.now() - lastUpdatedDate.getTime(), 0);
+        const totalMinutes = Math.floor(diffMs / (1000 * 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (hours === 0) {
+            return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+        }
+
+        const hourLabel = `${hours} ${hours === 1 ? "hour" : "hours"}`;
+        const minuteLabel = `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+        return `${hourLabel} ${minuteLabel} ago`;
+    }, [metricData?.last_updated_utc]);
+
 
     return (
         <GTPCardLayout
@@ -138,16 +160,20 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                   {(() => {
                     const show7dRolling = timeIntervalKey === "daily_7d_rolling";
                  
-                    return show7dRolling ? (
+                    return (
                       <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
                         <GTPIcon
                           icon="gtp-realtime"
                           className="!w-[12px] !h-[12px] text-color-text-primary"
                           containerClassName="!w-[12px] !h-[12px]"
                         />
-                        <span className="text-xxs text-color-text-secondary">7-day rolling average</span>
+                        <div className="text-xxs relative text-color-text-secondary w-[100px] group   transition-opacity ">
+                            <span className="absolute left-0 -top-[7px] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-300">{show7dRolling ? "7-day rolling average" :  " "}</span>
+                            <span className={` transition-opacity duration-300 whitespace-nowrap absolute left-0 -top-[7px] ${show7dRolling ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}>{lastUpdatedString}</span>
+
+                        </div>
                       </div>
-                    ) : <></>;
+                    );
                   })()}
                 </div>
               }
@@ -373,7 +399,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart metric_type="fundamentals" suffix={suffix ?? undefined} prefix={prefix ?? undefined} decimals={decimals ?? undefined} />
+                        <MetricChart metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
                     </div>
                 }
             />
