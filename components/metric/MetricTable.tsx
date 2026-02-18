@@ -603,7 +603,8 @@ const MetricTable = ({
                 ))}
                 <div className="relative z-[3] flex h-full w-full items-center justify-center translate-x-[6px] rounded-full">
                   <GTPButton
-                    leftIcon={chainSelectToggleState === "all" ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
+                    leftIcon={(chainSelectToggleState === "all" || chainSelectToggleState === "normal") ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
+                    leftIconClassname={`${chainSelectToggleState !== "all" ? "opacity-50" : "opacity-100"}`}
                     variant="primary"
                     visualState="default"
                     size="xs"
