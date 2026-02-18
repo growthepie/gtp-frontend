@@ -467,7 +467,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
           className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]"
         >
           <div className="size-[26px] flex items-center justify-center">
-            <GTPIcon icon={`${contract.origin_key}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />
+            <GTPIcon icon={`${(contract.origin_key as string).replaceAll("_", "-")}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />
           </div>
         </div>
       </div>
