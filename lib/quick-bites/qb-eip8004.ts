@@ -438,7 +438,7 @@ const Agents: QuickBiteData = createQuickBite({
     },
   ],
   icon: "ethereum-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 });
 
 export default Agents;
