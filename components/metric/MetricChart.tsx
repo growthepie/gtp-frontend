@@ -155,7 +155,6 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
         onDragSelect={(xStart, xEnd) => {
-          console.log("Drag select:", xStart, xEnd);
   
           if(xStart < xEnd) {
             setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);

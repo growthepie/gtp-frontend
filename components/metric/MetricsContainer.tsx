@@ -153,8 +153,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             cardRef={cardRef}
             header={
                 <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
-                  <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
-                    <GTPIcon icon={pageData?.icon as GTPIconName} className="!w-[12px] !h-[12px]" containerClassName="!h-[12px] !w-[12px]" />
+                  <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-primary">
+                    <GTPIcon icon={`${pageData?.icon}-monochrome` as GTPIconName} className="!w-[12px] !h-[12px]" containerClassName="!h-[12px] !w-[12px]" />
                     <span className="">{metricData?.metric_name}</span>
                    
                   </div>
@@ -168,7 +168,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                           className="!w-[12px] !h-[12px] text-color-text-primary"
                           containerClassName="!w-[12px] !h-[12px]"
                         />
-                        <div className="text-xxs relative text-color-text-secondary w-[100px] group   transition-opacity ">
+                        <div className="text-xxs relative text-color-text-primary w-[100px] group   transition-opacity ">
                             <span className="absolute left-0 -top-[7px] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-300">{show7dRolling ? "7-day rolling average" :  " "}</span>
                             <span className={` transition-opacity duration-300 whitespace-nowrap absolute left-0 -top-[7px] ${show7dRolling ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}>{lastUpdatedString}</span>
 
