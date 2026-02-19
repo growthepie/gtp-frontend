@@ -11,6 +11,7 @@ import ethereumScaling from './qb-ethereum-scaling';
 import ethSupply from './qb-ETH-supply';
 import lineaTokenBurn from './qb-linea-burn';
 import Fusaka from './qb-fusaka';
+import eip8004 from './qb-eip8004';
 import Stablecoin from './qb-stablecoin';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
@@ -25,6 +26,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "eth-supply": ethSupply,
   "linea-burn": lineaTokenBurn,
   "fusaka": Fusaka,
+  "eip8004": eip8004,
   "stablecoin": Stablecoin
 };
 

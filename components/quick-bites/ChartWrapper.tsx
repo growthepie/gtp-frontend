@@ -443,7 +443,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           </div>
         </div>
         <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart chart={chartRef.current} options={options}
+          <HighchartsChart chart={chartRef.current} options={options || {}}
               plotOptions={{
                 line: {
                   lineWidth: 3,
@@ -901,8 +901,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
-            <div className="flex justify-between gap-x-[10px]">
-              <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
+            <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
+              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
                 {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
@@ -910,7 +910,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   }
                   
                   return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
@@ -925,12 +925,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       }
                     }}>
                       <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                      <div className="text-xxxs !leading-[9px]">{category.name}</div>
+                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
                     </div>
                   )
                 })}
-              </div>
-              <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
+                
+              {/* </div> */}
+              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
                 {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
@@ -938,7 +939,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   }
                   
                   return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
@@ -953,12 +954,19 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       }
                     }}>
                       <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                      <div className="text-xxxs !leading-[9px]">{category.name}</div>
+                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
                     </div>
                   )
                 })}
-              </div>
+                
+              {/* </div> */}
             </div>
+            {filteredNames.length > 0 && (
+              <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
+                <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
+                <div className="text-xxxs whitespace-nowrap">Reset</div>
+              </div>
+            )}
           </div>
           <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
             <div className="flex flex-row md:flex-col gap-y-[2px]">

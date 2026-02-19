@@ -54,6 +54,11 @@ export default forwardRef(function VerticalScrollContainer(
   const trackStartPosRef = useRef<{ scrollTop: number; y: number } | null>(null);
   const isDraggingRef = useRef(false);
 
+  // Force a re-render after mount so useElementSizeObserver hooks can
+  // read the now-populated ref.current (null during first render).
+  const [, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // Force re-calculation when height prop changes
   const heightRef = useRef(height);
   useEffect(() => {
@@ -307,7 +312,7 @@ export default forwardRef(function VerticalScrollContainer(
       
       // Call immediately after setup to update thumb size without waiting for scroll
       updateScrollableAreaScroll();
-      
+
       return () => {
         if (scrollableArea) {
           scrollableArea.removeEventListener('scroll', updateScrollableAreaScroll);
