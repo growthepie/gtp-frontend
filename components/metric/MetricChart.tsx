@@ -8,6 +8,7 @@ import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataC
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type MetricChartProps = {
   suffix?: string;
@@ -163,8 +164,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           }
           console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
         }}
-        dragSelectOverlayColor="#d3dae6"
-        dragSelectIcon="x-circle"
+        dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
+        dragSelectIcon={"feather:zoom-in" as GTPIconName}
       />
     </div>
   );

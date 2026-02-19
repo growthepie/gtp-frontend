@@ -372,7 +372,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     </GTPButtonRow>
                     <GTPButton
                             label={!selectedRange ? undefined : ""}
-                            leftIcon={!selectedRange ? "x-circle" : "x-circle"}
+                            leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
                             leftIconClassname={"text-color-text-primary"}
                             size={isMobile ? "xs" : "sm"}
                             className={!selectedRange ? "hidden" : "block"}
