@@ -72,20 +72,27 @@ export interface TableBlock extends BaseBlock {
       isNumeric?: boolean;
       minWidth?: number;
       maxWidth?: number;
-      expand?: boolean;
       copyable?: boolean; // Add this line
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
-      sourceKey?: string;
-      sourceIndex?: number;
-      autoIndex?: boolean;
-      showIcon?: boolean;
-      showLabel?: boolean;
-      infoTooltip?: {
-        sourceKey?: string;
-        text?: string;
+      sourceKey?: string; // Map display column key to a source key from JSON columns
+      sourceIndex?: number; // Map display column key to a fixed source index
+      infoTooltip?: { sourceKey?: string; text?: string }; // Optional info icon tooltip content
+      autoIndex?: boolean; // Auto-generate 1-based row index when value is missing
+      expand?: boolean; // Column absorbs remaining space (1fr). Only one column should have this.
+      showIcon?: boolean; // For chain type: show chain icon (default true)
+      showLabel?: boolean; // For chain type: show chain name from AllChainsByKeys (default false)
+      uppercase?: boolean; // Render text in uppercase
+      chip?: boolean; // Render value as a monospace pill badge
+      valueMap?: Record<string, string>; // Map raw values to display strings (case-insensitive lookup)
+      valueMapShowKey?: boolean; // Show original key after mapped value, e.g. "US Dollar (USD)"
+      cellBar?: {
+        colorColumn?: string; // Column key with origin_key for chain color
+        color?: string;       // Explicit color fallback
       };
-      badgeSources?: Array<{
+      currencyMap?: Record<string, { symbol: string; name: string; country: string }>; // Map currency codes to symbol + name + country code for styled rendering
+      iconMap?: Record<string, { icon: string; label: string }>; // Map raw values to icon + label pairs
+      badgeSources?: Array<{ // For badges type: render color-coded pills from multiple source keys
         sourceKey: string;
         label: string;
         color: string;
@@ -100,6 +107,20 @@ export interface TableBlock extends BaseBlock {
     };
   };
   columnSortBy: "value" | "name" | undefined;
+  rowBar?: {
+    valueColumn: string;   // Column key whose numeric value drives bar width
+    colorColumn?: string;  // Column key with origin_key for chain-based color
+    color?: string;        // Explicit color fallback
+  };
+  scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
+  cardView?: {
+    titleColumn: string; // Column key for card title (middle section, displayed prominently)
+    imageColumn?: string; // Column key for avatar/icon (middle section)
+    linkColumn?: string; // Column key whose value is used as arrow link (middle section)
+    topColumns?: string[]; // Explicit column keys for top metric rows (auto-detected if omitted)
+    bottomColumns?: string[]; // Explicit column keys for bottom tag row (auto-detected if omitted)
+    hiddenColumns?: string[]; // Columns to suppress entirely in card view
+  };
   readFromJSON: boolean;
   filterOnStateKey?: {
     stateKey: string;
@@ -161,6 +182,18 @@ export interface ChartBlock extends BaseBlock {
       makeNegative?: boolean;
       aggregation?: "daily" | "weekly" | "monthly";
     }[];
+    dynamicSeries?: {
+      url: string;
+      pathToData: string;
+      pathToTypes?: string;
+      ystartIndex?: number;
+      names?: string | string[];
+      colors: string | string[];
+      type?: string;
+      stacking?: "normal" | "percent" | null;
+      xIndex?: number;
+      tooltipDecimals?: number;
+    };
   } | null;
   seeMetricURL?: string | null;
   yAxisLine?: {

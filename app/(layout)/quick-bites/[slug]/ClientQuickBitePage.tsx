@@ -24,6 +24,7 @@ import { getChainInfoFromUrl } from '@/lib/chains';
 import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
 import { SmartBackButton } from '@/components/SmartBackButton';
 import { useTheme } from 'next-themes';
+import { useUIContext } from '@/contexts/UIContext';
 
 type Props = {
   params: { slug: string };
@@ -31,12 +32,18 @@ type Props = {
 
 export default function ClientQuickBitePage({ params }: Props) {
   const { AllChainsByKeys } = useMaster();
+  const setEthUsdSwitchEnabled = useUIContext((state) => state.setEthUsdSwitchEnabled);
   const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(null);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>([]);
   const [showNotFound, setShowNotFound] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { theme } = useTheme();
+
+  useEffect(() => {
+    const quickBite = getQuickBiteBySlug(params.slug);
+    setEthUsdSwitchEnabled(quickBite?.ethUsdSwitchEnabled === true);
+  }, [params.slug, setEthUsdSwitchEnabled]);
 
   useEffect(() => {
     const fetchContentBlocks = async () => {

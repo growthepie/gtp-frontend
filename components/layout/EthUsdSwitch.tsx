@@ -1,12 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useEffect, useState, startTransition } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { track } from "@/lib/tracking";
-import { TooltipContent } from "./Tooltip";
-import { TooltipTrigger } from "./Tooltip";
 import { ToggleSwitch } from "./ToggleSwitch";
-import { Tooltip } from "./Tooltip";
-import { Icon } from "@iconify/react";
+import { useUIContext } from "@/contexts/UIContext";
+import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 type EthUsdSwitchProps = {
   isMobile?: boolean;
@@ -15,6 +13,7 @@ type EthUsdSwitchProps = {
 };
 
 export default function EthUsdSwitch({ isMobile, showBorder=false, className }: EthUsdSwitchProps) {
+  const ethUsdSwitchEnabled = useUIContext((state) => state.ethUsdSwitchEnabled);
   const [mounted, setMounted] = useState(false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -34,7 +33,9 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
-    setMounted(true);
+    startTransition(() => {
+      setMounted(true);
+    });
   }, []);
 
   const handleToggle = () => {
@@ -56,7 +57,7 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
     return null;
   }
 
-  return (
+  const switchControl = (
     <ToggleSwitch
       values={[
         { value: "eth", label: "ETH" },
@@ -64,8 +65,28 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
       ]}
       value={showUsd ? "usd" : "eth"}
       onChange={handleToggle}
+      disabled={!ethUsdSwitchEnabled}
       size={isMobile ? "sm" : "xl"}
       className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}
     />
   );
+
+  if (!ethUsdSwitchEnabled) {
+    return (
+      <GTPTooltipNew
+        placement={isMobile ? "top-start" : "bottom-start"}
+        allowInteract={true}
+        enableHover={!isMobile}
+        trigger={<div className="w-fit">{switchControl}</div>}
+        containerClass="flex flex-col gap-y-[10px] z-global-search"
+        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+      >
+        <div className="px-[15px] py-[5px]">
+          This toggle is not currently available on this page
+        </div>
+      </GTPTooltipNew>
+    );
+  }
+
+  return switchControl;
 }

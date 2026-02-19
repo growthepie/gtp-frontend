@@ -60,10 +60,12 @@ interface JsonMeta {
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { sharedState } = useQuickBite();
+  const dynamicSeriesConfig = block.dataAsJson?.dynamicSeries;
 
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.
   const processedUrls = React.useMemo(() => {
+    if (dynamicSeriesConfig) return [];
     const metaList = block.dataAsJson?.meta;
     if (!metaList?.length) return [];
 
@@ -93,21 +95,109 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       // If it's not a template, just return the URL
       return meta.url;
     }).filter(Boolean) as string[];
-  }, [block.dataAsJson, sharedState]);
+  }, [block.dataAsJson, dynamicSeriesConfig, sharedState]);
+
+  const dynamicSeriesUrl = React.useMemo(() => {
+    if (!dynamicSeriesConfig?.url) return null;
+    const rawUrl = dynamicSeriesConfig.url;
+
+    if (rawUrl.includes('{{')) {
+      const requiredVars = (Mustache.parse(rawUrl) || [])
+        .filter(tag => tag[0] === 'name')
+        .map(tag => tag[1]);
+
+      const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
+      if (!allVarsAvailable) return null;
+
+      return Mustache.render(rawUrl, sharedState);
+    }
+
+    return rawUrl;
+  }, [dynamicSeriesConfig, sharedState]);
 
   // The key for useSWR is now `processedUrls`, which is dynamic.
   // SWR will automatically re-fetch when the key changes.
-  const { data: unProcessedData, error } = useSWR(processedUrls.length > 0 ? processedUrls : null);
+  const swrKey = dynamicSeriesConfig ? dynamicSeriesUrl : (processedUrls.length > 0 ? processedUrls : null);
+  const { data: unProcessedData, error } = useSWR(swrKey);
+
+  const dynamicDerived = React.useMemo(() => {
+    if (!dynamicSeriesConfig || !unProcessedData) return null;
+
+    const sourceData = unProcessedData;
+    const values = getNestedValue(sourceData, dynamicSeriesConfig.pathToData);
+    const typeNames = dynamicSeriesConfig.pathToTypes
+      ? getNestedValue(sourceData, dynamicSeriesConfig.pathToTypes)
+      : null;
+    const namesRaw = typeof dynamicSeriesConfig.names === "string"
+      ? getNestedValue(sourceData, dynamicSeriesConfig.names)
+      : dynamicSeriesConfig.names;
+    const colorsRaw = typeof dynamicSeriesConfig.colors === "string"
+      ? getNestedValue(sourceData, dynamicSeriesConfig.colors)
+      : dynamicSeriesConfig.colors;
+
+    if (!Array.isArray(values)) return null;
+    if (!Array.isArray(colorsRaw) || colorsRaw.length === 0) return null;
+
+    const palette = colorsRaw;
+    const ystartIndex = dynamicSeriesConfig.ystartIndex ?? 1;
+    const names = Array.isArray(namesRaw) ? namesRaw : [];
+
+    const maxColumns = Array.isArray(values[0]) ? values[0].length : 0;
+    const availableSeriesCount = Math.max(0, maxColumns - ystartIndex);
+    const seriesCount = names.length > 0 ? Math.min(names.length, availableSeriesCount) : availableSeriesCount;
+
+    const hasNonZeroInSeries = (seriesIndex: number) => {
+      return values.some((row: any) => {
+        if (!Array.isArray(row)) return false;
+        const raw = row[seriesIndex];
+        const numeric = typeof raw === "number" ? raw : Number(raw);
+        return Number.isFinite(numeric) && numeric !== 0;
+      });
+    };
+
+    const generatedMeta = Array.from({ length: seriesCount })
+      .map((_, idx) => {
+        const yIndex = ystartIndex + idx;
+        const fallbackTypeName = Array.isArray(typeNames) && typeof typeNames[yIndex] === "string" ? typeNames[yIndex] : `Series ${idx + 1}`;
+        const seriesName = typeof names[idx] === "string" && names[idx].length > 0 ? names[idx] : fallbackTypeName;
+        return {
+          yIndex,
+          seriesName,
+        };
+      })
+      .filter(({ yIndex }) => hasNonZeroInSeries(yIndex))
+      .map(({ yIndex, seriesName }, seriesIdx) => ({
+        name: seriesName,
+        color: palette[seriesIdx % palette.length],
+        type: dynamicSeriesConfig.type || block.chartType,
+        stacking: dynamicSeriesConfig.stacking ?? "normal",
+        xIndex: dynamicSeriesConfig.xIndex ?? 0,
+        yIndex,
+        tooltipDecimals: dynamicSeriesConfig.tooltipDecimals ?? 0,
+        url: dynamicSeriesUrl || dynamicSeriesConfig.url,
+        pathToData: dynamicSeriesConfig.pathToData,
+      }));
+
+    return {
+      meta: generatedMeta,
+      nestedData: generatedMeta.map(() => values),
+    };
+  }, [block.chartType, dynamicSeriesConfig, dynamicSeriesUrl, unProcessedData]);
   
   // Get nested data for all meta entries
   const metaList = block.dataAsJson?.meta;
-  const nestedData = metaList?.length && unProcessedData 
+  const nestedData = dynamicSeriesConfig
+    ? dynamicDerived?.nestedData
+    : metaList?.length && unProcessedData 
     ? metaList.map((meta, index) => 
         meta.pathToData ? getNestedValue(unProcessedData[index], meta.pathToData) : unProcessedData[index]
       )
     : undefined;
 
   const resolvedJsonMeta = React.useMemo(() => {
+    if (dynamicSeriesConfig) {
+      return dynamicDerived?.meta || null;
+    }
     if (!metaList?.length) return null;
     if (!unProcessedData) return metaList;
 
@@ -129,9 +219,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         name: resolvedName,
       };
     });
-  }, [metaList, unProcessedData]);
+  }, [dynamicDerived?.meta, dynamicSeriesConfig, metaList, unProcessedData]);
 
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
+  const effectiveMeta = dynamicSeriesConfig ? (dynamicDerived?.meta || []) : (resolvedJsonMeta || metaList || []);
+  const canRenderChart = Boolean(passChartData) && (!dynamicSeriesConfig || effectiveMeta.length > 0);
 
   // Don't render the chart if there's a filter key but no data yet.
   // This handles the initial state where a dropdown selection is needed.
@@ -152,12 +244,12 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   return (
     <>
     <div className={wrapperClassName}>
-      {passChartData && (
+      {canRenderChart && (
         <ChartWrapper
           chartType={block.chartType}
           data={block.data}
           margins={block.margins || 'normal'}
-          options={block.options}
+          options={block.options || {}}
           width={block.width || '100%'}
           height={block.height || 400}
           title={block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title}
@@ -167,8 +259,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           showZeroTooltip={block.showZeroTooltip}
           showTotalTooltip={block.showTotalTooltip}
           jsonMeta={
-            metaList?.length ? {
-              meta: resolvedJsonMeta || metaList
+            effectiveMeta.length ? {
+              meta: effectiveMeta
             } : undefined
           }
           disableTooltipSort={block.disableTooltipSort}

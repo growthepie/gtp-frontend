@@ -243,14 +243,14 @@ const Agents: QuickBiteData = createQuickBite({
         first_registered_date: {
           label: "First Registered Date",
           type: "string",
-          minWidth: 120,
+          minWidth: 100,
           isNumeric: false,
           sortByValue: true,
         },
         total_registered: {
           label: "Total AI Agents",
           type: "number",
-          minWidth: 100,
+          minWidth: 200,
           isNumeric: true,
           sortByValue: true,
           units: {

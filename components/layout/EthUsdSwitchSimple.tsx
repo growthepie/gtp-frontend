@@ -1,8 +1,10 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, startTransition } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { track } from "@/lib/tracking";
 import { ToggleSwitch } from "./ToggleSwitch";
+import { useUIContext } from "@/contexts/UIContext";
+import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 interface EthUsdSwitchProps {
   isMobile?: boolean;
@@ -15,6 +17,7 @@ export default function EthUsdSwitchSimple({
   showBorder = true, // Changed default to true to match the image
   className = "" 
 }: EthUsdSwitchProps) {
+  const ethUsdSwitchEnabled = useUIContext((state) => state.ethUsdSwitchEnabled);
   // Changed default to false to make ETH the default selection
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", false);
   const [mounted, setMounted] = useState(false);
@@ -23,7 +26,9 @@ export default function EthUsdSwitchSimple({
 
   // Only show after hydration to prevent SSR mismatch
   useEffect(() => {
-    setMounted(true);
+    startTransition(() => {
+      setMounted(true);
+    });
   }, []);
 
   // Cleanup timeout on unmount
@@ -65,8 +70,8 @@ export default function EthUsdSwitchSimple({
     return null;
   }
 
-  return (
-    <div className="relative">
+  const switchControl = (
+    <div className="relative w-fit">
       <ToggleSwitch
         values={[
           { value: "eth", label: "ETH" },
@@ -74,6 +79,7 @@ export default function EthUsdSwitchSimple({
         ]}
         value={showUsd ? "usd" : "eth"}
         onChange={handleToggle}
+        disabled={!ethUsdSwitchEnabled}
         size={isMobile ? "xl" : "md"}
         className={`
           ${showBorder ? "h-fit rounded-full border border-color-bg-default" : ""} 
@@ -83,4 +89,23 @@ export default function EthUsdSwitchSimple({
       />
     </div>
   );
+
+  if (!ethUsdSwitchEnabled) {
+    return (
+      <GTPTooltipNew
+        placement={isMobile ? "top-start" : "bottom-start"}
+        allowInteract={true}
+        enableHover={!isMobile}
+        trigger={switchControl}
+        containerClass="flex flex-col gap-y-[10px] z-global-search"
+        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+      >
+        <div className="px-[15px] py-[5px]">
+          This toggle is not currently available on this page
+        </div>
+      </GTPTooltipNew>
+    );
+  }
+
+  return switchControl;
 }

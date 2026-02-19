@@ -284,6 +284,41 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     });
   }, [processedRows, sortConfig, columnKeyOrder, sharedState, block.filterOnStateKey, exclusiveFilterKeys, inclusiveFilterKeys]);
 
+  const barMaxValues = useMemo(() => {
+    const result = { rowBarMax: 0, cellBarMaxes: {} as Record<string, number> };
+    const cellBarCols = columnKeyOrder.filter(k => columnDefinitions[k]?.cellBar);
+
+    for (const row of sortedRows) {
+      if (block.rowBar?.valueColumn) {
+        const idx = columnKeyOrder.indexOf(block.rowBar.valueColumn);
+        if (idx !== -1) {
+          const val = typeof row[idx]?.value === "number" ? Math.abs(row[idx].value) : 0;
+          if (val > result.rowBarMax) result.rowBarMax = val;
+        }
+      }
+      for (const colKey of cellBarCols) {
+        const idx = columnKeyOrder.indexOf(colKey);
+        if (idx !== -1) {
+          const val = typeof row[idx]?.value === "number" ? Math.abs(row[idx].value) : 0;
+          if (!result.cellBarMaxes[colKey] || val > result.cellBarMaxes[colKey])
+            result.cellBarMaxes[colKey] = val;
+        }
+      }
+    }
+    return result;
+  }, [sortedRows, columnKeyOrder, columnDefinitions, block.rowBar]);
+
+  const resolveBarColor = (rowData: any[], colorColumn?: string, explicitColor?: string) => {
+    if (explicitColor) return explicitColor;
+    if (colorColumn) {
+      const idx = columnKeyOrder.indexOf(colorColumn);
+      const originKey = idx !== -1 ? rowData[idx]?.value : undefined;
+      if (typeof originKey === "string" && AllChainsByKeys[originKey])
+        return AllChainsByKeys[originKey].colors[resolvedTheme ?? "dark"][1];
+    }
+    return undefined;
+  };
+
   if (block.readFromJSON && isLoading) return <div className="my-8 text-center">Loading table data...</div>;
   if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
@@ -367,6 +402,24 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       ) : (
         <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
       );
+    } else if (columnDefinitions?.[columnKey]?.currencyMap && typeof cellData?.value === "string") {
+      const info = columnDefinitions[columnKey].currencyMap![cellData.value.toUpperCase()];
+      if (!info) return <span className="text-xs">{cellData.value}</span>;
+      return (
+        <div className="flex items-center gap-x-[8px] w-full min-w-0">
+          <span className="inline-flex items-center justify-center flex-shrink-0 min-w-[22px] px-[4px] h-[18px] rounded-[4px] bg-forest-500/10 numbers-xs leading-none">
+            {info.symbol}
+          </span>
+          <span className="text-xs truncate">{info.name}</span>
+        </div>
+      );
+    } else if (columnDefinitions?.[columnKey]?.iconMap && typeof cellData?.value === "string") {
+      const mapped = columnDefinitions[columnKey].iconMap![cellData.value];
+      return mapped ? (
+        <div className="flex items-center gap-x-[5px]"><GTPIcon icon={mapped.icon as GTPIconName} size="sm" /><span className="text-xs">{mapped.label}</span></div>
+      ) : (
+        <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
+      );
     } else if (columnType === "boolean") {
       const raw = cellData?.value;
       const normalized = raw === true || raw === "true" ? true : raw === false || raw === "false" ? false : null;
@@ -400,12 +453,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         </div>
       );
     } else {
+      const colDef = columnDefinitions?.[columnKey];
       const formatted = formatValue(cellData?.value, columnKey);
       if (formatted === null) return <EmptyCell />;
+      if (colDef?.chip) {
+        return (
+          <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+            {formatted}
+          </span>
+        );
+      }
       return (
         <>
           {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-          <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>{formatted}</span>
+          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>{formatted}</span>
         </>
       );
     }
@@ -524,6 +585,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
             scrollbarAbsolute={true}
             scrollbarPosition="right"
             paddingRight={30}
+            enableDragScroll={true}
           >
             {cardGrid}
           </VerticalScrollContainer>
@@ -547,6 +609,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     const maxWidth = colDef?.maxWidth;
 
+
     if (columnKey === expandColumnKey) {
       return maxWidth ? `minmax(${minWidth}px, ${maxWidth}px)` : `minmax(${minWidth}px, 2fr)`;
     }
@@ -560,7 +623,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     <div className={`my-8 ${block.className || ''}`}>
       {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
 
-      <HorizontalScrollContainer includeMargin={isMobile}>
+      <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
         {(() => {
           const isScrollable = block.scrollable !== false;
           const tableHeader = (
@@ -593,7 +656,24 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           const tableRows = (
             <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
             {sortedRows.map((rowData, rowIndex) => (
-              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`group text-xs !gap-x-0 !px-[5px] !pr-[15px] select-none h-[34px] !pt-0 !pb-0`}>
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0`}
+                bar={block.rowBar && barMaxValues.rowBarMax > 0 ? {
+                  origin_key: block.rowBar.colorColumn
+                    ? rowData[columnKeyOrder.indexOf(block.rowBar.colorColumn)]?.value
+                    : undefined,
+                  color: block.rowBar.color,
+                  width: (() => {
+                    const idx = columnKeyOrder.indexOf(block.rowBar.valueColumn);
+                    const val = idx !== -1 && typeof rowData[idx]?.value === "number" ? rowData[idx].value : 0;
+                    return Math.abs(val) / barMaxValues.rowBarMax;
+                  })(),
+                  containerStyle: {
+                    left: 1, right: 1, top: 0, bottom: 0,
+                    borderRadius: "9999px",
+                    zIndex: -1, overflow: "hidden",
+                  },
+                } : undefined}
+              >
                 {rowData.map((cellData, colIndex) => {
                   const columnKey = columnKeyOrder[colIndex];
                   let cellMainContent: React.ReactNode | null = null;
@@ -655,18 +735,22 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         )}
                       </div>
                     );
-                  } else if (columnType === "metric" && typeof cellData?.value === "string") {
-                    const metricIcon =
-                      cellData.value === "supply_bridged"
-                        ? "gtp-crosschain"
-                        : cellData.value === "supply_direct"
-                          ? "gtp-tokentransfers"
-                          : cellData.value === "locked_supply"
-                            ? "gtp-lock"
-                            : null;
-                    cellMainContent = metricIcon ? (
-                      <div className="flex items-center justify-center w-full text-color-ui-hover">
-                        <GTPIcon icon={metricIcon as GTPIconName} size="sm" />
+                  } else if (columnDefinitions?.[columnKey]?.currencyMap && typeof cellData?.value === "string") {
+                    const info = columnDefinitions[columnKey].currencyMap![cellData.value.toUpperCase()];
+                    cellMainContent = info ? (
+                      <div className="flex items-center gap-x-[8px] w-full min-w-0">
+                        <GTPIcon icon={`flag:${info.country.toLowerCase()}-4x3` as GTPIconName} className="!size-[13px] flex-shrink-0" containerClassName='!size-[13px]' />
+                        <span className="text-xs truncate">{info.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs">{cellData.value}</span>
+                    );
+                  } else if (columnDefinitions?.[columnKey]?.iconMap && typeof cellData?.value === "string") {
+                    const mapped = columnDefinitions[columnKey].iconMap![cellData.value];
+                    cellMainContent = mapped ? (
+                      <div className="flex items-center gap-x-[5px]">
+                        <GTPIcon icon={mapped.icon as GTPIconName} size="sm" />
+                        <span className="text-xs">{mapped.label}</span>
                       </div>
                     ) : (
                       <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
@@ -728,14 +812,30 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     }
                   } else {
                     // default cell content
-                    const formatted = formatValue(cellData?.value, columnKey);
+                    const colDef = columnDefinitions?.[columnKey];
+                    let formatted = formatValue(cellData?.value, columnKey);
+                    let valueMapKey: string | null = null;
+                    if (formatted !== null && colDef?.valueMap) {
+                      const key = String(formatted).toUpperCase();
+                      const mapped = colDef.valueMap[key];
+                      if (mapped) {
+                        formatted = mapped;
+                        if (colDef.valueMapShowKey) valueMapKey = key;
+                      }
+                    }
                     cellMainContent = formatted !== null ? (
-                      <>
-                        {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                        <span className={`truncate ${columnDefinitions?.[columnKey]?.isNumeric ? 'numbers-xs' : 'text-xs'}`}>
+                      colDef?.chip ? (
+                        <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
                           {formatted}
                         </span>
-                      </>
+                      ) : (
+                        <>
+                          {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''}`}>
+                            {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
+                          </span>
+                        </>
+                      )
                     ) : <EmptyCell />;
                   }
 
@@ -816,6 +916,24 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     } else {
                       cellRightContent = infoIcon;
                     }
+                  }
+
+                  // Cell bar wrapping
+                  const cellBarDef = columnDefinitions?.[columnKey]?.cellBar;
+                  const isNumeric = columnDefinitions?.[columnKey]?.isNumeric;
+                  if (cellBarDef && typeof cellData?.value === "number" && barMaxValues.cellBarMaxes[columnKey] > 0) {
+                    const barWidth = Math.abs(cellData.value) / barMaxValues.cellBarMaxes[columnKey];
+                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "#5A6462";
+                    cellMainContent = (
+                      <div className={`relative flex flex-col w-full gap-y-[4px] ${isNumeric ? 'items-end' : 'items-start'}`}>
+                        <div className={`w-full flex items-center ${isNumeric ? 'justify-end' : ''}`}>
+                          {cellMainContent}
+                        </div>
+                        <div className="absolute bottom-[-6px] right-0 w-full h-[4px]">
+                          <div className="absolute h-[4px] right-0 rounded-[2px]" style={{ background: barColor, width: `${barWidth*100}%`}}  />
+                        </div>
+                      </div>
+                    );
                   }
 
                   return (
