@@ -54,7 +54,16 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
+  scrollable?: boolean;
   columnOrder?: string[];
+  cardView?: {
+    titleColumn: string;
+    imageColumn?: string;
+    linkColumn?: string;
+    topColumns?: string[];
+    bottomColumns?: string[];
+    hiddenColumns?: string[];
+  };
   columnDefinitions: {
     [key: string]: {
       sortByValue: boolean;
@@ -62,9 +71,25 @@ export interface TableBlock extends BaseBlock {
       type?: string;
       isNumeric?: boolean;
       minWidth?: number;
+      maxWidth?: number;
+      expand?: boolean;
       copyable?: boolean; // Add this line
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
+      sourceKey?: string;
+      sourceIndex?: number;
+      autoIndex?: boolean;
+      showIcon?: boolean;
+      showLabel?: boolean;
+      infoTooltip?: {
+        sourceKey?: string;
+        text?: string;
+      };
+      badgeSources?: Array<{
+        sourceKey: string;
+        label: string;
+        color: string;
+      }>;
       units?: {
         [key: string]: {
           decimals?: number;
