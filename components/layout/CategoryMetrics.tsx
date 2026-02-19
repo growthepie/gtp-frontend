@@ -4,7 +4,7 @@ import {
   useMemo,
   useState,
   useEffect,
-
+  useRef,
   useCallback,
 } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -62,8 +62,18 @@ export default function CategoryMetrics({
 
   // get the category from the url
   const queryCategory = searchParams?.get("category");
-  // subcategories is an array of strings
-  const querySubcategories = searchParams?.get("subcategories")?.split(",");
+  const querySubcategoriesParam = searchParams?.get("subcategories") ?? "";
+  const querySubcategories = useMemo(() => {
+    if (!querySubcategoriesParam) return undefined;
+    return Array.from(
+      new Set(
+        querySubcategoriesParam
+          .split(",")
+          .map((subcategory) => subcategory.trim())
+          .filter(Boolean),
+      ),
+    );
+  }, [querySubcategoriesParam]);
 
   type ChainData = {
     id: string;
@@ -83,8 +93,8 @@ export default function CategoryMetrics({
 
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [selectedMode, setSelectedMode] = useState("txcount_");
-  const [selectedCategory, setSelectedCategory] = useState(
-    queryCategory ?? "finance",
+  const [selectedCategory, setSelectedCategory] = useState(() =>
+    queryCategory && data[queryCategory] ? queryCategory : "finance",
   );
 
   const [animationFinished, setAnimationFinished] = useState(true);
@@ -370,6 +380,23 @@ export default function CategoryMetrics({
 
   const [selectedSubcategories, setSelectedSubcategories] =
     useState(updatedSubcategories);
+
+  const lastAppliedQueryKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const queryKey = `${queryCategory ?? ""}|${querySubcategoriesParam}`;
+
+    // Only apply URL-derived state when query params are present and changed.
+    if (queryKey === "|" || lastAppliedQueryKeyRef.current === queryKey) {
+      return;
+    }
+
+    if (queryCategory && data[queryCategory]) {
+      setSelectedCategory(queryCategory);
+    }
+    setSelectedSubcategories(updatedSubcategories);
+    lastAppliedQueryKeyRef.current = queryKey;
+  }, [queryCategory, querySubcategoriesParam, updatedSubcategories, data]);
 
   // const chartData = useMemo(() => {
   //   if (!selectedSubcategories) return [];
