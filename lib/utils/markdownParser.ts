@@ -360,9 +360,10 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
           labelField: labelField || 'label'  // Default to 'label'
         },
         showInMenu: parseShowInMenu(dropdownConfig),
-        stateKey: dropdownConfig.stateKey || undefined
+        stateKey: dropdownConfig.stateKey || undefined,
+        multiSelect: dropdownConfig.multiSelect || false
       };
-      
+
       return block;
     } else {
       // Handle inline options (original behavior)
@@ -400,6 +401,7 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         className: dropdownConfig.className || '',
         readFromJSON: false,
         showInMenu: parseShowInMenu(dropdownConfig),
+        stateKey: dropdownConfig.stateKey || undefined,
         multiSelect: dropdownConfig.multiSelect || false
       };
       
@@ -745,6 +747,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
           pathToColumnKeys // Optional - component will auto-discover if not provided
         },
         scrollable: tableConfig.scrollable,
+        rowBar: tableConfig.rowBar || undefined,
         cardView: tableConfig.cardView || undefined,
         showInMenu: parseShowInMenu(tableConfig),
         filterOnStateKey: tableConfig.filterOnStateKey || undefined
@@ -781,6 +784,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         readFromJSON: false,
         rowData: tableConfig.rowData,
         scrollable: tableConfig.scrollable,
+        rowBar: tableConfig.rowBar || undefined,
         cardView: tableConfig.cardView || undefined,
         showInMenu: parseShowInMenu(tableConfig),
         filterOnStateKey: tableConfig.filterOnStateKey || undefined

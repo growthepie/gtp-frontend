@@ -21,6 +21,7 @@ type VerticalScrollContainerProps = {
   scrollTrackColor?: string;
   header?: React.ReactNode;
   enableTopShadow?: boolean;
+  enableDragScroll?: boolean;
 };
 
 export default forwardRef(function VerticalScrollContainer(
@@ -39,6 +40,7 @@ export default forwardRef(function VerticalScrollContainer(
     scrollTrackColor = "rgb(var(--ui-shadow) / 0.33)",
     header,
     enableTopShadow = false,
+    enableDragScroll = false,
   }: VerticalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
 ) {
@@ -407,6 +409,50 @@ export default forwardRef(function VerticalScrollContainer(
       setMaskGradient('');
     }
   }, [showTopGradient, showBottomGradient]);
+
+  // Content area click-and-drag-to-scroll
+  useEffect(() => {
+    if (!enableDragScroll) return;
+    const area = contentScrollAreaRef.current;
+    if (!area) return;
+
+    area.style.cursor = showScroller ? 'grab' : 'default';
+
+    let startY = 0;
+    let startScrollTop = 0;
+    let active = false;
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (!showScroller) return;
+      active = true;
+      startY = e.clientY;
+      startScrollTop = area.scrollTop;
+      area.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!active) return;
+      area.scrollTop = startScrollTop - (e.clientY - startY);
+    };
+
+    const onMouseUp = () => {
+      if (!active) return;
+      active = false;
+      area.style.cursor = showScroller ? 'grab' : 'default';
+      document.body.style.removeProperty('user-select');
+    };
+
+    area.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    return () => {
+      area.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [enableDragScroll, showScroller, contentScrollAreaRef]);
 
   // Determine padding based on scrollbar position
   const computedPaddingRight =

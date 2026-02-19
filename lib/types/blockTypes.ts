@@ -73,6 +73,16 @@ export interface TableBlock extends BaseBlock {
       expand?: boolean; // Column absorbs remaining space (1fr). Only one column should have this.
       showIcon?: boolean; // For chain type: show chain icon (default true)
       showLabel?: boolean; // For chain type: show chain name from AllChainsByKeys (default false)
+      uppercase?: boolean; // Render text in uppercase
+      chip?: boolean; // Render value as a monospace pill badge
+      valueMap?: Record<string, string>; // Map raw values to display strings (case-insensitive lookup)
+      valueMapShowKey?: boolean; // Show original key after mapped value, e.g. "US Dollar (USD)"
+      cellBar?: {
+        colorColumn?: string; // Column key with origin_key for chain color
+        color?: string;       // Explicit color fallback
+      };
+      currencyMap?: Record<string, { symbol: string; name: string; country: string }>; // Map currency codes to symbol + name + country code for styled rendering
+      iconMap?: Record<string, { icon: string; label: string }>; // Map raw values to icon + label pairs
       badgeSources?: Array<{ // For badges type: render color-coded pills from multiple source keys
         sourceKey: string;
         label: string;
@@ -88,6 +98,11 @@ export interface TableBlock extends BaseBlock {
     };
   };
   columnSortBy: "value" | "name" | undefined;
+  rowBar?: {
+    valueColumn: string;   // Column key whose numeric value drives bar width
+    colorColumn?: string;  // Column key with origin_key for chain-based color
+    color?: string;        // Explicit color fallback
+  };
   scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
   cardView?: {
     titleColumn: string; // Column key for card title (middle section, displayed prominently)
