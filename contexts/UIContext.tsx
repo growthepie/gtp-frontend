@@ -55,6 +55,8 @@ export type UIState = {
   setDragChartId: (value: string) => void;
   focusSwitchEnabled: boolean;
   setFocusSwitchEnabled: (value: Updater<boolean>) => void;
+  ethUsdSwitchEnabled: boolean;
+  setEthUsdSwitchEnabled: (value: Updater<boolean>) => void;
 };
 
 const getInitialSidebarOpen = () => {
@@ -128,6 +130,11 @@ export const useUIStore = create<UIState>((set) => ({
   setFocusSwitchEnabled: (value) =>
     set((state) => ({
       focusSwitchEnabled: resolveState(value, state.focusSwitchEnabled),
+    })),
+  ethUsdSwitchEnabled: true,
+  setEthUsdSwitchEnabled: (value) =>
+    set((state) => ({
+      ethUsdSwitchEnabled: resolveState(value, state.ethUsdSwitchEnabled),
     })),
 }));
 
