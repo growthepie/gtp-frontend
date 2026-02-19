@@ -78,7 +78,7 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
         allowInteract={true}
         enableHover={!isMobile}
         trigger={<div className="w-fit">{switchControl}</div>}
-        containerClass="flex flex-col gap-y-[10px]"
+        containerClass="flex flex-col gap-y-[10px] z-global-search"
         positionOffset={{ mainAxis: 0, crossAxis: 20 }}
       >
         <div className="px-[15px] py-[5px]">

@@ -43,11 +43,6 @@ export default function ClientQuickBitePage({ params }: Props) {
   useEffect(() => {
     const quickBite = getQuickBiteBySlug(params.slug);
     setEthUsdSwitchEnabled(quickBite?.ethUsdSwitchEnabled === true);
-
-    return () => {
-      // Keep Quick Bites default behavior when navigating between bites.
-      setEthUsdSwitchEnabled(false);
-    };
   }, [params.slug, setEthUsdSwitchEnabled]);
 
   useEffect(() => {

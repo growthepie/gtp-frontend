@@ -135,7 +135,7 @@ export default function ContributorsPage() {
               src={s.image}
               alt={s.name}
 
-              className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
+              className="brightness-[.55] grayscale dark:brightness-100"
               fill
               objectFit="contain"
             />
@@ -154,9 +154,6 @@ export default function ContributorsPage() {
             Team
           </Heading>
         </div>
-        <Description className="!pb-[15px]">
-          The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
-        </Description>
       </div>
       <div className="w-full flex flex-wrap justify-center sm:justify-start place-items-center gap-[15px]">
         {Contributors.map((c) => (
@@ -276,7 +273,7 @@ export default function ContributorsPage() {
                 alt={s.name}
                 width={s.width}
                 height={s.height}
-                className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
+                className="brightness-[.55] grayscale dark:brightness-100"
               // fill
               />
             </Link>

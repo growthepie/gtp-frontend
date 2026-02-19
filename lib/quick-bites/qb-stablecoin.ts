@@ -1,6 +1,9 @@
-// In your quick bite data file (e.g., lib/quick-bites/linea-token-burn.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
-import { prefetchDNS } from 'react-dom';
+import fiatData from '../../public/dicts/fiat.json';
+
+const CURRENCIES_MAP = Object.fromEntries(
+  Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
+);
 
 const Stablecoin: QuickBiteData = {
   title: "Stablecoin Breakdown",
@@ -145,6 +148,13 @@ const Stablecoin: QuickBiteData = {
         pathToTypes: "data.stables_per_chain.types",
       },
       columnDefinitions: {
+        logo: {
+          label: "",
+          type: "image",
+          minWidth: 26,
+          isNumeric: false,
+          sortByValue: false
+        },
         name: {
           label: "Name",
           type: "string",
@@ -155,16 +165,10 @@ const Stablecoin: QuickBiteData = {
         symbol: {
           label: "Symbol",
           type: "string",
-          minWidth: 60,
+          minWidth: 90,
           isNumeric: false,
-          sortByValue: true
-        },
-        logo: {
-          label: "",
-          type: "image",
-          minWidth: 20,
-          isNumeric: false,
-          sortByValue: false
+          sortByValue: true,
+          chip: true,
         },
         value: {
           label: "Supply",
@@ -189,31 +193,44 @@ const Stablecoin: QuickBiteData = {
               decimals: 2,
               prefix: "$",
             },
-          }
+          },
+
         },
         fiat: {
           label: "Fiat",
           type: "string",
-          minWidth: 60,
+          minWidth: 180,
           isNumeric: false,
-          sortByValue: true
+          sortByValue: true,
+          currencyMap: CURRENCIES_MAP,
         },
         metric_key: {
           label: "Type",
-          type: "metric",
-          minWidth: 20,
+          type: "string",
+          minWidth: 100,
           isNumeric: false,
-          sortByValue: true
+          sortByValue: true,
+          iconMap: {
+            supply_bridged: { icon: "gtp-crosschain", label: "Bridged" },
+            supply_direct: { icon: "gtp-tokentransfers", label: "Direct" },
+            locked_supply: { icon: "gtp-lock", label: "Locked" },
+          }
         },
         origin_key: {
-          label: "Bridged From/To",
+          label: "Bridged\nFrom/To",
           type: "chain",
-          minWidth: 80,
+          minWidth: 160,
           isNumeric: false,
-          sortByValue: true
+          sortByValue: true,
+          showLabel: true
         },
       },
       columnOrder: ["logo", "name", "symbol", "fiat", "value", "value_usd", "metric_key", "origin_key"],
+      rowBar: {
+        valueColumn: "value_usd",
+        color: "linear-gradient(-145deg, rgb(254, 84, 104) 0%, rgb(255, 223, 39) 100%)",
+        // color: "rgb(var(--text-primary))",
+      },
     }),
     "```",
 

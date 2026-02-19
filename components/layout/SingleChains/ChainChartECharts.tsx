@@ -1312,6 +1312,44 @@ const MetricChart = memo(
       };
     }, [drawLastPointLines, option]);
 
+    // Keep overlay graphics aligned in responsive layouts for simple mode.
+    // Without this, dashed line / marker / value label can stay at stale positions after resize.
+    useEffect(() => {
+      if (lineType !== "simple") return;
+
+      let redrawTimeoutId: ReturnType<typeof setTimeout> | null = null;
+      let resizeObserver: ResizeObserver | null = null;
+
+      const scheduleOverlayRedraw = () => {
+        if (redrawTimeoutId) {
+          clearTimeout(redrawTimeoutId);
+        }
+        redrawTimeoutId = setTimeout(() => {
+          drawLastPointLines();
+        }, 80);
+      };
+
+      const chartDom = chartRef.current?.getEchartsInstance()?.getDom?.();
+      if (chartDom && typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => {
+          scheduleOverlayRedraw();
+        });
+        resizeObserver.observe(chartDom);
+      }
+
+      window.addEventListener("resize", scheduleOverlayRedraw);
+
+      return () => {
+        if (redrawTimeoutId) {
+          clearTimeout(redrawTimeoutId);
+        }
+        window.removeEventListener("resize", scheduleOverlayRedraw);
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
+      };
+    }, [drawLastPointLines, lineType]);
+
     // Handle zoom events
     const onEvents = useMemo(
       () => ({
