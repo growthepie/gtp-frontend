@@ -66,9 +66,9 @@ export default function ChainMetricTableRow({
   const dataColumnCount = 2 + Number(show24h) + Number(show30d) + Number(show1y);
   const dataColumnIndexes = Array.from({ length: dataColumnCount }, (_, index) => index);
   const iconWrapperClassName = selected
-    ? "flex h-[26px] w-[26px] items-center justify-center rounded-full bg-color-ui-active"
-    : "flex h-[20px] w-[20px] items-center justify-center rounded-full border border-color-bg-medium/80 bg-color-bg-medium/70";
-  const iconSizeClassName = selected ? "!w-[14px] !h-[14px]" : "!w-[12px] !h-[12px]";
+    ? "flex min-h-[26px] min-w-[26px] h-[26px] w-[26px] items-center justify-center rounded-full bg-color-ui-active"
+    : "flex min-h-[20px] min-w-[20px] h-[20px] w-[20px] items-center justify-center rounded-full border border-color-bg-medium/80 bg-color-bg-medium/70";
+  const iconSizeClassName = selected ? "!min-w-[14px] !min-h-[14px] !w-[14px] !h-[14px]" : "!min-w-[12px] !min-h-[12px] !w-[12px] !h-[12px]";
 
   return (
     <div

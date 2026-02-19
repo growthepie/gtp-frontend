@@ -18,7 +18,7 @@ import { useMetricData } from "./MetricDataContext";
 import ChartWatermark from "../layout/ChartWatermark";
 
 const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
-  "minmax(0, 174px) 8px minmax(76px, 1fr) minmax(66px, 1fr) minmax(66px, 1fr) minmax(66px, 1fr) 22px";
+  "minmax(60px, 174px) 8px minmax(60px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
   daily: "last_1d",
@@ -550,7 +550,7 @@ const MetricTable = ({
 
   return (
     <HorizontalScrollContainer className="h-full" hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
-      <div className="w-full min-w-[503px] relative " style={{ height: `${tableViewportHeight}px` }}>
+      <div className="w-full min-w-[280px] relative " style={{ height: `${tableViewportHeight}px` }}>
         <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center">
           <ChartWatermark className="w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten" />
         </div>
