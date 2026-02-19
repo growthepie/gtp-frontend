@@ -19,6 +19,8 @@ type MetricChartProps = {
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
   type?: string;
+  selectedRange: [number, number] | null;
+  setSelectedRange: (range: [number, number] | null) => void;
 };
 
 const getSeriesType = (
@@ -30,7 +32,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange }: MetricChartProps) {
   const { data: master } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
@@ -142,8 +144,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals }: M
         stack={selectedScale === "stacked"}
         percentageMode={selectedScale === "percentage"}
         xAxisType="time"
-        xAxisMin={activeTimespan?.xMin}
-        xAxisMax={activeTimespan?.xMax}
+        xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
+        xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
         suffix={suffix}
         prefix={prefix}
         tooltipTitle={metricMeta?.name ?? undefined}
@@ -151,6 +153,16 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals }: M
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
+        onDragSelect={(xStart, xEnd) => {
+          console.log("Drag select:", xStart, xEnd);
+  
+          if(xStart < xEnd) {
+            setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
+          } else {
+            setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
+          }
+          console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
+        }}
       />
     </div>
   );

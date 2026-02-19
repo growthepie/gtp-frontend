@@ -157,7 +157,6 @@ export function useChainMetrics(
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
 
-    console.log(firstResponse);
 
     successfulChains.forEach((chainKey) => {
       const responseData = chainDataMap[chainKey];
@@ -182,7 +181,6 @@ export function useChainMetrics(
     };
   }, [chainDataMap, validChainKeys, isLoading, metricKey, metricsDict]);
 
-  console.log(aggregatedData);
 
   if (!metricsDict[metricKey]) {
     console.error(`Metric not found in ${metricType}`, metricKey);

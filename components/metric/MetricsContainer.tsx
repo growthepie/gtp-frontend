@@ -36,6 +36,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+    const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
     const {
         timespans,
         timeIntervals,
@@ -340,6 +341,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         </div>
                     </GTPButtonRow>
                    
+                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
                     <GTPButtonRow>
                         <GTPButton
                             label="Absolute"
@@ -368,6 +370,17 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             </>
                         )}
                     </GTPButtonRow>
+                    <GTPButton
+                            label={!selectedRange ? undefined : ""}
+                            leftIcon={!selectedRange ? "x-circle" : "x-circle"}
+                            leftIconClassname={"text-color-text-primary"}
+                            size={isMobile ? "xs" : "sm"}
+                            className={!selectedRange ? "hidden" : "block"}
+                            variant={!selectedRange ? "no-background" : "highlight"}
+                            visualState="default"
+                            clickHandler={() => setSelectedRange(null)}
+                        />
+                    </div>
 
                     
                 </GTPButtonContainer>
@@ -399,7 +412,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
+                        <MetricChart selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
                     </div>
                 }
             />

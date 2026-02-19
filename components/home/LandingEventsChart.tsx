@@ -183,7 +183,11 @@ const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEven
   );
 }
 
+
+
 const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES}) => {
+  const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
+
   return (
     <div className="relative flex-1 min-h-0 min-w-0 self-stretch overflow-hidden">
       <GTPCardLayout className="absolute inset-0 min-h-0 min-w-0"
@@ -201,9 +205,24 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
         <GTPChart series={[{
           name: EVENTS_EXAMPLES[selectedEvent].title,
           data: EVENTS_EXAMPLES[selectedEvent].data.map((d) => [new Date(d.date).getTime(), d.value] as [number, number]),
+
           seriesType: "line",
           color: EVENTS_EXAMPLES[selectedEvent].color,
-        }]} />
+        }]} 
+        xAxisMin={selectedRange ? selectedRange[0] : undefined}
+        xAxisMax={selectedRange ? selectedRange[1] : undefined}
+
+        onDragSelect={(xStart, xEnd) => {
+          if(xStart < xEnd) {
+            setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
+          } else {
+            setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
+          }
+          console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
+        }}
+      
+        
+        />
         </div>
       </GTPCardLayout>
     </div>

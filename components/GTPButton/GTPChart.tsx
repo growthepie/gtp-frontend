@@ -3,7 +3,7 @@
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import { EChartsOption } from "echarts";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { useTheme } from "next-themes";
@@ -80,6 +80,9 @@ export interface GTPChartProps {
   seriesOverrides?: (series: Record<string, unknown>, index: number) => Record<string, unknown>;
   height?: string | number;
   className?: string;
+  /** Called when the user completes a click-and-drag on the chart. Receives the x-axis values at
+   *  the drag start and drag end (always xStart ≤ xEnd). */
+  onDragSelect?: (xStart: number, xEnd: number) => void;
 }
 
 // --- Component ---
@@ -115,10 +118,15 @@ export default function GTPChart({
   seriesOverrides,
   height = "100%",
   className,
+  onDragSelect,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const echartsRef = useRef<any>(null);
+  const dragStartPixelRef = useRef<number | null>(null);
+  const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const { theme } = useTheme();
 
@@ -259,6 +267,82 @@ export default function GTPChart({
     },
     [],
   );
+
+  // Drag-select helpers
+  // Stable ref so the document mouseup handler always sees the latest callback
+  const onDragSelectRef = useRef(onDragSelect);
+  useEffect(() => { onDragSelectRef.current = onDragSelect; }, [onDragSelect]);
+
+  const handleDragMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!onDragSelect) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    dragStartPixelRef.current = e.clientX - rect.left;
+    setDragOverlay(null);
+  }, [onDragSelect]);
+
+  const handleDragMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragStartPixelRef.current === null) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const currentPixel = e.clientX - rect.left;
+    const startPixel = dragStartPixelRef.current;
+    if (Math.abs(currentPixel - startPixel) > 4) {
+      setDragOverlay({
+        left: Math.min(startPixel, currentPixel),
+        width: Math.abs(currentPixel - startPixel),
+      });
+    }
+  }, []);
+
+  // All drag completion is handled at the document level so it fires regardless of
+  // where the mouse is released — this also prevents onMouseLeave from cancelling
+  // an active drag when the cursor briefly exits the container.
+  useEffect(() => {
+    if (!onDragSelect) return;
+
+    const handleDocumentMouseUp = (e: MouseEvent) => {
+      if (dragStartPixelRef.current === null) return;
+      const startPixel = dragStartPixelRef.current;
+      dragStartPixelRef.current = null;
+      setDragOverlay(null);
+
+      if (!containerRef.current || !onDragSelectRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const endPixel = e.clientX - rect.left;
+      if (Math.abs(endPixel - startPixel) <= 4) return;
+
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+
+      // Derive the x-axis pixel↔data mapping directly from the axis model.
+      // convertFromPixel returns NaN for pixels outside the grid area, so we
+      // read the axis extents ourselves and do a simple linear interpolation.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const xAxisModel = (instance as any).getModel?.()?.getComponent?.("xAxis", 0);
+      if (!xAxisModel) return;
+      const pixelExtent: [number, number] | undefined = xAxisModel.axis?.getExtent?.();
+      const dataExtent: [number, number] | undefined = xAxisModel.axis?.scale?.getExtent?.();
+      if (!pixelExtent || !dataExtent) return;
+
+      const [pixMin, pixMax] = pixelExtent;
+      const [dataMin, dataMax] = dataExtent;
+      if (pixMax === pixMin) return;
+
+      const pixelToData = (px: number): number => {
+        const clamped = Math.max(pixMin, Math.min(pixMax, px));
+        return dataMin + ((clamped - pixMin) / (pixMax - pixMin)) * (dataMax - dataMin);
+      };
+
+      const xStart = pixelToData(Math.min(startPixel, endPixel));
+      const xEnd = pixelToData(Math.max(startPixel, endPixel));
+
+      if (Number.isFinite(xStart) && Number.isFinite(xEnd)) {
+        onDragSelectRef.current(xStart, xEnd);
+      }
+    };
+
+    document.addEventListener("mouseup", handleDocumentMouseUp);
+    return () => document.removeEventListener("mouseup", handleDocumentMouseUp);
+  }, [onDragSelect]);
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
@@ -902,17 +986,26 @@ export default function GTPChart({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full overflow-hidden ${className ?? ""}`}
+      className={`relative w-full overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
       style={containerStyle}
+      onMouseDown={onDragSelect ? handleDragMouseDown : undefined}
+      onMouseMove={onDragSelect ? handleDragMouseMove : undefined}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
         <ReactECharts
+          ref={echartsRef}
           option={chartOption}
           notMerge
           lazyUpdate
           style={{ width: "100%", height: "100%" }}
         />
       </div>
+      {onDragSelect && dragOverlay && (
+        <div
+          className="pointer-events-none absolute inset-y-0 z-30 bg-blue-500/10 border-x border-blue-400/30"
+          style={{ left: dragOverlay.left, width: dragOverlay.width }}
+        />
+      )}
       {showWatermark ? (
 
         watermarkMetricName ? (
