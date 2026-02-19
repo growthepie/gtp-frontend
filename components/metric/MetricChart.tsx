@@ -162,10 +162,10 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           } else {
             setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
           }
-          console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
         }}
         dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
         dragSelectIcon={"feather:zoom-in" as GTPIconName}
+        minDragSelectPoints={2}
       />
     </div>
   );

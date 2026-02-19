@@ -89,6 +89,8 @@ export interface GTPChartProps {
   dragSelectOverlayColor?: string;
   /** Icon rendered in the centre of the drag-selection overlay. */
   dragSelectIcon?: GTPIconName;
+  /** Minimum number of data points that must be visible after a drag-select zoom. Defaults to 2. */
+  minDragSelectPoints?: number;
 }
 
 // --- Component ---
@@ -127,6 +129,7 @@ export default function GTPChart({
   onDragSelect,
   dragSelectOverlayColor = "#3b82f6",
   dragSelectIcon,
+  minDragSelectPoints = 2,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -277,9 +280,13 @@ export default function GTPChart({
   );
 
   // Drag-select helpers
-  // Stable ref so the document mouseup handler always sees the latest callback
+  // Stable refs so document-level handlers always see the latest values
   const onDragSelectRef = useRef(onDragSelect);
   useEffect(() => { onDragSelectRef.current = onDragSelect; }, [onDragSelect]);
+  const normalizedSeriesRef = useRef(normalizedSeries);
+  useEffect(() => { normalizedSeriesRef.current = normalizedSeries; }, [normalizedSeries]);
+  const minDragSelectPointsRef = useRef(minDragSelectPoints);
+  useEffect(() => { minDragSelectPointsRef.current = minDragSelectPoints; }, [minDragSelectPoints]);
 
   const handleDragMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!onDragSelect) return;
@@ -339,12 +346,45 @@ export default function GTPChart({
         return dataMin + ((clamped - pixMin) / (pixMax - pixMin)) * (dataMax - dataMin);
       };
 
-      const xStart = pixelToData(Math.min(startPixel, endPixel));
-      const xEnd = pixelToData(Math.max(startPixel, endPixel));
+      let xStart = pixelToData(Math.min(startPixel, endPixel));
+      let xEnd = pixelToData(Math.max(startPixel, endPixel));
 
-      if (Number.isFinite(xStart) && Number.isFinite(xEnd)) {
-        onDragSelectRef.current(xStart, xEnd);
+      if (!Number.isFinite(xStart) || !Number.isFinite(xEnd)) return;
+
+      // Enforce minimum data-point count in the selected range.
+      const minPoints = minDragSelectPointsRef.current;
+      if (minPoints > 1) {
+        const allX = Array.from(
+          new Set(
+            normalizedSeriesRef.current.flatMap((s) =>
+              s.data.map(([x]) => Number(x)).filter(Number.isFinite),
+            ),
+          ),
+        ).sort((a, b) => a - b);
+
+        if (allX.length >= minPoints) {
+          const inRange = allX.filter((x) => x >= xStart && x <= xEnd);
+          if (inRange.length < minPoints) {
+            // Snap to the window of `minPoints` consecutive data points whose
+            // midpoint is closest to the midpoint of the user's drag.
+            const mid = (xStart + xEnd) / 2;
+            let bestIdx = 0;
+            let bestDist = Infinity;
+            for (let i = 0; i <= allX.length - minPoints; i++) {
+              const windowMid = (allX[i] + allX[i + minPoints - 1]) / 2;
+              const dist = Math.abs(windowMid - mid);
+              if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+              }
+            }
+            xStart = allX[bestIdx];
+            xEnd = allX[bestIdx + minPoints - 1];
+          }
+        }
       }
+
+      onDragSelectRef.current(xStart, xEnd);
     };
 
     document.addEventListener("mouseup", handleDocumentMouseUp);

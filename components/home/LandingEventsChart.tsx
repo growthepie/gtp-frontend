@@ -11,6 +11,7 @@ import GTPChart from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
+import { useMediaQuery } from "usehooks-ts";
 
 const EVENTS_EXAMPLES = {
     "example1": {
@@ -145,10 +146,10 @@ const EVENTS_EXAMPLES = {
 };
 
 
-const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeof EVENTS_EXAMPLES, isSelected: boolean, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES | null) => void }) => {
+const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeof EVENTS_EXAMPLES, isSelected: boolean, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES) => void }) => {
   return (
     <div className={`flex w-[390px] border-[1px] border-color-bg-medium rounded-[15px] p-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
-        onClick={() => setSelectedEvent(isSelected ? null : event)}
+        onClick={() => setSelectedEvent(event)}
     >
       {/*Content */}
       <div className={`${isSelected ? "" : "flex items-center justify-center"}`}>
@@ -173,7 +174,7 @@ const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeo
   );
 }
 
-const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES | null, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES | null) => void }) => {
+const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES) => void }) => {
   return (
     <div className="flex flex-col gap-y-[10px] max-w-[40%] h-full min-h-0 self-stretch overflow-y-auto">
       {Object.keys(EVENTS_EXAMPLES).map((event) => (
@@ -187,7 +188,7 @@ const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEven
 
 const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES}) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
-
+  const isMobile = useMediaQuery("(max-width: 768px)");
   return (
     <div className="relative flex-1 min-h-0 min-w-0 self-stretch overflow-hidden">
       <GTPCardLayout className="absolute inset-0 min-h-0 min-w-0"
@@ -198,7 +199,16 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
                 <GTPButton label="Weekly" size="sm"/>
                 <GTPButton label="Monthly" size="sm"/>
             </GTPButtonRow>
-        </GTPButtonContainer>
+            <GTPButton
+                label={!selectedRange ? undefined : ""}
+                leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
+                leftIconClassname={"text-color-text-primary"}
+                size={isMobile ? "xs" : "sm"}
+                className={!selectedRange ? "hidden" : "block"}
+                variant={!selectedRange ? "no-background" : "highlight"}
+                visualState="default"
+                clickHandler={() => setSelectedRange(null)}
+            />        </GTPButtonContainer>
        }
       >
        <div className="flex-1 min-h-0 w-full h-full py-[15px] overflow-hidden">
@@ -218,9 +228,10 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
           } else {
             setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
           }
-          console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
         }}
-      
+        dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
+        dragSelectIcon={"feather:zoom-in" as GTPIconName}
+        minDragSelectPoints={2}
         
         />
         </div>
