@@ -8,6 +8,8 @@ import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } fro
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 import {
   clamp,
   withOpacity,
@@ -83,6 +85,10 @@ export interface GTPChartProps {
   /** Called when the user completes a click-and-drag on the chart. Receives the x-axis values at
    *  the drag start and drag end (always xStart ≤ xEnd). */
   onDragSelect?: (xStart: number, xEnd: number) => void;
+  /** Hex color used to tint the drag-selection overlay (background at 10% opacity, border at 40%). Defaults to blue. */
+  dragSelectOverlayColor?: string;
+  /** Icon rendered in the centre of the drag-selection overlay. */
+  dragSelectIcon?: GTPIconName;
 }
 
 // --- Component ---
@@ -119,6 +125,8 @@ export default function GTPChart({
   height = "100%",
   className,
   onDragSelect,
+  dragSelectOverlayColor = "#3b82f6",
+  dragSelectIcon,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -316,8 +324,7 @@ export default function GTPChart({
       // Derive the x-axis pixel↔data mapping directly from the axis model.
       // convertFromPixel returns NaN for pixels outside the grid area, so we
       // read the axis extents ourselves and do a simple linear interpolation.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const xAxisModel = (instance as any).getModel?.()?.getComponent?.("xAxis", 0);
+      const xAxisModel = instance.getModel?.()?.getComponent?.("xAxis", 0);
       if (!xAxisModel) return;
       const pixelExtent: [number, number] | undefined = xAxisModel.axis?.getExtent?.();
       const dataExtent: [number, number] | undefined = xAxisModel.axis?.scale?.getExtent?.();
@@ -1002,9 +1009,18 @@ export default function GTPChart({
       </div>
       {onDragSelect && dragOverlay && (
         <div
-          className="pointer-events-none absolute inset-y-0 z-30 bg-blue-500/10 border-x border-blue-400/30"
-          style={{ left: dragOverlay.left, width: dragOverlay.width }}
-        />
+          className="pointer-events-none absolute inset-y-0 z-30 flex items-center justify-center border-x"
+          style={{
+            left: dragOverlay.left,
+            width: dragOverlay.width,
+            backgroundColor: withHexOpacity(dragSelectOverlayColor, 0.1),
+            borderColor: withHexOpacity(dragSelectOverlayColor, 0.4),
+          }}
+        >
+          {dragSelectIcon && (
+            <GTPIcon icon={dragSelectIcon} className="!size-[24px]" containerClassName="!size-[24px]" />
+          )}
+        </div>
       )}
       {showWatermark ? (
 

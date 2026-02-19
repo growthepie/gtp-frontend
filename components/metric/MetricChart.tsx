@@ -163,6 +163,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           }
           console.log("Selected range:", selectedRange?.[0], "→", selectedRange?.[1]);
         }}
+        dragSelectOverlayColor="#d3dae6"
+        dragSelectIcon="x-circle"
       />
     </div>
   );
