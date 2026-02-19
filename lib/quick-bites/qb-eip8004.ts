@@ -250,7 +250,7 @@ const Agents: QuickBiteData = createQuickBite({
         total_registered: {
           label: "Total AI Agents",
           type: "number",
-          minWidth: 100,
+          minWidth: 200,
           isNumeric: true,
           sortByValue: true,
           units: {
