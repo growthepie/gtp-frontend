@@ -74,14 +74,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       trigger={
         <button
           type="button"
-          className="inline-flex items-center justify-center text-[#5A6462] hover:text-color-text-primary cursor-pointer"
+          className="inline-flex items-center justify-center text-[#5A6462] hover:text-color-text-primary cursor-pointer z-"
           aria-label="Show info"
           onClick={(e) => e.preventDefault()}
         >
           <GTPIcon icon="gtp-info-monochrome" size="sm" className="!size-[11px]" containerClassName="!size-[11px]" />
         </button>
       }
-      containerClass="flex flex-col gap-y-[10px]"
+      containerClass="flex flex-col gap-y-[10px] z-tooltip"
       positionOffset={{ mainAxis: 10, crossAxis: 15 }}
     >
       <div className="px-[15px]">{text}</div>
@@ -585,7 +585,6 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
             scrollbarAbsolute={true}
             scrollbarPosition="right"
             paddingRight={30}
-            enableDragScroll={true}
           >
             {cardGrid}
           </VerticalScrollContainer>

@@ -54,16 +54,7 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
-  scrollable?: boolean;
   columnOrder?: string[];
-  cardView?: {
-    titleColumn: string;
-    imageColumn?: string;
-    linkColumn?: string;
-    topColumns?: string[];
-    bottomColumns?: string[];
-    hiddenColumns?: string[];
-  };
   columnDefinitions: {
     [key: string]: {
       sortByValue: boolean;
