@@ -40,8 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             as="h1"
           />
           <Description>
-            Meet the team and the people who make it happen. Being a public good, we rely on grants and public funding rounds, such as Gitcoin, Octant or Giveth.
-            Please support us whenever a round is active.
+            Meet the team and the people who make it happen.
           </Description>
         </Section>
       </PageContainer>
