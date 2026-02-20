@@ -619,7 +619,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             allowInteract={true}
             size="md"
             trigger={
-              <div className="flex-1 min-w-0 h-[32px] flex items-center">
+              <div className="min-w-0 h-[32px] flex items-center">
                 <div className="truncate w-full">
                   <ApplicationDisplayName owner_project={application.owner_project} />
                 </div>
