@@ -139,7 +139,7 @@ export default function ChainMetricTableRow({
               event.stopPropagation();
             }}
             className={`${truncateChainLabel ? "truncate" : "whitespace-nowrap"} hover:underline ${
-              selected ? "text-[11px] font-medium text-color-text-primary" : "text-[11px] text-color-text-secondary"
+              selected ? "text-xs font-medium text-color-text-primary" : "text-xs text-color-text-secondary"
             }`}
           >
             {label}
@@ -147,7 +147,7 @@ export default function ChainMetricTableRow({
         ) : (
           <div
             className={`${truncateChainLabel ? "truncate" : "whitespace-nowrap"} ${
-              selected ? "text-[11px] font-medium text-color-text-primary" : "text-[11px] text-color-text-secondary"
+              selected ? "text-xs font-medium text-color-text-primary" : "text-xs text-color-text-secondary"
             }`}
           >
             {label}
@@ -160,7 +160,7 @@ export default function ChainMetricTableRow({
       />
 
       <div
-        className={`relative z-[1] w-full numbers-xxs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
+        className={`relative z-[1] w-full numbers-xs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
           selected ? "text-color-text-primary font-semibold" : "text-color-text-secondary"
         }`}
       >
@@ -168,7 +168,7 @@ export default function ChainMetricTableRow({
       </div>
       {show24h ? (
         <div
-          className={`relative z-[1] w-full numbers-xxs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
+          className={`relative z-[1] w-full numbers-xs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
             hours24Change >= 0 ? "text-color-positive" : "text-color-negative"
           } ${selected ? "font-semibold" : "opacity-75"}`}
         >
@@ -177,7 +177,7 @@ export default function ChainMetricTableRow({
       ) : null}
       {show30d ? (
         <div
-          className={`relative z-[1] w-full numbers-xxs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
+          className={`relative z-[1] w-full numbers-xs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
             days30Change >= 0 ? "text-color-positive" : "text-color-negative"
           } ${selected ? "font-semibold" : "opacity-75"}`}
         >
@@ -186,7 +186,7 @@ export default function ChainMetricTableRow({
       ) : null}
       {show1y ? (
         <div
-          className={`relative z-[1] w-full numbers-xxs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
+          className={`relative z-[1] w-full numbers-xs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
             year1Change >= 0 ? "text-color-positive" : "text-color-negative"
           } ${selected ? "font-semibold" : "opacity-75"}`}
         >

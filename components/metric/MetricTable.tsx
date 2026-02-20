@@ -591,12 +591,14 @@ const MetricTable = ({
                 ).map(([timespan, label]) => (
                   <div key={timespan} className="relative z-[1] flex h-full w-full items-center justify-end pr-[2px]">
                     <GTPButton
+                      
                       label={label}
                       rightIcon={getHeaderSortIcon(timespan)}
                       rightIconClassname="!w-[8px] !h-[8px]"
                       variant="no-background"
                       visualState={isHeaderSortActive(timespan) ? "active" : "default"}
                       size="xs"
+                      textClassName="text-xs"
                       clickHandler={() => handleHeaderSortClick(timespan)}
                     />
                   </div>

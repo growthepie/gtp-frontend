@@ -20,6 +20,7 @@ export interface GTPButtonProps {
   variant?: GTPButtonVariant;
   visualState?: GTPButtonState;
   size?: GTPButtonSize | null;
+  textClassName?: string;
   className?: string;
   fill?: "none" | "full" | "mobile";
   buttonType?: "button" | "submit" | "reset";
@@ -153,6 +154,7 @@ export const GTPButton = ({
   size = null,
   className,
   fill = "none",
+  textClassName: buttonTextClassName = "text-xs",
   buttonType = "button",
   leftIconClassname = "",
   rightIconClassname = "",
@@ -249,6 +251,7 @@ export const GTPButton = ({
           <GTPButtonAnimatedLabel
             label={label ?? ""}
             textClassName={textClassName}
+            buttonTextClassName={buttonTextClassName}
             show={shouldShowLabel}
             animate={isActiveLabelMode}
           />
@@ -325,6 +328,7 @@ const GTPButtonIcon = ({
 const GTPButtonAnimatedLabel = ({
   label,
   textClassName,
+  buttonTextClassName,
   show,
   animate,
 }: {
@@ -332,6 +336,7 @@ const GTPButtonAnimatedLabel = ({
   textClassName: string;
   show: boolean;
   animate: boolean;
+  buttonTextClassName?: string;
 }) => {
   if (!animate && !show) {
     return null;
@@ -339,7 +344,7 @@ const GTPButtonAnimatedLabel = ({
 
   if (!animate) {
     return (
-      <span className={`${textClassName}`}>
+      <span className={`${textClassName} ${buttonTextClassName}`}>
         {label}
       </span>
     );
@@ -352,7 +357,7 @@ const GTPButtonAnimatedLabel = ({
       }`}
       aria-hidden={!show}
     >
-      <span className={`${textClassName} whitespace-nowrap`}>
+      <span className={`${textClassName} ${buttonTextClassName} whitespace-nowrap`}>
         {label}
       </span>
     </span>
