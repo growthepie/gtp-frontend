@@ -1,16 +1,11 @@
 import { TimespanProvider } from "./_contexts/TimespanContext";
 import { MetricsProvider } from "./_contexts/MetricsContext";
 import { SortProvider } from "./_contexts/SortContext";
-import Container from "@/components/layout/Container";
-import { GTPIcon } from "@/components/layout/GTPIcon";
-import Heading from "@/components/layout/Heading";
-import Search from "./_components/Search";
-import Controls from "./_components/Controls";
 import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
-import { PageTitleAndDescriptionAndControls } from "./_components/Components";
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import ApplicationsRouteHeader from "./_components/ApplicationsRouteHeader";
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -82,10 +77,7 @@ export default async function Layout({
           <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ProjectsMetadataProvider>
               <ApplicationsDataProvider>
-                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-                <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot>
-                  <PageTitleAndDescriptionAndControls />
-                </Container>
+                <ApplicationsRouteHeader />
                   {children}
               </ApplicationsDataProvider>
             </ProjectsMetadataProvider>

@@ -23,8 +23,21 @@ import NotificationButtonExpandable from './FloatingBar/NotificationButtonExpand
 import { useTheme } from 'next-themes';
 import { IS_PRODUCTION } from '@/lib/helpers';
 
+type GlobalFloatingBarProps = {
+  rightActionVariant?: 'workWithUs' | 'connectWallet';
+  walletAddress?: string | null;
+  isConnectingWallet?: boolean;
+  onConnectWallet?: () => void;
+  onDisconnectWallet?: () => void;
+};
 
-export default function GlobalFloatingBar() {
+export default function GlobalFloatingBar({
+  rightActionVariant = 'workWithUs',
+  walletAddress = null,
+  isConnectingWallet = false,
+  onConnectWallet,
+  onDisconnectWallet,
+}: GlobalFloatingBarProps = {}) {
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
   const isMobile = useUIContext((state) => state.isMobile);
@@ -466,6 +479,18 @@ export default function GlobalFloatingBar() {
     setIsShowingSearchResults(hasSearchResults);
   }, [query, isMobile, isMobileMenuPopoverOpen, isSearchActive]);
 
+  const connectWalletLabel = walletAddress
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : (isConnectingWallet ? 'Connecting...' : 'Connect Wallet');
+
+  const handleConnectWalletClick = () => {
+    if (walletAddress) {
+      onDisconnectWallet?.();
+      return;
+    }
+    onConnectWallet?.();
+  };
+
   if (!showGlobalSearchBar) return null;
 
   return (
@@ -636,7 +661,7 @@ export default function GlobalFloatingBar() {
                     hideIfNoNotifications={true}
                     placement="bottom-start"
                   />
-                  <WorkWithUs placement="bottom-start" />
+                  {rightActionVariant === 'connectWallet' ? <WorkWithUs placement="bottom-start" mobile /> : <WorkWithUs placement="bottom-start" />}
                 </div>
 
 
@@ -688,6 +713,15 @@ export default function GlobalFloatingBar() {
                 </FloatingBarButton>
                
                   <DarkModeToggleButton />
+                  {rightActionVariant === 'connectWallet' && (
+                    <FloatingBarButton
+                      icon={"gtp-wallet" as GTPIconName}
+                      label={connectWalletLabel}
+                      onClick={handleConnectWalletClick}
+                      className="hidden md:flex !min-w-[180px] !justify-start"
+                      title={walletAddress ? "Disconnect wallet" : "Connect wallet"}
+                    />
+                  )}
              
               </div>
             </div>

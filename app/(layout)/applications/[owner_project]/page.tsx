@@ -115,8 +115,7 @@ export default function Page(props: Props) {
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
+                  href={`/applications/edit?project=${owner_project}&focus=contracts`}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
                 />
@@ -127,8 +126,7 @@ export default function Page(props: Props) {
                   icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
+                  href={`/applications/edit?project=${owner_project}&focus=contracts`}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit"
                   containerClassName=""
