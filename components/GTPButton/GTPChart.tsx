@@ -417,6 +417,7 @@ export default function GTPChart({
     const shouldStack = stack || percentageMode;
     const grid = { ...DEFAULT_GRID, ...gridOverride };
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const threeMonthsMs = 3 * 30 * 24 * 60 * 60 * 1000;
 
     // Y-axis smart scaling
     const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
@@ -443,6 +444,7 @@ export default function GTPChart({
       Number.isFinite(xAxisMin) && Number.isFinite(xAxisMax) ? Number(xAxisMax) - Number(xAxisMin) : undefined;
     const xAxisRangeMs = explicitRangeMs ?? inferredRangeMs;
     const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
+    const isLessThan3Months = typeof xAxisRangeMs === "number" && xAxisRangeMs < threeMonthsMs;
 
     // For time-based bar series, bars are centered on the timestamp. If the axis min/max sits
     // exactly on the first/last point, edge bars can protrude outside the grid. We pad the
@@ -506,6 +508,15 @@ export default function GTPChart({
           timeZone: "UTC",
         }).format(numValue);
         return `{yearBold|${yearLabel}}`;
+      }
+
+      if (isLessThan3Months) {
+        return new Intl.DateTimeFormat("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(numValue);
       }
 
       return new Intl.DateTimeFormat("en-GB", {
