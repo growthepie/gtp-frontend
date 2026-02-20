@@ -160,7 +160,7 @@ export default function ChainMetricTableRow({
       />
 
       <div
-        className={`relative z-[1] w-full numbers-xs text-right pr-[4px] [font-variant-numeric:tabular-nums] ${
+        className={`relative z-[1] w-full numbers-xs text-right text-nowrap pr-[4px] [font-variant-numeric:tabular-nums] ${
           selected ? "text-color-text-primary font-semibold" : "text-color-text-secondary"
         }`}
       >

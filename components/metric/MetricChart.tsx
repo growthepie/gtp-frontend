@@ -9,6 +9,7 @@ import { useMetricChartControls } from "./MetricChartControlsContext";
 import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { formatCompactNumber } from "@/lib/echarts-utils";
 
 type MetricChartProps = {
   suffix?: string;
@@ -165,6 +166,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
         dragSelectIcon={"feather:zoom-in" as GTPIconName}
         minDragSelectPoints={2}
+        yAxisLabelFormatter={(value) => {
+          return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${` ${suffix ?? ""}`}`;
+        }}
       />
     </div>
   );

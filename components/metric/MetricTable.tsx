@@ -18,7 +18,7 @@ import { useMetricData } from "./MetricDataContext";
 import ChartWatermark from "../layout/ChartWatermark";
 
 const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
-  "minmax(120px, 174px) 4px minmax(60px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
+  "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
   daily: "last_1d",

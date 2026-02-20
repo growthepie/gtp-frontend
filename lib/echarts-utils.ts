@@ -93,7 +93,7 @@ export const DEFAULT_COLORS = [
   "#4E529A", "#EC796B", "#61DFFF", "#FFEEDA", "#00DACC",
 ];
 
-export const DEFAULT_GRID = { left: 52, right: 0, top: 4, bottom: 27 };
+export const DEFAULT_GRID = { left: 60, right: 0, top: 4, bottom: 27 };
 
 export const resolveSeriesColors = (
   color: string | [string, string] | undefined,

@@ -280,26 +280,54 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     ))}
                     </GTPButtonRow>
                     <GTPButtonRow>
-                        {Object.keys(timespans)
-                            .filter((timespan) =>
-                                selectedTimeInterval === "daily"
-                                    ? ["90d", "180d", "365d", "max"].includes(timespan)
-                                    : selectedTimeInterval === "weekly"
-                                    ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                                    : ["6m", "12m", "maxM"].includes(timespan))
-                            .map((timespan) => (
+                        
+                        {!selectedRange ? (
+                            Object.keys(timespans)
+                                .filter((timespan) =>
+                                    selectedTimeInterval === "daily"
+                                        ? ["90d", "180d", "365d", "max"].includes(timespan)
+                                        : selectedTimeInterval === "weekly"
+                                          ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                                          : ["6m", "12m", "maxM"].includes(timespan),
+                                )
+                                .map((timespan) => (
+                                    <GTPButton
+                                        key={timespan}
+                                        label={timespans[timespan].label}
+                                        variant="primary"
+                                        size={isMobile ? "xs" : "sm"}
+                                        clickHandler={() => {
+                                            setSelectedTimespan(timespan);
+                                            setZoomed(false);
+                                        }}
+                                        isSelected={selectedTimespan === timespan}
+                                    />
+                                ))
+                        ) : (
+                            <div className="flex items-center gap-x-[8px]">
                             <GTPButton
-                                key={timespan}
-                                label={timespans[timespan].label}
-                                variant="primary"
+                                label={selectedRange ? "Reset Zoom" : undefined}
+                                leftIcon={"feather:zoom-out" as GTPIconName}
+                                leftIconClassname="text-color-text-primary"
                                 size={isMobile ? "xs" : "sm"}
-                                clickHandler={() => {
-                                    setSelectedTimespan(timespan);
-                                    setZoomed(false);
-                                }}
-                                isSelected={selectedTimespan === timespan}
+                                className="block"
+                                variant="highlight"
+                                visualState="default"
+                                clickHandler={() => setSelectedRange(null)}
                             />
-                        ))}
+                            <GTPButton
+                                label={(() => {
+                                    const fmt = (ts: number) => new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                                    return ` ${fmt(selectedRange[0])} - ${fmt(selectedRange[1])}`;
+                                })()}
+                                size={isMobile ? "xs" : "sm"}
+                                className="block"
+                                variant="primary"
+                                visualState="active"
+                        
+                            />
+                            </div>
+                        )}
                     </GTPButtonRow>
                 </GTPButtonContainer>
             }
@@ -370,16 +398,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             </>
                         )}
                     </GTPButtonRow>
-                    <GTPButton
-                            label={!selectedRange ? undefined : ""}
-                            leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
-                            leftIconClassname={"text-color-text-primary"}
-                            size={isMobile ? "xs" : "sm"}
-                            className={!selectedRange ? "hidden" : "block"}
-                            variant={!selectedRange ? "no-background" : "highlight"}
-                            visualState="default"
-                            clickHandler={() => setSelectedRange(null)}
-                        />
+
                     </div>
 
                     
