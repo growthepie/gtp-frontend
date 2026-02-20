@@ -82,11 +82,18 @@ export const readTailwindTypographyStyle = (
   return result;
 };
 
-export const formatCompactNumber = (value: number, decimals?: number) =>
-  new Intl.NumberFormat("en-US", {
+export const formatCompactNumber = (value: number, decimals?: number) => {
+  const isCompact = Math.abs(value) >= 1000;
+  const defaultMax = Math.abs(value) >= 100_000_000_000 ? 0 : 2;
+  const maxDecimals = isCompact
+    ? (decimals !== undefined ? Math.max(decimals, defaultMax) : defaultMax)
+    : (decimals ?? defaultMax);
+  return new Intl.NumberFormat("en-US", {
     notation: "compact",
-    maximumFractionDigits: decimals ?? (Math.abs(value) >= 100_000_000_000 ? 0 : 1),
+    maximumFractionDigits: maxDecimals,
+    minimumFractionDigits: isCompact ? Math.min(2, maxDecimals) : 0,
   }).format(value);
+};
 
 export const DEFAULT_COLORS = [
   "#1C1CFF", "#12AAFF", "#FF0420", "#0052FF", "#7B3FE4",
