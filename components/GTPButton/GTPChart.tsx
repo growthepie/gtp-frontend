@@ -218,6 +218,12 @@ export default function GTPChart({
     };
   }, []);
 
+  // Resize when container height settles — fixes charts that mount before their container has a final height.
+  useEffect(() => {
+    if (containerHeight <= 0) return;
+    echartsRef.current?.getEchartsInstance?.()?.resize();
+  }, [containerHeight]);
+
   // Typography
   const textXxsTypography = useMemo(
     () =>
@@ -452,6 +458,8 @@ export default function GTPChart({
     let effectiveXMin = xAxisMin;
     let effectiveXMax = xAxisMax;
     if (hasBarSeries && xAxisType === "time") {
+      const tsMin = Number.isFinite(Number(xAxisMin)) ? Number(xAxisMin) : -Infinity;
+      const tsMax = Number.isFinite(Number(xAxisMax)) ? Number(xAxisMax) : Infinity;
       const sortedBarTs = Array.from(
         new Set(
           pairedSeries
@@ -460,7 +468,7 @@ export default function GTPChart({
               s.pairedData
                 .filter((p) => typeof p[1] === "number" && Number.isFinite(p[1]))
                 .map((p) => Number(p[0]))
-                .filter((timestamp) => Number.isFinite(timestamp)),
+                .filter((ts) => Number.isFinite(ts) && ts >= tsMin && ts <= tsMax),
             ),
         ),
       ).sort((a, b) => a - b);
@@ -472,23 +480,23 @@ export default function GTPChart({
           if (diff > 0 && Number.isFinite(diff)) intervals.push(diff);
         }
 
-        const inferredEdgeInterval =
-          intervals.length > 0
-            ? intervals[Math.floor(intervals.length / 2)]
+        // Pad the axis by half the median bar interval so edge bars don't overflow the grid.
+        // Median is used instead of first/last to avoid outlier gaps skewing the calculation.
+        const sortedIntervals = [...intervals].sort((a, b) => a - b);
+        const edgeInterval =
+          sortedIntervals.length > 0
+            ? sortedIntervals[Math.floor(sortedIntervals.length / 2)]
             : typeof xAxisRangeMs === "number" && xAxisRangeMs > 0
               ? xAxisRangeMs / 20
               : undefined;
 
-        const firstInterval = intervals[0] ?? inferredEdgeInterval;
-        const lastInterval = intervals[intervals.length - 1] ?? inferredEdgeInterval;
         const minBase = Number(xAxisMin ?? sortedBarTs[0]);
         const maxBase = Number(xAxisMax ?? sortedBarTs[sortedBarTs.length - 1]);
 
         if (Number.isFinite(minBase) && Number.isFinite(maxBase)) {
-          const leftPad = Number.isFinite(firstInterval) ? Number(firstInterval) / 2 : 0;
-          const rightPad = Number.isFinite(lastInterval) ? Number(lastInterval) / 2 : 0;
-          effectiveXMin = minBase - leftPad;
-          effectiveXMax = maxBase + rightPad;
+          const pad = Number.isFinite(edgeInterval) ? Number(edgeInterval) * 0.25 : 0;
+          effectiveXMin = minBase - pad;
+          effectiveXMax = maxBase + pad;
         }
       }
     }
@@ -721,7 +729,15 @@ export default function GTPChart({
             }
           : undefined;
 
-        const lastIdx = s.pairedData.length - 1;
+        // Filter to the visible axis range so bars from long-history series (e.g. Ethereum
+        // from 2020) don't appear clipped at the edge when the selected window is short.
+        const barTsMin = Number.isFinite(effectiveXMin) ? Number(effectiveXMin) : -Infinity;
+        const barTsMax = Number.isFinite(effectiveXMax) ? Number(effectiveXMax) : Infinity;
+        const visibleBarData = s.pairedData.filter((p) => {
+          const ts = Number(p[0]);
+          return Number.isFinite(ts) && ts >= barTsMin && ts <= barTsMax;
+        });
+        const lastIdx = visibleBarData.length - 1;
 
         // Zone-based coloring: if negativeColor is set, apply per-data-point styles
         if (s.negativeColor) {
@@ -735,7 +751,7 @@ export default function GTPChart({
             { offset: 1, color: withHexOpacity(negSecondary, 0.7) },
           ]);
 
-          config.data = s.pairedData.map((point, idx) => {
+          config.data = visibleBarData.map((point, idx) => {
             const yVal = point[1];
             const isNeg = typeof yVal === "number" && yVal < 0;
             const applyPattern = s.pattern === "dashed" && idx === lastIdx;
@@ -754,7 +770,7 @@ export default function GTPChart({
           });
           config.itemStyle = { color: posGradient };
         } else if (s.pattern === "dashed") {
-          config.data = s.pairedData.map((point, idx) => {
+          config.data = visibleBarData.map((point, idx) => {
             const isLast = idx === lastIdx;
             return {
               value: point,
@@ -1056,6 +1072,7 @@ export default function GTPChart({
           notMerge
           lazyUpdate
           style={{ width: "100%", height: "100%" }}
+          opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
       {onDragSelect && dragOverlay && (

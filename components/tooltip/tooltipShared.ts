@@ -67,5 +67,5 @@ export const getViewportAwareTooltipLocalPosition = ({
   }
 
   yAbs = clamp(yAbs, viewportPadding, maxY);
-  return [xAbs - hostLeft, yAbs - hostTop];
+  return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
 };
