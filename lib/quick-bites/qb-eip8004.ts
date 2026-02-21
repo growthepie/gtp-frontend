@@ -2,14 +2,14 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 const Agents: QuickBiteData = createQuickBite({
-  title: "AI Agents in the Ethereum Ecosystem (EIP-8004)",
+  title: "AI Agents in the Ethereum Ecosystem (ERC-8004)",
   shortTitle: "AI Agents",
-  subtitle: "Exploring EIP8004 and the role of AI agents in Ethereum",
+  subtitle: "Exploring ERC-8004 and the role of AI agents in Ethereum",
   content: [
     "# Introduction:",
-    "[EIP-8004](https://eips.ethereum.org/EIPS/eip-8004) (“Trustless Agents”) is emerging as foundational infrastructure for the onchain machine economy. It enables agents and services to discover each other, build reputation and optionally validate their outputs across organizational boundaries without relying on a centralized intermediary.",
+    "[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) (“Trustless Agents”) is emerging as foundational infrastructure for the onchain machine economy. It enables agents and services to discover each other, build reputation and optionally validate their outputs across organizational boundaries without relying on a centralized intermediary.",
     "While AI agents are a primary and highly visible use case, the standard is designed as a flexible trust and discovery layer that supports any onchain registered service or endpoint.",
-    "At its core, EIP-8004 is built around three registries:",
+    "At its core, ERC-8004 is built around three registries:",
     
     "### 1. Identity Registry",
     "The Identity Registry is an [ERC-721](https://etherscan.io/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) based registration system. Each registered entity mints an NFT whose metadata URI points to a structured registration file describing what the entity is, what it provides and how it can be reached. The registration file can reference A2A endpoints, MCP endpoints, standard web URLs, ENS names, DIDs, OASF endpoints or even email addresses. This design allows AI agents, tool servers, oracle networks, automated DeFi services and other infrastructure providers to establish an onchain identity that makes them globally discoverable.",
@@ -28,7 +28,7 @@ const Agents: QuickBiteData = createQuickBite({
         value: "{{eip8004_total_agents}}",
         description: "in total",
         icon: "gtp-settings",
-        info: "Total number of onchain registered services under EIP-8004.",
+        info: "Total number of onchain registered services under ERC-8004.",
       },
       {
         title: "Unique Owners",
@@ -47,7 +47,7 @@ const Agents: QuickBiteData = createQuickBite({
     ]),
     "```",
     
-    "Since the launch of the EIP-8004 standard in late January 2026, we have seen explosive growth in the number of registered machine-to-machine services, with over {{eip8004_total_agents}} services registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for the machine-to-machine ecosystem.",
+    "Since the launch of the ERC-8004 standard in late January 2026, we have seen explosive growth in the number of registered machine-to-machine services, with over {{eip8004_total_agents}} services registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for the machine-to-machine ecosystem.",
 
     "## Most Popular AI Agents & Services",
     "```table",
@@ -215,7 +215,7 @@ const Agents: QuickBiteData = createQuickBite({
         ],
       },
       height: 500,
-      caption: "EIP-8004 event activity over time for the whole Ethereum Ecosystem.",
+      caption: "ERC-8004 event activity over time for the whole Ethereum Ecosystem.",
     }),
     "```",
 
@@ -223,7 +223,7 @@ const Agents: QuickBiteData = createQuickBite({
     "```table",
     JSON.stringify({
       readFromJSON: true,
-      content: "As EIP-8004 is an application-layer standard, any EVM-compatible chain can simply deploy the registry contracts without requiring a network hard fork. Because of this permissionless design, many chains across the Ethereum ecosystem have already adopted the standard to support the growing agentic economy.",
+      content: "As ERC-8004 is an application-layer standard, any EVM-compatible chain can simply deploy the registry contracts without requiring a network hard fork. Because of this permissionless design, many chains across the Ethereum ecosystem have already adopted the standard to support the growing agentic economy.",
       scrollable: false,
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",
