@@ -10,6 +10,7 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint .",
+    "test:project-edit-intent": "tsx ./tests/project-edit-intent.test.ts",
     "icons:update": "dotenv -e .env.local -- tsx ./lib/figma.ts && node ./lib/icons.mjs",
     "figma-icons": "npm run icons:update"
   },

@@ -8,7 +8,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, Category } from "../_components/Components";
-import { memo, ReactNode, useEffect, useMemo, useState, use } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useState, use } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
@@ -26,6 +26,7 @@ import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
 import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { buildProjectEditHref } from "@/lib/project-edit-intent";
 
 // dynamic import to prevent server-side rendering of the chart component
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
@@ -40,6 +41,13 @@ export default function Page(props: Props) {
   const {
     owner_project
   } = params;
+  const editContractsHref = buildProjectEditHref({
+    mode: "edit",
+    source: "application-page",
+    project: owner_project,
+    focus: "contracts",
+    start: "contracts",
+  });
 
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
@@ -115,7 +123,7 @@ export default function Page(props: Props) {
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
-                  href={`/applications/edit?project=${owner_project}&focus=contracts`}
+                  href={editContractsHref}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
                 />
@@ -126,7 +134,7 @@ export default function Page(props: Props) {
                   icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
-                  href={`/applications/edit?project=${owner_project}&focus=contracts`}
+                  href={editContractsHref}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit"
                   containerClassName=""
@@ -538,20 +546,18 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
 
-  const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
-  const [medianMetric, setMedianMetric] = useState(selectedMetrics[0]);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  useEffect(() => {
-    if (Object.keys(metricsDef).includes(sort.metric)) {
-      let key = sort.metric;
-      if (sort.metric === "gas_fees")
-        key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-
-      setMedianMetricKey(key);
-      setMedianMetric(sort.metric);
+  const medianMetricKey = useMemo(() => {
+    if (!Object.keys(metricsDef).includes(sort.metric)) {
+      return selectedMetrics[0];
     }
 
-  }, [metricsDef, sort.metric, showUsd]);
+    if (sort.metric === "gas_fees") {
+      return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    }
+
+    return sort.metric;
+  }, [metricsDef, selectedMetrics, showUsd, sort.metric]);
 
 
 
@@ -605,7 +611,7 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   const { containerRef, showLeftGradient, showRightGradient } =
     useDragScroll("horizontal", 0.96, { snap: true, snapThreshold: 0.2 });
 
-  const onScroll = () => {
+  const onScroll = useCallback(() => {
     if (containerRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect();
       const containerCenter = containerRect.left + containerRect.width / 2;
@@ -627,16 +633,19 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
       setIsFirst(closestIndex === 0);
       setIsLast(closestIndex === children.length - 1);
     }
-  };
+  }, [containerRef]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     container.addEventListener("scroll", onScroll);
-    // Run once on mount to set the active index correctly.
-    onScroll();
     return () => container.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [containerRef, onScroll]);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(onScroll);
+    return () => cancelAnimationFrame(frameId);
+  }, [onScroll]);
 
   return (
     <div

@@ -271,11 +271,29 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
+const DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS = [
+  " Chains",
+  " Metrics",
+  " Applications",
+  " Quick Bites",
+  " and more...",
+];
+
 // Hook to cycle through animated placeholder options with typewriter effect
 const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false) => {
-  // Use searchbar_items from master JSON if available, otherwise fall back to default options
-  const defaultOptions = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
   const searchbarItems = masterData?.['searchbar_items'] as string[] | undefined;
+  const searchbarItemsSignature = Array.isArray(searchbarItems)
+    ? searchbarItems.join("|")
+    : "";
+  const normalizedSearchbarItems = useMemo(() => {
+    if (!searchbarItemsSignature) {
+      return [];
+    }
+    return searchbarItemsSignature
+      .split("|")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }, [searchbarItemsSignature]);
   
   // Get most recent quick bite shortTitle once (memoized to avoid re-checking on each loop)
   const mostRecentQuickBiteTitle = useMemo(() => {
@@ -294,12 +312,12 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
   }, []); // Empty deps array - only check once on mount
   
   const options = useMemo(() => {
-    const searchbarItemsFromMaster = masterData?.searchbar_items;
+    const searchbarItemsFromMaster = normalizedSearchbarItems;
     let baseOptions: string[];
     if (searchbarItemsFromMaster && searchbarItemsFromMaster.length > 0) {
       baseOptions = searchbarItemsFromMaster.map(item => ` ${item}`);
     } else {
-      baseOptions = defaultOptions;
+      baseOptions = DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS;
     }
     
     // Append most recent quick bite title before wrapping back to start
@@ -308,11 +326,13 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
     }
     
     return baseOptions;
-  }, [masterData, mostRecentQuickBiteTitle, defaultOptions]);
+  }, [normalizedSearchbarItems, mostRecentQuickBiteTitle]);
   
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const currentIndexRef = useRef(0);
+  const isDeletingRef = useRef(false);
+  const animationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentTextRef = useRef("");
   const prevActiveRef = useRef<boolean>(false);
 
   // Separate effect to handle reset when transitioning from active to inactive
@@ -323,67 +343,97 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
     // Only reset when transitioning from active to inactive
     if (wasActive && !isCurrentlyActive) {
       startTransition(() => {
-        setCurrentIndex(0);
+        currentIndexRef.current = 0;
+        isDeletingRef.current = false;
+        currentTextRef.current = "";
         setCurrentText("");
-        setIsDeleting(false);
       });
     }
     
     prevActiveRef.current = isCurrentlyActive;
   }, [isMounted, isActive]);
 
+  const updateCurrentText = useCallback((value: string) => {
+    currentTextRef.current = value;
+    setCurrentText(value);
+  }, []);
+
   useEffect(() => {
-    // Don't animate on server-side or before mount to prevent hydration mismatch
     if (!isMounted || !isActive) {
-      return;
+      return () => {
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+        }
+      };
     }
 
-    const currentOption = options[currentIndex];
-    
-    // Typing speed (milliseconds per character)
+    if (options.length === 0) {
+      updateCurrentText("");
+      currentIndexRef.current = 0;
+      isDeletingRef.current = false;
+      return () => {
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+        }
+      };
+    }
+
+    currentIndexRef.current = 0;
+    isDeletingRef.current = false;
+    updateCurrentText("");
+
     const typingSpeed = 100;
-    // Deleting speed (milliseconds per character)
     const deletingSpeed = 70;
-    // Pause after typing complete (milliseconds)
     const pauseAfterTyping = 2000;
-    // Pause after deleting complete (milliseconds)
     const pauseAfterDeleting = 500;
 
-    let timeoutId: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Typing phase
-      if (currentText.length < currentOption.length) {
-        // Continue typing
-        timeoutId = setTimeout(() => {
-          setCurrentText(currentOption.slice(0, currentText.length + 1));
-        }, typingSpeed);
-      } else {
-        // Finished typing, wait then start deleting
-        timeoutId = setTimeout(() => {
-          setIsDeleting(true);
-        }, pauseAfterTyping);
+    const runAnimation = () => {
+      if (!isMounted || !isActive || options.length === 0) {
+        return;
       }
-    } else {
-      // Deleting phase
-      if (currentText.length > 0) {
-        // Continue deleting
-        timeoutId = setTimeout(() => {
-          setCurrentText(currentText.slice(0, -1));
-        }, deletingSpeed);
-      } else {
-        // Finished deleting, wait then move to next option
-        timeoutId = setTimeout(() => {
-          setIsDeleting(false);
-          setCurrentIndex((prev) => (prev + 1) % options.length);
-        }, pauseAfterDeleting);
-      }
-    }
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      const safeIndex = options.length > 0 ? currentIndexRef.current % options.length : 0;
+      const currentOption = options[safeIndex];
+      if (!currentOption) {
+        return;
+      }
+
+      let delay = typingSpeed;
+
+      if (!isDeletingRef.current) {
+        const nextText = currentOption.slice(0, currentTextRef.current.length + 1);
+        if (nextText.length <= currentTextRef.current.length) {
+          isDeletingRef.current = true;
+          delay = pauseAfterTyping;
+        } else {
+          updateCurrentText(nextText);
+          delay = typingSpeed;
+        }
+      } else {
+        if (currentTextRef.current.length > 0) {
+          const nextText = currentTextRef.current.slice(0, -1);
+          updateCurrentText(nextText);
+          delay = deletingSpeed;
+        } else {
+          isDeletingRef.current = false;
+          currentIndexRef.current = (currentIndexRef.current + 1) % Math.max(options.length, 1);
+          delay = pauseAfterDeleting;
+        }
+      }
+
+      animationTimeoutRef.current = setTimeout(runAnimation, delay);
     };
-  }, [isMounted, isActive, currentIndex, currentText, isDeleting, options]);
+
+    animationTimeoutRef.current = setTimeout(runAnimation, 0);
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
+      }
+    };
+  }, [isMounted, isActive, options, updateCurrentText]);
 
   // Return consistent value during SSR to prevent hydration mismatch
   if (!isMounted) {
@@ -2226,6 +2276,3 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-
-
-

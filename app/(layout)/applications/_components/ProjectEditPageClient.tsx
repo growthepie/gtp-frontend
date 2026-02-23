@@ -1,14 +1,20 @@
 "use client";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createWalletClient, custom } from "viem";
 import Container from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { Title } from "@/components/layout/TextHeadingComponents";
 import { useMaster } from "@/contexts/MasterContext";
+import {
+  buildProjectEditHref,
+  getProjectEditIntentKey,
+  parseProjectEditIntent,
+} from "@/lib/project-edit-intent";
 import {
   AttestClient,
   createDynamicWalletAdapter,
@@ -36,7 +42,6 @@ declare global {
 }
 
 type ProjectMode = "add" | "edit";
-
 type ProjectFormState = {
   owner_project: string;
   display_name: string;
@@ -462,16 +467,26 @@ export default function ProjectEditPageClient() {
   const contractsSectionRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
-  const initializedFromQueryRef = useRef(false);
+  const hydratedIntentRef = useRef("");
   const autofilledOwnerRef = useRef("");
   const websiteCheckTargetRef = useRef("");
 
   const { data: masterData, SupportedChainKeys } = useMaster();
 
-  const mode: ProjectMode = pathname.endsWith("/edit") ? "edit" : "add";
+  const intent = useMemo(
+    () =>
+      parseProjectEditIntent({
+        pathname: pathname || undefined,
+        params: searchParams,
+        defaultSource: "legacy",
+      }),
+    [pathname, searchParams],
+  );
+  const intentKey = useMemo(() => getProjectEditIntentKey(intent), [intent]);
+  const mode: ProjectMode = intent.mode;
   const isAddMode = mode === "add";
 
-  const [showMetadataForm, setShowMetadataForm] = useState(!isAddMode);
+  const [showMetadataForm, setShowMetadataForm] = useState(intent.start !== "website");
   const [websiteCheckInput, setWebsiteCheckInput] = useState("");
   const [websiteCheckMatches, setWebsiteCheckMatches] = useState<ExistingProjectMatch[]>([]);
   const [websiteChecked, setWebsiteChecked] = useState(false);
@@ -534,47 +549,47 @@ export default function ProjectEditPageClient() {
   }, [loadProjects]);
 
   useEffect(() => {
-    if (!isAddMode) {
-      setShowMetadataForm(true);
+    if (hydratedIntentRef.current === intentKey) {
       return;
     }
-    setShowMetadataForm(false);
-  }, [isAddMode]);
+    hydratedIntentRef.current = intentKey;
+    autofilledOwnerRef.current = "";
+
+    setWebsiteChecked(false);
+    setWebsiteCheckMatches([]);
+    setProfilerError("");
+    setProfilerInfo("");
+    setShowMetadataForm(intent.start !== "website");
+
+    setForm((prev) => {
+      if (intent.mode === "add") {
+        return {
+          ...EMPTY_FORM,
+          owner_project: intent.project || "",
+          website: intent.website || "",
+        };
+      }
+      return {
+        ...prev,
+        owner_project: intent.project || prev.owner_project,
+        website: intent.website || prev.website,
+      };
+    });
+
+    const normalizedWebsite = intent.website ? ensureAbsoluteUrl(intent.website) : "";
+    setWebsiteCheckInput(normalizedWebsite);
+    websiteCheckTargetRef.current = normalizedWebsite;
+  }, [intent, intentKey]);
 
   useEffect(() => {
-    if (initializedFromQueryRef.current) {
-      return;
-    }
-
-    const projectParam = asString(searchParams.get("project"));
-    const websiteParam = asString(searchParams.get("website"));
-
-    setForm((prev) => ({
-      ...prev,
-      owner_project: projectParam || prev.owner_project,
-      website: websiteParam || prev.website,
-    }));
-
-    if (websiteParam) {
-      setWebsiteCheckInput(websiteParam);
-    }
-    if (!isAddMode || projectParam) {
-      setShowMetadataForm(true);
-    }
-
-    initializedFromQueryRef.current = true;
-  }, [isAddMode, searchParams]);
-
-  useEffect(() => {
-    const focus = searchParams.get("focus");
-    if (focus !== "contracts" || !contractsSectionRef.current) {
+    if (intent.focus !== "contracts" || !contractsSectionRef.current) {
       return;
     }
     const timer = setTimeout(() => {
       contractsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 220);
     return () => clearTimeout(timer);
-  }, [searchParams, showMetadataForm]);
+  }, [intent.focus, showMetadataForm]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.ethereum?.request) {
@@ -781,13 +796,32 @@ export default function ProjectEditPageClient() {
       return [];
     }
 
-    return Object.entries(masterData.chains)
-      .filter(([chainKey]) => SupportedChainKeys.includes(chainKey))
-      .map(([chainKey, chain]) => ({
-        value: `eip155:${chain.evm_chain_id}`,
-        label: chain.name,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+    const uniqueOptions = new Map<string, SearchDropdownOption>();
+
+    for (const [chainKey, chain] of Object.entries(masterData.chains)) {
+      if (!SupportedChainKeys.includes(chainKey)) {
+        continue;
+      }
+
+      const chainIdRaw = (chain as { evm_chain_id?: unknown }).evm_chain_id;
+      const chainId = typeof chainIdRaw === "number" || typeof chainIdRaw === "string"
+        ? String(chainIdRaw).trim()
+        : "";
+
+      if (!chainId || chainId === "null" || chainId === "undefined") {
+        continue;
+      }
+
+      const value = `eip155:${chainId}`;
+      if (!uniqueOptions.has(value)) {
+        uniqueOptions.set(value, {
+          value,
+          label: chain.name,
+        });
+      }
+    }
+
+    return Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
   }, [SupportedChainKeys, masterData]);
 
   const usageCategoryOptions = useMemo<SearchDropdownOption[]>(() => {
@@ -884,22 +918,18 @@ export default function ProjectEditPageClient() {
   );
 
   const isSingleFlow = meaningfulRows.length <= 1;
-
-  const syncSingleFormFromQueue = useCallback(() => {
+  const lastSyncedSingleRowSignatureRef = useRef("");
+  const singleRowSyncTarget = useMemo(() => {
     if (!isSingleFlow) {
-      return;
+      return null;
     }
-    const row = meaningfulRows[0] || bulkController.rows[0];
-    if (!row) {
-      singleController.setRow(
-        prepareRowForQueue({
-          chain_id: defaultQueueChainId,
-          owner_project: form.owner_project.trim(),
-        }),
-      );
-      return;
-    }
-    singleController.setRow(prepareRowForQueue(row));
+
+    const fallbackRow: AttestationRowInput = {
+      chain_id: defaultQueueChainId,
+      owner_project: form.owner_project.trim(),
+    };
+    const row = meaningfulRows[0] || bulkController.rows[0] || fallbackRow;
+    return prepareRowForQueue(row);
   }, [
     bulkController.rows,
     defaultQueueChainId,
@@ -907,12 +937,22 @@ export default function ProjectEditPageClient() {
     isSingleFlow,
     meaningfulRows,
     prepareRowForQueue,
-    singleController,
   ]);
 
   useEffect(() => {
-    syncSingleFormFromQueue();
-  }, [isSingleFlow, syncSingleFormFromQueue]);
+    if (!singleRowSyncTarget) {
+      lastSyncedSingleRowSignatureRef.current = "";
+      return;
+    }
+
+    const nextSignature = rowPreviewSignature(singleRowSyncTarget);
+    if (lastSyncedSingleRowSignatureRef.current === nextSignature) {
+      return;
+    }
+
+    lastSyncedSingleRowSignatureRef.current = nextSignature;
+    singleController.setRow(singleRowSyncTarget);
+  }, [singleController, singleRowSyncTarget]);
 
   useEffect(() => {
     if (!queueSubmitPreview) {
@@ -925,19 +965,26 @@ export default function ProjectEditPageClient() {
   }, [currentQueueSignature, queueSubmitPreview]);
 
   useEffect(() => {
-    if (!form.owner_project.trim() || bulkController.rows.length === 0) {
+    const rows = bulkController.rows;
+
+    if (!form.owner_project.trim() || rows.length === 0) {
       return;
     }
     const owner = form.owner_project.trim();
-    const nextRows = bulkController.rows.map((row) => {
+    let didPatchAnyRow = false;
+    const nextRows = rows.map((row) => {
       const currentOwner = toStringValue(row.owner_project).trim();
       if (currentOwner) {
         return row;
       }
+      didPatchAnyRow = true;
       return { ...row, owner_project: owner };
     });
+    if (!didPatchAnyRow) {
+      return;
+    }
     bulkController.setRows(nextRows);
-  }, [bulkController, form.owner_project]);
+  }, [bulkController.rows, form.owner_project]);
 
   const mergeRowsIntoQueue = useCallback(
     (rows: AttestationRowInput[]) => {
@@ -1413,18 +1460,29 @@ export default function ProjectEditPageClient() {
     [bulkController],
   );
 
-  const switchToAddRoute = () => {
-    router.push("/applications/add");
-  };
+  const switchToAddRoute = useCallback(() => {
+    const website = form.website.trim() || websiteCheckInput.trim();
+    router.push(
+      buildProjectEditHref({
+        mode: "add",
+        source: intent.source,
+        website: website || undefined,
+        start: website ? "metadata" : "website",
+      }),
+    );
+  }, [form.website, intent.source, router, websiteCheckInput]);
 
-  const switchToEditRoute = () => {
+  const switchToEditRoute = useCallback(() => {
     const owner = form.owner_project.trim();
-    if (owner) {
-      router.push(`/applications/edit?project=${owner}`);
-      return;
-    }
-    router.push("/applications/edit");
-  };
+    router.push(
+      buildProjectEditHref({
+        mode: "edit",
+        source: intent.source,
+        project: owner || undefined,
+        start: "metadata",
+      }),
+    );
+  }, [form.owner_project, intent.source, router]);
 
   const visibleQueueError = useMemo(() => {
     if (!queueError) {
@@ -1439,16 +1497,12 @@ export default function ProjectEditPageClient() {
   const activeQueueView = isSingleFlow ? "single" : "bulk";
 
   return (
-    <Container className="pt-[45px] md:pt-[30px] pb-[80px]">
-      <div className="mx-auto flex w-full max-w-[1250px] flex-col gap-y-[14px]">
+    <Container className="pt-[30px] md:pt-[30px] pb-[60px] px-[16px] md:px-[32px]">
+      <div className="w-full">
+        <div className="flex w-full flex-col gap-y-[16px]">
         <div className="flex flex-wrap items-center justify-between gap-[10px]">
-          <div className="flex flex-col gap-y-[4px]">
-            <Heading as="h1" className="heading-large-md md:heading-large-lg">
-              Project Profile
-            </Heading>
-            <p className="text-sm text-color-text-secondary">
-              Add or edit project metadata, then validate and submit contract attestations.
-            </p>
+          <div className="flex items-center h-[43px] gap-x-[8px]">
+            <Title icon="gtp-project" title="Project Profile" as="h1" />
           </div>
           <div className="flex items-center gap-x-[8px]">
             <button
@@ -1475,6 +1529,9 @@ export default function ProjectEditPageClient() {
             </button>
           </div>
         </div>
+        <p className="text-[14px] leading-relaxed text-color-text-secondary max-w-[820px]">
+          Add or edit project metadata, then validate and submit contract attestations.
+        </p>
 
         {!showMetadataForm && isAddMode && (
           <section className="rounded-[16px] border border-color-ui-shadow bg-color-bg-default p-[14px]">
@@ -1510,7 +1567,13 @@ export default function ProjectEditPageClient() {
                     {websiteCheckMatches.map((match) => (
                       <Link
                         key={`${match.owner_project}-${match.field}`}
-                        href={`/applications/edit?project=${match.owner_project}&focus=contracts`}
+                        href={buildProjectEditHref({
+                          mode: "edit",
+                          source: "website-check",
+                          project: match.owner_project,
+                          focus: "contracts",
+                          start: "contracts",
+                        })}
                         className="inline-flex items-center gap-x-[6px] rounded-full bg-color-bg-default px-[10px] py-[5px] text-xs hover:bg-color-ui-hover"
                       >
                         <span className="font-medium">{match.display_name}</span>
@@ -1592,10 +1655,13 @@ export default function ProjectEditPageClient() {
                       className="group relative flex size-[84px] items-center justify-center overflow-hidden rounded-full border border-color-ui-shadow bg-color-bg-medium"
                     >
                       {logoUpload?.previewUrl ? (
-                        <img
+                        <Image
                           src={logoUpload.previewUrl}
                           alt="Project logo preview"
-                          className="size-full object-cover"
+                          fill
+                          sizes="84px"
+                          unoptimized
+                          className="object-cover"
                         />
                       ) : (
                         <GTPIcon icon="gtp-project-monochrome" size="lg" className="text-color-ui-hover" />
@@ -2208,6 +2274,7 @@ export default function ProjectEditPageClient() {
           </div>
         )}
       </div>
-    </Container>
-  );
+    </div>
+  </Container>
+);
 }

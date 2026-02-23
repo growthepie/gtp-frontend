@@ -1,16 +1,9 @@
 import { redirect } from "next/navigation";
-
-type SearchParamValue = string | string[] | undefined;
-
-const toFirstString = (value: SearchParamValue): string | null => {
-  if (typeof value === "string") {
-    return value;
-  }
-  if (Array.isArray(value) && value.length > 0) {
-    return value[0] || null;
-  }
-  return null;
-};
+import {
+  buildProjectEditHref,
+  parseProjectEditIntent,
+  type SearchParamValue,
+} from "@/lib/project-edit-intent";
 
 export default async function LegacyProjectEditEditPage({
   searchParams,
@@ -18,17 +11,19 @@ export default async function LegacyProjectEditEditPage({
   searchParams: Promise<Record<string, SearchParamValue>>;
 }) {
   const params = await searchParams;
-  const project = toFirstString(params.project);
-  const focus = toFirstString(params.focus);
+  const intent = parseProjectEditIntent({
+    pathname: "/labels/project-edit/edit",
+    params,
+    defaultSource: "legacy",
+  });
 
-  const query = new URLSearchParams();
-  if (project) {
-    query.set("project", project);
-  }
-  if (focus) {
-    query.set("focus", focus);
-  }
-
-  const target = query.toString() ? `/applications/edit?${query.toString()}` : "/applications/edit";
-  redirect(target);
+  redirect(
+    buildProjectEditHref({
+      mode: "edit",
+      source: intent.source,
+      project: intent.project || undefined,
+      focus: intent.focus || undefined,
+      start: intent.start,
+    }),
+  );
 }

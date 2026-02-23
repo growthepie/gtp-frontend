@@ -24,7 +24,6 @@ import { useTheme } from 'next-themes';
 import { IS_PRODUCTION } from '@/lib/helpers';
 
 type GlobalFloatingBarProps = {
-  rightActionVariant?: 'workWithUs' | 'connectWallet';
   walletAddress?: string | null;
   isConnectingWallet?: boolean;
   onConnectWallet?: () => void;
@@ -32,7 +31,6 @@ type GlobalFloatingBarProps = {
 };
 
 export default function GlobalFloatingBar({
-  rightActionVariant = 'workWithUs',
   walletAddress = null,
   isConnectingWallet = false,
   onConnectWallet,
@@ -483,6 +481,10 @@ export default function GlobalFloatingBar({
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
     : (isConnectingWallet ? 'Connecting...' : 'Connect Wallet');
 
+  const showProjectWalletAction =
+    pathname?.startsWith("/applications/add") || pathname?.startsWith("/applications/edit");
+  const effectiveRightActionVariant = showProjectWalletAction ? "connectWallet" : "workWithUs";
+
   const handleConnectWalletClick = () => {
     if (walletAddress) {
       onDisconnectWallet?.();
@@ -661,7 +663,7 @@ export default function GlobalFloatingBar({
                     hideIfNoNotifications={true}
                     placement="bottom-start"
                   />
-                  {rightActionVariant === 'connectWallet' ? <WorkWithUs placement="bottom-start" mobile /> : <WorkWithUs placement="bottom-start" />}
+                  {effectiveRightActionVariant === 'connectWallet' ? <WorkWithUs placement="bottom-start" mobile /> : <WorkWithUs placement="bottom-start" />}
                 </div>
 
 
@@ -713,7 +715,7 @@ export default function GlobalFloatingBar({
                 </FloatingBarButton>
                
                   <DarkModeToggleButton />
-                  {rightActionVariant === 'connectWallet' && (
+                  {effectiveRightActionVariant === 'connectWallet' && (
                     <FloatingBarButton
                       icon={"gtp-wallet" as GTPIconName}
                       label={connectWalletLabel}
