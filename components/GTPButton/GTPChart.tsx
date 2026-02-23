@@ -28,7 +28,7 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 );
 
 const WATERMARK_CLASS =
-  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+  "h-auto w-[145px] text-color-text-primary opacity-20 mix-blend-darken dark:mix-blend-lighten";
 
 // --- Public types ---
 
