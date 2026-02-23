@@ -427,6 +427,9 @@ const MetricTable = ({
         if (bVal !== null && aVal === null) {
           return 1;
         }
+        if (bVal === null || aVal === null) {
+          return 0;
+        }
 
         return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
       }
