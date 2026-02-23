@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -30,16 +30,9 @@ import {
   type ProjectSimilarityMatch,
 } from "@openlabels/oli-sdk";
 import { useBulkCsvAttestUI, useSingleAttestUI } from "@openlabels/oli-sdk/react";
-
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on?: (event: string, callback: (...args: unknown[]) => void) => void;
-      removeListener?: (event: string, callback: (...args: unknown[]) => void) => void;
-    };
-  }
-}
+import { useWalletConnection } from "@/contexts/WalletContext";
+import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 type ProjectMode = "add" | "edit";
 type ProjectFormState = {
@@ -460,6 +453,40 @@ const withCurrentDropdownOption = (
   return [{ value: normalizedCurrent, label: normalizedCurrent }, ...options];
 };
 
+const FieldDropdown = ({
+  suggestions,
+  onSelect,
+}: {
+  suggestions: ProjectRecord[];
+  onSelect: (p: ProjectRecord) => void;
+}) => {
+  if (!suggestions.length) return null;
+  return (
+    <div className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] p-[5px] bg-color-bg-medium rounded-[22px] shadow-[0px_0px_50px_0px_rgba(0,0,0,0.6)] flex flex-col">
+      <div className="w-full bg-color-ui-active rounded-[16px] flex flex-col overflow-hidden">
+        {suggestions.map((project, i) => (
+          <button
+            key={`${asString(project.owner_project)}-${i}`}
+            type="button"
+            onMouseDown={() => onSelect(project)}
+            className="w-full flex items-center gap-x-[8px] px-[10px] py-[7px] hover:bg-color-ui-hover"
+          >
+            <div className="shrink-0">
+              <ApplicationIcon owner_project={asString(project.owner_project)} size="sm" />
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <div className="text-xs font-medium truncate">{toDisplayName(project)}</div>
+              <div className="text-xxs text-color-text-secondary truncate leading-tight">
+                {asString(project.owner_project)}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function ProjectEditPageClient() {
   const pathname = usePathname();
   const router = useRouter();
@@ -472,6 +499,7 @@ export default function ProjectEditPageClient() {
   const websiteCheckTargetRef = useRef("");
 
   const { data: masterData, SupportedChainKeys } = useMaster();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
 
   const intent = useMemo(
     () =>
@@ -514,9 +542,21 @@ export default function ProjectEditPageClient() {
   const [profilerError, setProfilerError] = useState("");
   const [profilerInfo, setProfilerInfo] = useState("");
 
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [smartPasteOpen, setSmartPasteOpen] = useState(false);
+  const [smartPasteText, setSmartPasteText] = useState("");
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classifyError, setClassifyError] = useState<string | null>(null);
+  const [smartPasteChainMode, setSmartPasteChainMode] = useState<"auto" | "fixed">("auto");
+  const [smartPasteFixedChain, setSmartPasteFixedChain] = useState("");
+
+  const {
+    walletAddress,
+    isConnectingWallet,
+    connectWallet: connectWalletFromContext,
+    disconnectWallet: disconnectWalletFromContext,
+  } = useWalletConnection();
   const [walletError, setWalletError] = useState<string | null>(null);
-  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [activeDropdownField, setActiveDropdownField] = useState<keyof ProjectFormState | null>(null);
 
   const loadProjects = useCallback(async (activeRef?: { current: boolean }) => {
     setIsLoadingProjects(true);
@@ -590,27 +630,6 @@ export default function ProjectEditPageClient() {
     }, 220);
     return () => clearTimeout(timer);
   }, [intent.focus, showMetadataForm]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.ethereum?.request) {
-      return;
-    }
-
-    const syncAccounts = async () => {
-      try {
-        const accounts = (await window.ethereum?.request({
-          method: "eth_accounts",
-        })) as string[];
-        if (Array.isArray(accounts) && accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
-      } catch {
-        // no-op
-      }
-    };
-
-    void syncAccounts();
-  }, []);
 
   const normalizedProjects = useMemo(
     () =>
@@ -718,6 +737,48 @@ export default function ProjectEditPageClient() {
     () => mergeMatches(ownerSuggestionMatches, websiteMatches, githubMatches),
     [ownerSuggestionMatches, websiteMatches, githubMatches],
   );
+
+  const ownerProjectSuggestions = useMemo(() => {
+    const val = form.owner_project.trim().toLowerCase();
+    if (!val) return [];
+    return normalizedProjects
+      .filter((p) => asString(p.owner_project).toLowerCase().includes(val))
+      .slice(0, 6);
+  }, [form.owner_project, normalizedProjects]);
+
+  const displayNameSuggestions = useMemo(() => {
+    const val = form.display_name.trim().toLowerCase();
+    if (!val) return [];
+    return normalizedProjects
+      .filter(
+        (p) =>
+          asString(p.display_name).toLowerCase().includes(val) ||
+          asString(p.owner_project).toLowerCase().includes(val),
+      )
+      .slice(0, 6);
+  }, [form.display_name, normalizedProjects]);
+
+  const websiteSuggestions = useMemo(() => {
+    const val = normalizeUrlForComparison(form.website);
+    if (!val) return [];
+    return normalizedProjects
+      .filter((p) => {
+        const pUrl = normalizeUrlForComparison(readProjectWebsite(p));
+        return pUrl && (pUrl.includes(val) || val.includes(pUrl));
+      })
+      .slice(0, 6);
+  }, [form.website, normalizedProjects]);
+
+  const githubSuggestions = useMemo(() => {
+    const val = normalizeUrlForComparison(form.main_github);
+    if (!val) return [];
+    return normalizedProjects
+      .filter((p) => {
+        const pUrl = normalizeUrlForComparison(readProjectGithub(p));
+        return pUrl && (pUrl.includes(val) || val.includes(pUrl));
+      })
+      .slice(0, 6);
+  }, [form.main_github, normalizedProjects]);
 
   const checkWebsiteForExistingProjects = useCallback(async () => {
     const input = websiteCheckInput.trim();
@@ -1057,6 +1118,41 @@ export default function ProjectEditPageClient() {
     [bulkController, mergeRowsIntoQueue, normalizedProjects],
   );
 
+  const classifySmartPaste = useCallback(async () => {
+    const text = smartPasteText.trim();
+    if (!text) return;
+    setIsClassifying(true);
+    setClassifyError(null);
+    try {
+      const res = await fetch("/api/labels/classify-contracts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          project: form.owner_project || "",
+          chain_id: smartPasteChainMode === "fixed" && smartPasteFixedChain
+            ? smartPasteFixedChain
+            : defaultQueueChainId,
+          auto_detect_chain: smartPasteChainMode === "auto",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Classification failed.");
+      const rows = (data.rows ?? []) as AttestationRowInput[];
+      if (rows.length === 0) {
+        setClassifyError("No contract addresses found in the pasted text.");
+        return;
+      }
+      mergeRowsIntoQueue(rows);
+      setSmartPasteText("");
+      setSmartPasteOpen(false);
+    } catch (error: any) {
+      setClassifyError(error?.message || "Classification failed.");
+    } finally {
+      setIsClassifying(false);
+    }
+  }, [smartPasteText, form.owner_project, mergeRowsIntoQueue, smartPasteChainMode, smartPasteFixedChain, defaultQueueChainId]);
+
   const onCsvInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -1157,6 +1253,21 @@ export default function ProjectEditPageClient() {
     setSubmitError(null);
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const fillFormFromProject = useCallback((project: ProjectRecord) => {
+    setForm({
+      owner_project: asString(project.owner_project),
+      display_name: toDisplayName(project),
+      description: asString(project.description),
+      website: readProjectWebsite(project),
+      main_github: readProjectGithub(project),
+      twitter: readProjectSocial(project, "twitter"),
+      telegram: readProjectSocial(project, "telegram"),
+    });
+    setContributionResult(null);
+    setSubmitError(null);
+    setActiveDropdownField(null);
+  }, []);
 
   const onLogoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1296,31 +1407,17 @@ export default function ProjectEditPageClient() {
   };
 
   const connectWallet = useCallback(async () => {
-    if (!window.ethereum?.request) {
-      setWalletError("No injected wallet found. Install a wallet extension to submit attestations.");
-      return;
-    }
     setWalletError(null);
-    setIsConnectingWallet(true);
     try {
-      const accounts = (await window.ethereum.request({
-        method: "eth_requestAccounts",
-      })) as string[];
-      if (Array.isArray(accounts) && accounts.length > 0) {
-        setWalletAddress(accounts[0]);
-      } else {
-        setWalletError("No wallet account returned.");
-      }
+      await connectWalletFromContext();
     } catch (error: any) {
       setWalletError(error?.message || "Wallet connection failed.");
-    } finally {
-      setIsConnectingWallet(false);
     }
-  }, []);
+  }, [connectWalletFromContext]);
 
   const disconnectWallet = useCallback(() => {
-    setWalletAddress(null);
-  }, []);
+    disconnectWalletFromContext();
+  }, [disconnectWalletFromContext]);
 
   const buildWalletAdapter = useCallback(() => {
     if (!walletAddress) {
@@ -1663,6 +1760,14 @@ export default function ProjectEditPageClient() {
                           unoptimized
                           className="object-cover"
                         />
+                      ) : ownerProjectToProjectData[form.owner_project.trim()]?.logo_path ? (
+                        <Image
+                          src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[form.owner_project.trim()].logo_path}`}
+                          alt={form.owner_project}
+                          fill
+                          sizes="84px"
+                          className="object-cover"
+                        />
                       ) : (
                         <GTPIcon icon="gtp-project-monochrome" size="lg" className="text-color-ui-hover" />
                       )}
@@ -1684,14 +1789,21 @@ export default function ProjectEditPageClient() {
                 <div className="grid grid-cols-1 gap-[12px] md:grid-cols-2">
                   <div>
                     <label className="mb-[6px] block text-xs text-color-text-secondary">Owner project key</label>
-                    <input
-                      value={form.owner_project}
-                      onChange={(event) =>
-                        updateField("owner_project", normalizeOwnerProjectInput(event.target.value))
-                      }
-                      placeholder="owner_project"
-                      className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
-                    />
+                    <div className="relative">
+                      <input
+                        value={form.owner_project}
+                        onChange={(event) =>
+                          updateField("owner_project", normalizeOwnerProjectInput(event.target.value))
+                        }
+                        onFocus={() => setActiveDropdownField("owner_project")}
+                        onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                        placeholder="owner_project"
+                        className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
+                      />
+                      {activeDropdownField === "owner_project" && (
+                        <FieldDropdown suggestions={ownerProjectSuggestions} onSelect={fillFormFromProject} />
+                      )}
+                    </div>
                     {validationErrors.owner_project ? (
                       <p className="mt-[6px] text-xs text-color-negative">{validationErrors.owner_project}</p>
                     ) : (
@@ -1703,12 +1815,19 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs text-color-text-secondary">Display name</label>
-                    <input
-                      value={form.display_name}
-                      onChange={(event) => updateField("display_name", event.target.value)}
-                      placeholder="Project name"
-                      className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
-                    />
+                    <div className="relative">
+                      <input
+                        value={form.display_name}
+                        onChange={(event) => updateField("display_name", event.target.value)}
+                        onFocus={() => setActiveDropdownField("display_name")}
+                        onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                        placeholder="Project name"
+                        className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
+                      />
+                      {activeDropdownField === "display_name" && (
+                        <FieldDropdown suggestions={displayNameSuggestions} onSelect={fillFormFromProject} />
+                      )}
+                    </div>
                     {validationErrors.display_name && (
                       <p className="mt-[6px] text-xs text-color-negative">{validationErrors.display_name}</p>
                     )}
@@ -1716,12 +1835,19 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs text-color-text-secondary">Website</label>
-                    <input
-                      value={form.website}
-                      onChange={(event) => updateField("website", event.target.value)}
-                      placeholder="https://"
-                      className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
-                    />
+                    <div className="relative">
+                      <input
+                        value={form.website}
+                        onChange={(event) => updateField("website", event.target.value)}
+                        onFocus={() => setActiveDropdownField("website")}
+                        onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                        placeholder="https://"
+                        className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
+                      />
+                      {activeDropdownField === "website" && (
+                        <FieldDropdown suggestions={websiteSuggestions} onSelect={fillFormFromProject} />
+                      )}
+                    </div>
                     {validationErrors.website && (
                       <p className="mt-[6px] text-xs text-color-negative">{validationErrors.website}</p>
                     )}
@@ -1729,12 +1855,19 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs text-color-text-secondary">GitHub</label>
-                    <input
-                      value={form.main_github}
-                      onChange={(event) => updateField("main_github", event.target.value)}
-                      placeholder="https://github.com/your-org"
-                      className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
-                    />
+                    <div className="relative">
+                      <input
+                        value={form.main_github}
+                        onChange={(event) => updateField("main_github", event.target.value)}
+                        onFocus={() => setActiveDropdownField("main_github")}
+                        onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                        placeholder="https://github.com/your-org"
+                        className="h-[42px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] text-sm outline-none focus:border-color-ui-hover"
+                      />
+                      {activeDropdownField === "main_github" && (
+                        <FieldDropdown suggestions={githubSuggestions} onSelect={fillFormFromProject} />
+                      )}
+                    </div>
                     {validationErrors.main_github && (
                       <p className="mt-[6px] text-xs text-color-negative">{validationErrors.main_github}</p>
                     )}
@@ -1791,32 +1924,6 @@ export default function ProjectEditPageClient() {
                     className="min-h-[92px] w-full rounded-[10px] border border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px] text-sm outline-none focus:border-color-ui-hover"
                   />
                 </div>
-
-                {allExistingMatches.length > 0 && (
-                  <div className="mt-[12px] rounded-[10px] border border-color-ui-shadow bg-color-bg-medium p-[10px]">
-                    <div className="text-xs font-medium text-color-text-primary">
-                      Your project might already exist.
-                    </div>
-                    <div className="mt-[4px] text-xs text-color-text-secondary">
-                      We check by project key, website and GitHub.
-                    </div>
-                    <div className="mt-[8px] flex flex-wrap gap-[8px]">
-                      {allExistingMatches.map((match) => (
-                        <Link
-                          key={`${match.owner_project}-${match.field}`}
-                          href={`/applications/${match.owner_project}`}
-                          className="inline-flex items-center gap-x-[6px] rounded-full bg-color-bg-default px-[10px] py-[5px] text-xs hover:bg-color-ui-hover"
-                        >
-                          <span className="font-medium">{match.display_name}</span>
-                          <span className="text-color-text-secondary">({match.field})</span>
-                          {match.confidence === "exact" && (
-                            <span className="text-color-positive">exact</span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="mt-[14px] rounded-[10px] border border-color-ui-shadow bg-color-bg-medium p-[10px]">
                   <div className="flex flex-wrap items-center justify-between gap-[10px]">
@@ -1937,6 +2044,20 @@ export default function ProjectEditPageClient() {
                     </button>
                     <button
                       type="button"
+                      className={`h-[36px] rounded-full border px-[12px] text-xs transition-colors ${
+                        smartPasteOpen
+                          ? "border-color-accent bg-color-accent/10 text-color-accent"
+                          : "border-color-ui-shadow bg-color-bg-default"
+                      }`}
+                      onClick={() => {
+                        setSmartPasteOpen((v) => !v);
+                        setClassifyError(null);
+                      }}
+                    >
+                      Smart Paste
+                    </button>
+                    <button
+                      type="button"
                       className="h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
                       onClick={addQueueRow}
                     >
@@ -1970,6 +2091,106 @@ export default function ProjectEditPageClient() {
                         : `Review & submit (${meaningfulRows.length})`}
                     </button>
                   </div>
+
+                  {smartPasteOpen && (
+                    <div className="mt-[10px] rounded-[12px] border border-color-accent/30 bg-color-accent/5 p-[12px]">
+                      <div className="mb-[10px] flex items-center gap-[6px]">
+                        <Icon icon="feather:zap" className="size-[14px] text-color-accent shrink-0" />
+                        <span className="text-xs font-medium text-color-accent">Smart Paste</span>
+                        <span className="text-xs text-color-text-secondary ml-[2px]">
+                          — Paste any text with contract addresses. AI will extract, chain-detect, and classify them.
+                        </span>
+                      </div>
+
+                      {/* Chain mode toggle */}
+                      <div className="mb-[10px] flex flex-wrap items-center gap-[8px]">
+                        <span className="text-xs text-color-text-secondary shrink-0">Chain:</span>
+                        <div className="flex rounded-full border border-color-ui-shadow overflow-hidden text-xs">
+                          <button
+                            type="button"
+                            className={`px-[12px] py-[5px] transition-colors ${
+                              smartPasteChainMode === "auto"
+                                ? "bg-color-accent text-white"
+                                : "bg-color-bg-default hover:bg-color-ui-hover"
+                            }`}
+                            onClick={() => setSmartPasteChainMode("auto")}
+                            disabled={isClassifying}
+                          >
+                            Auto-detect from text
+                          </button>
+                          <button
+                            type="button"
+                            className={`px-[12px] py-[5px] border-l border-color-ui-shadow transition-colors ${
+                              smartPasteChainMode === "fixed"
+                                ? "bg-color-accent text-white"
+                                : "bg-color-bg-default hover:bg-color-ui-hover"
+                            }`}
+                            onClick={() => setSmartPasteChainMode("fixed")}
+                            disabled={isClassifying}
+                          >
+                            All same chain
+                          </button>
+                        </div>
+                        {smartPasteChainMode === "fixed" && (
+                          <select
+                            className="h-[30px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[10px] text-xs focus:outline-none focus:ring-1 focus:ring-color-accent"
+                            value={smartPasteFixedChain || defaultQueueChainId}
+                            onChange={(e) => setSmartPasteFixedChain(e.target.value)}
+                            disabled={isClassifying}
+                          >
+                            {chainOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {smartPasteChainMode === "auto" && (
+                          <span className="text-xxs text-color-text-secondary">
+                            AI will try to identify the chain from your text, or fall back to{" "}
+                            {chainOptions.find((o) => o.value === defaultQueueChainId)?.label ?? defaultQueueChainId}
+                          </span>
+                        )}
+                      </div>
+
+                      <textarea
+                        className="w-full rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[10px] py-[8px] text-xs font-mono resize-y placeholder:text-color-text-secondary focus:outline-none focus:ring-1 focus:ring-color-accent"
+                        rows={5}
+                        placeholder={`Paste contract data here — any format works:\n{\n  "router": "0xabc..."\n  "vault": "0xdef..."\n}`}
+                        value={smartPasteText}
+                        onChange={(e) => setSmartPasteText(e.target.value)}
+                        disabled={isClassifying}
+                      />
+                      {classifyError && (
+                        <div className="mt-[6px] flex items-center gap-[6px] rounded-[8px] border border-color-negative/30 bg-color-negative/10 px-[10px] py-[6px] text-xxs text-color-negative">
+                          <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
+                          {classifyError}
+                        </div>
+                      )}
+                      <div className="mt-[8px] flex items-center gap-[8px]">
+                        <button
+                          type="button"
+                          className="h-[32px] rounded-full bg-color-accent px-[14px] text-xs font-medium text-white disabled:opacity-50"
+                          onClick={classifySmartPaste}
+                          disabled={isClassifying || !smartPasteText.trim()}
+                        >
+                          {isClassifying ? "Classifying..." : "Classify & add to queue"}
+                        </button>
+                        <button
+                          type="button"
+                          className="h-[32px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
+                          onClick={() => {
+                            setSmartPasteOpen(false);
+                            setSmartPasteText("");
+                            setClassifyError(null);
+                          }}
+                          disabled={isClassifying}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {bulkController.csv.result && (
                     <div className="mt-[8px] grid grid-cols-2 gap-[8px] text-xs md:grid-cols-4">
@@ -2021,92 +2242,102 @@ export default function ProjectEditPageClient() {
                         const rowError = rowDiagnostics.errors[0]?.message;
 
                         return (
-                          <tr key={`${rowIndex}-${rowPreviewSignature(row)}`}>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              {rowIndex + 1}
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <select
-                                value={chainId}
-                                className="h-[34px] w-[160px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
-                                onChange={(event) =>
-                                  setQueueCellValue(rowIndex, "chain_id", event.target.value)
-                                }
-                              >
-                                {withCurrentDropdownOption(chainOptions, chainId).map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <input
-                                value={toStringValue(row.address)}
-                                className="h-[34px] w-[240px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
-                                placeholder="0x..."
-                                onChange={(event) =>
-                                  setQueueCellValue(rowIndex, "address", event.target.value)
-                                }
-                              />
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <input
-                                value={toStringValue(row.contract_name)}
-                                className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
-                                placeholder="Contract name"
-                                onChange={(event) =>
-                                  setQueueCellValue(rowIndex, "contract_name", event.target.value)
-                                }
-                              />
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <select
-                                value={ownerProject}
-                                className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
-                                onChange={(event) =>
-                                  setQueueCellValue(rowIndex, "owner_project", event.target.value)
-                                }
-                              >
-                                <option value="">Select owner_project</option>
-                                {withCurrentDropdownOption(ownerProjectOptions, ownerProject).map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <select
-                                value={usageCategory}
-                                className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
-                                onChange={(event) =>
-                                  setQueueCellValue(rowIndex, "usage_category", event.target.value)
-                                }
-                              >
-                                <option value="">Select category</option>
-                                {withCurrentDropdownOption(usageCategoryOptions, usageCategory).map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
-                              <button
-                                type="button"
-                                className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] text-xxs"
-                                onClick={() => removeQueueRow(rowIndex)}
-                              >
-                                Remove
-                              </button>
-                              {rowError && (
-                                <div className="mt-[6px] max-w-[180px] text-xxs text-color-negative">
-                                  {rowError}
-                                </div>
-                              )}
-                            </td>
-                          </tr>
+                          <Fragment key={`${rowIndex}-${rowPreviewSignature(row)}`}>
+                            <tr className={rowError ? "border-l-2 border-color-negative" : ""}>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                {rowIndex + 1}
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <select
+                                  value={chainId}
+                                  className="h-[34px] w-[160px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
+                                  onChange={(event) =>
+                                    setQueueCellValue(rowIndex, "chain_id", event.target.value)
+                                  }
+                                >
+                                  {withCurrentDropdownOption(chainOptions, chainId).map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <input
+                                  value={toStringValue(row.address)}
+                                  className="h-[34px] w-[240px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
+                                  placeholder="0x..."
+                                  onChange={(event) =>
+                                    setQueueCellValue(rowIndex, "address", event.target.value)
+                                  }
+                                />
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <input
+                                  value={toStringValue(row.contract_name)}
+                                  className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
+                                  placeholder="Contract name"
+                                  onChange={(event) =>
+                                    setQueueCellValue(rowIndex, "contract_name", event.target.value)
+                                  }
+                                />
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <select
+                                  value={ownerProject}
+                                  className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
+                                  onChange={(event) =>
+                                    setQueueCellValue(rowIndex, "owner_project", event.target.value)
+                                  }
+                                >
+                                  <option value="">Select owner_project</option>
+                                  {withCurrentDropdownOption(ownerProjectOptions, ownerProject).map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <select
+                                  value={usageCategory}
+                                  className="h-[34px] w-[180px] rounded-[8px] border border-color-ui-shadow bg-color-bg-default px-[8px]"
+                                  onChange={(event) =>
+                                    setQueueCellValue(rowIndex, "usage_category", event.target.value)
+                                  }
+                                >
+                                  <option value="">Select category</option>
+                                  {withCurrentDropdownOption(usageCategoryOptions, usageCategory).map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="border-t border-color-ui-shadow px-[8px] py-[8px] align-top">
+                                <button
+                                  type="button"
+                                  className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] text-xxs"
+                                  onClick={() => removeQueueRow(rowIndex)}
+                                >
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                            {rowError && (
+                              <tr>
+                                <td colSpan={7} className="pb-[6px] px-[8px]">
+                                  <div className="ml-[32px] relative">
+                                    <div className="absolute -top-[5px] left-[16px] border-l-[5px] border-r-[5px] border-b-[5px] border-l-transparent border-r-transparent border-b-color-negative/30" />
+                                    <div className="flex items-center gap-x-[6px] rounded-[8px] border border-color-negative/30 bg-color-negative/10 px-[10px] py-[6px] text-xxs text-color-negative">
+                                      <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
+                                      {rowError}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
                         );
                       })}
                     </tbody>
@@ -2226,48 +2457,107 @@ export default function ProjectEditPageClient() {
               </section>
             </div>
 
-            <aside className="flex h-fit flex-col gap-y-[10px]">
-              <div className="rounded-[14px] border border-color-ui-shadow bg-color-bg-default p-[12px]">
-                <div className="text-sm font-medium">
-                  {mode === "edit" ? "Editing Tips" : "Adding Tips"}
+            <aside className="flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px]">
+              <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow bg-color-bg-default">
+                <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px]">
+                  <Icon
+                    icon={mode === "edit" ? "feather:edit-2" : "feather:plus-circle"}
+                    className="size-[14px] text-color-text-secondary"
+                  />
+                  <div className="text-sm font-medium">
+                    {mode === "edit" ? "Editing Tips" : "Adding Tips"}
+                  </div>
                 </div>
-                <ul className="mt-[8px] flex list-disc flex-col gap-y-[6px] pl-[16px] text-xs text-color-text-secondary">
+                <div className="flex flex-col gap-y-[8px] p-[12px]">
                   {mode === "edit" ? (
                     <>
-                      <li>Use the existing owner_project key to patch the right OSS entry.</li>
-                      <li>Change only fields that need updates, then validate queue rows.</li>
-                      <li>Use focus=contracts links to jump directly to contract attestations.</li>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:key" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Use the existing owner_project key to patch the right OSS entry.
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:edit" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Change only fields that need updates, then validate queue rows.
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:link" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Use focus=contracts links to jump directly to contract attestations.
+                        </span>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <li>Start with website check to avoid duplicate project entries.</li>
-                      <li>Use AI profiler for fast draft metadata, then verify manually.</li>
-                      <li>Prepare queue rows with CSV or manual input before submitting.</li>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:search" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Start with website check to avoid duplicate project entries.
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:cpu" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Use AI profiler for fast draft metadata, then verify manually.
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-x-[8px]">
+                        <Icon icon="feather:list" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                        <span className="text-xs text-color-text-secondary">
+                          Prepare queue rows with CSV or manual input before submitting.
+                        </span>
+                      </div>
                     </>
                   )}
-                </ul>
+                </div>
               </div>
 
-              <div className="rounded-[14px] border border-color-ui-shadow bg-color-bg-default p-[12px]">
-                <div className="text-sm font-medium">Validation status</div>
-                <div className="mt-[8px] flex flex-col gap-y-[6px] text-xs text-color-text-secondary">
-                  <div className="flex items-center gap-x-[6px]">
-                    <Icon icon={hasBlockingErrors ? "feather:alert-circle" : "feather:check-circle"} />
-                    <span>{hasBlockingErrors ? "Fix metadata field errors" : "Metadata required fields look good"}</span>
+              <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow bg-color-bg-default">
+                <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px]">
+                  <Icon icon="feather:shield" className="size-[14px] text-color-text-secondary" />
+                  <div className="text-sm font-medium">Validation status</div>
+                </div>
+                <div className="flex flex-col gap-y-[6px] p-[12px]">
+                  <div
+                    className={`flex items-center gap-x-[8px] rounded-[8px] border px-[10px] py-[7px] text-xs ${
+                      hasBlockingErrors
+                        ? "border-color-negative/30 bg-color-negative/10 text-color-negative"
+                        : "border-color-positive/30 bg-color-positive/10 text-color-positive"
+                    }`}
+                  >
+                    <Icon
+                      icon={hasBlockingErrors ? "feather:alert-circle" : "feather:check-circle"}
+                      className="size-[13px] shrink-0"
+                    />
+                    <span>{hasBlockingErrors ? "Fix metadata field errors" : "Metadata fields look good"}</span>
                   </div>
-                  <div className="flex items-center gap-x-[6px]">
-                    <Icon icon={isLoadingProjects ? "feather:loader" : "feather:search"} />
+                  <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[7px] text-xs text-color-text-secondary">
+                    <Icon
+                      icon={isLoadingProjects ? "feather:loader" : "feather:database"}
+                      className="size-[13px] shrink-0"
+                    />
                     <span>
                       {isLoadingProjects
                         ? "Checking existing projects..."
-                        : `Directory check ready (${normalizedProjects.length} projects loaded).`}
+                        : `${normalizedProjects.length} projects loaded`}
                     </span>
                   </div>
-                  <div className="flex items-center gap-x-[6px]">
-                    <Icon icon={activeQueueView === "single" ? "feather:file-text" : "feather:layers"} />
-                    <span>Queue mode: {activeQueueView === "single" ? "Single row" : "Bulk rows"}</span>
+                  <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[7px] text-xs text-color-text-secondary">
+                    <Icon
+                      icon={activeQueueView === "single" ? "feather:file-text" : "feather:layers"}
+                      className="size-[13px] shrink-0"
+                    />
+                    <span>Queue: {activeQueueView === "single" ? "Single row" : "Bulk rows"}</span>
                   </div>
-                  {projectsError && <p className="text-color-negative">{projectsError}</p>}
+                  {projectsError && (
+                    <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-negative/30 bg-color-negative/10 px-[10px] py-[7px] text-xs text-color-negative">
+                      <Icon icon="feather:alert-triangle" className="size-[13px] shrink-0" />
+                      <span>{projectsError}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
