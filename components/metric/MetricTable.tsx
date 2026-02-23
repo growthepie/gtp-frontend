@@ -297,6 +297,7 @@ const MetricTable = ({
     const maxVal = valuesArray.length > 0 ? Math.max(...valuesArray) : 0;
     const safeMaxVal = Number.isFinite(maxVal) && maxVal > 0 ? maxVal : 1;
 
+
     return chainKeys
       .filter(
         (chain) =>
@@ -308,12 +309,12 @@ const MetricTable = ({
               data.chains[chain].hourly!.data.length > 0)),
       )
       .map((chain: any) => {
-
+        console.log(chain, Math.max(lastValues[chain], 0) / safeMaxVal);
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
           lastVal: lastValues[chain],
-          barWidth: Math.max(lastValues[chain], 0) / safeMaxVal,
+          barWidth: Math.max(lastValues[chain], 0) / safeMaxVal < 0.004 ? 0 : Math.max(lastValues[chain], 0) / safeMaxVal,
         };
       })
       .sort((a, b) => {

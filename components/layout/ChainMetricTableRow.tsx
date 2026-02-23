@@ -81,8 +81,8 @@ export default function ChainMetricTableRow({
       onKeyDown={handleKeyDown}
       className={`group relative grid items-center gap-x-[6px] rounded-full border overflow-visible transition-colors cursor-pointer hover:bg-color-ui-hover ${
         selected
-          ? "h-[30px] border-color-bg-medium/95 bg-color-bg-default/60"
-          : "h-[24px] border-color-bg-medium/70 bg-color-bg-default/20"
+          ? "h-[30px] border-color-bg-medium/95 bg-transparent"
+          : "h-[24px] border-color-bg-medium/70 bg-transparent"
       }`}
       style={{ gridTemplateColumns }}
     >
