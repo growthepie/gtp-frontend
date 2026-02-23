@@ -590,7 +590,7 @@ const MetricTable = ({
 
 
   return (
-    <HorizontalScrollContainer className="h-full" hideScrollbar={true} enableDragScroll={true} includeMargin={isMobile ? true : false}>
+    <HorizontalScrollContainer className="h-full " hideScrollbar={true} enableDragScroll={true} includeMargin={false}>
       <div className="w-full min-w-[338px] relative " style={{ height: `${tableViewportHeight}px` }}>
         <div className="absolute top-0 bottom-[52px] left-0 right-0 flex items-center justify-center">
           <ChartWatermarkWithMetricName metricName={metricsDict[metric_id].name} className="w-[145px] text-color-text-primary opacity-20 mix-blend-darken dark:mix-blend-lighten" />

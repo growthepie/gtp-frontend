@@ -1,6 +1,7 @@
 "use client";
 
-import { PointerEvent as ReactPointerEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { PointerEvent as ReactPointerEvent, ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { GTPCardLayoutMobileContext } from "./GTPCardLayout";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -74,6 +75,8 @@ export default function GTPSplitPane({
   leftClassName,
   rightClassName,
 }: GTPSplitPaneProps) {
+  const { mobileBottomBar, bottomBarGap } = useContext(GTPCardLayoutMobileContext);
+
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentWidth, setContentWidth] = useState(0);
   const [internalSplitRatio, setInternalSplitRatio] = useState(defaultSplitRatio);
@@ -238,6 +241,15 @@ export default function GTPSplitPane({
       ) : null}
       {!isMobile && showLeft && divider ? (
         <DividerSlot render={divider} onDragStart={handleDividerPointerDown} isMobile={isMobile} />
+      ) : null}
+      {/* Mobile bottom bar injected from parent GTPCardLayout context: renders between right and left panes */}
+      {isMobile && mobileBottomBar ? (
+        <div
+          className="-mx-[5px] w-[calc(100%+10px)]"
+          style={{ order: mobileRightOrder + 1, marginTop: `${Math.max(bottomBarGap - 5, 0)}px` }}
+        >
+          {mobileBottomBar}
+        </div>
       ) : null}
       <div
         className={`flex min-w-0 pb-[30px] min-h-0 self-stretch ${isMobile ? "flex-1 w-full" : "shrink-0"} ${rightClassName ?? ""}`}

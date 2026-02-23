@@ -156,8 +156,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
+        minHeight={440}
         onDragSelect={(xStart, xEnd) => {
-  
+          
           if(xStart < xEnd) {
             setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
           } else {

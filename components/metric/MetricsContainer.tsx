@@ -206,14 +206,17 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 </div>
               }
             topBar={
-                <GTPButtonContainer className="mt-[2px]">
+                <GTPButtonContainer className="mt-[2px] ">
                     <GTPButtonRow>
                     {timeIntervals.map((interval) => (
                         <GTPButton
                             key={interval}
                             label={interval.charAt(0).toUpperCase() + interval.slice(1)}
+                            innerStyle={{ width: "100%" }}
+                            className="w-full justify-center"
                             variant="primary"
                             size={isMobile ? "xs" : "sm"}
+                          
                             clickHandler={() => {
                                 if (selectedTimeInterval === interval) return;
                                 if (interval === "hourly") {
@@ -331,6 +334,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                     <GTPButton
                                         key={timespan}
                                         label={timespans[timespan].label}
+                                        innerStyle={{ width: "100%" }}
+                                        className="w-full justify-center"
                                         variant="primary"
                                         size={isMobile ? "xs" : "sm"}
                                         clickHandler={() => {
@@ -369,9 +374,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 </GTPButtonContainer>
             }
             bottomBar={
-                <GTPButtonContainer>
+                <GTPButtonContainer className="gap-x-[5px]" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
                     
-                    <GTPButtonRow>
+                    <GTPButtonRow style={{ width: "auto"}}>
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
                             leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
@@ -406,7 +411,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         </div>
                     </GTPButtonRow>
                    
-                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
+                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end w-full">
                     <GTPButtonRow>
                         <GTPButton
                             label="Absolute"
@@ -414,6 +419,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             size={isMobile ? "xs" : "sm"}
                             isSelected={selectedScale === "absolute"}
                             clickHandler={() => setSelectedScale("absolute")}
+                            innerStyle={{ width: "100%" }}
+                            className="w-full justify-center"
                         />
                         {!shouldDisableStacking && (
                             <>
@@ -424,6 +431,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                     isSelected={selectedScale === "stacked"}
                                     disabled={metric_id === "txcosts"}
                                     clickHandler={() => setSelectedScale("stacked")}
+                                    innerStyle={{ width: "100%", }}
+                                    className="w-full justify-center"
                                 />
                                 <GTPButton
                                     label="Percentage"
@@ -431,6 +440,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                     size={isMobile ? "xs" : "sm"}
                                     isSelected={selectedScale === "percentage"}
                                     clickHandler={() => setSelectedScale("percentage")}
+                                    innerStyle={{ width: "100%" }}
+                                    className="w-full justify-center"
                                 />
                             </>
                         )}

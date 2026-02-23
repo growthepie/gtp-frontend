@@ -29,6 +29,7 @@ export interface GTPButtonProps {
   rightIconClickHandler?: () => void;
   leftIconClickHandler?: () => void;
   clickHandler?: () => void;
+  innerStyle?: React.CSSProperties;
 }
 
 const FIGMA_BUTTON_SIZE = {
@@ -161,6 +162,7 @@ export const GTPButton = ({
   rightIconClickHandler,
   leftIconClickHandler,
   clickHandler,
+  innerStyle,
 }: GTPButtonProps) => {
   const hasLabel = Boolean(label);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
@@ -217,7 +219,7 @@ export const GTPButton = ({
 
   return (
     <div
-      className={`inline-flex rounded-full ${wrapperFillClassName} ${className ?? ""}`}
+      className={`inline-flex rounded-full ${wrapperFillClassName} ${className ?? ""} `}
       style={{
         padding: hasOutline ? "1px" : "0px",
         background: wrapperBackground,
@@ -225,7 +227,7 @@ export const GTPButton = ({
     >
       <button
         type={buttonType}
-        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
+        className={`inline-flex justify-center items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
@@ -236,6 +238,7 @@ export const GTPButton = ({
         style={{
           ...(buttonGapStyle !== undefined && { gap: `${buttonGapStyle}px` }),
           ...(buttonPaddingStyle !== undefined && { padding: buttonPaddingStyle }),
+          ...(innerStyle !== undefined && innerStyle),
         }}
       >
         {displayLeftIcon && (

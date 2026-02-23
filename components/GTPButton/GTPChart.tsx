@@ -28,7 +28,7 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 );
 
 const WATERMARK_CLASS =
-  "h-auto w-[145px] text-color-text-primary opacity-20 mix-blend-darken dark:mix-blend-lighten";
+  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
 
 // --- Public types ---
 
@@ -73,6 +73,7 @@ export interface GTPChartProps {
   showWatermark?: boolean;
   watermarkMetricName?: string | null;
   emptyStateMessage?: string;
+  minHeight?: number | null;
   animation?: boolean;
   smooth?: boolean;
   lineWidth?: number;
@@ -114,7 +115,7 @@ export default function GTPChart({
   prefix,
   decimals,
   limitTooltipRows,
-
+  minHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
   emptyStateMessage = "No data to display",
@@ -1086,7 +1087,7 @@ export default function GTPChart({
           option={chartOption}
           notMerge
           lazyUpdate
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", height: minHeight ? `${minHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
