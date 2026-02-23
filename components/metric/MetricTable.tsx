@@ -620,11 +620,12 @@ const MetricTable = ({
                   <GTPButton
                     label={lastValueLabels[timeIntervalKey]}
                     rightIcon={getHeaderSortIcon("lastVal")}
-                    rightIconClassname="!w-[8px] !h-[8px]"
-                    variant="no-background"
+                    rightIconClassname="!w-[8px] !h-[8px] "
+                    variant="primary"
                     visualState={isHeaderSortActive("lastVal") ? "active" : "default"}
                     size="xs"
                     clickHandler={() => handleHeaderSortClick("lastVal")}
+                    rightIconContainerClassName="min-w-[12px] min-h-[12px] flex items-center justify-center"
                   />
                 </div>
                 {Object.entries(
@@ -635,12 +636,12 @@ const MetricTable = ({
                       
                       label={label}
                       rightIcon={getHeaderSortIcon(timespan)}
-                      rightIconClassname="!w-[8px] !h-[8px]"
-                      variant="no-background"
+                      rightIconClassname="!w-[8px] !h-[8px] "
+                      variant="primary"
                       visualState={isHeaderSortActive(timespan) ? "active" : "default"}
                       size="xs"
-                      textClassName="text-xs"
                       clickHandler={() => handleHeaderSortClick(timespan)}
+                      rightIconContainerClassName="min-w-[12px] min-h-[12px] flex items-center justify-center"
                     />
                   </div>
                 ))}

@@ -30,6 +30,8 @@ export interface GTPButtonProps {
   leftIconClickHandler?: () => void;
   clickHandler?: () => void;
   innerStyle?: React.CSSProperties;
+  rightIconContainerClassName?: string;
+  leftIconContainerClassName?: string;
 }
 
 const FIGMA_BUTTON_SIZE = {
@@ -155,7 +157,7 @@ export const GTPButton = ({
   size = null,
   className,
   fill = "none",
-  textClassName: buttonTextClassName = "text-xs",
+  textClassName: buttonTextClassName = "",
   buttonType = "button",
   leftIconClassname = "",
   rightIconClassname = "",
@@ -163,6 +165,8 @@ export const GTPButton = ({
   leftIconClickHandler,
   clickHandler,
   innerStyle,
+  rightIconContainerClassName,
+  leftIconContainerClassName,
 }: GTPButtonProps) => {
   const hasLabel = Boolean(label);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
@@ -248,6 +252,7 @@ export const GTPButton = ({
             disabled={isDisabled}
             clickHandler={leftIconClickHandler}
             classNameModifier={leftIconClassname}
+            iconContainerClassName={leftIconContainerClassName}
           />
         )}
         {hasLabel && (
@@ -266,6 +271,7 @@ export const GTPButton = ({
             disabled={isDisabled}
             clickHandler={rightIconClickHandler}
             classNameModifier={rightIconClassname}
+            iconContainerClassName={rightIconContainerClassName}
           />
         )}
       </button>
@@ -279,12 +285,14 @@ const GTPButtonIcon = ({
   disabled,
   clickHandler,
   classNameModifier,
+  iconContainerClassName,
 }: {
   icon?: GTPIconName;
   iconClassName: string;
   disabled: boolean;
   clickHandler?: () => void;
   classNameModifier?: string;
+  iconContainerClassName?: string;
 }) => {
   if (!icon) {
     return null;
@@ -294,7 +302,7 @@ const GTPButtonIcon = ({
     <GTPIcon
       icon={icon}
       className={`${iconClassName} ${classNameModifier ?? ""} text-current`}
-      containerClassName={`${iconClassName} ${classNameModifier ?? ""}`}
+      containerClassName={`${iconClassName}  ${classNameModifier ?? ""} ${iconContainerClassName}`}
     />
   );
 
@@ -317,7 +325,7 @@ const GTPButtonIcon = ({
 
   return (
     <span
-      className="inline-flex cursor-pointer"
+      className="inline-flex cursor-pointer min-w-[12px] min-h-[12px]"
       role="button"
       tabIndex={0}
       onClick={handleClick}
