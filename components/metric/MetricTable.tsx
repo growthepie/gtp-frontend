@@ -21,6 +21,7 @@ const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
   "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
+  hourly: "last_1d",
   daily: "last_1d",
   daily_7d_rolling: "last_1d",
   weekly: "last_7d",
@@ -28,6 +29,11 @@ const timeIntervalSummaryKeys = {
 }
 
 const timespanLabels: { [key: string]: { [key: string]: string } } = {
+  hourly: {
+    "1d": "24h",
+    "30d": "30d",
+    "365d": "1y",
+  },
   daily: {
     "1d": "24h",
     "30d": "30d",
@@ -193,7 +199,8 @@ const MetricTable = ({
   }, [metric_id, metric_type]);
 
   const lastValueTimeIntervalKey = useMemo(() => {
-    if (timeIntervalKey === "daily_7d_rolling") {
+    // hourly has no dedicated changes/summary rows — fall back to daily
+    if (timeIntervalKey === "hourly" || timeIntervalKey === "daily_7d_rolling") {
       return "daily";
     }
 
@@ -336,6 +343,7 @@ const MetricTable = ({
   });
 
   const lastValueLabels = {
+    hourly: "Latest",
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
     monthly: "Last 30d",

@@ -56,6 +56,7 @@ export interface SummaryPeriod {
 }
 
 export interface Timeseries {
+  hourly?: TimeseriesData;
   daily: TimeseriesData;
   weekly: TimeseriesData;
   monthly: TimeseriesData;

@@ -22,6 +22,10 @@ export type Chains = {
 export type ChainData = {
   chain_name: string;
   changes: Changes;
+  hourly?: {
+    types: string[];
+    data: number[][];
+  };
   daily: {
     types: string[];
     data: number[][];

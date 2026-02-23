@@ -146,7 +146,7 @@ export const MetricChartControlsProvider = ({
   };
 
   const { SupportedChainKeys, DefaultChainSelection } = useMaster();
-  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data } = useMetricData();
+  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data, timeIntervals } = useMetricData();
 
   const url = UrlsMap[metric_type][metric_id];
   const storageKeys = {
@@ -212,6 +212,16 @@ export const MetricChartControlsProvider = ({
     }
   }, []);
 
+  // If the stored interval isn't supported by this metric (e.g. "hourly" carried
+  // over from a different page), fall back to daily so the chart isn't empty.
+  useEffect(() => {
+    if (timeIntervals.length > 0 && !timeIntervals.includes(selectedTimeInterval)) {
+      setSelectedTimeInterval("daily");
+      setSelectedTimespan(selectedTimespansByTimeInterval?.["daily"] ?? "365d");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeIntervals]);
+
   const [selectedYAxisScale, setSelectedYAxisScale] = useState(log_default ? "logarithmic" : "linear");
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
@@ -263,6 +273,10 @@ export const MetricChartControlsProvider = ({
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
+    }
+
+    if (selectedTimeInterval === "hourly") {
+      return "hourly";
     }
 
     if (selectedTimeInterval === "weekly") {

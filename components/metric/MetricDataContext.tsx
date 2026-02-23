@@ -129,11 +129,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
       .map((chainKey) => data.chains[chainKey])
       .reduce(
         (acc: number, chain: ChainData) => {
-          if (!chain[selectedTimeInterval].data[0][0]) return acc;
-          return Math.min(
-            acc,
-            chain[selectedTimeInterval].data[0][0],
-          );
+          const val = chain[selectedTimeInterval]?.data?.[0]?.[0];
+          if (!val) return acc;
+          return Math.min(acc, val);
         }
         , Infinity) as number
   }, [data, selectedChains, selectedTimeInterval])
@@ -145,10 +143,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
       .map((chainKey) => data.chains[chainKey])
       .reduce(
         (acc: number, chain: ChainData) => {
-          return Math.max(
-            acc,
-            chain[selectedTimeInterval].data[chain[selectedTimeInterval].data.length - 1][0],
-          );
+          const d = chain[selectedTimeInterval]?.data;
+          if (!d?.length) return acc;
+          return Math.max(acc, d[d.length - 1][0]);
         }
         , 0) as number
 
@@ -166,7 +163,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
       // find the min unix value across all chains for the interval
-      const minUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[0][0]).reduce((acc, curr) => Math.min(acc, curr), Infinity);
+      const minUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval]?.data?.[0]?.[0]).filter((v): v is number => v !== undefined).reduce((acc, curr) => Math.min(acc, curr), Infinity);
       values[interval] = minUnix;
     });
     return values;
@@ -177,7 +174,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
       // find the max unix value across all chains for the interval
-      const maxUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[data.chains[chainKey][interval].data.length - 1][0]).reduce((acc, curr) => Math.max(acc, curr), 0);
+      const maxUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => { const d = data.chains[chainKey][interval]?.data; return d ? d[d.length - 1][0] : undefined; }).filter((v): v is number => v !== undefined).reduce((acc, curr) => Math.max(acc, curr), 0);
       values[interval] = maxUnix;
     });
     return values;
@@ -185,11 +182,46 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
   const timespans = useMemo(() => {
     if (!data) return {};
-    const [dailybuffer, weeklybuffer, monthlybuffer ] = [0, 0, 0];
+    const [hourlybuffer, dailybuffer, weeklybuffer, monthlybuffer] = [0, 0, 0, 0];
     const minUnix = minUnixByTimeInterval[selectedTimeInterval];
     const maxUnix = maxUnixByTimeInterval[selectedTimeInterval];
 
     const ts = {
+      "24h": {
+        label: "24 hours",
+        shortLabel: "24h",
+        value: 24,
+        xMin: maxUnix - 24 * 60 * 60 * 1000 - hourlybuffer,
+        xMax: maxUnix + hourlybuffer,
+      },
+      "3d": {
+        label: "3 days",
+        shortLabel: "3d",
+        value: 3,
+        xMin: maxUnix - 3 * 24 * 60 * 60 * 1000 - hourlybuffer,
+        xMax: maxUnix + hourlybuffer,
+      },
+      "7d": {
+        label: "7 days",
+        shortLabel: "7d",
+        value: 7,
+        xMin: maxUnix - 7 * 24 * 60 * 60 * 1000 - hourlybuffer,
+        xMax: maxUnix + hourlybuffer,
+      },
+      "30d": {
+        label: "30 days",
+        shortLabel: "30d",
+        value: 30,
+        xMin: maxUnix - 30 * 24 * 60 * 60 * 1000 - hourlybuffer,
+        xMax: maxUnix + hourlybuffer,
+      },
+      "maxH": {
+        label: "Max",
+        shortLabel: "Max",
+        value: 0,
+        xMin: minUnix - hourlybuffer,
+        xMax: maxUnix + hourlybuffer,
+      },
       "90d": {
         label: "90 days",
         shortLabel: "90d",

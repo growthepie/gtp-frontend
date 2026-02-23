@@ -216,8 +216,12 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             size={isMobile ? "xs" : "sm"}
                             clickHandler={() => {
                                 if (selectedTimeInterval === interval) return;
-                                if (interval === "daily") {
-                                    if(["12w"].includes(selectedTimespan)) {
+                                if (interval === "hourly") {
+                                    setSelectedTimespan("7d");
+                                } else if (interval === "daily") {
+                                    if (["24h", "3d", "7d"].includes(selectedTimespan)) {
+                                        setSelectedTimespan("90d");
+                                    } else if(["12w"].includes(selectedTimespan)) {
                                         setSelectedTimespan("90d");
                                     } else if (["6m", "24m"].includes(selectedTimespan)) {
                                         setSelectedTimespan("180d");
@@ -245,7 +249,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                         setSelectedTimespan(closestTimespan);
                                     }
                                 } else if (interval === "weekly") {
-                                    if(["90d"].includes(selectedTimespan)) {
+                                    if (["24h", "3d", "7d"].includes(selectedTimespan)) {
+                                        setSelectedTimespan("12w");
+                                    } else if(["90d"].includes(selectedTimespan)) {
                                         setSelectedTimespan("12w");
                                     } else if(["365d", "12m"].includes(selectedTimespan)) {
                                         setSelectedTimespan("52w");
@@ -273,7 +279,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                         setSelectedTimespan(closestTimespan);
                                     }
                                 } else {
-                                    if (["365d", "52w"].includes(selectedTimespan)) {
+                                    if (["24h", "3d", "7d"].includes(selectedTimespan)) {
+                                        setSelectedTimespan("6m");
+                                    } else if (["365d", "52w"].includes(selectedTimespan)) {
                                         setSelectedTimespan("12m");
                                     } else if ("180d" === selectedTimespan || "24w" === selectedTimespan) {
                                         setSelectedTimespan("6m");
@@ -311,11 +319,13 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         {!selectedRange ? (
                             Object.keys(timespans)
                                 .filter((timespan) =>
-                                    selectedTimeInterval === "daily"
-                                        ? ["90d", "180d", "365d", "max"].includes(timespan)
-                                        : selectedTimeInterval === "weekly"
-                                          ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                                          : ["6m", "12m", "maxM"].includes(timespan),
+                                    selectedTimeInterval === "hourly"
+                                        ? ["24h", "3d", "7d"].includes(timespan)
+                                        : selectedTimeInterval === "daily"
+                                          ? ["90d", "180d", "365d", "max"].includes(timespan)
+                                          : selectedTimeInterval === "weekly"
+                                            ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                                            : ["6m", "12m", "maxM"].includes(timespan),
                                 )
                                 .map((timespan) => (
                                     <GTPButton

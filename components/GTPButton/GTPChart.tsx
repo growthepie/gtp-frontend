@@ -91,6 +91,7 @@ export interface GTPChartProps {
   dragSelectIcon?: GTPIconName;
   /** Minimum number of data points that must be visible after a drag-select zoom. Defaults to 2. */
   minDragSelectPoints?: number;
+  showTooltipTimestamp?: boolean;
 }
 
 // --- Component ---
@@ -130,6 +131,7 @@ export default function GTPChart({
   dragSelectOverlayColor = "#3b82f6",
   dragSelectIcon,
   minDragSelectPoints = 2,
+  showTooltipTimestamp = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -827,6 +829,13 @@ export default function GTPChart({
         timeZone: "UTC",
       }).format(timestamp);
 
+      const timeLabel = new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC",
+      }).format(timestamp);
+
       const sortedPoints = validPoints
         .map((p) => ({ ...p, numericValue: Number(p.value[1]) }))
         .sort((a, b) => b.numericValue - a.numericValue);
@@ -888,10 +897,15 @@ export default function GTPChart({
         })
         .join("");
 
+
       return `
         <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
-          <div class="flex-1 flex items-center justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
-            <span>${dateLabel}</span>
+          <div class="flex-1 flex ${showTooltipTimestamp ? "items-start" : "items-center"}  justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
+          
+            <div class="">
+              <div>${dateLabel}</div>
+              <div class="text-xs font-medium text-color-text-primary ${showTooltipTimestamp ? "block" : "hidden"}">${timeLabel} UTC</div>
+            </div>
             <span class="text-xs font-medium text-color-text-primary">${tooltipTitle ?? ""}</span>
           </div>
           <div class="flex flex-col w-full">
@@ -1040,6 +1054,7 @@ export default function GTPChart({
     textXxsTypography,
     tooltipFormatter,
     tooltipTitle,
+    showTooltipTimestamp,
     limitTooltipRows,
     xAxisLabelFormatter,
     xAxisMin,

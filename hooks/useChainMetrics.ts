@@ -157,7 +157,13 @@ export function useChainMetrics(
 
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
-    const timeIntervals = Object.keys(firstResponse.details.changes)
+    // Derive intervals from timeseries keys, filtered to those we actually support.
+    // Using timeseries (not changes) ensures "hourly" is included; using an
+    // allowlist keeps unsupported keys like "quarterly" and "daily_7d_rolling" out.
+    const supported = ["hourly", "daily", "weekly", "monthly"];
+    const timeIntervals = supported.filter(
+      (key) => key in firstResponse.details.timeseries,
+    );
 
     successfulChains.forEach((chainKey) => {
       const responseData = chainDataMap[chainKey];
@@ -218,6 +224,10 @@ function transformToChainData(
       types: timeseries.daily.types as string[],
       data: timeseries.daily.data,
     },
+    hourly: timeseries.hourly ? {
+      types: timeseries.hourly.types as string[],
+      data: timeseries.hourly.data,
+    } : undefined,
     daily_7d_rolling: timeseries.daily_7d_rolling ? {
       types: timeseries.daily_7d_rolling.types as string[],
       data: timeseries.daily_7d_rolling.data,

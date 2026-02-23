@@ -170,6 +170,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         yAxisLabelFormatter={(value) => {
           return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${` ${suffix ?? ""}`}`;
         }}
+        showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
     </div>
   );
