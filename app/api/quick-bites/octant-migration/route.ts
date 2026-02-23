@@ -114,8 +114,9 @@ export async function GET() {
     ({ epoch, info }) => {
       const epochKey = String(epoch);
       const lockedUsers = community.reduce((acc, user) => {
-        const value = user.lockeds[epochKey] ?? 0;
-        return acc + (value > 0 ? 1 : 0);
+        // Match tracker "All Users" logic:
+        // count wallets that have data for the epoch (not only balances > 0).
+        return acc + (user.lockeds[epochKey] !== undefined ? 1 : 0);
       }, 0);
       const totalLockedGlm = community.reduce(
         (acc, user) => acc + (user.lockeds[epochKey] ?? 0),
