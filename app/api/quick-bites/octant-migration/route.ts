@@ -126,12 +126,14 @@ export async function GET() {
   );
 
   const topLockersRows: Array<[string, number, number, number]> = community
-    .map((user) => [
-      user.user,
-      user.maxs.all ?? 0,
-      user.allocation_amounts.all ?? 0,
-      user.allocated_to_project_counts.all ?? 0,
-    ])
+    .map(
+      (user): [string, number, number, number] => [
+        user.user,
+        user.maxs.all ?? 0,
+        user.allocation_amounts.all ?? 0,
+        user.allocated_to_project_counts.all ?? 0,
+      ],
+    )
     .sort((a, b) => b[1] - a[1])
     .slice(0, 15);
 
