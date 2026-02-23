@@ -1,7 +1,6 @@
 import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
 import { Chain } from "@/lib/chains";
-import { ChainData, MetricData } from "@/types/api/MetricsResponse";
-import { intersection } from "lodash";
+import { MetricData } from "@/types/api/MetricsResponse";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 
@@ -120,65 +119,92 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     ).map((chain) => chain.key);
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
+  const intervalBounds = useMemo(() => {
+    if (!data) return {};
+
+    const boundsByInterval: { [key: string]: { min: number; max: number } } = {};
+
+    const allChainKeys = Object.keys(data.chains);
+    const selectedAvailableKeys = allChainKeys.filter((chainKey) =>
+      selectedChains.includes(chainKey),
+    );
+
+    const computeBounds = (interval: string, preferredChainKeys: string[]) => {
+      const keysToScan = preferredChainKeys.length > 0 ? preferredChainKeys : allChainKeys;
+      const series = keysToScan
+        .map((chainKey) => data.chains[chainKey]?.[interval]?.data)
+        .filter((rows): rows is number[][] => Array.isArray(rows) && rows.length > 0);
+
+      if (series.length === 0) {
+        return { min: 0, max: 0 };
+      }
+
+      const min = series.reduce((acc, rows) => Math.min(acc, rows[0][0]), Infinity);
+      const max = series.reduce((acc, rows) => Math.max(acc, rows[rows.length - 1][0]), 0);
+
+      if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return { min: 0, max: 0 };
+      }
+
+      return { min, max };
+    };
+
+    const intervals = Array.from(
+      new Set([
+        ...data.timeIntervals,
+        ...allChainKeys.flatMap((chainKey) => Object.keys(data.chains[chainKey] ?? {})),
+      ]),
+    );
+
+    intervals.forEach((interval) => {
+      const selectedWithData = selectedAvailableKeys.filter((chainKey) => {
+        const rows = data.chains[chainKey]?.[interval]?.data;
+        return Array.isArray(rows) && rows.length > 0;
+      });
+      boundsByInterval[interval] = computeBounds(interval, selectedWithData);
+    });
+
+    return boundsByInterval;
+  }, [data, selectedChains]);
 
 
   const minDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.keys(data.chains)
-      .filter((chainKey) => selectedChains.includes(chainKey))
-      .map((chainKey) => data.chains[chainKey])
-      .reduce(
-        (acc: number, chain: ChainData) => {
-          const val = chain[selectedTimeInterval]?.data?.[0]?.[0];
-          if (!val) return acc;
-          return Math.min(acc, val);
-        }
-        , Infinity) as number
-  }, [data, selectedChains, selectedTimeInterval])
+    return intervalBounds[selectedTimeInterval]?.min ?? 0;
+  }, [data, intervalBounds, selectedTimeInterval]);
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.keys(data.chains)
-      .filter((chainKey) => selectedChains.includes(chainKey))
-      .map((chainKey) => data.chains[chainKey])
-      .reduce(
-        (acc: number, chain: ChainData) => {
-          const d = chain[selectedTimeInterval]?.data;
-          if (!d?.length) return acc;
-          return Math.max(acc, d[d.length - 1][0]);
-        }
-        , 0) as number
-
-  }, [data, selectedChains, selectedTimeInterval])
+    return intervalBounds[selectedTimeInterval]?.max ?? 0;
+  }, [data, intervalBounds, selectedTimeInterval]);
   
   const timeIntervals = useMemo(() => {
     if (!data) return [];
-
-
-    return intersection(data.timeIntervals, Object.keys(Object.values(data.chains)[0]));
-  }, [data])
+    return data.timeIntervals.filter((interval) => {
+      return Object.values(data.chains).some((chain) => {
+        const rows = chain[interval]?.data;
+        return Array.isArray(rows) && rows.length > 0;
+      });
+    });
+  }, [data]);
 
   const minUnixByTimeInterval = useMemo(() => {
-    if (!data) return 0;
+    if (!data) return {};
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
-      // find the min unix value across all chains for the interval
-      const minUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval]?.data?.[0]?.[0]).filter((v): v is number => v !== undefined).reduce((acc, curr) => Math.min(acc, curr), Infinity);
-      values[interval] = minUnix;
+      values[interval] = intervalBounds[interval]?.min ?? 0;
     });
     return values;
-  }, [data, timeIntervals, selectedChains])
+  }, [data, timeIntervals, intervalBounds]);
 
   const maxUnixByTimeInterval = useMemo(() => {
-    if (!data) return 0;
+    if (!data) return {};
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
-      // find the max unix value across all chains for the interval
-      const maxUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => { const d = data.chains[chainKey][interval]?.data; return d ? d[d.length - 1][0] : undefined; }).filter((v): v is number => v !== undefined).reduce((acc, curr) => Math.max(acc, curr), 0);
-      values[interval] = maxUnix;
+      values[interval] = intervalBounds[interval]?.max ?? 0;
     });
     return values;
-  }, [data, timeIntervals, selectedChains])
+  }, [data, timeIntervals, intervalBounds]);
 
   const timespans = useMemo(() => {
     if (!data) return {};

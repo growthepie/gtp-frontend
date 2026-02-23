@@ -210,7 +210,17 @@ const MetricTable = ({
   const changesValueIndex = useMemo(() => {
     if (!data || chainKeys.length === 0) return;
 
-    const sampleChainChangesTypes = data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
+    const sampleChainKey = chainKeys.find(
+      (chainKey) =>
+        Array.isArray(
+          data.chains[chainKey]?.changes?.[lastValueTimeIntervalKey]?.types,
+        ),
+    );
+
+    if (!sampleChainKey) return 0;
+
+    const sampleChainChangesTypes =
+      data.chains[sampleChainKey]?.changes?.[lastValueTimeIntervalKey]?.types ?? [];
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -229,9 +239,17 @@ const MetricTable = ({
     return chainKeys
       .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
       .reduce((acc, chain) => {
-        let types = data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].types;
-        let values =
-          data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].data;
+        const summaryKey = timeIntervalSummaryKeys[lastValueTimeIntervalKey];
+        const summary = data.chains[chain]?.summary?.[summaryKey];
+        if (!summary || !Array.isArray(summary.types) || !Array.isArray(summary.data)) {
+          return {
+            ...acc,
+            [chain]: 0,
+          };
+        }
+
+        let types = summary.types;
+        let values = summary.data;
 
         let valueIndex = 0;
 
@@ -244,6 +262,9 @@ const MetricTable = ({
         }
 
         let lastVal = values[valueIndex];
+        if (typeof lastVal !== "number" || !Number.isFinite(lastVal)) {
+          lastVal = 0;
+        }
 
         // if (lastValueTimeIntervalKey === "monthly") {
         //   types = data.chains[chain].last_30d.types;
@@ -273,15 +294,18 @@ const MetricTable = ({
     if (!data || lastValues === null) return [];
 
     const valuesArray = Object.values<number>(lastValues);
-
-    const maxVal = Math.max(...valuesArray);
+    const maxVal = valuesArray.length > 0 ? Math.max(...valuesArray) : 0;
+    const safeMaxVal = Number.isFinite(maxVal) && maxVal > 0 ? maxVal : 1;
 
     return chainKeys
       .filter(
         (chain) =>
           (chain !== "ethereum" ? true : !focusEnabled) &&
           Object.keys(allChainsByKeys).includes(chain) &&
-          allChainsByKeys[chain],
+          allChainsByKeys[chain] &&
+          (timeIntervalKey !== "hourly" ||
+            (Array.isArray(data.chains[chain]?.hourly?.data) &&
+              data.chains[chain].hourly!.data.length > 0)),
       )
       .map((chain: any) => {
 
@@ -289,7 +313,7 @@ const MetricTable = ({
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
           lastVal: lastValues[chain],
-          barWidth: Math.max(lastValues[chain], 0) / maxVal,
+          barWidth: Math.max(lastValues[chain], 0) / safeMaxVal,
         };
       })
       .sort((a, b) => {
@@ -334,7 +358,8 @@ const MetricTable = ({
     lastValues,
     reversePerformer,
     selectedChains,
-    focusEnabled
+    focusEnabled,
+    timeIntervalKey,
   ]);
 
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
@@ -381,8 +406,11 @@ const MetricTable = ({
       // if sort.metric is a timespan, sort by the timespan value
       else if (timespanKeys.includes(sort.metric)) {
         const timespanIndex = timespanKeys.indexOf(sort.metric);
-        const bVal = b.data.changes[lastValueTimeIntervalKey][timespanKeys[timespanIndex]][0];
-        const aVal = a.data.changes[lastValueTimeIntervalKey][timespanKeys[timespanIndex]][0];
+        const timespanKey = timespanKeys[timespanIndex];
+        const bValRaw = b.data?.changes?.[lastValueTimeIntervalKey]?.[timespanKey]?.[0];
+        const aValRaw = a.data?.changes?.[lastValueTimeIntervalKey]?.[timespanKey]?.[0];
+        const bVal = typeof bValRaw === "number" && Number.isFinite(bValRaw) ? bValRaw : null;
+        const aVal = typeof aValRaw === "number" && Number.isFinite(aValRaw) ? aValRaw : null;
 
         if (aIsSelected && !bIsSelected) {
           return -1;
@@ -482,11 +510,9 @@ const MetricTable = ({
       let suffix = units[unitKey].suffix ? units[unitKey].suffix : "";
       const decimals = showGwei && !showUsd ? 2 : units[unitKey].decimals;
 
-      let types = item.data[lastValueTimeIntervalKey].types;
-      let values =
-        item.data[lastValueTimeIntervalKey].data[
-        item.data[lastValueTimeIntervalKey].data.length - 1
-        ];
+      const intervalData = item.data?.[lastValueTimeIntervalKey];
+      let types = intervalData?.types ?? [];
+      let values = intervalData?.data?.[intervalData.data.length - 1] ?? [];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
       //     item.data[lastValueTimeIntervalKey].data.length - 1
@@ -516,13 +542,16 @@ const MetricTable = ({
           if (navItem && navItem.page?.showGwei) {
             prefix = "";
             suffix = " Gwei";
-            value = formatNumber(
-              values[types.indexOf("eth")] * 1000000000,
-              decimals,
-            );
+            const ethValue = values[types.indexOf("eth")];
+            value = typeof ethValue === "number" && Number.isFinite(ethValue)
+              ? formatNumber(ethValue * 1000000000, decimals)
+              : "0";
           }
         } else {
-          value = formatNumber(values[types.indexOf("usd")], decimals);
+          const usdValue = values[types.indexOf("usd")];
+          value = typeof usdValue === "number" && Number.isFinite(usdValue)
+            ? formatNumber(usdValue, decimals)
+            : "0";
         }
       }
       return { value, prefix, suffix };

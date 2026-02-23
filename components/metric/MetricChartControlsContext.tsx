@@ -240,6 +240,43 @@ export const MetricChartControlsProvider = ({
     ).map((chain) => chain.key) : allChains.map((chain) => chain.key),
   );
 
+  // Keep selected chains deduplicated and constrained to chains available for this metric.
+  useEffect(() => {
+    if (chainKeys.length === 0) return;
+
+    const normalized = Array.from(
+      new Set(selectedChains.filter((chain) => chainKeys.includes(chain))),
+    );
+
+    if (normalized.length !== selectedChains.length) {
+      setSelectedChains(normalized);
+    }
+  }, [chainKeys, selectedChains, setSelectedChains]);
+
+  // When hourly is selected, keep only chains that actually have hourly datapoints.
+  // This can intentionally result in no selected chains.
+  useEffect(() => {
+    if (!data || selectedTimeInterval !== "hourly") return;
+
+    const hourlySelected = selectedChains.filter((chainKey) => {
+      if (!chainKeys.includes(chainKey)) return false;
+      const rows = data.chains[chainKey]?.hourly?.data;
+      return Array.isArray(rows) && rows.length > 0;
+    });
+
+    if (hourlySelected.length !== selectedChains.length) {
+      setSelectedChains(hourlySelected);
+      setLastSelectedChains(hourlySelected);
+    }
+  }, [
+    chainKeys,
+    data,
+    setLastSelectedChains,
+    setSelectedChains,
+    selectedChains,
+    selectedTimeInterval,
+  ]);
+
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     storageKeys["showEthereumMainnet"],
