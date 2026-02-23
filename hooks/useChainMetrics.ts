@@ -10,13 +10,14 @@ type AggregatedMetricData = {
   metric_id: string;
   metric_name: string;
   description: string;
-  source: string[];
-  avg?: boolean;
+    source: string[];
+    avg?: boolean;
   monthly_agg: "sum" | "maa" | "avg" | "unique";
   last_updated_utc: string;
   chains: {
     [chainKey: string]: ChainData;
   };
+  timeIntervals: string[];
 };
 
 type UseChainMetricsResult = {
@@ -156,7 +157,7 @@ export function useChainMetrics(
 
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
-
+    const timeIntervals = Object.keys(firstResponse.details.changes)
 
     successfulChains.forEach((chainKey) => {
       const responseData = chainDataMap[chainKey];
@@ -170,10 +171,11 @@ export function useChainMetrics(
       metric_id: firstResponse.details.metric_id,
       metric_name: firstResponse.details.metric_name,
       description: "", // Not available in new API structure
-      source: [], // Not available in new API structure
+      source: firstResponse.details.source || [], // Not available in new API structure
       avg: metricsDict[metricKey].avg || false, // Default value, can be overridden
       monthly_agg: metricsDict[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
       chains,
+      timeIntervals,
       last_updated_utc:
         firstResponse.last_updated_utc instanceof Date
           ? firstResponse.last_updated_utc.toISOString()

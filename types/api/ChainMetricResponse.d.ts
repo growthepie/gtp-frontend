@@ -7,6 +7,7 @@ export interface MetricDetails {
   metric_id: string;
   metric_name: string;
   timeseries: Timeseries;
+  source: string[];
   changes: Changes;
   summary: Summary;
 }

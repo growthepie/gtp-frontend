@@ -14,7 +14,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { Switch } from "@/components/Switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Link from "next/link";
-import { Sources } from "@/lib/datasources";
+
 import MetricTable from "./MetricTable";
 import MetricChart from "./MetricChart";
 import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
@@ -25,6 +25,8 @@ import { downloadElementAsImage } from "../GTPButton/chartSnapshotHelpers";
 import { GTPIcon } from "../layout/GTPIcon";
 import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { Icon } from "@iconify/react";
+import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 767px)");
@@ -35,7 +37,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
+    const [show7dRollingText, setShow7dRollingText] = useState(false);
     const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
     const {
         timespans,
@@ -94,14 +96,14 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     
 
     const SourcesDisplay = useMemo(() => {
-        return sources && sources.length > 0 ? (
+        return sources && master && sources.length > 0 ? (
             sources
                 .map<ReactNode>((s) => (
                     <Link
                         key={s}
                         rel="noopener noreferrer"
                         target="_blank"
-                        href={Sources[s] ?? ""}
+                        href={master.sources[s]?.url ?? ""}
                         className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
                     >
                         {s}
@@ -111,7 +113,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         ) : (
             <>Unavailable</>
         );
-    }, [sources]);
+    }, [sources, master]);
 
     const handleDownloadChartSnapshot = useCallback(async () => {
         if (isDownloadingChartSnapshot) return;
@@ -126,11 +128,18 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     }, [isDownloadingChartSnapshot, metricData?.metric_name]);
 
     const lastUpdatedString = useMemo(() => {
+
         if (!metricData?.last_updated_utc) return "N/A";
 
-        const lastUpdatedDate = new Date(metricData.last_updated_utc);
+        const rawStr = metricData.last_updated_utc;
+        // If no timezone info is present, treat as UTC by appending 'Z'.
+        // Without this, JS parses date-time strings as local time, causing the
+        // diff to go negative for users in timezones behind UTC.
+        const normalizedStr = /Z$|[+-]\d{2}:\d{2}$/.test(rawStr) ? rawStr : rawStr + 'Z';
+        const lastUpdatedDate = new Date(normalizedStr);
         if (Number.isNaN(lastUpdatedDate.getTime())) return "N/A";
 
+   
         const diffMs = Math.max(Date.now() - lastUpdatedDate.getTime(), 0);
         const totalMinutes = Math.floor(diffMs / (1000 * 60));
         const hours = Math.floor(totalMinutes / 60);
@@ -162,17 +171,35 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     const show7dRolling = timeIntervalKey === "daily_7d_rolling";
                  
                     return (
-                      <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary">
+                      <div className="flex items-center gap-x-[5px] h-full text-xxs text-color-text-secondary min-w-[200px] justify-end"
+                       onMouseEnter={() => setShow7dRollingText(true)}
+                       onMouseLeave={() => setShow7dRollingText(false)}
+                      >
                         <GTPIcon
                           icon="gtp-realtime"
                           className="!w-[12px] !h-[12px] text-color-text-primary"
                           containerClassName="!w-[12px] !h-[12px]"
                         />
-                        <div className="text-xxs relative text-color-text-primary w-[100px] group   transition-opacity ">
-                            <span className="absolute left-0 -top-[7px] whitespace-nowrap group-hover:opacity-0 transition-opacity duration-300">{show7dRolling ? "7-day rolling average" :  " "}</span>
-                            <span className={` transition-opacity duration-300 whitespace-nowrap absolute left-0 -top-[7px] ${show7dRolling ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}>{lastUpdatedString}</span>
+                        <div className="text-xxs relative text-color-text-primary   group   transition-opacity ">
+                            <span className={` whitespace-nowrap `}>{show7dRolling && !show7dRollingText ? "7-day rolling average" :  lastUpdatedString}</span>
 
                         </div>
+                        <GTPTooltipNew
+                            placement="left"
+                            allowInteract={true}
+                            
+                            containerClass="z-[99]"
+                            trigger={
+                            <div className="size-[12px]">
+                                <Icon icon="feather:info" className="size-[12px]"  />
+                            </div>
+                            }
+                        >
+                            <div className="text-xxs flex items-center gap-x-[5px] relative text-color-text-primary pl-[15px] w-[100px]  group   transition-opacity ">
+                              Sources: <span className="text-color-text-primary">{SourcesDisplay}</span>
+                            </div>
+                        </GTPTooltipNew>
+                        
                       </div>
                     );
                   })()}

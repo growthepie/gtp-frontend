@@ -82,6 +82,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         return showEthereumMainnet;
       })
       .map((chainKey) => {
+
         const chainData = data.chains[chainKey]?.[timeIntervalKey];
         if (!chainData) return null;
 

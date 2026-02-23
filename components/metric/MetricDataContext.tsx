@@ -156,7 +156,9 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
   
   const timeIntervals = useMemo(() => {
     if (!data) return [];
-    return intersection(["daily", "weekly", "monthly", "quarterly"], Object.keys(Object.values(data.chains)[0]));
+
+
+    return intersection(data.timeIntervals, Object.keys(Object.values(data.chains)[0]));
   }, [data])
 
   const minUnixByTimeInterval = useMemo(() => {
@@ -276,6 +278,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
 
   const log_default = metricsDict[metric_id]?.log_default || false;
+
 
   // if (!data) return <div>Loading...</div>;
 
