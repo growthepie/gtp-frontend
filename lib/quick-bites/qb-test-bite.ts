@@ -903,6 +903,29 @@ const testBite: QuickBiteData = createQuickBite({
     }),
     "```",
 
+    "## Pie Chart",
+    "Usage: When you want to show the composition or market share of static/snapshot data across 3–8 categories. Use centerName to label the donut hole.",
+    "```chart",
+    JSON.stringify({
+      type: "pie",
+      title: "L2 Blob Usage Share",
+      subtitle: "Breakdown of DA blob usage by rollup (snapshot)",
+      centerName: "BLOB\nSHARE",
+      height: 400,
+      dataAsJson: {
+        pieData: [
+          { name: "Base", y: 38.4, color: "#2151F5" },
+          { name: "Arbitrum", y: 22.1, color: "#FFC300" },
+          { name: "OP Mainnet", y: 15.7, color: "#FE5468" },
+          { name: "Scroll", y: 10.2, color: "#EADB6B" },
+          { name: "zkSync Era", y: 8.3, color: "#8B5CF6" },
+          { name: "Other", y: 5.3, color: "#5A6462" },
+        ],
+      },
+      caption: "Approximate blob usage share across major L2s. Data is illustrative.",
+    }),
+    "```",
+
     "## Sample Image",
     "Here's an example of how to include an image in your quick bite:",
 

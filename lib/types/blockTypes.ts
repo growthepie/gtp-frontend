@@ -146,6 +146,7 @@ export interface ChartBlock extends BaseBlock {
   subtitle?: string;
   caption?: string;
   className?: string;
+  centerName?: string; // Center label for pie/donut charts
   chartCategories?: {
     name: string;
     color: string;
@@ -185,6 +186,7 @@ export interface ChartBlock extends BaseBlock {
       xIndex?: number;
       tooltipDecimals?: number;
     };
+    pieData?: { name: string; y: number; color: string }[]; // Static pie/donut slice data
   } | null;
   seeMetricURL?: string | null;
   yAxisLine?: {

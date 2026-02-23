@@ -223,7 +223,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
   const effectiveMeta = dynamicSeriesConfig ? (dynamicDerived?.meta || []) : (resolvedJsonMeta || metaList || []);
-  const canRenderChart = Boolean(passChartData) && (!dynamicSeriesConfig || effectiveMeta.length > 0);
+  const hasPieData = block.chartType === 'pie' && !!block.dataAsJson?.pieData?.length;
+  const canRenderChart = (Boolean(passChartData) || hasPieData) && (!dynamicSeriesConfig || effectiveMeta.length > 0 || hasPieData);
 
   // Don't render the chart if there's a filter key but no data yet.
   // This handles the initial state where a dropdown selection is needed.
@@ -247,7 +248,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       {canRenderChart && (
         <ChartWrapper
           chartType={block.chartType}
-          data={block.data}
+          data={block.data ?? []}
           margins={block.margins || 'normal'}
           options={block.options || {}}
           width={block.width || '100%'}
@@ -266,6 +267,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           disableTooltipSort={block.disableTooltipSort}
           seeMetricURL={block.seeMetricURL}
           yAxisLine={block.yAxisLine}
+          centerName={block.centerName}
+          pieData={block.dataAsJson?.pieData}
         />
       )}
       {block.caption && (
