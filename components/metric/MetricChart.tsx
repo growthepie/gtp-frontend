@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import GTPChart, { GTPChartSeries } from "@/components/GTPButton/GTPChart";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataContext";
@@ -40,6 +40,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { theme } = useTheme();
   const { data, metric_id, chainKeys, timespans } = useMetricData();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const {
     selectedScale,
     selectedTimespan,
@@ -156,7 +157,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
-        minHeight={440}
+        minHeight={isMobile ? 300 : 440}
         onDragSelect={(xStart, xEnd) => {
           
           if(xStart < xEnd) {

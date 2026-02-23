@@ -574,7 +574,7 @@ const MetricTable = ({
 
   if (!data || !timespanLabels[timeIntervalKey]) return timeIntervalKey;
   const tableViewportHeight =
-    !isMobile ? 470 : chainKeys.filter((chain) => chain !== "ethereum").length * 39 + 45;
+    !isMobile ? 470 : 250;
 
   const getHeaderSortIcon = (metric: string) => {
     if (sort.metric !== metric) return "gtp-chevrondown-monochrome";

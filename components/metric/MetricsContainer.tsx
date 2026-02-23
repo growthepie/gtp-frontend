@@ -215,7 +215,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             innerStyle={{ width: "100%" }}
                             className="w-full justify-center"
                             variant="primary"
-                            size={isMobile ? "xs" : "sm"}
+                            size={"sm"}
                           
                             clickHandler={() => {
                                 if (selectedTimeInterval === interval) return;
@@ -337,7 +337,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                         innerStyle={{ width: "100%" }}
                                         className="w-full justify-center"
                                         variant="primary"
-                                        size={isMobile ? "xs" : "sm"}
+                                        size={"sm"}
                                         clickHandler={() => {
                                             setSelectedTimespan(timespan);
                                             setZoomed(false);
@@ -351,7 +351,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                 label={selectedRange ? "Reset Zoom" : undefined}
                                 leftIcon={"feather:zoom-out" as GTPIconName}
                                 leftIconClassname="text-color-text-primary"
-                                size={isMobile ? "xs" : "sm"}
+                                size={"sm"}
                                 className="block"
                                 variant="highlight"
                                 visualState="default"
@@ -362,7 +362,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                     const fmt = (ts: number) => new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                                     return ` ${fmt(selectedRange[0])} - ${fmt(selectedRange[1])}`;
                                 })()}
-                                size={isMobile ? "xs" : "sm"}
+                                size={"sm"}
                                 className="block"
                                 variant="primary"
                                 visualState="active"
@@ -380,7 +380,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
                             leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
-                            size={isMobile ? "xs" : "sm"}
+                            size={"sm"}
                             variant={!collapseTable ? "no-background" : "highlight"}
                             visualState="default"
                             clickHandler={() => setCollapseTable(!collapseTable)}
@@ -392,7 +392,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                 label: "Share",
                                 labelDisplay: "active",
                                 leftIcon: "gtp-share-monochrome",
-                                size: isMobile ? "xs" : "sm",
+                                size: "sm",
                                 variant: "no-background",
                             }}
                             isOpen={isSharePopoverOpen}
@@ -402,7 +402,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         <div title="Download image">
                             <GTPButton
                                 leftIcon="gtp-download-monochrome"
-                                size={isMobile ? "xs" : "sm"}
+                                size={"sm"}
                                 variant="no-background"
                                 visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                                 disabled={isDownloadingChartSnapshot}
@@ -416,7 +416,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         <GTPButton
                             label="Absolute"
                             variant="primary"
-                            size={isMobile ? "xs" : "sm"}
+                            size={"sm"}
                             isSelected={selectedScale === "absolute"}
                             clickHandler={() => setSelectedScale("absolute")}
                             innerStyle={{ width: "100%" }}
@@ -427,7 +427,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                 <GTPButton
                                     label="Stacked"
                                     variant="primary"
-                                    size={isMobile ? "xs" : "sm"}
+                                    size={"sm"}
                                     isSelected={selectedScale === "stacked"}
                                     disabled={metric_id === "txcosts"}
                                     clickHandler={() => setSelectedScale("stacked")}
@@ -437,7 +437,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                 <GTPButton
                                     label="Percentage"
                                     variant="primary"
-                                    size={isMobile ? "xs" : "sm"}
+                                    size={"sm"}
                                     isSelected={selectedScale === "percentage"}
                                     clickHandler={() => setSelectedScale("percentage")}
                                     innerStyle={{ width: "100%" }}
@@ -467,7 +467,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     ) : null
                   }
 
-                leftClassName="!pb-[0px]"
+                leftClassName="!pb-0 "
                 left={
                     <div className={`relative h-full min-h-0 w-full min-w-[160px]  rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
                         <MetricTable
