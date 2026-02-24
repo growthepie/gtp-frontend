@@ -706,6 +706,7 @@ const MetricTable = ({
             className="h-full px-[6px] pt-[1px]"
             scrollRef={scrollRef}
             onScrollMetricsChange={onScrollMetricsChange}
+            bottomFadeHeight={isMobile ? 15 : 37}
           >
             <div className="space-y-[2px]">
               {rowsWithPlaceholders().map((item, index) => (
