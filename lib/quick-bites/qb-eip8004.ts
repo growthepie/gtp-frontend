@@ -2,50 +2,54 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
 
 const Agents: QuickBiteData = createQuickBite({
-  title: "AI Agents in the Ethereum Ecosystem (EIP-8004)",
+  title: "AI Agents in the Ethereum Ecosystem (ERC-8004)",
   shortTitle: "AI Agents",
-  subtitle: "Exploring EIP8004 and the role of AI agents in Ethereum",
+  subtitle: "Exploring ERC-8004 and the role of AI agents in Ethereum",
   content: [
     "# Introduction:",
-    "[EIP-8004](https://eips.ethereum.org/EIPS/eip-8004) (a.k.a. \"Trustless Agents\" standard) is the emerging backbone for the \"Agentic Economy\" on EVM chains. It solves the \"trust gap\" that occurs when autonomous AI agents from different organizations need to work together without a central middleman to verify who they are or if they are any good.",
-    "The protocol is built around three registries. Think of them as the Identity, Review System and Notary of the AI world.",
-    "### 1. Identity Registry",
-    "Agents can register and mint an [ERC-721 NFTs](https://etherscan.io/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) that serves as their digital passport. Each agent receives a unique ID and sets a metadata URI detailing its skills, communication protocols (e.g., MCP/A2A) and wallet address ensuring global discoverability.",
-    "### 2. Reputation Registry",
-    "A decentralized [feedback system](https://etherscan.io/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63) for clients to rate their AI agents on a score of 0–100 and assign performance tags.",
-    "### 3. Validation Registry (Under Development)",
-    "It allows agents to request audits from external validators (like TEEs or zkML proofs). Unlike the subjective Reputation Registry, this is for objective proofs. However, the reliability depends entirely on the specific validator chosen, not the registry itself.",
+    "[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) (“Trustless Agents”) is emerging as foundational infrastructure for the onchain machine economy. It enables agents and services to discover each other, build reputation and optionally validate their outputs across organizational boundaries without relying on a centralized intermediary.",
+    "While AI agents are a primary and highly visible use case, the standard is designed as a flexible trust and discovery layer that supports any onchain registered service or endpoint.",
+    "At its core, ERC-8004 is built around three registries:",
     
+    "### 1. Identity Registry",
+    "The Identity Registry is an [ERC-721](https://etherscan.io/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) based registration system. Each registered entity mints an NFT whose metadata URI points to a structured registration file describing what the entity is, what it provides and how it can be reached. The registration file can reference A2A endpoints, MCP endpoints, standard web URLs, ENS names, DIDs, OASF endpoints or even email addresses. This design allows AI agents, tool servers, oracle networks, automated DeFi services and other infrastructure providers to establish an onchain identity that makes them globally discoverable.",
+    
+    "### 2. Reputation Registry",
+    "The [Reputation Registry](https://etherscan.io/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63) enables giving onchain feedback to service providers on a score of 0–100 with optional performance tags. It is not limited to subjective scoring, it can also capture performance indicators such as uptime, response time, success rate, block freshness, revenues or yield. This makes it suitable for evaluating both autonomous agents and infrastructure services.",
+
+    "### 3. Validation Registry (Under Development)",
+    "The Validation Registry introduces a mechanism for requesting and publishing objective verification of outputs. Registered entities can request audits or proofs from validator contracts, which may rely on stake secured re-execution, zkML proofs, or TEE-based attestations. The registry itself does not define correctness; instead, it standardizes how validation claims are published and discovered, allowing participants to evaluate services based on the specific validator mechanisms they trust.",
+
     "# Overview",
     "```kpi-cards",
     JSON.stringify([
       {
-        title: "Registered AI Agents",
+        title: "Onchain Registered Services",
         value: "{{eip8004_total_agents}}",
-        description: "latest cumulative",
+        description: "in total",
         icon: "gtp-settings",
-        info: "Total number of AI agents registered under EIP-8004.",
+        info: "Total number of onchain registered services under ERC-8004.",
       },
       {
         title: "Unique Owners",
         value: "{{eip8004_unique_owners}}",
-        description: "latest snapshot",
+        description: "in total",
         icon: "gtp-users",
-        info: "Number of unique owners that registered AI agents.",
+        info: "Number of unique owners that registered at least one onchain services.",
       },
       {
-        title: "Agents with Reviews",
+        title: "Services with Reviews",
         value: "{{eip8004_agents_with_feedback}}",
-        description: "latest cumulative",
+        description: "in total",
         icon: "gtp-realtime",
-        info: "Number of registered AI agents that received at least one review.",
+        info: "Number of registered onchain services that received at least one review.",
       },
     ]),
     "```",
     
-    "Since the launch of the EIP-8004 standard in late January 2026, we have seen explosive growth in the number of registered AI agents, with over {{eip8004_total_agents}} agents registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for AI agents.",
+    "Since the launch of the ERC-8004 standard in late January 2026, we have seen explosive growth in the number of registered machine-to-machine services, with over {{eip8004_total_agents}} services registered to date. The ecosystem is still in its early days, but the rapid adoption of the standard and the volume of feedback already generated show the strong demand for a trustless identity and reputation layer for the machine-to-machine ecosystem.",
 
-    "## Most Popular AI Agents",
+    "## Most Popular AI Agents & Services",
     "```table",
     JSON.stringify({
       readFromJSON: true,
@@ -63,7 +67,7 @@ const Agents: QuickBiteData = createQuickBite({
           sortByValue: false,
         },
         agent: {
-          label: "Agent Name",
+          label: "Name",
           type: "string",
           sourceKey: "name",
           infoTooltip: { sourceKey: "description" },
@@ -103,14 +107,19 @@ const Agents: QuickBiteData = createQuickBite({
           sortByValue: true
         },
         endpoints: {
-          label: "Endpoints",
+          label: "Service Endpoints",
           type: "badges",
-          minWidth: 140,
+          minWidth: 250,
           isNumeric: false,
           sortByValue: false,
           badgeSources: [
             { sourceKey: "service_web_endpoint", label: "Web", color: "#4A90D9" },
             { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
+            { sourceKey: "service_a2a_endpoint", label: "A2A", color: "#F59E0B" },
+            { sourceKey: "service_oasf_endpoint", label: "OASF", color: "#8B5CF6" },
+            { sourceKey: "service_ens_endpoint", label: "ENS", color: "#EC4899" },
+            { sourceKey: "service_did_endpoint", label: "DID", color: "#14B8A6" },
+            { sourceKey: "service_email_endpoint", label: "Email", color: "#F97316" },
           ],
         },
         rating: {
@@ -147,12 +156,12 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
-    "AI agents come in a wide variety of flavors, ranging from deterministic task-specific bots such as automated arbitrageurs or liquidators, to autonomous agentic systems capable of long-term planning and complex DeFi strategy execution. As shown in the table above, each agent supports different payment or communication solutions, such as x402 payment protocols for real-time microtransactions or MCP (Model Context Protocol) endpoints for standardized tool and data integrations.",
+    "AI agents span a broad spectrum, from task-specific bots such as automated arbitrageurs or liquidators to more autonomous, agentic systems capable of long-term planning and complex DeFi strategy execution. Alongside these agents, the registry also includes a growing range of infrastructure services and tool providers. As reflected in the table above, each registered entity exposes different payment and communication interfaces, including x402-based payment flows for real-time microtransactions and MCP (Model Context Protocol) endpoints for standardized access to tools and data services.",
 
     "```chart",
     JSON.stringify({
       type: "line",
-      title: "AI Agent Registrations & Reviews Over Time",
+      title: "Registrations & Reviews Over Time",
       subtitle: "Two key event series over time.",
       showXAsDate: true,
       dataAsJson: {
@@ -206,15 +215,15 @@ const Agents: QuickBiteData = createQuickBite({
         ],
       },
       height: 500,
-      caption: "EIP-8004 event activity over time for the whole Ethereum Ecosystem.",
+      caption: "ERC-8004 event activity over time for the whole Ethereum Ecosystem.",
     }),
     "```",
 
-    "## AI Agent Distribution by Chain",
+    "## Distribution by Chain",
     "```table",
     JSON.stringify({
       readFromJSON: true,
-      content: "As EIP-8004 is an application-layer standard, any EVM-compatible chain can simply deploy the registry contracts without requiring a network hard fork. Because of this permissionless design, many chains across the Ethereum ecosystem have already adopted the standard to support the growing agentic economy.",
+      content: "As ERC-8004 is an application-layer standard, any EVM-compatible chain can simply deploy the registry contracts without requiring a network hard fork. Because of this permissionless design, many chains across the Ethereum ecosystem have already adopted the standard to support the growing agentic economy.",
       scrollable: false,
       jsonData: {
         url: "https://api.growthepie.com/v1/quick-bites/eip8004/origin_breakdown.json",
@@ -243,7 +252,7 @@ const Agents: QuickBiteData = createQuickBite({
         first_registered_date: {
           label: "First Registered Date",
           type: "string",
-          minWidth: 100,
+          minWidth: 120,
           isNumeric: false,
           sortByValue: true,
         },
@@ -330,7 +339,7 @@ const Agents: QuickBiteData = createQuickBite({
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Registered Agents Over Time by Chain",
+      title: "New Registrations of AI Agents & Services by Chain",
       subtitle: "Stacked registrations split by origin chain.",
       showXAsDate: true,
       showTotalTooltip: true,
@@ -347,36 +356,60 @@ const Agents: QuickBiteData = createQuickBite({
         },
       },
       height: 440,
-      caption: "New registrations of AI agents over time, broken down by chain.",
+      caption: "New registrations of AI agents & services over time, broken down by chain.",
     }),
     "```",
 
-    "# Estimating AI Agents Slop",
+    "## Endpoint Service Types",
+    "Count of different endpoint types provided by registered agents & services. One agent can provide multiple endpoints.",
+    "Web endpoints are standard HTTP/HTTPS APIs or frontends for interacting with an agent; MCP (Model Context Protocol) endpoints expose structured tools and data for AI-native integrations; A2A endpoints enable direct agent-to-agent communication; OASF endpoints follow a structured service framework for publishing agent capabilities; ENS endpoints use human-readable .eth names for resolution; DID endpoints provide decentralized identity documents; and Email endpoints bridge agents with traditional offchain communication.",
+    "```chart",
+    JSON.stringify({
+      type: "pie",
+      title: "Service Endpoint Share",
+      subtitle: "Breakdown of endpoint types published by ERC-8004 agents",
+      centerName: "SERVICE\nSHARE",
+      height: 400,
+      dataAsJson: {
+        pieData: {
+          url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
+          pathToData: "data.service_counts",
+          colors: ["#2151F5","#FFC300","#FE5468","#2bee6c","#8B5CF6","#19D9D6","#ff7ceb"],
+          xIndex: 0,
+          yIndex: 1,
+          tooltipDecimals: 0,
+        },
+      },
+      caption: "Distribution of service endpoint types provided by registered agents.",
+    }),
+    "```",
 
-    "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the amount of AI agent slop by counting the non-functional URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, which totals to a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
+    "# Estimating AI Slop",
+
+    "To be discoverable by AI agents and onchain actors, each service provider must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the amount of AI slop by counting the non-functional URI resolvability; currently, out of {{eip8004_total_agents}} total registrations, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, which totals to a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality profiles.",
 
     "```kpi-cards",
     JSON.stringify([
       {
-        title: "Valid AI Agents",
+        title: "Valid Registrations",
         value: "{{eip8004_valid_uri_count}}",
         description: "latest snapshot",
         icon: "gtp-realtime",
-        info: "Count of agents with a valid URI set.",
+        info: "Count of registrations with a valid URI set.",
       },
       {
-        title: "Invalid AI Agents",
+        title: "Invalid Registrations",
         value: "{{eip8004_empty_uri_count}}",
         description: "latest snapshot",
         icon: "gtp-message",
-        info: "Count of agents with an invalid URI set.",
+        info: "Count of registrations with an invalid URI set.",
       },
       {
-        title: "Valid AI Agents Share",
+        title: "Valid Registrations Share",
         value: "{{eip8004_valid_uri_share}}%",
         description: "latest snapshot",
         icon: "gtp-metrics-chains-percentage",
-        info: "Share of agents with a valid URI set.",
+        info: "Share of registrations with a valid URI set.",
       },
     ]),
     "```",
@@ -391,20 +424,20 @@ const Agents: QuickBiteData = createQuickBite({
         meta: [
           {
             name: "Valid URIs",
-            color: "#FE5468",
+            color: "#00C805",
             stacking: "percent",
             xIndex: 0,
-            yIndex: 1,
+            yIndex: 2,
             tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/eip8004/invalid_uri_daily.json",
             pathToData: "data.timeseries.values",
           },
           {
             name: "Invalid URIs",
-            color: "#00C805",
+            color: "#FE5468",
             stacking: "percent",
             xIndex: 0,
-            yIndex: 2,
+            yIndex: 1,
             tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/eip8004/invalid_uri_daily.json",
             pathToData: "data.timeseries.values",
@@ -438,7 +471,7 @@ const Agents: QuickBiteData = createQuickBite({
     },
   ],
   icon: "ethereum-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 });
 
 export default Agents;

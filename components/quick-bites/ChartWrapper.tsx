@@ -41,7 +41,7 @@ interface ChartWrapperProps {
   subtitle?: string;
   jsonData?: any;
   centerName?: string;
-  pieData?: { name: string; y: number; color: string }[];
+  pieData?: { name: string; y: number; color: string; tooltipDecimals?: number }[];
   yAxisLine?: {
     xValue: number;
     annotationPositionY: number;
