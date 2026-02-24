@@ -110,7 +110,7 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
 }
 
 
-const metricIds = ["txcount", "throughput", "stables_mcap", "rent_paid", "market_cap"];
+const metricIds = ["stables_mcap", "rent_paid", "txcount", "throughput", "market_cap"];
 
 export default function LandingSwiperItems() {
   const {
