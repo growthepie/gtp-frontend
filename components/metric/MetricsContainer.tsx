@@ -106,7 +106,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         href={master.sources[s]?.url ?? ""}
                         className="hover:text-color-text-primary dark:hover:text-color-text-primary underline"
                     >
-                        {s}
+                        {master.sources[s]?.name ?? s}
                     </Link>
                 ))
                 .reduce((prev, curr) => [prev, ", ", curr])
