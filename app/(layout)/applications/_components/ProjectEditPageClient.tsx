@@ -4,7 +4,7 @@ import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useRef, useStat
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { createWalletClient, custom } from "viem";
+import { createWalletClient, custom, defineChain } from "viem";
 import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -112,34 +112,6 @@ const EMPTY_FORM: ProjectFormState = {
   twitter: "",
   telegram: "",
 };
-
-const PROFILER_BASE_PROMPT = `You are a focused website profiler that outputs a strict YAML record. Given one or more URLs, visit and look for other sources, then return:
-
-YAML schema (exact keys, in this order):
-version: 7
-name: <slug, lowercase hyphenated, <=60 chars, ASCII, no TLD>
-display_name: <human readable brand/project name>
-description: <2-3 short, neutral sentences. No marketing language>
-websites:
-  - url: <canonical absolute URL of the site you profiled>
-social:
-  twitter:
-    - url: <absolute URL to profile>
-  x:
-    - url: <absolute URL to profile>
-  discord:
-    - url: <absolute URL>
-  telegram:
-    - url: <absolute URL>
-github:
-  - url: <absolute GitHub org/repo URL>
-
-How to work:
-- Always browse the provided URL(s). Prefer the homepage. Follow redirects and use the final URL in websites[0].url.
-- Then search web for mentions of the project name.
-- Keep description non-promotional and factual.
-- Do not guess absent social links.
-- Return YAML only.`;
 
 const asString = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
@@ -265,10 +237,6 @@ const parseProfilerYaml = (yamlText: string): Partial<ProjectFormState> => {
     display_name: parseYamlScalar(sanitized, "display_name"),
     description: parseYamlScalar(sanitized, "description"),
     website: parseFirstUrlInBlock(sanitized, "websites"),
-    main_github: parseFirstUrlInBlock(sanitized, "github"),
-    twitter:
-      parseFirstUrlInBlock(sanitized, "twitter") || parseFirstUrlInBlock(sanitized, "x"),
-    telegram: parseFirstUrlInBlock(sanitized, "telegram"),
   };
 };
 
@@ -404,10 +372,16 @@ const runFallbackUrlMatch = (
   return [...exact, ...similar].slice(0, 5);
 };
 
-const buildProfilerPrompt = (website: string): string =>
-  `${PROFILER_BASE_PROMPT}\n\nURL(s) to profile:\n- ${ensureAbsoluteUrl(
-    website,
-  )}\n\nReturn YAML only.`;
+const extractCoreName = (website: string): string => {
+  try {
+    const hostname = new URL(ensureAbsoluteUrl(website)).hostname.replace(/^www\./, "");
+    // Strip TLD(s): e.g. "huntergames.xyz" → "huntergames", "app.aave.com" → "aave"
+    const parts = hostname.split(".");
+    return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+  } catch {
+    return "";
+  }
+};
 
 const hasMeaningfulRowData = (row: AttestationRowInput): boolean => {
   const address = toStringValue(row.address).trim();
@@ -1165,6 +1139,13 @@ export default function ProjectEditPageClient() {
   const runQueueValidation = useCallback(
     async (): Promise<{ flow: "single" | "bulk"; rows: AttestationRowInput[] } | null> => {
       try {
+        // In add mode the new project doesn't exist in the registry yet — inject it so the
+        // validator accepts the owner_project slug without raising an "unknown project" error.
+        const projectsForValidation =
+          isAddMode && form.owner_project.trim()
+            ? [...normalizedProjects, { owner_project: form.owner_project.trim() }]
+            : normalizedProjects;
+
         if (isSingleFlow) {
           const row = meaningfulRows[0] || bulkController.rows[0];
           if (!row) {
@@ -1175,7 +1156,7 @@ export default function ProjectEditPageClient() {
 
           const normalizedRow = prepareRowForQueue(row);
           singleController.setRow(normalizedRow);
-          const result = await singleController.validate({ projects: normalizedProjects });
+          const result = await singleController.validate({ projects: projectsForValidation });
           if (!result.valid) {
             const message = result.diagnostics.errors[0]?.message || "Single row validation failed.";
             setQueueError(message);
@@ -1192,7 +1173,7 @@ export default function ProjectEditPageClient() {
         }
 
         const bulkResult = await bulkController.validate({
-          projects: normalizedProjects,
+          projects: projectsForValidation,
           maxRows: MAX_QUEUE_ROWS,
         });
         if (!bulkResult.valid) {
@@ -1215,6 +1196,8 @@ export default function ProjectEditPageClient() {
       }
     },
     [
+      isAddMode,
+      form.owner_project,
       isSingleFlow,
       meaningfulRows,
       bulkController,
@@ -1307,7 +1290,8 @@ export default function ProjectEditPageClient() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt: buildProfilerPrompt(website),
+            url: ensureAbsoluteUrl(website),
+            coreName: extractCoreName(website),
           }),
         });
 
@@ -1329,9 +1313,6 @@ export default function ProjectEditPageClient() {
           display_name: parsed.display_name || prev.display_name,
           description: parsed.description || prev.description,
           website: parsed.website || ensureAbsoluteUrl(prev.website),
-          main_github: parsed.main_github || prev.main_github,
-          twitter: parsed.twitter || prev.twitter,
-          telegram: parsed.telegram || prev.telegram,
         }));
 
         setShowMetadataForm(true);
@@ -1437,11 +1418,21 @@ export default function ProjectEditPageClient() {
           params: [{ chainId: `0x${chainId.toString(16)}` }],
         });
       },
-      getWalletClient: async () =>
-        createWalletClient({
+      getWalletClient: async () => {
+        const chainIdHex = await ethereum.request({ method: "eth_chainId" }) as string;
+        const chainId = parseInt(chainIdHex, 16);
+        const chain = defineChain({
+          id: chainId,
+          name: `Chain ${chainId}`,
+          nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+          rpcUrls: { default: { http: [] } },
+        });
+        return createWalletClient({
           account: walletAddress as `0x${string}`,
           transport: custom(ethereum),
-        }) as any,
+          chain,
+        }) as any;
+      },
     };
 
     return createDynamicWalletAdapter(primaryWallet);
