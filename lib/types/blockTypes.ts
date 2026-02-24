@@ -160,7 +160,6 @@ export interface ChartBlock extends BaseBlock {
       type?: string;
       name: string;
       nameFromPath?: string;
-      nameIndex?: number;
       color: string;
       stacking?: "normal" | "percent" | null;
       xIndex: number;
@@ -186,7 +185,16 @@ export interface ChartBlock extends BaseBlock {
       xIndex?: number;
       tooltipDecimals?: number;
     };
-    pieData?: { name: string; y: number; color: string }[]; // Static pie/donut slice data
+    pieData?:
+      | { name: string; y: number; color: string; tooltipDecimals?: number }[]
+      | {
+          url: string;
+          pathToData: string;
+          xIndex?: number;
+          yIndex?: number;
+          tooltipDecimals?: number;
+          colors: string | string[];
+        };
   } | null;
   seeMetricURL?: string | null;
   yAxisLine?: {

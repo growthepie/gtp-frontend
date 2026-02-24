@@ -14,10 +14,9 @@ export interface Author {
     color?: string;
   }
   
-  export interface ChartMeta {
+export interface ChartMeta {
     name: string;
     nameFromPath?: string;
-    nameIndex?: number;
     color: string;
     xIndex: number;
     yIndex: number;
