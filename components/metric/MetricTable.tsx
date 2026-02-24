@@ -30,9 +30,9 @@ const timeIntervalSummaryKeys = {
 
 const timespanLabels: { [key: string]: { [key: string]: string } } = {
   hourly: {
-    "1d": "24h",
-    "30d": "30d",
-    "365d": "1y",
+    "1d": "1d",
+    "3d": "3d",
+    "7d": "7d",
   },
   daily: {
     "1d": "24h",
@@ -200,7 +200,7 @@ const MetricTable = ({
 
   const lastValueTimeIntervalKey = useMemo(() => {
     // hourly has no dedicated changes/summary rows — fall back to daily
-    if (timeIntervalKey === "hourly" || timeIntervalKey === "daily_7d_rolling") {
+    if (timeIntervalKey === "daily_7d_rolling") {
       return "daily";
     }
 
@@ -309,7 +309,6 @@ const MetricTable = ({
               data.chains[chain].hourly!.data.length > 0)),
       )
       .map((chain: any) => {
-        console.log(chain, Math.max(lastValues[chain], 0) / safeMaxVal);
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
@@ -588,7 +587,7 @@ const MetricTable = ({
     }));
   };
 
-
+ 
   return (
     <HorizontalScrollContainer className="h-full " hideScrollbar={true} enableDragScroll={true} includeMargin={false}>
       <div className="w-full min-w-[338px] relative " style={{ height: `${tableViewportHeight}px` }}>
