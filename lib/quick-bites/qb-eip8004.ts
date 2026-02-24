@@ -351,6 +351,29 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
+    "## Pie Chart",
+    "Distribution of supported endpoint service types among registered agents.",
+    "```chart",
+    JSON.stringify({
+      type: "pie",
+      title: "Agent Service Endpoint Share",
+      subtitle: "Breakdown of endpoint types published by EIP-8004 agents",
+      centerName: "SERVICE\nSHARE",
+      height: 400,
+      dataAsJson: {
+        pieData: {
+          url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
+          pathToData: "data.service_counts",
+          colors: ["#2151F5","#FFC300","#FE5468","#2bee6c","#8B5CF6","#19D9D6","#ff7ceb"],
+          xIndex: 0,
+          yIndex: 1,
+          tooltipDecimals: 0,
+        },
+      },
+      caption: "Service endpoint composition based on latest EIP-8004 snapshot.",
+    }),
+    "```",
+
     "# Estimating AI Agents Slop",
 
     "To be discoverable by other AI agents and onchain actors, each AI agent must provide a standardized metadata file via the URI field of its Identity NFT. We can estimate the amount of AI agent slop by counting the non-functional URI resolvability; currently, out of {{eip8004_total_agents}} total agents, only {{eip8004_valid_uri_count}} have valid and resolvable URIs, which totals to a slop share of {{eip8004_empty_uri_share}}%. As tooling matures and registration becomes more intuitive, we expect a decrease in these broken configurations and a shift toward higher-quality, verifiable agent profiles.",
