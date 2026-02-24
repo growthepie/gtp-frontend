@@ -118,7 +118,7 @@ export default function GTPChart({
   minHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
-  emptyStateMessage = "No data to display",
+  emptyStateMessage = "",
   animation = false,
   smooth = false,
   lineWidth = 2,
@@ -941,22 +941,7 @@ export default function GTPChart({
     const baseOption: EChartsOption = {
       animation,
       backgroundColor: "transparent",
-      graphic:
-        pairedSeries.length === 0
-          ? [
-              {
-                type: "text",
-                left: "center",
-                top: "middle",
-                silent: true,
-                style: {
-                  text: emptyStateMessage,
-                  fill: textSecondary,
-                  font: "12px var(--font-raleway), sans-serif",
-                },
-              },
-            ]
-          : undefined,
+
       grid: {
         ...grid,
       },
@@ -1133,6 +1118,11 @@ export default function GTPChart({
           {dragSelectIcon && (
             <GTPIcon icon={dragSelectIcon} className="!size-[24px]" containerClassName="!size-[24px]" />
           )}
+        </div>
+      )}
+      {emptyStateMessage && pairedSeries.length === 0 && (
+        <div className="absolute inset-0 top-[35px] left-[45px] flex items-center justify-center">
+          <div className="text-xxs text-color-text-secondary">{emptyStateMessage}</div>
         </div>
       )}
       {showWatermark ? (
