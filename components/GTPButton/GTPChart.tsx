@@ -426,6 +426,7 @@ export default function GTPChart({
     const shouldStack = stack || percentageMode;
     const grid = { ...DEFAULT_GRID, ...gridOverride };
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
     const threeMonthsMs = 3 * 30 * 24 * 60 * 60 * 1000;
 
     // Y-axis smart scaling
@@ -453,6 +454,7 @@ export default function GTPChart({
       Number.isFinite(xAxisMin) && Number.isFinite(xAxisMax) ? Number(xAxisMax) - Number(xAxisMin) : undefined;
     const xAxisRangeMs = explicitRangeMs ?? inferredRangeMs;
     const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
+    const isLessThan3Days = typeof xAxisRangeMs === "number" && xAxisRangeMs < threeDaysMs;
     const isLessThan3Months = typeof xAxisRangeMs === "number" && xAxisRangeMs < threeMonthsMs;
 
     // For time-based bar series, bars are centered on the timestamp. If the axis min/max sits
@@ -519,6 +521,26 @@ export default function GTPChart({
           timeZone: "UTC",
         }).format(numValue);
         return `{yearBold|${yearLabel}}`;
+      }
+
+      if (isLessThan3Days) {
+        const hours = date.getUTCHours();
+        const minutes = date.getUTCMinutes();
+        // At midnight show a bolded date label as the day boundary marker
+        if (hours === 0 && minutes === 0) {
+          const dayLabel = new Intl.DateTimeFormat("en-GB", {
+            day: "numeric",
+            month: "short",
+            timeZone: "UTC",
+          }).format(numValue);
+          return `{dateBold|${dayLabel}}`;
+        }
+        return new Intl.DateTimeFormat("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "UTC",
+          hour12: false,
+        }).format(numValue);
       }
 
       if (isLessThan3Months) {
@@ -956,6 +978,13 @@ export default function GTPChart({
           formatter: (xAxisLabelFormatter ?? defaultXFormatter) as (value: number | string) => string,
           rich: {
             yearBold: {
+              color: textPrimary,
+              fontSize: textSmTypography.fontSize,
+              fontFamily: textSmTypography.fontFamily,
+              fontWeight: 700,
+              lineHeight: textXxsTypography.lineHeight,
+            },
+            dateBold: {
               color: textPrimary,
               fontSize: textSmTypography.fontSize,
               fontFamily: textSmTypography.fontFamily,
