@@ -231,7 +231,7 @@ export default function GTPChart({
   useEffect(() => {
     if (containerHeight <= 0) return;
     echartsRef.current?.getEchartsInstance?.()?.resize();
-  }, [containerHeight]);
+  }, [containerHeight, minHeight]);
 
   // Typography
   const textXxsTypography = useMemo(

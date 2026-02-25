@@ -161,7 +161,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
-        minHeight={isMobile ? 300 : 400}
+        minHeight={isMobile ? 300 : collapseTable ? 400 : 440}
         emptyStateMessage="Select chains to show their historic data"
         onDragSelect={(xStart, xEnd) => {
           
