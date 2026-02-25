@@ -190,7 +190,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
               clickHandler={() => {
                 setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
               }}
-              leftIconOverride={<div className="min-w-[5px] min-h-[5px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
+              rightIcon={"in-button-close" as GTPIconName}
+              rightIconClassname="!w-[12px] !h-[12px]"
+              leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
             />
           ))}
         </div>

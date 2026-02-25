@@ -273,7 +273,7 @@ export const GTPButton = ({
             animate={isActiveLabelMode}
           />
         )}
-        {displayRightIcon && !leftIconOverride &&  (
+        {displayRightIcon && (
           <GTPButtonIcon
             icon={rightIcon}
             iconClassName={iconSizeClassName}
