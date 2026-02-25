@@ -144,6 +144,7 @@ export default function GTPChart({
   const lastDragPixelRef = useRef<number | null>(null);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
   const { theme } = useTheme();
 
   const textPrimary = theme === "light" ? "rgb(31, 39, 38)" : "rgb(205, 216, 211)";
@@ -206,13 +207,17 @@ export default function GTPChart({
     const sync = () => {
       const rect = element.getBoundingClientRect();
       setContainerHeight(rect.height);
+      setContainerWidth(rect.width);
     };
 
     sync();
     const frame = window.requestAnimationFrame(sync);
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) setContainerHeight(entry.contentRect.height);
+      if (entry) {
+        setContainerHeight(entry.contentRect.height);
+        setContainerWidth(entry.contentRect.width);
+      }
     });
 
     observer.observe(element);
@@ -231,9 +236,9 @@ export default function GTPChart({
   // Typography
   const textXxsTypography = useMemo(
     () =>
-      readTailwindTypographyStyle("text-xs", {
+      readTailwindTypographyStyle("text-xxs", {
         fontFamily: "var(--font-raleway), sans-serif",
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: 500,
         lineHeight: 16,
         letterSpacing: "normal",
@@ -242,9 +247,9 @@ export default function GTPChart({
   );
   const textSmTypography = useMemo(
     () =>
-      readTailwindTypographyStyle("text-sm", {
+      readTailwindTypographyStyle("text-xs", {
         fontFamily: "var(--font-raleway), sans-serif",
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 500,
         lineHeight: 20,
         letterSpacing: "normal",
@@ -649,55 +654,6 @@ export default function GTPChart({
     const isLessThan3Days = typeof xAxisRangeMs === "number" && xAxisRangeMs < threeDaysMs;
     const isLessThan3Months = typeof xAxisRangeMs === "number" && xAxisRangeMs < threeMonthsMs;
 
-    // For time-based bar series, bars are centered on the timestamp. If the axis min/max sits
-    // exactly on the first/last point, edge bars can protrude outside the grid. We pad the
-    // internal bounds using edge intervals computed across all bar series.
-    let effectiveXMin = xAxisMin;
-    let effectiveXMax = xAxisMax;
-    if (hasBarSeries && xAxisType === "time") {
-      const tsMin = Number.isFinite(Number(xAxisMin)) ? Number(xAxisMin) : -Infinity;
-      const tsMax = Number.isFinite(Number(xAxisMax)) ? Number(xAxisMax) : Infinity;
-      const sortedBarTs = Array.from(
-        new Set(
-          pairedSeries
-            .filter((s) => s.seriesType === "bar")
-            .flatMap((s) =>
-              s.pairedData
-                .filter((p) => typeof p[1] === "number" && Number.isFinite(p[1]))
-                .map((p) => Number(p[0]))
-                .filter((ts) => Number.isFinite(ts) && ts >= tsMin && ts <= tsMax),
-            ),
-        ),
-      ).sort((a, b) => a - b);
-
-      if (sortedBarTs.length > 0) {
-        const intervals: number[] = [];
-        for (let i = 1; i < sortedBarTs.length; i += 1) {
-          const diff = sortedBarTs[i] - sortedBarTs[i - 1];
-          if (diff > 0 && Number.isFinite(diff)) intervals.push(diff);
-        }
-
-        // Pad the axis by half the median bar interval so edge bars don't overflow the grid.
-        // Median is used instead of first/last to avoid outlier gaps skewing the calculation.
-        const sortedIntervals = [...intervals].sort((a, b) => a - b);
-        const edgeInterval =
-          sortedIntervals.length > 0
-            ? sortedIntervals[Math.floor(sortedIntervals.length / 2)]
-            : typeof xAxisRangeMs === "number" && xAxisRangeMs > 0
-              ? xAxisRangeMs / 20
-              : undefined;
-
-        const minBase = Number(xAxisMin ?? sortedBarTs[0]);
-        const maxBase = Number(xAxisMax ?? sortedBarTs[sortedBarTs.length - 1]);
-
-        if (Number.isFinite(minBase) && Number.isFinite(maxBase)) {
-          const pad = Number.isFinite(edgeInterval) ? Number(edgeInterval) * 0.25 : 0;
-          effectiveXMin = minBase - pad;
-          effectiveXMax = maxBase + pad;
-        }
-      }
-    }
-
     const formatXAxisTick = (value: number | string) => {
       const numValue = typeof value === "string" ? Number(value) : value;
       if (!Number.isFinite(numValue)) {
@@ -750,6 +706,147 @@ export default function GTPChart({
         timeZone: "UTC",
       }).format(numValue);
     };
+
+    const effectiveXAxisLabelFormatter = xAxisLabelFormatter ?? formatXAxisTick;
+    const fallbackLabelWidthPx = isLessThan3Days ? 40 : isLessThan3Months ? 72 : 62;
+    const stripRichLabelTags = (label: string) =>
+      label
+        .replace(/\{[^|}]+\|([^}]*)\}/g, "$1")
+        .replace(/[{}]/g, "")
+        .trim();
+
+    const estimateLabelWidthPx = (rawLabel: string) => {
+      const plainLabel = stripRichLabelTags(rawLabel);
+      if (!plainLabel) {
+        return 0;
+      }
+
+      const isYearOnly = /^\d{4}$/.test(plainLabel);
+      const charWidth = isYearOnly ? 7.2 : 6.4;
+      const horizontalPadding = isYearOnly ? 14 : 16;
+      return Math.ceil(plainLabel.length * charWidth + horizontalPadding);
+    };
+
+    const visibleLabelTimestamps = Array.from(
+      new Set(allTimestamps.filter((timestamp) => isWithinVisibleRange(timestamp))),
+    ).sort((a, b) => a - b);
+    const sampledLabelTimestamps = (() => {
+      if (visibleLabelTimestamps.length > 0) {
+        if (visibleLabelTimestamps.length <= 12) {
+          return visibleLabelTimestamps;
+        }
+
+        const stride = Math.ceil(visibleLabelTimestamps.length / 12);
+        return visibleLabelTimestamps.filter(
+          (_, index) => index % stride === 0 || index === visibleLabelTimestamps.length - 1,
+        );
+      }
+
+      const fallbackMin = Number.isFinite(visibleMinTs)
+        ? visibleMinTs
+        : minTimestamp !== undefined
+          ? minTimestamp
+          : undefined;
+      const fallbackMax = Number.isFinite(visibleMaxTs)
+        ? visibleMaxTs
+        : maxTimestamp !== undefined
+          ? maxTimestamp
+          : undefined;
+      if (
+        fallbackMin === undefined ||
+        fallbackMax === undefined ||
+        !Number.isFinite(fallbackMin) ||
+        !Number.isFinite(fallbackMax) ||
+        fallbackMax <= fallbackMin
+      ) {
+        return [] as number[];
+      }
+
+      const sampleCount = 6;
+      const step = (fallbackMax - fallbackMin) / (sampleCount - 1);
+      return Array.from({ length: sampleCount }, (_, index) => fallbackMin + step * index);
+    })();
+
+    const sampledLabelWidths = sampledLabelTimestamps
+      .map((timestamp) => {
+        try {
+          return estimateLabelWidthPx(String(effectiveXAxisLabelFormatter(timestamp)));
+        } catch {
+          return estimateLabelWidthPx(formatXAxisTick(timestamp));
+        }
+      })
+      .filter((width) => Number.isFinite(width) && width > 0);
+
+    // X-axis label layout — estimate label pixel width for the active date format so we can:
+    //   1. Set grid.right to ~half the label width, preventing the last label from being clipped
+    //      at the right canvas edge (the label is centered on its tick; without right margin the
+    //      right half overflows the canvas and gets cut off).
+    //   2. Derive minInterval so ECharts generates only as many ticks as fit the available width
+    //      without overlap, making hideOverlap a no-op and giving consistent label spacing.
+    const xLabelWidthPx = clamp(
+      sampledLabelWidths.length > 0 ? Math.max(...sampledLabelWidths, fallbackLabelWidthPx) : fallbackLabelWidthPx,
+      fallbackLabelWidthPx,
+      160,
+    );
+    const xLabelGapPx = isLessThan3Days ? 12 : 16;
+    // Only override right padding when the caller hasn't explicitly provided one.
+    const gridRight = gridOverride?.right !== undefined
+      ? grid.right
+      : Math.max(grid.right, Math.ceil(xLabelWidthPx / 2));
+    const effectiveGrid = { ...grid, right: gridRight };
+    const plotWidthPx = Math.max(100, (containerWidth || 600) - effectiveGrid.left - effectiveGrid.right);
+    const maxTickCount = Math.max(2, Math.floor(plotWidthPx / (xLabelWidthPx + xLabelGapPx)));
+    const xAxisMinInterval =
+      typeof xAxisRangeMs === "number" && maxTickCount > 1 ? xAxisRangeMs / (maxTickCount - 1) : undefined;
+
+    // For time-based bar series, bars are centered on the timestamp. If the axis min/max sits
+    // exactly on the first/last point, edge bars can protrude outside the grid. We pad the
+    // internal bounds using edge intervals computed across all bar series.
+    let effectiveXMin = xAxisMin;
+    let effectiveXMax = xAxisMax;
+    if (hasBarSeries && xAxisType === "time") {
+      const tsMin = Number.isFinite(Number(xAxisMin)) ? Number(xAxisMin) : -Infinity;
+      const tsMax = Number.isFinite(Number(xAxisMax)) ? Number(xAxisMax) : Infinity;
+      const sortedBarTs = Array.from(
+        new Set(
+          pairedSeries
+            .filter((s) => s.seriesType === "bar")
+            .flatMap((s) =>
+              s.pairedData
+                .filter((p) => typeof p[1] === "number" && Number.isFinite(p[1]))
+                .map((p) => Number(p[0]))
+                .filter((ts) => Number.isFinite(ts) && ts >= tsMin && ts <= tsMax),
+            ),
+        ),
+      ).sort((a, b) => a - b);
+
+      if (sortedBarTs.length > 0) {
+        const intervals: number[] = [];
+        for (let i = 1; i < sortedBarTs.length; i += 1) {
+          const diff = sortedBarTs[i] - sortedBarTs[i - 1];
+          if (diff > 0 && Number.isFinite(diff)) intervals.push(diff);
+        }
+
+        // Pad the axis by half the median bar interval so edge bars don't overflow the grid.
+        // Median is used instead of first/last to avoid outlier gaps skewing the calculation.
+        const sortedIntervals = [...intervals].sort((a, b) => a - b);
+        const edgeInterval =
+          sortedIntervals.length > 0
+            ? sortedIntervals[Math.floor(sortedIntervals.length / 2)]
+            : typeof xAxisRangeMs === "number" && xAxisRangeMs > 0
+              ? xAxisRangeMs / 20
+              : undefined;
+
+        const minBase = Number(xAxisMin ?? sortedBarTs[0]);
+        const maxBase = Number(xAxisMax ?? sortedBarTs[sortedBarTs.length - 1]);
+
+        if (Number.isFinite(minBase) && Number.isFinite(maxBase)) {
+          const pad = Number.isFinite(edgeInterval) ? Number(edgeInterval) * 0.25 : 0;
+          effectiveXMin = minBase - pad;
+          effectiveXMax = maxBase + pad;
+        }
+      }
+    }
 
     const maxSeriesValue =
       shouldStack && pairedSeries.length > 0
@@ -1135,13 +1232,15 @@ export default function GTPChart({
       backgroundColor: "transparent",
 
       grid: {
-        ...grid,
+        ...effectiveGrid,
       },
       xAxis: {
         type: xAxisType,
         show: true,
         min: effectiveXMin,
         max: effectiveXMax,
+        splitNumber: maxTickCount,
+        minInterval: xAxisMinInterval,
         boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
         axisTick: { show: false },
@@ -1241,6 +1340,7 @@ export default function GTPChart({
     barMaxWidth,
     chartTooltipPosition,
     containerHeight,
+    containerWidth,
     decimals,
     gridOverride,
     hasBarSeries,
