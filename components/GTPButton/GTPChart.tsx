@@ -854,7 +854,7 @@ export default function GTPChart({
         const posGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: withHexOpacity(primary, 0.85) },
           { offset: 0.5, color: withHexOpacity(primary, 0.6) },
-          { offset: 1, color: "transparent" },
+          { offset: 1, color: withHexOpacity(primary, 0.15) },
         ]);
         const posGradientEmphasis = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: withHexOpacity(primary, 1.0) },

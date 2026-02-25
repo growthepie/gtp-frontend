@@ -12,6 +12,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { formatCompactNumber } from "@/lib/echarts-utils";
 import { GTPButton } from "../GTPButton/GTPButton";
 import colors from "tailwindcss/colors";
+import { useState } from "react";
 
 type MetricChartProps = {
   collapseTable: boolean;
@@ -44,6 +45,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const { theme } = useTheme();
   const { data, metric_id, chainKeys, timespans } = useMetricData();
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const [hoverChainKey, setHoverChainKey] = useState<string | null>(null);
   const {
     selectedScale,
     selectedTimespan,
@@ -180,20 +182,25 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
       {collapseTable && (
-        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] bottom-[30px]">
+        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] bottom-[30px]" >
           {selectedChains.map((chain) => (
-            <GTPButton
+            <div
               key={chain}
-              label={master?.chains?.[chain]?.name}
-              variant="primary"
-              size="xs"
-              clickHandler={() => {
-                setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
-              }}
-              rightIcon={"in-button-close" as GTPIconName}
-              rightIconClassname="!w-[12px] !h-[12px]"
-              leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
-            />
+              onMouseEnter={() => setHoverChainKey(chain)}
+              onMouseLeave={() => setHoverChainKey(null)}
+            >
+              <GTPButton
+                label={master?.chains?.[chain]?.name}
+                variant="primary"
+                size="xs"
+                clickHandler={() => {
+                  setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
+                }}
+                rightIcon={hoverChainKey === chain ? "in-button-close" : undefined}
+                rightIconClassname="!w-[12px] !h-[12px]"
+                leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
+              />
+            </div>
           ))}
         </div>
       )}

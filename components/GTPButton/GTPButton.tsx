@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, MouseEvent } from "react";
+import { KeyboardEvent, MouseEvent, MouseEventHandler } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "../layout/GTPIcon";
 
@@ -34,6 +34,8 @@ export interface GTPButtonProps {
   leftIconContainerClassName?: string;
   leftIconOverride?: React.ReactNode;
   rightIconOverride?: React.ReactNode;
+  onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
+  onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
 
 const FIGMA_BUTTON_SIZE = {
@@ -171,6 +173,8 @@ export const GTPButton = ({
   rightIconOverride,
   rightIconContainerClassName,
   leftIconContainerClassName,
+  onMouseEnter,
+  onMouseLeave,
 }: GTPButtonProps) => {
   const hasLabel = Boolean(label);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
@@ -242,6 +246,8 @@ export const GTPButton = ({
         }`}
         aria-label={isActiveLabelMode && !shouldShowLabel ? label : undefined}
         onClick={clickHandler}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         disabled={isDisabled}
         style={{
           ...(buttonGapStyle !== undefined && { gap: `${buttonGapStyle}px` }),
