@@ -12,6 +12,8 @@ const FONT_VARIABLES = [
   "--font-source-code-pro",
   "--font-roboto-mono",
 ] as const;
+const SCREENSHOT_PIXEL_RATIO_MULTIPLIER = 1.5;
+const SCREENSHOT_PIXEL_RATIO_MAX = 3;
 
 /**
  * Walks up the DOM tree to find the first solid background color.
@@ -92,6 +94,112 @@ function readSnapshotFontVariables(): Record<string, string> {
   }
 
   return fontVars;
+}
+
+type InlineStylePatch = {
+  node: HTMLElement;
+  styleAttribute: string | null;
+};
+
+function isTransparentColorToken(token: string): boolean {
+  const normalized = token.trim().toLowerCase().replace(/\s+/g, " ");
+  if (
+    normalized === "transparent" ||
+    normalized === "#0000" ||
+    normalized === "#00000000"
+  ) {
+    return true;
+  }
+
+  if (/^rgba\(.+,\s*0(?:\.0+)?\)$/.test(normalized)) return true;
+  if (/^hsla\(.+,\s*0(?:\.0+)?\)$/.test(normalized)) return true;
+  if (/^rgb\(.+\/\s*0(?:\.0+)?\s*\)$/.test(normalized)) return true;
+  if (/^hsl\(.+\/\s*0(?:\.0+)?\s*\)$/.test(normalized)) return true;
+  return false;
+}
+
+function extractNonTransparentColorFromShadow(boxShadow: string): string | null {
+  const matches = boxShadow.match(/(rgba?\([^)]*\)|hsla?\([^)]*\)|#[0-9a-fA-F]{3,8}|transparent)/g);
+  if (!matches || matches.length === 0) return null;
+
+  for (let index = matches.length - 1; index >= 0; index -= 1) {
+    const color = matches[index];
+    if (!isTransparentColorToken(color)) {
+      return color;
+    }
+  }
+
+  return null;
+}
+
+function resolveCssColorExpression(node: HTMLElement, colorExpression: string): string | null {
+  if (!colorExpression) return null;
+
+  const probe = document.createElement("span");
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.pointerEvents = "none";
+  probe.style.fontSize = "0";
+  probe.style.color = colorExpression;
+  node.appendChild(probe);
+  const resolved = window.getComputedStyle(probe).color;
+  probe.remove();
+
+  if (!resolved || isTransparentColorToken(resolved)) return null;
+  return resolved;
+}
+
+function patchSubpixelTailwindRingsForSnapshot(root: HTMLElement): () => void {
+  const ringNodes = new Set<HTMLElement>();
+
+  if (root.className.includes("ring-[0.5px]")) {
+    ringNodes.add(root);
+  }
+  root
+    .querySelectorAll<HTMLElement>("[class*='ring-[0.5px]']")
+    .forEach((node) => ringNodes.add(node));
+
+  if (ringNodes.size === 0) {
+    return () => {};
+  }
+
+  const patches: InlineStylePatch[] = [];
+  ringNodes.forEach((node) => {
+    const computed = window.getComputedStyle(node);
+    const ringColorExpression = computed.getPropertyValue("--tw-ring-color").trim();
+    const resolvedRingColor =
+      resolveCssColorExpression(node, ringColorExpression) ??
+      extractNonTransparentColorFromShadow(computed.boxShadow);
+
+    patches.push({
+      node,
+      styleAttribute: node.getAttribute("style"),
+    });
+
+    // Screenshot-only replacement: convert Tailwind ring to an actual border so
+    // sub-pixel strokes survive rasterization in html-to-image.
+    node.style.boxShadow = "none";
+    if (resolvedRingColor) {
+      node.style.borderStyle = "solid";
+      node.style.borderWidth = "0.5px";
+      node.style.borderColor = resolvedRingColor;
+    } else {
+      // Fallback requested by design: if ring color cannot be resolved, hide it.
+      node.style.borderStyle = "solid";
+      node.style.borderWidth = "0";
+      node.style.borderColor = "transparent";
+    }
+  });
+
+  return () => {
+    patches.forEach(({ node, styleAttribute }) => {
+      if (styleAttribute === null) {
+        node.removeAttribute("style");
+      } else {
+        node.setAttribute("style", styleAttribute);
+      }
+    });
+  };
 }
 
 async function waitForSnapshotFonts(): Promise<void> {
@@ -235,9 +343,14 @@ export async function downloadElementAsImage(
   );
 
   const fontEmbedCSS = await buildFontEmbedCSS();
+  const baseDevicePixelRatio = Math.max(window.devicePixelRatio || 1, 1);
+  const screenshotPixelRatio = Math.min(
+    baseDevicePixelRatio * SCREENSHOT_PIXEL_RATIO_MULTIPLIER,
+    SCREENSHOT_PIXEL_RATIO_MAX,
+  );
 
   const options = {
-    pixelRatio: Math.min(Math.max(window.devicePixelRatio || 1, 1), 2),
+    pixelRatio: screenshotPixelRatio,
     backgroundColor: resolveBackgroundColor(element),
     imagePlaceholder: TRANSPARENT_PIXEL,
     fontEmbedCSS,
@@ -254,13 +367,16 @@ export async function downloadElementAsImage(
     },
   };
 
-  let dataUrl: string;
+  const restoreSubpixelRings = patchSubpixelTailwindRingsForSnapshot(element);
+  let dataUrl: string | null = null;
   try {
     dataUrl = await toPng(element, options);
   } catch (err) {
     console.error("[chartSnapshot] toPng failed:", err);
-    return;
+  } finally {
+    restoreSubpixelRings();
   }
+  if (!dataUrl) return;
 
   const metricSlug =
     label
