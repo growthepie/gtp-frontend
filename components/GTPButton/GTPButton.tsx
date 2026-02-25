@@ -229,13 +229,13 @@ export const GTPButton = ({
     <div
       className={`inline-flex rounded-full ${wrapperFillClassName} ${className ?? ""} `}
       style={{
-        padding: hasOutline ? "1px" : "0px",
+        padding: "1px",
         background: wrapperBackground,
       }}
     >
       <button
         type={buttonType}
-        className={`inline-flex justify-center items-center rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
+        className={`inline-flex justify-center items-center  rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
