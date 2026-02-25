@@ -32,6 +32,8 @@ export interface GTPButtonProps {
   innerStyle?: React.CSSProperties;
   rightIconContainerClassName?: string;
   leftIconContainerClassName?: string;
+  leftIconOverride?: React.ReactNode;
+  rightIconOverride?: React.ReactNode;
 }
 
 const FIGMA_BUTTON_SIZE = {
@@ -165,6 +167,8 @@ export const GTPButton = ({
   leftIconClickHandler,
   clickHandler,
   innerStyle,
+  leftIconOverride,
+  rightIconOverride,
   rightIconContainerClassName,
   leftIconContainerClassName,
 }: GTPButtonProps) => {
@@ -245,7 +249,7 @@ export const GTPButton = ({
           ...(innerStyle !== undefined && innerStyle),
         }}
       >
-        {displayLeftIcon && (
+        {displayLeftIcon &&  !leftIconOverride && (
           <GTPButtonIcon
             icon={iconVariant === "alone" ? iconForAlone : leftIcon}
             iconClassName={iconSizeClassName}
@@ -254,6 +258,11 @@ export const GTPButton = ({
             classNameModifier={leftIconClassname}
             iconContainerClassName={leftIconContainerClassName}
           />
+        )}
+        {leftIconOverride && (
+          <>
+          {leftIconOverride}
+          </>
         )}
         {hasLabel && (
           <GTPButtonAnimatedLabel
@@ -264,7 +273,7 @@ export const GTPButton = ({
             animate={isActiveLabelMode}
           />
         )}
-        {displayRightIcon && (
+        {displayRightIcon && !leftIconOverride &&  (
           <GTPButtonIcon
             icon={rightIcon}
             iconClassName={iconSizeClassName}

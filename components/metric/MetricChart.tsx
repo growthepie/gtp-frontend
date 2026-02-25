@@ -10,8 +10,11 @@ import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { formatCompactNumber } from "@/lib/echarts-utils";
+import { GTPButton } from "../GTPButton/GTPButton";
+import colors from "tailwindcss/colors";
 
 type MetricChartProps = {
+  collapseTable: boolean;
   suffix?: string;
   prefix?: string;
   decimals?: number;
@@ -34,7 +37,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable }: MetricChartProps) {
   const { data: master } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
@@ -46,6 +49,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     selectedTimespan,
     timeIntervalKey,
     selectedChains,
+    setSelectedChains,
     showEthereumMainnet,
   } = useMetricChartControls();
 
@@ -157,7 +161,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
-        minHeight={isMobile ? 300 : 440}
+        minHeight={isMobile ? 300 : 400}
         emptyStateMessage="Select chains to show their historic data"
         onDragSelect={(xStart, xEnd) => {
           
@@ -175,6 +179,22 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         }}
         showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
+      {collapseTable && (
+        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] bottom-[30px]">
+          {selectedChains.map((chain) => (
+            <GTPButton
+              key={chain}
+              label={master?.chains?.[chain]?.name}
+              variant="primary"
+              size="xs"
+              clickHandler={() => {
+                setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
+              }}
+              leftIconOverride={<div className="min-w-[5px] min-h-[5px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -146,12 +146,12 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         const minutes = totalMinutes % 60;
 
         if (hours === 0) {
-            return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+            return `Data updated ${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
         }
 
-        const hourLabel = `${hours} ${hours === 1 ? "hour" : "hours"}`;
-        const minuteLabel = `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-        return `${hourLabel} ${minuteLabel} ago`;
+        const hourLabel = `Data updated  ${hours} ${hours === 1 ? "hour" : "hours"}`;
+        const minuteLabel = `Data updated  ${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+        return `Data updated  ${hourLabel} ${minuteLabel} ago`;
     }, [metricData?.last_updated_utc]);
 
 
@@ -205,6 +205,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                   })()}
                 </div>
               }
+
+            
             topBar={
                 <GTPButtonContainer className="mt-[2px] ">
                     <GTPButtonRow>
@@ -479,7 +481,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
+                        <MetricChart collapseTable={collapseTable} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
                     </div>
                 }
             />

@@ -137,15 +137,16 @@ export default function GTPChart({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const echartsRef = useRef<any>(null);
+  const echartsRef = useRef<InstanceType<typeof ReactECharts> | null>(null);
   const dragStartPixelRef = useRef<number | null>(null);
+  const dragStartAxisXRef = useRef<number | null>(null);
+  const latestAxisXRef = useRef<number | null>(null);
+  const lastDragPixelRef = useRef<number | null>(null);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const { theme } = useTheme();
 
   const textPrimary = theme === "light" ? "rgb(31, 39, 38)" : "rgb(205, 216, 211)";
-  const textSecondary = theme === "light" ? "rgb(121, 139, 137)" : "rgb(75, 83, 79)";
 
   const normalizedSeries = useMemo(() => {
     if (xAxisType !== "time" || series.length <= 1) {
@@ -289,7 +290,6 @@ export default function GTPChart({
   );
 
   // Drag-select helpers
-  // Stable refs so document-level handlers always see the latest values
   const onDragSelectRef = useRef(onDragSelect);
   useEffect(() => { onDragSelectRef.current = onDragSelect; }, [onDragSelect]);
   const normalizedSeriesRef = useRef(normalizedSeries);
@@ -297,108 +297,300 @@ export default function GTPChart({
   const minDragSelectPointsRef = useRef(minDragSelectPoints);
   useEffect(() => { minDragSelectPointsRef.current = minDragSelectPoints; }, [minDragSelectPoints]);
 
-  const handleDragMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!onDragSelect) return;
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    dragStartPixelRef.current = e.clientX - rect.left;
-    setDragOverlay(null);
-  }, [onDragSelect]);
+  type AxisPointerPayload = {
+    axesInfo?: Array<{ axisDim?: string; value?: number }>;
+    dataByCoordSys?: Array<{
+      dataByAxis?: Array<{
+        axisDim?: string;
+        value?: number;
+        seriesDataIndices?: Array<{
+          seriesIndex?: number;
+          dataIndex?: number;
+          dataIndexInside?: number;
+        }>;
+      }>;
+    }>;
+  };
 
-  const handleDragMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragStartPixelRef.current === null) return;
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const currentPixel = e.clientX - rect.left;
-    const startPixel = dragStartPixelRef.current;
-    if (Math.abs(currentPixel - startPixel) > 4) {
-      setDragOverlay({
-        left: Math.min(startPixel, currentPixel),
-        width: Math.abs(currentPixel - startPixel),
-      });
+  const getSeriesPointXFromOption = useCallback((seriesIndex: number, dataIndex: number): number | null => {
+    const option = echartsRef.current?.getEchartsInstance?.()?.getOption?.();
+    const optionSeries = Array.isArray(option?.series) ? option.series[seriesIndex] : undefined;
+    if (!optionSeries) return null;
+    const data = (optionSeries as { data?: unknown[] }).data;
+    if (!Array.isArray(data)) return null;
+    const point = data[dataIndex];
+    if (!point) return null;
+
+    if (Array.isArray(point)) {
+      const x = Number(point[0]);
+      return Number.isFinite(x) ? x : null;
     }
+    if (typeof point === "object" && point !== null && "value" in point) {
+      const value = (point as { value?: unknown }).value;
+      if (Array.isArray(value)) {
+        const x = Number(value[0]);
+        return Number.isFinite(x) ? x : null;
+      }
+    }
+    return null;
   }, []);
 
-  // All drag completion is handled at the document level so it fires regardless of
-  // where the mouse is released — this also prevents onMouseLeave from cancelling
-  // an active drag when the cursor briefly exits the container.
+  const snapToNearestDataX = useCallback((axisValue: number): number | null => {
+    if (!Number.isFinite(axisValue)) return null;
+    const allX = Array.from(
+      new Set(
+        normalizedSeriesRef.current.flatMap((s) =>
+          s.data.map(([x]) => Number(x)).filter(Number.isFinite),
+        ),
+      ),
+    ).sort((a, b) => a - b);
+    if (allX.length === 0) return null;
+
+    let lo = 0;
+    let hi = allX.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (allX[mid] < axisValue) lo = mid + 1;
+      else hi = mid;
+    }
+    if (hi === 0) return allX[0];
+    const before = allX[hi - 1];
+    const after = allX[hi];
+    return Math.abs(axisValue - before) <= Math.abs(axisValue - after) ? before : after;
+  }, []);
+
+  const extractSnappedXFromAxisPointer = useCallback((payload: AxisPointerPayload): number | null => {
+    const coordSystems = Array.isArray(payload.dataByCoordSys) ? payload.dataByCoordSys : [];
+    for (const coordSys of coordSystems) {
+      const axes = Array.isArray(coordSys?.dataByAxis) ? coordSys.dataByAxis : [];
+      for (const axis of axes) {
+        if (axis?.axisDim !== "x") continue;
+
+        const seriesIndices = Array.isArray(axis.seriesDataIndices) ? axis.seriesDataIndices : [];
+        for (const item of seriesIndices) {
+          const seriesIndex = Number(item?.seriesIndex);
+          const dataIndex = Number(item?.dataIndexInside ?? item?.dataIndex);
+          if (!Number.isFinite(seriesIndex) || !Number.isFinite(dataIndex)) continue;
+          const pointX = getSeriesPointXFromOption(seriesIndex, dataIndex);
+          if (Number.isFinite(pointX)) return pointX;
+        }
+
+        const axisValue = Number(axis?.value);
+        if (Number.isFinite(axisValue)) {
+          const snapped = snapToNearestDataX(axisValue);
+          if (Number.isFinite(snapped)) return snapped;
+        }
+      }
+    }
+
+    const axesInfo = Array.isArray(payload.axesInfo) ? payload.axesInfo : [];
+    const xInfo = axesInfo.find((axis) => axis?.axisDim === "x");
+    const xValue = Number(xInfo?.value);
+    if (Number.isFinite(xValue)) {
+      const snapped = snapToNearestDataX(xValue);
+      if (Number.isFinite(snapped)) return snapped;
+    }
+
+    return null;
+  }, [getSeriesPointXFromOption, snapToNearestDataX]);
+
+  const querySnappedXAtPixel = useCallback((instance: echarts.ECharts, pixelX: number): number | null => {
+    const chartWidth = instance.getWidth();
+    if (!Number.isFinite(chartWidth) || chartWidth <= 0) {
+      return latestAxisXRef.current;
+    }
+    const clampedX = Math.max(0, Math.min(pixelX, chartWidth));
+
+    const chartHeight = instance.getHeight();
+    const queryY = Number.isFinite(chartHeight) ? chartHeight / 2 : NaN;
+    if (!Number.isFinite(queryY)) return latestAxisXRef.current;
+
+    let captured: number | null = null;
+    const handler = (params: AxisPointerPayload) => {
+      captured = extractSnappedXFromAxisPointer(params);
+    };
+    instance.on("updateAxisPointer", handler);
+    instance.dispatchAction({
+      type: "updateAxisPointer",
+      currTrigger: "mousemove",
+      x: clampedX,
+      y: queryY,
+    });
+    instance.off("updateAxisPointer", handler);
+
+    if (Number.isFinite(captured)) {
+      latestAxisXRef.current = Number(captured);
+    }
+    return Number.isFinite(captured) ? Number(captured) : latestAxisXRef.current;
+  }, [extractSnappedXFromAxisPointer]);
+
   useEffect(() => {
     if (!onDragSelect) return;
+    let subscribedInstance: echarts.ECharts | null = null;
+    let axisPointerHandler: ((params: AxisPointerPayload) => void) | null = null;
 
-    const handleDocumentMouseUp = (e: MouseEvent) => {
-      if (dragStartPixelRef.current === null) return;
-      const startPixel = dragStartPixelRef.current;
-      dragStartPixelRef.current = null;
-      setDragOverlay(null);
-
-      if (!containerRef.current || !onDragSelectRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const endPixel = e.clientX - rect.left;
-      if (Math.abs(endPixel - startPixel) <= 4) return;
-
+    const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
 
-      // Derive the x-axis pixel↔data mapping directly from the axis model.
-      // convertFromPixel returns NaN for pixels outside the grid area, so we
-      // read the axis extents ourselves and do a simple linear interpolation.
-      const xAxisModel = instance.getModel?.()?.getComponent?.("xAxis", 0);
-      if (!xAxisModel) return;
-      const pixelExtent: [number, number] | undefined = xAxisModel.axis?.getExtent?.();
-      const dataExtent: [number, number] | undefined = xAxisModel.axis?.scale?.getExtent?.();
-      if (!pixelExtent || !dataExtent) return;
-
-      const [pixMin, pixMax] = pixelExtent;
-      const [dataMin, dataMax] = dataExtent;
-      if (pixMax === pixMin) return;
-
-      const pixelToData = (px: number): number => {
-        const clamped = Math.max(pixMin, Math.min(pixMax, px));
-        return dataMin + ((clamped - pixMin) / (pixMax - pixMin)) * (dataMax - dataMin);
+      const handler = (params: AxisPointerPayload) => {
+        const snapped = extractSnappedXFromAxisPointer(params);
+        if (Number.isFinite(snapped)) {
+          latestAxisXRef.current = Number(snapped);
+        }
       };
+      subscribedInstance = instance;
+      axisPointerHandler = handler;
+      instance.on("updateAxisPointer", handler);
+    });
 
-      let xStart = pixelToData(Math.min(startPixel, endPixel));
-      let xEnd = pixelToData(Math.max(startPixel, endPixel));
+    return () => {
+      cancelAnimationFrame(frame);
+      if (subscribedInstance && axisPointerHandler) {
+        subscribedInstance.off("updateAxisPointer", axisPointerHandler);
+      }
+      latestAxisXRef.current = null;
+    };
+  }, [onDragSelect, extractSnappedXFromAxisPointer]);
 
-      if (!Number.isFinite(xStart) || !Number.isFinite(xEnd)) return;
+  useEffect(() => {
+    if (!onDragSelect) return;
+    const DRAG_THRESHOLD = 4;
+    let isDragging = false;
+    let zr: ReturnType<echarts.ECharts["getZr"]> | null = null;
+    let zrDom: HTMLElement | null = null;
+    let mouseUpListener: ((event: MouseEvent) => void) | null = null;
+    let onMouseDownHandler: ((event: { event?: { button?: number }; offsetX?: number }) => void) | null = null;
+    let onMouseMoveHandler: ((event: { offsetX?: number }) => void) | null = null;
+    let onMouseUpHandler: ((event: { offsetX?: number }) => void) | null = null;
+    let onGlobalOutHandler: (() => void) | null = null;
 
-      // Enforce minimum data-point count in the selected range.
-      const minPoints = minDragSelectPointsRef.current;
-      if (minPoints > 1) {
-        const allX = Array.from(
-          new Set(
-            normalizedSeriesRef.current.flatMap((s) =>
-              s.data.map(([x]) => Number(x)).filter(Number.isFinite),
+    const frame = requestAnimationFrame(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+      zr = instance.getZr();
+      zrDom = (zr?.dom as HTMLElement | undefined) ?? null;
+      if (!zr || !zrDom) return;
+
+      const finalizeDrag = (rawEndPixel?: number) => {
+        if (!isDragging || dragStartPixelRef.current === null) return;
+        isDragging = false;
+
+        const startPixel = dragStartPixelRef.current;
+        const endPixel = Number.isFinite(rawEndPixel) ? Number(rawEndPixel) : (lastDragPixelRef.current ?? startPixel);
+
+        dragStartPixelRef.current = null;
+        lastDragPixelRef.current = null;
+        setDragOverlay(null);
+
+        if (Math.abs(endPixel - startPixel) <= DRAG_THRESHOLD) {
+          dragStartAxisXRef.current = null;
+          return;
+        }
+
+        const startX = Number.isFinite(dragStartAxisXRef.current)
+          ? Number(dragStartAxisXRef.current)
+          : querySnappedXAtPixel(instance, startPixel);
+        const endX = querySnappedXAtPixel(instance, endPixel);
+        dragStartAxisXRef.current = null;
+
+        if (!onDragSelectRef.current || startX === null || endX === null) return;
+
+        const orderedStart = Math.min(startX, endX);
+        const orderedEnd = Math.max(startX, endX);
+
+        const minPoints = minDragSelectPointsRef.current;
+        if (minPoints > 1) {
+          const allX = Array.from(
+            new Set(
+              normalizedSeriesRef.current.flatMap((s) =>
+                s.data.map(([x]) => Number(x)).filter(Number.isFinite),
+              ),
             ),
-          ),
-        ).sort((a, b) => a - b);
+          ).sort((a, b) => a - b);
 
-        if (allX.length >= minPoints) {
-          const inRange = allX.filter((x) => x >= xStart && x <= xEnd);
-          if (inRange.length < minPoints) {
-            // Snap to the window of `minPoints` consecutive data points whose
-            // midpoint is closest to the midpoint of the user's drag.
-            const mid = (xStart + xEnd) / 2;
-            let bestIdx = 0;
-            let bestDist = Infinity;
-            for (let i = 0; i <= allX.length - minPoints; i++) {
-              const windowMid = (allX[i] + allX[i + minPoints - 1]) / 2;
-              const dist = Math.abs(windowMid - mid);
-              if (dist < bestDist) {
-                bestDist = dist;
-                bestIdx = i;
-              }
-            }
-            xStart = allX[bestIdx];
-            xEnd = allX[bestIdx + minPoints - 1];
+          if (allX.length >= minPoints) {
+            const inRange = allX.filter((x) => x >= orderedStart && x <= orderedEnd);
+            if (inRange.length < minPoints) return;
           }
         }
+
+        onDragSelectRef.current(orderedStart, orderedEnd);
+      };
+
+      const onMouseDown = (event: { event?: { button?: number }; offsetX?: number }) => {
+        if (event?.event?.button !== 0) return;
+        const startPixel = Number(event?.offsetX);
+        if (!Number.isFinite(startPixel)) return;
+
+        isDragging = true;
+        dragStartPixelRef.current = startPixel;
+        lastDragPixelRef.current = startPixel;
+        setDragOverlay(null);
+        dragStartAxisXRef.current = querySnappedXAtPixel(instance, startPixel);
+      };
+
+      const onMouseMove = (event: { offsetX?: number }) => {
+        if (!isDragging || dragStartPixelRef.current === null) return;
+        const currentPixel = Number(event?.offsetX);
+        if (!Number.isFinite(currentPixel)) return;
+
+        lastDragPixelRef.current = currentPixel;
+        querySnappedXAtPixel(instance, currentPixel);
+
+        const startPixel = dragStartPixelRef.current;
+        if (Math.abs(currentPixel - startPixel) > DRAG_THRESHOLD) {
+          setDragOverlay({
+            left: Math.min(startPixel, currentPixel),
+            width: Math.abs(currentPixel - startPixel),
+          });
+        } else {
+          setDragOverlay(null);
+        }
+      };
+
+      const onMouseUp = (event: { offsetX?: number }) => {
+        finalizeDrag(Number(event?.offsetX));
+      };
+
+      const onGlobalOut = () => {
+        finalizeDrag(lastDragPixelRef.current ?? undefined);
+      };
+
+      zr.on("mousedown", onMouseDown);
+      zr.on("mousemove", onMouseMove);
+      zr.on("mouseup", onMouseUp);
+      zr.on("globalout", onGlobalOut);
+      onMouseDownHandler = onMouseDown;
+      onMouseMoveHandler = onMouseMove;
+      onMouseUpHandler = onMouseUp;
+      onGlobalOutHandler = onGlobalOut;
+
+      mouseUpListener = (event: MouseEvent) => {
+        if (!isDragging || !zrDom) return;
+        const rect = zrDom.getBoundingClientRect();
+        finalizeDrag(event.clientX - rect.left);
+      };
+      document.addEventListener("mouseup", mouseUpListener);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      if (zr) {
+        if (onMouseDownHandler) zr.off("mousedown", onMouseDownHandler);
+        if (onMouseMoveHandler) zr.off("mousemove", onMouseMoveHandler);
+        if (onMouseUpHandler) zr.off("mouseup", onMouseUpHandler);
+        if (onGlobalOutHandler) zr.off("globalout", onGlobalOutHandler);
       }
-
-      onDragSelectRef.current(xStart, xEnd);
+      if (mouseUpListener) {
+        document.removeEventListener("mouseup", mouseUpListener);
+      }
+      dragStartPixelRef.current = null;
+      dragStartAxisXRef.current = null;
+      lastDragPixelRef.current = null;
+      setDragOverlay(null);
     };
-
-    document.addEventListener("mouseup", handleDocumentMouseUp);
-    return () => document.removeEventListener("mouseup", handleDocumentMouseUp);
-  }, [onDragSelect]);
+  }, [onDragSelect, querySnappedXAtPixel]);
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
@@ -1021,6 +1213,7 @@ export default function GTPChart({
         position: chartTooltipPosition,
         axisPointer: {
           type: "line",
+          snap: true,
           lineStyle: { color: withOpacity(textPrimary, 0.45), width: 1 },
         },
         backgroundColor: "transparent",
@@ -1049,11 +1242,9 @@ export default function GTPChart({
     chartTooltipPosition,
     containerHeight,
     decimals,
-    emptyStateMessage,
     gridOverride,
     hasBarSeries,
     textPrimary,
-    textSecondary,
     lineWidth,
     numbersXxsTypography,
     optionOverrides,
@@ -1092,8 +1283,6 @@ export default function GTPChart({
       ref={containerRef}
       className={`relative w-full overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
       style={containerStyle}
-      onMouseDown={onDragSelect ? handleDragMouseDown : undefined}
-      onMouseMove={onDragSelect ? handleDragMouseMove : undefined}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
         <ReactECharts
