@@ -44,6 +44,8 @@ export interface GTPChartSeries {
   negativeColor?: string | [string, string];
   /** When set to 'dashed', bars render with a diagonal stripe decal over the gradient fill. */
   pattern?: "dashed";
+  /** When true, line/area charts render their last visible segment as dashed. */
+  dashedLastSegment?: boolean;
 }
 
 export interface GTPChartTooltipParams {
@@ -806,7 +808,7 @@ export default function GTPChart({
     const resolvedAreaOpacity = areaOpacityOverride ?? defaultAreaOpacity;
 
     // Build series configs — each series determines its own type
-    const echartsSeriesConfigs = sortedSeries.map((s, index) => {
+    const echartsSeriesConfigs = sortedSeries.flatMap((s, index) => {
       const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
       const [primary, secondary] = resolveSeriesColors(s.color, fallbackColor);
       const type = s.seriesType;
@@ -940,7 +942,96 @@ export default function GTPChart({
         config = seriesOverrides(config, index);
       }
 
-      return config;
+      const shouldRenderDashedTail =
+        Boolean(s.dashedLastSegment) &&
+        (type === "line" || type === "area") &&
+        xAxisType === "time";
+
+      if (!shouldRenderDashedTail) {
+        return [config];
+      }
+
+      const lineTsMin = Number.isFinite(effectiveXMin) ? Number(effectiveXMin) : -Infinity;
+      const lineTsMax = Number.isFinite(effectiveXMax) ? Number(effectiveXMax) : Infinity;
+      const visibleValueIndexes = s.pairedData
+        .map((point, pointIndex) => {
+          const ts = Number(point[0]);
+          const value = point[1];
+          if (!Number.isFinite(ts) || ts < lineTsMin || ts > lineTsMax) return -1;
+          if (typeof value !== "number" || !Number.isFinite(value)) return -1;
+          return pointIndex;
+        })
+        .filter((pointIndex) => pointIndex >= 0);
+
+      if (visibleValueIndexes.length < 2) {
+        return [config];
+      }
+
+      const lastVisibleIdx = visibleValueIndexes[visibleValueIndexes.length - 1];
+      const secondLastVisibleIdx = visibleValueIndexes[visibleValueIndexes.length - 2];
+      if (lastVisibleIdx - secondLastVisibleIdx !== 1) {
+        return [config];
+      }
+
+      const secondLastPoint = s.pairedData[secondLastVisibleIdx];
+      const lastPoint = s.pairedData[lastVisibleIdx];
+      if (!secondLastPoint || !lastPoint) {
+        return [config];
+      }
+
+      const secondLastValue = secondLastPoint[1];
+      const lastValue = lastPoint[1];
+      if (
+        typeof secondLastValue !== "number" ||
+        !Number.isFinite(secondLastValue) ||
+        typeof lastValue !== "number" ||
+        !Number.isFinite(lastValue)
+      ) {
+        return [config];
+      }
+
+      const solidData = s.pairedData.map<[number, number | null]>((point, pointIdx) =>
+        pointIdx === lastVisibleIdx ? [point[0], null] : point,
+      );
+      const solidConfig = {
+        ...config,
+        data: solidData,
+      };
+      const dashedTailConfig: Record<string, unknown> = {
+        ...config,
+        data: [
+          {
+            value: [secondLastPoint[0], secondLastValue],
+            symbolSize: 0,
+            tooltip: { show: false },
+          },
+          {
+            value: [lastPoint[0], lastValue],
+          },
+        ],
+        areaStyle: undefined,
+        stack: undefined,
+        symbol: "circle",
+        symbolSize: 8,
+        showSymbol: true,
+        lineStyle: {
+          width: lineWidth,
+          color: primary,
+          type: "dashed",
+        },
+        itemStyle: { color: "transparent", borderWidth: 0 },
+        emphasis: {
+          symbolSize: 8,
+          symbol: "circle",
+          itemStyle: {
+            color: withHexOpacity(secondary, 0.5),
+            borderWidth: 0,
+            shadowBlur: 0,
+          },
+        },
+      };
+
+      return [solidConfig, dashedTailConfig];
     });
 
     // Default Y-axis formatter
@@ -978,17 +1069,21 @@ export default function GTPChart({
       const sortedPoints = validPoints
         .map((p) => ({ ...p, numericValue: Number(p.value[1]) }))
         .sort((a, b) => b.numericValue - a.numericValue);
+      const dedupedSortedPoints = sortedPoints.filter(
+        (point, pointIdx, collection) =>
+          collection.findIndex((candidate) => candidate.seriesName === point.seriesName) === pointIdx,
+      );
 
       const resolvedTooltipRowLimit =
         typeof limitTooltipRows === "number" && Number.isFinite(limitTooltipRows)
           ? Math.max(1, Math.floor(limitTooltipRows))
           : undefined;
 
-      let displayPoints = sortedPoints;
-      if (resolvedTooltipRowLimit !== undefined && sortedPoints.length > resolvedTooltipRowLimit) {
+      let displayPoints = dedupedSortedPoints;
+      if (resolvedTooltipRowLimit !== undefined && dedupedSortedPoints.length > resolvedTooltipRowLimit) {
         const visiblePointCount = Math.max(0, resolvedTooltipRowLimit - 1);
-        const visiblePoints = sortedPoints.slice(0, visiblePointCount);
-        const overflowPoints = sortedPoints.slice(visiblePointCount);
+        const visiblePoints = dedupedSortedPoints.slice(0, visiblePointCount);
+        const overflowPoints = dedupedSortedPoints.slice(visiblePointCount);
         const overflowSum = overflowPoints.reduce((sum, point) => sum + point.numericValue, 0);
         const othersColor = withOpacity(textPrimary, 0.55);
 
