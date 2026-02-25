@@ -361,8 +361,20 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             />
                             <GTPButton
                                 label={(() => {
-                                    const fmt = (ts: number) => new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-                                    return ` ${fmt(selectedRange[0])} - ${fmt(selectedRange[1])}`;
+                                    const dateLabel = new Intl.DateTimeFormat("en-GB", {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                        timeZone: "UTC",
+                                    }).format(selectedRange[0]);
+
+                                    const dateLabel2 = new Intl.DateTimeFormat("en-GB", {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                        timeZone: "UTC",
+                                    }).format(selectedRange[1]);
+                                    return ` ${dateLabel} - ${dateLabel2}`;
                                 })()}
                                 size={"sm"}
                                 className="block"
