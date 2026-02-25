@@ -208,7 +208,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
             
             topBar={
-                <GTPButtonContainer className="mt-[2px] ">
+                <GTPButtonContainer className=" ">
                     <GTPButtonRow>
                     {timeIntervals.map((interval) => (
                         <GTPButton
@@ -401,16 +401,16 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             onOpenChange={setIsSharePopoverOpen}
                             dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                         />
-                        <div title="Download image">
-                            <GTPButton
-                                leftIcon="gtp-download-monochrome"
-                                size={"sm"}
-                                variant="no-background"
-                                visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
-                                disabled={isDownloadingChartSnapshot}
-                                clickHandler={handleDownloadChartSnapshot}
-                            />
-                        </div>
+                      
+                        <GTPButton
+                            leftIcon="gtp-download-monochrome"
+                            size={"sm"}
+                            variant="no-background"
+                            visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                            disabled={isDownloadingChartSnapshot}
+                            clickHandler={handleDownloadChartSnapshot}
+                        />
+                     
                     </GTPButtonRow>
                    
                    <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end w-full">
