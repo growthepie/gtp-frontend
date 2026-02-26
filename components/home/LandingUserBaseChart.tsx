@@ -263,7 +263,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
             <LandingEventsChart /> 
           </Container>
           )}
-          {IS_PRODUCTION && (
+        
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -284,7 +284,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               Overview of the chains being part of the (wider) Ethereum ecosystem.
             </Subheading>
           </Container>
-          )}
+    
           <Container className="pt-[15px]">
             <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
               <TopRowParent className="!justify-center lg:!justify-normal">
