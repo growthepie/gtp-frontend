@@ -5,6 +5,7 @@ import Sidebar from "../sidebar/Sidebar";
 import { getIcon, Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useIsStaleSession } from "@/hooks/useIsStaleSession";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { track } from "@/lib/tracking";
 import { GTPIcon } from "./GTPIcon";
@@ -19,6 +20,7 @@ import { IconContextMenu } from "./IconContextMenu";
 export default function SidebarContainer() {
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const toggleSidebar = useUIContext((state) => state.toggleSidebar);
+  const isStale = useIsStaleSession();
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
 
@@ -79,6 +81,7 @@ export default function SidebarContainer() {
             
             <Link
               href="/"
+              prefetch={isStale ? false : undefined}
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-[width] duration-sidebar ease-sidebar`}
               title="Link to growthepie"
               aria-label="Link to growthepie"
