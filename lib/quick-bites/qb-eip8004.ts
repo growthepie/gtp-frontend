@@ -109,7 +109,8 @@ const Agents: QuickBiteData = createQuickBite({
         endpoints: {
           label: "Service Endpoints",
           type: "badges",
-          minWidth: 250,
+          minWidth: 300,
+          maxVisibleBadges: 6,
           isNumeric: false,
           sortByValue: false,
           badgeSources: [
@@ -150,8 +151,12 @@ const Agents: QuickBiteData = createQuickBite({
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        topColumns: ["", "rating"],
-        bottomColumns: ["endpoints", "origin_key", "x402_support"],
+        sections: [
+          { columns: ["rating", "feedback_count_valid", "unique_clients"], labelPosition: "bottom" },
+          { columns: ["origin_key", "x402_support"], labelPosition: "right", layout: "start" },
+          { columns: ["endpoints"], labelPosition: "hidden" },
+        ],
+        autoRowHeight: true,
       },
     }),
     "```",
@@ -251,9 +256,11 @@ const Agents: QuickBiteData = createQuickBite({
         },
         first_registered_date: {
           label: "First Registered Date",
-          type: "string",
-          minWidth: 120,
-          isNumeric: false,
+          type: "date",
+          dateFormat: "medium",
+          showTimeAgo: true,
+          minWidth: 140,
+          isNumeric: true,
           sortByValue: true,
         },
         total_registered: {
@@ -330,8 +337,10 @@ const Agents: QuickBiteData = createQuickBite({
       columnSortBy: "value",
       cardView: {
         titleColumn: "origin_key",
-        topColumns: [null, "total_registered", "valid_registrations"],
-        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"]
+        sections: [
+          { columns: ["total_registered", "valid_registrations"], labelPosition: "bottom" },
+          { columns: ["total_feedback", "unique_owners", "agents_per_owner"], labelPosition: "bottom" },
+        ]
       },
     }),
     "```",
@@ -378,6 +387,16 @@ const Agents: QuickBiteData = createQuickBite({
           xIndex: 0,
           yIndex: 1,
           tooltipDecimals: 0,
+          showPercentage: true,
+          nameMap: {
+            "web": "Web",
+            "mcp": "MCP",
+            "a2a": "A2A",
+            "oasf": "OASF",
+            "ens": "ENS",
+            "did": "DID",
+            "email": "Email",
+          },
         },
       },
       caption: "Distribution of service endpoint types provided by registered agents.",
