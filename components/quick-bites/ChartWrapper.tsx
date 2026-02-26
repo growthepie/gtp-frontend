@@ -42,6 +42,7 @@ interface ChartWrapperProps {
   jsonData?: any;
   centerName?: string;
   pieData?: { name: string; y: number; color: string; tooltipDecimals?: number }[];
+  showPiePercentage?: boolean;
   yAxisLine?: {
     xValue: number;
     annotationPositionY: number;
@@ -98,6 +99,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   showTotalTooltip = false,
   centerName,
   pieData,
+  showPiePercentage = false,
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -438,18 +440,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         maximumFractionDigits: decimals,
       });
 
+      const percentageStr = showPiePercentage
+        ? `<div class="text-right numbers-xs text-forest-400">${percentage.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</div>`
+        : '';
+
       return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
         <div class="flex space-x-2 items-center font-medium mb-0.5">
           <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
           <div class="tooltip-point-name text-xs">${name}</div>
-          <div class="flex-1 text-right justify-end flex numbers-xs ml-2">
-            <div>${prefix}${displayValue}${suffix}</div>
+          <div class="flex-1 text-right justify-end flex numbers-xs ml-2 gap-x-[5px]">
+            <div>${prefix}${displayValue}${suffix}</div>${percentageStr}
           </div>
         </div>
-
       </div>`;
     },
-    [pieData, jsonMeta],
+    [pieData, jsonMeta, showPiePercentage],
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
@@ -1037,7 +1042,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 
               {/* </div> */}
             </div>
-            {filteredNames.length > 0 && (
+            {filteredNames && filteredNames.length > 0 && (
               <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
                 <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
                 <div className="text-xxxs whitespace-nowrap">Reset</div>

@@ -77,6 +77,8 @@ export interface TableBlock extends BaseBlock {
       chip?: boolean; // Render value as a monospace pill badge
       valueMap?: Record<string, string>; // Map raw values to display strings (case-insensitive lookup)
       valueMapShowKey?: boolean; // Show original key after mapped value, e.g. "US Dollar (USD)"
+      dateFormat?: 'short' | 'medium' | 'long'; // For date type: date display format (default 'medium')
+      showTimeAgo?: boolean; // For date type: show relative time as secondary text (e.g. "100 days ago")
       cellBar?: {
         colorColumn?: string; // Column key with origin_key for chain color
         color?: string;       // Explicit color fallback
@@ -106,11 +108,21 @@ export interface TableBlock extends BaseBlock {
   };
   scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
   cardView?: {
-    titleColumn: string; // Column key for card title (middle section, displayed prominently)
-    imageColumn?: string; // Column key for avatar/icon (middle section)
-    linkColumn?: string; // Column key whose value is used as arrow link (middle section)
-    topColumns?: string[]; // Explicit column keys for top metric rows (auto-detected if omitted)
-    bottomColumns?: string[]; // Explicit column keys for bottom tag row (auto-detected if omitted)
+    titleColumn: string; // Column key for card title (header row, displayed prominently)
+    imageColumn?: string; // Column key for avatar/icon (header row)
+    linkColumn?: string; // Column key whose value is used as arrow link (header row)
+
+    // New sections-based layout: ordered rows below the header, each with its own label/layout config.
+    sections?: Array<{
+      columns: string[]; // Column keys to show in this row
+      labelPosition?: "right" | "left" | "top" | "bottom" | "hidden"; // Where column label appears relative to value (default "right")
+      layout?: "spread" | "start" | "end"; // Horizontal distribution (default "spread")
+    }>;
+
+    // Legacy: used when sections is not provided. Kept for backward compatibility.
+    topColumns?: string[];
+    bottomColumns?: string[];
+
     hiddenColumns?: string[]; // Columns to suppress entirely in card view
     autoRowHeight?: boolean; // If true, allow card rows to grow with content instead of fixed 20px height
   };
@@ -196,6 +208,8 @@ export interface ChartBlock extends BaseBlock {
           yIndex?: number;
           tooltipDecimals?: number;
           colors: string | string[];
+          nameMap?: Record<string, string>; // Map raw slice names to display names
+          showPercentage?: boolean; // Show percentage in tooltip (default false)
         };
   } | null;
   seeMetricURL?: string | null;
