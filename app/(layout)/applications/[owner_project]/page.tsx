@@ -192,17 +192,21 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   let valueKey = "value";
   let valueIndex = 1;
   let decimals = 0;
+  const overTimeValues = Object.values(data.metrics[metric].over_time);
+  const hasOverTimeData = overTimeValues.some((v) => v.daily.data.length > 0);
+  const firstWithData = overTimeValues.find((v) => v.daily.data.length > 0);
+
   if (metricDefinition.units.eth) {
     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
     suffix = showUsd ? metricDefinition.units.usd.suffix || "" : metricDefinition.units.eth.suffix || "";
     valueKey = showUsd ? "usd" : "eth";
-    valueIndex = Object.values(data.metrics[metric].over_time)[0].daily.types.indexOf(valueKey);
+    valueIndex = firstWithData ? firstWithData.daily.types.indexOf(valueKey) : 1;
     decimals = metricDefinition.units[valueKey].decimals || 0;
   } else {
     prefix = Object.values(metricDefinition.units)[0].prefix || "";
     suffix = Object.values(metricDefinition.units)[0].suffix || "";
     valueKey = Object.keys(metricDefinition.units)[0];
-    valueIndex = Object.values(data.metrics[metric].over_time)[0].daily.types.indexOf(valueKey);
+    valueIndex = firstWithData ? firstWithData.daily.types.indexOf(valueKey) : 1;
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
 
@@ -236,22 +240,30 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
         </div>
       </Container>
       <Container>
-        <MetricChainBreakdownBar metric={metric} />
-        <div className={`${selectedTimespan === "1d" ? "max-h-0" : "h-[168px]"} transition-all duration-300 overflow-hidden`}>
-          <ApplicationDetailsChart
-            metric={metric}
-            prefix={prefix}
-            suffix={suffix}
-            decimals={decimals}
-            seriesTypes={data.metrics[metric].over_time[sortedChainKeys[0]].daily.types}
-            seriesData={
-              sortedChainKeys.map((chain) => ({
-                name: chain,
-                data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
-              })
-              )}
-          />
-        </div>
+        {hasOverTimeData ? (
+          <>
+            <MetricChainBreakdownBar metric={metric} />
+            <div className={`${selectedTimespan === "1d" ? "max-h-0" : "h-[168px]"} transition-all duration-300 overflow-hidden`}>
+              <ApplicationDetailsChart
+                metric={metric}
+                prefix={prefix}
+                suffix={suffix}
+                decimals={decimals}
+                seriesTypes={firstWithData!.daily.types}
+                seriesData={
+                  sortedChainKeys.map((chain) => ({
+                    name: chain,
+                    data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
+                  })
+                )}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-center h-[168px] text-sm text-forest-400">
+            No chart data available for this metric
+          </div>
+        )}
       </Container>
     </>
   );
