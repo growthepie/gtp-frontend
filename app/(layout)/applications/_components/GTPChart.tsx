@@ -81,9 +81,10 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
   // const chainsData = Object.entries(metricData.aggregated.data);
   // const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
   const { minUnix, maxUnix } = useMemo(() => {
+    const nonEmpty = seriesData.filter((series) => series.data.length > 0);
     return {
-      minUnix: Math.min(...seriesData.map((series) => series.data[0][0])),
-      maxUnix: Math.max(...seriesData.map((series) => series.data[series.data.length - 1][0]))
+      minUnix: nonEmpty.length > 0 ? Math.min(...nonEmpty.map((series) => series.data[0][0])) : 0,
+      maxUnix: nonEmpty.length > 0 ? Math.max(...nonEmpty.map((series) => series.data[series.data.length - 1][0])) : 0,
     };
   }, [seriesData]);
   
