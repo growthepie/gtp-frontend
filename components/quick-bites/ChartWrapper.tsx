@@ -978,14 +978,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             {/*Categories*/}
             <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
               {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
-                {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
+                {(chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data)).filter((series: any) => !series.oppositeYAxis).map((category: any) => {
+                  const allCategories: any[] = chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data);
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
                     bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
 
                   return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                     <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
