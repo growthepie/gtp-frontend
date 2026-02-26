@@ -100,10 +100,14 @@ export async function GET() {
     );
   }
 
-  const summary = (await summaryRes.json()) as SummaryResponse;
-  const community = (await communityRes.json()) as CommunityRow[];
-  const projectFunding = (await fundingRes.json()) as ProjectFundingRow[];
-  const projectMetadata = (await metadataRes.json()) as ProjectMetadataResponse;
+  // Some Octant API responses contain NaN values (Python/numpy serialization artifact),
+  // which are invalid JSON. Sanitize all responses via text before parsing.
+  const sanitizeJson = (text: string) => JSON.parse(text.replace(/:\s*NaN\b/g, ": null"));
+
+  const summary = sanitizeJson(await summaryRes.text()) as SummaryResponse;
+  const community = sanitizeJson(await communityRes.text()) as CommunityRow[];
+  const projectFunding = sanitizeJson(await fundingRes.text()) as ProjectFundingRow[];
+  const projectMetadata = sanitizeJson(await metadataRes.text()) as ProjectMetadataResponse;
 
   const epochEntries = Object.entries(summary.epochs)
     .map(([epoch, info]) => ({ epoch: Number(epoch), info }))
