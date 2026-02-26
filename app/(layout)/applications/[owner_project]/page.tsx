@@ -5,6 +5,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { ContractDict, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
+import { getExplorerAddressUrl } from "@/lib/helpers";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, Category } from "../_components/Components";
@@ -502,8 +503,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
             </div>
           </div>
           <Link
-            href={`${masterData.chains[contract.origin_key].block_explorer
-              }address/${contract.address}`}
+            href={getExplorerAddressUrl(masterData.chains[contract.origin_key].block_explorer, contract.address)}
             rel="noopener noreferrer"
             target="_blank"
           >
