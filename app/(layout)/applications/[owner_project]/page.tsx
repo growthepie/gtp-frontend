@@ -503,7 +503,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
             </div>
           </div>
           <Link
-            href={getExplorerAddressUrl(masterData.chains[contract.origin_key].block_explorer, contract.address)}
+            href={getExplorerAddressUrl(masterData.chains[contract.origin_key].block_explorer, String(contract.address))}
             rel="noopener noreferrer"
             target="_blank"
           >
