@@ -14,7 +14,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
-import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipNew, TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import Mustache from 'mustache';
 
 
@@ -32,6 +32,31 @@ const getHostname = (url: string): string => {
   } catch {
     return url;
   }
+};
+
+const isLikelyEmailAddress = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+const getBadgeLinkProps = (badge: { label: string; url: string }) => {
+  const rawUrl = badge.url.trim();
+  const isEmailBadge =
+    badge.label.toLowerCase() === "email" ||
+    rawUrl.toLowerCase().startsWith("mailto:") ||
+    isLikelyEmailAddress(rawUrl);
+
+  if (isEmailBadge) {
+    const emailAddress = rawUrl.replace(/^mailto:/i, "").trim();
+    return {
+      href: emailAddress ? `mailto:${emailAddress}` : rawUrl,
+      target: undefined as string | undefined,
+      rel: undefined as string | undefined,
+    };
+  }
+
+  return {
+    href: rawUrl,
+    target: "_blank",
+    rel: "noopener noreferrer",
+  };
 };
 
 /** Fixed-content column types that should never flex. */
@@ -443,12 +468,24 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const activeBadges = badges?.filter(b => b.url) ?? [];
       if (activeBadges.length === 0) return <EmptyCell />;
       return (
-        <div className="flex items-center gap-x-[5px] w-full flex-wrap">
+        <div className="flex items-start gap-x-[5px] gap-y-[4px] w-full flex-wrap">
           {activeBadges.map((badge) => (
-            <a key={badge.label} href={badge.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity" style={{ borderColor: badge.color, color: badge.color }}>
-              <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
-              {badge.label}
-            </a>
+            (() => {
+              const linkProps = getBadgeLinkProps(badge);
+              return (
+                <a
+                  key={badge.label}
+                  href={linkProps.href}
+                  target={linkProps.target}
+                  rel={linkProps.rel}
+                  className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity"
+                  style={{ borderColor: badge.color, color: badge.color }}
+                >
+                  <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+                  {badge.label}
+                </a>
+              );
+            })()
           ))}
         </div>
       );
@@ -474,7 +511,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
   // Card view for mobile when cardView config is present
   if (isMobile && block.cardView) {
-    const { titleColumn, imageColumn, linkColumn, topColumns: explicitTop, bottomColumns: explicitBottom, hiddenColumns = [] } = block.cardView;
+    const { titleColumn, imageColumn, linkColumn, topColumns: explicitTop, bottomColumns: explicitBottom, hiddenColumns = [], autoRowHeight } = block.cardView;
     // Columns consumed by the middle section or explicitly hidden
     const reservedInCard = new Set([titleColumn, ...(imageColumn ? [imageColumn] : []), ...(linkColumn ? [linkColumn] : []), ...hiddenColumns]);
     const visibleColumns = columnKeyOrder.filter(key => !reservedInCard.has(key));
@@ -516,7 +553,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     const colDef = columnDefinitions[colKey];
                     const label = colDef?.label ?? formatLabel(colKey);
                     return (
-                      <div key={colKey} className="flex items-center h-[20px] gap-x-[5px]">
+                      <div
+                        key={colKey}
+                        className={`flex items-center gap-x-[5px] ${autoRowHeight ? '' : 'h-[20px]'}`}
+                      >
                         <span className={`${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} text-color-text-primary text-right truncate`}>
                           {renderCellContent(cell, colKey)}
                         </span>
@@ -560,7 +600,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     const colDef = columnDefinitions[colKey];
                     const label = colDef?.label ?? formatLabel(colKey);
                     return (
-                      <div key={colKey} className="flex items-center h-[20px] gap-x-[5px]">
+                      <div
+                        key={colKey}
+                        className={`flex items-center gap-x-[5px] ${autoRowHeight ? '' : 'h-[20px]'}`}
+                      >
                         <span className={`${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} text-color-text-primary text-right truncate`}>
                           {renderCellContent(cell, colKey)}
                         </span>
@@ -791,21 +834,78 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     if (activeBadges.length === 0) {
                       cellMainContent = <EmptyCell />;
                     } else {
+                      const configuredMaxVisibleBadges = columnDefinitions?.[columnKey]?.maxVisibleBadges;
+                      const hasConfiguredBadgeLimit = typeof configuredMaxVisibleBadges === "number";
+                      const maxVisibleBadges = Math.max(0, configuredMaxVisibleBadges ?? activeBadges.length);
+                      const visibleBadgeLimit =
+                        hasConfiguredBadgeLimit && activeBadges.length > maxVisibleBadges
+                          ? Math.max(0, maxVisibleBadges - 1)
+                          : maxVisibleBadges;
+                      const visibleBadges = activeBadges.slice(0, visibleBadgeLimit);
+                      const hiddenBadges = activeBadges.slice(visibleBadgeLimit);
+                      const hiddenBadgeCount = hiddenBadges.length;
+
+                      // In the main table view, keep badges on a single line and cap visible badges when configured.
                       cellMainContent = (
-                        <div className="flex items-center gap-x-[5px] w-full">
-                          {activeBadges.map((badge) => (
-                            <a
-                              key={badge.label}
-                              href={badge.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity"
-                              style={{ borderColor: badge.color, color: badge.color }}
-                            >
-                              <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
-                              {badge.label}
-                            </a>
+                        <div className="flex items-center gap-x-[5px] w-full min-w-0 overflow-hidden">
+                          {visibleBadges.map((badge, badgeIndex) => (
+                            (() => {
+                              const linkProps = getBadgeLinkProps(badge);
+                              return (
+                                <a
+                                  key={`${badge.label}-${badgeIndex}`}
+                                  href={linkProps.href}
+                                  target={linkProps.target}
+                                  rel={linkProps.rel}
+                                  className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity flex-shrink-0"
+                                  style={{ borderColor: badge.color, color: badge.color }}
+                                >
+                                  <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+                                  {badge.label}
+                                </a>
+                              );
+                            })()
                           ))}
+                          {hiddenBadgeCount > 0 && (
+                            <GTPTooltipNew
+                              size="sm"
+                              placement="bottom-end"
+                              allowInteract={true}
+                              containerClass="flex flex-col gap-y-[10px] !pr-[5px]"
+                              positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                              trigger={(
+                                <span className="inline-flex items-center rounded-full w-auto pl-[5px] pr-[6px] py-[1.5px] text-xxs bg-color-bg-medium flex-shrink-0 cursor-default">
+                                  {`+ ${hiddenBadgeCount} more`}
+                                </span>
+                              )}
+                            >
+                              <>
+                                <TooltipHeader title={columnDefinitions?.[columnKey]?.label || "Service Endpoints"} />
+                                <TooltipBody className="pl-[20px]">
+                                  <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
+                                    {activeBadges.map((badge, badgeIndex) => (
+                                      (() => {
+                                        const linkProps = getBadgeLinkProps(badge);
+                                        return (
+                                          <a
+                                            key={`${badge.label}-all-${badgeIndex}`}
+                                            href={linkProps.href}
+                                            target={linkProps.target}
+                                            rel={linkProps.rel}
+                                            className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity"
+                                            style={{ borderColor: badge.color, color: badge.color }}
+                                          >
+                                            <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+                                            {badge.label}
+                                          </a>
+                                        );
+                                      })()
+                                    ))}
+                                  </div>
+                                </TooltipBody>
+                              </>
+                            </GTPTooltipNew>
+                          )}
                         </div>
                       );
                     }
