@@ -1,31 +1,27 @@
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
+import { useCallback, useMemo, useState } from "react";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { Icon } from "@iconify/react";
-import { useTransition, animated } from "@react-spring/web";
-import { useUIContext } from "@/contexts/UIContext";
 
-import { difference, intersection } from "lodash";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { intersection } from "lodash";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
-import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems, daMetricItems } from "@/lib/metrics";
-import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import ChainMetricTableRow from "@/components/layout/ChainMetricTableRow";
 import {
-  GridTableContainer,
   GridTableHeader,
-  GridTableHeaderCell,
-  GridTableRow,
 } from "@/components/layout/GridTable";
+import { GTPButton } from "../GTPButton/GTPButton";
+import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPButton/GTPScrollPane";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
+import ChartWatermark, { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 
-const AnimatedDiv = animated.div as any;
+const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
+  "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
+  hourly: "last_1d",
   daily: "last_1d",
   daily_7d_rolling: "last_1d",
   weekly: "last_7d",
@@ -33,32 +29,41 @@ const timeIntervalSummaryKeys = {
 }
 
 const timespanLabels: { [key: string]: { [key: string]: string } } = {
+  hourly: {
+    "1d": "1d",
+    "3d": "3d",
+    "7d": "7d",
+  },
   daily: {
-    "1d": "24 hours",
-    "30d": "30 days",
-    "365d": "1 year",
+    "1d": "24h",
+    "30d": "30d",
+    "365d": "1y",
   },
   daily_7d_rolling: {
-    "1d": "24 hrs",
-    "30d": "30 days",
-    "365d": "1 year",
+    "1d": "24h",
+    "30d": "30d",
+    "365d": "1y",
   },
   weekly: {
-    "7d": "1 week",
-    "28d": "4 weeks",
-    "365d": "1 year",
+    "7d": "1w",
+    "28d": "4w",
+    "365d": "1y",
   },
   monthly: {
-    "30d": "1 mo",
-    "180d": "6 mos",
-    "365d": "1 year",
+    "30d": "1m",
+    "180d": "6m",
+    "365d": "1y",
   },
 }
 
 const MetricTable = ({
   metric_type,
+  scrollRef,
+  onScrollMetricsChange,
 }: {
   metric_type: "fundamentals" | "data-availability";
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
+  onScrollMetricsChange?: (metrics: GTPScrollPaneScrollMetrics) => void;
 }) => {
   const {
     data: master,
@@ -72,12 +77,8 @@ const MetricTable = ({
   const {
     data,
     chainKeys,
-    type,
-    allChains,
     allChainsByKeys,
     metric_id,
-    timeIntervals,
-    selectedTimeInterval,
   } = useMetricData();
   
   const {
@@ -91,7 +92,6 @@ const MetricTable = ({
   } = useMetricChartControls();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [maxVal, setMaxVal] = useState<number | null>(null);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
 
@@ -143,6 +143,7 @@ const MetricTable = ({
   }, [
     chainSelectToggleState,
     showEthereumMainnet,
+    focusEnabled,
     setSelectedChains,
     lastSelectedChains,
     chainKeys,
@@ -172,6 +173,7 @@ const MetricTable = ({
     },
 
     [
+      focusEnabled,
       selectedChains,
       setLastSelectedChains,
       setSelectedChains,
@@ -196,10 +198,8 @@ const MetricTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id, metric_type]);
 
-  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
-  const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
-
   const lastValueTimeIntervalKey = useMemo(() => {
+    // hourly has no dedicated changes/summary rows — fall back to daily
     if (timeIntervalKey === "daily_7d_rolling") {
       return "daily";
     }
@@ -207,27 +207,20 @@ const MetricTable = ({
     return timeIntervalKey;
   }, [timeIntervalKey]);
 
-  const valueIndex = useMemo(() => {
-    if (!data) return;
-
-    const sampleChainDataTypes =
-      data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
-
-    if (sampleChainDataTypes.includes("usd")) {
-      if (showUsd) {
-        return sampleChainDataTypes.indexOf("usd");
-      } else {
-        return sampleChainDataTypes.indexOf("eth");
-      }
-    } else {
-      return 1;
-    }
-  }, [chainKeys, data, showUsd, lastValueTimeIntervalKey]);
-
   const changesValueIndex = useMemo(() => {
-    if (!data) return;
+    if (!data || chainKeys.length === 0) return;
 
-    const sampleChainChangesTypes = data.chains[chainKeys[0]].changes[lastValueTimeIntervalKey].types;
+    const sampleChainKey = chainKeys.find(
+      (chainKey) =>
+        Array.isArray(
+          data.chains[chainKey]?.changes?.[lastValueTimeIntervalKey]?.types,
+        ),
+    );
+
+    if (!sampleChainKey) return 0;
+
+    const sampleChainChangesTypes =
+      data.chains[sampleChainKey]?.changes?.[lastValueTimeIntervalKey]?.types ?? [];
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -238,7 +231,7 @@ const MetricTable = ({
     } else {
       return 0;
     }
-  }, [lastValueTimeIntervalKey, data, showUsd]);
+  }, [data, chainKeys, lastValueTimeIntervalKey, showUsd]);
 
   const lastValues = useMemo(() => {
     if (!data) return null;
@@ -246,9 +239,17 @@ const MetricTable = ({
     return chainKeys
       .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
       .reduce((acc, chain) => {
-        let types = data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].types;
-        let values =
-          data.chains[chain].summary[timeIntervalSummaryKeys[lastValueTimeIntervalKey]].data;
+        const summaryKey = timeIntervalSummaryKeys[lastValueTimeIntervalKey];
+        const summary = data.chains[chain]?.summary?.[summaryKey];
+        if (!summary || !Array.isArray(summary.types) || !Array.isArray(summary.data)) {
+          return {
+            ...acc,
+            [chain]: 0,
+          };
+        }
+
+        let types = summary.types;
+        let values = summary.data;
 
         let valueIndex = 0;
 
@@ -261,6 +262,9 @@ const MetricTable = ({
         }
 
         let lastVal = values[valueIndex];
+        if (typeof lastVal !== "number" || !Number.isFinite(lastVal)) {
+          lastVal = 0;
+        }
 
         // if (lastValueTimeIntervalKey === "monthly") {
         //   types = data.chains[chain].last_30d.types;
@@ -284,40 +288,32 @@ const MetricTable = ({
           [chain]: lastVal,
         };
       }, {});
-  }, [chainKeys, data, valueIndex, lastValueTimeIntervalKey, showUsd, focusEnabled]);
-
-  // set maxVal
-  useEffect(() => {
-    if (!data || !lastValues) return;
-
-    const valuesArray = Object.values<number>(lastValues);
-
-    const maxVal = Math.max(...valuesArray);
-
-    setMaxVal(maxVal);
-  }, [data, valueIndex, lastValueTimeIntervalKey, showUsd, lastValues]);
+  }, [chainKeys, data, lastValueTimeIntervalKey, showUsd, focusEnabled]);
 
   const rows = useCallback(() => {
     if (!data || lastValues === null) return [];
 
     const valuesArray = Object.values<number>(lastValues);
+    const maxVal = valuesArray.length > 0 ? Math.max(...valuesArray) : 0;
+    const safeMaxVal = Number.isFinite(maxVal) && maxVal > 0 ? maxVal : 1;
 
-    const maxVal = Math.max(...valuesArray);
 
     return chainKeys
       .filter(
         (chain) =>
           (chain !== "ethereum" ? true : !focusEnabled) &&
           Object.keys(allChainsByKeys).includes(chain) &&
-          allChainsByKeys[chain],
+          allChainsByKeys[chain] &&
+          (timeIntervalKey !== "hourly" ||
+            (Array.isArray(data.chains[chain]?.hourly?.data) &&
+              data.chains[chain].hourly!.data.length > 0)),
       )
       .map((chain: any) => {
-
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
           lastVal: lastValues[chain],
-          barWidth: Math.max(lastValues[chain], 0) / maxVal,
+          barWidth: Math.max(lastValues[chain], 0) / safeMaxVal < 0.004 ? 0 : Math.max(lastValues[chain], 0) / safeMaxVal,
         };
       })
       .sort((a, b) => {
@@ -362,7 +358,8 @@ const MetricTable = ({
     lastValues,
     reversePerformer,
     selectedChains,
-    focusEnabled
+    focusEnabled,
+    timeIntervalKey,
   ]);
 
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
@@ -370,15 +367,8 @@ const MetricTable = ({
     sortOrder: "desc",
   });
 
-  // Update sort order based on reversePerformer when metric changes
-  useEffect(() => {
-    setSort({
-      metric: "lastVal",
-      sortOrder: "desc",
-    });
-  }, [reversePerformer]);
-
   const lastValueLabels = {
+    hourly: "Latest",
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
     monthly: "Last 30d",
@@ -387,6 +377,7 @@ const MetricTable = ({
 
   // New function to create rows with placeholders
   const rowsWithPlaceholders = useCallback(() => {
+    const timespanKeys = Object.keys(timespanLabels[timeIntervalKey] ?? {});
     const sortedRows = rows().sort((a, b) => {
       const aIsSelected = selectedChains.includes(a.chain.key);
       const bIsSelected = selectedChains.includes(b.chain.key);
@@ -413,10 +404,13 @@ const MetricTable = ({
         return sort.sortOrder === "desc" ? b.chain.key.localeCompare(a.chain.key) : a.chain.key.localeCompare(b.chain.key);
       }
       // if sort.metric is a timespan, sort by the timespan value
-      else if (Object.keys(timespanLabels[timeIntervalKey]).includes(sort.metric)) {
-        const timespanIndex = Object.keys(timespanLabels[timeIntervalKey]).indexOf(sort.metric);
-        const bVal = b.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
-        const aVal = a.data.changes[lastValueTimeIntervalKey][Object.keys(timespanLabels[timeIntervalKey])[timespanIndex]][0];
+      else if (timespanKeys.includes(sort.metric)) {
+        const timespanIndex = timespanKeys.indexOf(sort.metric);
+        const timespanKey = timespanKeys[timespanIndex];
+        const bValRaw = b.data?.changes?.[lastValueTimeIntervalKey]?.[timespanKey]?.[0];
+        const aValRaw = a.data?.changes?.[lastValueTimeIntervalKey]?.[timespanKey]?.[0];
+        const bVal = typeof bValRaw === "number" && Number.isFinite(bValRaw) ? bValRaw : null;
+        const aVal = typeof aValRaw === "number" && Number.isFinite(aValRaw) ? aValRaw : null;
 
         if (aIsSelected && !bIsSelected) {
           return -1;
@@ -432,6 +426,9 @@ const MetricTable = ({
         }
         if (bVal !== null && aVal === null) {
           return 1;
+        }
+        if (bVal === null || aVal === null) {
+          return 0;
         }
 
         return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
@@ -462,33 +459,7 @@ const MetricTable = ({
     }
 
     return result;
-  }, [rows, selectedChains, sort, timespanLabels, lastValueTimeIntervalKey, reversePerformer]);
-
-  let height = 0;
-  const transitions = useTransition(
-    rowsWithPlaceholders().map((data) => ({
-      ...data,
-      y: (height += data.isPlaceholder ? 20 : 39) - (data.isPlaceholder ? 20 : 39),
-      height: data.isPlaceholder ? 20 : 39,
-    })),
-    {
-      key: (d) => d.chain.key,
-      from: ({ y, height }) => ({ opacity: 0, y, height }),
-      enter: ({ y, height }) => ({ opacity: 1, y, height }),
-      update: ({ y, height }) => ({ y, height }),            // smooth reordering
-      leave: ({ y, height }) => ({ opacity: 0, y, height }),
-
-      trail: 6, // tiny cascade
-
-      config: (item, idx, phase) => ({
-        mass: 0.6,
-        tension: 520,
-        friction: 40,
-        clamp: phase === 'leave',
-        precision: 0.01,
-      }),
-    },
-  );
+  }, [rows, selectedChains, sort.metric, sort.sortOrder, timeIntervalKey, reversePerformer, lastValueTimeIntervalKey]);
 
   function formatNumber(number: number, decimals?: number): string {
 
@@ -542,11 +513,9 @@ const MetricTable = ({
       let suffix = units[unitKey].suffix ? units[unitKey].suffix : "";
       const decimals = showGwei && !showUsd ? 2 : units[unitKey].decimals;
 
-      let types = item.data[lastValueTimeIntervalKey].types;
-      let values =
-        item.data[lastValueTimeIntervalKey].data[
-        item.data[lastValueTimeIntervalKey].data.length - 1
-        ];
+      const intervalData = item.data?.[lastValueTimeIntervalKey];
+      let types = intervalData?.types ?? [];
+      let values = intervalData?.data?.[intervalData.data.length - 1] ?? [];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
       //     item.data[lastValueTimeIntervalKey].data.length - 1
@@ -576,13 +545,16 @@ const MetricTable = ({
           if (navItem && navItem.page?.showGwei) {
             prefix = "";
             suffix = " Gwei";
-            value = formatNumber(
-              values[types.indexOf("eth")] * 1000000000,
-              decimals,
-            );
+            const ethValue = values[types.indexOf("eth")];
+            value = typeof ethValue === "number" && Number.isFinite(ethValue)
+              ? formatNumber(ethValue * 1000000000, decimals)
+              : "0";
           }
         } else {
-          value = formatNumber(values[types.indexOf("usd")], decimals);
+          const usdValue = values[types.indexOf("usd")];
+          value = typeof usdValue === "number" && Number.isFinite(usdValue)
+            ? formatNumber(usdValue, decimals)
+            : "0";
         }
       }
       return { value, prefix, suffix };
@@ -600,475 +572,227 @@ const MetricTable = ({
   );
 
   if (!data || !timespanLabels[timeIntervalKey]) return timeIntervalKey;
+  const tableViewportHeight =
+    !isMobile ? 470 : 250;
 
+  const getHeaderSortIcon = (metric: string) => {
+    if (sort.metric !== metric) return "gtp-chevrondown-monochrome";
+    return sort.sortOrder === "asc" ? "gtp-chevronup-monochrome" : "gtp-chevrondown-monochrome";
+  };
+  const isHeaderSortActive = (metric: string) => sort.metric === metric;
+  const handleHeaderSortClick = (metric: string) => {
+    setSort((prev) => ({
+      metric,
+      sortOrder: prev.metric === metric ? (prev.sortOrder === "asc" ? "desc" : "asc") : "desc",
+    }));
+  };
+
+ 
   return (
-    <HorizontalScrollContainer includeMargin={isMobile ? true : false}>
-      <VerticalScrollContainer
-        height={
-          !isMobile
-            ? 434
-            : chainKeys.filter((chain) => chain != "ethereum").length * 39 + 45
-        }
-        scrollbarAbsolute={true}
-        scrollbarPosition="right"
-        className="w-full min-w-[503px]"
-        header={
-          <div className="hidden lg:block">
-            <div className="relative pr-[0px] lg:pr-[45px]">
-              <GridTableHeader
-                gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                className="z-[20] md:z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[12px] !font-bold"
-              >
-                {/* Icon */}
-                <GridTableHeaderCell>
-                  <div></div>
-                </GridTableHeaderCell>
-                <GridTableHeaderCell
-                  metric="chain"
-                  className="heading-small-xxs"
-                  sort={sort}
-                  setSort={setSort}
+    <HorizontalScrollContainer className="h-full" hideScrollbar={true} enableDragScroll={true} includeMargin={false}>
+      <div className="w-full min-w-[338px] relative " style={{ height: `${tableViewportHeight}px` }}>
+        <div className="absolute hidden top-0 bottom-[52px] left-0 right-0  items-center justify-center">
+          <ChartWatermarkWithMetricName metricName={metricsDict[metric_id].name} className="w-[145px] text-color-text-primary opacity-20 mix-blend-darken dark:mix-blend-lighten" />
+        </div>
+        <div className="hidden lg:block">
+          <div className="relative px-[6px]">
+            <GridTableHeader
+              className="z-[20] md:z-[2] flex h-[37px] select-none items-center gap-x-[6px] !pb-0 !pl-[4px] !pr-0 !pt-0 text-[12px] !font-semibold text-color-text-primary"
+              style={{ gridTemplateColumns: METRIC_TABLE_GRID_TEMPLATE_COLUMNS }}
+            >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 grid"
+                  style={{ gridTemplateColumns: METRIC_TABLE_GRID_TEMPLATE_COLUMNS }}
                 >
-                  Chain
-                </GridTableHeaderCell>
-                {/* Last Value */}
-                <GridTableHeaderCell
-                  metric="lastVal"
-                  justify="end"
-                  className="truncate heading-small-xxs"
-                  sort={sort}
-                  setSort={setSort}
-                >
-                  {lastValueLabels[timeIntervalKey]}
-                </GridTableHeaderCell>
-                {/* Timespans */}
+                  <div className="bg-transparent" />
+                  <div />
+                  <div className="bg-color-bg-default/8" />
+                  <div className="bg-color-bg-medium/32" />
+                  <div className="bg-color-bg-default/8" />
+                  <div className="bg-color-bg-medium/32" />
+                  <div />
+                </div>
+                <div className="relative z-[1] flex h-full items-center pl-[10px]">Chain</div>
+                <div aria-hidden className="relative z-[1] h-full" />
+                <div className="relative z-[1] flex h-full w-full items-center justify-end pr-[2px]">
+                  <GTPButton
+                    label={lastValueLabels[timeIntervalKey]}
+                    rightIcon={getHeaderSortIcon("lastVal")}
+                    rightIconClassname="!w-[8px] !h-[8px] "
+                    variant="primary"
+                    visualState={isHeaderSortActive("lastVal") ? "active" : "default"}
+                    size="xs"
+                    clickHandler={() => handleHeaderSortClick("lastVal")}
+                    rightIconContainerClassName="min-w-[12px] min-h-[12px] flex items-center justify-center"
+                  />
+                </div>
                 {Object.entries(
                   timespanLabels[timeIntervalKey],
                 ).map(([timespan, label]) => (
-                  <GridTableHeaderCell
-                    key={timespan}
-                    metric={timespan}
-                    justify="end"
-                    className="heading-small-xxs"
-                    // sort={sort}
-                    // setSort={setSort}
-                  >
-                    {/* {label} */}
-                    <div
-                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] flex`}
-                      onClick={() => {
-                        setSort({
-                          metric: timespan, //"gas_fees_change_pct",
-                          sortOrder:
-                            sort.metric === timespan
-                              ? sort.sortOrder === "asc"
-                                ? "desc"
-                                : "asc"
-                              : "desc",
-                        });
-                      }}
-                    >
-                      <div className="text-xxxs !leading-[14px]">{label}</div>
-                      {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
-                      <Icon
-                        icon={
-                          sort.metric === timespan && sort.sortOrder === "asc"
-                            ? "feather:arrow-up"
-                            : "feather:arrow-down"
-                        }
-                        className="w-[10px] h-[10px]"
-                        style={{
-                          opacity: sort.metric === timespan ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </GridTableHeaderCell>
-                ))}
-              </GridTableHeader>
-              <div
-                className={`absolute right-[34px] top-[5px] cursor-pointer`}
-                onClick={onChainSelectToggle}
-              >
-                <div
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-                  style={{
-                    color:
-                      chainSelectToggleState === "all" ? undefined : "#5A6462",
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`h-6 w-6 ${chainSelectToggleState === "none"
-                        ? "opacity-100"
-                        : "opacity-0"
-                      }`}
-                  >
-                    <circle
-                      xmlns="http://www.w3.org/2000/svg"
-                      cx="12"
-                      cy="12"
-                      r="8"
+                  <div key={timespan} className="relative z-[1] flex h-full w-full items-center justify-end pr-[2px]">
+                    <GTPButton
+                      
+                      label={label}
+                      rightIcon={getHeaderSortIcon(timespan)}
+                      rightIconClassname="!w-[8px] !h-[8px] "
+                      variant="primary"
+                      visualState={isHeaderSortActive(timespan) ? "active" : "default"}
+                      size="xs"
+                      clickHandler={() => handleHeaderSortClick(timespan)}
+                      rightIconContainerClassName="min-w-[12px] min-h-[12px] flex items-center justify-center"
                     />
-                  </svg>
-                </div>
-                <div
-                  className={`rounded-full p-1 ${chainSelectToggleState === "none"
-                      ? "bg-forest-50 dark:bg-color-bg-default"
-                      : "bg-white dark:bg-color-ui-active"
-                    }`}
-                >
-                  <Icon
-                    icon="feather:check-circle"
-                    className={`h-[15px] w-[15px] ${chainSelectToggleState === "none"
-                        ? "opacity-0"
-                        : "opacity-100"
-                      }`}
-                    style={{
-                      color:
-                        chainSelectToggleState === "all"
-                          ? undefined
-                          : chainSelectToggleState === "normal"
-                            ? "#5A6462"
-                            : "#5A6462",
-                    }}
+                  </div>
+                ))}
+                <div className="relative z-[3] flex h-full w-full items-center justify-center translate-x-[6px] rounded-full">
+                  <GTPButton
+                    leftIcon={(chainSelectToggleState === "all" || chainSelectToggleState === "normal") ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
+                    leftIconClassname={`${chainSelectToggleState !== "all" ? "opacity-50" : "opacity-100"}`}
+                    variant="primary"
+                    visualState="default"
+                    size="xs"
+                    clickHandler={onChainSelectToggle}
                   />
                 </div>
-              </div>
-            </div>
+            </GridTableHeader>
           </div>
-        }
-      >
-        {/* <VerticalScrollContainer
-        height={!isMobile ? 434 : chainKeys.length * 39}
-        paddingRight={22}
-
-      > */}
+        </div>
         <div className="block lg:hidden">
-          <div className="relative pr-[16px] lg:pr-[45px]">
+          <div className="relative px-[6px]">
             <GridTableHeader
-              gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-              className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[12px] !font-bold"
+              className="z-[2] flex h-[37px] select-none items-center gap-x-[6px] !pb-0 !pl-[4px] !pr-0 !pt-0 text-[12px] !font-semibold text-color-text-primary"
+              style={{ gridTemplateColumns: METRIC_TABLE_GRID_TEMPLATE_COLUMNS }}
             >
-              {/* Icon */}
-              <GridTableHeaderCell>
-                <div></div>
-              </GridTableHeaderCell>
-              {/* Chain */}
-              <GridTableHeaderCell
-                metric="chain"
-                className="heading-small-xxs"
-                sort={sort}
-                setSort={setSort}
-              >Chain</GridTableHeaderCell>
-              {/* Last Value */}
-              <GridTableHeaderCell metric="lastVal" justify="end" className="truncate heading-small-xxs" sort={sort} setSort={setSort}>
-                {lastValueLabels[timeIntervalKey]}
-              </GridTableHeaderCell>
-              {/* Timespans */}
+              <div className="relative z-[1] flex h-full items-center pl-[10px]">Chain</div>
+              <div aria-hidden className="relative z-[1] h-full" />
+              <div className="relative z-[1] flex h-full w-full items-center justify-end pr-[2px]">
+                <GTPButton
+                  label={lastValueLabels[timeIntervalKey]}
+                  rightIcon={getHeaderSortIcon("lastVal")}
+                  variant="no-background"
+                  visualState={isHeaderSortActive("lastVal") ? "active" : "default"}
+                  size="xs"
+                  clickHandler={() => handleHeaderSortClick("lastVal")}
+                />
+              </div>
               {Object.entries(
                 timespanLabels[timeIntervalKey],
               ).map(([timespan, label]) => (
-                <GridTableHeaderCell key={timespan} metric={timespan} justify="end" className="heading-small-xxs" sort={sort} setSort={setSort}>
-                  {label}
-                </GridTableHeaderCell>
-              ))}
-            </GridTableHeader>
-            <div
-              className={`absolute right-[5px] top-[5px] cursor-pointer`}
-              onClick={onChainSelectToggle}
-            >
-              <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-                style={{
-                  color:
-                    chainSelectToggleState === "all" ? undefined : "#5A6462",
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`h-6 w-6 ${chainSelectToggleState === "none"
-                      ? "opacity-100"
-                      : "opacity-0"
-                    }`}
-                >
-                  <circle
-                    xmlns="http://www.w3.org/2000/svg"
-                    cx="12"
-                    cy="12"
-                    r="8"
+                <div key={timespan} className="relative z-[1] flex h-full w-full items-center justify-end pr-[2px]">
+                  <GTPButton
+                    label={label}
+                    rightIcon={getHeaderSortIcon(timespan)}
+                    variant="no-background"
+                    visualState={isHeaderSortActive(timespan) ? "active" : "default"}
+                    size="xs"
+                    clickHandler={() => handleHeaderSortClick(timespan)}
                   />
-                </svg>
-              </div>
-              <div
-                className={`rounded-full p-1 ${chainSelectToggleState === "none"
-                    ? "bg-forest-50 dark:bg-color-bg-default"
-                    : "bg-white dark:bg-color-ui-active"
-                  }`}
-              >
-                <Icon
-                  icon="feather:check-circle"
-                  className={`h-[15px] w-[15px] ${chainSelectToggleState === "none"
-                      ? "opacity-0"
-                      : "opacity-100"
-                    }`}
-                  style={{
-                    color:
-                      chainSelectToggleState === "all"
-                        ? undefined
-                        : chainSelectToggleState === "normal"
-                          ? "#5A6462"
-                          : "#5A6462",
-                  }}
+                </div>
+              ))}
+              <div className="relative z-[3] flex h-full w-full items-center justify-center translate-x-[6px] rounded-full">
+                <GTPButton
+                  leftIcon={chainSelectToggleState === "all" ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
+                  variant="primary"
+                  visualState="default"
+                  size="xs"
+                  clickHandler={onChainSelectToggle}
                 />
               </div>
-            </div>
+            </GridTableHeader>
           </div>
         </div>
-        <div style={{ height: `${rowsWithPlaceholders().reduce((acc, item) => acc + (item.isPlaceholder ? 20 : 37), 0)}px` }}>
-          {transitions((styles, item, t, index) => (
-            <AnimatedDiv
-              className="absolute w-full select-none pr-[16px] lg:pr-[45px]"
-              style={{
-                zIndex: chainKeys.length - index,
-                ...styles,
-              }}
-            >
-              {item.isPlaceholder ? (
-                <div className="flex items-center justify-center h-[20px] px-[5px] pb-[5px] mr-[-15px] ml-[-5px]">
-                  <div className="flex items-center gap-x-[5px] w-full">
-                    <div className="flex-grow border-t border-[#5A6462]"></div>
-                    <span className="heading-caps-xxs text-color-text-primary">
-                      Not showing in chart
-                    </span>
-                    <div className="flex-grow border-t border-[#5A6462]"></div>
-                  </div>
+        <div className="relative h-[calc(100%-60px)] ">
+          <GTPScrollPane
+            className="h-full px-[6px] pt-[1px]"
+            scrollRef={scrollRef}
+            onScrollMetricsChange={onScrollMetricsChange}
+            bottomFadeHeight={isMobile ? 15 : 37}
+          >
+            <div className="space-y-[2px]">
+              {rowsWithPlaceholders().map((item, index) => (
+                <div key={item.isPlaceholder ? `placeholder-${index}` : item.chain.key} className="w-full select-none">
+                  {item.isPlaceholder ? (
+                    <div className="flex h-[18px] items-center gap-x-[8px] px-[2px]">
+                      <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
+                      <span className="text-[10px] font-semibold tracking-[0.06em] text-color-text-secondary">
+                        NOT SHOWING IN CHART
+                      </span>
+                      <div className="h-[1px] flex-1 bg-color-bg-medium/80" />
+                    </div>
+                  ) : (
+                    (() => {
+                      const selected = selectedChains.includes(item.chain.key);
+                      const timespanKeys = Object.keys(timespanLabels[timeIntervalKey]);
+                      const [change1Key, change2Key, change3Key] = timespanKeys;
+                      const displayValue = getDisplayValue(item);
+                      const absoluteLabel = `${displayValue.prefix ?? ""}${displayValue.value}${displayValue.suffix ?? ""}`;
+
+                      const formatChangeForTimespan = (timespan?: string) => {
+                        if (!timespan || changesValueIndex === undefined) {
+                          return { label: "—", change: 0 };
+                        }
+
+                        const rawValue = item.data.changes[lastValueTimeIntervalKey]?.[timespan]?.[changesValueIndex];
+                        if (rawValue === null || rawValue === undefined || Number.isNaN(rawValue)) {
+                          return { label: "—", change: 0 };
+                        }
+
+                        const adjustedValue = (reversePerformer ? -1.0 : 1.0) * rawValue;
+                        const roundedAbsValue = Math.abs(Math.round(rawValue * 1000) / 10);
+                        const roundedString = roundedAbsValue.toFixed(1);
+                        const compactValue =
+                          roundedString.length >= 4 ? `${Math.floor(roundedAbsValue)}` : roundedString;
+                        const sign = adjustedValue >= 0 ? (reversePerformer ? "-" : "+") : reversePerformer ? "+" : "-";
+
+                        return {
+                          label: `${sign}${compactValue}%`,
+                          change: adjustedValue * 100,
+                        };
+                      };
+
+                      const change1 = formatChangeForTimespan(change1Key);
+                      const change2 = formatChangeForTimespan(change2Key);
+                      const change3 = formatChangeForTimespan(change3Key);
+
+                      return (
+                        <div className="py-[1px]">
+                          <ChainMetricTableRow
+                            key={item.chain.key}
+                            id={item.chain.key}
+                            label={item.chain.label}
+                            icon={`${item.chain.key.replaceAll("_", "-")}-logo-monochrome` as GTPIconName}
+                            chainHref={
+                              metric_type === "fundamentals" && ChainsNavigationItemsByKeys[item.chain.key]
+                                ? `/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`
+                                : undefined
+                            }
+                            accentColor={item.chain.colors[theme ?? "dark"][1]}
+                            selected={selected}
+                            gridTemplateColumns={METRIC_TABLE_GRID_TEMPLATE_COLUMNS}
+                            truncateChainLabel={false}
+                            show24h={Boolean(change1Key)}
+                            show30d={Boolean(change2Key)}
+                            show1y={Boolean(change3Key)}
+                            barWidth={`${Math.max(0, item.barWidth) * 100}%`}
+                            yesterdayValue={absoluteLabel}
+                            hours24Value={change1.label}
+                            hours24Change={change1.change}
+                            days30Value={change2.label}
+                            days30Change={change2.change}
+                            year1Value={change3.label}
+                            year1Change={change3.change}
+                            onToggle={handleChainClick}
+                          />
+                        </div>
+                      );
+                    })()
+                  )}
                 </div>
-              ) : (
-                <div className="group relative">
-                  <GridTableRow
-                    key={item.chain.key}
-                    gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                    className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[14px] ${selectedChains.includes(item.chain.key)
-                        ? "border-black/[16%] group-hover:bg-forest-500/10 dark:border-[#5A6462]"
-                        : "border-black/[16%] transition-all duration-100 group-hover:bg-forest-500/5 dark:border-[#5A6462]"
-                      }`}
-                    onClick={() => handleChainClick(item.chain.key)}
-                    bar={{
-                      width: item.barWidth,
-                      color: selectedChains.includes(item.chain.key)
-                        ? item.chain.colors[theme ?? "dark"][1]
-                        : "#5A6462",
-                      containerStyle: {
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 1,
-                        paddingLeft: "8px",
-                        paddingRight: "8px",
-                        borderRadius: "9999px 9999px 9999px 9999px",
-                        zIndex: -1,
-                        overflow: "hidden",
-                      },
-                    }}
-                  >
-                    <div className="flex size-[26px] items-center justify-center">
-                      <Icon
-                        icon={`gtp:${item.chain.key.replace("_", "-").replace("_", "-")}-logo-monochrome`}
-                        className="size-[15px]"
-                        style={{
-                          color: selectedChains.includes(item.chain.key)
-                            ? item.chain.colors[theme ?? "dark"][1]
-                            : "#5A6462",
-                        }}
-                      />
-                    </div>
-                    <div className="text-xs">
-                      {metric_type === "fundamentals" &&
-                        ChainsNavigationItemsByKeys[item.chain.key] ? (
-                        <Link
-                          href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
-                          className={`truncate hover:underline`}
-                          prefetch={true}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {item.chain.label}
-                        </Link>
-                      ) : (
-                        <div className="truncate">{item.chain.label}</div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex w-full justify-end numbers-xs">
-                        {getDisplayValue(item).prefix && (
-                          <div className="">{getDisplayValue(item).prefix}</div>
-                        )}
-                        {getDisplayValue(item).value}
-                        {getDisplayValue(item).suffix && (
-                          <div className="pl-0.5">
-                            {getDisplayValue(item).suffix}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {Object.keys(
-                      timespanLabels[timeIntervalKey],
-                    ).map((timespan) => (
-                      <div key={timespan} className="w-full text-right">
-                        {changesValueIndex !== undefined && item.data.changes[lastValueTimeIntervalKey][timespan][changesValueIndex] ===
-                          null ? (
-                          <span className="inline-block text-center text-gray-500 numbers-xs">
-                            —
-                          </span>
-                        ) : changesValueIndex !== undefined ? (
-                          <>
-                            {(reversePerformer ? -1.0 : 1.0) *
-                              item.data.changes[lastValueTimeIntervalKey][timespan][
-                              changesValueIndex
-                              ] >=
-                              0 ? (
-                              <div
-                                className={`text-color-positive numbers-xs`}
-                                style={{
-                                  color: selectedChains.includes(item.chain.key)
-                                    ? undefined
-                                    : "#5A6462",
-                                }}
-                              >
-                                {reversePerformer ? "-" : "+"}
-                                {(() => {
-                                  const rawPercentage = Math.abs(
-                                    Math.round(
-                                      item.data.changes[lastValueTimeIntervalKey][timespan][
-                                      changesValueIndex
-                                      ] * 1000,
-                                    ) / 10,
-                                  ).toFixed(1);
-
-                                  const percentage = parseFloat(rawPercentage);
-
-                                  if (!isNaN(percentage)) {
-                                    // if (Math.abs(percentage) >= 1000)
-                                    //   return formatNumber(percentage);
-
-                                    const formattedPercentage =
-                                      percentage.toFixed(1);
-
-                                    return formattedPercentage.length >= 4
-                                      ? Math.floor(percentage)
-                                      : formattedPercentage;
-                                  } else {
-                                    return "Invalid Percentage";
-                                  }
-                                })()}
-                                %
-                              </div>
-                            ) : (
-                              <div
-                                className={`text-color-negative numbers-xs`}
-                                style={{
-                                  color: selectedChains.includes(item.chain.key)
-                                    ? undefined
-                                    : "#5A6462",
-                                }}
-                              >
-                                {reversePerformer ? "+" : "-"}
-                                {Math.abs(
-                                  Math.round(
-                                    item.data.changes[lastValueTimeIntervalKey][timespan][
-                                    changesValueIndex
-                                    ] * 1000,
-                                  ) / 10,
-                                ).toFixed(1)}
-                                %
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <span className="inline-block text-center text-gray-500 numbers-xs">
-                            —
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </GridTableRow>
-                  <div
-                    className={`absolute right-[-15px] top-0 cursor-pointer`}
-                    onClick={() => handleChainClick(item.chain.key)}
-                  >
-                    <div
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-                      style={{
-                        color: selectedChains.includes(item.chain.key)
-                          ? undefined
-                          : "rgb(var(--text-secondary))",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={`h-6 w-6 ${selectedChains.includes(item.chain.key)
-                            ? "opacity-0"
-                            : "opacity-100"
-                          }`}
-                      >
-                        <circle
-                          xmlns="http://www.w3.org/2000/svg"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                        />
-                      </svg>
-                    </div>
-                    <div
-                      className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
-                          ? "bg-white dark:bg-color-ui-active"
-                          : "bg-color-bg-medium group-hover:bg-color-ui-hover"
-                        }`}
-                    >
-                      <Icon
-                        icon="feather:check-circle"
-                        className={`h-[24px] w-[24px] ${selectedChains.includes(item.chain.key)
-                            ? "opacity-100"
-                            : "opacity-0"
-                          }`}
-                        style={{
-                          color: selectedChains.includes(item.chain.key)
-                            ? undefined
-                            : "#5A6462",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </AnimatedDiv>
-          ))}
+              ))}
+            </div>
+          </GTPScrollPane>
         </div>
-        {/* </VerticalScrollContainer> */}
-      </VerticalScrollContainer>
+      </div>
     </HorizontalScrollContainer>
   );
 };

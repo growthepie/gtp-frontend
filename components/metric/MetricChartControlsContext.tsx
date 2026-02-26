@@ -146,7 +146,7 @@ export const MetricChartControlsProvider = ({
   };
 
   const { SupportedChainKeys, DefaultChainSelection } = useMaster();
-  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data } = useMetricData();
+  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data, timeIntervals } = useMetricData();
 
   const url = UrlsMap[metric_type][metric_id];
   const storageKeys = {
@@ -212,6 +212,16 @@ export const MetricChartControlsProvider = ({
     }
   }, []);
 
+  // If the stored interval isn't supported by this metric (e.g. "hourly" carried
+  // over from a different page), fall back to daily so the chart isn't empty.
+  useEffect(() => {
+    if (timeIntervals.length > 0 && !timeIntervals.includes(selectedTimeInterval)) {
+      setSelectedTimeInterval("daily");
+      setSelectedTimespan(selectedTimespansByTimeInterval?.["daily"] ?? "365d");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeIntervals]);
+
   const [selectedYAxisScale, setSelectedYAxisScale] = useState(log_default ? "logarithmic" : "linear");
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
@@ -229,6 +239,43 @@ export const MetricChartControlsProvider = ({
           ))
     ).map((chain) => chain.key) : allChains.map((chain) => chain.key),
   );
+
+  // Keep selected chains deduplicated and constrained to chains available for this metric.
+  useEffect(() => {
+    if (chainKeys.length === 0) return;
+
+    const normalized = Array.from(
+      new Set(selectedChains.filter((chain) => chainKeys.includes(chain))),
+    );
+
+    if (normalized.length !== selectedChains.length) {
+      setSelectedChains(normalized);
+    }
+  }, [chainKeys, selectedChains, setSelectedChains]);
+
+  // When hourly is selected, keep only chains that actually have hourly datapoints.
+  // This can intentionally result in no selected chains.
+  useEffect(() => {
+    if (!data || selectedTimeInterval !== "hourly") return;
+
+    const hourlySelected = selectedChains.filter((chainKey) => {
+      if (!chainKeys.includes(chainKey)) return false;
+      const rows = data.chains[chainKey]?.hourly?.data;
+      return Array.isArray(rows) && rows.length > 0;
+    });
+
+    if (hourlySelected.length !== selectedChains.length) {
+      setSelectedChains(hourlySelected);
+      setLastSelectedChains(hourlySelected);
+    }
+  }, [
+    chainKeys,
+    data,
+    setLastSelectedChains,
+    setSelectedChains,
+    selectedChains,
+    selectedTimeInterval,
+  ]);
 
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
@@ -263,6 +310,10 @@ export const MetricChartControlsProvider = ({
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
+    }
+
+    if (selectedTimeInterval === "hourly") {
+      return "hourly";
     }
 
     if (selectedTimeInterval === "weekly") {

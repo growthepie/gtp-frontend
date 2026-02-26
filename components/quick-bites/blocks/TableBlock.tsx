@@ -15,6 +15,7 @@ import { Icon } from '@iconify/react';
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import Mustache from 'mustache';
 
 
@@ -39,6 +40,7 @@ const FIXED_COLUMN_TYPES = new Set(["image", "chain", "boolean", "metric"]);
 
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
+  const [sortConfig, setSortConfig] = useState<{ metric: string; sortOrder: string }>({ metric: '', sortOrder: 'desc' });
   const [sortConfig, setSortConfig] = useState<{ metric: string; sortOrder: string }>({ metric: '', sortOrder: 'desc' });
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const { AllChainsByKeys } = useMaster();
@@ -121,6 +123,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     }
     return columns || block.columnDefinitions || {};
   }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData]);
+  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData]);
 
   const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
   const hiddenKeys = useMemo(() => {
@@ -146,11 +149,22 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       const hasAutoIndex = columnDef?.autoIndex === true;
       const hasBadgeSources = Array.isArray(columnDef?.badgeSources) && columnDef.badgeSources.length > 0;
       if ((keyIsPresentInData || hasFixedSourceIndex || hasAutoIndex || hasBadgeSources) && !seen.has(key) && !hiddenKeys.has(key)) {
+      const columnDef = block.columnDefinitions?.[key];
+      const mappedKey = columnDef?.sourceKey || key;
+      const keyIsPresentInData = Boolean(dynamicColumnKeys[mappedKey]);
+      const hasFixedSourceIndex = typeof columnDef?.sourceIndex === "number";
+      const hasAutoIndex = columnDef?.autoIndex === true;
+      const hasBadgeSources = Array.isArray(columnDef?.badgeSources) && columnDef.badgeSources.length > 0;
+      if ((keyIsPresentInData || hasFixedSourceIndex || hasAutoIndex || hasBadgeSources) && !seen.has(key) && !hiddenKeys.has(key)) {
         orderedKeys.push(key);
         seen.add(key);
       }
     });
 
+    // When columnOrder is provided, use it as explicit visible set.
+    // Fallback to visible defaults only if none of the requested keys exist.
+    return orderedKeys.length > 0 ? orderedKeys : visibleDefault;
+  }, [block.columnOrder, block.columnDefinitions, defaultColumnKeyOrder, dynamicColumnKeys, hiddenKeys]);
     // When columnOrder is provided, use it as explicit visible set.
     // Fallback to visible defaults only if none of the requested keys exist.
     return orderedKeys.length > 0 ? orderedKeys : visibleDefault;
@@ -169,10 +183,23 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     }
     return {};
   }, [block.columnDefinitions]);
+  }, [block.columnDefinitions]);
 
   const processedRows = useMemo(() => {
     if (!block.readFromJSON || !jsonData) {
       if (block.rowData) {
+        return Object.values(block.rowData).map((rowObject: any) =>
+          columnKeyOrder.map((key) => {
+            const columnDef = columnDefinitions[key];
+            const infoSourceKey = columnDef?.infoTooltip?.sourceKey;
+            const infoValue = infoSourceKey
+              ? (rowObject?.[infoSourceKey]?.value ?? rowObject?.[infoSourceKey])
+              : columnDef?.infoTooltip?.text;
+            const infoTooltipText = toTooltipText(infoValue);
+            const rawCell = rowObject?.[key];
+            const baseCell = rawCell && typeof rawCell === "object" ? rawCell : { value: rawCell };
+            return infoTooltipText ? { ...baseCell, infoTooltipText } : baseCell;
+          })
         return Object.values(block.rowData).map((rowObject: any) =>
           columnKeyOrder.map((key) => {
             const columnDef = columnDefinitions[key];
@@ -192,7 +219,37 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
     return rowsArray.map((row, rowIndex) => columnKeyOrder.map((columnKey) => {
+    return rowsArray.map((row, rowIndex) => columnKeyOrder.map((columnKey) => {
       const columnDef = columnDefinitions[columnKey];
+      const mappedKey = columnDef?.sourceKey || columnKey;
+      const sourceIndex = typeof columnDef?.sourceIndex === "number" ? columnDef.sourceIndex : columnIndexMap[mappedKey];
+      let cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
+
+      // Auto-generate 1-based row index when value is missing and autoIndex is set.
+      if ((cellValue === undefined || cellValue === null) && columnDef?.autoIndex) {
+        cellValue = rowIndex + 1;
+      }
+
+      const infoSourceKey = columnDef?.infoTooltip?.sourceKey;
+      const infoSourceIndex = infoSourceKey ? columnIndexMap[infoSourceKey] : undefined;
+      const infoValue = infoSourceIndex !== undefined ? row[infoSourceIndex] : columnDef?.infoTooltip?.text;
+      const infoTooltipText = toTooltipText(infoValue);
+
+      const cellObject: { value: any; link?: string; icon?: string; color?: string; badges?: Array<{ label: string; color: string; url: string }>; infoTooltipText?: string } = { value: cellValue };
+
+      // For badges type: collect values from multiple source keys
+      if (columnDef?.type === "badges" && columnDef.badgeSources) {
+        cellObject.badges = columnDef.badgeSources.map((source) => {
+          const srcIdx = columnIndexMap[source.sourceKey];
+          const srcValue = srcIdx !== undefined ? row[srcIdx] : undefined;
+          return {
+            label: source.label,
+            color: source.color,
+            url: typeof srcValue === "string" ? srcValue.trim() : "",
+          };
+        });
+      }
+
       const mappedKey = columnDef?.sourceKey || columnKey;
       const sourceIndex = typeof columnDef?.sourceIndex === "number" ? columnDef.sourceIndex : columnIndexMap[mappedKey];
       let cellValue = sourceIndex !== undefined ? row[sourceIndex] : undefined;
@@ -230,8 +287,13 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         cellObject.infoTooltipText = infoTooltipText;
       }
 
+      if (infoTooltipText) {
+        cellObject.infoTooltipText = infoTooltipText;
+      }
+
       return cellObject;
     }));
+  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
   }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
 
   const sortedRows = useMemo(() => {
@@ -240,8 +302,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     // Filter based on shared state if configured
     if (block.filterOnStateKey) {
 
+
       const { stateKey, columnKey } = block.filterOnStateKey;
       const filterValue = sharedState[stateKey] || exclusiveFilterKeys.valueKey || inclusiveFilterKeys.valueKey;
+
 
       const filteredData = (filterValue && filterValue !== 'all')
         ? dataToSort.filter(row => {
@@ -256,7 +320,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         : dataToSort;
 
       if (!sortConfig.metric) return filteredData;
+      if (!sortConfig.metric) return filteredData;
 
+      const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
       const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
       if (sortIndex === -1) return filteredData;
 
@@ -267,10 +333,13 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           ? aValue - bValue
           : String(aValue).localeCompare(String(bValue));
         return sortConfig.sortOrder === 'asc' ? result : -result;
+        return sortConfig.sortOrder === 'asc' ? result : -result;
       });
     }
 
     // Default sorting if no filtering is configured
+    if (!sortConfig.metric) return dataToSort;
+    const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
     if (!sortConfig.metric) return dataToSort;
     const sortIndex = columnKeyOrder.indexOf(sortConfig.metric);
     if (sortIndex === -1) return dataToSort;
@@ -281,8 +350,44 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         ? aValue - bValue
         : String(aValue).localeCompare(String(bValue));
       return sortConfig.sortOrder === 'asc' ? result : -result;
+      return sortConfig.sortOrder === 'asc' ? result : -result;
     });
   }, [processedRows, sortConfig, columnKeyOrder, sharedState, block.filterOnStateKey, exclusiveFilterKeys, inclusiveFilterKeys]);
+
+  const barMaxValues = useMemo(() => {
+    const result = { rowBarMax: 0, cellBarMaxes: {} as Record<string, number> };
+    const cellBarCols = columnKeyOrder.filter(k => columnDefinitions[k]?.cellBar);
+
+    for (const row of sortedRows) {
+      if (block.rowBar?.valueColumn) {
+        const idx = columnKeyOrder.indexOf(block.rowBar.valueColumn);
+        if (idx !== -1) {
+          const val = typeof row[idx]?.value === "number" ? Math.abs(row[idx].value) : 0;
+          if (val > result.rowBarMax) result.rowBarMax = val;
+        }
+      }
+      for (const colKey of cellBarCols) {
+        const idx = columnKeyOrder.indexOf(colKey);
+        if (idx !== -1) {
+          const val = typeof row[idx]?.value === "number" ? Math.abs(row[idx].value) : 0;
+          if (!result.cellBarMaxes[colKey] || val > result.cellBarMaxes[colKey])
+            result.cellBarMaxes[colKey] = val;
+        }
+      }
+    }
+    return result;
+  }, [sortedRows, columnKeyOrder, columnDefinitions, block.rowBar]);
+
+  const resolveBarColor = (rowData: any[], colorColumn?: string, explicitColor?: string) => {
+    if (explicitColor) return explicitColor;
+    if (colorColumn) {
+      const idx = columnKeyOrder.indexOf(colorColumn);
+      const originKey = idx !== -1 ? rowData[idx]?.value : undefined;
+      if (typeof originKey === "string" && AllChainsByKeys[originKey])
+        return AllChainsByKeys[originKey].colors[resolvedTheme ?? "dark"][1];
+    }
+    return undefined;
+  };
 
   const barMaxValues = useMemo(() => {
     const result = { rowBarMax: 0, cellBarMaxes: {} as Record<string, number> };
@@ -328,10 +433,19 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       return null; // Return null so we can render the empty placeholder component
     }
 
+    if (value === null || value === undefined || value === '') {
+      return null; // Return null so we can render the empty placeholder component
+    }
+
     // get units if exists
     const units = columnDefinitions[columnKey]?.units;
     if (units) {
       const unit = Object.values(units)[0];
+      const numericValue = typeof value === 'number' ? value : Number(value);
+      if (!Number.isFinite(numericValue)) {
+        return null;
+      }
+      return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
       const numericValue = typeof value === 'number' ? value : Number(value);
       if (!Number.isFinite(numericValue)) {
         return null;
@@ -639,9 +753,30 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     : isCompact
                       ? `${isFirst ? 'pl-[5px]' : 'pl-[3px]'} pr-[3px]`
                       : `${isFirst ? 'pl-[5px]' : 'pl-[15px]'} pr-[15px]`;
+      <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
+        {(() => {
+          const isScrollable = block.scrollable !== false;
+          const tableHeader = (
+            <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs !gap-x-0 !px-[5px] !pr-[15px] select-none min-h-[34px] !pt-0 !pb-0 !items-end`}>
+              {columnKeyOrder.map((columnKey, colIdx) => {
+                const mappedKey = columnDefinitions[columnKey]?.sourceKey || columnKey;
+                const canSort = columnDefinitions[columnKey]?.sortByValue ?? dynamicColumnKeys[mappedKey]?.sortByValue;
+                const colType = columnDefinitions[columnKey]?.type;
+                const isFirst = colIdx === 0;
+                const isImage = colType === "image";
+                const isCompact = (colType === "chain" && !columnDefinitions[columnKey]?.showLabel) || colType === "boolean";
+                const cellPadding = isImage
+                    ? ''
+                    : isCompact
+                      ? `${isFirst ? 'pl-[5px]' : 'pl-[3px]'} pr-[3px]`
+                      : `${isFirst ? 'pl-[5px]' : 'pl-[15px]'} pr-[15px]`;
                 return <GridTableHeaderCell
                   key={columnKey}
                   justify={columnDefinitions[columnKey]?.isNumeric ? 'end' : 'start'}
+                  metric={canSort ? columnKey : undefined}
+                  sort={canSort ? sortConfig : undefined}
+                  setSort={canSort ? setSortConfig : undefined}
+                  className={`${cellPadding} ${columnDefinitions[columnKey]?.isNumeric ? 'text-right' : 'text-left'}`}
                   metric={canSort ? columnKey : undefined}
                   sort={canSort ? sortConfig : undefined}
                   setSort={canSort ? setSortConfig : undefined}
@@ -654,7 +789,28 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           );
           const tableRows = (
             <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
+          );
+          const tableRows = (
+            <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
             {sortedRows.map((rowData, rowIndex) => (
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0`}
+                bar={block.rowBar && barMaxValues.rowBarMax > 0 ? {
+                  origin_key: block.rowBar.colorColumn
+                    ? rowData[columnKeyOrder.indexOf(block.rowBar.colorColumn)]?.value
+                    : undefined,
+                  color: block.rowBar.color,
+                  width: (() => {
+                    const idx = columnKeyOrder.indexOf(block.rowBar.valueColumn);
+                    const val = idx !== -1 && typeof rowData[idx]?.value === "number" ? rowData[idx].value : 0;
+                    return Math.abs(val) / barMaxValues.rowBarMax;
+                  })(),
+                  containerStyle: {
+                    left: 1, right: 1, top: 0, bottom: 0,
+                    borderRadius: "9999px",
+                    zIndex: -1, overflow: "hidden",
+                  },
+                } : undefined}
+              >
               <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0`}
                 bar={block.rowBar && barMaxValues.rowBarMax > 0 ? {
                   origin_key: block.rowBar.colorColumn
@@ -679,6 +835,15 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   let cellLeftContent: React.ReactNode | null = null;
                   let cellRightContent: React.ReactNode | null = null;
                   const columnType = columnDefinitions?.[columnKey]?.type;
+                  const isFirst = colIndex === 0;
+                  const isImage = columnType === "image";
+                  const isCompact = (columnType === "chain" && !columnDefinitions[columnKey]?.showLabel) || columnType === "boolean";
+                  const cellPadding = isImage
+                    ? ''
+                    : isCompact
+                      ? `${isFirst ? 'pl-[5px]' : 'pl-[3px]'} pr-[3px]`
+                      : `${isFirst ? 'pl-[5px]' : 'pl-[15px]'} pr-[15px]`;
+
                   const isFirst = colIndex === 0;
                   const isImage = columnType === "image";
                   const isCompact = (columnType === "chain" && !columnDefinitions[columnKey]?.showLabel) || columnType === "boolean";
@@ -721,7 +886,48 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     }
                   } else if (columnType === "image") {
                     const imageSrc = typeof cellData?.value === "string" ? cellData.value.trim() : "";
+                    const colDef = columnDefinitions?.[columnKey];
+                    const showIcon = colDef?.showIcon !== false; // default true
+                    const showLabel = colDef?.showLabel === true; // default false
+                    if (chainKeys.length === 0) {
+                      cellMainContent = <EmptyCell />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center w-full gap-x-[5px]">
+                          {chainKeys.map((chainKey) => {
+                            const chainInfo = AllChainsByKeys[chainKey];
+                            if (!chainInfo) return null;
+                            return (
+                              <React.Fragment key={chainKey}>
+                                {showIcon && (
+                                  <Icon
+                                    icon={`gtp:${chainInfo.urlKey}-logo-monochrome`}
+                                    className="w-[15px] h-[15px] flex-shrink-0"
+                                    style={{ color: chainInfo.colors[resolvedTheme ?? "dark"][0] }}
+                                  />
+                                )}
+                                {showLabel && (
+                                  <span className="text-xs truncate">{chainInfo.name_short}</span>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                  } else if (columnType === "image") {
+                    const imageSrc = typeof cellData?.value === "string" ? cellData.value.trim() : "";
                     cellMainContent = (
+                      <div className="flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] overflow-hidden">
+                        {imageSrc && (
+                          <img
+                            src={imageSrc}
+                            alt=""
+                            className="rounded-full w-[26px] h-[26px] object-cover"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
                       <div className="flex items-center justify-center select-none bg-color-ui-active rounded-full size-[26px] overflow-hidden">
                         {imageSrc && (
                           <img
@@ -750,10 +956,82 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       <div className="flex items-center gap-x-[5px]">
                         <GTPIcon icon={mapped.icon as GTPIconName} size="sm" />
                         <span className="text-xs">{mapped.label}</span>
+                  } else if (columnDefinitions?.[columnKey]?.currencyMap && typeof cellData?.value === "string") {
+                    const info = columnDefinitions[columnKey].currencyMap![cellData.value.toUpperCase()];
+                    cellMainContent = info ? (
+                      <div className="flex items-center gap-x-[8px] w-full min-w-0">
+                        <GTPIcon icon={`flag:${info.country.toLowerCase()}-4x3` as GTPIconName} className="!size-[13px] flex-shrink-0" containerClassName='!size-[13px]' />
+                        <span className="text-xs truncate">{info.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs">{cellData.value}</span>
+                    );
+                  } else if (columnDefinitions?.[columnKey]?.iconMap && typeof cellData?.value === "string") {
+                    const mapped = columnDefinitions[columnKey].iconMap![cellData.value];
+                    cellMainContent = mapped ? (
+                      <div className="flex items-center gap-x-[5px]">
+                        <GTPIcon icon={mapped.icon as GTPIconName} size="sm" />
+                        <span className="text-xs">{mapped.label}</span>
                       </div>
                     ) : (
                       <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
+                      <span className="text-xs">{formatValue(cellData?.value, columnKey) ?? <EmptyCell />}</span>
                     );
+                  } else if (columnType === "boolean") {
+                    const raw = cellData?.value;
+                    const normalized = raw === true || raw === "true"
+                      ? true
+                      : raw === false || raw === "false"
+                        ? false
+                        : null;
+                    if (normalized === null) {
+                      cellMainContent = <EmptyCell centered />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center justify-center w-full">
+                          <Icon
+                            icon={normalized ? "feather:check" : "feather:x"}
+                            className={`w-[14px] h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`}
+                          />
+                        </div>
+                      );
+                    }
+                  } else if (columnType === "link") {
+                    const linkValue = typeof cellData?.value === "string" ? cellData.value.trim() : "";
+                    if (linkValue) {
+                      cellMainContent = (
+                        <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
+                          <Icon icon="feather:external-link" className="w-[12px] h-[12px] text-[#5A6462] flex-shrink-0" />
+                          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+                        </div>
+                      );
+                    } else {
+                      cellMainContent = <EmptyCell />;
+                    }
+                  } else if (columnType === "badges") {
+                    const badges = cellData?.badges as Array<{ label: string; color: string; url: string }> | undefined;
+                    const activeBadges = badges?.filter(b => b.url) ?? [];
+                    if (activeBadges.length === 0) {
+                      cellMainContent = <EmptyCell />;
+                    } else {
+                      cellMainContent = (
+                        <div className="flex items-center gap-x-[5px] w-full">
+                          {activeBadges.map((badge) => (
+                            <a
+                              key={badge.label}
+                              href={badge.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity"
+                              style={{ borderColor: badge.color, color: badge.color }}
+                            >
+                              <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
+                              {badge.label}
+                            </a>
+                          ))}
+                        </div>
+                      );
+                    }
                   } else if (columnType === "boolean") {
                     const raw = cellData?.value;
                     const normalized = raw === true || raw === "true"
@@ -836,6 +1114,31 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         </>
                       )
                     ) : <EmptyCell />;
+                    const colDef = columnDefinitions?.[columnKey];
+                    let formatted = formatValue(cellData?.value, columnKey);
+                    let valueMapKey: string | null = null;
+                    if (formatted !== null && colDef?.valueMap) {
+                      const key = String(formatted).toUpperCase();
+                      const mapped = colDef.valueMap[key];
+                      if (mapped) {
+                        formatted = mapped;
+                        if (colDef.valueMapShowKey) valueMapKey = key;
+                      }
+                    }
+                    cellMainContent = formatted !== null ? (
+                      colDef?.chip ? (
+                        <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+                          {formatted}
+                        </span>
+                      ) : (
+                        <>
+                          {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''}`}>
+                            {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
+                          </span>
+                        </>
+                      )
+                    ) : <EmptyCell />;
                   }
 
 
@@ -846,6 +1149,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent numbers-xs"
                           onDoubleClick={(e) => {
+                            e.preventDefault();
                             e.preventDefault();
                             const selection = window.getSelection();
                             const range = document.createRange();
@@ -934,8 +1238,41 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       </div>
                     );
                   }
+                  const infoTooltipText = getCellInfoTooltipText(cellData);
+                  if (infoTooltipText) {
+                    const infoIcon = <InfoTooltipIcon text={infoTooltipText} />;
+                    if (cellRightContent) {
+                      cellRightContent = (
+                        <div className="flex items-center gap-x-[6px]">
+                          {cellRightContent}
+                          {infoIcon}
+                        </div>
+                      );
+                    } else {
+                      cellRightContent = infoIcon;
+                    }
+                  }
+
+                  // Cell bar wrapping
+                  const cellBarDef = columnDefinitions?.[columnKey]?.cellBar;
+                  const isNumeric = columnDefinitions?.[columnKey]?.isNumeric;
+                  if (cellBarDef && typeof cellData?.value === "number" && barMaxValues.cellBarMaxes[columnKey] > 0) {
+                    const barWidth = Math.abs(cellData.value) / barMaxValues.cellBarMaxes[columnKey];
+                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "#5A6462";
+                    cellMainContent = (
+                      <div className={`relative flex flex-col w-full gap-y-[4px] ${isNumeric ? 'items-end' : 'items-start'}`}>
+                        <div className={`w-full flex items-center ${isNumeric ? 'justify-end' : ''}`}>
+                          {cellMainContent}
+                        </div>
+                        <div className="absolute bottom-[-6px] right-0 w-full h-[4px]">
+                          <div className="absolute h-[4px] right-0 rounded-[2px]" style={{ background: barColor, width: `${barWidth*100}%`}}  />
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
+                    <div key={`${rowIndex}-${columnKey}`} className={`flex items-center gap-[5px] w-full ${cellPadding} ${columnDefinitions?.[columnKey]?.isNumeric ? 'justify-end' : 'justify-start'}`}>
                     <div key={`${rowIndex}-${columnKey}`} className={`flex items-center gap-[5px] w-full ${cellPadding} ${columnDefinitions?.[columnKey]?.isNumeric ? 'justify-end' : 'justify-start'}`}>
                       {cellLeftContent && cellLeftContent}
                       {cellMainContent && cellMainContent}
@@ -945,6 +1282,26 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                 })}
               </GridTableRow>
             ))}
+            </div>
+          );
+          return isScrollable ? (
+            <VerticalScrollContainer
+              height={340}
+              scrollbarAbsolute={true}
+              scrollbarPosition="right"
+              paddingRight={30}
+              className="w-full min-w-[600px]"
+              header={tableHeader}
+            >
+              {tableRows}
+            </VerticalScrollContainer>
+          ) : (
+            <div className="w-full min-w-[600px]">
+              {tableHeader}
+              {tableRows}
+            </div>
+          );
+        })()}
             </div>
           );
           return isScrollable ? (

@@ -31,43 +31,29 @@ export const Contributors = [
     name: "Lorenz Lehmann",
     image: "/contributors/lorenz.png",
     role: "Research",
-    twitter: "https://www.x.com/lorenz234",
+    twitter: "https://www.x.com/LehmannLorenz",
     linkedin: "https://www.linkedin.com/in/lorenz-lehmann",
   },
   {
     name: "Ahoura Azarbin",
     image: "/contributors/ahoura.png",
-    role: "Socials",
-    twitter: "https://www.x.com/AhouraAzarbin",
+    role: "BD & Research",
+    twitter: "https://www.x.com/ahoura_az",
     linkedin: "https://www.linkedin.com/in/ahoura-azarbin-a3887b180",
-  },
-  {
-    name: "Nader Bennour",
-    image: "/contributors/nader.png",
-    role: "Data",
-    twitter: "https://www.x.com/naderfyi",
-    linkedin: "https://www.linkedin.com/in/naderfyi/",
   },
   {
     name: "EthWave",
     image: "/contributors/ethwave.png",
-    role: "Intern",
+    role: "Communications",
     twitter: "https://www.x.com/truewavebreak",
     linkedin: "",
-  },
-  {
-    name: "Chris Keshian",
-    image: "/contributors/chris.png",
-    role: "Early Contributor",
-    twitter: "https://www.x.com/chriskeshian",
-    linkedin: "https://www.linkedin.com/in/chriskeshian",
   },
 ];
 
 export const Datasources = [
   {
     name: "growthepie",
-    image: "/contributors/logo-full-monochrome.svg",
+    image: "/logo-full.svg",
     width: 258,
     height: 45,
     url: "https://www.growthepie.com/",

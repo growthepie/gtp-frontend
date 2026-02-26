@@ -16,11 +16,13 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import { TopRowContainer, TopRowChild, TopRowParent } from "@/components/layout/TopRow";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { metricItems, getFundamentalsByKey, metricCategories } from "@/lib/metrics";
+import { IS_PRODUCTION } from "@/lib/helpers";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { preload } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
+import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -68,29 +70,12 @@ const transformMetricDetails = (details: MetricDetails): MetricData => {
   };
 };
 
-// Calculate "nice" Y-axis max/min and interval to match Highcharts behavior
-// Returns { max, min, interval } that divides evenly into nice tick intervals with some headroom
-function calculateNiceYAxis(maxValue: number, tickCount: number = 4, minValue: number = 0): { max: number; min: number; interval: number } {
-  // All values are zero or no data
-  if (maxValue <= 0 && minValue >= 0) return { max: 1, min: 0, interval: 0.25 };
+const getNiceInterval = (rawInterval: number): number => {
+  if (!Number.isFinite(rawInterval) || rawInterval <= 0) return 1;
 
-  // Determine the range we need to cover (use whichever extent is larger for interval calc)
-  const absMax = Math.abs(maxValue);
-  const absMin = Math.abs(minValue);
-  const extent = Math.max(absMax, absMin);
-
-  // Add ~10% headroom like Highcharts does
-  const paddedExtent = extent * 1.1;
-
-  // Calculate nice tick interval first, then derive max/min from it
-  const rawInterval = paddedExtent / tickCount;
-
-  // Calculate the order of magnitude for the interval
   const magnitude = Math.pow(10, Math.floor(Math.log10(rawInterval)));
   const normalized = rawInterval / magnitude;
 
-  // Round up to a nice interval value (1, 2, 2.5, 5, 10)
-  // These values ensure even division on the axis
   let niceInterval: number;
   if (normalized <= 1) niceInterval = 1;
   else if (normalized <= 2) niceInterval = 2;
@@ -98,15 +83,44 @@ function calculateNiceYAxis(maxValue: number, tickCount: number = 4, minValue: n
   else if (normalized <= 5) niceInterval = 5;
   else niceInterval = 10;
 
-  const interval = niceInterval * magnitude;
+  return niceInterval * magnitude;
+};
 
-  // Calculate max as a multiple of the interval that covers the padded data
-  const niceMax = maxValue > 0 ? Math.ceil(maxValue * 1.1 / interval) * interval : 0;
+// Calculate "nice" Y-axis range and interval to match Highcharts-like spacing,
+// while supporting negative-only and mixed-sign datasets.
+function calculateNiceYAxisRange(
+  minValue: number,
+  maxValue: number,
+  tickCount: number = 4
+): { min: number; max: number; interval: number } {
+  const hasNegative = minValue < 0;
+  const hasPositive = maxValue > 0;
 
-  // Calculate min: snap down to a nice interval multiple (or 0 if no negatives)
-  const niceMin = minValue < 0 ? -Math.ceil(Math.abs(minValue) * 1.1 / interval) * interval : 0;
+  if (!hasNegative && !hasPositive) {
+    return { min: 0, max: 1, interval: 0.25 };
+  }
 
-  return { max: niceMax || interval, min: niceMin, interval };
+  if (!hasNegative) {
+    const paddedMax = maxValue * 1.1;
+    const interval = getNiceInterval(paddedMax / tickCount);
+    const niceMax = Math.ceil(paddedMax / interval) * interval;
+    return { min: 0, max: Math.max(interval, niceMax), interval };
+  }
+
+  if (!hasPositive) {
+    const paddedMin = minValue * 1.1; // More negative.
+    const interval = getNiceInterval(Math.abs(paddedMin) / tickCount);
+    const niceMin = Math.floor(paddedMin / interval) * interval;
+    return { min: Math.min(-interval, niceMin), max: 0, interval };
+  }
+
+  const paddedMin = minValue * 1.1;
+  const paddedMax = maxValue * 1.1;
+  const interval = getNiceInterval((paddedMax - paddedMin) / tickCount);
+  const niceMin = Math.floor(paddedMin / interval) * interval;
+  const niceMax = Math.ceil(paddedMax / interval) * interval;
+
+  return { min: niceMin, max: niceMax, interval };
 }
 
 // Format number with SI suffix - matches Highcharts format (e.g., "1.0M", "750k")
@@ -252,6 +266,7 @@ const MetricChart = memo(
     zoomMax,
     onZoomChange,
     groupId,
+    lineType,
   }: {
     metricKey: string;
     data: ChainsData[];
@@ -268,6 +283,7 @@ const MetricChart = memo(
     zoomMax: number | null;
     onZoomChange: (zoomed: boolean, min: number | null, max: number | null) => void;
     groupId: string;
+    lineType: "complex" | "simple";
   }) => {
     const chartRef = useRef<ReactECharts>(null);
     const isMobile = useMediaQuery("(max-width: 767px)");
@@ -275,6 +291,7 @@ const MetricChart = memo(
     const lastGraphicElements = useRef<any[]>([]);
     const lastXPos = useRef<number | null>(null);
     const lastYPositions = useRef<{ [chainId: string]: number }>({});
+    const [textPosition, setTextPosition] = useState<number | null>(null);
 
     // Determine chart type based on interval and comparison
     const chartType = useMemo(() => {
@@ -383,8 +400,8 @@ const MetricChart = memo(
       [selectedTimeInterval]
     );
 
-    // Pre-compute filtered data and max value to avoid duplicate filtering in option
-    const { filteredDataMap, maxDataValue, minDataValue, xMin, xMax } = useMemo(() => {
+    // Pre-compute filtered data and y-axis bounds to avoid duplicate filtering in option.
+    const { filteredDataMap, minDataValue, maxDataValue, xMin, xMax } = useMemo(() => {
       const xMinRaw = zoomed ? zoomMin : activeTimespan?.xMin;
       const xMaxVal = zoomed ? zoomMax : activeTimespan?.xMax;
 
@@ -394,8 +411,9 @@ const MetricChart = memo(
       const xMinVal = xMinRaw ? xMinRaw - leftPaddingMs : xMinRaw;
 
       const filtered: { [chainId: string]: [number, number][] } = {};
-      let maxVal = 0;
-      let minVal = 0;
+      let maxVal = Number.NEGATIVE_INFINITY;
+      let minVal = Number.POSITIVE_INFINITY;
+      let hasValues = false;
 
       data.forEach((item) => {
         const seriesDataObj = seriesDataMap[item.chain_id];
@@ -411,14 +429,27 @@ const MetricChart = memo(
 
         filtered[item.chain_id] = chainFiltered;
 
-        // Calculate max and min in same pass
+        // Calculate min/max in same pass
         for (let i = 0; i < chainFiltered.length; i++) {
-          if (chainFiltered[i][1] > maxVal) maxVal = chainFiltered[i][1];
-          if (chainFiltered[i][1] < minVal) minVal = chainFiltered[i][1];
+          const currentVal = chainFiltered[i][1];
+          if (currentVal > maxVal) maxVal = currentVal;
+          if (currentVal < minVal) minVal = currentVal;
+          hasValues = true;
         }
       });
 
-      return { filteredDataMap: filtered, maxDataValue: maxVal, minDataValue: minVal, xMin: xMinVal, xMax: xMaxVal };
+      if (!hasValues) {
+        minVal = 0;
+        maxVal = 0;
+      }
+
+      return {
+        filteredDataMap: filtered,
+        minDataValue: minVal,
+        maxDataValue: maxVal,
+        xMin: xMinVal,
+        xMax: xMaxVal,
+      };
     }, [data, seriesDataMap, zoomed, zoomMin, zoomMax, activeTimespan?.xMin, activeTimespan?.xMax]);
     const echartsColors = useMemo(() => {
       const colors = theme === 'dark' ? ECHARTS_COLORS.dark : ECHARTS_COLORS.light;
@@ -434,7 +465,7 @@ const MetricChart = memo(
       const series: any[] = [];
       const isComparing = chainKey.length > 1;
 
-      const { max: niceYMax, min: niceYMin, interval: niceYInterval } = calculateNiceYAxis(maxDataValue, 4, minDataValue);
+      const { min: niceYMin, max: niceYMax, interval: niceYInterval } = calculateNiceYAxisRange(minDataValue, maxDataValue, 4);
 
       data.forEach((item, index) => {
         const chainColors = AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"] || ["#FF0000", "#FF0000"];
@@ -465,6 +496,19 @@ const MetricChart = memo(
           },
           z: 10 - index,
         };
+
+        const getBarBorderRadius = (value: number): [number, number, number, number] =>
+          value < 0 ? [0, 0, 2, 2] : [2, 2, 0, 0];
+        const getBarGradient = (value: number) =>
+          value < 0
+            ? new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: chainColors[0] + "00" },
+                { offset: 1, color: chainColors[0] + "FF" },
+              ], false)
+            : new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                { offset: 0, color: chainColors[0] + "00" },
+                { offset: 1, color: chainColors[0] + "FF" },
+              ], false);
 
         if (chartType === "line" && !isComparing) {
           // Area chart styling with shadow/glow effect
@@ -530,7 +574,10 @@ const MetricChart = memo(
           }
         } else if (chartType === "bar") {
           // Column/bar chart styling with shadow/glow effect
-          baseSeries.barMaxWidth = 50;
+          // Remove barMaxWidth to allow bars to grow naturally with fewer data points
+          // Use 15% gap to match landing charts (equivalent to Highcharts pointPadding: 0.15)
+          baseSeries.barCategoryGap = '15%';
+          baseSeries.barGap = '15%';
 
           const LARGE_DATASET_THRESHOLD = 100;
           const isLargeDataset = processedData.length > LARGE_DATASET_THRESHOLD;
@@ -606,8 +653,10 @@ const MetricChart = memo(
             ], false);
 
             baseSeries.itemStyle = {
-              color: posGradient,
-              borderRadius: [2, 2, 0, 0],
+              // global: false makes gradient relative to each bar, not the whole chart
+              // Gradient: bottom (transparent) to top (opaque)
+              color: getBarGradient(1),
+              borderRadius: getBarBorderRadius(1),
               shadowColor: chainColors[0] + "44",
               shadowBlur: 8,
               shadowOffsetX: 0,
@@ -617,24 +666,20 @@ const MetricChart = memo(
             // Generate the pattern using the primary chain color
             const incompletePattern = createDiagonalPattern(chainColors[0]);
 
-            // Apply per-bar styling when data has negatives or incomplete bars
-            const hasNegatives = minDataValue < 0;
-            if (hasNegatives || (isIncomplete && processedData.length > 1)) {
+            // Apply per-bar styling so negative bars keep matching rounded edges.
+            if (processedData.length > 0) {
               const lastIndex = processedData.length - 1;
               baseSeries.data = processedData.map((d, i) => {
-                const isNeg = d[1] < 0;
-                const isLastIncomplete = isIncomplete && i === lastIndex;
-
-                if (isNeg || isLastIncomplete) {
-                  return {
-                    value: d,
-                    itemStyle: {
-                      color: isLastIncomplete ? incompletePattern : negGradient,
-                      borderRadius: isNeg ? [0, 0, 2, 2] : [2, 2, 0, 0],
-                    },
-                  };
-                }
-                return d;
+                const isLastAndIncomplete = isIncomplete && i === lastIndex;
+                return {
+                  value: d,
+                  itemStyle: {
+                    color: isLastAndIncomplete
+                      ? incompletePattern
+                      : getBarGradient(d[1]),
+                    borderRadius: getBarBorderRadius(d[1]),
+                  },
+                };
               });
             }
           // }
@@ -742,8 +787,8 @@ const MetricChart = memo(
         },
         yAxis: {
           type: "value",
-          min: niceYMin, // Start from 0 or negative "nice" floor when data has negatives
-          max: isAllZeroValues && data.length === 1 ? 1 : niceYMax, // Use "nice" max like Highcharts
+          min: isAllZeroValues && data.length === 1 ? 0 : niceYMin,
+          max: isAllZeroValues && data.length === 1 ? 1 : niceYMax,
           z: 1000,
           position: "left",
           axisLine: { show: false },
@@ -960,6 +1005,7 @@ const MetricChart = memo(
       chainKey,
       seriesDataMap,
       filteredDataMap,
+      minDataValue,
       maxDataValue,
       minDataValue,
       chartType,
@@ -987,15 +1033,15 @@ const MetricChart = memo(
 
       const graphicElements: any[] = [];
       const chartWidth = chartInstance.getWidth();
-      const linesXPos = chartWidth - 15; // 15px from right edge
+      let linesXPos = chartWidth - 15; // 15px from right edge (default for simple mode and line charts)
       let hasValidElements = false;
 
       // Check if we're rendering bars (no compare + weekly/monthly/quarterly)
       const isComparing = chainKey.length > 1;
       const isBarChart = !isComparing && (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly" || selectedTimeInterval === "quarterly");
 
-      // Save x position for placeholder graphics
-      lastXPos.current = linesXPos;
+      // For complex mode bar charts, we'll calculate linesXPos based on last bar position
+      // For now, keep default - will be updated per series in complex mode
 
       data.forEach((item, seriesIndex) => {
         const seriesDataObj = seriesDataMap[item.chain_id];
@@ -1028,53 +1074,119 @@ const MetricChart = memo(
         // For line charts: all segments collapse to a single vertical line at linesXPos
 
         if (isBarChart) {
-          // Bar chart: path with 2 turns to hit top-center of bar
-          const turnY = topY + 28; // Y level where we turn horizontally
+          if (lineType === "simple") {
+            // Simple mode: straight vertical line, dot at bar center, text positioned relative to dot
+            // Position dot at the center of the last bar
+            const dotXPos = lastPointX;
+            
+            // Update linesXPos for this series to position the dot at bar center
+            // This will be used for the circle position
+            const currentLinesXPos = dotXPos;
+            
+            // For the first series, update the global position for text positioning
+            // In simple mode, position text to the left of the dot with a gap
+            if (seriesIndex === 0) {
+              lastXPos.current = currentLinesXPos;
+              // Calculate text position: dot is at lastPointX from left, text should be gap pixels to the left
+              // CSS 'right' property is distance from right edge, so: chartWidth - (lastPointX - gap)
+              const chartWidth = chartInstance.getWidth();
+              const gap = 10; // Gap between text and dot
+              setTextPosition(Math.max(0, chartWidth - lastPointX + gap));
+            }
 
-          // Segment 1: Vertical from dot down to turn point
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-v1-${item.chain_id}`,
-            shape: {
-              x1: linesXPos,
-              y1: topY,
-              x2: linesXPos,
-              y2: turnY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Segment 1: Straight vertical line from dot down to bar center
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v1-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: topY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
 
-          // Segment 2: Horizontal from right edge to bar center
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-h-${item.chain_id}`,
-            shape: {
-              x1: linesXPos,
-              y1: turnY,
-              x2: lastPointX,
-              y2: turnY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Collapsed horizontal segment (for animation compatibility)
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-h-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: lastPointY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
 
-          // Segment 3: Vertical from turn point down to bar top
-          graphicElements.push({
-            type: "line",
-            id: `lastpoint-line-v2-${item.chain_id}`,
-            shape: {
-              x1: lastPointX,
-              y1: turnY,
-              x2: lastPointX,
-              y2: lastPointY,
-            },
-            style: lineStyle,
-            z: 100,
-            transition: ["shape", "style"],
-          });
+            // Collapsed vertical segment (for animation compatibility)
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v2-${item.chain_id}`,
+              shape: {
+                x1: dotXPos,
+                y1: lastPointY,
+                x2: dotXPos,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+          } else {
+            // Complex mode: kinked path with 2 turns to hit top-center of bar
+            const turnY = topY + 28; // Y level where we turn horizontally
+
+            // Segment 1: Vertical from dot down to turn point
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v1-${item.chain_id}`,
+              shape: {
+                x1: linesXPos,
+                y1: topY,
+                x2: linesXPos,
+                y2: turnY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+
+            // Segment 2: Horizontal from right edge to bar center
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-h-${item.chain_id}`,
+              shape: {
+                x1: linesXPos,
+                y1: turnY,
+                x2: lastPointX,
+                y2: turnY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+
+            // Segment 3: Vertical from turn point down to bar top
+            graphicElements.push({
+              type: "line",
+              id: `lastpoint-line-v2-${item.chain_id}`,
+              shape: {
+                x1: lastPointX,
+                y1: turnY,
+                x2: lastPointX,
+                y2: lastPointY,
+              },
+              style: lineStyle,
+              z: 100,
+              transition: ["shape", "style"],
+            });
+          }
         } else {
           // Line/area chart: all 3 segments collapse to straight vertical line
           // This allows smooth animation when switching from bar to line mode
@@ -1127,11 +1239,13 @@ const MetricChart = memo(
         }
 
         // Circle at top (value display dot)
+        // In simple mode bar charts, position dot at bar center; otherwise use linesXPos (right edge)
+        const dotXPosition = (isBarChart && lineType === "simple") ? lastPointX : linesXPos;
         graphicElements.push({
           type: "circle",
           id: `lastpoint-circle-${item.chain_id}`,
           shape: {
-            cx: linesXPos,
+            cx: dotXPosition,
             cy: topY,
             r: 4.5,
           },
@@ -1166,7 +1280,7 @@ const MetricChart = memo(
           console.debug('Chart instance unavailable during drawLastPointLines:', e);
         }
       }, 0);
-    }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval]);
+    }, [data, seriesDataMap, AllChainsByKeys, theme, chainKey.length, selectedTimeInterval, lineType]);
 
     // Draw lines after chart renders - use RAF to ensure chart is ready
     useEffect(() => {
@@ -1197,6 +1311,44 @@ const MetricChart = memo(
         clearTimeout(timeoutId);
       };
     }, [drawLastPointLines, option]);
+
+    // Keep overlay graphics aligned in responsive layouts for simple mode.
+    // Without this, dashed line / marker / value label can stay at stale positions after resize.
+    useEffect(() => {
+      if (lineType !== "simple") return;
+
+      let redrawTimeoutId: ReturnType<typeof setTimeout> | null = null;
+      let resizeObserver: ResizeObserver | null = null;
+
+      const scheduleOverlayRedraw = () => {
+        if (redrawTimeoutId) {
+          clearTimeout(redrawTimeoutId);
+        }
+        redrawTimeoutId = setTimeout(() => {
+          drawLastPointLines();
+        }, 80);
+      };
+
+      const chartDom = chartRef.current?.getEchartsInstance()?.getDom?.();
+      if (chartDom && typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => {
+          scheduleOverlayRedraw();
+        });
+        resizeObserver.observe(chartDom);
+      }
+
+      window.addEventListener("resize", scheduleOverlayRedraw);
+
+      return () => {
+        if (redrawTimeoutId) {
+          clearTimeout(redrawTimeoutId);
+        }
+        window.removeEventListener("resize", scheduleOverlayRedraw);
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
+      };
+    }, [drawLastPointLines, lineType]);
 
     // Handle zoom events
     const onEvents = useMemo(
@@ -1244,10 +1396,12 @@ const MetricChart = memo(
         minimumFractionDigits: decimals,
       });
 
+      const isNegative = value < 0;
       return {
-        value: valueFormat.format(value),
+        value: valueFormat.format(Math.abs(value)),
         prefix: showGwei(metricKey) ? "" : unitInfo?.prefix || "",
         suffix: showGwei(metricKey) ? "Gwei" : unitInfo?.suffix || "",
+        sign: isNegative ? "-" : "",
       };
     }, [seriesDataMap, data, master, metricKey, showUsd, showGwei]);
 
@@ -1293,14 +1447,20 @@ const MetricChart = memo(
         minimumFractionDigits: decimals,
       });
 
+      const isNegative = value < 0;
       return {
-        value: valueFormat.format(value),
+        value: valueFormat.format(Math.abs(value)),
         prefix: showGwei(metricKey) ? "" : unitInfo?.prefix || "",
         suffix: showGwei(metricKey) ? "Gwei" : unitInfo?.suffix || "",
+        sign: isNegative ? "-" : "",
       };
     }, [seriesDataMap, data, master, metricKey, showUsd, showGwei]);
 
     if (!seriesDataMap[data[0]?.chain_id]) return null;
+
+    // Determine if this is a bar chart for text positioning
+    const isComparing = chainKey.length > 1;
+    const isBarChartForText = !isComparing && (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly" || selectedTimeInterval === "quarterly");
 
     return (
       <div className="group/chart w-full h-[224px] rounded-2xl bg-color-bg-default relative @container">
@@ -1315,13 +1475,19 @@ const MetricChart = memo(
               <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
             </div>
           </Link>
-          <div className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0">
+          <div 
+            className="relative -top-[2px] flex items-center gap-x-[5px] flex-shrink-0"
+            style={isBarChartForText && lineType === "simple" && textPosition !== null 
+              ? { right: `${textPosition}px`, position: 'absolute', top: '1px' } 
+              : undefined}
+          >
             {accumulationBadge && (
               <div className="hidden @[340px]:flex px-[5px] h-[13px] items-center justify-center bg-color-bg-medium rounded-full">
                 <span className="text-xxxs whitespace-nowrap">{accumulationBadge}</span>
               </div>
             )}
             <div className="flex numbers-lg">
+              {displayValue.sign && <div>{displayValue.sign}</div>}
               <div>{displayValue.prefix}</div>
               <div>{displayValue.value}</div>
               {displayValue.suffix && <div className="pl-0.5">{displayValue.suffix}</div>}
@@ -1330,6 +1496,7 @@ const MetricChart = memo(
           {displayValue2 && (
             <div className="absolute top-[28px] w-full flex justify-end items-center pl-[23px] pr-[25px] text-[#5A6462]">
               <div className="numbers-sm flex gap-x-[2px]">
+                {displayValue2.sign && <div>{displayValue2.sign}</div>}
                 <div>{displayValue2.prefix}</div>
                 <div>{displayValue2.value}</div>
                 {displayValue2.suffix && <div className="numbers-sm pl-0.5">{displayValue2.suffix}</div>}
@@ -1430,6 +1597,22 @@ export default function ChainChartECharts({
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [lineType, setLineType] = useLocalStorage<"complex" | "simple">("fundamentalsLineTypeV2", "simple");
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure component is mounted before rendering toggle to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Reset to simple whenever the fundamentals tab is opened
+  useEffect(() => {
+    setLineType("simple");
+  }, [setLineType]);
+  
+  const handleLineTypeChange = useCallback((value: string) => {
+    setLineType(value as "complex" | "simple");
+  }, [setLineType]);
   const [isPending, startTransition] = useTransition();
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
@@ -1706,6 +1889,19 @@ export default function ChainChartECharts({
           <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
             Fundamental Metrics
           </Heading>
+          {mounted && !IS_PRODUCTION && (
+            <ToggleSwitch
+              values={[
+                { value: "simple", label: "simple" },
+                { value: "complex", label: "complex" },
+              ]}
+              value={lineType}
+              onChange={handleLineTypeChange}
+              size="sm"
+              ariaLabel="Line type toggle"
+              className="ml-[12px]"
+            />
+          )}
         </div>
 
         {/* Chain Compare Dropdown */}
@@ -1917,6 +2113,7 @@ export default function ChainChartECharts({
                             zoomMax={zoomMax}
                             onZoomChange={handleZoomChange}
                             groupId="fundamentals-charts"
+                            lineType={lineType}
                           />
                         </LazyChart>
                       );

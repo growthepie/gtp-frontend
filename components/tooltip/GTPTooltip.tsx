@@ -6,14 +6,19 @@ import Image from "next/image";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useSearchParams } from "next/navigation";
+import { getGTPTooltipContainerClass, GTP_TOOLTIP_SIZE_CLASS_MAP, GTPTooltipSize } from "./tooltipShared";
 
 import { computePosition, flip, shift, offset, arrow, Placement, autoUpdate } from '@floating-ui/dom';
-import { FloatingPortal, safePolygon, useDismiss, useFloating, useHover, useInteractions, useRole } from "@floating-ui/react";
+import { FloatingPortal, safePolygon, useDismiss, useFloating, useHover, useInteractions, useMergeRefs, useRole } from "@floating-ui/react";
 import { CSSTransition } from "react-transition-group";
+
+const APPLICATION_LINK_PREFIXES = ["", "https://x.com/", "https://github.com/"] as const;
+const APPLICATION_LINK_ICONS = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"] as const;
+const APPLICATION_LINK_KEYS = ["website", "twitter", "main_github"] as const;
 
 interface GTPTooltipNewProps {
   children: ReactNode;
-  size?: "fit" | "sm" | "md" | "lg";
+  size?: GTPTooltipSize;
   triggerElement?: HTMLElement | null;
   positionOffset?: {
     mainAxis: number;
@@ -27,22 +32,16 @@ interface GTPTooltipNewProps {
   enableHover?: boolean;
   allowInteract?: boolean;
   containerClass?: string;
+  unstyled?: boolean;
   // New animation props
   animationDuration?: number;
   onOpenChange?: (open: boolean) => void;
 }
 
-const GTPTooltipSizeClassMap = {
-  fit: "w-fit",
-  sm: "w-[245px]",
-  md: "w-[350px] max-w-[calc(100vw-30px)]",
-  lg: "w-[350px] md:w-[460px] max-w-[calc(100vw-30px)]",
-}
-
 export const GTPTooltipNew = ({
   children,
   size = "sm",
-  containerClass = "flex flex-col gap-y-[5px]",
+  containerClass = "",
   triggerElement,
   positionOffset = { mainAxis: 0, crossAxis: 0 },
   isOpen: controlledIsOpen,
@@ -52,12 +51,11 @@ export const GTPTooltipNew = ({
   portalId = "tooltip-portal",
   enableHover = true,
   allowInteract = true,
+  unstyled = false,
   onOpenChange,
 }: GTPTooltipNewProps) => {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(defaultOpen);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen;
-  const internalTriggerRef = useRef<HTMLElement | null>(null);
-  const effectiveTriggerElement = triggerElement || internalTriggerRef.current;
 
   // Ref for the tooltip node itself, required by CSSTransition
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
@@ -78,9 +76,6 @@ export const GTPTooltipNew = ({
 
   const { refs, floatingStyles, context, update } = useFloating({
     open: isOpen,
-    elements: {
-      reference: effectiveTriggerElement,
-    },
     placement,
     middleware: [
       offset({
@@ -95,11 +90,13 @@ export const GTPTooltipNew = ({
   });
 
   useEffect(() => {
-    if (effectiveTriggerElement) {
-      refs.setReference(effectiveTriggerElement);
-      update();
+    if (!triggerElement) {
+      return;
     }
-  }, [effectiveTriggerElement, refs, update]);
+
+    refs.setReference(triggerElement);
+    update();
+  }, [triggerElement, refs, update]);
 
   const hover = useHover(context, {
     enabled: enableHover,
@@ -164,7 +161,7 @@ export const GTPTooltipNew = ({
             refs.setFloating(node);
           }}
           style={floatingStyles}
-          className={`${containerClass} ${GTPTooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard z-50`}
+          className={`${unstyled ? containerClass : `${getGTPTooltipContainerClass(size)} ${containerClass}`} z-50`}
           {...getFloatingProps({
             // No need for onMouseLeave here anymore if allowInteract is false,
             // useHover + CSSTransition handles it
@@ -176,6 +173,11 @@ export const GTPTooltipNew = ({
     </FloatingPortal>
   );
 
+  const triggerRef = isValidElement(trigger)
+    ? ((trigger as any).ref as React.Ref<HTMLElement> | undefined)
+    : undefined;
+  const mergedTriggerRef = useMergeRefs<HTMLElement>([refs.setReference, triggerRef]);
+
   // --- Trigger Handling ---
   if (trigger) {
     if (!isValidElement(trigger)) {
@@ -186,17 +188,7 @@ export const GTPTooltipNew = ({
     const clonedTrigger = cloneElement(
       trigger,
       {
-        ref: (node: HTMLElement | null) => {
-          internalTriggerRef.current = node;
-          refs.setReference(node); // Also set floating-ui ref here
-
-          const originalRef = (trigger as any).ref;
-          if (typeof originalRef === "function") {
-            originalRef(node);
-          } else if (originalRef && typeof originalRef === "object") {
-            originalRef.current = node;
-          }
-        },
+        ref: mergedTriggerRef,
         onMouseEnter: (e: React.MouseEvent) => {
           // Handle hover manually since getReferenceProps handler isn't working
           if (enableHover && !isOpen) {
@@ -232,8 +224,8 @@ export const GTPTooltipNew = ({
 
   // Regular non-wrapping tooltip pattern (Should not be reached if triggerElement is always provided)
   // This pattern is less common with floating-ui v1 where the reference needs to be managed.
-  // If you intend to use this, ensure `effectiveTriggerElement` is valid.
-  if (!effectiveTriggerElement) {
+  // If you intend to use this, ensure `triggerElement` is valid.
+  if (!triggerElement) {
       console.warn("GTPTooltipNew used without a trigger or triggerElement. Tooltip cannot be positioned.");
       return null; // Or render children only? Decide based on expected usage.
   }
@@ -250,9 +242,9 @@ interface TooltipProps {
 }
 
 const TooltipSizeClassMap = {
-  sm: "w-[245px]",
-  md: "w-[350px]",
-  lg: "w-[350px] md:w-[460px]",
+  sm: GTP_TOOLTIP_SIZE_CLASS_MAP.sm,
+  md: GTP_TOOLTIP_SIZE_CLASS_MAP.md,
+  lg: GTP_TOOLTIP_SIZE_CLASS_MAP.lg,
 }
 
 export const Tooltip = ({ children, size = "sm", className }: TooltipProps) => {
@@ -475,14 +467,14 @@ GTPApplicationTooltip.displayName = 'GTPApplicationTooltip';
 
 export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_project: string, showUrl?: boolean }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
-  const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
-  const keys = ["website", "twitter", "main_github"];
   
   // default hover key should be the first link that is not empty
   const defaultHoverKey = useMemo(() => {
     if (!ownerProjectToProjectData[owner_project]) return "website";
-    return keys.find((key) => ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project][key]) || "website";
+    return (
+      APPLICATION_LINK_KEYS.find((key) => ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project][key]) ||
+      "website"
+    );
   }, [ownerProjectToProjectData, owner_project]);
 
   const [currentHoverKey, setCurrentHover] = useState(defaultHoverKey);
@@ -498,17 +490,17 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
     return (
     <div className="flex flex-col gap-y-[5px]">
       <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
-      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
+      {ownerProjectToProjectData[owner_project] && APPLICATION_LINK_KEYS.map((key, index) => {
         if(!ownerProjectToProjectData[owner_project][key]) return null;
 
         return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
           {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
             target="_blank"
           >
             <GTPIcon
-              icon={icons[index] as GTPIconName}
+              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
               size="sm"
               className="select-none"
             />
@@ -518,7 +510,10 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
       })}
       </div>
       <div className="text-xxs text-[#5A6462]">
-        {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
+        {`${formatUrl(
+          APPLICATION_LINK_PREFIXES[APPLICATION_LINK_KEYS.indexOf(currentHoverKey as (typeof APPLICATION_LINK_KEYS)[number])] +
+            ownerProjectToProjectData[owner_project][currentHoverKey],
+        ).replace("https://", "")}`}
       </div>
     </div>
     );
@@ -526,14 +521,14 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
 
   return (
     <div className="flex items-center gap-x-[5px]">
-      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
+      {ownerProjectToProjectData[owner_project] && APPLICATION_LINK_KEYS.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
           {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
             target="_blank"
           >
             <GTPIcon
-              icon={icons[index] as GTPIconName}
+              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
               size="sm"
               className="select-none"
             />

@@ -176,7 +176,7 @@ const { metric } = await params;
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
-<FundamentalsBackButton />
+          <FundamentalsBackButton />
             <Title
               icon={pageData.icon as GTPIconName}
               title={pageTitle}
@@ -192,7 +192,7 @@ const { metric } = await params;
               }
             />
           </div>
-          <Description className="pb-[15px]">
+          <Description>
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

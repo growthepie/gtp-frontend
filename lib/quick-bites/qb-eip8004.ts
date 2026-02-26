@@ -360,27 +360,29 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
-    //"```chart",
-    //JSON.stringify({
-    //  type: "pie",
-    //  title: "Count of Service Endpoints Provided",
-    //  subtitle: "Service endpoint distribution across registered agents. Can be more than 1 per agent.",
-    //  showXAsDate: false,
-    //  dataAsJson: {
-    //    meta: [
-    //      {
-    //        xIndex: 0,
-    //        yIndex: 1,
-    //        tooltipDecimals: 0,
-    //        url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
-    //        pathToData: "data.service_counts.rows",
-    //      },
-    //    ],
-    //  },
-    //  height: 500,
-    //  caption: "Counts of declared service endpoint type (web, mcp, a2a, oasf, ens, did, email).",
-    //}),
-    //"```",
+    "## Endpoint Service Types",
+    "Count of different endpoint types provided by registered agents & services. One agent can provide multiple endpoints.",
+    "Web endpoints are standard HTTP/HTTPS APIs or frontends for interacting with an agent; MCP (Model Context Protocol) endpoints expose structured tools and data for AI-native integrations; A2A endpoints enable direct agent-to-agent communication; OASF endpoints follow a structured service framework for publishing agent capabilities; ENS endpoints use human-readable .eth names for resolution; DID endpoints provide decentralized identity documents; and Email endpoints bridge agents with traditional offchain communication.",
+    "```chart",
+    JSON.stringify({
+      type: "pie",
+      title: "Service Endpoint Share",
+      subtitle: "Breakdown of endpoint types published by ERC-8004 agents",
+      centerName: "SERVICE\nSHARE",
+      height: 400,
+      dataAsJson: {
+        pieData: {
+          url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
+          pathToData: "data.service_counts",
+          colors: ["#2151F5","#FFC300","#FE5468","#2bee6c","#8B5CF6","#19D9D6","#ff7ceb"],
+          xIndex: 0,
+          yIndex: 1,
+          tooltipDecimals: 0,
+        },
+      },
+      caption: "Distribution of service endpoint types provided by registered agents.",
+    }),
+    "```",
 
     "# Estimating AI Slop",
 
