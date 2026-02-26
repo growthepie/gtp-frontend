@@ -110,6 +110,7 @@ const Agents: QuickBiteData = createQuickBite({
           label: "Service Endpoints",
           type: "badges",
           minWidth: 250,
+          maxVisibleBadges: 4,
           isNumeric: false,
           sortByValue: false,
           badgeSources: [
@@ -152,6 +153,7 @@ const Agents: QuickBiteData = createQuickBite({
         imageColumn: "image",
         topColumns: ["", "rating"],
         bottomColumns: ["endpoints", "origin_key", "x402_support"],
+        autoRowHeight: true,
       },
     }),
     "```",

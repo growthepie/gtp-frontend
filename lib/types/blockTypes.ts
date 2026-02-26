@@ -88,6 +88,7 @@ export interface TableBlock extends BaseBlock {
         label: string;
         color: string;
       }>;
+      maxVisibleBadges?: number; // For badges type in desktop table view: show first N badges, then "+X more"
       units?: {
         [key: string]: {
           decimals?: number;
@@ -111,6 +112,7 @@ export interface TableBlock extends BaseBlock {
     topColumns?: string[]; // Explicit column keys for top metric rows (auto-detected if omitted)
     bottomColumns?: string[]; // Explicit column keys for bottom tag row (auto-detected if omitted)
     hiddenColumns?: string[]; // Columns to suppress entirely in card view
+    autoRowHeight?: boolean; // If true, allow card rows to grow with content instead of fixed 20px height
   };
   readFromJSON: boolean;
   filterOnStateKey?: {
