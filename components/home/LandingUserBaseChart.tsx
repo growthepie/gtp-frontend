@@ -257,11 +257,12 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
       {data && landing && master && AllChainsByKeys ? (
         <>
         {!IS_PRODUCTION && (
-          <Container
-            className={`w-full`}
-          >
-            <LandingEventsChart /> 
-          </Container>
+          // <Container
+          //   className={`w-full`}
+          // >
+          //   <LandingEventsChart /> 
+          // </Container>
+          <> </>
           )}
         
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
