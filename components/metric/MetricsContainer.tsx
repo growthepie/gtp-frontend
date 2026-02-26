@@ -30,6 +30,7 @@ import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 767px)");
+    const splitRows = useMediaQuery("(max-width: 967px)");
     const [collapseTable, setCollapseTable] = useState(false);
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
@@ -391,6 +392,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 <GTPButtonContainer className="gap-x-[5px]" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
                     
                     <GTPButtonRow style={{ width: "auto"}}>
+                        {!splitRows && (
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
                             leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
@@ -399,6 +401,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             visualState="default"
                             clickHandler={() => setCollapseTable(!collapseTable)}
                         />
+                        )}
                         <GTPButtonDropdown
                             openDirection="top"
                             matchTriggerWidthToDropdown
