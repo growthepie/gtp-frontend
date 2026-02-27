@@ -439,8 +439,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                      
                     </GTPButtonRow>
                    
-                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end w-full">
-                    <GTPButtonRow>
+                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end w-full @[967px]:w-auto">
+                    <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                         <GTPButton
                             label="Absolute"
                             variant="primary"
