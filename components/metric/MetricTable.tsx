@@ -105,32 +105,48 @@ const MetricTable = ({
     }
   });
 
+  // Chains that are actually visible in the table for the current time interval.
+  // In hourly mode some chains lack hourly data and are hidden, so toggle logic
+  // must operate on this subset rather than the full chainKeys list.
+  const visibleChainKeys = useMemo(() => {
+    if (!data) return chainKeys;
+    return chainKeys.filter(
+      (chain) =>
+        (chain !== "ethereum" ? true : !focusEnabled) &&
+        Object.keys(allChainsByKeys).includes(chain) &&
+        allChainsByKeys[chain] &&
+        (timeIntervalKey !== "hourly" ||
+          (Array.isArray(data.chains[chain]?.hourly?.data) &&
+            data.chains[chain].hourly!.data.length > 0)),
+    );
+  }, [chainKeys, data, timeIntervalKey, allChainsByKeys, focusEnabled]);
+
   const chainSelectToggleState = useMemo(() => {
     if (
-      intersection(selectedChains, chainKeys).length === 1 &&
+      intersection(selectedChains, visibleChainKeys).length === 1 &&
       showEthereumMainnet
     )
       return "none";
 
     if (
-      intersection(selectedChains, chainKeys).length === 0 &&
+      intersection(selectedChains, visibleChainKeys).length === 0 &&
       !showEthereumMainnet
     )
       return "none";
 
-    if (chainKeys.includes("ethereum")) {
+    if (visibleChainKeys.includes("ethereum")) {
       if (
-        intersection(selectedChains, chainKeys).length ===
-        chainKeys.length
+        intersection(selectedChains, visibleChainKeys).length ===
+        visibleChainKeys.length
       )
         return "all";
     } else {
-      if (intersection(selectedChains, chainKeys).length === chainKeys.length)
+      if (intersection(selectedChains, visibleChainKeys).length === visibleChainKeys.length)
         return "all";
     }
 
     return "normal";
-  }, [chainKeys, selectedChains, showEthereumMainnet]);
+  }, [visibleChainKeys, selectedChains, showEthereumMainnet]);
 
   const onChainSelectToggle = useCallback(() => {
     if (scrollRef?.current) {
@@ -149,9 +165,9 @@ const MetricTable = ({
       else setSelectedChains([...lastSelectedChains]);
     }
 
-    // if some chains are selected, select all chains
+    // if some chains are selected, select all visible chains
     if (chainSelectToggleState === "normal") {
-      setSelectedChains(chainKeys);
+      setSelectedChains(visibleChainKeys);
     }
   }, [
     chainSelectToggleState,
@@ -159,7 +175,8 @@ const MetricTable = ({
     focusEnabled,
     setSelectedChains,
     lastSelectedChains,
-    chainKeys,
+    visibleChainKeys,
+    scrollRef,
   ]);
 
   const handleChainClick = useCallback(
@@ -195,6 +212,7 @@ const MetricTable = ({
       setSelectedChains,
       setShowEthereumMainnet,
       showEthereumMainnet,
+      scrollRef,
     ],
   );
 
