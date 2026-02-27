@@ -158,11 +158,16 @@ const MetricTable = ({
       else setSelectedChains([]);
     }
 
-    // if no chains are selected, select last selected chains
+    // if no chains are selected, restore last selected chains that are still
+    // visible — if none qualify (e.g. wiped after hourly deselect + metric
+    // switch), fall back to selecting all visible chains so the toggle is
+    // never stuck.
     if (chainSelectToggleState === "none") {
+      const restorable = lastSelectedChains.filter((c) => visibleChainKeys.includes(c));
+      const toSelect = restorable.length > 0 ? restorable : visibleChainKeys;
       if (showEthereumMainnet && focusEnabled)
-        setSelectedChains([...lastSelectedChains, "ethereum"]);
-      else setSelectedChains([...lastSelectedChains]);
+        setSelectedChains([...toSelect, "ethereum"]);
+      else setSelectedChains([...toSelect]);
     }
 
     // if some chains are selected, select all visible chains
