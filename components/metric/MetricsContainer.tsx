@@ -29,7 +29,7 @@ import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 
 export default function MetricsContainer({ metric }: { metric: string }) {
-    const isMobile = useMediaQuery("(max-width: 767px)");
+    const isMobile = useMediaQuery("(max-width: 967px)");
     const splitRows = useMediaQuery("(max-width: 967px)");
     const [collapseTable, setCollapseTable] = useState(false);
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
@@ -170,6 +170,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         <GTPCardLayout
             fullBleed={false}
             contentHeight={538}
+            mobileBreakpoint={967}
             cardRef={cardRef}
             header={
                 <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
@@ -220,7 +221,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             
             topBar={
                 <GTPButtonContainer className=" ">
-                    <GTPButtonRow>
+                    <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                     {timeIntervals.map((interval) => (
                         <GTPButton
                             key={interval}
@@ -330,7 +331,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         />
                     ))}
                     </GTPButtonRow>
-                    <GTPButtonRow>
+                    <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                         
                         {!selectedRange ? (
                             Object.keys(timespans)
@@ -402,7 +403,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 <GTPButtonContainer className="gap-x-[5px]" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
                     
                     <GTPButtonRow style={{ width: "auto"}}>
-                        {!splitRows && (
+                     
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
                             leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
@@ -411,7 +412,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             visualState="default"
                             clickHandler={() => setCollapseTable(!collapseTable)}
                         />
-                        )}
+                     
                         <GTPButtonDropdown
                             openDirection="top"
                             matchTriggerWidthToDropdown
@@ -483,8 +484,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             <GTPSplitPane
                 leftCollapsed={collapseTable}
                 maxLeftPanePercent={50}
+                mobileBreakpoint={967}
                 divider={({ onDragStart, isMobile: isMobileLayout }) =>
-                    !isMobileLayout && !collapseTable ? (
+                    !isMobile && !collapseTable ? (
                       <GTPResizeDivider
                         onDragStart={onDragStart}
                         showScrollbar

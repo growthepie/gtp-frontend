@@ -26,6 +26,7 @@ export interface GTPCardLayoutProps {
   contentHeight?: number | string;
   bottomBarOverlayHeight?: number;
   bottomBarGap?: number;
+  mobileBreakpoint?: number;
   isMobile?: boolean;
   cardRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
@@ -38,6 +39,7 @@ export default function GTPCardLayout({
   bottomBar,
   bottomBarOverlayHeight = DEFAULT_BOTTOM_BAR_OVERLAY_HEIGHT,
   bottomBarGap = DEFAULT_BOTTOM_BAR_GAP,
+  mobileBreakpoint = DEFAULT_MOBILE_BREAKPOINT,
   isMobile = false,
   cardRef,
   className,
@@ -50,7 +52,7 @@ export default function GTPCardLayout({
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const sync = (width: number) => setInternalIsMobile(width < DEFAULT_MOBILE_BREAKPOINT);
+    const sync = (width: number) => setInternalIsMobile(width < mobileBreakpoint);
     sync(el.getBoundingClientRect().width);
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -58,7 +60,7 @@ export default function GTPCardLayout({
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [mobileBreakpoint]);
 
   const isActuallyMobile = isMobile || internalIsMobile;
 
