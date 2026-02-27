@@ -169,7 +169,14 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                 {Object.keys(data.streaks).map((key) => {
                     const keyValue = key === "txcount" ? "value" : showUsd ? "usd" : "eth";
                     const valueName = key === "txcount" ? "Transactions" : showUsd ? "USD" : "ETH";
-                    const daysValue = data.streaks[key][keyValue].streak_length % 7 + (streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value > 1 ? 1 : 0);
+                    const streakEntry = data?.streaks?.[key]?.[keyValue];
+                    const chainValue = streaksData?.data?.[chainKey]?.[key]?.[keyValue];
+
+                    if (!streakEntry || chainValue == null) return null;
+
+                    const yesterdayValue = streakEntry.yesterday_value ?? 0;
+                    const ratio = yesterdayValue ? chainValue / yesterdayValue : 0;
+                    const daysValue = streakEntry.streak_length % 7 + (ratio > 1 ? 1 : 0);
 
                     const lastUpdated = streaksData.last_updated_utc;
 
@@ -180,28 +187,28 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
 
                     return (
                         <div className="flex items-center flex-col flex-1 min-w-[200px]" key={key + "streaks"}>
-                            <div className="text-xxs" dangerouslySetInnerHTML={{ __html: getStreakText(data.streaks[key][keyValue].streak_length, streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value > 1) }} />
+                            <div className="text-xxs" dangerouslySetInnerHTML={{ __html: getStreakText(streakEntry.streak_length, ratio > 1) }} />
                             <div className="flex flex-col items-center -space-y-[4px]">
                             <div className="flex items-center gap-x-[5px] h-[39px] pt-[2px]">
-                                {Array.from({ length: data.streaks[key][keyValue].streak_length }, (_, i) => (
+                                {Array.from({ length: streakEntry.streak_length }, (_, i) => (
                                     <div key={i + "streaks"} className="w-[13.69px] h-[24.09px]">
-                                        <StreakIcon progress={i < data.streaks[key][keyValue].streak_length ? 100 : 0} />
+                                        <StreakIcon progress={i < streakEntry.streak_length ? 100 : 0} />
                                     </div>
                                 ))}
                                 <div className="w-[22.16px] h-[39px] z-20 cursor-pointer pointer-events-auto"
                                     onMouseEnter={() => setFlameHovered(`${key}-streak-icon-progress`)}
                                     onMouseLeave={() => setFlameHovered(null)}
                                 >
-                                    <StreakIcon progress={streaksData.data[chainKey][key][keyValue] / data.streaks[key][keyValue].yesterday_value * 100} key={`${key}-streak-icon-progress`} animated={true} isHovered={flameHovered === `${key}-streak-icon-progress`} />
+                                    <StreakIcon progress={ratio * 100} key={`${key}-streak-icon-progress`} animated={true} isHovered={flameHovered === `${key}-streak-icon-progress`} />
                                 </div>
-                                {Array.from({ length: 7 - (data.streaks[key][keyValue].streak_length + 1) }, (_, i) => (
+                                {Array.from({ length: 7 - (streakEntry.streak_length + 1) }, (_, i) => (
                                     <div key={i + "streaks"} className="w-[13.69px] h-[24.09px]">
                                         <StreakIcon progress={0} />
                                     </div>
                                 ))}
                             </div>
                             <div className="cursor-pointer" onMouseEnter={() => setFlameHovered(`${key}-streak-icon-progress`)} onMouseLeave={() => setFlameHovered(null)}>
-                            {streaksData.data[chainKey] && <StreakBar yesterdayValue={data.streaks[key][keyValue].yesterday_value} todayValue={streaksData.data[chainKey][key][keyValue]} keyValue={keyValue} hoverBar={flameHovered === `${key}-streak-icon-progress`} />}
+                            {streaksData.data[chainKey] && <StreakBar yesterdayValue={yesterdayValue} todayValue={chainValue} keyValue={keyValue} hoverBar={flameHovered === `${key}-streak-icon-progress`} />}
                             </div>
                             </div>
                             <GTPTooltipNew placement="bottom" allowInteract={true}
@@ -223,13 +230,13 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                             >
                                 <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
                                     <div>
-                                    Today, {master.chains[chainKey].name} processed {formatNumber(streaksData.data[chainKey][key][keyValue], 2)} <span className="font-bold">{keyData[key].name}</span> (as of {minutesPassed} minutes ago).
+                                    Today, {master.chains[chainKey].name} processed {formatNumber(chainValue, 2)} <span className="font-bold">{keyData[key].name}</span> (as of {minutesPassed} minutes ago).
                                     <br />
                                     <br />
-                                    {data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue] < 0 ? <>
-                                    {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue]), 2)} <span className="font-bold">{keyData[key].name}</span>.
+                                    {yesterdayValue - chainValue < 0 ? <>
+                                    {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(yesterdayValue - chainValue), 2)} <span className="font-bold">{keyData[key].name}</span>.
                                     </> : <>
-                                    {master.chains[chainKey].name} needs {formatNumber(data.streaks[key][keyValue].yesterday_value - streaksData.data[chainKey][key][keyValue], 2)} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
+                                    {master.chains[chainKey].name} needs {formatNumber(yesterdayValue - chainValue, 2)} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
                                     </>}
                                     </div>
                                 </TooltipBody>
