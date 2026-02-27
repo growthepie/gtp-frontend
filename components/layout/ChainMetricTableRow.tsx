@@ -79,10 +79,10 @@ export default function ChainMetricTableRow({
       onMouseEnter={() => setIsRowHovered(true)}
       onMouseLeave={() => setIsRowHovered(false)}
       onKeyDown={handleKeyDown}
-      className={`group relative grid items-center gap-x-[6px] rounded-full border overflow-visible transition-colors cursor-pointer hover:bg-color-ui-hover ${
+      className={`group relative grid items-center gap-x-[6px] rounded-full border overflow-visible transition-colors cursor-pointer hover:bg-color-ui-hover h-[28px] ${
         selected
-          ? "h-[30px] border-color-bg-medium/95 bg-transparent"
-          : "h-[24px] border-color-bg-medium/70 bg-transparent"
+          ? "border-color-bg-medium/95 bg-transparent"
+          : "border-color-bg-medium/70 bg-transparent"
       }`}
       style={{ gridTemplateColumns }}
     >

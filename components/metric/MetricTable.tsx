@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 
@@ -94,6 +94,16 @@ const MetricTable = ({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
+  // Preserve scroll position across selection-driven list reorders.
+  // We save scrollTop right before a selection change and restore it after
+  // React re-renders the reordered list, before the browser paints.
+  const scrollRestoreRef = useRef<{ top: number; pending: boolean }>({ top: 0, pending: false });
+  useLayoutEffect(() => {
+    if (scrollRestoreRef.current.pending && scrollRef?.current) {
+      scrollRef.current.scrollTop = scrollRestoreRef.current.top;
+      scrollRestoreRef.current.pending = false;
+    }
+  });
 
   const chainSelectToggleState = useMemo(() => {
     if (
@@ -123,6 +133,9 @@ const MetricTable = ({
   }, [chainKeys, selectedChains, showEthereumMainnet]);
 
   const onChainSelectToggle = useCallback(() => {
+    if (scrollRef?.current) {
+      scrollRestoreRef.current = { top: scrollRef.current.scrollTop, pending: true };
+    }
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
       if (showEthereumMainnet && focusEnabled) setSelectedChains(["ethereum"]);
@@ -151,6 +164,9 @@ const MetricTable = ({
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
+      if (scrollRef?.current) {
+        scrollRestoreRef.current = { top: scrollRef.current.scrollTop, pending: true };
+      }
       if (chainKey === "ethereum" && focusEnabled) {
         if (showEthereumMainnet) {
           setShowEthereumMainnet(false);
