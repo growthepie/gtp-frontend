@@ -185,7 +185,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         dragSelectIcon={"feather:zoom-in" as GTPIconName}
         minDragSelectPoints={2}
         yAxisLabelFormatter={(value) => {
-          return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${` ${suffix ?? ""}`}`;
+          return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
         }}
         showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
