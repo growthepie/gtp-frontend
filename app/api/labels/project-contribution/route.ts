@@ -3,17 +3,13 @@ import { headers } from "next/headers";
 import {
   DEFAULT_CONTRIBUTION_REPOSITORIES,
   buildProjectPayloadFromDraft,
+  createGitHubPullRequestClient,
   ensureProjectFilePath,
-  parseProjectYaml,
-  reorderProjectPayload,
+  inferLogoExtension,
   submitProjectContribution,
 } from "@openlabels/oli-sdk";
-import type {
-  GitHubRepositoryRef,
-  ProjectSocialProfile,
-  ProjectUrlEntry,
-  ProjectYamlPayload,
-} from "@openlabels/oli-sdk/contributions";
+import type { GitHubRepositoryRef } from "@openlabels/oli-sdk/contributions";
+import { isMap, isSeq, parseDocument, YAMLMap, YAMLSeq } from "yaml";
 
 // ---------------------------------------------------------------------------
 // In-memory rate limiter — 5 requests per IP per hour
@@ -45,7 +41,9 @@ type ContributionProjectInput = {
   display_name?: string;
   description?: string;
   website?: string;
+  websites?: string[];
   main_github?: string;
+  github?: string[];
   twitter?: string;
   telegram?: string;
 };
@@ -67,11 +65,6 @@ const toNonEmptyString = (value: unknown): string => {
     return "";
   }
   return value.trim();
-};
-
-const toSingleUrlList = (value: unknown): string[] | undefined => {
-  const url = toNonEmptyString(value);
-  return url ? [url] : undefined;
 };
 
 const parseBooleanEnv = (value: string | undefined, defaultValue: boolean): boolean => {
@@ -104,6 +97,36 @@ const encodeContentPath = (value: string): string =>
 const decodeGitHubFileContent = (content: string): string =>
   Buffer.from(content.replace(/\n/g, ""), "base64").toString("utf8");
 
+const toNonEmptyStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((entry) => toNonEmptyString(entry)).filter(Boolean);
+};
+
+const dedupeUrls = (values: string[]): string[] => {
+  const deduped: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) {
+      continue;
+    }
+    seen.add(trimmed);
+    deduped.push(trimmed);
+  }
+  return deduped;
+};
+
+const toUrlList = (input: {
+  primary?: string;
+  additional?: unknown;
+}): string[] | undefined => {
+  const urls = dedupeUrls([
+    ...(input.primary ? [input.primary] : []),
+    ...toNonEmptyStringArray(input.additional),
+  ]);
+  return urls.length > 0 ? urls : undefined;
+};
+
 const toRepositoryRef = (input: {
   owner: string;
   repo: string;
@@ -133,71 +156,133 @@ const resolveContributionRepositories = () => ({
   }),
 });
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const isProjectUrlEntry = (value: unknown): value is ProjectUrlEntry =>
-  isRecord(value) &&
-  typeof value.url === "string" &&
-  value.url.trim().length > 0;
-
-const isProjectUrlEntryArray = (value: unknown): value is ProjectUrlEntry[] =>
-  Array.isArray(value) && value.every(isProjectUrlEntry);
-
-const toProjectSocialProfile = (
-  value: unknown,
-): ProjectSocialProfile | undefined => {
-  if (!isRecord(value)) return undefined;
-
-  const social: ProjectSocialProfile = {};
-  for (const [platform, entries] of Object.entries(value)) {
-    if (isProjectUrlEntryArray(entries)) {
-      social[platform] = entries;
-    }
-  }
-
-  return social;
+type EditMetadataPatch = {
+  displayName: string;
+  description?: string;
+  websites?: string[];
+  github?: string[];
+  twitter?: string;
+  telegram?: string;
 };
 
-const mergeEditPayload = (
-  existingPayload: ProjectYamlPayload,
-  draftPayload: ProjectYamlPayload,
-): ProjectYamlPayload => {
-  const merged: ProjectYamlPayload = {
-    ...existingPayload,
-    ...draftPayload,
-    name:
-      typeof existingPayload.name === "string" && existingPayload.name.trim()
-        ? existingPayload.name.trim()
-        : draftPayload.name,
-    version:
-      typeof existingPayload.version === "number"
-        ? existingPayload.version
-        : draftPayload.version,
-  };
-
-  // Merge partial social updates (twitter/telegram from UI) without dropping other platforms.
-  if (Object.prototype.hasOwnProperty.call(draftPayload, "social")) {
-    const existingSocial = toProjectSocialProfile(existingPayload.social);
-    const draftSocial = toProjectSocialProfile(draftPayload.social);
-
-    if (existingSocial || draftSocial) {
-      const mergedSocial: ProjectSocialProfile = {
-        ...(existingSocial || {}),
-        ...(draftSocial || {}),
-      };
-      merged.social = mergedSocial;
-    }
+const ensureRootMap = (document: ReturnType<typeof parseDocument>): YAMLMap => {
+  if (isMap(document.contents)) {
+    return document.contents as YAMLMap;
   }
-
-  return reorderProjectPayload(merged);
+  const map = document.createNode({}) as YAMLMap;
+  document.contents = map;
+  return map;
 };
 
-const fetchExistingProjectPayload = async (input: {
+const ensureMapAtKey = (
+  document: ReturnType<typeof parseDocument>,
+  map: YAMLMap,
+  key: string,
+): YAMLMap => {
+  const existing = map.get(key, true);
+  if (isMap(existing)) {
+    return existing as YAMLMap;
+  }
+
+  const next = document.createNode({}) as YAMLMap;
+  map.set(key, next);
+  return next;
+};
+
+const ensureSeqAtKey = (
+  document: ReturnType<typeof parseDocument>,
+  map: YAMLMap,
+  key: string,
+): YAMLSeq => {
+  const existing = map.get(key, true);
+  if (isSeq(existing)) {
+    return existing as YAMLSeq;
+  }
+
+  const next = document.createNode([]) as YAMLSeq;
+  map.set(key, next);
+  return next;
+};
+
+const setUrlEntry = (
+  document: ReturnType<typeof parseDocument>,
+  sequence: YAMLSeq,
+  index: number,
+  url: string,
+) => {
+  const existing = sequence.items[index];
+  if (isMap(existing)) {
+    (existing as YAMLMap).set("url", url);
+    return;
+  }
+  sequence.items[index] = document.createNode({ url });
+};
+
+const applyAdditiveUrlPatch = (
+  document: ReturnType<typeof parseDocument>,
+  map: YAMLMap,
+  key: string,
+  urls?: string[],
+) => {
+  if (!urls || urls.length === 0) return;
+
+  const sequence = ensureSeqAtKey(document, map, key);
+  urls.forEach((url, index) => {
+    if (index < sequence.items.length) {
+      setUrlEntry(document, sequence, index, url);
+      return;
+    }
+    sequence.add(document.createNode({ url }));
+  });
+};
+
+const applyAdditiveSocialPatch = (
+  document: ReturnType<typeof parseDocument>,
+  map: YAMLMap,
+  platform: "twitter" | "telegram",
+  url?: string,
+) => {
+  if (!url) return;
+
+  const social = ensureMapAtKey(document, map, "social");
+  const sequence = ensureSeqAtKey(document, social, platform);
+  if (sequence.items.length === 0) {
+    sequence.add(document.createNode({ url }));
+    return;
+  }
+
+  setUrlEntry(document, sequence, 0, url);
+};
+
+const patchExistingProjectYaml = (
+  yamlText: string,
+  patch: EditMetadataPatch,
+): string => {
+  const document = parseDocument(yamlText, {
+    keepSourceTokens: true,
+  });
+  if (document.errors.length > 0) {
+    throw new Error(`Could not parse existing project YAML: ${document.errors[0]?.message || "unknown error"}`);
+  }
+
+  const root = ensureRootMap(document);
+  root.set("display_name", patch.displayName);
+  if (patch.description) {
+    root.set("description", patch.description);
+  }
+  applyAdditiveUrlPatch(document, root, "websites", patch.websites);
+  applyAdditiveUrlPatch(document, root, "github", patch.github);
+  applyAdditiveSocialPatch(document, root, "twitter", patch.twitter);
+  applyAdditiveSocialPatch(document, root, "telegram", patch.telegram);
+
+  return String(document);
+};
+
+const fetchExistingProjectFile = async (input: {
   token: string;
   repository: GitHubRepositoryRef;
   ownerProject: string;
-}): Promise<ProjectYamlPayload> => {
+}): Promise<{ filePath: string; yamlText: string }> => {
   const filePath = ensureProjectFilePath(input.ownerProject);
   const ref = input.repository.baseBranch || "main";
   const response = await fetch(
@@ -227,7 +312,7 @@ const fetchExistingProjectPayload = async (input: {
   }
 
   const yamlText = decodeGitHubFileContent(payload.content);
-  return parseProjectYaml(yamlText);
+  return { filePath, yamlText };
 };
 
 export async function POST(request: Request) {
@@ -263,6 +348,17 @@ export async function POST(request: Request) {
     const mode: ProjectContributionMode = body.mode === "edit" ? "edit" : "add";
     const ownerProject = toNonEmptyString(body.project.owner_project);
     const displayName = toNonEmptyString(body.project.display_name);
+    const description = toNonEmptyString(body.project.description) || undefined;
+    const websites = toUrlList({
+      primary: toNonEmptyString(body.project.website) || undefined,
+      additional: body.project.websites,
+    });
+    const github = toUrlList({
+      primary: toNonEmptyString(body.project.main_github) || undefined,
+      additional: body.project.github,
+    });
+    const twitter = toNonEmptyString(body.project.twitter) || undefined;
+    const telegram = toNonEmptyString(body.project.telegram) || undefined;
     if (!ownerProject || !displayName) {
       return NextResponse.json(
         { error: "owner_project and display_name are required." },
@@ -273,12 +369,12 @@ export async function POST(request: Request) {
     const draftInput = {
       name: ownerProject,
       displayName,
-      description: toNonEmptyString(body.project.description) || undefined,
-      websites: toSingleUrlList(body.project.website),
-      github: toSingleUrlList(body.project.main_github),
+      description,
+      websites,
+      github,
       social: {
-        ...(toNonEmptyString(body.project.twitter) ? { twitter: [toNonEmptyString(body.project.twitter)] } : {}),
-        ...(toNonEmptyString(body.project.telegram) ? { telegram: [toNonEmptyString(body.project.telegram)] } : {}),
+        ...(twitter ? { twitter: [twitter] } : {}),
+        ...(telegram ? { telegram: [telegram] } : {}),
       },
     };
 
@@ -296,17 +392,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload =
-      mode === "edit"
-        ? mergeEditPayload(
-            await fetchExistingProjectPayload({
-              token: githubToken,
-              repository: repositories.projects,
-              ownerProject,
-            }),
-            draftPayload,
-          )
-        : draftPayload;
+    const targetOwner = process.env.OLI_GITHUB_TARGET_OWNER || undefined;
+    const autoCreateFork = parseBooleanEnv(process.env.OLI_GITHUB_AUTO_CREATE_FORK, true);
+    const branchPrefix = process.env.OLI_GITHUB_BRANCH_PREFIX || undefined;
+    const actorLabel = "gtp-frontend";
 
     const logoBase64 = rawLogoBase64;
     let logoContribution:
@@ -333,29 +422,121 @@ export async function POST(request: Request) {
       };
     }
 
-    const result = await submitProjectContribution({
-      auth: { token: githubToken },
-      yaml: {
-        mode,
-        payload,
-        existingProjectName: mode === "edit" ? ownerProject : undefined,
-      },
-      logo: logoContribution,
-      repositories,
-      targetOwner: process.env.OLI_GITHUB_TARGET_OWNER || undefined,
-      autoCreateFork: parseBooleanEnv(process.env.OLI_GITHUB_AUTO_CREATE_FORK, true),
-      branchPrefix: process.env.OLI_GITHUB_BRANCH_PREFIX || undefined,
-      validateYaml: true,
-      actorLabel: "gtp-frontend",
-    });
+    let yamlPullRequestUrl: string;
+    let logoPullRequestUrl: string | null = null;
+    let yamlFilePath: string;
+    let logoFilePath: string | null = null;
+    let yamlBranchName: string;
+    let logoBranchName: string | null = null;
+
+    if (mode === "edit") {
+      const existingFile = await fetchExistingProjectFile({
+        token: githubToken,
+        repository: repositories.projects,
+        ownerProject,
+      });
+      const patchedYamlText = patchExistingProjectYaml(existingFile.yamlText, {
+        displayName,
+        description,
+        websites,
+        github,
+        twitter,
+        telegram,
+      });
+      if (patchedYamlText === existingFile.yamlText) {
+        return NextResponse.json(
+          { error: "No metadata changes detected for this project." },
+          { status: 400 },
+        );
+      }
+
+      const pullRequestClient = createGitHubPullRequestClient({
+        token: githubToken,
+      });
+      const yamlTitle = `Update ${displayName || ownerProject} project`;
+      const yamlPullRequest = await pullRequestClient.createOrUpdatePullRequest({
+        upstream: repositories.projects,
+        targetOwner,
+        autoCreateFork,
+        branchPrefix,
+        filePath: existingFile.filePath,
+        fileContent: patchedYamlText,
+        fileContentEncoding: "utf8",
+        commitMessage: yamlTitle,
+        pullRequestTitle: yamlTitle,
+        pullRequestBody: [
+          "Updated OSS-directory project metadata via gtp-frontend.",
+          "",
+          `- slug: \`${ownerProject}\``,
+          `- file: \`${existingFile.filePath}\``,
+          `- source: ${actorLabel}`,
+        ].join("\n"),
+      });
+
+      yamlPullRequestUrl = yamlPullRequest.pullRequestUrl;
+      yamlFilePath = existingFile.filePath;
+      yamlBranchName = yamlPullRequest.branchName;
+
+      if (logoContribution) {
+        const logoExtension = inferLogoExtension(
+          logoContribution.fileName,
+          logoContribution.mimeType,
+        );
+        const computedLogoPath = `logos/images/${ownerProject}.${logoExtension}`;
+        const logoTitle = `Update logo for ${displayName || ownerProject}`;
+        const logoPullRequest = await pullRequestClient.createOrUpdatePullRequest({
+          upstream: repositories.logos,
+          targetOwner,
+          autoCreateFork,
+          branchPrefix,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
+          pullRequestTitle: logoTitle,
+          pullRequestBody: [
+            "Updated project logo via gtp-frontend.",
+            "",
+            `- slug: \`${ownerProject}\``,
+            `- file: \`${computedLogoPath}\``,
+            `- source: ${actorLabel}`,
+          ].join("\n"),
+        });
+        logoPullRequestUrl = logoPullRequest.pullRequestUrl;
+        logoFilePath = computedLogoPath;
+        logoBranchName = logoPullRequest.branchName;
+      }
+    } else {
+      const result = await submitProjectContribution({
+        auth: { token: githubToken },
+        yaml: {
+          mode,
+          payload: draftPayload,
+          existingProjectName: undefined,
+        },
+        logo: logoContribution,
+        repositories,
+        targetOwner,
+        autoCreateFork,
+        branchPrefix,
+        validateYaml: true,
+        actorLabel,
+      });
+
+      yamlPullRequestUrl = result.yaml.pullRequest.pullRequestUrl;
+      logoPullRequestUrl = result.logo?.pullRequest.pullRequestUrl || null;
+      yamlFilePath = result.yaml.filePath;
+      logoFilePath = result.logo?.filePath || null;
+      yamlBranchName = result.yaml.pullRequest.branchName;
+      logoBranchName = result.logo?.pullRequest.branchName || null;
+    }
 
     return NextResponse.json({
-      yamlPullRequestUrl: result.yaml.pullRequest.pullRequestUrl,
-      logoPullRequestUrl: result.logo?.pullRequest.pullRequestUrl || null,
-      yamlFilePath: result.yaml.filePath,
-      logoFilePath: result.logo?.filePath || null,
-      yamlBranchName: result.yaml.pullRequest.branchName,
-      logoBranchName: result.logo?.pullRequest.branchName || null,
+      yamlPullRequestUrl,
+      logoPullRequestUrl,
+      yamlFilePath,
+      logoFilePath,
+      yamlBranchName,
+      logoBranchName,
     });
   } catch (error: any) {
     return NextResponse.json(
