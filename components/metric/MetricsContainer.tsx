@@ -143,16 +143,26 @@ export default function MetricsContainer({ metric }: { metric: string }) {
    
         const diffMs = Math.max(Date.now() - lastUpdatedDate.getTime(), 0);
         const totalMinutes = Math.floor(diffMs / (1000 * 60));
-        const hours = Math.floor(totalMinutes / 60);
+        if (totalMinutes <= 0) return "Data updated just now";
+
+        const totalHours = Math.floor(totalMinutes / 60);
+        const days = Math.floor(totalHours / 24);
+        const hours = totalHours % 24;
         const minutes = totalMinutes % 60;
 
-        if (hours === 0) {
-            return `Data updated ${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+        const dayLabel = `${days} ${days === 1 ? "day" : "days"}`;
+        const hourLabel = `${hours} ${hours === 1 ? "hour" : "hours"}`;
+        const minuteLabel = `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+
+        if (days > 0) {
+            return `Data updated ${dayLabel}${hours ? ` ${hourLabel}` : ""} ago`;
         }
 
-        const hourLabel = `Data updated  ${hours} ${hours === 1 ? "hour" : "hours"}`;
-        const minuteLabel = `Data updated  ${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-        return `Data updated  ${hourLabel} ${minuteLabel} ago`;
+        if (hours > 0) {
+            return `Data updated ${hourLabel}${minutes ? ` ${minuteLabel}` : ""} ago`;
+        }
+
+        return `Data updated ${minuteLabel} ago`;
     }, [metricData?.last_updated_utc]);
 
 
