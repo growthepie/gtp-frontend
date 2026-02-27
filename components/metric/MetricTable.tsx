@@ -21,7 +21,7 @@ const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
   "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
-  hourly: "last_1d",
+  hourly: "last_1h",
   daily: "last_1d",
   daily_7d_rolling: "last_1d",
   weekly: "last_7d",
@@ -30,6 +30,7 @@ const timeIntervalSummaryKeys = {
 
 const timespanLabels: { [key: string]: { [key: string]: string } } = {
   hourly: {
+
     "1d": "1d",
     "3d": "3d",
     "7d": "7d",
