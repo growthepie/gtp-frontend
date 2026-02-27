@@ -172,6 +172,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             contentHeight={538}
             mobileBreakpoint={967}
             cardRef={cardRef}
+            
             header={
                 <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-primary">
@@ -400,7 +401,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 </GTPButtonContainer>
             }
             bottomBar={
-                <GTPButtonContainer className="gap-x-[5px]" style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
+                <GTPButtonContainer className="gap-x-[5px] " style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
                     
                     <GTPButtonRow style={{ width: "auto"}}>
                      

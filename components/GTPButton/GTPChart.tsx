@@ -77,6 +77,7 @@ export interface GTPChartProps {
   watermarkMetricName?: string | null;
   emptyStateMessage?: string;
   minHeight?: number | null;
+  maxHeight?: number | null;
   animation?: boolean;
   smooth?: boolean;
   lineWidth?: number;
@@ -119,6 +120,7 @@ export default function GTPChart({
   decimals,
   limitTooltipRows,
   minHeight = null,
+  maxHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
   emptyStateMessage = "",
@@ -234,7 +236,7 @@ export default function GTPChart({
   useEffect(() => {
     if (containerHeight <= 0) return;
     echartsRef.current?.getEchartsInstance?.()?.resize();
-  }, [containerHeight, minHeight]);
+  }, [containerHeight, minHeight, maxHeight]);
 
   // Typography
   const textXxsTypography = useMemo(
@@ -1318,7 +1320,7 @@ export default function GTPChart({
           option={chartOption}
           notMerge
           lazyUpdate
-          style={{ width: "100%", height: minHeight ? `${minHeight}px` : "100%" }}
+          style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>

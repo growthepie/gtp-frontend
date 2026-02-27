@@ -13,7 +13,7 @@ import { formatCompactNumber } from "@/lib/echarts-utils";
 import { GTPButton } from "../GTPButton/GTPButton";
 import colors from "tailwindcss/colors";
 import { useState } from "react";
-
+import { useUIContext } from "@/contexts/UIContext";
 type MetricChartProps = {
   collapseTable: boolean;
   suffix?: string;
@@ -40,11 +40,13 @@ const getSeriesType = (
 
 export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable }: MetricChartProps) {
   const { data: master } = useMaster();
+  const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [showUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { theme } = useTheme();
   const { data, metric_id, chainKeys, timespans } = useMetricData();
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const containerMobile = useMediaQuery("(max-width: 967px)");
   const [hoverChainKey, setHoverChainKey] = useState<string | null>(null);
   const {
     selectedScale,
@@ -150,7 +152,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
 
   return (
-    <div className="w-full h-full ">
+    <div className="w-full overflow-hidden  "
+    style={{height: containerMobile ? `${300 + (collapseTable ? 30 : 0)}px` : collapseTable ? `${400 + (collapseTable ? 30 : 0)}px` : `${440 + (collapseTable ? 30 : 0)}px`}}
+    >
       <GTPChart
         series={chartSeries}
         stack={selectedScale === "stacked"}
@@ -165,7 +169,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
-        minHeight={isMobile ? 300 : collapseTable ? 400 : 440}
+        height={containerMobile ? 300 : collapseTable ? 400 : 440}
+        minHeight={containerMobile ? 300 : collapseTable ? 400 : 440}
+        maxHeight={containerMobile ? 300 : collapseTable ? 400 : 440}
         emptyStateMessage="Select chains to show their historic data"
         onDragSelect={(xStart, xEnd) => {
           
@@ -183,29 +189,32 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         }}
         showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
+
+
       {collapseTable && (
-        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] @[967px]:bottom-[30px] bottom-[5px]" >
+        <div className="h-[30px] w-full  flex items-center justify-center gap-[5px]" 
+        
+        >
           {selectedChains.map((chain) => (
-            <div
+            <GTPButton
               key={chain}
+              label={master?.chains?.[chain]?.name}
+              variant="primary"
+              size="xs"
+              clickHandler={() => {
+                setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
+              }}
               onMouseEnter={() => setHoverChainKey(chain)}
               onMouseLeave={() => setHoverChainKey(null)}
-            >
-              <GTPButton
-                label={master?.chains?.[chain]?.name}
-                variant="primary"
-                size="xs"
-                clickHandler={() => {
-                  setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
-                }}
-                rightIcon={hoverChainKey === chain ? "in-button-close" : undefined}
-                rightIconClassname="!w-[12px] !h-[12px]"
-                leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
-              />
-            </div>
+              rightIcon={hoverChainKey === chain ? "in-button-close" : undefined}
+              rightIconClassname="!w-[12px] !h-[12px]"
+              leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
+            />
           ))}
         </div>
       )}
+      
+   
     </div>
   );
 }
