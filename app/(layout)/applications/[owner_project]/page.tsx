@@ -27,6 +27,8 @@ import dynamic from "next/dynamic";
 import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { buildProjectEditHref } from "@/lib/project-edit-intent";
+import { writeProjectEditContractSeed, type ProjectEditContractSeedRow } from "@/lib/project-edit-contract-seed";
+import { useRouter } from "next/navigation";
 
 // dynamic import to prevent server-side rendering of the chart component
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
@@ -35,12 +37,66 @@ type Props = {
   params: Promise<{ owner_project: string }>;
 };
 
+const buildContractSeedRows = ({
+  contracts,
+  master,
+  owner_project,
+}: {
+  contracts: ContractDict[];
+  master: any;
+  owner_project: string;
+}): ProjectEditContractSeedRow[] => {
+  if (!master) {
+    return [];
+  }
+
+  const byKey = new Map<string, ProjectEditContractSeedRow>();
+
+  for (const contract of contracts) {
+    const address = typeof contract.address === "string" ? contract.address.trim() : "";
+    if (!address) {
+      continue;
+    }
+
+    const originKey = typeof contract.origin_key === "string" ? contract.origin_key : "";
+    const evmChainIdRaw = master.chains[originKey]?.evm_chain_id;
+    const evmChainId = evmChainIdRaw != null ? String(evmChainIdRaw).trim() : "";
+    const chain_id =
+      evmChainId && evmChainId !== "null" && evmChainId !== "undefined"
+        ? `eip155:${evmChainId}`
+        : "";
+
+    const subCategoryKey =
+      typeof contract.sub_category_key === "string" ? contract.sub_category_key.trim() : "";
+    const usage_category =
+      subCategoryKey && master.blockspace_categories.sub_categories[subCategoryKey]
+        ? subCategoryKey
+        : "";
+
+    const row: ProjectEditContractSeedRow = {
+      chain_id,
+      address,
+      contract_name: typeof contract.name === "string" ? contract.name.trim() : "",
+      owner_project,
+      usage_category,
+    };
+
+    const dedupeKey = `${row.chain_id}::${row.address.toLowerCase()}::${row.owner_project}`;
+    if (!byKey.has(dedupeKey)) {
+      byKey.set(dedupeKey, row);
+    }
+  }
+
+  return Array.from(byKey.values());
+};
+
 export default function Page(props: Props) {
   const params = use(props.params);
 
   const {
     owner_project
   } = params;
+  const { contracts } = useApplicationDetailsData();
   const editContractsHref = buildProjectEditHref({
     mode: "edit",
     source: "application-page",
@@ -53,6 +109,21 @@ export default function Page(props: Props) {
   const { selectedMetrics } = useMetrics();
   const { data: master } = useMaster();
   const { selectedTimespan } = useTimespan();
+
+  const contractsSeedRows = useMemo<ProjectEditContractSeedRow[]>(
+    () => buildContractSeedRows({ contracts, master, owner_project }),
+    [contracts, master, owner_project],
+  );
+
+  const seedContractsForEdit = useCallback(() => {
+    writeProjectEditContractSeed({
+      version: 1,
+      source: "application-page",
+      owner_project,
+      created_at: Date.now(),
+      rows: contractsSeedRows,
+    });
+  }, [contractsSeedRows, owner_project]);
 
   const SourcesDisplay = useMemo(() => {
     if (!master)
@@ -124,6 +195,7 @@ export default function Page(props: Props) {
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
                   href={editContractsHref}
+                  onClick={seedContractsForEdit}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
                 />
@@ -135,6 +207,7 @@ export default function Page(props: Props) {
                   iconSize="md"
                   iconBackground="bg-transparent"
                   href={editContractsHref}
+                  onClick={seedContractsForEdit}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit"
                   containerClassName=""
@@ -147,7 +220,7 @@ export default function Page(props: Props) {
           </div>
         </div>
       </Container>
-      <ContractsTable />
+      <ContractsTable editContractsHref={editContractsHref} />
       <Container>
         {/* <div className="rounded-md bg-color-ui-active/60 h-[152px] w-full"></div> */}
         <div className="pt-[30px] pb-[15px]">
@@ -262,14 +335,17 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   );
 }
 
-const ContractsTable = () => {
+const ContractsTable = ({ editContractsHref }: { editContractsHref: string }) => {
   const { data, owner_project, contracts, sort, setSort, setSelectedSeriesName: setSelectedSeriesNameApps } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, data: master } = useMaster();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
+  const [isSelectingContracts, setIsSelectingContracts] = useState(false);
+  const [selectedContractIndices, setSelectedContractIndices] = useState<Set<number>>(new Set());
+  const router = useRouter();
 
   const {selectedSeriesName, setSelectedSeriesName} = useChartSync();
 
@@ -292,8 +368,84 @@ const ContractsTable = () => {
     [selectedMetricKeys]
   );
 
+  useEffect(() => {
+    setSelectedContractIndices((prev) => {
+      const next = new Set(Array.from(prev).filter((index) => index >= 0 && index < contracts.length));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [contracts.length]);
+
+  const toggleContractSelection = useCallback((contractIndex: number) => {
+    setSelectedContractIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(contractIndex)) {
+        next.delete(contractIndex);
+      } else {
+        next.add(contractIndex);
+      }
+      return next;
+    });
+  }, []);
+
+  const selectedContractSeedRows = useMemo<ProjectEditContractSeedRow[]>(() => {
+    if (!master || selectedContractIndices.size === 0) {
+      return [];
+    }
+
+    const selectedContracts = Array.from(selectedContractIndices)
+      .sort((a, b) => a - b)
+      .map((index) => contracts[index])
+      .filter((contract): contract is ContractDict => Boolean(contract));
+
+    return buildContractSeedRows({
+      contracts: selectedContracts,
+      master,
+      owner_project,
+    });
+  }, [contracts, master, owner_project, selectedContractIndices]);
+
+  const toggleSelectionMode = useCallback(() => {
+    setIsSelectingContracts((prev) => {
+      if (prev) {
+        setSelectedContractIndices(new Set());
+      }
+      return !prev;
+    });
+  }, []);
+
+  const moveSelectedContractsToQueue = useCallback(() => {
+    if (selectedContractSeedRows.length === 0) {
+      return;
+    }
+
+    writeProjectEditContractSeed({
+      version: 1,
+      source: "application-page",
+      owner_project,
+      created_at: Date.now(),
+      rows: selectedContractSeedRows,
+    });
+
+    router.push(editContractsHref);
+  }, [editContractsHref, owner_project, router, selectedContractSeedRows]);
+
   return (
     <>
+      <Container className="pb-[10px]">
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={toggleSelectionMode}
+            className={`h-[32px] rounded-full border px-[14px] text-xs font-medium transition-colors ${
+              isSelectingContracts
+                ? "border-color-text-primary bg-color-ui-active text-color-text-primary"
+                : "border-[#CDD8D3] text-color-text-primary hover:bg-color-ui-hover"
+            }`}
+          >
+            {isSelectingContracts ? "Cancel contract selection" : "Select contracts to edit"}
+          </button>
+        </div>
+      </Container>
       <HorizontalScrollContainer reduceLeftMask={true}>
         <GridTableHeader
           gridDefinitionColumns={gridColumns}
@@ -368,7 +520,12 @@ const ContractsTable = () => {
 
               return (
                 <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-                  <ContractsTableRow contract={contracts[index]}  />
+                  <ContractsTableRow
+                    contract={contracts[index]}
+                    showSelectionControl={isSelectingContracts}
+                    isSelected={selectedContractIndices.has(index)}
+                    onToggleSelection={() => toggleContractSelection(index)}
+                  />
                 </div>
               )
             }}
@@ -385,6 +542,27 @@ const ContractsTable = () => {
             {showMore ? "Show less" : "Show more"}
           </div>
         </div>
+      )}
+      {isSelectingContracts && (
+        <Container className="pt-[16px]">
+          <div className="flex flex-col items-center gap-y-[10px]">
+            <div className="text-xs text-color-text-secondary">
+              {selectedContractSeedRows.length} contract{selectedContractSeedRows.length === 1 ? "" : "s"} selected
+            </div>
+            <button
+              type="button"
+              onClick={moveSelectedContractsToQueue}
+              disabled={selectedContractSeedRows.length === 0}
+              className={`h-[36px] rounded-full border px-[16px] text-sm font-medium transition-colors ${
+                selectedContractSeedRows.length === 0
+                  ? "cursor-not-allowed border-color-ui-hover text-color-text-secondary"
+                  : "border-[#CDD8D3] text-color-text-primary hover:bg-color-ui-hover"
+              }`}
+            >
+              Move selected contracts to edit queue
+            </button>
+          </div>
+        </Container>
       )}
     </>
   )
@@ -428,7 +606,17 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
+const ContractsTableRow = memo(({
+  contract,
+  showSelectionControl = false,
+  isSelected = false,
+  onToggleSelection,
+}: {
+  contract: ContractDict;
+  showSelectionControl?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
+}) => {
   const { data } = useApplicationDetailsData();
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -463,7 +651,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
+      className={`group relative text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
       style={{
         gridTemplateColumns: gridColumns,
       }}
@@ -533,6 +721,56 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
           <ContractValue contract={contract} metric={selectedMetrics[index]} />
         </div>
       ))}
+      {showSelectionControl && onToggleSelection && (
+        <button
+          type="button"
+          className="absolute -right-[15px] top-0 cursor-pointer"
+          onClick={onToggleSelection}
+          aria-label={isSelected ? "Deselect contract" : "Select contract"}
+        >
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
+            style={{
+              color: isSelected ? undefined : "#5A6462",
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`h-6 w-6 ${isSelected ? "opacity-0" : "opacity-100"}`}
+            >
+              <circle
+                xmlns="http://www.w3.org/2000/svg"
+                cx="12"
+                cy="12"
+                r="10"
+              />
+            </svg>
+          </div>
+          <div
+            className={`rounded-full p-1 ${
+              isSelected
+                ? "bg-white dark:bg-color-ui-active"
+                : "bg-color-bg-medium group-hover:bg-color-ui-hover"
+            }`}
+          >
+            <Icon
+              icon="feather:check-circle"
+              className={`h-[24px] w-[24px] ${isSelected ? "opacity-100" : "opacity-0"}`}
+              style={{
+                color: isSelected ? undefined : "#5A6462",
+              }}
+            />
+          </div>
+        </button>
+      )}
     </GridTableRow>
   )
 });

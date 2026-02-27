@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import {
   DEFAULT_CONTRIBUTION_REPOSITORIES,
   buildProjectPayloadFromDraft,
   submitProjectContribution,
 } from "@openlabels/oli-sdk";
+
+// ---------------------------------------------------------------------------
+// In-memory rate limiter — 5 requests per IP per hour
+// ---------------------------------------------------------------------------
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_LOGO_BASE64_BYTES = 700_000; // ~500 KB binary
+
+const ipBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfterSecs: number } {
+  const now = Date.now();
+  const bucket = ipBuckets.get(ip);
+  if (!bucket || now >= bucket.resetAt) {
+    ipBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfterSecs: 0 };
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfterSecs: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  bucket.count += 1;
+  return { allowed: true, retryAfterSecs: 0 };
+}
 
 type ProjectContributionMode = "add" | "edit";
 
@@ -64,9 +88,32 @@ const decodeBase64Bytes = (value: string): Uint8Array => {
 
 export async function POST(request: Request) {
   try {
+    // Rate limit
+    const headersList = await headers();
+    const ip =
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headersList.get("x-real-ip") ||
+      "unknown";
+    const { allowed, retryAfterSecs } = checkRateLimit(ip);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait before submitting again." },
+        { status: 429, headers: { "Retry-After": String(retryAfterSecs) } },
+      );
+    }
+
     const body = (await request.json().catch(() => null)) as ContributionRequestBody | null;
     if (!body?.project) {
       return NextResponse.json({ error: "Missing project payload." }, { status: 400 });
+    }
+
+    // Logo size cap (~500 KB binary)
+    const rawLogoBase64 = toNonEmptyString(body.logo?.base64);
+    if (rawLogoBase64 && rawLogoBase64.length > MAX_LOGO_BASE64_BYTES) {
+      return NextResponse.json(
+        { error: "Logo file is too large. Maximum size is 500 KB." },
+        { status: 413 },
+      );
     }
 
     const mode: ProjectContributionMode = body.mode === "edit" ? "edit" : "add";
@@ -104,7 +151,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const logoBase64 = toNonEmptyString(body.logo?.base64);
+    const logoBase64 = rawLogoBase64;
     let logoContribution:
       | {
           mode: ProjectContributionMode;
