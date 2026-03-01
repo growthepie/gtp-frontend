@@ -560,8 +560,11 @@ const testBite: QuickBiteData = createQuickBite({
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        topColumns: ["", "events"],
-        bottomColumns: ["endpoints", "origin_key"],
+        sections: [
+          { columns: ["events"], labelPosition: "bottom" },
+          { columns: ["origin_key"], labelPosition: "right", layout: "start" },
+          { columns: ["endpoints"], labelPosition: "hidden" },
+        ],
         autoRowHeight: true,
       },
     }),
@@ -669,8 +672,10 @@ const testBite: QuickBiteData = createQuickBite({
       columnSortBy: "value",
       cardView: {
         titleColumn: "origin_key",
-        topColumns: [null, "total_registered", "valid_registrations"],
-        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"],
+        sections: [
+          { columns: ["total_registered", "valid_registrations"], labelPosition: "bottom" },
+          { columns: ["total_feedback", "unique_owners", "agents_per_owner"], labelPosition: "bottom" },
+        ],
       },
     }),
     "```",

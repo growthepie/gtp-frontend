@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { useIsStaleSession } from '@/hooks/useIsStaleSession';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
 import { Badge } from './FloatingBar/Badge';
 import { FloatingBarButton } from './FloatingBar/FloatingBarButton';
@@ -888,6 +889,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
 
 const GTPLogoOld = () => {
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const isStale = useIsStaleSession();
 
   const toast = useToast(); // Keep toast for fetch error
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);
@@ -941,6 +943,7 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
+      prefetch={isStale ? false : undefined}
       className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] min-w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
       title="Link to growthepie"
       aria-label="Link to growthepie"

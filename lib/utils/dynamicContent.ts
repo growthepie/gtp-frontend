@@ -399,6 +399,30 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           .replace('{{eip8004_invalid_uri_7d_avg}}', 'N/A');
       }
 
+      // Handle Octant data placeholders
+      if (processedItem.includes('{{octant_')) {
+        const octantSummaryRaw = await fetchData('octant_summary', "https://api.growthepie.com/v1/trackers/octant/summary.json");
+        const octantSummary = (octantSummaryRaw ?? {}) as Record<string, any>;
+
+        const formatNumber = (value: any, decimals: number = 0): string => {
+          const num = Number(value);
+          if (!Number.isFinite(num)) return 'N/A';
+          return num.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          });
+        };
+
+        const totalFunded = octantSummary?.total_funding_amount;
+        const medianProjectFunding = octantSummary?.median_reward_amounts?.all;
+        const totalWalletsLocked = octantSummary?.locked_changes?.now?.num_users_locked_glm;
+
+        processedItem = processedItem
+          .replace('{{octant_total_funded_eth}}', formatNumber(totalFunded, 0))
+          .replace('{{octant_median_project_funding_eth}}', formatNumber(medianProjectFunding, 2))
+          .replace('{{octant_total_wallets_locked}}', formatNumber(totalWalletsLocked, 0));
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

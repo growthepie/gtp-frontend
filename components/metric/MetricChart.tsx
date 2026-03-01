@@ -184,7 +184,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         showTooltipTimestamp={timeIntervalKey === "hourly"}
       />
       {collapseTable && (
-        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] bottom-[30px]" >
+        <div className="h-[30px] w-full relative flex items-center justify-center gap-[5px] @[967px]:bottom-[30px] bottom-[5px]" >
           {selectedChains.map((chain) => (
             <div
               key={chain}

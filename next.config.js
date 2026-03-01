@@ -141,6 +141,11 @@ const nextConfig = {
     
     return [
       {
+        source: "/quick-bites/eip8004",
+        destination: "/quick-bites/eip-8004",
+        permanent: true,
+      },
+      {
         source: "/data-availability/blob-producers",
         destination: "/data-availability/da-consumers",
         permanent: true,

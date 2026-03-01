@@ -21,6 +21,7 @@ import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { useIsStaleSession } from "@/hooks/useIsStaleSession";
 
 type SidebarProps = {
   className?: string;
@@ -32,6 +33,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const isMobileSidebarOpen = useUIContext((state) => state.isMobileSidebarOpen);
   const toggleMobileSidebar = useUIContext((state) => state.toggleMobileSidebar);
+  const isStale = useIsStaleSession();
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
 
@@ -152,7 +154,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           ></div> */}
           <div className="relative w-screen p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
             <div className="flex px-[5px] justify-between gap-x-[20px] items-end w-full pointer-events-auto">
-              <Link href="/" className="h-[36px] w-[33.44px] relative">
+              <Link href="/" prefetch={isStale ? false : undefined} className="h-[36px] w-[33.44px] relative">
                 {/* <Image
                     src="/logo_pie_only.png"
                     alt="Forest"

@@ -16,10 +16,12 @@ import { HeaderSearchButton, SearchComponent } from "../search/Components";
 import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";
 import { LogoContextMenu } from "./SidebarContainer";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { useIsStaleSession } from "@/hooks/useIsStaleSession";
 
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const isStale = useIsStaleSession();
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
 
@@ -30,7 +32,7 @@ export default function Header() {
           <div className="flex gap-x-0 xl:gap-x-6 w-full">
             <div className="flex h-[37px] justify-between items-start md:hidden relative w-full self-stretch pl-[5px] pr-[5px]">
               <LogoContextMenu>
-                <Link href="/" className="">
+                <Link href="/" prefetch={isStale ? false : undefined} className="">
                   <div className="h-[36px] w-[154.05px] relative ">
                     <svg width="155" height="36" viewBox="0 0 155 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M10.7093 11.175C10.6414 10.2278 10.8994 9.35794 11.4529 8.51448C11.8235 7.95377 12.3491 7.34833 12.929 6.68139C14.425 4.95852 16.278 2.82591 16.7317 0C17.7181 2.16616 17.2397 4.27241 16.1478 6.20934C15.6566 7.07995 15.1127 7.70536 14.5935 8.30201C13.9825 9.0041 13.4066 9.66625 12.9929 10.6399C12.7652 11.1695 12.6358 11.6767 12.5751 12.1727L10.7093 11.175Z" fill="url(#paint0_radial_22630_130036)" />

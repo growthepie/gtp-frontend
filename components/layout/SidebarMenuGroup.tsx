@@ -18,6 +18,7 @@ import { GTPIcon, GTPIconSize } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 import { MOBILE_BREAKPOINT, useUIContext } from "@/contexts/UIContext";
+import { useIsStaleSession } from "@/hooks/useIsStaleSession";
 import { useMediaQuery } from "usehooks-ts";
 
 type SidebarProps = {
@@ -505,13 +506,16 @@ export const Accordion = memo(({
     }
   };
   
+  const isStale = useIsStaleSession();
+
   const InteractiveWrapper = link ? Link : 'div';
-  const interactiveProps = link 
-    ? { 
-        href: link, 
+  const interactiveProps = link
+    ? {
+        href: link,
         target: link.startsWith("http") ? "_blank" : undefined,
         rel: link.startsWith("http") ? "noopener noreferrer" : undefined,
-      } 
+        prefetch: isStale ? false : undefined,
+      }
     : {
       href: "",
       target: undefined,

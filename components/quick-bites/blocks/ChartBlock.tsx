@@ -50,6 +50,8 @@ interface PieDataConfig {
   yIndex?: number;
   tooltipDecimals?: number;
   colors: string | string[];
+  nameMap?: Record<string, string>;
+  showPercentage?: boolean;
 }
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
@@ -67,6 +69,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.
   const processedUrls = React.useMemo(() => {
+    if (dynamicSeriesConfig) return [];
     if (dynamicSeriesConfig) return [];
     const metaList = block.dataAsJson?.meta;
     if (!metaList?.length) return [];
@@ -303,7 +306,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         const y = typeof rawValue === "number" ? rawValue : Number(rawValue);
         if (!Number.isFinite(y)) return null;
 
-        const name = String(rawName ?? `Slice ${index + 1}`);
+        const rawNameStr = String(rawName ?? `Slice ${index + 1}`);
+        const name = pieDataConfig.nameMap?.[rawNameStr] ?? rawNameStr;
         const color = palette[index % palette.length];
         const tooltipDecimals = pieDataConfig.tooltipDecimals;
 
@@ -360,6 +364,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           yAxisLine={block.yAxisLine}
           centerName={block.centerName}
           pieData={resolvedPieData}
+          showPiePercentage={pieDataConfig?.showPercentage}
         />
       )}
       {block.caption && (

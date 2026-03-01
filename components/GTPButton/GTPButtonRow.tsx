@@ -10,7 +10,7 @@ export default function GTPButtonRow({
   style?: React.CSSProperties;
 }) {
   return (
-    <GTPTabButtonSet className={`w-full md:w-auto ${className ?? ""}`} style={style ?? undefined}>
+    <GTPTabButtonSet className={` ${className ?? ""}`} style={style ?? undefined}>
       {children}
     </GTPTabButtonSet>
   );

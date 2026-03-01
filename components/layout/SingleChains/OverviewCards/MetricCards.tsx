@@ -14,7 +14,8 @@ import { getFundamentalsByKey } from "@/lib/metrics";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { useTheme } from "next-themes";
 
-const formatLargeNumber = (value: number, decimals: number) => {
+const formatLargeNumber = (value: number | null | undefined, decimals: number) => {
+    if (value == null || Number.isNaN(value)) return "—";
     const absValue = Math.abs(value);
     if (absValue >= 1e9) {
         return (value / 1e9).toFixed(decimals) + 'B';

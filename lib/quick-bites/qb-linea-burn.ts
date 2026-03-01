@@ -230,10 +230,23 @@ const lineaTokenBurn: QuickBiteData = {
             url: "https://api.growthepie.com/v1/quick-bites/linea/profit_calculation.json",
             pathToData: "data.daily.values",
             makeNegative: true
+          },
+          {
+            name: "Cumulative Profits",
+            color: "#A9E9FF",
+            type: "line",
+            oppositeYAxis: true,
+            xIndex: 0,
+            yIndex: 11,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/linea/profit_calculation.json",
+            pathToData: "data.daily.values"
           }
         ],
       },
-      height: 400,
+      height: 500,
       caption: "Network economics showing gas fee income and operating costs, broken down by L1 rent and infrastructure costs.",
     }),
     "```",    

@@ -71,7 +71,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["fusaka"];
+const quickBiteIds = ["eip-8004", "octant-v2-migration"];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -110,7 +110,7 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
 }
 
 
-const metricIds = ["txcount", "throughput", "stables_mcap", "rent_paid", "market_cap"];
+const metricIds = ["stables_mcap", "rent_paid", "txcount", "throughput", "market_cap"];
 
 export default function LandingSwiperItems() {
   const {

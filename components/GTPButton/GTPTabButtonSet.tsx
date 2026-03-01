@@ -39,7 +39,7 @@ export default function GTPTabButtonSet({
 
   return (
     <div
-      className={`inline-flex items-center gap-[2px] rounded-full ring-[0.5px] ring-inset ring-color-bg-default py-[2px] px-[2px] ${containerFillClassName} ${
+      className={`inline-flex  items-center w-full gap-[2px] rounded-full ring-[0.5px] ring-inset ring-color-bg-default py-[2px] px-[2px] ${containerFillClassName} ${
         className ?? ""
       }`}
       style={style}

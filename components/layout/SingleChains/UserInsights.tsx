@@ -11,6 +11,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
+import { getExplorerAddressUrl } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { GTPTooltipNew, GTPApplicationTooltip, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
@@ -380,7 +381,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                           </div>
                           {master?.chains[chainKey]?.block_explorer && (
                             <Link
-                              href={`${master.chains[chainKey].block_explorer}address/${row.address}`}
+                              href={getExplorerAddressUrl(master.chains[chainKey].block_explorer, row.address)}
                               rel="noopener noreferrer"
                               target="_blank"
                             >
