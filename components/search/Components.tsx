@@ -28,8 +28,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 
-function normalizeString(str: string) {
-  return str.toLowerCase().replace(/[\s-]+/g, '');
+function normalizeString(str: string | null | undefined) {
+  return (typeof str === "string" ? str : "").toLowerCase().replace(/[\s-]+/g, "");
 }
 
 const SEARCH_RESULT_CONTEXT_MAX_CHARS = 32;
