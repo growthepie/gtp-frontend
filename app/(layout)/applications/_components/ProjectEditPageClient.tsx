@@ -468,6 +468,19 @@ const runFallbackUrlMatch = (
   return [...exact, ...similar].slice(0, 5);
 };
 
+const BLOCKSCOUT_TX_URLS: Record<string, string> = {
+  "8453":  "https://base.blockscout.com/tx/",
+  "1":     "https://eth.blockscout.com/tx/",
+  "10":    "https://optimism.blockscout.com/tx/",
+  "42161": "https://arbitrum.blockscout.com/tx/",
+  "137":   "https://polygon.blockscout.com/tx/",
+};
+
+const getTxExplorerUrl = (chainId: string, txHash: string): string => {
+  const base = BLOCKSCOUT_TX_URLS[chainId] ?? `https://blockscout.com/chain/${chainId}/tx/`;
+  return `${base}${txHash}`;
+};
+
 const extractCoreName = (website: string): string => {
   try {
     const hostname = new URL(ensureAbsoluteUrl(website)).hostname.replace(/^www\./, "");
@@ -724,6 +737,7 @@ export default function ProjectEditPageClient() {
   const importedContractSeedRef = useRef(false);
   const loadedFormRef = useRef<ProjectFormState>({ ...EMPTY_FORM });
   const websiteCheckTargetRef = useRef("");
+  const prevOwnerProjectRef = useRef("");
 
   const { data: masterData, SupportedChainKeys } = useMaster();
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -765,6 +779,7 @@ export default function ProjectEditPageClient() {
   const [lastValidatedSingleRowIndex, setLastValidatedSingleRowIndex] = useState<number | null>(null);
   const [singleSubmitResult, setSingleSubmitResult] = useState<OnchainSubmitResult | null>(null);
   const [bulkSubmitResult, setBulkSubmitResult] = useState<BulkOnchainSubmitResult | null>(null);
+  const [lastSubmitChainId, setLastSubmitChainId] = useState("");
   const [contributionResult, setContributionResult] = useState<ContributionResult | null>(null);
   const [isSubmittingContribution, setIsSubmittingContribution] = useState(false);
 
@@ -834,6 +849,7 @@ export default function ProjectEditPageClient() {
     setWebsiteCheckMatches([]);
     setProfilerError("");
     setProfilerInfo("");
+    setLogoUpload(null);
     setShowMetadataForm(intent.start !== "website");
 
     setForm((prev) => {
@@ -981,6 +997,32 @@ export default function ProjectEditPageClient() {
       })
       .slice(0, 6);
   }, [form.main_github, normalizedProjects]);
+
+  // Comprehensive duplicate detection across all fields (add mode only)
+  const allProjectMatches = useMemo((): ExistingProjectMatch[] => {
+    if (!isAddMode) return [];
+
+    const ownerMatches: ExistingProjectMatch[] = existingOwnerProject
+      ? [{ owner_project: asString(existingOwnerProject.owner_project), display_name: toDisplayName(existingOwnerProject), confidence: "exact", field: "owner_project" }]
+      : ownerProjectSuggestions.map((p) => ({ owner_project: asString(p.owner_project), display_name: toDisplayName(p), confidence: "similar" as const, field: "owner_project" as MatchField }));
+
+    const displayMatches: ExistingProjectMatch[] = displayNameSuggestions.map((p) => ({
+      owner_project: asString(p.owner_project),
+      display_name: toDisplayName(p),
+      confidence: "similar" as const,
+      field: "owner_project" as MatchField,
+    }));
+
+    const websiteMatches = form.website.trim()
+      ? getSimilarityMatches(ensureAbsoluteUrl(form.website), "website", "website")
+      : [];
+
+    const githubMatches = form.main_github.trim()
+      ? getSimilarityMatches(ensureAbsoluteUrl(form.main_github), "github", "github")
+      : [];
+
+    return mergeMatches(ownerMatches, displayMatches, websiteMatches, githubMatches).slice(0, 5);
+  }, [isAddMode, existingOwnerProject, ownerProjectSuggestions, displayNameSuggestions, form.website, form.main_github, getSimilarityMatches]);
 
   const checkWebsiteForExistingProjects = useCallback(async () => {
     const input = websiteCheckInput.trim();
@@ -1317,6 +1359,7 @@ export default function ProjectEditPageClient() {
     setQueueSubmitPreview(null);
     setSingleSubmitResult(null);
     setBulkSubmitResult(null);
+    setLastSubmitChainId("");
     setLastValidatedQueueFlow(null);
     setLastValidatedQueueSignature("");
     setLastValidatedSingleRowIndex(null);
@@ -1413,26 +1456,28 @@ export default function ProjectEditPageClient() {
   }, [currentQueueSignature, lastValidatedQueueFlow, lastValidatedQueueSignature]);
 
   useEffect(() => {
-    const rows = bulkController.queue.rows;
+    const newOwner = form.owner_project.trim();
+    const prevOwner = prevOwnerProjectRef.current;
+    prevOwnerProjectRef.current = newOwner;
 
-    if (!form.owner_project.trim() || rows.length === 0) {
-      return;
-    }
-    const owner = form.owner_project.trim();
-    let didPatchAnyRow = false;
+    if (!newOwner || newOwner === prevOwner) return;
+
+    const rows = bulkController.queue.rows;
+    if (rows.length === 0) return;
+
+    let didPatch = false;
     const nextRows = rows.map((row) => {
       const currentOwner = toStringValue(row.owner_project).trim();
-      if (currentOwner || hasRowDataExcludingOwner(row)) {
-        return row;
+      // Patch rows that are empty OR that matched the previous project
+      if (currentOwner === "" || currentOwner === prevOwner) {
+        didPatch = true;
+        return { ...row, owner_project: newOwner };
       }
-      didPatchAnyRow = true;
-      return { ...row, owner_project: owner };
+      return row;
     });
-    if (!didPatchAnyRow) {
-      return;
-    }
+    if (!didPatch) return;
     bulkController.queue.setRows(nextRows);
-  }, [bulkController.queue, form.owner_project]);
+  }, [form.owner_project, bulkController.queue]);
 
   const mergeRowsIntoQueue = useCallback(
     (rows: AttestationRowInput[]) => {
@@ -1745,6 +1790,9 @@ export default function ProjectEditPageClient() {
   const updateField = <K extends keyof ProjectFormState>(key: K, value: ProjectFormState[K]) => {
     setContributionResult(null);
     setSubmitError(null);
+    if (key === "owner_project") {
+      setLogoUpload(null);
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -1796,6 +1844,7 @@ export default function ProjectEditPageClient() {
       twitter,
       telegram,
     };
+    setLogoUpload(null);
     setForm(newForm);
     loadedFormRef.current = newForm;
     setContributionResult(null);
@@ -2085,6 +2134,7 @@ export default function ProjectEditPageClient() {
     setSubmitError(null);
     setSingleSubmitResult(null);
     setBulkSubmitResult(null);
+    setLastSubmitChainId("");
     setQueueSubmitPreview(null);
 
     if (!walletAddress) {
@@ -2144,6 +2194,7 @@ export default function ProjectEditPageClient() {
 
     setIsSubmittingFromPreview(true);
     try {
+      setLastSubmitChainId(queueSubmitPreview.preparedRows[0]?.chainId ?? "");
       if (queueSubmitPreview.flow === "single") {
         const result = await attestClient.submitSingleOnchain(
           queueSubmitPreview.preparedRows[0],
@@ -2192,7 +2243,11 @@ export default function ProjectEditPageClient() {
   );
 
   const switchToAddRoute = useCallback(() => {
-    const website = form.website.trim() || websiteCheckInput.trim();
+    // When coming from application-page, start fresh (don't carry over project data)
+    const shouldCarryWebsite = intent.source !== "application-page";
+    const website = shouldCarryWebsite
+      ? (form.website.trim() || websiteCheckInput.trim())
+      : "";
     router.push(
       buildProjectEditHref({
         mode: "add",
@@ -2697,6 +2752,40 @@ export default function ProjectEditPageClient() {
                   {enhanceDescInfo && <p className="mt-[5px] text-xs text-color-positive">{enhanceDescInfo}</p>}
                 </div>
 
+                {isAddMode && allProjectMatches.length > 0 && (
+                  <div className="mt-[14px] rounded-[10px] border border-color-data-yellow/40 bg-color-data-yellow/10 p-[12px]">
+                    <div className="flex items-center gap-x-[8px]">
+                      <Icon icon="feather:alert-triangle" className="size-[14px] text-color-data-yellow shrink-0" />
+                      <div className="font-medium text-sm text-color-data-yellow">Similar projects already exist</div>
+                    </div>
+                    <p className="mt-[4px] text-xs text-color-text-primary">Check if your project is already listed before adding.</p>
+                    <div className="mt-[8px] flex flex-col gap-y-[6px]">
+                      {allProjectMatches.map((match) => (
+                        <div key={match.owner_project} className="flex items-center justify-between gap-x-[8px]">
+                          <div className="flex items-center gap-x-[6px] min-w-0">
+                            <ApplicationIcon owner_project={match.owner_project} size="sm" />
+                            <span className="text-xs font-medium truncate">{match.display_name}</span>
+                            <span className="text-xxs text-color-text-secondary shrink-0">({match.owner_project})</span>
+                            <span className={`shrink-0 rounded-full px-[6px] py-[1px] text-xxs border ${match.confidence === "exact" ? "border-color-negative/40 bg-color-negative/10 text-color-negative" : "border-color-data-yellow/40 bg-color-data-yellow/10 text-color-data-yellow"}`}>
+                              {match.confidence}
+                            </span>
+                            <span className="shrink-0 rounded-full border border-color-ui-shadow bg-color-bg-medium px-[6px] py-[1px] text-xxs text-color-text-secondary">
+                              {match.field}
+                            </span>
+                          </div>
+                          <Link
+                            href={buildProjectEditHref({ mode: "edit", project: match.owner_project })}
+                            className="shrink-0 inline-flex items-center gap-x-[4px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[8px] py-[3px] text-xxs hover:bg-color-ui-hover transition-colors"
+                          >
+                            Edit
+                            <Icon icon="feather:external-link" className="size-[9px]" />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-[14px] flex items-center justify-end">
                   <button
                     type="button"
@@ -2714,17 +2803,22 @@ export default function ProjectEditPageClient() {
 
                 {submitError && <p className="mt-[8px] text-xs text-color-negative">{submitError}</p>}
                 {contributionResult && (
-                  <div className="mt-[10px] rounded-[10px] border border-color-ui-shadow bg-color-bg-medium p-[10px] text-sm">
-                    <div className="font-medium text-color-text-primary">Contribution created</div>
-                    <div className="mt-[6px] flex flex-wrap gap-[6px]">
+                  <div className="mt-[10px] rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
+                    <div className="flex items-center gap-x-[8px]">
+                      <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
+                      <div className="font-medium text-sm text-color-positive">Changes submitted — awaiting approval</div>
+                    </div>
+                    <p className="mt-[4px] text-xs text-color-text-primary">Your PR has been created. Maintainers will review it.</p>
+                    <div className="mt-[8px] flex flex-wrap gap-[6px]">
                       <Link
                         href={contributionResult.yamlPullRequestUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[10px] py-[5px] text-xs hover:bg-color-ui-hover transition-colors"
+                        className="inline-flex items-center gap-x-[5px] rounded-full border border-color-positive/30 bg-color-positive/10 px-[10px] py-[5px] text-xs text-color-positive hover:bg-color-positive/20 transition-colors"
                       >
                         <Icon icon="feather:git-pull-request" className="size-[11px] shrink-0" />
-                        YAML PR
+                        Track PR on GitHub
+                        <Icon icon="feather:external-link" className="size-[10px] shrink-0" />
                       </Link>
                       {contributionResult.logoPullRequestUrl && (
                         <Link
@@ -2735,6 +2829,7 @@ export default function ProjectEditPageClient() {
                         >
                           <Icon icon="feather:git-pull-request" className="size-[11px] shrink-0" />
                           Logo PR
+                          <Icon icon="feather:external-link" className="size-[10px] shrink-0" />
                         </Link>
                       )}
                     </div>
@@ -3283,7 +3378,14 @@ export default function ProjectEditPageClient() {
                         {singleSubmitResult.txHash && (
                           <div className="mt-[2px]">
                             Tx:{" "}
-                            <span className="font-mono">{truncateHex(singleSubmitResult.txHash, 18, 16)}</span>
+                            <Link
+                              href={getTxExplorerUrl(lastSubmitChainId, singleSubmitResult.txHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono underline hover:opacity-70"
+                            >
+                              {truncateHex(singleSubmitResult.txHash, 18, 16)}
+                            </Link>
                           </div>
                         )}
                       </div>
@@ -3294,7 +3396,14 @@ export default function ProjectEditPageClient() {
                         {bulkSubmitResult.txHash && (
                           <div className="mt-[2px]">
                             Tx:{" "}
-                            <span className="font-mono">{truncateHex(bulkSubmitResult.txHash, 18, 16)}</span>
+                            <Link
+                              href={getTxExplorerUrl(lastSubmitChainId, bulkSubmitResult.txHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono underline hover:opacity-70"
+                            >
+                              {truncateHex(bulkSubmitResult.txHash, 18, 16)}
+                            </Link>
                           </div>
                         )}
                       </div>
