@@ -28,8 +28,23 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const filterOptions = <T extends { label: unknown }>(options: T[]) =>
+  options.filter(option => isNonEmptyString(option.label));
+
+const filterGroups = <T extends { label: unknown; options: { label: unknown }[] }>(groups: T[]) =>
+  groups
+    .map(group => ({
+      ...group,
+      options: filterOptions(group.options),
+    }))
+    .filter(group => isNonEmptyString(group.label) && group.options.length > 0);
+
 function normalizeString(str: string | null | undefined) {
-  return (typeof str === "string" ? str : "").toLowerCase().replace(/[\s-]+/g, "");
+  if (!isNonEmptyString(str)) return "";
+  return str.toLowerCase().replace(/[\s-]+/g, "");
 }
 
 const SEARCH_RESULT_CONTEXT_MAX_CHARS = 32;
@@ -771,15 +786,17 @@ export const useSearchBuckets = () => {
       });
     });
     
-    const quickBitesByTopic = Array.from(topicMap.entries()).map(([topicName, quickBites]) => ({
-      label: topicName,
-      options: quickBites.map(quickBite => ({
-        label: quickBite.shortTitle, // Use shortTitle for menu consistency
-        url: `/quick-bites/${quickBite.slug}`,
-        icon: "gtp-quick-bites",
-        color: undefined
-      }))
-    })).filter(group => group.options.length > 0); // Filter out empty topic groups
+    const quickBitesByTopic = filterGroups(
+      Array.from(topicMap.entries()).map(([topicName, quickBites]) => ({
+        label: topicName,
+        options: quickBites.map(quickBite => ({
+          label: quickBite.shortTitle, // Use shortTitle for menu consistency
+          url: `/quick-bites/${quickBite.slug}`,
+          icon: "gtp-quick-bites",
+          color: undefined,
+        })),
+      })),
+    );
     
     // Process navigation items and insert Quick Bites before Blockspace
     const processedNavigationItems = navigationItems
@@ -791,13 +808,15 @@ export const useSearchBuckets = () => {
             label: "Quick Bites",
             icon: "gtp-quick-bites",
             options: [
-              ...allQuickBites.map(quickBite => ({
-                label: quickBite.title,
-                url: `/quick-bites/${quickBite.slug}`,
-                icon: "gtp-quick-bites",
-                color: undefined
-              })),
-              ...publicGoodsTrackers
+              ...filterOptions(
+                allQuickBites.map(quickBite => ({
+                  label: quickBite.title,
+                  url: `/quick-bites/${quickBite.slug}`,
+                  icon: "gtp-quick-bites",
+                  color: undefined,
+                })),
+              ),
+              ...filterOptions(publicGoodsTrackers),
             ],
             groupOptions: quickBitesByTopic // Add topic-based grouping
           });
@@ -843,8 +862,8 @@ export const useSearchBuckets = () => {
             });
           
           // Get category labels from master data
-          const applicationsByCategory = Array.from(categoryMap.entries())
-            .map(([categoryKey, projects]) => {
+          const applicationsByCategory = filterGroups(
+            Array.from(categoryMap.entries()).map(([categoryKey, projects]) => {
               // Get category label from master data, fallback to categoryKey if not found
               const categoryLabel = master?.blockspace_categories?.main_categories?.[categoryKey] || categoryKey;
               
@@ -858,14 +877,14 @@ export const useSearchBuckets = () => {
                     ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
                     : "gtp-project-monochrome",
                   color: undefined
-                }))
+                })),
               };
-            })
-            .filter(group => group.options.length > 0); // Filter out empty category groups
+            }),
+          );
           
           // Get subcategory labels from master data
-          const applicationsBySubCategory = Array.from(subCategoryMap.entries())
-            .map(([subCategoryKey, projects]) => {
+          const applicationsBySubCategory = filterGroups(
+            Array.from(subCategoryMap.entries()).map(([subCategoryKey, projects]) => {
               // Get subcategory label from master data, fallback to subCategoryKey if not found
               const subCategoryLabel = master?.blockspace_categories?.sub_categories?.[subCategoryKey] || subCategoryKey;
               
@@ -878,10 +897,10 @@ export const useSearchBuckets = () => {
                     ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
                     : "gtp-project-monochrome",
                   color: undefined
-                }))
+                })),
               };
-            })
-            .filter(group => group.options.length > 0); // Filter out empty subcategory groups
+            }),
+          );
           
           // Combine main categories and subcategories
           const allApplicationGroups = [...applicationsByCategory, ...applicationsBySubCategory];
@@ -890,38 +909,44 @@ export const useSearchBuckets = () => {
             label: navItem.name,
             icon: navItem.icon,
             options: [
-              ...navItem.options.map(option => ({
-                label: option.label,
-                url: option.url || "",
-                icon: `gtp:${option.icon}`,
-                color: undefined
-              })),
-              ...Object.entries(ownerProjectToProjectData)
-                .filter(([owner, project]) => project.on_apps_page)
-                .map(([owner, project]) => ({
-                  label: project.display_name,
-                  url: `/applications/${project.owner_project}`,
-                  icon: project.logo_path 
-                    ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
-                    : "gtp-project-monochrome",
-                  color: undefined
-                }))
+              ...filterOptions(
+                navItem.options.map(option => ({
+                  label: option.label,
+                  url: option.url || "",
+                  icon: `gtp:${option.icon}`,
+                  color: undefined,
+                })),
+              ),
+              ...filterOptions(
+                Object.entries(ownerProjectToProjectData)
+                  .filter(([owner, project]) => project.on_apps_page)
+                  .map(([owner, project]) => ({
+                    label: project.display_name,
+                    url: `/applications/${project.owner_project}`,
+                    icon: project.logo_path 
+                      ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
+                      : "gtp-project-monochrome",
+                    color: undefined,
+                  })),
+              ),
             ],
             groupOptions: allApplicationGroups // Add category and subcategory-based grouping
           });
         } else if (navItem.name === "Blockspace") {
           // Add category-based groupOptions for Blockspace (main categories -> chain overview)
           const blockspaceCategoryGroups = master?.blockspace_categories?.main_categories
-            ? Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, categoryLabel]) => ({
-                label: categoryLabel,
-                categoryKey: categoryKey,
-                options: [{
-                  label: `Chain Overview: ${categoryLabel}`,
-                  url: `/blockspace/chain-overview/${categoryKey}`,
-                  icon: "gtp-chain",
-                  color: undefined
-                }]
-              }))
+            ? filterGroups(
+                Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, categoryLabel]) => ({
+                  label: categoryLabel,
+                  categoryKey: categoryKey,
+                  options: [{
+                    label: `Chain Overview: ${categoryLabel}`,
+                    url: `/blockspace/chain-overview/${categoryKey}`,
+                    icon: "gtp-chain",
+                    color: undefined,
+                  }],
+                })),
+              )
             : [];
           
           // Add subcategory-based groupOptions for Blockspace (subcategories -> category comparison)
@@ -932,22 +957,24 @@ export const useSearchBuckets = () => {
             return Object.entries(mapping).find(([, subKeys]) => subKeys?.includes(subKey))?.[0];
           };
           const blockspaceSubCategoryGroups = master?.blockspace_categories?.sub_categories
-            ? Object.entries(master.blockspace_categories.sub_categories).map(([subCategoryKey, subCategoryLabel]) => {
-                const parentCategoryKey = getParentCategoryKey(subCategoryKey);
-                const url = parentCategoryKey
-                  ? `/blockspace/category-comparison?category=${parentCategoryKey}&subcategories=${subCategoryKey}`
-                  : `/blockspace/category-comparison?subcategories=${subCategoryKey}`;
-                return {
-                  label: subCategoryLabel,
-                  subCategoryKey: subCategoryKey,
-                  options: [{
-                    label: `Category Comparison: ${subCategoryLabel}`,
-                    url,
-                    icon: "gtp-compare",
-                    color: undefined
-                  }]
-                };
-              })
+            ? filterGroups(
+                Object.entries(master.blockspace_categories.sub_categories).map(([subCategoryKey, subCategoryLabel]) => {
+                  const parentCategoryKey = getParentCategoryKey(subCategoryKey);
+                  const url = parentCategoryKey
+                    ? `/blockspace/category-comparison?category=${parentCategoryKey}&subcategories=${subCategoryKey}`
+                    : `/blockspace/category-comparison?subcategories=${subCategoryKey}`;
+                  return {
+                    label: subCategoryLabel,
+                    subCategoryKey: subCategoryKey,
+                    options: [{
+                      label: `Category Comparison: ${subCategoryLabel}`,
+                      url,
+                      icon: "gtp-compare",
+                      color: undefined,
+                    }],
+                  };
+                }),
+              )
             : [];
           
           // Combine main categories and subcategories
@@ -956,24 +983,28 @@ export const useSearchBuckets = () => {
           acc.push({
             label: navItem.name,
             icon: navItem.icon,
-            options: navItem.options.map(option => ({
-              label: option.label,
-              url: option.url || "",
-              icon: `gtp:${option.icon}`,
-              color: undefined
-            })),
+            options: filterOptions(
+              navItem.options.map(option => ({
+                label: option.label,
+                url: option.url || "",
+                icon: `gtp:${option.icon}`,
+                color: undefined,
+              })),
+            ),
             groupOptions: allBlockspaceGroups
           });
         } else {
           acc.push({
             label: navItem.name,
             icon: navItem.icon,
-            options: navItem.options.map(option => ({
-              label: option.label,
-              url: option.url || "",
-              icon: `gtp:${option.icon}`,
-              color: undefined
-            }))
+            options: filterOptions(
+              navItem.options.map(option => ({
+                label: option.label,
+                url: option.url || "",
+                icon: `gtp:${option.icon}`,
+                color: undefined,
+              })),
+            ),
           });
         }
         
@@ -984,16 +1015,18 @@ export const useSearchBuckets = () => {
       {
         label: "Chains",
         icon: "gtp-chain",
-        options: Object.entries(AllChainsByKeys)
-          .filter(([key]) => key !== "all_l2s" && key !== "multiple")
-          // Add production check filter here
-          .filter(([key]) => supportedChainKeys.includes(key))
-          .map(([_, chain]) => ({
-            label: chain.label,
-            url: `/chains/${chain.urlKey}`,
-            icon: `gtp:${chain.urlKey}-logo-monochrome`,
-            color: chain.colors.dark[0]
-          })),
+        options: filterOptions(
+          Object.entries(AllChainsByKeys)
+            .filter(([key]) => key !== "all_l2s" && key !== "multiple")
+            // Add production check filter here
+            .filter(([key]) => supportedChainKeys.includes(key))
+            .map(([_, chain]) => ({
+              label: chain.label,
+              url: `/chains/${chain.urlKey}`,
+              icon: `gtp:${chain.urlKey}-logo-monochrome`,
+              color: chain.colors.dark[0],
+            })),
+        ),
         groupOptions: Object.entries(AllChainsByStacks)
           .map(([bucket, chains]) => ({
             label: bucket,
@@ -1010,10 +1043,14 @@ export const useSearchBuckets = () => {
                 url: `/chains/${chain.url_key}`,
                 icon: `gtp:${chain.url_key}-logo-monochrome`,
                 color: chain.colors.dark[0]
-              }))
+              })),
           }))
-          // Filter out empty stack groups
-          .filter(group => group.options.length > 0)
+          // Filter out empty stack groups + invalid labels
+          .map(group => ({
+            ...group,
+            options: filterOptions(group.options),
+          }))
+          .filter(group => isNonEmptyString(group.label) && group.options.length > 0)
       },
       ...processedNavigationItems,
     ];
@@ -2288,6 +2325,5 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-
 
 
