@@ -133,8 +133,7 @@ export const PageTitleAndDescriptionAndControls = () => {
                 iconSize="md"
                 iconBackground="bg-transparent"
                 rightIcon={"feather:arrow-right" as GTPIconName}
-                href="https://www.openlabelsinitiative.org/?gtp.applications"
-                newTab
+                href="/applications/add"
                 gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                 className="w-fit hidden md:block"
               />
@@ -149,9 +148,7 @@ export const PageTitleAndDescriptionAndControls = () => {
         </div>
         <div className="flex md:hidden">
           <Link
-            href="https://www.openlabelsinitiative.org/?gtp.applications"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/applications/add"
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
             <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">

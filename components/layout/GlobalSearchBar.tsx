@@ -23,14 +23,36 @@ import WorkWithUs from './WorkWithUs';
 import NotificationButtonExpandable from './FloatingBar/NotificationButtonExpandable';
 import { useTheme } from 'next-themes';
 import { IS_PRODUCTION } from '@/lib/helpers';
+import { useWalletConnection } from '@/contexts/WalletContext';
 
+type GlobalFloatingBarProps = {
+  walletAddress?: string | null;
+  isConnectingWallet?: boolean;
+  onConnectWallet?: () => Promise<void> | void;
+  onDisconnectWallet?: () => void;
+};
 
-export default function GlobalFloatingBar() {
+export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
+  const {
+    walletAddress: walletAddressProp,
+    isConnectingWallet: isConnectingWalletProp,
+    onConnectWallet,
+    onDisconnectWallet,
+  } = props;
   // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
   const showGlobalSearchBar = true;
   const isMobile = useUIContext((state) => state.isMobile);
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const toggleSidebar = useUIContext((state) => state.toggleSidebar);
+  const walletConnection = useWalletConnection();
+  const toast = useToast();
+  const walletAddressValue = walletAddressProp ?? walletConnection.walletAddress;
+  const isConnectingWalletValue =
+    typeof isConnectingWalletProp === "boolean"
+      ? isConnectingWalletProp
+      : walletConnection.isConnectingWallet;
+  const resolvedConnectWallet = onConnectWallet ?? walletConnection.connectWallet;
+  const resolvedDisconnectWallet = onDisconnectWallet ?? walletConnection.disconnectWallet;
 
   // State for controlling popover visibility
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
@@ -467,6 +489,33 @@ export default function GlobalFloatingBar() {
     setIsShowingSearchResults(hasSearchResults);
   }, [query, isMobile, isMobileMenuPopoverOpen, isSearchActive]);
 
+  const connectWalletLabel = walletAddressValue
+    ? `${walletAddressValue.slice(0, 6)}...${walletAddressValue.slice(-4)}`
+    : (isConnectingWalletValue ? 'Connecting...' : 'Connect Wallet');
+
+  const showProjectWalletAction =
+    pathname?.startsWith("/applications/add") || pathname?.startsWith("/applications/edit");
+  const effectiveRightActionVariant = showProjectWalletAction ? "connectWallet" : "workWithUs";
+
+  const handleConnectWalletClick = async () => {
+    if (walletAddressValue) {
+      resolvedDisconnectWallet?.();
+      return;
+    }
+    if (!resolvedConnectWallet) {
+      return;
+    }
+    try {
+      await resolvedConnectWallet();
+    } catch (error: any) {
+      toast.addToast({
+        title: "Wallet connection failed",
+        message: error?.message || "Could not connect your wallet.",
+        type: "error",
+      });
+    }
+  };
+
   if (!showGlobalSearchBar) return null;
 
   return (
@@ -637,7 +686,7 @@ export default function GlobalFloatingBar() {
                     hideIfNoNotifications={true}
                     placement="bottom-start"
                   />
-                  <WorkWithUs placement="bottom-start" />
+                  {effectiveRightActionVariant === 'connectWallet' ? <WorkWithUs placement="bottom-start" mobile /> : <WorkWithUs placement="bottom-start" />}
                 </div>
 
 
@@ -689,6 +738,15 @@ export default function GlobalFloatingBar() {
                 </FloatingBarButton>
                
                   <DarkModeToggleButton />
+                  {effectiveRightActionVariant === 'connectWallet' && (
+                    <FloatingBarButton
+                      icon={"gtp-wallet" as GTPIconName}
+                      label={connectWalletLabel}
+                      onClick={handleConnectWalletClick}
+                      className="hidden md:flex !min-w-[180px] !justify-start"
+                      title={walletAddressValue ? "Disconnect wallet" : "Connect wallet"}
+                    />
+                  )}
              
               </div>
             </div>
