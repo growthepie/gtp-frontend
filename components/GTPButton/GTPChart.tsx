@@ -77,6 +77,7 @@ export interface GTPChartProps {
   watermarkMetricName?: string | null;
   emptyStateMessage?: string;
   minHeight?: number | null;
+  maxHeight?: number | null;
   animation?: boolean;
   smooth?: boolean;
   lineWidth?: number;
@@ -119,6 +120,7 @@ export default function GTPChart({
   decimals,
   limitTooltipRows,
   minHeight = null,
+  maxHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
   emptyStateMessage = "",
@@ -234,7 +236,7 @@ export default function GTPChart({
   useEffect(() => {
     if (containerHeight <= 0) return;
     echartsRef.current?.getEchartsInstance?.()?.resize();
-  }, [containerHeight, minHeight]);
+  }, [containerHeight, minHeight, maxHeight]);
 
   // Typography
   const textXxsTypography = useMemo(
@@ -1118,11 +1120,14 @@ export default function GTPChart({
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
           const formattedValue = percentageMode ? `${v.toFixed(1)}%` : formatCompactNumber(v, decimals);
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
+          const prefixStd = percentageMode ? "" : (prefix ?? "");
+          const suffixStd = percentageMode ? "" : (suffix ?? "");
+
           return `
             <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
               <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${lineColor}"></div>
               <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
-              <div class="flex-1 text-right justify-end flex numbers-xs">${prefix ?? ""}${formattedValue}${suffix ?? ""}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedValue}${suffixStd}</div>
             </div>
             <div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
               <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
@@ -1315,7 +1320,7 @@ export default function GTPChart({
           option={chartOption}
           notMerge
           lazyUpdate
-          style={{ width: "100%", height: minHeight ? `${minHeight}px` : "100%" }}
+          style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
