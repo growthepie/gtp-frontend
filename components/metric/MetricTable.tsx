@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 
@@ -21,7 +21,7 @@ const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
   "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
 
 const timeIntervalSummaryKeys = {
-  hourly: "last_1d",
+  hourly: "last_1h",
   daily: "last_1d",
   daily_7d_rolling: "last_1d",
   weekly: "last_7d",
@@ -30,6 +30,7 @@ const timeIntervalSummaryKeys = {
 
 const timespanLabels: { [key: string]: { [key: string]: string } } = {
   hourly: {
+
     "1d": "1d",
     "3d": "3d",
     "7d": "7d",
@@ -94,51 +95,85 @@ const MetricTable = ({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
+  // Preserve scroll position across selection-driven list reorders.
+  // We save scrollTop right before a selection change and restore it after
+  // React re-renders the reordered list, before the browser paints.
+  const scrollRestoreRef = useRef<{ top: number; pending: boolean }>({ top: 0, pending: false });
+  useLayoutEffect(() => {
+    if (scrollRestoreRef.current.pending && scrollRef?.current) {
+      scrollRef.current.scrollTop = scrollRestoreRef.current.top;
+      scrollRestoreRef.current.pending = false;
+    }
+  });
+
+  // Chains that are actually visible in the table for the current time interval.
+  // In hourly mode some chains lack hourly data and are hidden, so toggle logic
+  // must operate on this subset rather than the full chainKeys list.
+  const visibleChainKeys = useMemo(() => {
+    if (!data) return chainKeys;
+    return chainKeys.filter(
+      (chain) =>
+        (chain !== "ethereum" ? true : !focusEnabled) &&
+        Object.keys(allChainsByKeys).includes(chain) &&
+        allChainsByKeys[chain] &&
+        (timeIntervalKey !== "hourly" ||
+          (Array.isArray(data.chains[chain]?.hourly?.data) &&
+            data.chains[chain].hourly!.data.length > 0)),
+    );
+  }, [chainKeys, data, timeIntervalKey, allChainsByKeys, focusEnabled]);
 
   const chainSelectToggleState = useMemo(() => {
     if (
-      intersection(selectedChains, chainKeys).length === 1 &&
+      intersection(selectedChains, visibleChainKeys).length === 1 &&
       showEthereumMainnet
     )
       return "none";
 
     if (
-      intersection(selectedChains, chainKeys).length === 0 &&
+      intersection(selectedChains, visibleChainKeys).length === 0 &&
       !showEthereumMainnet
     )
       return "none";
 
-    if (chainKeys.includes("ethereum")) {
+    if (visibleChainKeys.includes("ethereum")) {
       if (
-        intersection(selectedChains, chainKeys).length ===
-        chainKeys.length
+        intersection(selectedChains, visibleChainKeys).length ===
+        visibleChainKeys.length
       )
         return "all";
     } else {
-      if (intersection(selectedChains, chainKeys).length === chainKeys.length)
+      if (intersection(selectedChains, visibleChainKeys).length === visibleChainKeys.length)
         return "all";
     }
 
     return "normal";
-  }, [chainKeys, selectedChains, showEthereumMainnet]);
+  }, [visibleChainKeys, selectedChains, showEthereumMainnet]);
 
   const onChainSelectToggle = useCallback(() => {
+    if (scrollRef?.current) {
+      scrollRestoreRef.current = { top: scrollRef.current.scrollTop, pending: true };
+    }
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
       if (showEthereumMainnet && focusEnabled) setSelectedChains(["ethereum"]);
       else setSelectedChains([]);
     }
 
-    // if no chains are selected, select last selected chains
+    // if no chains are selected, restore last selected chains that are still
+    // visible — if none qualify (e.g. wiped after hourly deselect + metric
+    // switch), fall back to selecting all visible chains so the toggle is
+    // never stuck.
     if (chainSelectToggleState === "none") {
+      const restorable = lastSelectedChains.filter((c) => visibleChainKeys.includes(c));
+      const toSelect = restorable.length > 0 ? restorable : visibleChainKeys;
       if (showEthereumMainnet && focusEnabled)
-        setSelectedChains([...lastSelectedChains, "ethereum"]);
-      else setSelectedChains([...lastSelectedChains]);
+        setSelectedChains([...toSelect, "ethereum"]);
+      else setSelectedChains([...toSelect]);
     }
 
-    // if some chains are selected, select all chains
+    // if some chains are selected, select all visible chains
     if (chainSelectToggleState === "normal") {
-      setSelectedChains(chainKeys);
+      setSelectedChains(visibleChainKeys);
     }
   }, [
     chainSelectToggleState,
@@ -146,11 +181,15 @@ const MetricTable = ({
     focusEnabled,
     setSelectedChains,
     lastSelectedChains,
-    chainKeys,
+    visibleChainKeys,
+    scrollRef,
   ]);
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
+      if (scrollRef?.current) {
+        scrollRestoreRef.current = { top: scrollRef.current.scrollTop, pending: true };
+      }
       if (chainKey === "ethereum" && focusEnabled) {
         if (showEthereumMainnet) {
           setShowEthereumMainnet(false);
@@ -179,6 +218,7 @@ const MetricTable = ({
       setSelectedChains,
       setShowEthereumMainnet,
       showEthereumMainnet,
+      scrollRef,
     ],
   );
 
