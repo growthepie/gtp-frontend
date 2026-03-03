@@ -7,34 +7,47 @@ import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import GTPCardLayout from "../GTPButton/GTPCardLayout";
-import GTPChart from "../GTPButton/GTPChart";
+import GTPChart, { GTPChartSeries } from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useMediaQuery } from "usehooks-ts";
 
-const EVENTS_EXAMPLES = {
+type EventExample = {
+    title: string;
+    description: string;
+    question: string;
+    image: string;
+    link: string;
+    series: GTPChartSeries[];
+};
+
+const EVENTS_EXAMPLES: Record<string, EventExample> = {
     "example1": {
         title: "Example 1",
         description: "Example 1 description lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#FF0000",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 100,
-            },
-            {
-                date: "2026-01-02",
-                value: 500,
-            },
-            {
-                date: "2026-01-03",
-                value: 300,
-            },
-        ],
+        series: [{
+            name: "Example 1",
+            seriesType: "line",
+            color: "#FF0000",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 500],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        },
+        {
+            name: "Example 1",
+            seriesType: "line",
+            color: "#0000FF",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+            ],
+        }
+      ],
     },
     "example2": {
         title: "Example 2",
@@ -42,21 +55,16 @@ const EVENTS_EXAMPLES = {
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#00FF00",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 900,
-            },
-            {
-                date: "2026-01-02",
-                value: 200,
-            },
-            {
-                date: "2026-01-03",
-                value: 300,
-            },
-        ],
+        series: [{
+            name: "Example 2",
+            seriesType: "line",
+            color: "#00FF00",
+            data: [
+                [new Date("2026-01-01").getTime(), 900],
+                [new Date("2026-01-02").getTime(), 200],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        }],
     },
     "example3": {
         title: "Example 3",
@@ -64,21 +72,16 @@ const EVENTS_EXAMPLES = {
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#0000FF",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 100,
-            },
-            {
-                date: "2026-01-02",
-                value: 200,
-            },
-            {
-                date: "2026-01-03",
-                value: 300,
-            },
-        ],
+        series: [{
+            name: "Example 3",
+            seriesType: "line",
+            color: "#0000FF",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 200],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        }],
     },
     "example4": {
         title: "Example 4",
@@ -86,21 +89,16 @@ const EVENTS_EXAMPLES = {
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#FF00FF",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 100,
-            },
-            {
-                date: "2026-01-02",
-                value: 200,
-            },
-            {
-                date: "2026-01-03",
-                value: 300,
-            },
-        ],
+        series: [{
+            name: "Example 4",
+            seriesType: "line",
+            color: "#FF00FF",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 200],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        }],
     },
     "example5": {
         title: "Example 5",
@@ -108,21 +106,16 @@ const EVENTS_EXAMPLES = {
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#00FFFF",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 100,
-            },
-            {
-                date: "2026-01-02",
-                value: 200,
-            },
-            {
-                date: "2026-01-03",
-                value: 300,
-            },
-        ],
+        series: [{
+            name: "Example 5",
+            seriesType: "line",
+            color: "#00FFFF",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 200],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        }],
     },
     "example6": {
         title: "Example 6",
@@ -130,19 +123,16 @@ const EVENTS_EXAMPLES = {
         question: "What is the best way to learn about Ethereum?",
         image: "gtp-ethereum-weekly",
         link: "/chains/ethereum",
-        color: "#FFFF00",
-        data: [
-            {
-                date: "2026-01-01",
-                value: 100,
-            },
-            {
-                date: "2026-01-02",
-                value: 200,
-            },
-        ],
+        series: [{
+            name: "Example 6",
+            seriesType: "line",
+            color: "#FFFF00",
+            data: [
+                [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 200],
+            ],
+        }],
     },
-
 };
 
 
@@ -212,13 +202,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
        }
       >
        <div className="flex-1 min-h-0 w-full h-full py-[15px] overflow-hidden">
-        <GTPChart series={[{
-          name: EVENTS_EXAMPLES[selectedEvent].title,
-          data: EVENTS_EXAMPLES[selectedEvent].data.map((d) => [new Date(d.date).getTime(), d.value] as [number, number]),
-
-          seriesType: "line",
-          color: EVENTS_EXAMPLES[selectedEvent].color,
-        }]} 
+        <GTPChart series={EVENTS_EXAMPLES[selectedEvent].series}
         xAxisMin={selectedRange ? selectedRange[0] : undefined}
         xAxisMax={selectedRange ? selectedRange[1] : undefined}
 
