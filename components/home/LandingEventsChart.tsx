@@ -45,8 +45,21 @@ const EVENTS_EXAMPLES: Record<string, EventExample> = {
             color: "#0000FF",
             data: [
                 [new Date("2026-01-01").getTime(), 100],
+                [new Date("2026-01-02").getTime(), 200],
+                [new Date("2026-01-03").getTime(), 300],
+            ],
+        },
+        {
+            name: "Example 1",
+            seriesType: "line",
+            color: "#00FF00",
+            data: [
+                [new Date("2026-01-01").getTime(), 0],
+                [new Date("2026-01-02").getTime(), 80],
+                [new Date("2026-01-03").getTime(), 120],
             ],
         }
+
       ],
     },
     "example2": {

@@ -268,7 +268,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
           <Container className="w-full">
            
-          
+          {(IS_PRODUCTION ? (
             <LandingChart
               data={data}
               master={master}
@@ -283,6 +283,9 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               metric={selectedTimeInterval}
               setSelectedMetric={setSelectedMetric}
             />
+            ) : (
+              <LandingEventsChart />
+            ))}
           </Container>
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
