@@ -90,26 +90,26 @@ const MeetL2sMapCards = ({
         const metrics = (
           <>
             <div className="flex gap-x-[10px] items-center justify-between">
-              <div className="flex flex-col gap-y-[5px] w-[125px]">
-                <div className="numbers-2xl">{formatNumber(tableEntry?.users)}</div>
+              <div className="flex flex-col gap-y-[2px] w-[125px]">
+                <div className="numbers-md">{formatNumber(tableEntry?.users)}</div>
                 <div className="text-xs">Weekly Active</div>
               </div>
-              <div className="flex flex-col gap-y-[5px] w-[125px]">
-                <div className="numbers-2xl">
+              <div className="flex flex-col gap-y-[2px] w-[125px]">
+                <div className="numbers-md">
                   {userShare !== undefined && userShare !== null ? `${(userShare * 100).toFixed(2)}%` : "N/A"}
                 </div>
                 <div className="text-xs">User Share</div>
               </div>
             </div>
             <div className="flex gap-x-[10px] items-center justify-between">
-              <div className="flex flex-col gap-y-[5px] w-[125px]">
-                <div className="numbers-2xl">
+              <div className="flex flex-col gap-y-[2px] w-[125px]">
+                <div className="numbers-md">
                   {crossChain !== undefined && crossChain !== null ? d3Format(crossChain > 0.01 ? ".1%" : ".1%")(crossChain) : "N/A"}
                 </div>
                 <div className="text-xs">Cross-Chain Activity</div>
               </div>
-              <div className="flex flex-col gap-y-[5px] w-[125px]">
-                <div className="numbers-2xl">{chainAges[chainKey] ?? "N/A"}</div>
+              <div className="flex flex-col gap-y-[2px] w-[125px]">
+                <div className="numbers-md">{chainAges[chainKey] ?? "N/A"}</div>
                 <div className="text-xs">Age</div>
               </div>
             </div>
