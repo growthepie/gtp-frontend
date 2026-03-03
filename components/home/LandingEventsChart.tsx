@@ -154,7 +154,7 @@ const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeo
   return (
     <motion.div
       layout
-      className={`flex w-[390px] border-[1px] border-color-bg-medium rounded-[15px] p-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
+      className={`flex w-full border-[1px] border-color-bg-medium rounded-[15px] p-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
       onClick={() => setSelectedEvent(event)}
       transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
     >
@@ -200,7 +200,7 @@ const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeo
 
 const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES) => void }) => {
   return (
-    <div className="flex flex-col gap-y-[10px] max-w-[40%] h-full min-h-0 self-stretch overflow-y-auto">
+    <div className="flex flex-col gap-y-[10px] w-[390px] min-w-[300px] shrink h-full min-h-0 self-stretch overflow-y-auto">
       {Object.keys(EVENTS_EXAMPLES).map((event) => (
         <EventCard key={event} event={event as keyof typeof EVENTS_EXAMPLES} isSelected={selectedEvent === event} setSelectedEvent={setSelectedEvent} />
       ))}
@@ -214,7 +214,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   return (
-    <div className="relative flex-1 min-h-0 min-w-0 self-stretch overflow-hidden">
+    <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
       <GTPCardLayout className="absolute inset-0 min-h-0 min-w-0"
        topBar={
         <GTPButtonContainer>
@@ -272,7 +272,7 @@ export default function LandingEventsChart() {
         <Heading className="heading-large-lg">Trending</Heading>
 
       </div>
-      <div className="flex items-stretch gap-x-[15px] flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
         <SideEventsContainer selectedEvent={selectedEvent} setSelectedEvent={(event) => setSelectedEvent(event as keyof typeof EVENTS_EXAMPLES)}></SideEventsContainer>
             <LandingEventsChartContent selectedEvent={selectedEvent} />
       </div>
