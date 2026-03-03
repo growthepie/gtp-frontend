@@ -48,24 +48,24 @@ export const MeetL2sCard = React.memo(({ chainKey, l2Data, projectData, showUsd,
   const defaultMetrics = (
     <>
       <div className="flex gap-x-[10px] items-center justify-between">
-        <div className="flex flex-col gap-y-[5px] w-[125px]">
-          <div className="numbers-2xl">{l2Data ? formatNumber(l2Data.yesterday_aa) : "N/A"}</div>
+        <div className="flex flex-col gap-y-[2px] w-[125px]">
+          <div className="numbers-md">{l2Data ? formatNumber(l2Data.yesterday_aa) : "N/A"}</div>
           <div className="text-xs">Wallets Yesterday</div>
         </div>
-        <div className="flex flex-col gap-y-[5px] w-[125px]">
-          <div className="numbers-2xl">{l2Data ? formatNumber(l2Data.total_aa) : "N/A"}</div>
+        <div className="flex flex-col gap-y-[2px] w-[125px]">
+          <div className="numbers-md">{l2Data ? formatNumber(l2Data.total_aa) : "N/A"}</div>
           <div className="text-xs">Total Wallets</div>
         </div>
       </div>
       <div className="flex gap-x-[10px] items-center justify-between">
-        <div className="flex flex-col gap-y-[5px] w-[125px]">
-          <div className="numbers-2xl">
+        <div className="flex flex-col gap-y-[2px] w-[125px]">
+          <div className="numbers-md">
             {l2Data ? `$${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}` : "N/A"}
           </div>
           <div className="text-xs">Stablecoin Supply</div>
         </div>
-        <div className="flex flex-col gap-y-[5px] w-[125px]">
-          <div className="numbers-2xl">{l2Data ? formatNumber(l2Data.tps) : "N/A"}</div>
+        <div className="flex flex-col gap-y-[2px] w-[125px]">
+          <div className="numbers-md">{l2Data ? formatNumber(l2Data.tps) : "N/A"}</div>
           <div className="text-xs">TPS/Day</div>
         </div>
       </div>
