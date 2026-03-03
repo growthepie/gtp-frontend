@@ -12,6 +12,7 @@ import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useMediaQuery } from "usehooks-ts";
+import { motion } from "framer-motion";
 
 type EventExample = {
     title: string;
@@ -151,29 +152,49 @@ const EVENTS_EXAMPLES: Record<string, EventExample> = {
 
 const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeof EVENTS_EXAMPLES, isSelected: boolean, setSelectedEvent: (event: keyof typeof EVENTS_EXAMPLES) => void }) => {
   return (
-    <div className={`flex w-[390px] border-[1px] border-color-bg-medium rounded-[15px] p-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
-        onClick={() => setSelectedEvent(event)}
+    <motion.div
+      layout
+      className={`flex w-[390px] border-[1px] border-color-bg-medium rounded-[15px] p-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
+      onClick={() => setSelectedEvent(event)}
+      transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
     >
-      {/*Content */}
-      <div className={`${isSelected ? "" : "flex items-center justify-center"}`}>
-        <GTPIcon icon={isSelected ? EVENTS_EXAMPLES[event].image as GTPIconName : "gtp-megaphone"} className={`${!isSelected ? "!size-[16px]" : "!size-[24px]"}`} containerClassName={`${"!size-[24px]"}`} />
-      </div>
-      <div className={`flex flex-col w-full gap-y-[10px] ${isSelected ? "" : "justify-center"}`}>
-        {isSelected ? (
-            <>
-                <p className="heading-small-md">{EVENTS_EXAMPLES[event].title}</p>
-                <p className="text-xs">{EVENTS_EXAMPLES[event].description}</p>
-            </>
-               
-        ) : (
-            <p className="heading-small-xs">{EVENTS_EXAMPLES[event].question}</p>
-        )}
+      {/*Icon */}
+      <motion.div layout className={`${isSelected ? "" : "flex items-center justify-center"}`}>
+        <GTPIcon
+          icon={isSelected ? EVENTS_EXAMPLES[event].image as GTPIconName : "gtp-megaphone"}
+          className={isSelected ? "!size-[24px]" : "!size-[16px]"}
+          containerClassName="!size-[24px]"
+        />
+      </motion.div>
+
+      {/*Content — both states always rendered, height+opacity animated simultaneously */}
+      <div className="flex flex-col w-full min-w-0">
+        {/* Unselected: question */}
+        <motion.div
+          animate={{ opacity: isSelected ? 0 : 1, height: isSelected ? 0 : "auto" }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          style={{ overflow: "hidden" }}
+          className="flex items-center"
+        >
+          <p className="heading-small-xs">{EVENTS_EXAMPLES[event].question}</p>
+        </motion.div>
+
+        {/* Selected: title + description */}
+        <motion.div
+          animate={{ opacity: isSelected ? 1 : 0, height: isSelected ? "auto" : 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          style={{ overflow: "hidden" }}
+          className="flex flex-col gap-y-[10px]"
+        >
+          <p className="heading-small-md">{EVENTS_EXAMPLES[event].title}</p>
+          <p className="text-xs">{EVENTS_EXAMPLES[event].description}</p>
+        </motion.div>
       </div>
 
       <Link className="flex items-center justify-center" href={EVENTS_EXAMPLES[event].link}>
-        <GTPIcon icon={!isSelected ? "gtp-chevronright-monochrome" : "gtp-chevronright"} className="!size-[16px]" containerClassName="!size-[16px]" />
+        <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
       </Link>
-    </div>
+    </motion.div>
   );
 }
 
