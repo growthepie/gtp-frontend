@@ -17,8 +17,8 @@ import { useSearchBuckets, SearchBadge, BucketItem } from "../../search/Componen
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import Sidebar from "@/components/sidebar/Sidebar";
 
-function normalizeString(str: string) {
-  return str.toLowerCase().replace(/[\s-]+/g, '');
+function normalizeString(str: string | null | undefined) {
+  return (typeof str === "string" ? str : "").toLowerCase().replace(/[\s-]+/g, "");
 }
 
 // Text highlighting component (simplified from original)
