@@ -57,6 +57,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     '/chains/[slug]', // The path key stored in Airtable
     { chainName: res.chains[key].name } // Data for placeholders like {{chainName}}
   );
+  const canonical = `https://www.growthepie.com/chains/${urlKey}`;
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
 
   if (res && key && res.chains[key]) {
     const currentDate = new Date();
@@ -69,7 +71,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         absolute: metadata.title,
       },
       description: metadata.description,
+      alternates: {
+        canonical,
+      },
       openGraph: {
+        url: canonical,
+        type: "website",
+        title: metadata.title,
+        description: metadata.description,
+        siteName: "growthepie",
         images: [
           {
             url: `https://api.growthepie.com/v1/og_images/chains/${urlKey}.png`,
@@ -79,6 +89,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
           },
         ],
       },
+      twitter: {
+        card: "summary_large_image",
+        title: metadata.title,
+        description: metadata.description,
+        images: [`https://api.growthepie.com/v1/og_images/chains/${urlKey}.png`],
+      },
+      robots,
     };
   }
 
