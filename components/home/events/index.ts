@@ -1,0 +1,30 @@
+import arbitrumTimeboost from "./arbitrum-timeboost";
+import dencun from "./dencun";
+import fusaka from "./fusaka";
+import l2Activity from "./l2-activity";
+import lineaBurn from "./linea-burn";
+import pectra from "./pectra";
+
+export const EVENTS_BY_ID = {
+  "fusaka": fusaka,
+  "dencun": dencun,
+  "pectra": pectra,
+  "l2-activity": l2Activity,
+  "linea-burn": lineaBurn,
+  "arbitrum-timeboost": arbitrumTimeboost,
+} as const;
+
+export type EventId = keyof typeof EVENTS_BY_ID;
+
+const MAX_FEATURED_EVENTS = 6;
+
+export const FEATURED_EVENT_IDS_MAX = (Object.keys(EVENTS_BY_ID) as EventId[]).slice(
+  0,
+  MAX_FEATURED_EVENTS,
+);
+
+if (process.env.NODE_ENV !== "production" && Object.keys(EVENTS_BY_ID).length > MAX_FEATURED_EVENTS) {
+  console.warn(
+    `[LandingEvents] EVENTS_BY_ID has more than ${MAX_FEATURED_EVENTS} items; only the first ${MAX_FEATURED_EVENTS} will be shown.`,
+  );
+}
