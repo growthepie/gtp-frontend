@@ -1,5 +1,9 @@
 import { Metadata } from "next";
 import {
+  buildAboutThings,
+  buildDatasetJsonLd,
+  buildDefinedTermSet,
+  buildFaqJsonLd,
   buildKeywords,
   canonicalUrlForMetric,
   findMetricConfig,
@@ -18,6 +22,7 @@ import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { cache } from "react";
+import { serializeJsonLd } from "@/utils/json-ld";
 
 type Props = {
   params: Promise<{ metric: string }>;
@@ -122,7 +127,7 @@ export default async function Layout({
   children: React.ReactNode;
   params: Promise<{ metric: string }>;
 }) {
-const { metric } = await params;
+  const { metric } = await params;
   const metricConfig = findMetricConfig(metric);
   if (!metricConfig) {
     track("404 Error", {
@@ -138,8 +143,35 @@ const { metric } = await params;
     icon: "",
   };
   const pageTitle = pageData.title || metricConfig.label || "No Title";
+  const metadata = await getPageMetadata(`/fundamentals/${metric}`, {});
+  const master = await fetchMasterData();
+  const keywords = buildKeywords(metricConfig);
+  const aboutThings = buildAboutThings(metricConfig);
+  const lastUpdated = master.last_updated_utc
+    ? new Date(master.last_updated_utc).toISOString()
+    : new Date().toISOString();
+
+  const faqJsonLd = buildFaqJsonLd(metric, metricConfig.page);
+  const datasetJsonLd = buildDatasetJsonLd(metric, metricConfig.page, {
+    description: metadata.description,
+    keywords,
+    about: aboutThings,
+    dateModified: lastUpdated,
+  });
+  const definedTermSetJsonLd = buildDefinedTermSet(metric, metricConfig.page);
+  const jsonLdGraphs = [datasetJsonLd, faqJsonLd, definedTermSetJsonLd].filter(Boolean) as Record<
+    string,
+    unknown
+  >[];
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
+      {jsonLdGraphs.map((graph, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(graph) }}
+        />
+      ))}
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
