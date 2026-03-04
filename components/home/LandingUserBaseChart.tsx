@@ -246,15 +246,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
 
 
-  console.log(data);
-  console.log(landing);
-  console.log(master);
-  console.log(AllChainsByKeys);
-  console.log(EnabledChainsByKeys);
-  console.log(chainAges);
-  console.log(tableChainKeys);
-  console.log(sort);
-  console.log(selectedChainTypes);
   return (
     <>
       <ShowLoading

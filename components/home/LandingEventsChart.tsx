@@ -370,6 +370,7 @@ const SideEventsContainer = ({ selectedEvent, setSelectedEvent }: { selectedEven
 
 const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typeof EVENTS_EXAMPLES}) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
+  const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const eventData = EVENTS_EXAMPLES[selectedEvent];
   const options = eventData.options ?? EMPTY_OPTIONS;
@@ -410,9 +411,9 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
     <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
       <GTPCardLayout className="h-[442px]"
        topBar={
-        <GTPButtonContainer>
+        <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
             {hasOptions && (
-              <GTPButtonRow className="flex-wrap">
+              <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
 
