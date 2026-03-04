@@ -11,7 +11,7 @@ import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useMediaQuery } from "usehooks-ts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 
 type EventSeriesMeta = {
@@ -226,7 +226,7 @@ const L2_ACTIVITY_SERIES: GTPChartSeries[] = [
 const EVENTS_EXAMPLES: Record<string, EventExample> = {
   "fusaka": {
     title: "Fusaka Upgrade",
-    description: "Average blobs per block vs target and blob fees in ETH.",
+    description: "Average blobs per block vs target blob fees in ETH.",
     question: "Is blob capacity keeping up with demand?",
     image: "gtp-ethereum-weekly",
     link: "/quick-bites/fusaka",
@@ -240,6 +240,7 @@ const EVENTS_EXAMPLES: Record<string, EventExample> = {
     image: "gtp-blobs-ethereum",
     link: "/quick-bites/dencun",
     series: DENCUN_SERIES,
+    options: FUSAKA_BLOB_OPTIONS,
   },
   "pectra": {
     title: "Pectra Upgrade",
@@ -248,6 +249,7 @@ const EVENTS_EXAMPLES: Record<string, EventExample> = {
     image: "gtp-metrics-total-value-secured",
     link: "/quick-bites/pectra",
     series: PECTRA_SERIES,
+    options: FUSAKA_BLOB_OPTIONS,
   },
   "l2-activity": {
     title: "L2 Activity Growth",
@@ -256,6 +258,7 @@ const EVENTS_EXAMPLES: Record<string, EventExample> = {
     image: "gtp-metrics-transaction-count",
     link: "/fundamentals/transaction-count",
     series: L2_ACTIVITY_SERIES,
+    options: FUSAKA_BLOB_OPTIONS,
   },
 };
 
@@ -300,12 +303,12 @@ const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeo
   return (
     <motion.div
       layout
-      className={`flex w-full border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "bg-color-ui-active" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover"}`}
+      className={`flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
       onClick={() => setSelectedEvent(event)}
-      transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
+      transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
     >
-      {/*Icon */}
-      <motion.div layout className={`${isSelected ? "" : "flex items-center justify-center  relative pt-[7px] h-full "}`}>
+      {/* Icon — layout="position" so it animates from center to top-left as card expands */}
+      <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
         <GTPIcon
           icon={isSelected ? EVENTS_EXAMPLES[event].image as GTPIconName : "gtp-megaphone"}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
@@ -313,33 +316,42 @@ const EventCard = ({ event, isSelected, setSelectedEvent }: { event: keyof typeo
         />
       </motion.div>
 
-      {/*Content — both states always rendered, height+opacity animated simultaneously */}
-      <div className="flex flex-col w-full min-w-0 justify-center">
-        {/* Unselected: question */}
-        <motion.div
-          animate={{ opacity: isSelected ? 0 : 1, height: isSelected ? 0 : "auto" }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          style={{ overflow: "hidden" }}
-          className="flex items-center"
-        >
-          <p className="heading-small-xs">{EVENTS_EXAMPLES[event].question}</p>
-        </motion.div>
-
-        {/* Selected: title + description */}
-        <motion.div
-          animate={{ opacity: isSelected ? 1 : 0, height: isSelected ? "auto" : 0 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          style={{ overflow: "hidden" }}
-          className="flex flex-col gap-y-[10px]"
-        >
-          <p className="heading-small-md">{EVENTS_EXAMPLES[event].title}</p>
-          <p className="text-xs">{EVENTS_EXAMPLES[event].description}</p>
-        </motion.div>
+      {/* Content — AnimatePresence swaps between the two text states with opacity only.
+          The card's own layout animation handles the height change, so no height
+          animation is needed here (which was causing the squishing/pushing effect). */}
+      <div className={`flex flex-col w-full min-w-0 ${isSelected ? "h-full" : "justify-center"}`}>
+        <AnimatePresence mode="wait" initial={false}>
+          {isSelected ? (
+            <motion.div
+              key="selected"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.15, ease: "easeOut" } }}
+              exit={{ opacity: 0, transition: { duration: 0.05 } }}
+              className="flex flex-col gap-y-[10px] h-full"
+            >
+              <p className="heading-small-md">{EVENTS_EXAMPLES[event].title}</p>
+              <div className="flex h-full items-center pb-[30px]"><p className="text-xs">{EVENTS_EXAMPLES[event].description}</p></div>
+            </motion.div>
+          ) : (
+            <motion.p
+              key="question"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.25, ease: "easeOut" } }}
+              exit={{ opacity: 0, transition: { duration: 0.05 } }}
+              className="heading-small-xs"
+            >
+              {EVENTS_EXAMPLES[event].question}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
-      <Link className="flex items-center justify-center" href={EVENTS_EXAMPLES[event].link}>
-        <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
-      </Link>
+      {/* Chevron — layout="position" mirrors the icon treatment */}
+      <motion.div layout="position" className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
+        <Link className="flex items-center justify-center" href={EVENTS_EXAMPLES[event].link}>
+          <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
+        </Link>
+      </motion.div>
     </motion.div>
   );
 }
@@ -400,7 +412,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: keyof typ
        topBar={
         <GTPButtonContainer>
             {hasOptions && (
-              <GTPButtonRow>
+              <GTPButtonRow className="flex-wrap">
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
 
