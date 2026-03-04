@@ -52,56 +52,66 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Layout({
-  children
+  children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ owner_project?: string }>;
 }) {
-  const metadata = await getPageMetadata(
-    "/applications",
-    {}
-  );
-  const canonical = metadata.canonical ?? "https://www.growthepie.com/applications";
-  const webPage = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "@id": canonical,
-    url: canonical,
-    name: metadata.title,
-    description: metadata.description,
-    isPartOf: {
-      "@id": "https://www.growthepie.com/#website",
-    },
-    inLanguage: "en",
-  };
+  const resolvedParams = await params;
+  const isOverview = !resolvedParams?.owner_project;
+  let jsonLdScripts: React.ReactNode = null;
 
-  const breadcrumbs = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://www.growthepie.com/",
+  if (isOverview) {
+    const metadata = await getPageMetadata(
+      "/applications",
+      {}
+    );
+    const canonical = metadata.canonical ?? "https://www.growthepie.com/applications";
+    const webPage = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": canonical,
+      url: canonical,
+      name: metadata.title,
+      description: metadata.description,
+      isPartOf: {
+        "@id": "https://www.growthepie.com/#website",
       },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Applications",
-        item: canonical,
-      },
-    ],
-  };
+      inLanguage: "en",
+    };
+
+    const breadcrumbs = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://www.growthepie.com/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Applications",
+          item: canonical,
+        },
+      ],
+    };
+
+    jsonLdScripts = [webPage, breadcrumbs].map((graph, index) => (
+      <script
+        key={index}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(graph) }}
+      />
+    ));
+  }
 
   return (
       <>
-      {[webPage, breadcrumbs].map((graph, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(graph) }}
-        />
-      ))}
+      {jsonLdScripts}
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",

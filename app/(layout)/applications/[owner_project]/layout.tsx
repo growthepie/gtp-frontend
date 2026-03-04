@@ -127,6 +127,7 @@ export default async function Layout(
   ].filter(Boolean) as string[];
 
   const appEntity = {
+    "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "@id": appId,
     name: projectName,
