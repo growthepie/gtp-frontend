@@ -1,8 +1,8 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
-import { EChartsOption } from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
+import type { EChartsOption } from "echarts";
 import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { iconNames } from "@/icons/gtp-icon-names";
@@ -2223,7 +2223,8 @@ export default function GTPUniversalChart({
                   className="relative w-full rounded-[14px] overflow-hidden"
                   style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
                 >
-                  <ReactECharts
+                  <ReactEChartsCore
+                    echarts={echarts}
                     option={chartOption}
                     notMerge
                     lazyUpdate

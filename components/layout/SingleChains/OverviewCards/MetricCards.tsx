@@ -4,7 +4,8 @@ import { GTPIcon } from "../../GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
 import { ChainOverview, GetRankingColor } from "@/lib/chains";
 import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useState, useCallback, useRef, useEffect } from "react";
 import dayjs from "@/lib/dayjs";
@@ -237,7 +238,7 @@ const MetricChart = ({
     prefix: string,
     suffix: string
 }) => {
-    const chartRef = useRef<ReactECharts>(null);
+    const chartRef = useRef<ReactEChartsCore>(null);
     const types = overviewData.data.kpi_cards[metricKey].sparkline.types;
     
     // Extract timestamps and values from the sparkline data
@@ -478,7 +479,8 @@ const MetricChart = ({
                 }
             }}
         >
-            <ReactECharts 
+            <ReactEChartsCore
+                echarts={echarts}
                 ref={chartRef}
                 option={option} 
                 style={{ height: '100%', width: '100%' }}

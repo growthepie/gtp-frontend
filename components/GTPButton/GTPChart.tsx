@@ -1,8 +1,8 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
-import { EChartsOption } from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
+import type { EChartsOption } from "echarts";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
@@ -99,6 +99,8 @@ export interface GTPChartProps {
   showTooltipTimestamp?: boolean;
 }
 
+type EChartsInstance = ReturnType<typeof echarts.init>;
+
 // --- Component ---
 
 export default function GTPChart({
@@ -142,7 +144,7 @@ export default function GTPChart({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
-  const echartsRef = useRef<InstanceType<typeof ReactECharts> | null>(null);
+  const echartsRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
   const dragStartPixelRef = useRef<number | null>(null);
   const dragStartAxisXRef = useRef<number | null>(null);
   const latestAxisXRef = useRef<number | null>(null);
@@ -235,7 +237,7 @@ export default function GTPChart({
   // Resize when container height settles — fixes charts that mount before their container has a final height.
   useEffect(() => {
     if (containerHeight <= 0) return;
-    echartsRef.current?.getEchartsInstance?.()?.resize();
+    (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
   }, [containerHeight, minHeight, maxHeight]);
 
   // Typography
@@ -323,7 +325,7 @@ export default function GTPChart({
   };
 
   const getSeriesPointXFromOption = useCallback((seriesIndex: number, dataIndex: number): number | null => {
-    const option = echartsRef.current?.getEchartsInstance?.()?.getOption?.();
+    const option = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.getOption?.();
     const optionSeries = Array.isArray(option?.series) ? option.series[seriesIndex] : undefined;
     if (!optionSeries) return null;
     const data = (optionSeries as { data?: unknown[] }).data;
@@ -404,7 +406,7 @@ export default function GTPChart({
     return null;
   }, [getSeriesPointXFromOption, snapToNearestDataX]);
 
-  const querySnappedXAtPixel = useCallback((instance: echarts.ECharts, pixelX: number): number | null => {
+  const querySnappedXAtPixel = useCallback((instance: EChartsInstance, pixelX: number): number | null => {
     const chartWidth = instance.getWidth();
     if (!Number.isFinite(chartWidth) || chartWidth <= 0) {
       return latestAxisXRef.current;
@@ -436,11 +438,11 @@ export default function GTPChart({
 
   useEffect(() => {
     if (!onDragSelect) return;
-    let subscribedInstance: echarts.ECharts | null = null;
+    let subscribedInstance: EChartsInstance | null = null;
     let axisPointerHandler: ((params: AxisPointerPayload) => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
-      const instance = echartsRef.current?.getEchartsInstance?.();
+      const instance = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined);
       if (!instance) return;
 
       const handler = (params: AxisPointerPayload) => {
@@ -467,7 +469,7 @@ export default function GTPChart({
     if (!onDragSelect) return;
     const DRAG_THRESHOLD = 4;
     let isDragging = false;
-    let zr: ReturnType<echarts.ECharts["getZr"]> | null = null;
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
     let zrDom: HTMLElement | null = null;
     let mouseUpListener: ((event: MouseEvent) => void) | null = null;
     let onMouseDownHandler: ((event: { event?: { button?: number }; offsetX?: number }) => void) | null = null;
@@ -476,7 +478,7 @@ export default function GTPChart({
     let onGlobalOutHandler: (() => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
-      const instance = echartsRef.current?.getEchartsInstance?.();
+      const instance = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined);
       if (!instance) return;
       zr = instance.getZr();
       zrDom = (zr?.dom as HTMLElement | undefined) ?? null;
@@ -1315,8 +1317,9 @@ export default function GTPChart({
       style={containerStyle}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
-        <ReactECharts
+        <ReactEChartsCore
           ref={echartsRef}
+          echarts={echarts}
           option={chartOption}
           notMerge
           lazyUpdate
