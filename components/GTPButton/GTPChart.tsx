@@ -21,7 +21,14 @@ import {
   DEFAULT_COLORS,
   DEFAULT_GRID,
 } from "@/lib/echarts-utils";
-import { buildTimeXAxisLayout } from "@/lib/echarts-x-axis-layout";
+import {
+  buildTimeXAxisLayout,
+  enumerateTickPositions,
+  createPlainLabelFormatter,
+  computeVisibleXAxisLabels,
+  computeSubtickPixelPositions,
+  type VisibleLabel,
+} from "@/lib/echarts-x-axis-layout";
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -30,6 +37,16 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 
 const WATERMARK_CLASS =
   "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+
+// Singleton canvas context for precise text width measurement (avoids char-width heuristics)
+let _measureCtx: CanvasRenderingContext2D | null | undefined;
+const getMeasureCtx = () => {
+  if (_measureCtx !== undefined) return _measureCtx;
+  if (typeof document === "undefined") { _measureCtx = null; return null; }
+  const c = document.createElement("canvas");
+  _measureCtx = c.getContext("2d");
+  return _measureCtx;
+};
 
 // --- Public types ---
 
@@ -625,15 +642,98 @@ export default function GTPChart({
     });
   }, [normalizedSeries, percentageMode]);
 
-  // Build ECharts option
-  const chartOption = useMemo<EChartsOption>(() => {
-    const shouldStack = stack || percentageMode;
-    const grid = {
+  // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
+  const timeAxisLayout = useMemo(() => {
+    if (xAxisType !== "time") return undefined;
+    const allTs = pairedSeries.flatMap((s) =>
+      s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
+    );
+    const barData = pairedSeries.filter((s) => s.seriesType === "bar").map((s) => s.pairedData);
+    const g = {
       left: gridOverride?.left ?? DEFAULT_GRID.left,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
+    return buildTimeXAxisLayout({ timestamps: allTs, barSeriesData: barData, xAxisMin, xAxisMax, grid: g });
+  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax]);
+
+  const effectiveGrid = useMemo(() => {
+    const base = {
+      left: gridOverride?.left ?? DEFAULT_GRID.left,
+      right: gridOverride?.right ?? DEFAULT_GRID.right,
+      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
+    };
+    return timeAxisLayout?.grid ?? base;
+  }, [gridOverride, timeAxisLayout]);
+
+  const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
+  const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
+
+  // --- Shared pixel mapper for overlay labels and subticks ---
+  const axisPixelMap = useMemo(() => {
+    const aMin = Number.isFinite(Number(effectiveXMin)) ? Number(effectiveXMin) : NaN;
+    const aMax = Number.isFinite(Number(effectiveXMax)) ? Number(effectiveXMax) : NaN;
+    if (!Number.isFinite(aMin) || !Number.isFinite(aMax) || aMax <= aMin) return null;
+
+    const plotLeft = effectiveGrid.left;
+    const plotWidth = Math.round(containerWidth) - effectiveGrid.left - effectiveGrid.right;
+    if (plotWidth <= 0) return null;
+
+    const axisRange = aMax - aMin;
+    const timestampToPixel = (ts: number): number => plotLeft + ((ts - aMin) / axisRange) * plotWidth;
+
+    return { aMin, aMax, plotLeft, plotWidth, timestampToPixel };
+  }, [effectiveXMin, effectiveXMax, effectiveGrid, containerWidth]);
+
+  // --- Custom x-axis label overlay ---
+  const overlayLabels = useMemo<VisibleLabel[]>(() => {
+    if (xAxisType !== "time" || !timeAxisLayout || !axisPixelMap) return [];
+    const { firstTick, lastTick, minInterval, rangeDays } = timeAxisLayout;
+    if (firstTick === undefined || lastTick === undefined) return [];
+
+    const ticks = enumerateTickPositions(firstTick, lastTick, minInterval, axisPixelMap.aMax);
+
+    const formatter = xAxisLabelFormatter
+      ? ((ts: number, _isFirst: boolean) => ({ text: (xAxisLabelFormatter as (v: number) => string)(ts), isBold: false }))
+      : createPlainLabelFormatter(rangeDays);
+
+    const measureText = (text: string, isBold: boolean): number => {
+      const ctx = getMeasureCtx();
+      if (ctx) {
+        ctx.font = isBold
+          ? `bold ${textSmTypography.fontSize}px ${textSmTypography.fontFamily}`
+          : `${textXxsTypography.fontWeight} ${textXxsTypography.fontSize}px ${textXxsTypography.fontFamily}`;
+        return ctx.measureText(text).width + 2;
+      }
+      return text.length * (isBold ? 7.5 : 5.5) + 4;
+    };
+
+    return computeVisibleXAxisLabels({
+      ticks, containerWidth, labelFormatter: formatter, measureText, timestampToPixel: axisPixelMap.timestampToPixel, minGap: 16,
+    });
+  }, [xAxisType, timeAxisLayout, axisPixelMap, containerWidth, textSmTypography, textXxsTypography, xAxisLabelFormatter]);
+
+  // --- Subtick positions (unlabeled intermediate tick marks) ---
+  const subtickPixels = useMemo<number[]>(() => {
+    if (xAxisType !== "time" || !timeAxisLayout || !axisPixelMap || overlayLabels.length === 0) return [];
+
+    const labeledTimestamps = new Set(overlayLabels.map((l) => l.timestamp));
+    return computeSubtickPixelPositions({
+      mainIntervalMs: timeAxisLayout.minInterval,
+      axisMin: axisPixelMap.aMin,
+      axisMax: axisPixelMap.aMax,
+      plotLeft: axisPixelMap.plotLeft,
+      plotWidth: axisPixelMap.plotWidth,
+      labeledTimestamps,
+      timestampToPixel: axisPixelMap.timestampToPixel,
+    });
+  }, [xAxisType, timeAxisLayout, axisPixelMap, overlayLabels]);
+
+  // Build ECharts option
+  const chartOption = useMemo<EChartsOption>(() => {
+    const shouldStack = stack || percentageMode;
 
     // Y-axis smart scaling
     const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
@@ -647,42 +747,6 @@ export default function GTPChart({
         .map((p) => p[1])
         .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
     );
-    const allTimestamps = pairedSeries.flatMap((s) =>
-      s.pairedData
-        .map((p) => Number(p[0]))
-        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
-    );
-    // X-axis layout is resolved in one pipeline so label width, grid padding, and tick density
-    // all derive from the same source of truth.
-    const barSeriesData = pairedSeries
-      .filter((seriesItem) => seriesItem.seriesType === "bar")
-      .map((seriesItem) => seriesItem.pairedData);
-    const timeAxisLayout = xAxisType === "time"
-      ? buildTimeXAxisLayout({
-          timestamps: allTimestamps,
-          barSeriesData,
-          xAxisMin,
-          xAxisMax,
-          xAxisLabelFormatter,
-          containerWidth,
-          grid,
-        })
-      : undefined;
-    const effectiveGrid = timeAxisLayout?.grid ?? grid;
-    const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
-    const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
-    const xAxisSplitNumber = xAxisType === "time" ? timeAxisLayout?.splitNumber : undefined;
-    const xAxisMinInterval = xAxisType === "time" ? timeAxisLayout?.minInterval : undefined;
-    const xAxisFixedInterval = xAxisType === "time" ? timeAxisLayout?.minInterval : undefined;
-    const defaultXFormatter = (value: number | string) => {
-      if (timeAxisLayout) {
-        return timeAxisLayout.defaultLabelFormatter(value);
-      }
-      return String(value);
-    };
-    const resolvedXAxisLabelFormatter =
-      (timeAxisLayout?.labelFormatter ?? xAxisLabelFormatter ?? defaultXFormatter) as
-        (value: number | string) => string;
 
     const maxSeriesValue =
       shouldStack && pairedSeries.length > 0
@@ -1159,7 +1223,6 @@ export default function GTPChart({
     const baseOption: EChartsOption = {
       animation,
       backgroundColor: "transparent",
-
       grid: {
         ...effectiveGrid,
       },
@@ -1168,39 +1231,10 @@ export default function GTPChart({
         show: true,
         min: effectiveXMin,
         max: effectiveXMax,
-        splitNumber: xAxisSplitNumber,
-        interval: xAxisFixedInterval,
-        minInterval: xAxisMinInterval,
         boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
-        axisTick: { show: false },
-        axisLabel: {
-          color: textPrimary,
-          fontSize: textXxsTypography.fontSize,
-          fontFamily: textXxsTypography.fontFamily,
-          fontWeight: textXxsTypography.fontWeight,
-          alignMinLabel: xAxisType === "time" ? "left" : undefined,
-          alignMaxLabel: xAxisType === "time" ? "right" : undefined,
-          hideOverlap: true,
-          margin: 8,
-          formatter: resolvedXAxisLabelFormatter,
-          rich: {
-            yearBold: {
-              color: textPrimary,
-              fontSize: textSmTypography.fontSize,
-              fontFamily: textSmTypography.fontFamily,
-              fontWeight: 700,
-              lineHeight: textXxsTypography.lineHeight,
-            },
-            dateBold: {
-              color: textPrimary,
-              fontSize: textSmTypography.fontSize,
-              fontFamily: textSmTypography.fontFamily,
-              fontWeight: 700,
-              lineHeight: textXxsTypography.lineHeight,
-            },
-          },
-        },
+        axisTick: { show: xAxisType !== "time" },
+        axisLabel: { show: xAxisType !== "time" },
         splitLine: { show: false },
       } as any,
       yAxis: {
@@ -1274,7 +1308,9 @@ export default function GTPChart({
     containerHeight,
     containerWidth,
     decimals,
-    gridOverride,
+    effectiveGrid,
+    effectiveXMin,
+    effectiveXMax,
     hasBarSeries,
     textPrimary,
     lineWidth,
@@ -1288,13 +1324,10 @@ export default function GTPChart({
     seriesOverrides,
     smooth,
     stack,
-    textSmTypography,
-    textXxsTypography,
     tooltipFormatter,
     tooltipTitle,
     showTooltipTimestamp,
     limitTooltipRows,
-    xAxisLabelFormatter,
     xAxisMin,
     xAxisMax,
     xAxisType,
@@ -1327,6 +1360,53 @@ export default function GTPChart({
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
+      {xAxisType === "time" && overlayLabels.length > 0 && (
+        <div
+          className="pointer-events-none absolute left-0 right-0 bottom-0"
+          style={{ height: effectiveGrid.bottom }}
+        >
+          {subtickPixels.map((px) => (
+            <div
+              key={`sub-${px}`}
+              className="absolute top-0"
+              style={{
+                left: px,
+                width: 1,
+                height: 3,
+                backgroundColor: withOpacity(textPrimary, 0.3),
+              }}
+            />
+          ))}
+          {overlayLabels.map((label) => {
+            const snappedX = Math.round(label.pixelX);
+            return (
+              <div
+                key={`tick-${label.timestamp}`}
+                className="absolute top-0"
+                style={{
+                  left: snappedX,
+                  width: 1,
+                  height: 15,
+                  backgroundColor: withOpacity(textPrimary, 0.3),
+                }}
+              />
+            );
+          })}
+          {overlayLabels.map((label) => (
+            <span
+              key={`label-${label.timestamp}`}
+              className={`absolute whitespace-nowrap ${label.isBold ? "heading-xxxs scale-[1.4]" : "text-xxs"} ${label.align === "left" ? "text-left translate-x-0" : label.align === "right" ? "text-right -translate-x-full" : "text-center -translate-x-1/2"}`}
+              style={{
+                left: Math.round(label.pixelX),
+                top: label.isBold ? 18 : 19,
+                color: textPrimary,
+              }}
+            >
+              {label.text}
+            </span>
+          ))}
+        </div>
+      )}
       {onDragSelect && dragOverlay && (
         <div
           className="pointer-events-none absolute inset-y-0 z-30 flex items-center justify-center border-x"
