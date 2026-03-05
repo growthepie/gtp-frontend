@@ -28,7 +28,7 @@ export type EventExample = {
   image: string;
   link: string;
   series?: GTPChartSeries[];
-  cards?: { id: string, name: string, value: number, rank: number, contractsDeployed: number, icon: string, }[];
+  cards?: { owner_project: string, metric: string }[];
   options?: EventOption[];
   defaultOptionId?: string;
   bodyType?: "chart" | "card";
