@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from "react";
-import ReactECharts from "echarts-for-react";
-import { EChartsOption } from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
+import type { EChartsOption } from "echarts";
 import { throttle } from "lodash";
 import ChartWatermark, { ChartWatermarkWithMetricName } from "@/components/layout/ChartWatermark";
 import { useTheme } from "next-themes";
@@ -57,7 +58,7 @@ const getCssVarAsRgb = (name: string): string => {
 
 export const LiveMetricsChart = React.memo(
   ({ data, overrideColor, chainName, centerWatermark, anchorZero, metricLabel }: LiveMetricsChartProps) => {
-    const chartRef = React.useRef<ReactECharts>(null);
+    const chartRef = React.useRef<ReactEChartsCore>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
@@ -223,7 +224,8 @@ export const LiveMetricsChart = React.memo(
 
     return (
       <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
-        <ReactECharts
+        <ReactEChartsCore
+          echarts={echarts}
           ref={chartRef}
           opts={{
             devicePixelRatio: window.devicePixelRatio || 1,

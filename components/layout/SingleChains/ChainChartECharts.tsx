@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef, useCallback, memo, useTransition } from "react";
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
@@ -285,7 +285,7 @@ const MetricChart = memo(
     groupId: string;
     lineType: "complex" | "simple";
   }) => {
-    const chartRef = useRef<ReactECharts>(null);
+    const chartRef = useRef<ReactEChartsCore>(null);
     const isMobile = useMediaQuery("(max-width: 767px)");
     const isHovered = useRef(false);
     const lastGraphicElements = useRef<any[]>([]);
@@ -1511,7 +1511,8 @@ const MetricChart = memo(
           onMouseEnter={() => { isHovered.current = true; }}
           onMouseLeave={() => { isHovered.current = false; }}
         >
-          <ReactECharts
+          <ReactEChartsCore
+            echarts={echarts}
             ref={chartRef}
             option={option}
             style={{ height: "100%", width: "100%" }}
