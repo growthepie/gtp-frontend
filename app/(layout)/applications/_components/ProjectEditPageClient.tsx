@@ -4,13 +4,14 @@ import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useRef, useStat
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { createWalletClient, custom, defineChain } from "viem";
 import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { Title } from "@/components/layout/TextHeadingComponents";
+import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { useMaster } from "@/contexts/MasterContext";
+import { useUIContext } from "@/contexts/UIContext";
 import {
   buildProjectEditHref,
   getProjectEditIntentKey,
@@ -217,6 +218,14 @@ const isValidHttpUrl = (value: string): boolean => {
   }
 };
 
+// Extract second-level domain (core name) from a normalized URL (no protocol, no www.)
+// "app.uniswap.org" → "uniswap", "growthepie.xyz" → "growthepie", "figma.com" → "figma"
+const extractSLD = (normalizedUrl: string): string => {
+  const host = normalizedUrl.split("/")[0]; // strip path
+  const parts = host.split(".");
+  return parts.length >= 2 ? parts[parts.length - 2] : host;
+};
+
 const normalizeUrlForComparison = (value: string): string => {
   if (!value.trim()) {
     return "";
@@ -279,6 +288,11 @@ const dedupeUrls = (values: string[]): string[] => {
   }
   return deduped;
 };
+
+// Merge form URLs with original loaded URLs — form order wins (default first),
+// original URLs appended if not already present (nothing silently dropped).
+const mergeUrlLists = (formUrls: string[], originalUrls: string[]): string[] =>
+  dedupeUrls([...formUrls, ...originalUrls.map(ensureAbsoluteUrl).filter(Boolean)]);
 
 const firstUrlFromUnknown = (value: unknown): string => {
   if (typeof value === "string") {
@@ -432,15 +446,16 @@ const runFallbackUrlMatch = (
       continue;
     }
 
+    const inputSLD = extractSLD(normalizedInput);
+    const sourceSLD = extractSLD(normalizedSource);
+
     let confidence: "exact" | "similar" | null = null;
     if (normalizedSource === normalizedInput) {
       confidence = "exact";
-    } else if (
-      normalizedSource.startsWith(normalizedInput) ||
-      normalizedInput.startsWith(normalizedSource) ||
-      normalizedSource.includes(normalizedInput) ||
-      normalizedInput.includes(normalizedSource)
-    ) {
+    } else if (inputSLD && sourceSLD && inputSLD === sourceSLD) {
+      // Same core domain name — handles subdomains AND cross-TLD:
+      // app.uniswap.org vs uniswap.org → both "uniswap"
+      // growthepie.xyz vs growthepie.com → both "growthepie"
       confidence = "similar";
     }
 
@@ -500,12 +515,6 @@ const hasMeaningfulRowData = (row: AttestationRowInput): boolean => {
   return Boolean(address || contractName || ownerProject || usageCategory);
 };
 
-const hasRowDataExcludingOwner = (row: AttestationRowInput): boolean => {
-  const address = toStringValue(row.address).trim();
-  const contractName = toStringValue(row.contract_name).trim();
-  const usageCategory = toStringValue(row.usage_category).trim();
-  return Boolean(address || contractName || usageCategory);
-};
 
 const getQueueRowKey = (
   chainId: string,
@@ -699,16 +708,20 @@ const FieldDropdown = ({
   suggestions: ProjectRecord[];
   onSelect: (p: ProjectRecord) => void;
 }) => {
-  if (!suggestions.length) return null;
+  const open = suggestions.length > 0;
+  const height = open ? suggestions.length * 44 + 8 : 0;
   return (
-    <div className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] p-[5px] bg-color-bg-medium rounded-[22px] shadow-[0px_0px_50px_0px_rgba(0,0,0,0.6)] flex flex-col">
-      <div className="w-full bg-color-ui-active rounded-[16px] flex flex-col overflow-hidden">
+    <div
+      className={`absolute top-[calc(100%+4px)] left-0 right-0 z-50 overflow-hidden bg-color-ui-active rounded-[22px] transition-all duration-300 ${open ? "shadow-standard" : "shadow-none"}`}
+      style={{ height }}
+    >
+      <div className="flex flex-col py-[4px]">
         {suggestions.map((project, i) => (
           <button
             key={`${asString(project.owner_project)}-${i}`}
             type="button"
             onMouseDown={() => onSelect(project)}
-            className="w-full flex items-center gap-x-[8px] px-[10px] py-[7px] hover:bg-color-ui-hover"
+            className="w-full flex items-center gap-x-[10px] pl-[14px] pr-[10px] h-[44px] hover:bg-color-ui-hover transition-colors"
           >
             <div className="shrink-0">
               <ApplicationIcon owner_project={asString(project.owner_project)} size="sm" />
@@ -728,7 +741,6 @@ const FieldDropdown = ({
 
 export default function ProjectEditPageClient() {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
@@ -736,6 +748,8 @@ export default function ProjectEditPageClient() {
   const autofilledOwnerRef = useRef("");
   const importedContractSeedRef = useRef(false);
   const loadedFormRef = useRef<ProjectFormState>({ ...EMPTY_FORM });
+  const loadedWebsiteUrlsRef = useRef<string[]>([]);
+  const loadedGithubUrlsRef = useRef<string[]>([]);
   const websiteCheckTargetRef = useRef("");
   const prevOwnerProjectRef = useRef("");
 
@@ -753,13 +767,13 @@ export default function ProjectEditPageClient() {
   );
   const intentKey = useMemo(() => getProjectEditIntentKey(intent), [intent]);
   const mode: ProjectMode = intent.mode;
-  const isAddMode = mode === "add";
+  const setProjectEditMode = useUIContext((state) => state.setProjectEditMode);
 
-  const [showMetadataForm, setShowMetadataForm] = useState(intent.start !== "website");
-  const [websiteCheckInput, setWebsiteCheckInput] = useState("");
-  const [websiteCheckMatches, setWebsiteCheckMatches] = useState<ExistingProjectMatch[]>([]);
-  const [websiteChecked, setWebsiteChecked] = useState(false);
-  const [isCheckingWebsite, setIsCheckingWebsite] = useState(false);
+  // Signal to the global search bar that it should use project-edit mode
+  useEffect(() => {
+    setProjectEditMode(true);
+    return () => setProjectEditMode(false);
+  }, [setProjectEditMode]);
 
   const [form, setForm] = useState<ProjectFormState>(EMPTY_FORM);
   const [logoUpload, setLogoUpload] = useState<LogoUploadState>(null);
@@ -806,7 +820,10 @@ export default function ProjectEditPageClient() {
   const [walletError, setWalletError] = useState<string | null>(null);
   const [activeDropdownField, setActiveDropdownField] = useState<keyof ProjectFormState | null>(null);
   const [addressEditRow, setAddressEditRow] = useState<number | null>(null);
-  const [activeStep, setActiveStep] = useState<1 | 2>(1);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+  const [hoveredTab, setHoveredTab] = useState<"find" | "add" | null>(null);
+  const [localMode, setLocalMode] = useState<ProjectMode>(intent.mode);
+  const isAddMode = localMode === "add";
 
   const loadProjects = useCallback(async (activeRef?: { current: boolean }) => {
     setIsLoadingProjects(true);
@@ -845,12 +862,15 @@ export default function ProjectEditPageClient() {
     hydratedIntentRef.current = intentKey;
     autofilledOwnerRef.current = "";
 
-    setWebsiteChecked(false);
-    setWebsiteCheckMatches([]);
+    setLocalMode(intent.mode);
+
     setProfilerError("");
     setProfilerInfo("");
     setLogoUpload(null);
-    setShowMetadataForm(intent.start !== "website");
+
+    const extraMainGithub = searchParams.get("main_github") || "";
+    const extraTwitter = searchParams.get("twitter") || "";
+    const extraDisplayName = searchParams.get("display_name") || "";
 
     setForm((prev) => {
       if (intent.mode === "add") {
@@ -858,24 +878,29 @@ export default function ProjectEditPageClient() {
           ...EMPTY_FORM,
           owner_project: intent.project || "",
           website: intent.website || "",
+          main_github: extraMainGithub,
+          twitter: extraTwitter,
+          display_name: extraDisplayName,
         };
       }
       return {
         ...prev,
         owner_project: intent.project || prev.owner_project,
         website: intent.website || prev.website,
+        ...(extraMainGithub && { main_github: extraMainGithub }),
+        ...(extraTwitter && { twitter: extraTwitter }),
+        ...(extraDisplayName && { display_name: extraDisplayName }),
       };
     });
 
-    const normalizedWebsite = intent.website ? ensureAbsoluteUrl(intent.website) : "";
-    setWebsiteCheckInput(normalizedWebsite);
-    websiteCheckTargetRef.current = normalizedWebsite;
+    if (intent.website) websiteCheckTargetRef.current = ensureAbsoluteUrl(intent.website);
     setActiveStep(intent.focus === "contracts" ? 2 : 1);
-  }, [intent, intentKey]);
+  }, [intent, intentKey, searchParams]);
 
   useEffect(() => {
-    if (contributionResult) setActiveStep(2);
+    if (contributionResult) setActiveStep(2 as 1 | 2 | 3 | 4);
   }, [contributionResult]);
+
 
   const normalizedProjects = useMemo(
     () =>
@@ -906,7 +931,7 @@ export default function ProjectEditPageClient() {
     : undefined;
 
   useEffect(() => {
-    if (!existingOwnerProject || mode !== "edit") {
+    if (!existingOwnerProject || localMode !== "edit") {
       return;
     }
     const ownerKey = asString(existingOwnerProject.owner_project).toLowerCase();
@@ -930,11 +955,13 @@ export default function ProjectEditPageClient() {
         telegram: readProjectSocial(existingOwnerProject, "telegram") || prev.telegram,
       };
       loadedFormRef.current = updated;
+      loadedWebsiteUrlsRef.current = websiteList;
+      loadedGithubUrlsRef.current = githubList;
       return updated;
     });
 
     autofilledOwnerRef.current = ownerKey;
-  }, [existingOwnerProject, mode]);
+  }, [existingOwnerProject, localMode]);
 
 
   const getSimilarityMatches = useCallback(
@@ -950,10 +977,26 @@ export default function ProjectEditPageClient() {
       const sdkMatches = findSimilarProjectMatches(value, fieldType, sourceProjects, 5).map((match) =>
         mapSimilarityMatch(match, field),
       );
+
+      // For URL fields the SDK uses fuzzy character matching which produces false positives.
+      // Keep only SDK matches where the core domain (SLD) actually aligns with the input.
+      const isUrlField = field === "website" || field === "github";
+      const normInput = normalizeUrlForComparison(value);
+      const inputSLD = normInput ? extractSLD(normInput) : "";
+      const filteredSdkMatches = isUrlField && inputSLD
+        ? sdkMatches.filter((match) => {
+            const project = ownerProjectToProjectData[match.owner_project] as ProjectRecord | undefined;
+            if (!project) return false;
+            const projectUrl = field === "website" ? readProjectWebsite(project) : readProjectGithub(project);
+            const normProject = normalizeUrlForComparison(projectUrl);
+            return normProject ? extractSLD(normProject) === inputSLD : false;
+          })
+        : sdkMatches;
+
       const fallbackMatches = runFallbackUrlMatch(value, field, sourceProjects);
-      return mergeMatches(sdkMatches, fallbackMatches);
+      return mergeMatches(filteredSdkMatches, fallbackMatches);
     },
-    [normalizedProjects],
+    [normalizedProjects, ownerProjectToProjectData],
   );
 
   const ownerProjectSuggestions = useMemo(() => {
@@ -979,10 +1022,11 @@ export default function ProjectEditPageClient() {
   const websiteSuggestions = useMemo(() => {
     const val = normalizeUrlForComparison(form.website);
     if (!val) return [];
+    const inputSLD = extractSLD(val);
     return normalizedProjects
       .filter((p) => {
         const pUrl = normalizeUrlForComparison(readProjectWebsite(p));
-        return pUrl && (pUrl.includes(val) || val.includes(pUrl));
+        return pUrl && extractSLD(pUrl) === inputSLD;
       })
       .slice(0, 6);
   }, [form.website, normalizedProjects]);
@@ -990,10 +1034,11 @@ export default function ProjectEditPageClient() {
   const githubSuggestions = useMemo(() => {
     const val = normalizeUrlForComparison(form.main_github);
     if (!val) return [];
+    const inputSLD = extractSLD(val);
     return normalizedProjects
       .filter((p) => {
         const pUrl = normalizeUrlForComparison(readProjectGithub(p));
-        return pUrl && (pUrl.includes(val) || val.includes(pUrl));
+        return pUrl && extractSLD(pUrl) === inputSLD;
       })
       .slice(0, 6);
   }, [form.main_github, normalizedProjects]);
@@ -1024,38 +1069,6 @@ export default function ProjectEditPageClient() {
     return mergeMatches(ownerMatches, displayMatches, websiteMatches, githubMatches).slice(0, 5);
   }, [isAddMode, existingOwnerProject, ownerProjectSuggestions, displayNameSuggestions, form.website, form.main_github, getSimilarityMatches]);
 
-  const checkWebsiteForExistingProjects = useCallback(async () => {
-    const input = websiteCheckInput.trim();
-    if (!input) {
-      return;
-    }
-    setIsCheckingWebsite(true);
-    setWebsiteChecked(false);
-    try {
-      const website = ensureAbsoluteUrl(input);
-      websiteCheckTargetRef.current = website;
-      setForm((prev) => ({ ...prev, website }));
-
-      const matches = getSimilarityMatches(website, "website", "website");
-      setWebsiteCheckMatches(matches);
-      setWebsiteChecked(true);
-    } finally {
-      setIsCheckingWebsite(false);
-    }
-  }, [getSimilarityMatches, websiteCheckInput]);
-
-  const startManualProjectFlow = useCallback(() => {
-    setShowMetadataForm(true);
-    setProfilerError("");
-    setProfilerInfo("");
-    if (websiteCheckTargetRef.current) {
-      setForm((prev) => ({
-        ...prev,
-        website: websiteCheckTargetRef.current,
-      }));
-    }
-  }, []);
-
   const validationErrors = useMemo(() => {
     const errors: Partial<Record<keyof ProjectFormState, string>> = {};
 
@@ -1063,9 +1076,9 @@ export default function ProjectEditPageClient() {
       errors.owner_project = "Owner project key is required.";
     } else if (!OWNER_PROJECT_PATTERN.test(form.owner_project.trim())) {
       errors.owner_project = "Use lowercase letters and numbers with '-' or '_' between words.";
-    } else if (mode === "add" && existingOwnerProject) {
+    } else if (localMode === "add" && existingOwnerProject) {
       errors.owner_project = "This key already exists. Switch to edit mode or use another key.";
-    } else if (mode === "edit" && !existingOwnerProject) {
+    } else if (localMode === "edit" && !existingOwnerProject) {
       errors.owner_project = "Project key not found in OSS directory.";
     }
 
@@ -1091,32 +1104,16 @@ export default function ProjectEditPageClient() {
     }
 
     return errors;
-  }, [existingOwnerProject, form, mode]);
+  }, [existingOwnerProject, form, localMode]);
 
   const hasBlockingErrors = Object.values(validationErrors).some(Boolean);
   const collapsedOwnerProject = form.owner_project.trim();
-  const collapsedDisplayName = form.display_name.trim() || collapsedOwnerProject;
   const collapsedLogoPath = ownerProjectToProjectData[collapsedOwnerProject]?.logo_path;
   const collapsedLogoSrc = logoUpload?.previewUrl
     || (collapsedLogoPath
       ? `https://api.growthepie.com/v1/apps/logos/${collapsedLogoPath}`
       : "");
-  const hasWebsiteInSummary = Boolean(
-    form.website.trim() || form.additional_websites.some((url) => url.trim().length > 0),
-  );
-  const hasGithubInSummary = Boolean(
-    form.main_github.trim() || form.additional_github.some((url) => url.trim().length > 0),
-  );
-  const hasTwitterInSummary = Boolean(form.twitter.trim());
-  const hasTelegramInSummary = Boolean(form.telegram.trim());
-  const hasCollapsedMetadataSummary = Boolean(
-    collapsedDisplayName
-    || collapsedLogoSrc
-    || hasWebsiteInSummary
-    || hasGithubInSummary
-    || hasTwitterInSummary
-    || hasTelegramInSummary,
-  );
+
   const hasFormChanges = useMemo(() => {
     if (isAddMode) return true;
     if (logoUpload) return true;
@@ -1847,10 +1844,28 @@ export default function ProjectEditPageClient() {
     setLogoUpload(null);
     setForm(newForm);
     loadedFormRef.current = newForm;
+    loadedWebsiteUrlsRef.current = websiteList;
+    loadedGithubUrlsRef.current = githubList;
     setContributionResult(null);
     setSubmitError(null);
     setActiveDropdownField(null);
+    setLocalMode("edit");
   }, []);
+
+  // Listen for project selection events from the global search bar (project-edit mode)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ownerProject = (e as CustomEvent<{ ownerProject: string }>).detail?.ownerProject;
+      if (!ownerProject) return;
+      const project = ownerProjectToProjectData[ownerProject] as ProjectRecord | undefined;
+      if (!project) return;
+      fillFormFromProject(project);
+      setLocalMode("edit");
+      setActiveStep(1);
+    };
+    window.addEventListener("projectEditSelectProject", handler);
+    return () => window.removeEventListener("projectEditSelectProject", handler);
+  }, [fillFormFromProject, ownerProjectToProjectData]);
 
   const onLogoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1915,7 +1930,6 @@ export default function ProjectEditPageClient() {
           website: parsed.website || ensureAbsoluteUrl(prev.website),
         }));
 
-        setShowMetadataForm(true);
         setProfilerInfo("AI profile completed. Review values before submitting.");
         return true;
       } catch (error: any) {
@@ -1987,7 +2001,7 @@ export default function ProjectEditPageClient() {
       };
 
       const normalizedCurrent = normalizeProjectFormForContribution(form);
-      if (mode === "add") {
+      if (localMode === "add") {
         if (normalizedCurrent.description) {
           projectPayload.description = normalizedCurrent.description;
         }
@@ -2012,17 +2026,15 @@ export default function ProjectEditPageClient() {
         ) {
           projectPayload.description = normalizedCurrent.description;
         }
-        if (
-          normalizedCurrent.websites.length > 0 &&
-          !areStringArraysEqual(normalizedCurrent.websites, normalizedLoaded.websites)
-        ) {
-          projectPayload.websites = normalizedCurrent.websites;
+        const mergedWebsites = mergeUrlLists(normalizedCurrent.websites, loadedWebsiteUrlsRef.current);
+        const mergedGithub = mergeUrlLists(normalizedCurrent.github, loadedGithubUrlsRef.current);
+        const originalWebsites = normalizeUrlList(loadedFormRef.current.website, loadedFormRef.current.additional_websites);
+        const originalGithub = normalizeUrlList(loadedFormRef.current.main_github, loadedFormRef.current.additional_github);
+        if (mergedWebsites.length > 0 && !areStringArraysEqual(mergedWebsites, originalWebsites)) {
+          projectPayload.websites = mergedWebsites;
         }
-        if (
-          normalizedCurrent.github.length > 0 &&
-          !areStringArraysEqual(normalizedCurrent.github, normalizedLoaded.github)
-        ) {
-          projectPayload.github = normalizedCurrent.github;
+        if (mergedGithub.length > 0 && !areStringArraysEqual(mergedGithub, originalGithub)) {
+          projectPayload.github = mergedGithub;
         }
         if (
           normalizedCurrent.twitter &&
@@ -2042,7 +2054,7 @@ export default function ProjectEditPageClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode,
+          mode: localMode,
           project: projectPayload,
           logo: logoUpload
             ? {
@@ -2242,35 +2254,33 @@ export default function ProjectEditPageClient() {
     [bulkController],
   );
 
-  const switchToAddRoute = useCallback(() => {
-    // When coming from application-page, start fresh (don't carry over project data)
-    const shouldCarryWebsite = intent.source !== "application-page";
-    const website = shouldCarryWebsite
-      ? (form.website.trim() || websiteCheckInput.trim())
-      : "";
-    router.push(
-      buildProjectEditHref({
-        mode: "add",
-        source: intent.source,
-        website: website || undefined,
-        start: website ? "metadata" : "website",
-      }),
-    );
-  }, [form.website, intent.source, router, websiteCheckInput]);
+  const switchToAdd = useCallback(() => {
+    setLocalMode("add");
+    setForm({ ...EMPTY_FORM });
+    setLogoUpload(null);
+    setContributionResult(null);
+    setSubmitError(null);
+    setProfilerInfo("");
+    setProfilerError("");
+    autofilledOwnerRef.current = "";
+    loadedWebsiteUrlsRef.current = [];
+    loadedGithubUrlsRef.current = [];
+    setActiveStep(1);
+  }, []);
 
-  const switchToEditRoute = useCallback(() => {
-    const href = buildProjectEditHref({
-      mode: "edit",
-      source: intent.source,
-      start: "metadata",
-    });
-
-    if (typeof window !== "undefined") {
-      window.location.assign(href);
-      return;
-    }
-    router.push(href);
-  }, [intent.source, router]);
+  const switchToFind = useCallback(() => {
+    setLocalMode("edit");
+    setForm({ ...EMPTY_FORM });
+    setLogoUpload(null);
+    setContributionResult(null);
+    setSubmitError(null);
+    setProfilerInfo("");
+    setProfilerError("");
+    autofilledOwnerRef.current = "";
+    loadedWebsiteUrlsRef.current = [];
+    loadedGithubUrlsRef.current = [];
+    setActiveStep(1);
+  }, []);
 
   const isMetadataSubmitted = Boolean(contributionResult);
 
@@ -2278,53 +2288,83 @@ export default function ProjectEditPageClient() {
     <Container className="pt-[30px] md:pt-[30px] pb-[60px] px-[16px] md:px-[32px]">
       <div className="w-full">
         <div className="flex w-full flex-col gap-y-[16px]">
-        <div className="flex flex-wrap items-center justify-between gap-[10px]">
-          <div className="flex items-center h-[43px] gap-x-[8px]">
-            <Title icon="gtp-project" title="Project Profile" as="h1" />
+
+        {/* ── SectionBar-style tabs: Find existing / Add new ── */}
+        <div className="w-full h-[46px] relative flex gap-[5px] items-center overflow-y-hidden">
+          {/* Find existing tab */}
+          <div
+            className={`relative transition-all duration-300 flex items-center justify-between rounded-full cursor-pointer flex-1
+              ${!isAddMode
+                ? "bg-color-ui-active border-2 border-color-bg-medium h-[46px] heading-large-sm md:heading-large-md"
+                : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium hover:bg-color-ui-hover hover:h-[42px]"}
+              ${hoveredTab === "find" || !isAddMode ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}
+            style={{ zIndex: !isAddMode ? 100 : hoveredTab === "find" ? 110 : 10 }}
+            onClick={switchToFind}
+            onMouseEnter={() => setHoveredTab("find")}
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            <div className="flex items-center justify-center h-full gap-x-[15px]">
+              {collapsedLogoSrc && !isAddMode ? (
+                <div className="relative size-[36px] shrink-0 overflow-hidden rounded-[4px] border border-color-ui-shadow/60">
+                  <Image src={collapsedLogoSrc} alt={form.display_name || "Project"} fill sizes="36px" unoptimized className="object-cover" />
+                </div>
+              ) : (
+                <GTPIcon
+                  icon={(!isAddMode ? "gtp-project" : "gtp-project-monochrome") as any}
+                  className={`transition-all duration-300 ${!isAddMode ? "!size-[28px]" : "lg:!size-[24px]"}`}
+                />
+              )}
+              <div className="transition-all duration-300 overflow-hidden whitespace-nowrap">
+                {!isAddMode && form.display_name ? form.display_name : "Edit existing project"}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center rounded-full bg-color-bg-medium p-[3px] gap-x-[2px]">
-            <button
-              type="button"
-              onClick={switchToAddRoute}
-              className={`rounded-full px-[14px] py-[7px] text-sm transition-all ${
-                isAddMode
-                  ? "bg-color-text-primary text-color-bg-default"
-                  : "text-color-text-secondary hover:text-color-text-primary"
-              }`}
-            >
-              Add new
-            </button>
-            <button
-              type="button"
-              onClick={switchToEditRoute}
-              className={`rounded-full px-[14px] py-[7px] text-sm transition-all ${
-                !isAddMode
-                  ? "bg-color-text-primary text-color-bg-default"
-                  : "text-color-text-secondary hover:text-color-text-primary"
-              }`}
-            >
-              Edit existing
-            </button>
+
+          {/* Add new tab */}
+          <div
+            className={`relative transition-all duration-300 flex items-center justify-between rounded-full cursor-pointer flex-1
+              ${isAddMode
+                ? "bg-color-ui-active border-2 border-color-bg-medium h-[46px] heading-large-sm md:heading-large-md"
+                : "border-2 bg-color-bg-medium h-[38px] border-color-bg-medium hover:bg-color-ui-hover hover:h-[42px]"}
+              ${hoveredTab === "add" || isAddMode ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}
+            style={{ zIndex: isAddMode ? 100 : hoveredTab === "add" ? 110 : 20 }}
+            onClick={switchToAdd}
+            onMouseEnter={() => setHoveredTab("add")}
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            <div className="flex items-center justify-center h-full gap-x-[15px]">
+              <GTPIcon
+                icon={(isAddMode ? "gtp-plus" : "gtp-plus-monochrome") as any}
+                className={`transition-all duration-300 ${isAddMode ? "!size-[28px]" : "lg:!size-[24px]"}`}
+              />
+              <div className="transition-all duration-300 overflow-hidden whitespace-nowrap">
+                Add new project
+              </div>
+            </div>
           </div>
         </div>
-        <p className="text-[14px] leading-relaxed text-color-text-primary max-w-[820px]">
-          Add or edit project metadata, then validate and submit contract attestations.
-        </p>
 
-        {/* Always-visible step accordion grid */}
+        {/* ── Main layout grid ── */}
         <div className="grid grid-cols-1 gap-x-[8px] gap-y-[8px] xl:grid-cols-[minmax(0,1fr)_300px]">
 
           {/* Main column */}
           <div className="flex flex-col gap-y-[8px]">
 
-            {/* ── Step 1 card ── */}
-            <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden">
+            {/* ── Step 1 card: Project Details ── */}
+            <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
               {/* Clickable header */}
               <button
                 type="button"
                 onClick={() => setActiveStep(1)}
                 className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
               >
+                {/* Circle toggle button with chevron */}
+                <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
+                  <Icon
+                    icon="feather:chevron-down"
+                    className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 1 ? "rotate-180" : ""}`}
+                  />
+                </div>
                 {/* Step badge */}
                 <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                   contributionResult
@@ -2335,156 +2375,76 @@ export default function ProjectEditPageClient() {
                 }`}>
                   {contributionResult ? <Icon icon="feather:check" className="size-[13px]" /> : 1}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">{isAddMode ? "Add project details" : "Edit project details"}</div>
-                  {activeStep !== 1 && (
-                    hasCollapsedMetadataSummary ? (
-                      <div className="mt-[3px] flex flex-col gap-y-[4px]">
-                        <div className="flex min-w-0 items-center gap-x-[6px]">
-                          <div className="relative size-[20px] shrink-0 overflow-hidden rounded-full border border-color-ui-shadow/60 bg-color-bg-medium">
-                            {collapsedLogoSrc ? (
-                              <Image
-                                src={collapsedLogoSrc}
-                                alt={collapsedDisplayName || "Project logo"}
-                                fill
-                                sizes="20px"
-                                unoptimized
-                                className="object-cover"
-                              />
-                            ) : (
-                              <GTPIcon icon="gtp-project-monochrome" size="sm" className="text-color-ui-hover" />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-x-[4px] shrink-0">
-                            <span
-                              title={hasWebsiteInSummary ? "Website added" : "Website missing"}
-                              className={`inline-flex size-[16px] items-center justify-center rounded-full border ${hasWebsiteInSummary ? "border-color-positive/35 bg-color-positive/10 text-color-positive" : "border-color-negative/35 bg-color-negative/10 text-color-negative"}`}
-                            >
-                              <Icon icon="feather:globe" className="size-[9px]" />
-                            </span>
-                            <span
-                              title={hasGithubInSummary ? "GitHub added" : "GitHub missing"}
-                              className={`inline-flex size-[16px] items-center justify-center rounded-full border ${hasGithubInSummary ? "border-color-positive/35 bg-color-positive/10 text-color-positive" : "border-color-negative/35 bg-color-negative/10 text-color-negative"}`}
-                            >
-                              <Icon icon="feather:github" className="size-[9px]" />
-                            </span>
-                            <span
-                              title={hasTwitterInSummary ? "Twitter added" : "Twitter missing"}
-                              className={`inline-flex size-[16px] items-center justify-center rounded-full border ${hasTwitterInSummary ? "border-color-positive/35 bg-color-positive/10 text-color-positive" : "border-color-negative/35 bg-color-negative/10 text-color-negative"}`}
-                            >
-                              <Icon icon="feather:twitter" className="size-[9px]" />
-                            </span>
-                            <span
-                              title={hasTelegramInSummary ? "Telegram added" : "Telegram missing"}
-                              className={`inline-flex size-[16px] items-center justify-center rounded-full border ${hasTelegramInSummary ? "border-color-positive/35 bg-color-positive/10 text-color-positive" : "border-color-negative/35 bg-color-negative/10 text-color-negative"}`}
-                            >
-                              <Icon icon="feather:send" className="size-[9px]" />
-                            </span>
-                          </div>
-                          <div className="min-w-0 truncate text-xs text-color-text-secondary">
-                            {collapsedDisplayName || "Project"}
-                            {contributionResult ? " · PR submitted" : ""}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-color-text-secondary mt-[2px] truncate">
-                        Fill in project information
-                      </div>
-                    )
-                  )}
+                {/* Step icon — project logo or placeholder */}
+                {collapsedLogoSrc ? (
+                  <div className="relative size-[24px] shrink-0 overflow-hidden rounded-[4px] border border-color-ui-shadow/60">
+                    <Image src={collapsedLogoSrc} alt={form.display_name || "Project"} fill sizes="24px" unoptimized className="object-cover" />
+                  </div>
+                ) : (
+                  <GTPIcon icon="gtp-project-monochrome" size="sm" className="shrink-0" />
+                )}
+                {/* Name */}
+                <div className="text-sm font-medium min-w-0 truncate flex-1">
+                  {form.display_name || (isAddMode ? "Add project details" : "Edit project details")}
                 </div>
-                <Icon
-                  icon="feather:chevron-down"
-                  className={`size-[16px] shrink-0 text-color-text-secondary transition-transform ${activeStep === 1 ? "rotate-180" : ""}`}
-                />
+                {/* Collapsed pills — validation-colored, only when step is not active */}
+                {activeStep !== 1 && (
+                  <div className="flex items-center gap-[5px] flex-wrap justify-end shrink-0">
+                    {/* Website — green if filled, red if missing */}
+                    <div className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${
+                      form.website.trim()
+                        ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                        : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                    }`}>
+                      <Icon icon="feather:globe" className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" />
+                      <div className="text-xs whitespace-nowrap">Website</div>
+                    </div>
+                    {/* GitHub — green if filled, red if missing */}
+                    <div className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${
+                      form.main_github.trim()
+                        ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                        : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                    }`}>
+                      <Icon icon="ri:github-fill" className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" />
+                      <div className="text-xs whitespace-nowrap">GitHub</div>
+                    </div>
+                    {/* Twitter — green if filled, red if missing */}
+                    <div className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${
+                      form.twitter.trim()
+                        ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                        : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                    }`}>
+                      <Icon icon="feather:twitter" className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" />
+                      <div className="text-xs whitespace-nowrap">Twitter</div>
+                    </div>
+                    {/* Telegram — green if filled, red if missing */}
+                    <div className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${
+                      form.telegram.trim()
+                        ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                        : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                    }`}>
+                      <Icon icon="feather:send" className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" />
+                      <div className="text-xs whitespace-nowrap">Telegram</div>
+                    </div>
+                    {/* Description — green if ≥50 chars, yellow if short, red if empty */}
+                    <div className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${
+                      form.description.trim().length >= 50
+                        ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                        : form.description.trim().length > 0
+                        ? "bg-color-data-yellow/10 border-color-data-yellow/30 text-color-data-yellow"
+                        : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                    }`}>
+                      <Icon icon="feather:file-text" className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]" />
+                      <div className="text-xs whitespace-nowrap">Description</div>
+                    </div>
+                  </div>
+                )}
+                <span className="sr-only">{activeStep === 1 ? "Collapse" : "Expand"} step 1</span>
               </button>
 
               {/* Step 1 body */}
               {activeStep === 1 && (
                 <div className="border-t border-color-ui-shadow/40">
-                  {!showMetadataForm && isAddMode ? (
-                    <div className="px-[20px] py-[16px]">
-                      <div className="flex flex-col gap-y-[8px]">
-                        <div className="text-base font-medium">Start with your website</div>
-                        <p className="text-xs text-color-text-primary">
-                          Enter your website to check if your project already exists in OSS directory.
-                        </p>
-                        <div className="flex flex-wrap items-center gap-[8px]">
-                          <div className="flex min-w-[260px] flex-1 items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
-                            <input
-                              value={websiteCheckInput}
-                              onChange={(event) => setWebsiteCheckInput(event.target.value)}
-                              placeholder="https://yourproject.xyz"
-                              className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={checkWebsiteForExistingProjects}
-                            disabled={isCheckingWebsite || !websiteCheckInput.trim()}
-                            className={`h-[40px] rounded-full px-[14px] text-sm transition-all disabled:opacity-60 ${websiteCheckInput.trim() ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-medium"}`}
-                          >
-                            {isCheckingWebsite ? "Checking..." : "Check website"}
-                          </button>
-                        </div>
-
-                        {websiteChecked && websiteCheckMatches.length > 0 && (
-                          <div className="rounded-[10px] border border-color-ui-shadow bg-color-bg-medium p-[10px]">
-                            <div className="text-xs font-medium">Project already found</div>
-                            <p className="mt-[4px] text-xs text-color-text-primary">
-                              We found matching entries. Open one of these in edit mode:
-                            </p>
-                            <div className="mt-[8px] flex flex-wrap gap-[8px]">
-                              {websiteCheckMatches.map((match) => (
-                                <Link
-                                  key={`${match.owner_project}-${match.field}`}
-                                  href={buildProjectEditHref({
-                                    mode: "edit",
-                                    source: "website-check",
-                                    project: match.owner_project,
-                                    focus: "contracts",
-                                    start: "contracts",
-                                  })}
-                                  className="inline-flex items-center gap-x-[6px] rounded-full bg-color-bg-default px-[10px] py-[5px] text-xs hover:bg-color-ui-hover"
-                                >
-                                  <span className="font-medium">{match.display_name}</span>
-                                  <span className="text-color-text-secondary">({match.field})</span>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {websiteChecked && websiteCheckMatches.length === 0 && (
-                          <div className="rounded-[10px] border border-color-ui-shadow bg-color-bg-medium p-[10px]">
-                            <div className="text-xs font-medium">
-                              No matching website found in OSS directory.
-                            </div>
-                            <div className="mt-[8px] flex flex-wrap gap-[8px]">
-                              <button
-                                type="button"
-                                onClick={startManualProjectFlow}
-                                className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                              >
-                                Add metadata manually
-                              </button>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  startManualProjectFlow();
-                                  await runProfiler(websiteCheckTargetRef.current || websiteCheckInput);
-                                }}
-                                className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                              >
-                                Use AI profiler
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
                     <div className="px-[20px] pb-[20px] pt-[16px]">
                       <div className="mb-[14px] text-sm font-medium">Project identity</div>
                       <div className="flex gap-x-[16px]">
@@ -2500,7 +2460,7 @@ export default function ProjectEditPageClient() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="group relative flex size-[84px] items-center justify-center overflow-hidden rounded-full border border-color-ui-shadow bg-color-bg-medium"
+                      className="group relative flex size-[84px] items-center justify-center overflow-hidden rounded-[8px] border border-color-ui-shadow bg-color-bg-medium"
                     >
                       {logoUpload?.previewUrl ? (
                         <Image
@@ -2526,27 +2486,112 @@ export default function ProjectEditPageClient() {
                         <Icon icon="feather:edit-2" className="text-white size-[16px]" />
                       </span>
                     </button>
-                    {isAddMode && (
-                      <button
-                        type="button"
-                        disabled={isProfiling}
-                        onClick={() => runProfiler()}
-                        className="flex items-center gap-x-[5px] whitespace-nowrap rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[5px] text-[10px] disabled:opacity-60"
-                      >
-                        <Icon icon="feather:cpu" className="size-[10px]" />
-                        {isProfiling ? "Profiling..." : "Profile"}
-                      </button>
-                    )}
-                    {isAddMode && profilerError && <p className="max-w-[84px] text-center text-[10px] text-color-negative">{profilerError}</p>}
-                    {isAddMode && profilerInfo && <p className="max-w-[84px] text-center text-[10px] text-color-positive">{profilerInfo}</p>}
                     {logoUpload?.fileName && <p className="max-w-[84px] truncate text-center text-[10px] text-color-text-secondary">{logoUpload.fileName}</p>}
                   </div>
                   {/* Fields grid */}
                   <div className="min-w-0 flex-1 grid grid-cols-1 gap-[12px] sm:grid-cols-2">
-                    <div>
-                      <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Owner project key</label>
+                    {/* Website — first field, full width */}
+                    <div className="sm:col-span-2">
+                      <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Website</label>
+                      <div className="relative">
+                        {(() => {
+                          const abs = ensureAbsoluteUrl(form.website.trim());
+                          const isValidWebsite = isAddMode && abs.startsWith("http") &&
+                            !abs.toLowerCase().includes("github.com") &&
+                            !abs.toLowerCase().includes("twitter.com") &&
+                            !abs.toLowerCase().includes("x.com");
+                          return (
+                            <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
+                              <input
+                                value={form.website}
+                                onChange={(event) => updateField("website", event.target.value)}
+                                onFocus={() => setActiveDropdownField("website")}
+                                onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                                placeholder="https://yourproject.xyz"
+                                className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
+                              />
+                              {form.website.trim() && (
+                                <span className="shrink-0 text-[10px] text-color-text-secondary px-[8px] py-[3px] rounded-full border border-color-ui-shadow/50 bg-color-bg-medium select-none mr-[4px]">
+                                  Default
+                                </span>
+                              )}
+                              {isValidWebsite && (
+                                <GTPButton
+                                  label={isProfiling ? "Profiling..." : "AI Profile"}
+                                  variant="highlight"
+                                  size="sm"
+                                  leftIconOverride={<Icon icon="feather:cpu" className="size-[13px] shrink-0" />}
+                                  disabled={isProfiling}
+                                  clickHandler={() => runProfiler()}
+                                />
+                              )}
+                            </div>
+                          );
+                        })()}
+                        {activeDropdownField === "website" && (
+                          <FieldDropdown suggestions={websiteSuggestions} onSelect={fillFormFromProject} />
+                        )}
+                      </div>
+                      {validationErrors.website && (
+                        <p className="mt-[6px] text-xs text-color-negative">{validationErrors.website}</p>
+                      )}
+                      {isAddMode && (profilerError || profilerInfo) && (
+                        <div className="mt-[4px] flex items-center gap-x-[6px]">
+                          {profilerError && <p className="text-xs text-color-negative">{profilerError}</p>}
+                          {profilerInfo && <p className="text-xs text-color-positive">{profilerInfo}</p>}
+                        </div>
+                      )}
+                    {form.additional_websites.map((value, index) => (
+                      <div key={`website-extra-${index}`} className="mt-[6px] flex items-center gap-[6px]">
+                        <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[38px] px-[14px]">
+                          <input
+                            value={value}
+                            onChange={(event) =>
+                              updateAdditionalUrlField("additional_websites", index, event.target.value)
+                            }
+                            placeholder="Additional website URL"
+                            className="flex-1 h-full bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPrimary = form.additional_websites[index];
+                            const newAdditional = [
+                              form.website,
+                              ...form.additional_websites.filter((_, i) => i !== index),
+                            ].filter(Boolean);
+                            setForm((prev) => ({ ...prev, website: newPrimary, additional_websites: newAdditional }));
+                          }}
+                          className="shrink-0 flex items-center gap-x-[4px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[8px] py-[3px] text-[10px] text-color-text-secondary hover:bg-color-ui-hover transition-colors whitespace-nowrap"
+                        >
+                          <Icon icon="feather:arrow-up" className="size-[9px]" />
+                          Default
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAdditionalUrlField("additional_websites", index)}
+                          className="size-[30px] shrink-0 rounded-full border border-color-ui-shadow bg-color-bg-default text-color-text-secondary"
+                        >
+                          <Icon icon="feather:x" className="mx-auto size-[12px]" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addAdditionalUrlField("additional_websites")}
+                      className="mt-[6px] inline-flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[4px] text-[11px]"
+                    >
+                      <Icon icon="feather:plus" className="size-[11px]" />
+                      Add website URL
+                    </button>
+                  </div>
+
+                  {/* Owner project key */}
+                  <div>
+                    <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Owner project key</label>
                     <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
+                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                         <input
                           value={form.owner_project}
                           onChange={(event) =>
@@ -2571,10 +2616,11 @@ export default function ProjectEditPageClient() {
                     )}
                   </div>
 
+                  {/* Display name */}
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Display name</label>
                     <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
+                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                         <input
                           value={form.display_name}
                           onChange={(event) => updateField("display_name", event.target.value)}
@@ -2594,60 +2640,9 @@ export default function ProjectEditPageClient() {
                   </div>
 
                   <div>
-                    <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Website</label>
-                    <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
-                        <input
-                          value={form.website}
-                          onChange={(event) => updateField("website", event.target.value)}
-                          onFocus={() => setActiveDropdownField("website")}
-                          onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
-                          placeholder="https://"
-                          className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                        />
-                      </div>
-                      {activeDropdownField === "website" && (
-                        <FieldDropdown suggestions={websiteSuggestions} onSelect={fillFormFromProject} />
-                      )}
-                    </div>
-                    {validationErrors.website && (
-                      <p className="mt-[6px] text-xs text-color-negative">{validationErrors.website}</p>
-                    )}
-                    {form.additional_websites.map((value, index) => (
-                      <div key={`website-extra-${index}`} className="mt-[6px] flex items-center gap-[6px]">
-                        <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[38px] px-[14px]">
-                          <input
-                            value={value}
-                            onChange={(event) =>
-                              updateAdditionalUrlField("additional_websites", index, event.target.value)
-                            }
-                            placeholder="Additional website URL"
-                            className="flex-1 h-full bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeAdditionalUrlField("additional_websites", index)}
-                          className="size-[30px] shrink-0 rounded-full border border-color-ui-shadow bg-color-bg-default text-color-text-secondary"
-                        >
-                          <Icon icon="feather:x" className="mx-auto size-[12px]" />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => addAdditionalUrlField("additional_websites")}
-                      className="mt-[6px] inline-flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[4px] text-[11px]"
-                    >
-                      <Icon icon="feather:plus" className="size-[11px]" />
-                      Add website URL
-                    </button>
-                  </div>
-
-                  <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">GitHub</label>
                     <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
+                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
                         <input
                           value={form.main_github}
                           onChange={(event) => updateField("main_github", event.target.value)}
@@ -2656,6 +2651,11 @@ export default function ProjectEditPageClient() {
                           placeholder="https://github.com/your-org"
                           className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
                         />
+                        {form.main_github.trim() && (
+                          <span className="shrink-0 text-[10px] text-color-text-secondary px-[8px] py-[3px] rounded-full border border-color-ui-shadow/50 bg-color-bg-medium select-none mr-[4px]">
+                            Default
+                          </span>
+                        )}
                       </div>
                       {activeDropdownField === "main_github" && (
                         <FieldDropdown suggestions={githubSuggestions} onSelect={fillFormFromProject} />
@@ -2666,7 +2666,7 @@ export default function ProjectEditPageClient() {
                     )}
                     {form.additional_github.map((value, index) => (
                       <div key={`github-extra-${index}`} className="mt-[6px] flex items-center gap-[6px]">
-                        <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[38px] px-[14px]">
+                        <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[38px] px-[14px]">
                           <input
                             value={value}
                             onChange={(event) =>
@@ -2676,6 +2676,21 @@ export default function ProjectEditPageClient() {
                             className="flex-1 h-full bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
                           />
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPrimary = form.additional_github[index];
+                            const newAdditional = [
+                              form.main_github,
+                              ...form.additional_github.filter((_, i) => i !== index),
+                            ].filter(Boolean);
+                            setForm((prev) => ({ ...prev, main_github: newPrimary, additional_github: newAdditional }));
+                          }}
+                          className="shrink-0 flex items-center gap-x-[4px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[8px] py-[3px] text-[10px] text-color-text-secondary hover:bg-color-ui-hover transition-colors whitespace-nowrap"
+                        >
+                          <Icon icon="feather:arrow-up" className="size-[9px]" />
+                          Default
+                        </button>
                         <button
                           type="button"
                           onClick={() => removeAdditionalUrlField("additional_github", index)}
@@ -2697,7 +2712,7 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Twitter / X <span className="font-normal text-color-text-secondary">(optional)</span></label>
-                    <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
+                    <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                       <input
                         value={form.twitter}
                         onChange={(event) => updateField("twitter", event.target.value)}
@@ -2712,7 +2727,7 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Telegram <span className="font-normal text-color-text-secondary">(optional)</span></label>
-                    <div className="flex w-full items-center bg-color-bg-default rounded-[22px] h-[44px] px-[14px]">
+                    <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                       <input
                         value={form.telegram}
                         onChange={(event) => updateField("telegram", event.target.value)}
@@ -2746,7 +2761,7 @@ export default function ProjectEditPageClient() {
                     value={form.description}
                     onChange={(event) => updateField("description", event.target.value)}
                     placeholder="Short project description"
-                    className="min-h-[100px] w-full rounded-[22px] bg-color-bg-default px-[14px] py-[12px] text-sm border-none outline-none resize-y text-color-text-primary placeholder-color-text-secondary"
+                    className="min-h-[100px] w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-y text-color-text-primary placeholder-color-text-secondary"
                   />
                   {enhanceDescError && <p className="mt-[5px] text-xs text-color-negative">{enhanceDescError}</p>}
                   {enhanceDescInfo && <p className="mt-[5px] text-xs text-color-positive">{enhanceDescInfo}</p>}
@@ -2845,722 +2860,774 @@ export default function ProjectEditPageClient() {
                     <Icon icon="feather:arrow-right" className="size-[12px]" />
                   </button>
                 )}
-              </div>
-              )}
-            </div>
-          )}
-          </div>
-
-          {/* ── Step 2 card ── */}
-          <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden">
-            {/* Clickable header */}
-            <button
-              type="button"
-              onClick={() => setActiveStep(2)}
-              className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
-            >
-              <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                (singleSubmitResult || bulkSubmitResult)
-                  ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
-                  : activeStep === 2
-                  ? "bg-color-text-primary text-color-bg-default"
-                  : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
-              }`}>
-                {(singleSubmitResult || bulkSubmitResult) ? <Icon icon="feather:check" className="size-[13px]" /> : 2}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">Add contracts</div>
-                {activeStep !== 2 && (
-                  <div className="text-xs text-color-text-secondary mt-[2px] truncate">
-                    {singleSubmitResult || bulkSubmitResult ? "Attestation submitted"
-                      : meaningfulRows.length > 0 ? `${meaningfulRows.length} contract${meaningfulRows.length !== 1 ? "s" : ""} in queue`
-                      : "Add contract addresses for attestation"}
-                  </div>
-                )}
-              </div>
-              <Icon
-                icon="feather:chevron-down"
-                className={`size-[16px] shrink-0 text-color-text-secondary transition-transform ${activeStep === 2 ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {/* Step 2 body */}
-            {activeStep === 2 && (
-              <div className="border-t border-color-ui-shadow/40 px-[20px] pb-[20px] pt-[16px]">
-                <div className="mb-[12px] flex items-center justify-between gap-[10px]">
-                  <div>
-                    <h2 className="heading-small-md flex items-center gap-x-[8px]">
-                      <GTPIcon icon="gtp-labeled" size="sm" className="shrink-0" />
-                      Add your contracts
-                    </h2>
-                    <div className="text-xs text-color-text-primary mt-[2px]">
-                      Validate queue rows and submit onchain attestations.
                     </div>
                   </div>
+              )}
+            </div>
 
-                  <div className="flex items-center gap-[8px]">
-                    {walletAddress ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-x-[6px] h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[12px] text-xs"
-                        onClick={disconnectWallet}
-                      >
-                        <div className="size-[6px] rounded-full bg-color-positive shrink-0" />
-                        {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="flex items-center gap-x-[6px] h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[12px] text-xs"
-                        onClick={connectWallet}
-                        disabled={isConnectingWallet}
-                      >
-                        <div className="size-[6px] rounded-full bg-color-text-secondary/40 shrink-0" />
-                        {isConnectingWallet ? "Connecting..." : "Connect wallet"}
-                      </button>
-                    )}
-                  </div>
+            {/* ── Step 2 card: Add Contracts ── */}
+            <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
+              {/* Step 2 header */}
+              <button
+                type="button"
+                onClick={() => setActiveStep(2)}
+                className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+              >
+                <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
+                  <Icon
+                    icon="feather:chevron-down"
+                    className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 2 ? "rotate-180" : ""}`}
+                  />
                 </div>
+                <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  (singleSubmitResult || bulkSubmitResult)
+                    ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
+                    : activeStep === 2
+                    ? "bg-color-text-primary text-color-bg-default"
+                    : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
+                }`}>
+                  {(singleSubmitResult || bulkSubmitResult) ? <Icon icon="feather:check" className="size-[13px]" /> : 2}
+                </div>
+                <GTPIcon icon="gtp-labeled" size="sm" className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">Add contracts</div>
+                  {activeStep !== 2 && (
+                    <div className="text-xs text-color-text-secondary mt-[2px] truncate">
+                      {meaningfulRows.length > 0
+                        ? `${meaningfulRows.length} contract${meaningfulRows.length !== 1 ? "s" : ""} in queue`
+                        : "Add contract addresses for attestation"}
+                    </div>
+                  )}
+                </div>
+              </button>
 
-                <div className="mb-[12px]">
-                  <div className="flex flex-wrap items-center gap-[8px]">
-                    <input
-                      ref={csvInputRef}
-                      type="file"
-                      accept=".csv,text/csv"
-                      className="hidden"
-                      onChange={onCsvInputChange}
-                    />
-                    <button
-                      type="button"
-                      className="h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                      onClick={() => csvInputRef.current?.click()}
-                    >
-                      Upload CSV
-                    </button>
-                    <button
-                      type="button"
-                      className={`h-[36px] rounded-full border px-[12px] text-xs transition-colors ${
-                        smartPasteOpen
-                          ? "border-color-accent bg-color-accent/10 text-color-accent"
-                          : "border-color-ui-shadow bg-color-bg-default"
-                      }`}
-                      onClick={() => {
-                        setSmartPasteOpen((v) => !v);
-                        setClassifyError(null);
-                      }}
-                    >
-                      Smart Paste
-                    </button>
-                    <button
-                      type="button"
-                      className="h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                      onClick={addQueueRow}
-                    >
-                      Add row
-                    </button>
-                    <div className="h-[20px] w-px bg-color-ui-shadow" />
-                    <button
-                      type="button"
-                      className="h-[36px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                      onClick={validateQueue}
-                      disabled={bulkController.validation.isRunning || singleController.validation.isRunning}
-                    >
-                      {bulkController.validation.isRunning || singleController.validation.isRunning
-                        ? "Validating..."
-                        : "Validate queue"}
-                    </button>
-                    <div className="h-[20px] w-px bg-color-ui-shadow" />
-                    <button
-                      type="button"
-                      className={`h-[36px] rounded-full px-[14px] text-xs transition-all ${!walletAddress || meaningfulRows.length === 0 || isPreparingSubmitPreview || isSubmittingFromPreview ? "border border-color-ui-shadow bg-color-bg-default opacity-60 cursor-not-allowed" : "bg-color-text-primary text-color-bg-default"}`}
-                      onClick={prepareQueueSubmitPreview}
-                      disabled={
-                        !walletAddress ||
-                        meaningfulRows.length === 0 ||
-                        isPreparingSubmitPreview ||
-                        isSubmittingFromPreview
-                      }
-                    >
-                      {isPreparingSubmitPreview
-                        ? "Preparing preview..."
-                        : isSubmittingFromPreview
-                        ? "Submitting..."
-                        : `Review & submit (${meaningfulRows.length})`}
-                    </button>
-                  </div>
+              {/* Step 2 body */}
+              {activeStep === 2 && (
+                <div className="border-t border-color-ui-shadow/40 px-[20px] pb-[20px] pt-[16px]">
+                  {/* Toolbar */}
+                  <div className="mb-[12px]">
+                    <div className="flex flex-wrap items-center gap-[8px]">
+                      <input
+                        ref={csvInputRef}
+                        type="file"
+                        accept=".csv,text/csv"
+                        className="hidden"
+                        onChange={onCsvInputChange}
+                      />
+                      <GTPButton
+                        label="Upload CSV"
+                        variant="primary"
+                        size="sm"
+                        clickHandler={() => csvInputRef.current?.click()}
+                      />
+                      <GTPButton
+                        label="Smart Paste"
+                        variant={smartPasteOpen ? "highlight" : "primary"}
+                        size="sm"
+                        clickHandler={() => {
+                          setSmartPasteOpen((v) => !v);
+                          setClassifyError(null);
+                        }}
+                      />
+                      <GTPButton
+                        label="Add row"
+                        variant="primary"
+                        size="sm"
+                        clickHandler={addQueueRow}
+                      />
+                    </div>
 
-                  {smartPasteOpen && (
-                    <div className="mt-[8px] rounded-[22px] border border-white/[0.1] px-[16px] py-[14px]">
-                      {/* Header */}
-                      <div className="mb-[12px] flex items-center gap-[8px]">
-                        <Icon icon="feather:zap" className="size-[13px] shrink-0 text-color-text-primary" />
-                        <div className="min-w-0 flex flex-wrap items-baseline gap-x-[6px]">
-                          <span className="text-xs font-semibold text-color-text-primary">Smart Paste</span>
-                          <span className="text-xxs text-color-text-secondary">
-                            Paste any text with contract addresses — AI extracts, detects chains, and classifies them.
-                          </span>
+                    {smartPasteOpen && (
+                      <div className="mt-[8px] rounded-[22px] border border-white/[0.1] px-[16px] py-[14px]">
+                        {/* Header */}
+                        <div className="mb-[12px] flex items-center gap-[8px]">
+                          <Icon icon="feather:zap" className="size-[13px] shrink-0 text-color-text-primary" />
+                          <div className="min-w-0 flex flex-wrap items-baseline gap-x-[6px]">
+                            <span className="text-xs font-semibold text-color-text-primary">Smart Paste</span>
+                            <span className="text-xxs text-color-text-secondary">
+                              Paste any text with contract addresses — AI extracts, detects chains, and classifies them.
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Chain mode */}
-                      <div className="mb-[10px] flex flex-wrap items-center gap-[6px]">
-                        <span className="text-xxs text-color-text-primary/60 shrink-0">Chain:</span>
-                        <button
-                          type="button"
-                          className={`h-[26px] rounded-full px-[12px] text-xs transition-colors ${
-                            smartPasteChainMode === "auto"
-                              ? "bg-color-text-primary text-color-bg-default"
-                              : "bg-color-bg-default hover:bg-color-ui-hover"
-                          }`}
-                          onClick={() => setSmartPasteChainMode("auto")}
-                          disabled={isClassifying}
-                        >
-                          Auto-detect
-                        </button>
-                        <button
-                          type="button"
-                          className={`h-[26px] rounded-full px-[12px] text-xs transition-colors ${
-                            smartPasteChainMode === "fixed"
-                              ? "bg-color-text-primary text-color-bg-default"
-                              : "bg-color-bg-default hover:bg-color-ui-hover"
-                          }`}
-                          onClick={() => setSmartPasteChainMode("fixed")}
-                          disabled={isClassifying}
-                        >
-                          All same chain
-                        </button>
-                        {smartPasteChainMode === "fixed" && (
-                          <select
-                            className="h-[26px] rounded-full bg-color-bg-default px-[10px] text-xs border-none outline-none"
-                            value={smartPasteFixedChain || defaultQueueChainId}
-                            onChange={(e) => setSmartPasteFixedChain(e.target.value)}
+                        {/* Chain mode */}
+                        <div className="mb-[10px] flex flex-wrap items-center gap-[6px]">
+                          <span className="text-xxs text-color-text-primary/60 shrink-0">Chain:</span>
+                          <button
+                            type="button"
+                            className={`h-[26px] rounded-full px-[12px] text-xs transition-colors ${
+                              smartPasteChainMode === "auto"
+                                ? "bg-color-text-primary text-color-bg-default"
+                                : "bg-color-bg-default hover:bg-color-ui-hover"
+                            }`}
+                            onClick={() => setSmartPasteChainMode("auto")}
                             disabled={isClassifying}
                           >
-                            {chainOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
+                            Auto-detect
+                          </button>
+                          <button
+                            type="button"
+                            className={`h-[26px] rounded-full px-[12px] text-xs transition-colors ${
+                              smartPasteChainMode === "fixed"
+                                ? "bg-color-text-primary text-color-bg-default"
+                                : "bg-color-bg-default hover:bg-color-ui-hover"
+                            }`}
+                            onClick={() => setSmartPasteChainMode("fixed")}
+                            disabled={isClassifying}
+                          >
+                            All same chain
+                          </button>
+                          {smartPasteChainMode === "fixed" && (
+                            <select
+                              className="h-[26px] rounded-full bg-color-bg-default px-[10px] text-xs border-none outline-none"
+                              value={smartPasteFixedChain || defaultQueueChainId}
+                              onChange={(e) => setSmartPasteFixedChain(e.target.value)}
+                              disabled={isClassifying}
+                            >
+                              {chainOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {smartPasteChainMode === "auto" && (
+                            <span className="text-xxs text-color-text-secondary">
+                              Falls back to{" "}
+                              <span className="text-color-text-primary">
+                                {chainOptions.find((o) => o.value === defaultQueueChainId)?.label ?? defaultQueueChainId}
+                              </span>{" "}
+                              if chain not detected
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Textarea */}
+                        <textarea
+                          className="w-full rounded-[16px] bg-color-bg-default px-[14px] py-[10px] text-xs font-mono resize-none placeholder:text-color-text-secondary focus:outline-none"
+                          rows={5}
+                          placeholder={`Paste contract data here — any format works:\n{\n  "router": "0xabc..."\n  "vault": "0xdef..."\n}`}
+                          value={smartPasteText}
+                          onChange={(e) => setSmartPasteText(e.target.value)}
+                          disabled={isClassifying}
+                        />
+
+                        {/* Error */}
+                        {classifyError && (
+                          <div className="mt-[8px] flex items-center gap-[6px] rounded-full border border-color-negative/30 bg-color-negative/10 px-[12px] py-[5px] text-xxs text-color-negative">
+                            <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
+                            {classifyError}
+                          </div>
                         )}
-                        {smartPasteChainMode === "auto" && (
-                          <span className="text-xxs text-color-text-secondary">
-                            Falls back to{" "}
-                            <span className="text-color-text-primary">
-                              {chainOptions.find((o) => o.value === defaultQueueChainId)?.label ?? defaultQueueChainId}
-                            </span>{" "}
-                            if chain not detected
-                          </span>
+
+                        {/* Actions */}
+                        <div className="mt-[10px] flex items-center gap-[8px]">
+                          <button
+                            type="button"
+                            className="h-[36px] rounded-full bg-color-text-primary px-[18px] text-xs font-medium text-color-bg-default disabled:opacity-40 transition-opacity"
+                            onClick={classifySmartPaste}
+                            disabled={isClassifying || !smartPasteText.trim()}
+                          >
+                            {isClassifying ? "Classifying…" : "Classify & add to queue"}
+                          </button>
+                          <button
+                            type="button"
+                            className="h-[36px] rounded-full border border-white/[0.1] bg-color-bg-default px-[16px] text-xs font-medium text-color-text-primary hover:bg-color-ui-hover transition-colors"
+                            onClick={() => {
+                              setSmartPasteOpen(false);
+                              setSmartPasteText("");
+                              setClassifyError(null);
+                            }}
+                            disabled={isClassifying}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contract table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-fixed text-xs border-separate border-spacing-y-[5px]">
+                      <colgroup>
+                        <col className="w-[32px]" />
+                        <col className="w-[44px]" />
+                        <col className="w-[24%]" />
+                        <col className="w-[18%]" />
+                        <col className="w-[19%]" />
+                        <col className="w-[19%]" />
+                        <col className="w-[46px]" />
+                      </colgroup>
+                      <thead>
+                        <tr className="text-xs text-color-text-primary">
+                          <th className="pl-[8px] pr-[4px] pb-[4px] text-left font-normal" />
+                          <th className="px-[4px] pb-[4px] text-center font-normal">Chain</th>
+                          <th className="px-[6px] pb-[4px] text-left font-normal">Address</th>
+                          <th className="px-[6px] pb-[4px] text-left font-normal">Contract name</th>
+                          <th className="px-[6px] pb-[4px] text-left font-normal">Owner project</th>
+                          <th className="px-[6px] pb-[4px] text-left font-normal">Usage category</th>
+                          <th className="pb-[4px]" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bulkController.queue.rows.map((row, rowIndex) => {
+                          const chainId = toStringValue(row.chain_id).trim() || defaultQueueChainId;
+                          const ownerProject = toStringValue(row.owner_project).trim();
+                          const normalizedOwnerProject = ownerProject.toLowerCase();
+                          const usageCategory = toStringValue(row.usage_category).trim();
+                          const rowErrorMessages = getQueueRowErrorMessages(rowIndex);
+                          const rowHasError = rowErrorMessages.length > 0;
+
+                          const addressVal = toStringValue(row.address).trim();
+                          const addressInvalid = rowHasError && (!addressVal || !!validateAddressForChain(addressVal, chainId));
+                          const ownerExistsInProjects = normalizedProjects.some(
+                            (project) => asString(project.owner_project).toLowerCase() === normalizedOwnerProject,
+                          );
+                          const ownerMatchesPendingAddProject =
+                            isAddMode &&
+                            normalizedOwnerProject !== "" &&
+                            normalizedOwnerProject === form.owner_project.trim().toLowerCase();
+                          const ownerInvalid =
+                            rowHasError &&
+                            ownerProject !== "" &&
+                            !ownerExistsInProjects &&
+                            !ownerMatchesPendingAddProject;
+                          const categoryInvalid = rowHasError && usageCategory !== "" && !usageCategoryOptions.some((o) => o.value === usageCategory);
+
+                          const rowBg = rowHasError ? "bg-color-negative/[0.07]" : "";
+                          const border = rowHasError ? "border-color-negative/30" : "border-white/[0.1]";
+                          const cellMid = `${rowBg} py-[4px] align-middle border-t border-b ${border}`;
+                          const cellFirst = `${cellMid} border-l rounded-l-full pl-[10px] pr-[4px]`;
+                          const cellLast = `${cellMid} border-r rounded-r-full pl-[2px] pr-[8px]`;
+                          const isEditingAddress = addressEditRow === rowIndex;
+
+                          return (
+                            <Fragment key={rowIndex}>
+                              <tr>
+                              {/* # */}
+                              <td className={`${cellFirst} text-color-text-secondary text-xxs`}>
+                                {rowIndex + 1}
+                              </td>
+                              {/* Chain — icon only */}
+                              <td className={`${cellMid} px-[2px]`}>
+                                <div className="flex items-center justify-center">
+                                  <TableCellSelect
+                                    value={chainId}
+                                    placeholder="Chain"
+                                    options={chainOptions}
+                                    onSelect={(value) => setQueueCellValue(rowIndex, "chain_id", value)}
+                                    iconRenderer={chainIconRenderer}
+                                    iconOnly
+                                  />
+                                </div>
+                              </td>
+                              {/* Address */}
+                              <td className={`${cellMid} pl-0 pr-[6px]`}>
+                                {isEditingAddress ? (
+                                  <input
+                                    autoFocus
+                                    value={toStringValue(row.address)}
+                                    className={`h-[24px] w-full rounded-full pl-[6px] pr-[10px] font-mono text-xs border-none outline-none ${addressInvalid ? "bg-color-negative/20 ring-1 ring-color-negative/50" : "bg-color-bg-default"}`}
+                                    placeholder="0x..."
+                                    onChange={(event) => setQueueCellValue(rowIndex, "address", event.target.value)}
+                                    onBlur={() => setAddressEditRow(null)}
+                                  />
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className={`h-[24px] w-full rounded-full pl-[6px] pr-[10px] font-mono text-xs text-left border-none outline-none transition-colors ${addressInvalid ? "bg-color-negative/20 ring-1 ring-color-negative/50" : "bg-color-bg-default hover:bg-color-ui-hover"} ${!addressVal ? "text-color-text-secondary" : ""}`}
+                                    onClick={() => setAddressEditRow(rowIndex)}
+                                  >
+                                    {addressVal ? truncateMiddle(addressVal) : "0x…"}
+                                  </button>
+                                )}
+                              </td>
+                              {/* Contract name */}
+                              <td className={`${cellMid} pl-0 pr-[6px]`}>
+                                <input
+                                  value={toStringValue(row.contract_name)}
+                                  className="h-[24px] w-full rounded-full bg-color-bg-default pl-[6px] pr-[10px] text-xs border-none outline-none"
+                                  placeholder="Contract name"
+                                  onChange={(event) => setQueueCellValue(rowIndex, "contract_name", event.target.value)}
+                                />
+                              </td>
+                              {/* Owner project */}
+                              <td className={`${cellMid} pl-0 pr-[6px]`}>
+                                <TableCellSelect
+                                  value={ownerProject}
+                                  placeholder="Select owner"
+                                  options={ownerProjectOptions}
+                                  onSelect={(value) => setQueueCellValue(rowIndex, "owner_project", value)}
+                                  showIcon
+                                  iconRenderer={ownerProjectIconRenderer}
+                                  error={ownerInvalid}
+                                  triggerClassName="pl-[6px]"
+                                />
+                              </td>
+                              {/* Usage category */}
+                              <td className={`${cellMid} pl-0 pr-[6px]`}>
+                                <TableCellSelect
+                                  value={usageCategory}
+                                  placeholder="Select category"
+                                  options={usageCategoryOptions}
+                                  onSelect={(value) => setQueueCellValue(rowIndex, "usage_category", value)}
+                                  error={categoryInvalid}
+                                  triggerClassName="pl-[6px]"
+                                />
+                              </td>
+                              {/* Delete */}
+                              <td className={cellLast}>
+                                <div className="flex items-center justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => removeQueueRow(rowIndex)}
+                                  className="flex items-center justify-center opacity-40 transition-opacity hover:opacity-100"
+                                >
+                                  <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#gtp-search-clear-gradient)" />
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                                    <defs>
+                                      <linearGradient id="gtp-search-clear-gradient" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                                        <stop stopColor="#FE5468" />
+                                        <stop offset="1" stopColor="#FFDF27" />
+                                      </linearGradient>
+                                    </defs>
+                                  </svg>
+                                </button>
+                                </div>
+                              </td>
+                              </tr>
+                              {rowHasError && (
+                                <tr>
+                                  <td colSpan={7} className="px-[8px] pb-[2px] pt-0">
+                                    <div className="flex items-start gap-x-[6px] pl-[2px]">
+                                      <div className="shrink-0 rounded-full border border-color-negative/50 bg-color-bg-default px-[7px] py-[2px] text-xxs font-semibold text-color-negative leading-[1.6]">
+                                        #{rowIndex + 1}
+                                      </div>
+                                      <div className="flex min-w-0 flex-1 flex-wrap gap-[4px]">
+                                        {rowErrorMessages.map((error, i) => (
+                                          <div key={i} className="rounded-full border border-color-negative/25 bg-color-bg-default px-[10px] py-[3px] text-xxs text-color-negative leading-[1.6] shadow-sm">
+                                            {error}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          );
+                        })}
+                        {meaningfulRows.length === 0 && (
+                          <tr>
+                            <td colSpan={7} className="py-[40px] text-center">
+                              <div className="flex flex-col items-center gap-y-[8px] text-xs text-color-text-primary">
+                                <Icon icon="feather:inbox" className="size-[20px] opacity-40" />
+                                <span>No contracts in queue. Add a row or upload a CSV.</span>
+                              </div>
+                            </td>
+                          </tr>
                         )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Validate queue - below table, right-aligned */}
+                  <div className="mt-[10px] flex justify-end">
+                    <GTPButton
+                      label={
+                        bulkController.validation.isRunning || singleController.validation.isRunning
+                          ? "Validating..."
+                          : "Validate queue"
+                      }
+                      variant="highlight"
+                      size="sm"
+                      clickHandler={validateQueue}
+                      disabled={bulkController.validation.isRunning || singleController.validation.isRunning}
+                    />
+                  </div>
+
+                  {queueError && (
+                    <div className="mt-[8px] rounded-[12px] border border-color-negative/50 bg-color-negative/10 px-[12px] py-[10px] text-xs">
+                      {queueError}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ── Step 3 card: Connect Wallet ── */}
+            <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
+              <button
+                type="button"
+                onClick={() => setActiveStep(3)}
+                className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+              >
+                <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
+                  <Icon
+                    icon="feather:chevron-down"
+                    className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 3 ? "rotate-180" : ""}`}
+                  />
+                </div>
+                <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  walletAddress
+                    ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
+                    : activeStep === 3
+                    ? "bg-color-text-primary text-color-bg-default"
+                    : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
+                }`}>
+                  {walletAddress ? <Icon icon="feather:check" className="size-[13px]" /> : 3}
+                </div>
+                <GTPIcon icon="gtp-wallet" size="sm" className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">Connect wallet</div>
+                  {activeStep !== 3 && (
+                    <div className="text-xs text-color-text-secondary mt-[2px] truncate">
+                      {walletAddress
+                        ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                        : "Connect your wallet to sign attestations"}
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {activeStep === 3 && (
+                <div className="border-t border-color-ui-shadow/40 px-[20px] pb-[20px] pt-[16px] flex flex-col gap-y-[12px]">
+                  <p className="text-xs text-color-text-primary">Connect your wallet to sign onchain attestations.</p>
+                  {walletAddress ? (
+                    <div className="flex items-center gap-x-[10px]">
+                      <div className="size-[8px] rounded-full bg-color-positive" />
+                      <span className="text-sm text-color-text-primary">{`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}</span>
+                      <GTPButton label="Disconnect" size="sm" variant="primary" clickHandler={disconnectWallet} />
+                    </div>
+                  ) : (
+                    <GTPButton
+                      label={isConnectingWallet ? "Connecting..." : "Connect wallet"}
+                      size="sm"
+                      variant="highlight"
+                      leftIcon={"gtp-wallet" as any}
+                      clickHandler={connectWallet}
+                      disabled={isConnectingWallet}
+                    />
+                  )}
+                  {walletError && <p className="text-xs text-color-negative">{walletError}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* ── Step 4 card: Review & Submit ── */}
+            <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
+              <button
+                type="button"
+                onClick={() => setActiveStep(4)}
+                className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+              >
+                <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
+                  <Icon
+                    icon="feather:chevron-down"
+                    className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 4 ? "rotate-180" : ""}`}
+                  />
+                </div>
+                <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  (singleSubmitResult || bulkSubmitResult)
+                    ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
+                    : activeStep === 4
+                    ? "bg-color-text-primary text-color-bg-default"
+                    : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
+                }`}>
+                  {(singleSubmitResult || bulkSubmitResult) ? <Icon icon="feather:check" className="size-[13px]" /> : 4}
+                </div>
+                <GTPIcon icon={"gtp-checkmark-checked" as any} size="sm" className="shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">Review & submit</div>
+                  {activeStep !== 4 && (
+                    <div className="text-xs text-color-text-secondary mt-[2px] truncate">
+                      {singleSubmitResult || bulkSubmitResult
+                        ? "Attestation submitted"
+                        : "Submit contract attestations onchain"}
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {activeStep === 4 && (
+                <div className="border-t border-color-ui-shadow/40 px-[20px] pb-[20px] pt-[16px] flex flex-col gap-y-[12px]">
+                  {!queueSubmitPreview ? (
+                    <div className="flex flex-col gap-y-[10px]">
+                      <p className="text-xs text-color-text-primary">Review your contract attestations before signing.</p>
+                      <GTPButton
+                        label={isPreparingSubmitPreview ? "Preparing preview..." : `Review & submit (${meaningfulRows.length})`}
+                        size="sm"
+                        variant="highlight"
+                        disabled={!walletAddress || meaningfulRows.length === 0 || isPreparingSubmitPreview || isSubmittingFromPreview}
+                        clickHandler={prepareQueueSubmitPreview}
+                      />
+                      {!walletAddress && (
+                        <p className="text-xs text-color-text-secondary">Connect your wallet in step 3 first.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-[12px] border border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px] text-xs">
+                      <div className="font-semibold">Transaction preview</div>
+                      <div className="mt-[2px] text-color-text-primary">
+                        Final validation passed. Review payloads before signing{" "}
+                        {queueSubmitPreview.preparedRows.length} transaction
+                        {queueSubmitPreview.preparedRows.length === 1 ? "" : "s"}.
                       </div>
 
-                      {/* Textarea */}
-                      <textarea
-                        className="w-full rounded-[16px] bg-color-bg-default px-[14px] py-[10px] text-xs font-mono resize-none placeholder:text-color-text-secondary focus:outline-none"
-                        rows={5}
-                        placeholder={`Paste contract data here — any format works:\n{\n  "router": "0xabc..."\n  "vault": "0xdef..."\n}`}
-                        value={smartPasteText}
-                        onChange={(e) => setSmartPasteText(e.target.value)}
-                        disabled={isClassifying}
-                      />
+                      <div className="mt-[8px] max-h-[260px] overflow-auto rounded-[10px] border border-color-ui-shadow">
+                        <table className="w-full min-w-[760px] border-separate border-spacing-y-[0px] text-xxs">
+                          <thead className="sticky top-0 bg-color-bg-default">
+                            <tr className="text-color-text-primary">
+                              <th className="px-[8px] py-[6px] text-left font-medium">#</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Chain</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Address</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Contract</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Owner</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Category</th>
+                              <th className="px-[8px] py-[6px] text-left font-medium">Encoded data</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {queueSubmitPreview.preparedRows.map((prepared, index) => (
+                              <tr key={`${prepared.chainId}-${prepared.address}-${index}`}>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{index + 1}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{prepared.chainId}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{prepared.address}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{toStringValue(prepared.raw.contract_name)}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{toStringValue(prepared.raw.owner_project)}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">{toStringValue(prepared.raw.usage_category)}</td>
+                                <td className="border-t border-color-ui-shadow px-[8px] py-[6px] font-mono">{truncateHex(prepared.encodedData)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                      {/* Error */}
-                      {classifyError && (
-                        <div className="mt-[8px] flex items-center gap-[6px] rounded-full border border-color-negative/30 bg-color-negative/10 px-[12px] py-[5px] text-xxs text-color-negative">
-                          <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
-                          {classifyError}
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="mt-[10px] flex items-center gap-[8px]">
+                      <div className="mt-[10px] flex flex-wrap gap-[8px]">
                         <button
                           type="button"
-                          className="h-[36px] rounded-full bg-color-text-primary px-[18px] text-xs font-medium text-color-bg-default disabled:opacity-40 transition-opacity"
-                          onClick={classifySmartPaste}
-                          disabled={isClassifying || !smartPasteText.trim()}
+                          className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
+                          onClick={() => setQueueSubmitPreview(null)}
+                          disabled={isSubmittingFromPreview}
                         >
-                          {isClassifying ? "Classifying…" : "Classify & add to queue"}
+                          Cancel
                         </button>
                         <button
                           type="button"
-                          className="h-[36px] rounded-full border border-white/[0.1] bg-color-bg-default px-[16px] text-xs font-medium text-color-text-primary hover:bg-color-ui-hover transition-colors"
-                          onClick={() => {
-                            setSmartPasteOpen(false);
-                            setSmartPasteText("");
-                            setClassifyError(null);
-                          }}
-                          disabled={isClassifying}
+                          className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
+                          onClick={confirmQueueSubmit}
+                          disabled={isSubmittingFromPreview}
                         >
-                          Cancel
+                          {isSubmittingFromPreview
+                            ? "Waiting for signature..."
+                            : queueSubmitPreview.preparedRows.length === 1
+                            ? "Sign transaction"
+                            : `Sign ${queueSubmitPreview.preparedRows.length} transactions`}
                         </button>
                       </div>
                     </div>
                   )}
 
-                </div>
+                  {(submitError || walletError) && (
+                    <div className="rounded-[12px] border border-color-negative/50 bg-color-negative/10 px-[12px] py-[10px] text-xs">
+                      {submitError || walletError}
+                    </div>
+                  )}
 
-                <div className="overflow-x-auto">
-                  <table className="w-full table-fixed text-xs border-separate border-spacing-y-[5px]">
-                    <colgroup>
-                      <col className="w-[32px]" />
-                      <col className="w-[44px]" />
-                      <col className="w-[24%]" />
-                      <col className="w-[18%]" />
-                      <col className="w-[19%]" />
-                      <col className="w-[19%]" />
-                      <col className="w-[46px]" />
-                    </colgroup>
-                    <thead>
-                      <tr className="text-xs text-color-text-primary">
-                        <th className="pl-[8px] pr-[4px] pb-[4px] text-left font-normal" />
-                        <th className="px-[4px] pb-[4px] text-center font-normal">Chain</th>
-                        <th className="px-[6px] pb-[4px] text-left font-normal">Address</th>
-                        <th className="px-[6px] pb-[4px] text-left font-normal">Contract name</th>
-                        <th className="px-[6px] pb-[4px] text-left font-normal">Owner project</th>
-                        <th className="px-[6px] pb-[4px] text-left font-normal">Usage category</th>
-                        <th className="pb-[4px]" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bulkController.queue.rows.map((row, rowIndex) => {
-                        const chainId = toStringValue(row.chain_id).trim() || defaultQueueChainId;
-                        const ownerProject = toStringValue(row.owner_project).trim();
-                        const normalizedOwnerProject = ownerProject.toLowerCase();
-                        const usageCategory = toStringValue(row.usage_category).trim();
-                        const rowErrorMessages = getQueueRowErrorMessages(rowIndex);
-                        const rowHasError = rowErrorMessages.length > 0;
-
-                        const addressVal = toStringValue(row.address).trim();
-                        const addressInvalid = rowHasError && (!addressVal || !!validateAddressForChain(addressVal, chainId));
-                        const ownerExistsInProjects = normalizedProjects.some(
-                          (project) => asString(project.owner_project).toLowerCase() === normalizedOwnerProject,
-                        );
-                        const ownerMatchesPendingAddProject =
-                          isAddMode &&
-                          normalizedOwnerProject !== "" &&
-                          normalizedOwnerProject === form.owner_project.trim().toLowerCase();
-                        const ownerInvalid =
-                          rowHasError &&
-                          ownerProject !== "" &&
-                          !ownerExistsInProjects &&
-                          !ownerMatchesPendingAddProject;
-                        const categoryInvalid = rowHasError && usageCategory !== "" && !usageCategoryOptions.some((o) => o.value === usageCategory);
-
-                        const rowBg = rowHasError ? "bg-color-negative/[0.07]" : "";
-                        const border = rowHasError ? "border-color-negative/30" : "border-white/[0.1]";
-                        const cellMid = `${rowBg} py-[4px] align-middle border-t border-b ${border}`;
-                        const cellFirst = `${cellMid} border-l rounded-l-full pl-[10px] pr-[4px]`;
-                        const cellLast = `${cellMid} border-r rounded-r-full pl-[2px] pr-[8px]`;
-                        const isEditingAddress = addressEditRow === rowIndex;
-
-                        return (
-                          <Fragment key={rowIndex}>
-                            <tr>
-                            {/* # */}
-                            <td className={`${cellFirst} text-color-text-secondary text-xxs`}>
-                              {rowIndex + 1}
-                            </td>
-                            {/* Chain — icon only */}
-                            <td className={`${cellMid} px-[2px]`}>
-                              <div className="flex items-center justify-center">
-                                <TableCellSelect
-                                  value={chainId}
-                                  placeholder="Chain"
-                                  options={chainOptions}
-                                  onSelect={(value) => setQueueCellValue(rowIndex, "chain_id", value)}
-                                  iconRenderer={chainIconRenderer}
-                                  iconOnly
-                                />
-                              </div>
-                            </td>
-                            {/* Address — truncated display / edit toggle */}
-                            <td className={`${cellMid} pl-0 pr-[6px]`}>
-                              {isEditingAddress ? (
-                                <input
-                                  autoFocus
-                                  value={toStringValue(row.address)}
-                                  className={`h-[24px] w-full rounded-full pl-[6px] pr-[10px] font-mono text-xs border-none outline-none ${addressInvalid ? "bg-color-negative/20 ring-1 ring-color-negative/50" : "bg-color-bg-default"}`}
-                                  placeholder="0x..."
-                                  onChange={(event) => setQueueCellValue(rowIndex, "address", event.target.value)}
-                                  onBlur={() => setAddressEditRow(null)}
-                                />
-                              ) : (
-                                <button
-                                  type="button"
-                                  className={`h-[24px] w-full rounded-full pl-[6px] pr-[10px] font-mono text-xs text-left border-none outline-none transition-colors ${addressInvalid ? "bg-color-negative/20 ring-1 ring-color-negative/50" : "bg-color-bg-default hover:bg-color-ui-hover"} ${!addressVal ? "text-color-text-secondary" : ""}`}
-                                  onClick={() => setAddressEditRow(rowIndex)}
-                                >
-                                  {addressVal ? truncateMiddle(addressVal) : "0x…"}
-                                </button>
-                              )}
-                            </td>
-                            {/* Contract name */}
-                            <td className={`${cellMid} pl-0 pr-[6px]`}>
-                              <input
-                                value={toStringValue(row.contract_name)}
-                                className="h-[24px] w-full rounded-full bg-color-bg-default pl-[6px] pr-[10px] text-xs border-none outline-none"
-                                placeholder="Contract name"
-                                onChange={(event) => setQueueCellValue(rowIndex, "contract_name", event.target.value)}
-                              />
-                            </td>
-                            {/* Owner project */}
-                            <td className={`${cellMid} pl-0 pr-[6px]`}>
-                              <TableCellSelect
-                                value={ownerProject}
-                                placeholder="Select owner"
-                                options={ownerProjectOptions}
-                                onSelect={(value) => setQueueCellValue(rowIndex, "owner_project", value)}
-                                showIcon
-                                iconRenderer={ownerProjectIconRenderer}
-                                error={ownerInvalid}
-                                triggerClassName="pl-[6px]"
-                              />
-                            </td>
-                            {/* Usage category */}
-                            <td className={`${cellMid} pl-0 pr-[6px]`}>
-                              <TableCellSelect
-                                value={usageCategory}
-                                placeholder="Select category"
-                                options={usageCategoryOptions}
-                                onSelect={(value) => setQueueCellValue(rowIndex, "usage_category", value)}
-                                error={categoryInvalid}
-                                triggerClassName="pl-[6px]"
-                              />
-                            </td>
-                            {/* Delete */}
-                            <td className={cellLast}>
-                              <div className="flex items-center justify-end">
-                              <button
-                                type="button"
-                                onClick={() => removeQueueRow(rowIndex)}
-                                className="flex items-center justify-center opacity-40 transition-opacity hover:opacity-100"
+                  {(singleSubmitResult || bulkSubmitResult) && (
+                    <div className="rounded-[12px] border border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px] text-xs">
+                      <div className="font-semibold">Attestation submitted</div>
+                      {singleSubmitResult && (
+                        <div className="mt-[4px]">
+                          Status: {singleSubmitResult.status}
+                          {singleSubmitResult.txHash && (
+                            <div className="mt-[2px]">
+                              Tx:{" "}
+                              <Link
+                                href={getTxExplorerUrl(lastSubmitChainId, singleSubmitResult.txHash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono underline hover:opacity-70"
                               >
-                                <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#gtp-search-clear-gradient)" />
-                                  <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
-                                  <defs>
-                                    <linearGradient id="gtp-search-clear-gradient" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
-                                      <stop stopColor="#FE5468" />
-                                      <stop offset="1" stopColor="#FFDF27" />
-                                    </linearGradient>
-                                  </defs>
-                                </svg>
-                              </button>
-                              </div>
-                            </td>
-                            </tr>
-                            {rowHasError && (
-                              <tr>
-                                <td colSpan={7} className="px-[8px] pb-[2px] pt-0">
-                                  <div className="flex items-start gap-x-[6px] pl-[2px]">
-                                    <div className="shrink-0 rounded-full border border-color-negative/50 bg-color-bg-default px-[7px] py-[2px] text-xxs font-semibold text-color-negative leading-[1.6]">
-                                      #{rowIndex + 1}
-                                    </div>
-                                    <div className="flex min-w-0 flex-1 flex-wrap gap-[4px]">
-                                      {rowErrorMessages.map((error, i) => (
-                                        <div key={i} className="rounded-full border border-color-negative/25 bg-color-bg-default px-[10px] py-[3px] text-xxs text-color-negative leading-[1.6] shadow-sm">
-                                          {error}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </Fragment>
-                        );
-                      })}
-                      {meaningfulRows.length === 0 && (
-                        <tr>
-                          <td colSpan={7} className="py-[40px] text-center">
-                            <div className="flex flex-col items-center gap-y-[8px] text-xs text-color-text-primary">
-                              <Icon icon="feather:inbox" className="size-[20px] opacity-40" />
-                              <span>No contracts in queue. Add a row or upload a CSV.</span>
+                                {truncateHex(singleSubmitResult.txHash, 18, 16)}
+                              </Link>
                             </div>
-                          </td>
-                        </tr>
+                          )}
+                        </div>
                       )}
-                    </tbody>
-                  </table>
+                      {bulkSubmitResult && (
+                        <div className="mt-[4px]">
+                          Status: {bulkSubmitResult.status}
+                          {bulkSubmitResult.txHash && (
+                            <div className="mt-[2px]">
+                              Tx:{" "}
+                              <Link
+                                href={getTxExplorerUrl(lastSubmitChainId, bulkSubmitResult.txHash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono underline hover:opacity-70"
+                              >
+                                {truncateHex(bulkSubmitResult.txHash, 18, 16)}
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
 
-                {queueSubmitPreview && (
-                  <div className="mt-[10px] rounded-[12px] border border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px] text-xs">
-                    <div className="font-semibold">Transaction preview</div>
-                    <div className="mt-[2px] text-color-text-primary">
-                      Final validation passed. Review payloads before signing{" "}
-                      {queueSubmitPreview.preparedRows.length} transaction
-                      {queueSubmitPreview.preparedRows.length === 1 ? "" : "s"}.
+          </div>{/* closes main column */}
+
+          {/* Sidebar */}
+          <aside className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px]">
+            <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40 bg-color-bg-default">
+              <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow/40 px-[12px] py-[10px]">
+                <Icon
+                  icon={activeStep === 2 ? "feather:zap" : isMetadataSubmitted ? "feather:check-circle" : localMode === "edit" ? "feather:edit-2" : "feather:plus-circle"}
+                  className="size-[14px] text-color-text-secondary"
+                />
+                <div className="text-sm font-medium">
+                  {activeStep === 2 ? "Contract Tips" : isMetadataSubmitted ? "Next Steps" : localMode === "edit" ? "Editing Tips" : "Adding Tips"}
+                </div>
+              </div>
+              <div className={`flex flex-col ${activeStep === 2 || isMetadataSubmitted ? "gap-y-[6px] p-[10px]" : "gap-y-[8px] p-[12px]"}`}>
+                {activeStep === 2 ? (
+                  <>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:zap" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Start with <span className="font-mono">Smart Paste</span> to bulk-add contracts, then review chain and category.
+                      </span>
                     </div>
-
-                    <div className="mt-[8px] max-h-[260px] overflow-auto rounded-[10px] border border-color-ui-shadow">
-                      <table className="w-full min-w-[760px] border-separate border-spacing-y-[0px] text-xxs">
-                        <thead className="sticky top-0 bg-color-bg-default">
-                          <tr className="text-color-text-primary">
-                            <th className="px-[8px] py-[6px] text-left font-medium">#</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Chain</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Address</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Contract</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Owner</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Category</th>
-                            <th className="px-[8px] py-[6px] text-left font-medium">Encoded data</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {queueSubmitPreview.preparedRows.map((prepared, index) => (
-                            <tr key={`${prepared.chainId}-${prepared.address}-${index}`}>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {index + 1}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {prepared.chainId}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {prepared.address}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {toStringValue(prepared.raw.contract_name)}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {toStringValue(prepared.raw.owner_project)}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px]">
-                                {toStringValue(prepared.raw.usage_category)}
-                              </td>
-                              <td className="border-t border-color-ui-shadow px-[8px] py-[6px] font-mono">
-                                {truncateHex(prepared.encodedData)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:link-2" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        <span className="font-mono">owner_project</span> defaults to the selected project, but you can switch it to any project or choose <span className="font-mono">No owner</span> for wrong-association attestations.
+                      </span>
                     </div>
-
-                    <div className="mt-[10px] flex flex-wrap gap-[8px]">
-                      <button
-                        type="button"
-                        className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                        onClick={() => setQueueSubmitPreview(null)}
-                        disabled={isSubmittingFromPreview}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="h-[34px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[12px] text-xs"
-                        onClick={confirmQueueSubmit}
-                        disabled={isSubmittingFromPreview}
-                      >
-                        {isSubmittingFromPreview
-                          ? "Waiting for signature..."
-                          : queueSubmitPreview.preparedRows.length === 1
-                          ? "Sign transaction"
-                          : `Sign ${queueSubmitPreview.preparedRows.length} transactions`}
-                      </button>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:type" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Use readable version suffixes like <span className="font-mono">Router v2.2</span>, not <span className="font-mono">2.2Router</span> or <span className="font-mono">RouterV2.2</span>.
+                      </span>
                     </div>
-                  </div>
-                )}
-
-                {(submitError || walletError) && (
-                  <div className="mt-[10px] rounded-[12px] border border-color-negative/50 bg-color-negative/10 px-[12px] py-[10px] text-xs">
-                    {submitError || walletError}
-                  </div>
-                )}
-
-                {(singleSubmitResult || bulkSubmitResult) && (
-                  <div className="mt-[10px] rounded-[12px] border border-color-ui-shadow bg-color-bg-medium px-[12px] py-[10px] text-xs">
-                    <div className="font-semibold">Attestation submitted</div>
-                    {singleSubmitResult && (
-                      <div className="mt-[4px]">
-                        Status: {singleSubmitResult.status}
-                        {singleSubmitResult.txHash && (
-                          <div className="mt-[2px]">
-                            Tx:{" "}
-                            <Link
-                              href={getTxExplorerUrl(lastSubmitChainId, singleSubmitResult.txHash)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono underline hover:opacity-70"
-                            >
-                              {truncateHex(singleSubmitResult.txHash, 18, 16)}
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {bulkSubmitResult && (
-                      <div className="mt-[4px]">
-                        Status: {bulkSubmitResult.status}
-                        {bulkSubmitResult.txHash && (
-                          <div className="mt-[2px]">
-                            Tx:{" "}
-                            <Link
-                              href={getTxExplorerUrl(lastSubmitChainId, bulkSubmitResult.txHash)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono underline hover:opacity-70"
-                            >
-                              {truncateHex(bulkSubmitResult.txHash, 18, 16)}
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:tag" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        For fungible token contracts, use the ticker in all caps (for example <span className="font-mono">USDC</span>, <span className="font-mono">WETH</span>).
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:minimize-2" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Keep names concise and self-explanatory; avoid project prefixes like <span className="font-mono">Uniswap Router</span>.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:edit-3" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Prefer human-readable names with spaces, and avoid underscores and quotes.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:refresh-cw" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Editing an existing contract entry will overwrite it after approval.
+                      </span>
+                    </div>
+                  </>
+                ) : isMetadataSubmitted ? (
+                  <>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:check" className="mt-[2px] size-[12px] shrink-0 text-color-positive" />
+                      <span className="text-xs text-color-text-primary">
+                        Metadata PR submitted for <span className="font-mono">{form.owner_project || "project"}</span>.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:layers" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Add contracts to the queue and keep owner slugs consistent.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:shield" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Validate rows, review transaction preview, then sign.
+                      </span>
+                    </div>
+                  </>
+                ) : localMode === "edit" ? (
+                  <>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:key" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        The <span className="font-mono font-medium">owner_project</span> key is the unique OSS identifier — it must match exactly (e.g. <span className="font-mono">uniswap</span>, <span className="font-mono">aave-v3</span>). Leave fields blank to keep existing values.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:refresh-cw" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Rebranded? Only update the <span className="font-medium">Display name</span> — the <span className="font-mono">owner_project</span> key cannot change.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:file-text" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Description must be 2–3 short, neutral sentences. No marketing language, superlatives, or first-person claims.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:github" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        GitHub should point to the main org or repo (e.g. <span className="font-mono">https://github.com/Uniswap</span>), not a specific branch or file.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:zap" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Use Smart Paste to bulk-add contracts — paste any JSON, table, or freeform text with addresses and let AI extract, chain-detect, and classify them.
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:key" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        <span className="font-mono font-medium">owner_project</span> is the permanent OSS slug — lowercase, hyphenated, no TLD, max 60 chars (e.g. <span className="font-mono">aave-v3</span>, <span className="font-mono">uniswap</span>). It cannot be changed later.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:cpu" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Use <span className="font-medium">Profile from website</span> to auto-fill fields via AI. Always verify the output before submitting.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:file-text" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Description must be 2–3 short, neutral sentences about what the project does. Avoid marketing language, comparisons, or first-person phrasing.
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-x-[8px]">
+                      <Icon icon="feather:at-sign" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
+                      <span className="text-xs text-color-text-primary">
+                        Twitter and Telegram accept handles (e.g. <span className="font-mono">@uniswap</span>) — they'll be converted to full URLs automatically.
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
-        </div>
-
-            {(activeStep === 1 || activeStep === 2) && (
-              <aside className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px]">
-                <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40">
-                  <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow/40 px-[12px] py-[10px]">
-                    <Icon
-                      icon={activeStep === 2 ? "feather:zap" : isMetadataSubmitted ? "feather:check-circle" : mode === "edit" ? "feather:edit-2" : "feather:plus-circle"}
-                      className="size-[14px] text-color-text-secondary"
-                    />
-                    <div className="text-sm font-medium">
-                      {activeStep === 2 ? "Contract Tips" : isMetadataSubmitted ? "Next Steps" : mode === "edit" ? "Editing Tips" : "Adding Tips"}
-                    </div>
-                  </div>
-                  <div className={`flex flex-col ${activeStep === 2 || isMetadataSubmitted ? "gap-y-[6px] p-[10px]" : "gap-y-[8px] p-[12px]"}`}>
-                    {activeStep === 2 ? (
-                      <>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:zap" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Start with <span className="font-mono">Smart Paste</span> to bulk-add contracts, then review chain and category.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:link-2" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            <span className="font-mono">owner_project</span> defaults to the selected project, but you can switch it to any project or choose <span className="font-mono">No owner</span> for wrong-association attestations.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:type" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Use readable version suffixes like <span className="font-mono">Router v2.2</span>, not <span className="font-mono">2.2Router</span> or <span className="font-mono">RouterV2.2</span>.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:tag" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            For fungible token contracts, use the ticker in all caps (for example <span className="font-mono">USDC</span>, <span className="font-mono">WETH</span>).
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:minimize-2" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Keep names concise and self-explanatory; avoid project prefixes like <span className="font-mono">Uniswap Router</span>.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:edit-3" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Prefer human-readable names with spaces, and avoid underscores and quotes.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:refresh-cw" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Editing an existing contract entry will overwrite it after approval.
-                          </span>
-                        </div>
-                      </>
-                    ) : isMetadataSubmitted ? (
-                      <>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:check" className="mt-[2px] size-[12px] shrink-0 text-color-positive" />
-                          <span className="text-xs text-color-text-primary">
-                            Metadata PR submitted for <span className="font-mono">{form.owner_project || "project"}</span>.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:layers" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Add contracts to the queue and keep owner slugs consistent.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:shield" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Validate rows, review transaction preview, then sign.
-                          </span>
-                        </div>
-                      </>
-                    ) : mode === "edit" ? (
-                      <>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:key" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            The <span className="font-mono font-medium">owner_project</span> key is the unique OSS identifier — it must match exactly (e.g. <span className="font-mono">uniswap</span>, <span className="font-mono">aave-v3</span>). Leave fields blank to keep existing values.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:refresh-cw" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Rebranded? Only update the <span className="font-medium">Display name</span> — the <span className="font-mono">owner_project</span> key cannot change. Consider appending the old name in parentheses, e.g. <span className="font-mono">Sky (formerly MakerDAO)</span>.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:file-text" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Description must be 2–3 short, neutral sentences. No marketing language, superlatives, or first-person claims.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:github" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            GitHub should point to the main org or repo (e.g. <span className="font-mono">https://github.com/Uniswap</span>), not a specific branch or file.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:zap" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Use Smart Paste to bulk-add contracts — paste any JSON, table, or freeform text with addresses and let AI extract, chain-detect, and classify them.
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:key" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            <span className="font-mono font-medium">owner_project</span> is the permanent OSS slug — lowercase, hyphenated, no TLD, max 60 chars (e.g. <span className="font-mono">aave-v3</span>, <span className="font-mono">uniswap</span>). It cannot be changed later.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:cpu" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Use <span className="font-medium">Profile from website</span> to auto-fill fields via AI. The profiler extracts name, description, and website — always verify the output before submitting.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:file-text" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Description must be 2–3 short, neutral sentences about what the project does. Avoid marketing language, comparisons, or first-person phrasing.
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-x-[8px]">
-                          <Icon icon="feather:at-sign" className="mt-[2px] size-[12px] shrink-0 text-color-text-secondary" />
-                          <span className="text-xs text-color-text-primary">
-                            Twitter and Telegram accept handles (e.g. <span className="font-mono">@uniswap</span>) — they'll be converted to full URLs automatically.
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-              {activeStep === 1 && !isMetadataSubmitted && (
-              <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40">
+            {activeStep === 1 && !isMetadataSubmitted && (
+              <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40 bg-color-bg-default">
                 <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow/40 px-[12px] py-[10px]">
                   <Icon icon="feather:shield" className="size-[14px] text-color-text-secondary" />
                   <div className="text-sm font-medium">Validation status</div>
@@ -3585,8 +3652,6 @@ export default function ProjectEditPageClient() {
                       <span className="text-color-text-primary">{s.text}</span>
                     </div>
                   ))}
-
-                  {/* Queue rows status */}
                   {meaningfulRows.length > 0 ? (
                     <>
                       <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[7px] text-xs">
@@ -3595,7 +3660,6 @@ export default function ProjectEditPageClient() {
                           {meaningfulRows.length} {meaningfulRows.length === 1 ? "row" : "rows"} in queue
                         </span>
                       </div>
-
                       {rowErrors.length > 0 ? (
                         <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-negative/30 bg-color-negative/10 px-[10px] py-[7px] text-xs text-color-negative">
                           <Icon icon="feather:alert-circle" className="size-[13px] shrink-0" />
@@ -3607,7 +3671,6 @@ export default function ProjectEditPageClient() {
                           <span>All queue rows valid</span>
                         </div>
                       ) : null}
-
                       {queueStats.warnings > 0 && (
                         <div className="flex items-center gap-x-[8px] rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-[10px] py-[7px] text-xs text-amber-500">
                           <Icon icon="feather:alert-triangle" className="size-[13px] shrink-0" />
@@ -3621,7 +3684,6 @@ export default function ProjectEditPageClient() {
                       <span className="text-color-text-primary">No rows in queue yet</span>
                     </div>
                   )}
-
                   {projectsError && (
                     <div className="flex items-center gap-x-[8px] rounded-[8px] border border-color-negative/30 bg-color-negative/10 px-[10px] py-[7px] text-xs text-color-negative">
                       <Icon icon="feather:alert-triangle" className="size-[13px] shrink-0" />
@@ -3630,10 +3692,10 @@ export default function ProjectEditPageClient() {
                   )}
                 </div>
               </div>
-              )}
-              </aside>
             )}
-          </div>
+          </aside>
+
+        </div>{/* closes grid */}
       </div>
     </div>
   </Container>

@@ -30,6 +30,7 @@ import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPToolt
 import { buildProjectEditHref } from "@/lib/project-edit-intent";
 import { writeProjectEditContractSeed, type ProjectEditContractSeedRow } from "@/lib/project-edit-contract-seed";
 import { useRouter } from "next/navigation";
+import { GTPButton } from "@/components/GTPButton/GTPButton";
 
 // dynamic import to prevent server-side rendering of the chart component
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
@@ -375,10 +376,10 @@ const ContractsTable = ({ editContractsHref }: { editContractsHref: string }) =>
     return key;
   }, [selectedMetrics, showUsd]);
 
-  // Memoize gridColumns to prevent recalculations (include selection column when active)
+  // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}${isSelectingContracts ? " 40px" : ""}`,
-    [selectedMetricKeys, isSelectingContracts]
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")} 28px`,
+    [selectedMetricKeys]
   );
 
   useEffect(() => {
@@ -512,7 +513,7 @@ const ContractsTable = ({ editContractsHref }: { editContractsHref: string }) =>
               </GridTableHeaderCell>
             )
           })}
-          {isSelectingContracts && <div />}
+          <div />
         </GridTableHeader>
         {/* <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
         <VerticalVirtuosoScrollContainer
@@ -638,6 +639,7 @@ const ContractsTableRow = memo(({
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [isRowHovered, setIsRowHovered] = useState(false);
   const { data: master } = useMaster();
 
 
@@ -650,10 +652,10 @@ const ContractsTableRow = memo(({
     }, 1000);
   };
 
-  // Memoize gridColumns to prevent recalculations (include selection column when active)
+  // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}${showSelectionControl ? " 40px" : ""}`,
-    [selectedMetricKeys, showSelectionControl]
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")} 28px`,
+    [selectedMetricKeys]
   );
 
   if (!masterData)
@@ -663,6 +665,7 @@ const ContractsTableRow = memo(({
 
   
   return (
+    <div onMouseEnter={() => setIsRowHovered(true)} onMouseLeave={() => setIsRowHovered(false)}>
     <GridTableRow
       gridDefinitionColumns={gridColumns}
       className={`group relative text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
@@ -734,59 +737,20 @@ const ContractsTableRow = memo(({
           <ContractValue contract={contract} metric={selectedMetrics[index]} />
         </div>
       ))}
-      {showSelectionControl && onToggleSelection && (
-        <div className="flex items-center justify-center">
-          <button
-            type="button"
-            className="relative cursor-pointer"
-            onClick={onToggleSelection}
-            aria-label={isSelected ? "Deselect contract" : "Select contract"}
-          >
-            <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-              style={{
-                color: isSelected ? undefined : "#5A6462",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`h-6 w-6 ${isSelected ? "opacity-0" : "opacity-100"}`}
-              >
-                <circle
-                  xmlns="http://www.w3.org/2000/svg"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                />
-              </svg>
-            </div>
-            <div
-              className={`rounded-full p-1 ${
-                isSelected
-                  ? "bg-white dark:bg-color-ui-active"
-                  : "bg-color-bg-medium group-hover:bg-color-ui-hover"
-              }`}
-            >
-              <Icon
-                icon="feather:check-circle"
-                className={`h-[24px] w-[24px] ${isSelected ? "opacity-100" : "opacity-0"}`}
-                style={{
-                  color: isSelected ? undefined : "#5A6462",
-                }}
-              />
-            </div>
-          </button>
-        </div>
-      )}
+      <div
+        className={`relative z-[3] flex w-full items-center justify-center translate-x-[7px] transition-opacity ${showSelectionControl && onToggleSelection ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <GTPButton
+          leftIcon={isSelected ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
+          variant="primary"
+          visualState={isRowHovered ? "hover" : "default"}
+          size="sm"
+          clickHandler={onToggleSelection ?? undefined}
+        />
+      </div>
     </GridTableRow>
+    </div>
   )
 });
 

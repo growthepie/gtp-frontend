@@ -27,6 +27,7 @@ import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
+import { useUIContext } from "@/contexts/UIContext";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -328,7 +329,14 @@ const DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS = [
 ];
 
 // Hook to cycle through animated placeholder options with typewriter effect
-const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false) => {
+const PROJECT_EDIT_PLACEHOLDER_OPTIONS = [
+  " a website URL, e.g. https://uniswap.org",
+  " a GitHub link, e.g. https://github.com/uniswap",
+  " a Twitter link, e.g. https://x.com/uniswap",
+  " a project name, e.g. Uniswap",
+];
+
+const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false, overrideOptions?: string[]) => {
   const searchbarItems = masterData?.['searchbar_items'] as string[] | undefined;
   const searchbarItemsSignature = Array.isArray(searchbarItems)
     ? searchbarItems.join("|")
@@ -342,14 +350,15 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
       .map((item) => item.trim())
       .filter(Boolean);
   }, [searchbarItemsSignature]);
-  
+
   // Get most recent quick bite shortTitle once (memoized to avoid re-checking on each loop)
   const mostRecentQuickBiteTitle = useMemo(() => {
+    if (overrideOptions) return null;
     try {
       const allQuickBites = getAllQuickBites()
         .filter(qb => qb.showInMenu !== false && qb.date) // Filter out hidden bites and ones without dates
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
-      
+
       if (allQuickBites.length > 0) {
         return ` ${allQuickBites[0].shortTitle}`; // Return shortTitle (same as used in menu items)
       }
@@ -357,9 +366,10 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
       console.error('Error getting most recent quick bite:', error);
     }
     return null;
-  }, []); // Empty deps array - only check once on mount
-  
+  }, [overrideOptions]); // Empty deps array - only check once on mount
+
   const options = useMemo(() => {
+    if (overrideOptions) return overrideOptions;
     const searchbarItemsFromMaster = normalizedSearchbarItems;
     let baseOptions: string[];
     if (searchbarItemsFromMaster && searchbarItemsFromMaster.length > 0) {
@@ -367,14 +377,14 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
     } else {
       baseOptions = DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS;
     }
-    
+
     // Append most recent quick bite title before wrapping back to start
     if (mostRecentQuickBiteTitle) {
       return [...baseOptions, mostRecentQuickBiteTitle];
     }
-    
+
     return baseOptions;
-  }, [normalizedSearchbarItems, mostRecentQuickBiteTitle]);
+  }, [normalizedSearchbarItems, mostRecentQuickBiteTitle, overrideOptions]);
   
   const [currentText, setCurrentText] = useState("");
   const currentIndexRef = useRef(0);
@@ -523,14 +533,20 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const { totalMatches } = useSearchBuckets();
     const [isFocused, setIsFocused] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    
+    const projectEditMode = useUIContext((state) => state.projectEditMode);
+
     // Track client-side mount to prevent hydration mismatch
     useEffect(() => {
       setIsMounted(true);
     }, []);
-    
+
     // Animated placeholder - only animate when input is empty and mounted (hook must always be called)
-    const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0, masterData, isMounted);
+    const animatedPlaceholder = useAnimatedPlaceholder(
+      localQuery.length === 0,
+      masterData,
+      isMounted,
+      projectEditMode ? PROJECT_EDIT_PLACEHOLDER_OPTIONS : undefined,
+    );
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);
@@ -1466,8 +1482,24 @@ export const SearchBadge = memo(({
 
 SearchBadge.displayName = 'SearchBadge';
 
+// Detect which project form field a query string likely belongs to
+const detectProjectQueryField = (q: string): { field: "website" | "main_github" | "twitter" | "display_name"; label: string } => {
+  const t = q.trim().toLowerCase();
+  if (t.includes("github.com") || t.startsWith("https://github") || t.startsWith("github.com")) {
+    return { field: "main_github", label: "GitHub URL" };
+  }
+  if (t.includes("x.com") || t.includes("twitter.com") || t.startsWith("@")) {
+    return { field: "twitter", label: "Twitter / X" };
+  }
+  if (t.startsWith("http://") || t.startsWith("https://") || t.includes(".xyz") || t.includes(".io") || t.includes(".com") || t.includes(".org") || t.includes(".finance")) {
+    return { field: "website", label: "website URL" };
+  }
+  return { field: "display_name", label: "project name" };
+};
+
 const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
   const { AllChainsByKeys, data: masterData } = useMaster();
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
   const [viewportHeight, setViewportHeight] = useState<number>(0);
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
@@ -1812,9 +1844,145 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
   }, []);
 
+  // Project-edit mode: search the full OSS directory
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const editMatches = useMemo(() => {
+    if (!projectEditMode || !memoizedQuery || memoizedQuery.length < 2) return [];
+    const q = memoizedQuery.toLowerCase();
+
+    // Normalize a URL to "host/path" for domain-aware matching (strips protocol, www., trailing slash)
+    const normalizeForMatch = (value: string): string => {
+      const v = value.trim();
+      if (!v) return "";
+      try {
+        const url = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+        const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+        const path = url.pathname.replace(/\/+$/, "").toLowerCase();
+        return `${host}${path}`;
+      } catch {
+        return v.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+      }
+    };
+
+    const qNorm = normalizeForMatch(q);
+    const isUrlQuery = /^https?:\/\/|\./.test(memoizedQuery.trim());
+
+    // Extract SLD (second-level domain) for cross-TLD and subdomain matching
+    const extractSLD = (norm: string): string => {
+      const host = norm.split("/")[0];
+      const parts = host.split(".");
+      return parts.length >= 2 ? parts[parts.length - 2] : host;
+    };
+    const qSLD = isUrlQuery && qNorm ? extractSLD(qNorm) : "";
+
+    return Object.values(ownerProjectToProjectData)
+      .filter((p) => {
+        // Always try plain text match on name fields
+        if (
+          p.owner_project.toLowerCase().includes(q) ||
+          (p.display_name || "").toLowerCase().includes(q)
+        ) return true;
+
+        if (isUrlQuery && qSLD) {
+          // For URL queries: match by core domain name (SLD) so that:
+          // - growthepie.xyz matches growthepie.com (same SLD, different TLD)
+          // - app.uniswap.org matches uniswap.org (same SLD, subdomain)
+          // - figma.com does NOT match codelnpay.com (different SLD)
+          const websiteNorm = normalizeForMatch((p.website as string) || "");
+          const githubNorm = normalizeForMatch((p.main_github as string) || "");
+          return (
+            (websiteNorm && extractSLD(websiteNorm) === qSLD) ||
+            (githubNorm && extractSLD(githubNorm) === qSLD)
+          );
+        }
+
+        // Non-URL query: also check raw website/github strings
+        return (
+          (p.website || "").toLowerCase().includes(q) ||
+          (p.main_github || "").toLowerCase().includes(q)
+        );
+      })
+      .slice(0, 20);
+  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData]);
+
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {memoizedQuery && allFilteredData.length > 0 && <div
+      {projectEditMode && memoizedQuery ? (
+        <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px]">
+          {/* ── Edit section ── */}
+          {editMatches.length > 0 && (
+            <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div className="flex gap-x-[10px] items-center shrink-0">
+                <GTPIcon icon="gtp-project" size="md" className="max-sm:size-[15px]" />
+                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Edit</div>
+                <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+              </div>
+              <div className="flex flex-wrap gap-[5px]">
+                {editMatches.map((p) => {
+                  const logoSrc = p.logo_path
+                    ? `https://api.growthepie.com/v1/apps/logos/${p.logo_path}`
+                    : null;
+                  return (
+                    <button
+                      key={p.owner_project}
+                      type="button"
+                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[10px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("projectEditSelectProject", { detail: { ownerProject: p.owner_project } }));
+                        window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                      }}
+                    >
+                      {logoSrc ? (
+                        <Image src={logoSrc} alt={p.display_name || p.owner_project} width={14} height={14} unoptimized className="rounded-[3px] object-cover" />
+                      ) : (
+                        <GTPIcon icon="gtp-project-monochrome" className="!w-[14px] !h-[14px] shrink-0" />
+                      )}
+                      <span>{p.display_name || p.owner_project}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* ── Add section ── */}
+          {(() => {
+            const { field, label } = detectProjectQueryField(memoizedQuery);
+            const addParams = new URLSearchParams({ [field]: memoizedQuery });
+            const profileParams = new URLSearchParams({ [field]: memoizedQuery, profile: "1" });
+            return (
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
+                <div className="flex gap-x-[10px] items-center shrink-0">
+                  <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px]" />
+                  <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Add</div>
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+                </div>
+                <div className="flex flex-wrap items-center gap-[5px]">
+                  <span className="text-xs text-color-text-secondary">Add &quot;{memoizedQuery}&quot; as {label}:</span>
+                  {field === "website" && (
+                    <Link
+                      href={`/applications/add?${profileParams.toString()}`}
+                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors"
+                      onClick={() => window.dispatchEvent(new CustomEvent("clearSearchOrClose"))}
+                    >
+                      <Icon icon="feather:cpu" className="size-[12px] text-color-text-secondary" />
+                      AI Profile
+                    </Link>
+                  )}
+                  <Link
+                    href={`/applications/add?${addParams.toString()}`}
+                    className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors"
+                    onClick={() => window.dispatchEvent(new CustomEvent("clearSearchOrClose"))}
+                  >
+                    <Icon icon="feather:edit-2" className="size-[12px] text-color-text-secondary" />
+                    Add manually
+                  </Link>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      ) : (
+      <>{memoizedQuery && allFilteredData.length > 0 && <div
         key={memoizedQuery}
         className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
         {allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
@@ -1978,6 +2146,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           );
         })}
       </div>}
+      </>
+    )}
     </div>
   )
 }

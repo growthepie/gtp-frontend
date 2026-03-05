@@ -57,6 +57,8 @@ export type UIState = {
   setFocusSwitchEnabled: (value: Updater<boolean>) => void;
   ethUsdSwitchEnabled: boolean;
   setEthUsdSwitchEnabled: (value: Updater<boolean>) => void;
+  projectEditMode: boolean;
+  setProjectEditMode: (value: Updater<boolean>) => void;
 };
 
 const getInitialSidebarOpen = () => {
@@ -135,6 +137,11 @@ export const useUIStore = create<UIState>((set) => ({
   setEthUsdSwitchEnabled: (value) =>
     set((state) => ({
       ethUsdSwitchEnabled: resolveState(value, state.ethUsdSwitchEnabled),
+    })),
+  projectEditMode: false,
+  setProjectEditMode: (value) =>
+    set((state) => ({
+      projectEditMode: resolveState(value, state.projectEditMode),
     })),
 }));
 
