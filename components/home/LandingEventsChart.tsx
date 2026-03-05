@@ -240,6 +240,19 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
           const metadata = ownerProjectToProjectData[card.owner_project];
           const isGasFees = card.metric === "gas_fees";
           const metricData = isGasFees ? projectData?.metrics[`gas_fees_${showUsd ? "usd" : "eth"}`] : projectData?.metrics[card.metric];
+          const positiveChangeColor = metricData?.change_pct && metricData.change_pct > 0
+          const metricSuffix = (() => {
+            switch (card.metric) {
+              case "gas_fees":
+                return "Gas Fees";
+              case "txcount":
+                return "Transactions";
+              case "daa":
+                return "Active Addresses";
+              default:
+                return "";
+            }
+          })();
 
           return (
             <Link
@@ -254,7 +267,11 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
                 </div>
                 <div className="">
                   <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
-                  <span className="numbers-xs">{metricData ? metricData.rank : "—"}<span className={`numbers-xs ${metricData?.change_pct ? metricData.change_pct > 0 ? "text-color-positive" : "text-color-negative" : ""}`}>{metricData?.change_pct ? ` ${metricData.change_pct.toFixed(0)}%` : ""}</span></span>
+                  <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
+                    <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
+                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : "-"}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
+                    </span>
+                  </span>
                 </div>
               </div>
               <div className="flex w-full justify-end items-center">
@@ -264,6 +281,7 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
                       ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
                       : "—"}
                   </span>
+                  <span className="text-xs text-color-text-secondary">&nbsp;{metricSuffix}</span>
                 </div>
               </div>
               <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
