@@ -532,7 +532,7 @@ export const buildTimeXAxisLayout = ({
   return {
     grid,
     min: bounds.min ?? snappedMin,
-    max: bounds.max,
+    max: resolvedMax,
     minInterval: interval,
     firstTick,
     lastTick,
