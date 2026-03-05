@@ -135,6 +135,48 @@ const SideEventsContainer = ({
   );
 };
 
+
+const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
+  console.log(EVENTS_BY_ID[selectedEvent]);
+  return (
+    <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
+      <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
+        {EVENTS_BY_ID[selectedEvent].cards?.map((card, index) => (
+          <Link href={"/chains/optimism"} key={card.id + index} className="px-[15px] pt-[5px] h-full pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col">
+            <div className="flex w-full justify-between items-end">
+              <div className="">
+                <span className="numbers-xs">{card.contractsDeployed}</span>
+                <span className="text-xs text-color-text-secondary">&nbsp;contracts</span>
+              </div>
+
+              <div className="">
+                <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
+                <span className="numbers-xs">{card.rank}</span>
+                
+              </div>
+              
+            </div>
+            <div className="flex w-full justify-end items-center">
+              <div className="">
+                <span className="numbers-sm">{card.value}$</span>
+             
+              </div>
+              
+            </div>
+            <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
+              <GTPIcon icon={card.icon as GTPIconName} className="!size-[22px]" containerClassName="!size-[32px]" />
+              <span className="heading-small-md text-color-text-primary">{card.name}</span>
+              <div className="p-[5px] bg-color-bg-medium rounded-full flex items-center justify-center">
+                <GTPIcon icon="gtp-chevronright-monochrome" className="!size-[11px]" containerClassName="!size-[16px] flex items-center justify-center" />
+              </div>
+
+            </div>
+          </Link>
+          ))}
+      </div>   
+    </div>
+  );
+};
 const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
@@ -181,8 +223,8 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
     <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
       <GTPCardLayout className="h-[442px]"
        topBar={
-        <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
-            {showOptions && (
+        showOptions ? (
+          <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
               <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
@@ -202,7 +244,6 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                   );
                 })}
               </GTPButtonRow>
-            )}
             <GTPButton
                 label={!selectedRange ? undefined : ""}
                 leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
@@ -212,7 +253,9 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 variant={!selectedRange ? "no-background" : "highlight"}
                 visualState="default"
                 clickHandler={() => setSelectedRange(null)}
-            />        </GTPButtonContainer>
+            />
+          </GTPButtonContainer>
+        ) : undefined
        }
       >
         <div className="flex-1 min-h-0 w-full h-full py-[15px] overflow-hidden">
@@ -255,7 +298,11 @@ export default function LandingEventsChart() {
       </div>
       <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
         <SideEventsContainer selectedEvent={selectedEvent} setSelectedEvent={(event) => setSelectedEvent(event)}></SideEventsContainer>
-        <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} />
+        {(EVENTS_BY_ID[selectedEvent].bodyType ?? "chart") === "chart" ? (
+          <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} />
+        ) : (
+          <LandingEventsCardContent key={selectedEvent} selectedEvent={selectedEvent} />
+        )}
       </div>
     </div>
   );

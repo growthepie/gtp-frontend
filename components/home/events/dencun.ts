@@ -39,6 +39,85 @@ const DENCUN_SERIES: GTPChartSeries[] = [
   },
 ];
 
+
+const DENCUN_CARDS: {id: string, name: string, value: number, rank: number, contractsDeployed: number, icon: string,}[] = [
+      {
+        id: "dencun-l1-base-fee",
+        name: "L1 Base Fee (gwei)",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+
+      },
+      {
+        id: "dencun-avg-blobs-per-block",
+        name: "This is an example of a very long name for a card",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+      {
+        id: "dencun-avg-blobs-per-block",
+        name: "Avg blobs per block",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+      {
+        id: "dencun-contracts-deployed",
+        name: "Contracts Deployed",
+        value: 1000,
+        rank: 2,
+        contractsDeployed: 1000,
+        icon: "gtp-blobs-ethereum",
+      },
+];
+
 const dencunEvent: EventExample = {
   title: "Dencun Upgrade",
   description: "L1 base fees (gwei) and average blobs per block before and after EIP-4844.",
@@ -46,6 +125,9 @@ const dencunEvent: EventExample = {
   image: "gtp-blobs-ethereum",
   link: "/quick-bites/dencun",
   series: DENCUN_SERIES,
+  cards: DENCUN_CARDS,
+  bodyType: "card",
+
 };
 
 export default dencunEvent;

@@ -30,6 +30,7 @@ const arbitrumTimeboostEvent: EventExample = {
   link: "/quick-bites/arbitrum-timeboost",
   options: TIMEBOOST_OPTIONS,
   defaultOptionId: "timeboost-daily",
+  bodyType: "chart",
 };
 
 export default arbitrumTimeboostEvent;
