@@ -39,6 +39,48 @@ const DENCUN_SERIES: GTPChartSeries[] = [
   },
 ];
 
+
+const DENCUN_CARDS: {owner_project: string, metric: string}[] = [
+      {
+        owner_project: "saharaai",
+        metric: "txcount"
+      },
+      {
+        owner_project: "storj",
+        metric: "daa"
+      },
+      {
+        owner_project: "holochain",
+        metric: "gas_fees"
+      },
+
+      {
+        owner_project: "holochain",
+        metric: "num_contracts"
+      },
+      {
+        owner_project: "holochain",
+        metric: "num_contracts"
+      },
+
+      {
+        owner_project: "holochain",
+        metric: "num_contracts"
+      },
+      {
+        owner_project: "holochain",
+        metric: "gas_fees"
+      },
+      {
+        owner_project: "holochain",
+        metric: "gas_fees"
+      },
+      {
+        owner_project: "holochain",
+        metric: "gas_fees"
+      },
+];
+
 const dencunEvent: EventExample = {
   title: "Dencun Upgrade",
   description: "L1 base fees (gwei) and average blobs per block before and after EIP-4844.",
@@ -46,6 +88,9 @@ const dencunEvent: EventExample = {
   image: "gtp-blobs-ethereum",
   link: "/quick-bites/dencun",
   series: DENCUN_SERIES,
+  cards: DENCUN_CARDS,
+  bodyType: "card",
+
 };
 
 export default dencunEvent;

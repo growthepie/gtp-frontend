@@ -30,6 +30,8 @@ import {
   type VisibleLabel,
 } from "@/lib/echarts-x-axis-layout";
 
+const TOOLTIP_AUTO_HIDE_MS = 3000;
+
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
   "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[15px] pr-[15px] bg-color-bg-default",
@@ -620,6 +622,59 @@ export default function GTPChart({
       setDragOverlay(null);
     };
   }, [onDragSelect, querySnappedXAtPixel]);
+
+  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
+  useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
+    let zr: ReturnType<echarts.ECharts["getZr"]> | null = null;
+    let onMoveHandler: (() => void) | null = null;
+
+    const clearHideTimer = () => {
+      if (hideTimer !== null) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+    };
+
+    const scheduleHide = () => {
+      clearHideTimer();
+      hideTimer = setTimeout(() => {
+        const instance = echartsRef.current?.getEchartsInstance?.();
+        instance?.dispatchAction({ type: "hideTip" });
+      }, TOOLTIP_AUTO_HIDE_MS);
+    };
+
+    const frame = requestAnimationFrame(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+      zr = instance.getZr();
+      onMoveHandler = scheduleHide;
+      zr.on("mousemove", onMoveHandler);
+    });
+
+    const handleOutsideTap = (e: TouchEvent) => {
+      if (!containerRef.current) return;
+      const touch = e.touches[0] ?? e.changedTouches[0];
+      if (!touch) return;
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!containerRef.current.contains(target)) {
+        clearHideTimer();
+        const instance = echartsRef.current?.getEchartsInstance?.();
+        instance?.dispatchAction({ type: "hideTip" });
+      }
+    };
+
+    document.addEventListener("touchstart", handleOutsideTap, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearHideTimer();
+      document.removeEventListener("touchstart", handleOutsideTap);
+      if (zr && onMoveHandler) {
+        zr.off("mousemove", onMoveHandler);
+      }
+    };
+  }, []);
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {

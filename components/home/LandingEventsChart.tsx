@@ -10,11 +10,15 @@ import GTPChart, { GTPChartSeries } from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
-import { useMediaQuery } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "./events";
 import { EventOption, EventSeriesMeta } from "./events/types";
+import { ApplicationsURLs } from "@/lib/urls";
+import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -135,6 +139,167 @@ const SideEventsContainer = ({
   );
 };
 
+
+type ProjectMetricData = {
+  value: number;
+  prev_value: number;
+  change_pct: number;
+  rank: number;
+  num_contracts: number;
+};
+
+type AggregatedProjectData = {
+  owner_project: string;
+  metrics: Record<string, ProjectMetricData>;
+};
+
+function calcPctChange(current: number, previous: number): number {
+  if (previous === 0) return current === 0 ? 0 : Infinity;
+  return ((current - previous) / previous) * 100;
+}
+
+const METRIC_COLS = ["gas_fees_eth", "gas_fees_usd", "txcount", "daa"] as const;
+type MetricKey = typeof METRIC_COLS[number];
+
+const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
+  const { data: appOverviewData } = useSWR<AppOverviewResponse>(
+    ApplicationsURLs.overview.replace("{timespan}", "7d"),
+  );
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const projectDataMap = useMemo<Record<string, AggregatedProjectData>>(() => {
+    if (!appOverviewData) return {};
+
+    const types = appOverviewData.data.types as string[];
+    const col = {
+      owner_project:     types.indexOf("owner_project"),
+      num_contracts:     types.indexOf("num_contracts"),
+      gas_fees_eth:      types.indexOf("gas_fees_eth"),
+      prev_gas_fees_eth: types.indexOf("prev_gas_fees_eth"),
+      gas_fees_usd:      types.indexOf("gas_fees_usd"),
+      prev_gas_fees_usd: types.indexOf("prev_gas_fees_usd"),
+      txcount:           types.indexOf("txcount"),
+      prev_txcount:      types.indexOf("prev_txcount"),
+      daa:               types.indexOf("daa"),
+      prev_daa:          types.indexOf("prev_daa"),
+    };
+
+    // Raw accumulator shape per owner
+    type RawAcc = { num_contracts: number } & Record<MetricKey | `prev_${MetricKey}`, number>;
+    const aggregated = new Map<string, RawAcc>();
+
+    for (const row of appOverviewData.data.data) {
+      const owner = row[col.owner_project] as string;
+      if (!owner) continue;
+      if (!aggregated.has(owner)) {
+        aggregated.set(owner, { num_contracts: 0, gas_fees_eth: 0, prev_gas_fees_eth: 0, gas_fees_usd: 0, prev_gas_fees_usd: 0, txcount: 0, prev_txcount: 0, daa: 0, prev_daa: 0 });
+      }
+      const acc = aggregated.get(owner)!;
+      acc.num_contracts     += (row[col.num_contracts]     as number) || 0;
+      acc.gas_fees_eth      += (row[col.gas_fees_eth]      as number) || 0;
+      acc.prev_gas_fees_eth += (row[col.prev_gas_fees_eth] as number) || 0;
+      acc.gas_fees_usd      += (row[col.gas_fees_usd]      as number) || 0;
+      acc.prev_gas_fees_usd += (col.prev_gas_fees_usd >= 0 ? (row[col.prev_gas_fees_usd] as number) : 0) || 0;
+      acc.txcount           += (row[col.txcount]           as number) || 0;
+      acc.prev_txcount      += (row[col.prev_txcount]      as number) || 0;
+      acc.daa               += (row[col.daa]               as number) || 0;
+      acc.prev_daa          += (row[col.prev_daa]          as number) || 0;
+    }
+
+    // Build per-metric objects (rank filled in after sorting)
+    const rows: (AggregatedProjectData & { _raw: RawAcc })[] = Array.from(aggregated.entries()).map(([owner, raw]) => ({
+      owner_project: owner,
+      _raw: raw,
+      metrics: {
+        gas_fees_eth: { value: raw.gas_fees_eth, prev_value: raw.prev_gas_fees_eth, change_pct: calcPctChange(raw.gas_fees_eth, raw.prev_gas_fees_eth), rank: 0, num_contracts: raw.num_contracts },
+        gas_fees_usd: { value: raw.gas_fees_usd, prev_value: raw.prev_gas_fees_usd, change_pct: calcPctChange(raw.gas_fees_usd, raw.prev_gas_fees_usd), rank: 0, num_contracts: raw.num_contracts },
+        txcount:      { value: raw.txcount,       prev_value: raw.prev_txcount,      change_pct: calcPctChange(raw.txcount, raw.prev_txcount),           rank: 0, num_contracts: raw.num_contracts },
+        daa:          { value: raw.daa,           prev_value: raw.prev_daa,          change_pct: calcPctChange(raw.daa, raw.prev_daa),                   rank: 0, num_contracts: raw.num_contracts },
+      },
+    }));
+
+    // Assign ranks per metric
+    for (const metricKey of METRIC_COLS) {
+      const sorted = [...rows].sort((a, b) => b.metrics[metricKey].value - a.metrics[metricKey].value);
+      let rank = 1;
+      sorted.forEach((item, i) => {
+        if (i > 0 && item.metrics[metricKey].value < sorted[i - 1].metrics[metricKey].value) rank = i + 1;
+        item.metrics[metricKey].rank = rank;
+      });
+    }
+
+    return Object.fromEntries(rows.map(({ _raw: _, ...r }) => [r.owner_project, r]));
+  }, [appOverviewData]);
+
+  return (
+    <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
+      <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
+        {EVENTS_BY_ID[selectedEvent].cards?.map((card, index) => {
+          const projectData = projectDataMap[card.owner_project];
+          const metadata = ownerProjectToProjectData[card.owner_project];
+          const isGasFees = card.metric === "gas_fees";
+          const metricData = isGasFees ? projectData?.metrics[`gas_fees_${showUsd ? "usd" : "eth"}`] : projectData?.metrics[card.metric];
+          const positiveChangeColor = metricData?.change_pct && metricData.change_pct > 0
+          const metricSuffix = (() => {
+            switch (card.metric) {
+              case "gas_fees":
+                return "Gas Fees";
+              case "txcount":
+                return "Transactions";
+              case "daa":
+                return "Active Addresses";
+              default:
+                return "";
+            }
+          })();
+
+          return (
+            <Link
+              href={`/applications/${card.owner_project}`}
+              key={card.owner_project + index}
+              className="px-[15px] pt-[5px] h-full pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+            >
+              <div className="flex w-full justify-between items-end">
+                <div className="">
+                  <span className="numbers-xs">{metricData ? metricData.num_contracts.toLocaleString("en-GB") : "—"}</span>
+                  <span className="text-xs text-color-text-secondary">&nbsp;contracts</span>
+                </div>
+                <div className="">
+                  <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
+                  <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
+                    <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
+                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : "-"}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div className="flex w-full justify-end items-center">
+                <div className="">
+                  <span className="numbers-sm">
+                    {metricData
+                      ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
+                      : "—"}
+                  </span>
+                  <span className="text-xs text-color-text-secondary">&nbsp;{metricSuffix}</span>
+                </div>
+              </div>
+              <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
+                <ApplicationIcon owner_project={card.owner_project} size="sm" />
+                <span className="heading-small-md text-color-text-primary">
+                  {metadata?.display_name || card.owner_project}
+                </span>
+                <div className="p-[5px] bg-color-bg-medium rounded-full flex items-center justify-center">
+                  <GTPIcon icon="gtp-chevronright-monochrome" className="!size-[11px]" containerClassName="!size-[16px] flex items-center justify-center" />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
@@ -181,8 +346,8 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
     <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
       <GTPCardLayout className="h-[442px]"
        topBar={
-        <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
-            {showOptions && (
+        showOptions ? (
+          <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
               <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
@@ -202,7 +367,6 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                   );
                 })}
               </GTPButtonRow>
-            )}
             <GTPButton
                 label={!selectedRange ? undefined : ""}
                 leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
@@ -212,7 +376,9 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 variant={!selectedRange ? "no-background" : "highlight"}
                 visualState="default"
                 clickHandler={() => setSelectedRange(null)}
-            />        </GTPButtonContainer>
+            />
+          </GTPButtonContainer>
+        ) : undefined
        }
       >
         <div className="flex-1 min-h-0 w-full h-full py-[15px] overflow-hidden">
@@ -246,17 +412,23 @@ export default function LandingEventsChart() {
    
 
   return (
-    <div className="flex flex-col gap-y-[15px] w-full pb-[30px] h-full min-h-0 overflow-hidden">
-        {/*Heading */}
-      <div className="flex items-center gap-x-[8px]">
-        <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px]" />
-        <Heading className="heading-large-lg">Trending</Heading>
+    <ProjectsMetadataProvider>
+      <div className="flex flex-col gap-y-[15px] w-full pb-[30px] h-full min-h-0 overflow-hidden">
+          {/*Heading */}
+        <div className="flex items-center gap-x-[8px]">
+          <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px]" />
+          <Heading className="heading-large-lg">Trending</Heading>
 
+        </div>
+        <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
+          <SideEventsContainer selectedEvent={selectedEvent} setSelectedEvent={(event) => setSelectedEvent(event)}></SideEventsContainer>
+          {(EVENTS_BY_ID[selectedEvent].bodyType ?? "chart") === "chart" ? (
+            <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} />
+          ) : (
+            <LandingEventsCardContent key={selectedEvent} selectedEvent={selectedEvent} />
+          )}
+        </div>
       </div>
-      <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
-        <SideEventsContainer selectedEvent={selectedEvent} setSelectedEvent={(event) => setSelectedEvent(event)}></SideEventsContainer>
-        <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} />
-      </div>
-    </div>
+    </ProjectsMetadataProvider>
   );
 }

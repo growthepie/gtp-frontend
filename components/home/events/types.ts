@@ -28,6 +28,8 @@ export type EventExample = {
   image: string;
   link: string;
   series?: GTPChartSeries[];
+  cards?: { owner_project: string, metric: string }[];
   options?: EventOption[];
   defaultOptionId?: string;
+  bodyType?: "chart" | "card";
 };
