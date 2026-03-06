@@ -1,6 +1,6 @@
 import { EventExample, EventOption, EventSeriesMeta } from "./types";
 
-const FUSAKA_BLOB_SERIES_META: EventSeriesMeta[] = [
+const BLOB_SERIES_META: EventSeriesMeta[] = [
   {
     name: "Avg blob count",
     color: "#FFC300",
@@ -13,49 +13,95 @@ const FUSAKA_BLOB_SERIES_META: EventSeriesMeta[] = [
     yIndex: 5,
     seriesType: "line",
   },
-  {
-    name: "Total blob fees",
-    color: "#FE5468",
-    yIndex: 4,
-    seriesType: "line",
-  },
 ];
 
 const FUSAKA_BLOB_OPTIONS: EventOption[] = [
-  {
-    id: "fusaka-bpo2",
-    label: "since Fusaka-BPO2 (2026-01-07)",
+    {
+    id: "dencun",
+    label: "Since Dencun",
     dataSource: {
-      url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka-BPO2.json",
+      url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Dencun.json",
       pathToData: "data.timeseries.values",
-      series: FUSAKA_BLOB_SERIES_META,
+      series: BLOB_SERIES_META,
     },
+    xAxisLines: [
+      {
+        xValue: 1746576000000,
+        annotationText: "Pectra",
+        annotationPositionY: -8,
+        lineStyle: "Dash",
+        lineColor: "#CDD8D3",
+        textColor: "#CDD8D3",
+        textFontSize: 9,
+      },
+      {
+        xValue: 1765177600000,
+        annotationText: "Fusaka",
+        annotationPositionY: -8,
+        lineStyle: "Dash",
+        lineColor: "#CDD8D3",
+        textColor: "#CDD8D3",
+        textFontSize: 9,
+      },
+    ],
   },
   {
-    id: "fusaka-bpo1",
-    label: "since Fusaka-BPO1 (2025-12-09)",
+    id: "pectra",
+    label: "Since Pectra",
     dataSource: {
-      url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka-BPO1.json",
+      url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Pectra.json",
       pathToData: "data.timeseries.values",
-      series: FUSAKA_BLOB_SERIES_META,
+      series: BLOB_SERIES_META,
     },
+    xAxisLines: [
+      {
+        xValue: 1765187600000,
+        annotationText: "Fusaka",
+        annotationPositionY: -8,
+        lineStyle: "Dash",
+        lineColor: "#CDD8D3",
+        textColor: "#CDD8D3",
+        textFontSize: 9,
+      },
+    ],
   },
   {
     id: "fusaka",
-    label: "since Fusaka (2025-12-03)",
+    label: "Since Fusaka",
     dataSource: {
       url: "https://api.growthepie.com/v1/quick-bites/fusaka/timeseries_blobs/Fusaka.json",
       pathToData: "data.timeseries.values",
-      series: FUSAKA_BLOB_SERIES_META,
+      series: BLOB_SERIES_META,
     },
+    xAxisLines: [
+      {
+        xValue: 1765161600000,
+        annotationText: "Fusaka-BPO1",
+        annotationPositionY: -8,
+        lineStyle: "Dash",
+        lineColor: "#CDD8D3",
+        textColor: "#CDD8D3",
+        textFontSize: 9,
+      },
+      {
+        xValue: 1767647695000,
+        annotationText: "Fusaka-BPO2",
+        annotationPositionY: -8,
+        lineStyle: "Dash",
+        lineColor: "#CDD8D3",
+        textColor: "#CDD8D3",
+        textFontSize: 9,
+      },
+    ],
   },
+
 ];
 
 const fusakaEvent: EventExample = {
-  title: "Fusaka Upgrade",
-  description: "Average blobs per block vs target blob fees in ETH.",
-  question: "Is blob capacity keeping up with demand?",
-  image: "gtp-ethereum-weekly",
+  title: "Blob Capacity",
+  description: "Average blob count per block compared to target blob count over time.",
+  question: "Is Ethereum blob capacity keeping up with demand?",
+  image: "gtp-blobs",
   link: "/quick-bites/fusaka",
   defaultOptionId: "fusaka-bpo2",
   options: FUSAKA_BLOB_OPTIONS,

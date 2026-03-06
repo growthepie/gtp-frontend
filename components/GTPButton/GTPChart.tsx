@@ -73,6 +73,19 @@ export interface GTPChartTooltipParams {
   color?: string;
 }
 
+export type GTPChartXAxisLine = {
+  xValue: number;
+  annotationText?: string;
+  annotationPositionX?: number;
+  annotationPositionY?: number;
+  lineStyle?: "Dash" | "Dashed" | "Dotted" | "Dot" | "Solid" | "dash" | "dashed" | "dotted" | "dot" | "solid";
+  lineColor?: string;
+  lineWidth?: number;
+  textColor?: string;
+  textFontSize?: number;
+  backgroundColor?: string;
+};
+
 export interface GTPChartProps {
   series: GTPChartSeries[];
   stack?: boolean;
@@ -107,6 +120,7 @@ export interface GTPChartProps {
   seriesOverrides?: (series: Record<string, unknown>, index: number) => Record<string, unknown>;
   height?: string | number;
   className?: string;
+  xAxisLines?: GTPChartXAxisLine[];
   /** Called when the user completes a click-and-drag on the chart. Receives the x-axis values at
    *  the drag start and drag end (always xStart ≤ xEnd). */
   onDragSelect?: (xStart: number, xEnd: number) => void;
@@ -156,6 +170,7 @@ export default function GTPChart({
   seriesOverrides,
   height = "100%",
   className,
+  xAxisLines,
   onDragSelect,
   dragSelectOverlayColor = "#3b82f6",
   dragSelectIcon,
@@ -940,6 +955,15 @@ export default function GTPChart({
     const defaultAreaOpacity = shouldStack ? 0.36 : 0.22;
     const resolvedAreaOpacity = areaOpacityOverride ?? defaultAreaOpacity;
 
+    const resolvedXAxisLines = (xAxisLines ?? []).filter((line) => Number.isFinite(line.xValue));
+    const mapLineStyle = (lineStyle?: GTPChartXAxisLine["lineStyle"]) => {
+      const normalized = lineStyle?.toLowerCase();
+      if (normalized === "dash" || normalized === "dashed") return "dashed";
+      if (normalized === "dot" || normalized === "dotted") return "dotted";
+      if (normalized === "solid") return "solid";
+      return "solid";
+    };
+
     // Build series configs — each series determines its own type
     const echartsSeriesConfigs = sortedSeries.flatMap((s, index) => {
       const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
@@ -1073,6 +1097,59 @@ export default function GTPChart({
 
       if (seriesOverrides) {
         config = seriesOverrides(config, index);
+      }
+
+      if (index === 0 && resolvedXAxisLines.length > 0) {
+        config.markLine = {
+          silent: true,
+          symbol: ["none", "none"],
+          label: {
+            show: true,
+            position: "insideEndTop",
+            rotate: 0,
+            fontFamily: "var(--font-raleway), sans-serif",
+            fontWeight: 500,
+            textStyle: {
+              fontFamily: "var(--font-raleway), sans-serif",
+              fontWeight: 500,
+            },
+          },
+          labelLayout: {
+            hideOverlap: false,
+          },
+          data: resolvedXAxisLines.map((line) => ({
+            xAxis: line.xValue,
+            lineStyle: {
+              color: line.lineColor ?? withOpacity(textPrimary, 0.7),
+              width: line.lineWidth ?? 1,
+              type: mapLineStyle(line.lineStyle),
+            },
+            label: line.annotationText
+              ? {
+                  show: true,
+                  formatter: line.annotationText,
+                  position: "insideEndTop",
+                  rotate: 0,
+                  distance: -8,
+                  align: "left",
+                  verticalAlign: "middle",
+                  color: line.textColor ?? textPrimary,
+                  fontSize: line.textFontSize ?? 9,
+                  fontFamily: "var(--font-raleway), sans-serif",
+                  fontWeight: 500,
+                  textStyle: {
+                    color: line.textColor ?? textPrimary,
+                    fontSize: line.textFontSize ?? 9,
+                    fontFamily: "var(--font-raleway), sans-serif",
+                    fontWeight: 500,
+                  },
+                  backgroundColor: line.backgroundColor ?? "transparent",
+                  padding: [2, 6],
+                  offset: [line.annotationPositionX ?? 0, line.annotationPositionY ?? 0],
+                }
+              : { show: false },
+          })),
+        };
       }
 
       const shouldRenderDashedTail =
@@ -1385,6 +1462,7 @@ export default function GTPChart({
     suffix,
     percentageMode,
     snapToCleanBoundary,
+    xAxisLines,
     pairedSeries,
     normalizedSeries,
     seriesOverrides,

@@ -1,4 +1,4 @@
-import { GTPChartSeries } from "@/components/GTPButton/GTPChart";
+import { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPButton/GTPChart";
 
 export type EventSeriesMeta = {
   name: string;
@@ -27,6 +27,7 @@ export type EventOption = {
   series?: GTPChartSeries[];
   dataSource?: EventOptionDataSource;
   stack?: boolean;
+  xAxisLines?: GTPChartXAxisLine[];
 };
 
 export type EventExample = {
@@ -40,4 +41,5 @@ export type EventExample = {
   options?: EventOption[];
   defaultOptionId?: string;
   bodyType?: "chart" | "card";
+  xAxisLines?: GTPChartXAxisLine[];
 };

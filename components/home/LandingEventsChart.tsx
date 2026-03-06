@@ -388,6 +388,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
     ? options.find((option) => option.id === activeOptionId) ?? options[0]
     : null;
   const activeDataSource = activeOption?.dataSource;
+  const activeXAxisLines = activeOption?.xAxisLines ?? eventData.xAxisLines ?? [];
   const { data: activeSourceData } = useSWR(activeDataSource?.url ?? null);
 
   const selectedSeries = useMemo(() => {
@@ -503,6 +504,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
               xAxisMin={selectedRange ? selectedRange[0] : undefined}
               xAxisMax={selectedRange ? selectedRange[1] : undefined}
               emptyStateMessage={emptyStateMessage}
+              xAxisLines={activeXAxisLines}
               onDragSelect={(xStart, xEnd) => {
                 if(xStart < xEnd) {
                   setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);

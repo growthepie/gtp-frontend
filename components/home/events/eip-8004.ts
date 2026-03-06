@@ -18,7 +18,7 @@ const EIP8004_SERIES_TOTAL: EventSeriesMeta[] = [
 const EIP8004_OPTIONS: EventOption[] = [
   {
     id: "eip-8004-cumulative",
-    label: "Totals",
+    label: "Total Registrations & Reviews",
     dataSource: {
       url: "https://api.growthepie.com/v1/quick-bites/eip8004/events_cumulative.json",
       pathToData: "data.timeseries.values",
@@ -28,7 +28,7 @@ const EIP8004_OPTIONS: EventOption[] = [
   },
   {
     id: "eip-8004-chain-breakdown",
-    label: "By Chain",
+    label: "Registrations by Chain",
     dataSource: {
       url: "https://api.growthepie.com/v1/quick-bites/eip8004/registered_cumulative.json",
       pathToData: "data.timeseries.values",
@@ -48,7 +48,7 @@ const eip8004Event: EventExample = {
   title: "AI Agent Adoption",
   description: "AI agent (ERC-8004) registrations and reviews over time.",
   question: "How fast is AI agent adoption growing?",
-  image: "gtp-realtime",
+  image: "gtp-tracker",
   link: "/quick-bites/eip-8004",
   options: EIP8004_OPTIONS,
   defaultOptionId: "eip-8004-cumulative",
