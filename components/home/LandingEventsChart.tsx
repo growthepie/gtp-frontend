@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "../layout/Heading";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -413,21 +413,20 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
   const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
   const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
 
-  useEffect(() => {
-    setInactiveSeriesNames((prev) => {
-      if (prev.size === 0) return prev;
-      const next = new Set<string>();
-      prev.forEach((name) => {
-        if (allSeriesNames.includes(name)) next.add(name);
-      });
-      return next;
+  const validSeriesNamesSet = useMemo(() => new Set(allSeriesNames), [allSeriesNames]);
+  const effectiveInactiveSeriesNames = useMemo(() => {
+    if (inactiveSeriesNames.size === 0) return inactiveSeriesNames;
+    const filtered = new Set<string>();
+    inactiveSeriesNames.forEach((name) => {
+      if (validSeriesNamesSet.has(name)) filtered.add(name);
     });
-  }, [allSeriesNames.join("|")]);
+    return filtered;
+  }, [inactiveSeriesNames, validSeriesNamesSet]);
 
   const activeSeries = useMemo(() => {
-    if (inactiveSeriesNames.size === 0) return selectedSeries;
-    return selectedSeries.filter((series) => !inactiveSeriesNames.has(series.name));
-  }, [inactiveSeriesNames, selectedSeries]);
+    if (effectiveInactiveSeriesNames.size === 0) return selectedSeries;
+    return selectedSeries.filter((series) => !effectiveInactiveSeriesNames.has(series.name));
+  }, [effectiveInactiveSeriesNames, selectedSeries]);
 
   const legendItems = useMemo(() => {
     return selectedSeries.map((series, index) => {
@@ -442,7 +441,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
   }, [selectedSeries]);
 
   const visibleLegendItems = legendItems.slice(0, 9);
-  const inactiveLegendCount = inactiveSeriesNames.size;
+  const inactiveLegendCount = effectiveInactiveSeriesNames.size;
 
   const emptyStateMessage = activeDataSource
     ? activeSourceData
@@ -457,7 +456,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
         : "";
 
   return (
-    <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden">
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
@@ -523,7 +522,7 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 <GTPButton
                   key={item.name}
                   label={item.name}
-                  variant={inactiveSeriesNames.has(item.name) ? "no-background" : "primary"}
+                  variant={effectiveInactiveSeriesNames.has(item.name) ? "no-background" : "primary"}
                   size="xs"
                   clickHandler={() => {
                     setInactiveSeriesNames((prev) => {
@@ -540,18 +539,18 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                   onMouseLeave={() => setHoverSeriesName(null)}
                   rightIcon={
                     hoverSeriesName === item.name
-                      ? inactiveSeriesNames.has(item.name)
+                      ? effectiveInactiveSeriesNames.has(item.name)
                         ? "in-button-plus"
                         : "in-button-close"
                       : undefined
                   }
                   rightIconClassname="!w-[12px] !h-[12px]"
-                  textClassName={inactiveSeriesNames.has(item.name) ? "text-color-text-secondary" : undefined}
-                  className={inactiveSeriesNames.has(item.name) ? "border border-color-bg-medium" : undefined}
+                  textClassName={effectiveInactiveSeriesNames.has(item.name) ? "text-color-text-secondary" : undefined}
+                  className={effectiveInactiveSeriesNames.has(item.name) ? "border border-color-bg-medium" : undefined}
                   leftIconOverride={(
                     <div
                       className="min-w-[6px] min-h-[6px] rounded-full"
-                      style={{ backgroundColor: item.color, opacity: inactiveSeriesNames.has(item.name) ? 0.35 : 1 }}
+                      style={{ backgroundColor: item.color, opacity: effectiveInactiveSeriesNames.has(item.name) ? 0.35 : 1 }}
                     />
                   )}
                 />
