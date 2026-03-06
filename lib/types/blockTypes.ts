@@ -198,6 +198,7 @@ export interface ChartBlock extends BaseBlock {
       stacking?: "normal" | "percent" | null;
       xIndex?: number;
       tooltipDecimals?: number;
+      prefix?: string;
     };
     pieData?:
       | { name: string; y: number; color: string; tooltipDecimals?: number }[]
