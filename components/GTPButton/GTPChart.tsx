@@ -626,7 +626,7 @@ export default function GTPChart({
   // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
   useEffect(() => {
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
-    let zr: ReturnType<echarts.ECharts["getZr"]> | null = null;
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
     let onMoveHandler: (() => void) | null = null;
 
     const clearHideTimer = () => {
@@ -647,7 +647,8 @@ export default function GTPChart({
     const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
-      zr = instance.getZr();
+      zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
+      if (!zr) return;
       onMoveHandler = scheduleHide;
       zr.on("mousemove", onMoveHandler);
     });
