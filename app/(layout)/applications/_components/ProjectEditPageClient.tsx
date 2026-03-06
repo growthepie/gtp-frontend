@@ -708,20 +708,27 @@ const FieldDropdown = ({
   suggestions: ProjectRecord[];
   onSelect: (p: ProjectRecord) => void;
 }) => {
+  const MAX_VISIBLE = 5;
+  const ITEM_H = 44;
   const open = suggestions.length > 0;
-  const height = open ? suggestions.length * 44 + 8 : 0;
+  const visibleCount = Math.min(suggestions.length, MAX_VISIBLE);
+  const itemsH = visibleCount * ITEM_H + 8;
+  const panelH = open ? 44 + itemsH : 0;
   return (
     <div
-      className={`absolute top-[calc(100%+4px)] left-0 right-0 z-50 overflow-hidden bg-color-ui-active rounded-[22px] transition-all duration-300 ${open ? "shadow-standard" : "shadow-none"}`}
-      style={{ height }}
+      className={`absolute top-0 left-0 right-0 z-0 overflow-hidden bg-color-ui-active rounded-[22px] transition-all duration-300 ${open ? "shadow-standard" : "shadow-none"}`}
+      style={{ height: panelH }}
     >
-      <div className="flex flex-col py-[4px]">
+      <div
+        className="flex flex-col pt-[44px] pb-[4px] overflow-y-auto"
+        style={{ height: 44 + itemsH }}
+      >
         {suggestions.map((project, i) => (
           <button
             key={`${asString(project.owner_project)}-${i}`}
             type="button"
             onMouseDown={() => onSelect(project)}
-            className="w-full flex items-center gap-x-[10px] pl-[14px] pr-[10px] h-[44px] hover:bg-color-ui-hover transition-colors"
+            className="shrink-0 w-full flex items-center gap-x-[10px] pl-[14px] pr-[10px] h-[44px] hover:bg-color-ui-hover transition-colors"
           >
             <div className="shrink-0">
               <ApplicationIcon owner_project={asString(project.owner_project)} size="sm" />
@@ -748,6 +755,7 @@ export default function ProjectEditPageClient() {
   const autofilledOwnerRef = useRef("");
   const importedContractSeedRef = useRef(false);
   const loadedFormRef = useRef<ProjectFormState>({ ...EMPTY_FORM });
+  const submittedFormSnapshotRef = useRef<{ form: ProjectFormState; hasLogo: boolean } | null>(null);
   const loadedWebsiteUrlsRef = useRef<string[]>([]);
   const loadedGithubUrlsRef = useRef<string[]>([]);
   const websiteCheckTargetRef = useRef("");
@@ -1126,6 +1134,14 @@ export default function ProjectEditPageClient() {
     Boolean(form.owner_project.trim()) &&
     Boolean(form.display_name.trim()) &&
     hasFormChanges;
+
+  const hasFormChangedSinceSubmission = useMemo(() => {
+    if (!contributionResult) return false;
+    const snap = submittedFormSnapshotRef.current;
+    if (!snap) return false;
+    const formChanged = (Object.keys(form) as (keyof ProjectFormState)[]).some((k) => form[k] !== snap.form[k]);
+    return formChanged || Boolean(logoUpload) !== snap.hasLogo;
+  }, [contributionResult, form, logoUpload]);
 
   const formSuggestions = useMemo<{ icon: string; text: string }[]>(() => {
     if (!form.owner_project.trim() && !form.display_name.trim()) return [];
@@ -2078,6 +2094,7 @@ export default function ProjectEditPageClient() {
         throw new Error(data.error || "Failed to submit project contribution.");
       }
 
+      submittedFormSnapshotRef.current = { form: { ...form }, hasLogo: Boolean(logoUpload) };
       setContributionResult({
         yamlPullRequestUrl: data.yamlPullRequestUrl,
         logoPullRequestUrl: data.logoPullRequestUrl ?? null,
@@ -2493,7 +2510,7 @@ export default function ProjectEditPageClient() {
                     {/* Website — first field, full width */}
                     <div className="sm:col-span-2">
                       <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Website</label>
-                      <div className="relative">
+                      <div className="relative focus-within:z-50">
                         {(() => {
                           const abs = ensureAbsoluteUrl(form.website.trim());
                           const isValidWebsite = isAddMode && abs.startsWith("http") &&
@@ -2501,7 +2518,7 @@ export default function ProjectEditPageClient() {
                             !abs.toLowerCase().includes("twitter.com") &&
                             !abs.toLowerCase().includes("x.com");
                           return (
-                            <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
+                            <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
                               <input
                                 value={form.website}
                                 onChange={(event) => updateField("website", event.target.value)}
@@ -2590,8 +2607,8 @@ export default function ProjectEditPageClient() {
                   {/* Owner project key */}
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Owner project key</label>
-                    <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
+                    <div className="relative focus-within:z-50">
+                      <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                         <input
                           value={form.owner_project}
                           onChange={(event) =>
@@ -2619,8 +2636,8 @@ export default function ProjectEditPageClient() {
                   {/* Display name */}
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Display name</label>
-                    <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
+                    <div className="relative focus-within:z-50">
+                      <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                         <input
                           value={form.display_name}
                           onChange={(event) => updateField("display_name", event.target.value)}
@@ -2641,8 +2658,8 @@ export default function ProjectEditPageClient() {
 
                   <div>
                     <label className="mb-[6px] block text-xs font-medium text-color-text-primary">GitHub</label>
-                    <div className="relative">
-                      <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
+                    <div className="relative focus-within:z-50">
+                      <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
                         <input
                           value={form.main_github}
                           onChange={(event) => updateField("main_github", event.target.value)}
@@ -2743,26 +2760,28 @@ export default function ProjectEditPageClient() {
                 </div>{/* end logo + fields flex */}
 
                 <div className="mt-[12px]">
-                  <div className="mb-[6px] flex items-center justify-between gap-[8px]">
+                  <div className="mb-[6px]">
                     <label className="text-xs font-medium text-color-text-primary">Description</label>
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      value={form.description}
+                      onChange={(event) => updateField("description", event.target.value)}
+                      placeholder="Short project description"
+                      className="min-h-[100px] w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-y text-color-text-primary placeholder-color-text-secondary pb-[40px]"
+                    />
                     {!isAddMode && (
                       <button
                         type="button"
                         disabled={isEnhancingDesc}
                         onClick={enhanceDescription}
-                        className="flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[4px] text-[11px] text-color-text-primary transition-colors hover:border-color-ui-hover disabled:opacity-50"
+                        className="absolute bottom-[10px] right-[10px] flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-medium px-[10px] py-[4px] text-[11px] text-color-text-primary transition-colors hover:border-color-ui-hover disabled:opacity-50"
                       >
                         <Icon icon="feather:cpu" className="size-[10px]" />
                         {isEnhancingDesc ? "Enhancing..." : "Enhance with AI"}
                       </button>
                     )}
                   </div>
-                  <textarea
-                    value={form.description}
-                    onChange={(event) => updateField("description", event.target.value)}
-                    placeholder="Short project description"
-                    className="min-h-[100px] w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-y text-color-text-primary placeholder-color-text-secondary"
-                  />
                   {enhanceDescError && <p className="mt-[5px] text-xs text-color-negative">{enhanceDescError}</p>}
                   {enhanceDescInfo && <p className="mt-[5px] text-xs text-color-positive">{enhanceDescInfo}</p>}
                 </div>
@@ -2801,24 +2820,9 @@ export default function ProjectEditPageClient() {
                   </div>
                 )}
 
-                <div className="mt-[14px] flex items-center justify-end">
-                  <button
-                    type="button"
-                    disabled={!canSubmitContribution}
-                    onClick={submitProjectContribution}
-                    className={`rounded-full px-[14px] py-[9px] text-sm transition-all disabled:opacity-60 ${canSubmitContribution ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}`}
-                  >
-                    {isSubmittingContribution
-                      ? "Creating PR..."
-                      : isAddMode
-                        ? "Add project"
-                        : "Edit project"}
-                  </button>
-                </div>
-
                 {submitError && <p className="mt-[8px] text-xs text-color-negative">{submitError}</p>}
-                {contributionResult && (
-                  <div className="mt-[10px] rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
+                {contributionResult && !hasFormChangedSinceSubmission && (
+                  <div className="mt-[14px] rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
                     <div className="flex items-center gap-x-[8px]">
                       <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
                       <div className="font-medium text-sm text-color-positive">Changes submitted — awaiting approval</div>
@@ -2850,16 +2854,30 @@ export default function ProjectEditPageClient() {
                     </div>
                   </div>
                 )}
-                {contributionResult && (
+                <div className="mt-[14px] flex items-center justify-end gap-x-[8px]">
                   <button
                     type="button"
-                    onClick={() => setActiveStep(2)}
-                    className="mt-[10px] inline-flex items-center gap-x-[6px] rounded-full bg-color-text-primary px-[14px] py-[8px] text-xs text-color-bg-default"
+                    disabled={!canSubmitContribution || (Boolean(contributionResult) && !hasFormChangedSinceSubmission)}
+                    onClick={submitProjectContribution}
+                    className={`rounded-full px-[14px] py-[9px] text-sm transition-all disabled:opacity-60 ${(canSubmitContribution && !(Boolean(contributionResult) && !hasFormChangedSinceSubmission)) ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}`}
                   >
-                    Continue to contracts
-                    <Icon icon="feather:arrow-right" className="size-[12px]" />
+                    {isSubmittingContribution
+                      ? "Creating PR..."
+                      : isAddMode
+                        ? "Add project"
+                        : "Edit project"}
                   </button>
-                )}
+                  {contributionResult && !hasFormChangedSinceSubmission && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveStep(2)}
+                      className="inline-flex items-center gap-x-[6px] rounded-full bg-color-text-primary px-[14px] py-[9px] text-sm text-color-bg-default"
+                    >
+                      Continue to contracts
+                      <Icon icon="feather:arrow-right" className="size-[12px]" />
+                    </button>
+                  )}
+                </div>
                     </div>
                   </div>
               )}
