@@ -1,34 +1,28 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
-import fiatData from '../../public/dicts/fiat.json';
 
-const CURRENCIES_MAP = Object.fromEntries(
-  Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
-);
-
-const StablecoinChain: QuickBiteData = {
-  title: "Stablecoin Breakdown by Chain",
+const StablecoinProject: QuickBiteData = {
+  title: "Stablecoin Breakdown by Project",
   shortTitle: "Stablecoins",
-  subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
+  subtitle: "Analyzing the composition and trends of stablecoins across different projects.",
   content: [
-    
+
     "```dropdown",
     JSON.stringify({
-      label: "Select a Chain",
-      placeholder: "Choose a chain...",
+      label: "Select a Project",
+      placeholder: "Choose a project...",
       searchable: true,
-      stateKey: "selectedChain",
-      defaultValue: "arbitrum",
+      stateKey: "selectedProject",
+      defaultValue: "circlefin",
       allowEmpty: false,
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-chains.json",
+        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-projects.json",
         pathToOptions: "dropdown_values",
-        valueField: "origin_key",
-        labelField: "name"
+        valueField: "owner_project",
+        labelField: "display_name"
       }
     }),
     "```",
-
 
     "```chart",
     JSON.stringify({
@@ -40,7 +34,7 @@ const StablecoinChain: QuickBiteData = {
       showTotalTooltip: true,
       dataAsJson: {
         dynamicSeries: {
-          url: "https://api.growthepie.com/v1/quick-bites/stablecoins/chains/top_{{selectedChain}}.json",
+          url: "https://api.growthepie.com/v1/quick-bites/stablecoins/projects/{{selectedProject}}.json",
           pathToData: "data.timeseries.values",
           ystartIndex: 1,
           names: "data.symbols",
@@ -52,11 +46,11 @@ const StablecoinChain: QuickBiteData = {
         },
       },
       height: 500,
-      caption: "Stacked area chart showing the circulating supply of top stablecoins on the selected chain. Data is updated daily.",
+      caption: "Stacked area chart showing the circulating supply of top stablecoins for the selected project. Data is updated daily.",
     }),
     "```",
 
-    "> We do not double count: Bridged stablecoins are counted on the receiving chain. For example, USDC.e on Arbitrum is counted towards Arbitrum and that same amount is deducted from Ethereum's USDC supply, since it is locked in a bridge contract there.",
+    "> Ethereum ecosystem only: We only track stablecoins within the Ethereum ecosystem. Supply on other L1s is not included, so totals will be lower than a project's full global market cap.",
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
@@ -79,4 +73,4 @@ const StablecoinChain: QuickBiteData = {
   showInMenu: false
 };
 
-export default StablecoinChain;
+export default StablecoinProject;

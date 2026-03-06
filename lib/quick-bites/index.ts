@@ -15,6 +15,7 @@ import Stablecoin from './qb-stablecoin';
 import Agents from './qb-eip8004';
 import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
+import StablecoinProject from './qb-stablecoin-project';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -29,6 +30,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "linea-burn": lineaTokenBurn,
   "fusaka": Fusaka,
   "stablecoin-chain": StablecoinChain,
+  "stablecoin-project": StablecoinProject,
   "eip-8004": Agents,
   "octant-v2-migration": OctantV2Migration
 };
