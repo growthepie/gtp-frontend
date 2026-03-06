@@ -10,12 +10,14 @@ type AggregatedMetricData = {
   metric_id: string;
   metric_name: string;
   description: string;
-  source: string[];
-  avg?: boolean;
+    source: string[];
+    avg?: boolean;
   monthly_agg: "sum" | "maa" | "avg" | "unique";
+  last_updated_utc: string;
   chains: {
     [chainKey: string]: ChainData;
   };
+  timeIntervals: string[];
 };
 
 type UseChainMetricsResult = {
@@ -121,6 +123,8 @@ export function useChainMetrics(
     }
   );
 
+ 
+
   // Aggregate all the responses with progressive loading
   const aggregatedData = useMemo(() => {
     // Return early if not a valid metric
@@ -153,6 +157,13 @@ export function useChainMetrics(
 
     // Build the chains object by transforming each successful ChainMetricResponse
     const chains: { [chainKey: string]: ChainData } = {};
+    // Derive intervals from timeseries keys, filtered to those we actually support.
+    // Using timeseries (not changes) ensures "hourly" is included; using an
+    // allowlist keeps unsupported keys like "quarterly" and "daily_7d_rolling" out.
+    const supported = ["hourly", "daily", "weekly", "monthly"];
+    const timeIntervals = supported.filter(
+      (key) => key in firstResponse.details.timeseries,
+    );
 
     successfulChains.forEach((chainKey) => {
       const responseData = chainDataMap[chainKey];
@@ -166,12 +177,18 @@ export function useChainMetrics(
       metric_id: firstResponse.details.metric_id,
       metric_name: firstResponse.details.metric_name,
       description: "", // Not available in new API structure
-      source: [], // Not available in new API structure
+      source: firstResponse.details.source || [], // Not available in new API structure
       avg: metricsDict[metricKey].avg || false, // Default value, can be overridden
       monthly_agg: metricsDict[metricKey].monthly_agg || "sum" as const, // Default value, can be overridden
       chains,
+      timeIntervals,
+      last_updated_utc:
+        firstResponse.last_updated_utc instanceof Date
+          ? firstResponse.last_updated_utc.toISOString()
+          : String(firstResponse.last_updated_utc),
     };
   }, [chainDataMap, validChainKeys, isLoading, metricKey, metricsDict]);
+
 
   if (!metricsDict[metricKey]) {
     console.error(`Metric not found in ${metricType}`, metricKey);
@@ -207,6 +224,10 @@ function transformToChainData(
       types: timeseries.daily.types as string[],
       data: timeseries.daily.data,
     },
+    hourly: timeseries.hourly ? {
+      types: timeseries.hourly.types as string[],
+      data: timeseries.hourly.data,
+    } : undefined,
     daily_7d_rolling: timeseries.daily_7d_rolling ? {
       types: timeseries.daily_7d_rolling.types as string[],
       data: timeseries.daily_7d_rolling.data,

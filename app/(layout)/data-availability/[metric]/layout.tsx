@@ -41,6 +41,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     `/data-availability/${metric}`,
     {}
   );
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
 
   const currentDate = new Date();
   // Set the time to 2 am
@@ -50,6 +51,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     title: metadata.title,
     description: metadata.description,
+    alternates: metadata.canonical
+      ? { canonical: metadata.canonical }
+      : undefined,
     openGraph: {
       images: [
         {
@@ -60,6 +64,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         },
       ],
     },
+    robots,
   };
 }
 
@@ -99,7 +104,7 @@ export default async function Layout(
               )
             }
           />
-          <Description className="pb-[15px]">
+          <Description>
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

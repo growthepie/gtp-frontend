@@ -40,6 +40,9 @@ interface ChartWrapperProps {
   title?: string;
   subtitle?: string;
   jsonData?: any;
+  centerName?: string;
+  pieData?: { name: string; y: number; color: string; tooltipDecimals?: number }[];
+  showPiePercentage?: boolean;
   yAxisLine?: {
     xValue: number;
     annotationPositionY: number;
@@ -93,7 +96,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   showXAsDate = false,
   disableTooltipSort = false,
   showZeroTooltip = true,
-  showTotalTooltip = false
+  showTotalTooltip = false,
+  centerName,
+  pieData,
+  showPiePercentage = false,
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -274,6 +280,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   useEffect(() => {
     // This effect now only handles data-specific logic
     try {
+      // Pie charts with static pieData don't need the time-series data array
+      if (chartType === 'pie' && pieData && pieData.length > 0) {
+        setIsChartReady(true);
+        setLoading(false);
+        setError(null);
+        return;
+      }
       if (!Array.isArray(data)) {
         throw new Error('Chart data must be an array');
       }
@@ -284,7 +297,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       setError(err.message || 'Failed to initialize chart');
       setLoading(false);
     }
-  }, [data]); // Runs when data change
+  }, [data, chartType, pieData]); // Runs when data change
   
   // Handle resize events
   useEffect(() => {
@@ -397,6 +410,53 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip],
   );
 
+  const resolvedPieData = useMemo(() => {
+    if (chartType !== 'pie') return null;
+    if (pieData && pieData.length > 0) return pieData;
+    // Compute from fetched time-series: take the last non-null y value per series
+    return processedSeriesData.map(s => ({
+      name: s.name,
+      y: [...s.processedData].reverse().find(([, y]) => y !== null && y !== undefined)?.[1] ?? 0,
+      color: s.color,
+    }));
+  }, [chartType, pieData, processedSeriesData]);
+
+  const pieTooltipFormatter = useCallback(
+    function(this: any) {
+      const color = this.point.color;
+      const name = this.point.name;
+      const y = this.y;
+      const percentage = this.percentage;
+
+      const metaEntry = pieData
+        ? pieData.find(p => p.name === name)
+        : jsonMeta?.meta.find(m => m.name === name);
+      const prefix = (metaEntry as any)?.prefix || '';
+      const suffix = (metaEntry as any)?.suffix || '';
+      const decimals = (metaEntry as any)?.tooltipDecimals ?? 2;
+
+      const displayValue = y.toLocaleString("en-GB", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+
+      const percentageStr = showPiePercentage
+        ? `<div class="text-right numbers-xs text-forest-400">${percentage.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</div>`
+        : '';
+
+      return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+        <div class="flex space-x-2 items-center font-medium mb-0.5">
+          <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+          <div class="tooltip-point-name text-xs">${name}</div>
+          <div class="flex-1 text-right justify-end flex numbers-xs ml-2 gap-x-[5px]">
+            <div>${prefix}${displayValue}${suffix}</div>${percentageStr}
+          </div>
+        </div>
+      </div>`;
+    },
+    [pieData, jsonMeta, showPiePercentage],
+  );
+
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
 
   
@@ -445,6 +505,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart chart={chartRef.current} options={options || {}}
               plotOptions={{
+                pie: {
+                  allowPointSelect: false,
+                  cursor: "pointer",
+                  showInLegend: false,
+                  borderWidth: 10,
+                  borderColor: "transparent",
+                  dataLabels: { enabled: false },
+                },
                 line: {
                   lineWidth: 3,
                 },
@@ -452,7 +520,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   lineWidth: 2,
                 },
                 column: {
-                  
+
                   borderColor: "transparent",
                   animation: true,
                   pointPlacement: "on",
@@ -478,22 +546,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 },
               }}
           >
-            <Chart 
+            <Chart
               backgroundColor={"transparent"}
-              type="line"
+              type={chartType === 'pie' ? 'pie' : 'line'}
               panning={{
                 enabled: false,
                 type: "x",
               }}
-              
+
               panKey="shift"
-              // zooming={{
-              //   type: "x",
-              //   mouseWheel: {
-              //     enabled: false,
-              //     type: "xy",
-              //   },
-              // }}
               zooming={{
                 mouseWheel: {
                   enabled: false,
@@ -502,10 +563,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               animation={{
                 duration: 50,
               }}
-              marginBottom={showXAsDate ? 32 : 20}
-              marginLeft={50}
-              marginRight={hasOppositeYAxis ? 50 : 5}
-              marginTop={15}
+              marginBottom={chartType === 'pie' ? 10 : (showXAsDate ? 32 : 20)}
+              marginLeft={chartType === 'pie' ? undefined : 50}
+              marginRight={chartType === 'pie' ? undefined : (hasOppositeYAxis ? 50 : 5)}
+              marginTop={chartType === 'pie' ? 2 : 15}
             />
             
             
@@ -615,7 +676,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
-              {jsonMeta && jsonMeta.meta && jsonMeta.meta
+              {chartType !== 'pie' && jsonMeta && jsonMeta.meta && jsonMeta.meta
               .map((series: any, index: number) => {
                 // filter out series that are not on the opposite y axis and not filtered out
                 const showSeries = !series.oppositeYAxis && (filteredNames.length === 0 || filteredNames.includes(series.name));
@@ -629,12 +690,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 const fillOpacity = type === "area" ? 0.3 : undefined;
 
                 return (
-                  <Series 
+                  <Series
                     key={series.name}
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={processedSeriesData[index].processedData} 
+                    data={processedSeriesData[index].processedData}
                     color={series.color}
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
@@ -657,6 +718,20 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   />
                 )
               })}
+              {chartType === 'pie' && resolvedPieData && (
+                <PieSeries
+                  innerSize="95%"
+                  size="100%"
+                  borderRadius={8}
+                  dataLabels={{ enabled: false }}
+                  data={resolvedPieData.filter(d => filteredNames.length === 0 || filteredNames.includes(d.name))}
+                  animation={true}
+                  states={{
+                    hover: { enabled: true, brightness: 0.1 },
+                    inactive: { opacity: 0.6 },
+                  }}
+                />
+              )}
             </YAxis>
             <YAxis
               id="1"
@@ -860,9 +935,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 />
               )} */}
             
-            <Tooltip 
+            <Tooltip
               useHTML={true}
-              shared={true}
+              shared={chartType === 'pie' ? false : true}
               split={false}
               followPointer={true}
               followTouchMove={true}
@@ -872,7 +947,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               stickOnContact={false}
               shape="rect"
               borderRadius={17}
-            
               borderWidth={0}
               outside={true}
               shadow={{
@@ -884,13 +958,19 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               style={{
                 color: "rgb(215, 223, 222)",
               }}
-              formatter={tooltipFormatter}
-
+              formatter={chartType === 'pie' ? pieTooltipFormatter : tooltipFormatter}
             />
-            
+
           </HighchartsChart>
         </HighchartsProvider>
-        <div className="absolute bottom-[27.5%] md:bottom-[24.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
+        {chartType === 'pie' && centerName && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="text-xxxs font-bold leading-[120%] text-center max-w-[80px]">
+              {centerName}
+            </div>
+          </div>
+        )}
+        <div className="absolute bottom-[27.5%] md:bottom-[18.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  "
           style={{
             height: typeof height === "number" ? (height - 147) + "px" : "100%"
           }}
@@ -903,19 +983,20 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             {/*Categories*/}
             <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
               {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
-                {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
+                {(chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data)).filter((series: any) => !series.oppositeYAxis).map((category: any) => {
+                  const allCategories: any[] = chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data);
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
                     bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
-                  
+
                   return (
                     <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
                           // Check if we would have all categories selected
-                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
+                          if (newFilteredNames.length === allCategories.length) {
                             return []; // Reset to empty if all would be selected
                           }
                           return newFilteredNames;
@@ -961,7 +1042,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 
               {/* </div> */}
             </div>
-            {filteredNames.length > 0 && (
+            {filteredNames && filteredNames.length > 0 && (
               <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
                 <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
                 <div className="text-xxxs whitespace-nowrap">Reset</div>

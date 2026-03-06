@@ -413,23 +413,33 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       monthly: 30 * 24 * 3600 * 1000,
     };
 
-    const pointsSettings = {
-      pointPlacement:
-        (selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") &&
-          selectedScale === "stacked"
-          ? 0
-          : 0.5,
-    };
+    // Determine if this will be a column chart for weekly/monthly stacked
+    const isColumnChart = (selectedTimeInterval === "weekly" || selectedTimeInterval === "monthly") && selectedScale === "stacked";
+    
+    const pointsSettings = isColumnChart
+      ? {
+          pointPlacement: selectedTimeInterval === "monthly" ? 0 : 0.5,
+          pointRange: timeIntervalToMilliseconds[selectedTimeInterval],
+        }
+      : {
+          pointPlacement:
+            (selectedTimeInterval === "monthly" || selectedTimeInterval === "weekly") &&
+              selectedScale === "stacked"
+              ? 0
+              : 0.5,
+        };
 
 
-    const chainDataKeys = metric_type === "fundamentals" ? chainKeys.filter((chainKey) =>
+    const chainDataKeys = (metric_type === "fundamentals" ? chainKeys.filter((chainKey) =>
       selectedChains.includes(chainKey) && SupportedChainKeys.includes(chainKey)
-    ) : chainKeys.filter((chainKey) => selectedChains.includes(chainKey));
+    ) : chainKeys.filter((chainKey) => selectedChains.includes(chainKey)))
+      // exclude chains that don't have data for the current time interval
+      .filter((chainKey) => !!data.chains[chainKey]?.[timeIntervalKey]);
 
     const d = chainDataKeys.sort((a, b) => {
       if (["stacked", "percentage"].includes(selectedScale)) {
-        const aData = data.chains[a][timeIntervalKey].data;
-        const bData = data.chains[b][timeIntervalKey].data;
+        const aData = data.chains[a][timeIntervalKey]?.data ?? [];
+        const bData = data.chains[b][timeIntervalKey]?.data ?? [];
 
         if (showEthereumMainnet && !focusEnabled) {
           if (a === "ethereum") {
@@ -447,7 +457,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         // }
 
         // sort by the time of the first data point so that the series are stacked in the correct order
-        return bData[0][0] - aData[0][0];
+        return (bData[0]?.[0] ?? 0) - (aData[0]?.[0] ?? 0);
       }
       // else keep the order of the series the same
       return 0;

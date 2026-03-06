@@ -14,9 +14,13 @@ export async function generateMetadata(): Promise<Metadata> {
     '/economics',
     {}
   );
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title,
     description: metadata.description,
+    alternates: metadata.canonical
+      ? { canonical: metadata.canonical }
+      : undefined,
     openGraph: {
       images: [
         {
@@ -27,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
+    robots,
   };
 }
 

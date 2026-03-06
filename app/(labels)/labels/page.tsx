@@ -35,11 +35,6 @@ import { Table } from "apache-arrow";
 import { parseTable } from "arrow-js-ffi";
 // import { useProjectData } from "../useProjectData";
 // import { useDuckDB } from "../SparklineParquetContext";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/layout/Tooltip";
 import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";

@@ -50,6 +50,8 @@ const gtpMain = {
     "/fees-explainer",
     "/contracts",
     "/refactor",
+    "/gtpplayground",
+    "/debug/*",
   ],
 
   robotsTxtOptions: {
@@ -61,8 +63,10 @@ const gtpMain = {
         disallow: [
           "/_next/image",     // the image optimizer endpoint
           "/_next/static",
-          "/embed/",          
+          "/embed/",
           "/refactor",
+          "/gtpplayground",
+          "/debug/",
         ],
       },
     ],
@@ -102,10 +106,12 @@ const gtpFees = {
     "/scroll",
     "/labels",
     "/refactor",
+    "/gtpplayground",
+    "/debug/*",
   ],
   robotsTxtOptions: {
     policies: [
-      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/"] },
+      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/", "/gtpplayground", "/debug/"] },
     ],
     exclude: ["/server-sitemap.xml"],
   },
@@ -135,10 +141,12 @@ const gtpLabels = {
     "/scroll",
     "/labels",
     "/refactor",
+    "/gtpplayground",
+    "/debug/*",
   ],
   robotsTxtOptions: {
     policies: [
-      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/"] },
+      { userAgent: "*", allow: "/", disallow: ["/_next/image", "/api/", "/gtpplayground", "/debug/"] },
     ],
     exclude: ["/server-sitemap.xml"],
   },

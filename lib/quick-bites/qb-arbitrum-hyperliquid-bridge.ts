@@ -252,7 +252,7 @@ const arbitrumHyperliquidBridge: QuickBiteData = createQuickBite({
   related: [],
   author: [{
     name: "Lorenz Lehmann",
-    xUsername: "lorenz234",
+    xUsername: "LehmannLorenz",
   },
   {
     name: "ETH Wave",

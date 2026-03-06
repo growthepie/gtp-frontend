@@ -1,6 +1,6 @@
 import { Get_SupportedChainKeys } from "@/lib/chains";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
@@ -41,8 +41,6 @@ const MetricsTable = ({
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [maxVal, setMaxVal] = useState<number | null>(null);
-
   const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
     "lastSelectedChains",
     AllChains.filter(
@@ -78,7 +76,7 @@ const MetricsTable = ({
     if (selectedChains.length === chainKeys.length) return "all";
 
     return "normal";
-  }, [chainKeys, selectedChains]);
+  }, [chainKeys, selectedChains, showEthereumMainnet]);
 
   const onChainSelectToggle = useCallback(() => {
     // if all chains are selected, unselect all
@@ -164,7 +162,7 @@ const MetricsTable = ({
   }, [timeIntervalKey]);
 
   const valueIndex = useMemo(() => {
-    if (!data) return;
+    if (!data || Object.keys(data).length === 0) return;
 
     const sampleChainDataTypes =
       data[Object.keys(data)[0]][lastValueTimeIntervalKey].types;
@@ -181,7 +179,7 @@ const MetricsTable = ({
   }, [data, showUsd, lastValueTimeIntervalKey]);
 
   const changesValueIndex = useMemo(() => {
-    if (!data) return;
+    if (!data || Object.keys(data).length === 0) return;
 
     const sampleChainChangesTypes =
       data[Object.keys(data)[0]][changesKey].types;
@@ -234,16 +232,12 @@ const MetricsTable = ({
       }, {});
   }, [data, valueIndex, lastValueTimeIntervalKey, showUsd]);
 
-  // set maxVal
-  useEffect(() => {
-    if (!data || !lastValues) return;
-
+  const maxVal = useMemo(() => {
+    if (!data || !lastValues) return null;
     const valuesArray = Object.values<number>(lastValues);
-
-    const maxVal = Math.max(...valuesArray);
-
-    setMaxVal(maxVal);
-  }, [data, valueIndex, lastValueTimeIntervalKey, showUsd, lastValues]);
+    if (valuesArray.length === 0) return null;
+    return Math.max(...valuesArray);
+  }, [data, lastValues]);
 
   const rows = useCallback(() => {
     if (!data || maxVal === null || lastValues === null) return [];
@@ -299,21 +293,29 @@ const MetricsTable = ({
           }
         }
       });
-  }, [data, maxVal, lastValues, reversePerformer, selectedChains]);
+  }, [AllChainsByKeys, data, maxVal, lastValues, reversePerformer, selectedChains]);
 
-  let height = 0;
+  const rowHeight = isMobile ? 40 : 52;
+  const transitionRows = useMemo(
+    () =>
+      rows()
+        .filter((row) => {
+          const name = row.chain.key;
+          const supportedChainKeys = Get_SupportedChainKeys(master);
+          return supportedChainKeys.includes(name);
+        })
+        .map((row, index) => ({
+          ...row,
+          y: index * rowHeight,
+          height: rowHeight,
+        })),
+    [master, rowHeight, rows],
+  );
+
+  const tableHeight = transitionRows.length * rowHeight;
+
   const transitions = useTransition(
-    rows()
-      .filter((row) => {
-        const name = row.chain.key;
-        const supportedChainKeys = Get_SupportedChainKeys(master);
-        return supportedChainKeys.includes(name);
-      })
-      .map((data) => ({
-        ...data,
-        y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
-        height: isMobile ? 44 : 59,
-      })),
+    transitionRows,
     {
       key: (d) => d.chain.key,
       from: { opacity: 0, height: 0 },
@@ -325,7 +327,7 @@ const MetricsTable = ({
     },
   );
 
-  function formatNumber(number: number, decimals?: number): string {
+  const formatNumber = useCallback((number: number, decimals?: number): string => {
     if (number === 0) {
       return "0";
     } else if (Math.abs(number) >= 1e9) {
@@ -349,11 +351,13 @@ const MetricsTable = ({
 
     // Default return if none of the conditions are met
     return "";
-  }
+  }, []);
 
   const getDisplayValue = useCallback(
     (item: any) => {
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
+      if (!master.metrics[metric_id])
+        return { value: formatNumber(lastValues[item.chain.key]), prefix: "", suffix: "" };
       const units = Object.keys(master.metrics[metric_id].units);
       const unitKey =
         units.find((unit) => unit !== "usd" && unit !== "eth") ||
@@ -407,7 +411,7 @@ const MetricsTable = ({
       }
       return { value, prefix, suffix };
     },
-    [lastValueTimeIntervalKey, lastValues, metric_id, showUsd],
+    [formatNumber, lastValueTimeIntervalKey, lastValues, master, metric_id, showGwei, showUsd],
   );
 
   const timespanLabels = {
@@ -426,16 +430,15 @@ const MetricsTable = ({
 
   return (
     <HorizontalScrollContainer
-      className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] z-100 w-full py-5"
+      className="z-100 mt-3 ml-0 flex w-full flex-col py-5 font-semibold md:mt-0 lg:-ml-2"
       includeMargin={false}
     >
       <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex items-center justify-between py-1 pb-2 pl-4 pr-9 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`mt-2 flex h-[37px] items-center justify-between rounded-full px-[6px] py-[4px] text-[12px] font-semibold whitespace-nowrap text-color-text-primary lg:mt-3`}
         >
           <div
-            className={` ${isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
-              } pl-[44px] lg:pl-[52px]`}
+            className={`${isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"} pl-[44px] lg:pl-[52px]`}
           >
             {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
@@ -464,7 +467,7 @@ const MetricsTable = ({
               </div>
             ))}
             <div
-              className={`absolute top-0 lg:top-1 right-[26px] md:right-[56px] lg:right-[36px] cursor-pointer`}
+              className={`absolute top-[8px] right-[26px] cursor-pointer md:right-[56px] lg:right-[36px]`}
               onClick={onChainSelectToggle}
             >
               <div
@@ -538,7 +541,7 @@ const MetricsTable = ({
         >
           <div
             className="w-full relative"
-            style={{ height: height, direction: "ltr" }}
+            style={{ height: tableHeight, direction: "ltr" }}
           // style={{ height: height, direction: "ltr" }}
           >
             {transitions((style, item, t, index) => (
@@ -548,11 +551,11 @@ const MetricsTable = ({
               >
                 <div
                   key={item.chain.key}
-                  className={`flex items-center justify-between p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] cursor-pointer group relative
+                  className={`relative flex w-full cursor-pointer items-center justify-between rounded-full border-[1px] p-1.5 py-[3px] pl-4 text-xs font-[400] whitespace-nowrap group lg:py-[8px] lg:pl-2 lg:pr-2 lg:text-[0.95rem]
               ${item.chain.key === "ethereum"
                       ? showEthereumMainnet
-                        ? "border-black/[16%] dark:border-[#5A6462] hover:border hover:p-1.5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px] hover:lg:p-3 hover:lg:py-[7px]"
-                        : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px]"
+                        ? "border-black/[16%] p-[7px] py-[3px] hover:border hover:p-1.5 hover:lg:px-[13px] hover:lg:py-[7px] dark:border-[#5A6462] lg:px-[13px] lg:py-[8px]"
+                        : "border-black/[16%] p-[7px] py-[3px] hover:bg-forest-500/5 dark:border-[#5A6462] lg:px-[13px] lg:py-[8px]"
                       : selectedChains.includes(item.chain.key)
                         ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                         : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"

@@ -8,6 +8,7 @@ export type MetricData = {
   avg?: boolean;
   monthly_agg: "sum" | "avg" | "unique";
   metric_id: string;
+  last_updated_utc: string;
   metric_name: string;
   description: string;
   source: string[];
@@ -21,6 +22,10 @@ export type Chains = {
 export type ChainData = {
   chain_name: string;
   changes: Changes;
+  hourly?: {
+    types: string[];
+    data: number[][];
+  };
   daily: {
     types: string[];
     data: number[][];

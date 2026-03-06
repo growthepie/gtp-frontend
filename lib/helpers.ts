@@ -22,3 +22,12 @@ export const BASE_URL =
       ? "preview"
       : "production"
   ];
+
+const CONTRACT_PATH_EXPLORERS = ["voyager.online", "starkscan.co"];
+
+export function getExplorerAddressUrl(baseUrl: string, address: string): string {
+  if (CONTRACT_PATH_EXPLORERS.some((domain) => baseUrl.includes(domain))) {
+    return `${baseUrl}contract/${address}`;
+  }
+  return `${baseUrl}address/${address}`;
+}

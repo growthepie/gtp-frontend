@@ -15,7 +15,6 @@ import {
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useLocalStorage } from "usehooks-ts";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
 import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "@/app/(layout)/applications/_components/Components";
@@ -117,16 +116,19 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
                   <div className="text-xs">
                     Projects on {chainInfo?.name} that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
                   </div>
-                  <Tooltip placement="left">
-                    <TooltipTrigger>
+                  <GTPTooltipNew
+                    placement="left"
+                    allowInteract={false}
+                    unstyled
+                    containerClass="z-[99]"
+                    trigger={
                       <div className="size-[15px]">
                         <Icon icon="feather:info" className="size-[15px]" />
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="z-[99]">
-                      <TopGainersAndLosersTooltip metric={selectedMetrics[0]} scopeLabel={chainInfo?.name} />
-                    </TooltipContent>
-                  </Tooltip>
+                    }
+                  >
+                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} scopeLabel={chainInfo?.name} />
+                  </GTPTooltipNew>
                 </div>
               </div>
             </div>
@@ -364,14 +366,15 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
                         }}
                       />
                     </div>
-                    <Tooltip placement="bottom">
-                      <TooltipTrigger>
-                        <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                      </TooltipTrigger>
-                      <TooltipContent className="z-[99]">
-                        <MetricTooltip metric={metric} />
-                      </TooltipContent>
-                    </Tooltip>
+                    <GTPTooltipNew
+                      placement="bottom"
+                      allowInteract={false}
+                      unstyled
+                      containerClass="z-[99]"
+                      trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                    >
+                      <MetricTooltip metric={metric} />
+                    </GTPTooltipNew>
                   </div>
                 }
               >

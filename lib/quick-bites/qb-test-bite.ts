@@ -482,7 +482,7 @@ const testBite: QuickBiteData = createQuickBite({
     "```",
 
     "## Table with Card View, Badges & Chain Columns",
-    "This table demonstrates card view (resize to mobile), badges column, chain columns with icon/label options, expand, maxWidth, and auto-index.",
+    "This table demonstrates card view (resize to mobile), badges column, chain columns with icon/label options, expand, maxWidth, and auto-index. For badge overflow in desktop table view, set `maxVisibleBadges` on a badges column. If there are more badges than the limit, the table shows `maxVisibleBadges - 1` badges plus a `+ X more` pill, and hovering the pill reveals all badges. On mobile, setting `cardView.autoRowHeight: true` lets card rows grow to fit multi-line content (e.g. multiple endpoint badges) instead of forcing a fixed 20px row height.",
     "```table",
     JSON.stringify({
       readFromJSON: true,
@@ -522,11 +522,17 @@ const testBite: QuickBiteData = createQuickBite({
           label: "Endpoints",
           type: "badges",
           minWidth: 140,
+          maxVisibleBadges: 4,
           isNumeric: false,
           sortByValue: false,
           badgeSources: [
             { sourceKey: "service_web_endpoint", label: "Web", color: "#4A90D9" },
             { sourceKey: "service_mcp_endpoint", label: "MCP", color: "#10B981" },
+            { sourceKey: "service_a2a_endpoint", label: "A2A", color: "#F59E0B" },
+            { sourceKey: "service_oasf_endpoint", label: "OASF", color: "#8B5CF6" },
+            { sourceKey: "service_ens_endpoint", label: "ENS", color: "#EC4899" },
+            { sourceKey: "service_did_endpoint", label: "DID", color: "#14B8A6" },
+            { sourceKey: "service_email_endpoint", label: "Email", color: "#F97316" },
           ],
         },
         events: {
@@ -554,8 +560,12 @@ const testBite: QuickBiteData = createQuickBite({
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        topColumns: ["", "events"],
-        bottomColumns: ["endpoints", "origin_key"],
+        sections: [
+          { columns: ["events"], labelPosition: "bottom" },
+          { columns: ["origin_key"], labelPosition: "right", layout: "start" },
+          { columns: ["endpoints"], labelPosition: "hidden" },
+        ],
+        autoRowHeight: true,
       },
     }),
     "```",
@@ -662,8 +672,10 @@ const testBite: QuickBiteData = createQuickBite({
       columnSortBy: "value",
       cardView: {
         titleColumn: "origin_key",
-        topColumns: [null, "total_registered", "valid_registrations"],
-        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"],
+        sections: [
+          { columns: ["total_registered", "valid_registrations"], labelPosition: "bottom" },
+          { columns: ["total_feedback", "unique_owners", "agents_per_owner"], labelPosition: "bottom" },
+        ],
       },
     }),
     "```",
@@ -900,6 +912,29 @@ const testBite: QuickBiteData = createQuickBite({
       },
       height: 400,
       caption: "The amount of money that Arbitrum DAO is making from Timeboost per day. Data updated daily.",
+    }),
+    "```",
+
+    "## Pie Chart",
+    "Usage: When you want to show the composition or market share of static/snapshot data across 3–8 categories. Use centerName to label the donut hole.",
+    "```chart",
+    JSON.stringify({
+      type: "pie",
+      title: "L2 Blob Usage Share",
+      subtitle: "Breakdown of DA blob usage by rollup (snapshot)",
+      centerName: "BLOB\nSHARE",
+      height: 400,
+      dataAsJson: {
+        pieData: [
+          { name: "Base", y: 38.4, color: "#2151F5" },
+          { name: "Arbitrum", y: 22.1, color: "#FFC300" },
+          { name: "OP Mainnet", y: 15.7, color: "#FE5468" },
+          { name: "Scroll", y: 10.2, color: "#EADB6B" },
+          { name: "zkSync Era", y: 8.3, color: "#8B5CF6" },
+          { name: "Other", y: 5.3, color: "#5A6462" },
+        ],
+      },
+      caption: "Approximate blob usage share across major L2s. Data is illustrative.",
     }),
     "```",
 
