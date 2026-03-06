@@ -77,6 +77,7 @@ export interface GTPChartProps {
   series: GTPChartSeries[];
   stack?: boolean;
   percentageMode?: boolean;
+  snapToCleanBoundary?: boolean;
   xAxisType?: "time" | "category";
   xAxisLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
@@ -126,6 +127,7 @@ export default function GTPChart({
   series,
   stack = false,
   percentageMode = false,
+  snapToCleanBoundary = true,
   xAxisType = "time",
   xAxisMin,
   xAxisMax,
@@ -711,8 +713,15 @@ export default function GTPChart({
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
-    return buildTimeXAxisLayout({ timestamps: allTs, barSeriesData: barData, xAxisMin, xAxisMax, grid: g });
-  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax]);
+    return buildTimeXAxisLayout({
+      timestamps: allTs,
+      barSeriesData: barData,
+      xAxisMin,
+      xAxisMax,
+      grid: g,
+      snapToCleanBoundary,
+    });
+  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary]);
 
   const effectiveGrid = useMemo(() => {
     const base = {
@@ -1375,6 +1384,7 @@ export default function GTPChart({
     prefix,
     suffix,
     percentageMode,
+    snapToCleanBoundary,
     pairedSeries,
     normalizedSeries,
     seriesOverrides,

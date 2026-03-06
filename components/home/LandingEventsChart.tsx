@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "../layout/Heading";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -16,6 +16,7 @@ import useSWR from "swr";
 import { EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "./events";
 import { EventOption, EventSeriesMeta } from "./events/types";
 import { ApplicationsURLs } from "@/lib/urls";
+import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
@@ -31,10 +32,10 @@ const getNestedValue = (obj: unknown, path: string) => {
 
 const buildSeriesFromSource = (
   values: unknown,
-  seriesMeta: EventSeriesMeta[],
+  seriesMeta: EventSeriesMeta[] | undefined,
   xIndex = 0,
 ): GTPChartSeries[] => {
-  if (!Array.isArray(values)) return [];
+  if (!Array.isArray(values) || !seriesMeta?.length) return [];
 
   return seriesMeta.map((meta) => {
     const data = values
@@ -56,6 +57,74 @@ const buildSeriesFromSource = (
       data,
     };
   });
+};
+
+const buildDynamicSeriesFromSource = (
+  values: unknown,
+  dynamicConfig: NonNullable<EventOption["dataSource"]>["dynamicSeries"],
+  sourceData: unknown,
+): GTPChartSeries[] => {
+  if (!dynamicConfig || !Array.isArray(values)) return [];
+
+  const namesRaw = getNestedValue(sourceData, dynamicConfig.namesPath);
+  const colorsRaw = getNestedValue(sourceData, dynamicConfig.colorsPath);
+  const names = Array.isArray(namesRaw) ? namesRaw : [];
+  const colors = Array.isArray(colorsRaw)
+    ? colorsRaw.filter((color): color is string => typeof color === "string" && color.length > 0)
+    : [];
+
+  if (colors.length === 0) return [];
+
+  const ystartIndex = dynamicConfig.ystartIndex ?? 1;
+  const xIndex = dynamicConfig.xIndex ?? 0;
+  const seriesType = dynamicConfig.seriesType ?? "bar";
+
+  const firstRow = values.find((row) => Array.isArray(row));
+  const maxColumns = Array.isArray(firstRow) ? firstRow.length : 0;
+  const availableSeriesCount = Math.max(0, maxColumns - ystartIndex);
+  const seriesCount = names.length > 0 ? Math.min(names.length, availableSeriesCount) : availableSeriesCount;
+
+  const hasNonZeroInSeries = (yIndex: number) => {
+    return values.some((row) => {
+      if (!Array.isArray(row)) return false;
+      const raw = row[yIndex];
+      const numeric = typeof raw === "number" ? raw : Number(raw);
+      return Number.isFinite(numeric) && numeric !== 0;
+    });
+  };
+
+  const seriesList: GTPChartSeries[] = [];
+
+  for (let idx = 0; idx < seriesCount; idx += 1) {
+    const yIndex = ystartIndex + idx;
+    if (!hasNonZeroInSeries(yIndex)) continue;
+
+    const seriesName = typeof names[idx] === "string" && names[idx].length > 0
+      ? names[idx]
+      : `Series ${idx + 1}`;
+    const color = colors[idx % colors.length];
+
+    const data = values
+      .map<[number, number | null] | null>((row) => {
+        if (!Array.isArray(row)) return null;
+        const rawX = row[xIndex];
+        const rawY = row[yIndex];
+        const timestamp = typeof rawX === "number" ? rawX : Number(rawX);
+        if (!Number.isFinite(timestamp)) return null;
+        const value = typeof rawY === "number" ? rawY : Number(rawY);
+        return [timestamp, Number.isFinite(value) ? value : null];
+      })
+      .filter((point): point is [number, number | null] => Boolean(point));
+
+    seriesList.push({
+      name: seriesName,
+      color,
+      seriesType,
+      data,
+    });
+  }
+
+  return seriesList;
 };
 
 const EventCard = ({
@@ -326,6 +395,11 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
       return activeOption.series;
     }
 
+    if (activeDataSource?.dynamicSeries && activeSourceData) {
+      const values = getNestedValue(activeSourceData, activeDataSource.pathToData);
+      return buildDynamicSeriesFromSource(values, activeDataSource.dynamicSeries, activeSourceData);
+    }
+
     if (activeDataSource && activeSourceData) {
       const values = getNestedValue(activeSourceData, activeDataSource.pathToData);
       return buildSeriesFromSource(values, activeDataSource.series, activeDataSource.xIndex ?? 0);
@@ -334,13 +408,52 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
     return eventData.series ?? [];
   }, [activeOption?.series, activeDataSource, activeSourceData, eventData.series]);
 
+  const allSeriesNames = useMemo(() => selectedSeries.map((series) => series.name), [selectedSeries]);
+  const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
+  const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
+
+  useEffect(() => {
+    setInactiveSeriesNames((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set<string>();
+      prev.forEach((name) => {
+        if (allSeriesNames.includes(name)) next.add(name);
+      });
+      return next;
+    });
+  }, [allSeriesNames.join("|")]);
+
+  const activeSeries = useMemo(() => {
+    if (inactiveSeriesNames.size === 0) return selectedSeries;
+    return selectedSeries.filter((series) => !inactiveSeriesNames.has(series.name));
+  }, [inactiveSeriesNames, selectedSeries]);
+
+  const legendItems = useMemo(() => {
+    return selectedSeries.map((series, index) => {
+      const resolvedColor = Array.isArray(series.color)
+        ? series.color[0]
+        : series.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+      return {
+        name: series.name,
+        color: resolvedColor,
+      };
+    });
+  }, [selectedSeries]);
+
+  const visibleLegendItems = legendItems.slice(0, 9);
+  const inactiveLegendCount = inactiveSeriesNames.size;
+
   const emptyStateMessage = activeDataSource
     ? activeSourceData
-      ? "No data available"
+      ? activeSeries.length === 0
+        ? "Select series to show data"
+        : "No data available"
       : "Loading chart data..."
     : selectedSeries.length === 0
       ? "No chart data available"
-      : "";
+      : activeSeries.length === 0
+        ? "Select series to show data"
+        : "";
 
   return (
     <div className="relative flex-1 min-w-[300px] min-h-[300px] self-stretch overflow-hidden">
@@ -378,28 +491,80 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 clickHandler={() => setSelectedRange(null)}
             />
           </GTPButtonContainer>
-        ) : undefined
+       ) : undefined
        }
       >
-        <div className="flex-1 min-h-0 w-full h-full py-[15px] overflow-hidden">
-          <GTPChart 
-            series={selectedSeries}
-            xAxisMin={selectedRange ? selectedRange[0] : undefined}
-            xAxisMax={selectedRange ? selectedRange[1] : undefined}
-            emptyStateMessage={emptyStateMessage}
-            
-            onDragSelect={(xStart, xEnd) => {
-              if(xStart < xEnd) {
-                setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
-              } else {
-                setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
-              }
-            }}
-            dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
-            dragSelectIcon={"feather:zoom-in" as GTPIconName}
-            minDragSelectPoints={2}
-          
-          />
+        <div className="flex flex-col h-full min-h-0">
+          <div className="flex-1 min-h-0 w-full py-[15px] overflow-hidden">
+            <GTPChart
+              series={activeSeries}
+              stack={activeOption?.stack ?? false}
+              snapToCleanBoundary={false}
+              xAxisMin={selectedRange ? selectedRange[0] : undefined}
+              xAxisMax={selectedRange ? selectedRange[1] : undefined}
+              emptyStateMessage={emptyStateMessage}
+              onDragSelect={(xStart, xEnd) => {
+                if(xStart < xEnd) {
+                  setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
+                } else {
+                  setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
+                }
+              }}
+              dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
+              dragSelectIcon={"feather:zoom-in" as GTPIconName}
+              minDragSelectPoints={2}
+            />
+          </div>
+          {legendItems.length > 0 && (
+            <div className="h-[30px] w-full relative bottom-[6px] flex items-center justify-center gap-[5px]">
+              {visibleLegendItems.map((item) => (
+                <GTPButton
+                  key={item.name}
+                  label={item.name}
+                  variant={inactiveSeriesNames.has(item.name) ? "no-background" : "primary"}
+                  size="xs"
+                  clickHandler={() => {
+                    setInactiveSeriesNames((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(item.name)) {
+                        next.delete(item.name);
+                      } else {
+                        next.add(item.name);
+                      }
+                      return next;
+                    });
+                  }}
+                  onMouseEnter={() => setHoverSeriesName(item.name)}
+                  onMouseLeave={() => setHoverSeriesName(null)}
+                  rightIcon={
+                    hoverSeriesName === item.name
+                      ? inactiveSeriesNames.has(item.name)
+                        ? "in-button-plus"
+                        : "in-button-close"
+                      : undefined
+                  }
+                  rightIconClassname="!w-[12px] !h-[12px]"
+                  textClassName={inactiveSeriesNames.has(item.name) ? "text-color-text-secondary" : undefined}
+                  className={inactiveSeriesNames.has(item.name) ? "border border-color-bg-medium" : undefined}
+                  leftIconOverride={(
+                    <div
+                      className="min-w-[6px] min-h-[6px] rounded-full"
+                      style={{ backgroundColor: item.color, opacity: inactiveSeriesNames.has(item.name) ? 0.35 : 1 }}
+                    />
+                  )}
+                />
+              ))}
+              {inactiveLegendCount > 0 && (
+                <GTPButton
+                  key="legend-more"
+                  label="Select All"
+                  variant="primary"
+                  size="xs"
+                  clickHandler={() => setInactiveSeriesNames(new Set())}
+                />
+              )}
+            </div>
+          )}
         </div>
       </GTPCardLayout>
     </div>
@@ -417,7 +582,7 @@ export default function LandingEventsChart() {
           {/*Heading */}
         <div className="flex items-center gap-x-[8px]">
           <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px]" />
-          <Heading className="heading-large-lg">Trending</Heading>
+          <Heading className="heading-large-lg">Trending Topics in the Ecosystem</Heading>
 
         </div>
         <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">

@@ -1,11 +1,13 @@
 import arbitrumTimeboost from "./arbitrum-timeboost";
 import dencun from "./dencun";
+import eip8004 from "./eip-8004";
 import fusaka from "./fusaka";
 import l2Activity from "./l2-activity";
 import lineaBurn from "./linea-burn";
 import pectra from "./pectra";
 
 export const EVENTS_BY_ID = {
+  "eip-8004": eip8004,
   "fusaka": fusaka,
   "dencun": dencun,
   "pectra": pectra,

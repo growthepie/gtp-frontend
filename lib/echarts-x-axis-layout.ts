@@ -49,6 +49,7 @@ type BuildTimeXAxisLayoutParams = {
   xAxisMin?: number;
   xAxisMax?: number;
   grid: Grid;
+  snapToCleanBoundary?: boolean;
 };
 
 // --- Tick interval table (deterministic, based on effective range) ---
@@ -493,6 +494,7 @@ export const buildTimeXAxisLayout = ({
   xAxisMin,
   xAxisMax,
   grid,
+  snapToCleanBoundary: snapToCleanBoundaryEnabled = true,
 }: BuildTimeXAxisLayoutParams): TimeAxisLayout => {
   const dedupedTimestamps = Array.from(
     new Set(timestamps.filter((timestamp) => Number.isFinite(timestamp))),
@@ -513,7 +515,10 @@ export const buildTimeXAxisLayout = ({
   const interval = getTickInterval(rangeDays);
 
   // Snap axis min to a clean boundary so ticks land on round values.
-  const snappedMin = effectiveMin !== undefined ? snapToCleanBoundary(effectiveMin, interval) : undefined;
+  const snappedMin =
+    effectiveMin !== undefined && snapToCleanBoundaryEnabled
+      ? snapToCleanBoundary(effectiveMin, interval)
+      : effectiveMin;
 
   const bounds = getBarBoundsWithPadding({
     barSeriesData,

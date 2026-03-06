@@ -11,7 +11,14 @@ export type EventOptionDataSource = {
   url: string;
   pathToData: string;
   xIndex?: number;
-  series: EventSeriesMeta[];
+  series?: EventSeriesMeta[];
+  dynamicSeries?: {
+    namesPath: string;
+    colorsPath: string;
+    ystartIndex?: number;
+    xIndex?: number;
+    seriesType?: GTPChartSeries["seriesType"];
+  };
 };
 
 export type EventOption = {
@@ -19,6 +26,7 @@ export type EventOption = {
   label: string;
   series?: GTPChartSeries[];
   dataSource?: EventOptionDataSource;
+  stack?: boolean;
 };
 
 export type EventExample = {
