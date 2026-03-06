@@ -50,7 +50,7 @@ const StablecoinProject: QuickBiteData = {
     }),
     "```",
 
-    "> Ethereum ecosystem only: We only track stablecoins within the Ethereum ecosystem. Supply on other L1s is not included, so totals will be lower than a project's full global market cap.",
+    "> Ethereum ecosystem only: We only track stablecoins within the Ethereum ecosystem. Supply on other L1s are not included, so totals will be lower than a project's full global market cap.",
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
