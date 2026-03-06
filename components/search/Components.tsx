@@ -3,7 +3,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, forwardRef, startTransition } from "react"
 import { GrayOverlay } from "../layout/Backgrounds"
 import { GTPIcon } from "../layout/GTPIcon"
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import Icon from "../layout/Icon";
 import { Badge, FilterSelectionContainer } from "@/app/(layout)/applications/_components/Search";
 import { useMaster } from "@/contexts/MasterContext";
@@ -44,7 +44,68 @@ const filterGroups = <T extends { label: unknown; options: { label: unknown }[] 
 
 function normalizeString(str: string | null | undefined) {
   if (!isNonEmptyString(str)) return "";
-  return str.toLowerCase().replace(/[\s-]+/g, "");
+  return str.toLowerCase().replace(/[\s:\-]+/g, "");
+}
+
+const RECENT_SEARCHES_STORAGE_KEY = "gtp:recent-searches";
+const MAX_RECENT_SEARCHES = 5;
+const MIN_RECENT_SEARCH_LENGTH = 2;
+
+function readRecentSearches(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    const deduped: string[] = [];
+    for (const entry of parsed) {
+      if (!isNonEmptyString(entry)) continue;
+      const trimmed = entry.trim();
+      if (trimmed.length < MIN_RECENT_SEARCH_LENGTH) continue;
+      if (deduped.some((item) => normalizeString(item) === normalizeString(trimmed))) continue;
+      deduped.push(trimmed);
+      if (deduped.length >= MAX_RECENT_SEARCHES) break;
+    }
+
+    return deduped;
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentSearches(searches: string[]) {
+  if (typeof window === "undefined") return;
+  const sanitized: string[] = [];
+
+  for (const entry of searches) {
+    if (!isNonEmptyString(entry)) continue;
+    const trimmed = entry.trim();
+    if (trimmed.length < MIN_RECENT_SEARCH_LENGTH) continue;
+    if (sanitized.some((item) => normalizeString(item) === normalizeString(trimmed))) continue;
+    sanitized.push(trimmed);
+    if (sanitized.length >= MAX_RECENT_SEARCHES) break;
+  }
+
+  if (sanitized.length === 0) {
+    localStorage.removeItem(RECENT_SEARCHES_STORAGE_KEY);
+  } else {
+    localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(sanitized));
+  }
+  window.dispatchEvent(new CustomEvent("recentSearchesUpdated"));
+}
+
+function saveRecentSearch(query: string) {
+  const trimmedQuery = query.trim();
+  if (trimmedQuery.length < MIN_RECENT_SEARCH_LENGTH) return;
+  const existing = readRecentSearches();
+  const next = [
+    trimmedQuery,
+    ...existing.filter((item) => normalizeString(item) !== normalizeString(trimmedQuery)),
+  ].slice(0, MAX_RECENT_SEARCHES);
+
+  writeRecentSearches(next);
 }
 
 const SEARCH_RESULT_CONTEXT_MAX_CHARS = 32;
@@ -528,6 +589,33 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       setLocalQuery(query);
     }, [query]);
 
+    const queryHasResultsRef = useRef<Record<string, boolean>>({});
+    useEffect(() => {
+      const currentQuery = query.trim();
+      if (!currentQuery) return;
+      const normalizedCurrentQuery = normalizeString(currentQuery);
+      if (totalMatches > 0) {
+        queryHasResultsRef.current[normalizedCurrentQuery] = true;
+      } else if (!(normalizedCurrentQuery in queryHasResultsRef.current)) {
+        queryHasResultsRef.current[normalizedCurrentQuery] = false;
+      }
+    }, [query, totalMatches]);
+
+    const hasUserTypedSearchRef = useRef(false);
+    const previousQueryRef = useRef(query);
+    useEffect(() => {
+      const previousQuery = previousQueryRef.current.trim();
+      const currentQuery = query.trim();
+      const previousQueryHadResults =
+        queryHasResultsRef.current[normalizeString(previousQuery)] === true;
+
+      if (previousQuery && !currentQuery && hasUserTypedSearchRef.current && previousQueryHadResults) {
+        saveRecentSearch(previousQuery);
+        hasUserTypedSearchRef.current = false;
+      }
+      previousQueryRef.current = query;
+    }, [query]);
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target;
       const newValue = input.value;
@@ -535,6 +623,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
 
       // Update local state immediately
       setLocalQuery(newValue);
+      if (newValue.trim().length > 0) {
+        hasUserTypedSearchRef.current = true;
+      }
 
       // Call the debounced function for URL updates
       debouncedUpdateSearch(newValue);
@@ -1230,7 +1321,7 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
   }
 
   // Map normalized match index back to original string indices
-  const isIgnoredChar = (char: string) => /[\s-]/.test(char);
+  const isIgnoredChar = (char: string) => /[\s:\-]/.test(char);
 
   let origStart = 0, normCount = 0;
   while (origStart < text.length && normCount < matchIndex) {
@@ -1418,6 +1509,7 @@ SearchBadge.displayName = 'SearchBadge';
 
 const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
   const { AllChainsByKeys, data: masterData } = useMaster();
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [viewportHeight, setViewportHeight] = useState<number>(0);
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
@@ -1426,11 +1518,109 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const [lastBucketIndeces, setLastBucketIndeces] = useState<{ [key: string]: { x: number, y: number } }>({});
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | HTMLDivElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
+  const focusOutTimeoutRef = useRef<number | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
 
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const query = searchParams.get("query");
   const { allFilteredData, totalMatches } = useSearchBuckets();
-  const router = useRouter();
+
+  const refreshRecentSearches = useCallback(() => {
+    setRecentSearches(readRecentSearches());
+  }, []);
+
+  useEffect(() => {
+    refreshRecentSearches();
+    const handleRecentSearchesUpdated = () => {
+      refreshRecentSearches();
+    };
+
+    window.addEventListener("recentSearchesUpdated", handleRecentSearchesUpdated);
+    window.addEventListener("storage", handleRecentSearchesUpdated);
+    return () => {
+      window.removeEventListener("recentSearchesUpdated", handleRecentSearchesUpdated);
+      window.removeEventListener("storage", handleRecentSearchesUpdated);
+    };
+  }, [refreshRecentSearches]);
+
+  useEffect(() => {
+    const updateFocusedState = () => {
+      setIsSearchInputFocused(isGlobalSearchInputElement(document.activeElement));
+    };
+
+    const handleFocusOut = () => {
+      if (focusOutTimeoutRef.current !== null) {
+        window.clearTimeout(focusOutTimeoutRef.current);
+      }
+      // Let onClick handlers run before collapsing recent-search UI on blur.
+      focusOutTimeoutRef.current = window.setTimeout(updateFocusedState, 150);
+    };
+
+    const handleFocusIn = () => {
+      if (focusOutTimeoutRef.current !== null) {
+        window.clearTimeout(focusOutTimeoutRef.current);
+        focusOutTimeoutRef.current = null;
+      }
+      updateFocusedState();
+    };
+
+    updateFocusedState();
+    window.addEventListener("focusin", handleFocusIn);
+    window.addEventListener("focusout", handleFocusOut);
+    return () => {
+      if (focusOutTimeoutRef.current !== null) {
+        window.clearTimeout(focusOutTimeoutRef.current);
+      }
+      window.removeEventListener("focusin", handleFocusIn);
+      window.removeEventListener("focusout", handleFocusOut);
+    };
+  }, []);
+
+  const setQueryValue = useCallback((nextQuery: string) => {
+    const trimmed = nextQuery.trim();
+    const newSearchParams = new URLSearchParams(window.location.search);
+    if (trimmed) {
+      newSearchParams.set("query", trimmed);
+    } else {
+      newSearchParams.delete("query");
+    }
+
+    const nextUrl = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [pathname]);
+
+  const applyRecentSearchToInput = useCallback((recentQuery: string) => {
+    const input = document.getElementById("global-search-input") as HTMLInputElement | null;
+    if (!input) {
+      setQueryValue(recentQuery);
+      return;
+    }
+
+    input.focus();
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    nativeValueSetter?.call(input, recentQuery);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }, [setQueryValue]);
+
+  const handleRecentSearchClick = useCallback((recentQuery: string) => {
+    applyRecentSearchToInput(recentQuery);
+  }, [applyRecentSearchToInput]);
+
+  const handleClearRecentSearches = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(RECENT_SEARCHES_STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent("recentSearchesUpdated"));
+    }
+    setRecentSearches([]);
+  }, []);
 
   const getKey = useCallback((label: string, type: string) => {
     return String(`${type}::${label}`);
@@ -1440,6 +1630,11 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     // trim the query
     return normalizeString(query || "");
   }, [query]);
+  const showRecentSearches =
+    !isMobile &&
+    !memoizedQuery &&
+    isSearchInputFocused &&
+    recentSearches.length > 0;
 
   useEffect(() => {
     // reset lastBucketIndeces
@@ -1928,6 +2123,49 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           );
         })}
       </div>}
+      {showRecentSearches && (
+        <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+          <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden">
+            <div className="flex gap-x-[10px] items-center shrink-0 md:h-[24px]">
+              <div className="flex items-center justify-center size-[15px]">
+                <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
+              </div>
+              <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                <span className="text-color-text-primary">Recent Searches</span>
+              </div>
+              <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+            </div>
+
+            <div className="flex flex-col gap-[8px] w-full">
+              <div className="flex items-center justify-between gap-x-[10px] md:h-[24px]">
+                <div className="text-xxs text-color-text-secondary">
+                  Last {MAX_RECENT_SEARCHES} searches
+                </div>
+                <HeaderButton
+                  size="sm"
+                  className="!px-[10px] !h-[24px]"
+                  onClick={handleClearRecentSearches}
+                  ariaLabel="Clear recent searches"
+                >
+                  <span className="text-xxs text-color-text-primary">Clear</span>
+                </HeaderButton>
+              </div>
+              <div className="flex flex-wrap gap-[5px]">
+                {recentSearches.map((recentQuery) => (
+                  <SearchBadge
+                    key={recentQuery}
+                    className="!cursor-pointer"
+                    label={recentQuery}
+                    leftIcon="feather:clock"
+                    rightIcon=""
+                    onClick={() => handleRecentSearchClick(recentQuery)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
