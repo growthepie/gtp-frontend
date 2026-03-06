@@ -198,6 +198,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         xIndex: dynamicSeriesConfig.xIndex ?? 0,
         yIndex,
         tooltipDecimals: dynamicSeriesConfig.tooltipDecimals ?? 0,
+        ...(dynamicSeriesConfig.prefix !== undefined && { prefix: dynamicSeriesConfig.prefix }),
         url: dynamicSeriesUrl || dynamicSeriesConfig.url,
         pathToData: dynamicSeriesConfig.pathToData,
       }));
