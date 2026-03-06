@@ -1846,6 +1846,28 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   // Project-edit mode: search the full OSS directory
   const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  // Fetch the full OSS directory when in project-edit mode so every project is searchable,
+  // not just those in the filtered apps dataset.
+  const { data: ossRawData } = useSWR<{ data: { types: string[]; data: unknown[][] } }>(
+    projectEditMode ? "https://api.growthepie.com/v1/labels/projects.json" : null,
+  );
+  const ossProjects = useMemo(() => {
+    if (!ossRawData?.data) return [];
+    const { types, data } = ossRawData.data;
+    const idx = (f: string) => types.indexOf(f);
+    return data
+      .map((row) => ({
+        owner_project: String(row[idx("owner_project")] ?? ""),
+        display_name: String(row[idx("display_name")] ?? row[idx("owner_project")] ?? ""),
+        main_github: row[idx("main_github")] != null ? String(row[idx("main_github")]) : null,
+        twitter: row[idx("twitter")] != null ? String(row[idx("twitter")]) : null,
+        website: row[idx("website")] != null ? String(row[idx("website")]) : null,
+        logo_path: row[idx("logo_path")] != null ? String(row[idx("logo_path")]) : null,
+      }))
+      .filter((p) => !!p.owner_project);
+  }, [ossRawData]);
+
   const editMatches = useMemo(() => {
     if (!projectEditMode || !memoizedQuery || memoizedQuery.length < 2) return [];
     const q = memoizedQuery.toLowerCase();
@@ -1864,46 +1886,87 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       }
     };
 
-    const qNorm = normalizeForMatch(q);
-    const isUrlQuery = /^https?:\/\/|\./.test(memoizedQuery.trim());
-
-    // Extract SLD (second-level domain) for cross-TLD and subdomain matching
     const extractSLD = (norm: string): string => {
       const host = norm.split("/")[0];
       const parts = host.split(".");
       return parts.length >= 2 ? parts[parts.length - 2] : host;
     };
+
+    const qNorm = normalizeForMatch(q);
+    const isUrlQuery = /^https?:\/\/|\./.test(memoizedQuery.trim());
     const qSLD = isUrlQuery && qNorm ? extractSLD(qNorm) : "";
 
-    return Object.values(ownerProjectToProjectData)
-      .filter((p) => {
-        // Always try plain text match on name fields
-        if (
-          p.owner_project.toLowerCase().includes(q) ||
-          (p.display_name || "").toLowerCase().includes(q)
-        ) return true;
+    // Extract the first path segment and host from a URL-shaped query
+    const qHost = qNorm.split("/")[0];
+    const qPathFirst = qNorm.includes("/")
+      ? qNorm.slice(qHost.length + 1).split("/")[0].toLowerCase()
+      : "";
 
-        if (isUrlQuery && qSLD) {
-          // For URL queries: match by core domain name (SLD) so that:
-          // - growthepie.xyz matches growthepie.com (same SLD, different TLD)
-          // - app.uniswap.org matches uniswap.org (same SLD, subdomain)
-          // - figma.com does NOT match codelnpay.com (different SLD)
-          const websiteNorm = normalizeForMatch((p.website as string) || "");
-          const githubNorm = normalizeForMatch((p.main_github as string) || "");
-          return (
-            (websiteNorm && extractSLD(websiteNorm) === qSLD) ||
-            (githubNorm && extractSLD(githubNorm) === qSLD)
-          );
+    type Entry = { owner_project: string; display_name: string | null; main_github: string | null; twitter: string | null; website: string | null; logo_path: string | null };
+
+    const matchProject = (p: Entry): boolean => {
+      if (
+        p.owner_project.toLowerCase().includes(q) ||
+        (p.display_name || "").toLowerCase().includes(q)
+      ) return true;
+
+      if (isUrlQuery && qNorm) {
+        if (qNorm.includes("/")) {
+          // GitHub / GitLab / Bitbucket: match org name against main_github
+          // main_github can be a bare org name ("growthepie") or a full URL
+          if (/^(github|gitlab|bitbucket)\./.test(qHost) && qPathFirst) {
+            const ghVal = (p.main_github || "").toLowerCase();
+            return new RegExp(`(^|/)${qPathFirst}(/|$)`).test(ghVal);
+          }
+
+          // X / Twitter: match handle against twitter field
+          // twitter is stored as a bare handle ("growthepie_eth") or occasionally a full URL
+          if ((qHost === "x.com" || qHost === "twitter.com") && qPathFirst) {
+            const twVal = (p.twitter || "").toLowerCase()
+              .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
+              .replace(/^@/, "")
+              .replace(/\/.*$/, "");
+            return twVal === qPathFirst;
+          }
+
+          // Other URL with path: prefix-match against website
+          const websiteNorm = normalizeForMatch(p.website || "");
+          return !!websiteNorm && websiteNorm.startsWith(qNorm);
         }
 
-        // Non-URL query: also check raw website/github strings
+        // Domain-only: SLD matching for cross-TLD / subdomain flexibility
+        if (!qSLD) return false;
+        const websiteNorm = normalizeForMatch(p.website || "");
+        const githubNorm = normalizeForMatch(p.main_github || "");
         return (
-          (p.website || "").toLowerCase().includes(q) ||
-          (p.main_github || "").toLowerCase().includes(q)
+          (!!websiteNorm && extractSLD(websiteNorm) === qSLD) ||
+          (!!githubNorm && extractSLD(githubNorm) === qSLD)
         );
-      })
-      .slice(0, 20);
-  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData]);
+      }
+
+      // Plain text: also search website, github org, and twitter handle
+      const twRaw = (p.twitter || "").toLowerCase();
+      const twHandle = twRaw
+        .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
+        .replace(/^@/, "")
+        .replace(/\/.*$/, "");
+      return (
+        (p.website || "").toLowerCase().includes(q) ||
+        (p.main_github || "").toLowerCase().includes(q) ||
+        twHandle.includes(q) ||
+        twRaw.includes(q)
+      );
+    };
+
+    // Search apps dataset first, then OSS directory for projects not already found
+    const appsResults = Object.values(ownerProjectToProjectData).filter(matchProject) as Entry[];
+    const appsKeys = new Set(appsResults.map((p) => p.owner_project.toLowerCase()));
+    const ossResults = ossProjects.filter(
+      (p) => !appsKeys.has(p.owner_project.toLowerCase()) && matchProject(p),
+    );
+
+    return [...appsResults, ...ossResults].slice(0, 20);
+  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData, ossProjects]);
 
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
@@ -1947,8 +2010,26 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           {/* ── Add section ── */}
           {(() => {
             const { field, label } = detectProjectQueryField(memoizedQuery);
-            const addParams = new URLSearchParams({ [field]: memoizedQuery });
-            const profileParams = new URLSearchParams({ [field]: memoizedQuery, profile: "1" });
+            // Use raw query value (not memoizedQuery) to avoid normalizeString stripping hyphens from URLs
+            const rawValue = query || memoizedQuery;
+
+            // If editMatches already found this project, tell the user instead of offering to add it
+            if (editMatches.length > 0) {
+              return (
+                <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
+                  <div className="flex gap-x-[10px] items-center shrink-0">
+                    <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px] opacity-40" />
+                    <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] opacity-40">Add</div>
+                    <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-x-[6px] text-xs text-color-text-secondary">
+                    <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
+                    <span>Project already exists — select it above to edit.</span>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
                 <div className="flex gap-x-[10px] items-center shrink-0">
@@ -1959,23 +2040,29 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 <div className="flex flex-wrap items-center gap-[5px]">
                   <span className="text-xs text-color-text-secondary">Add &quot;{memoizedQuery}&quot; as {label}:</span>
                   {field === "website" && (
-                    <Link
-                      href={`/applications/add?${profileParams.toString()}`}
-                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors"
-                      onClick={() => window.dispatchEvent(new CustomEvent("clearSearchOrClose"))}
+                    <button
+                      type="button"
+                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("projectEditAiProfile", { detail: { website: rawValue } }));
+                        window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                      }}
                     >
                       <Icon icon="feather:cpu" className="size-[12px] text-color-text-secondary" />
                       AI Profile
-                    </Link>
+                    </button>
                   )}
-                  <Link
-                    href={`/applications/add?${addParams.toString()}`}
-                    className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors"
-                    onClick={() => window.dispatchEvent(new CustomEvent("clearSearchOrClose"))}
+                  <button
+                    type="button"
+                    className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent("projectEditAddManually", { detail: { field, value: rawValue } }));
+                      window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                    }}
                   >
                     <Icon icon="feather:edit-2" className="size-[12px] text-color-text-secondary" />
                     Add manually
-                  </Link>
+                  </button>
                 </div>
               </div>
             );
