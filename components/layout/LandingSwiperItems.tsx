@@ -71,7 +71,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["eip-8004", "octant-v2-migration"];
+const quickBiteIds = ["eip-8004"];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
