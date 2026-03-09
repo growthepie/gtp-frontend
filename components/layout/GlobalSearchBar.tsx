@@ -791,7 +791,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
       
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-        <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+        <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[27px]' : 'rounded-b-[27px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
           {children}
         </div>
       </div>
