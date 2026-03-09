@@ -13,14 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
     "/trackers/optimism-retropgf-3",
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title,
     description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
-    robots,
   };
 }
 

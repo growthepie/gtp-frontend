@@ -74,7 +74,7 @@ const anniversaryReport: QuickBiteData = createQuickBite({
   },
   {
     name: "Lorenz Lehmann",
-    xUsername: "LehmannLorenz"
+    xUsername: "lorenz234"
   }],
   topics: [{
     name: "Ethereum Mainnet",

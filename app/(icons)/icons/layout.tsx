@@ -1,7 +1,7 @@
 import { Providers } from "../../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
@@ -16,28 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
     "/icons",
     {}
   );
-  type RobotsValue = NonNullable<Metadata["robots"]>;
-  const robots: RobotsValue | undefined = metadata.noIndex
-    ? { index: false, follow: false }
-    : {
-        index: true,
-        follow: true,
-        nocache: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          noimageindex: false,
-          "max-video-preview": -1,
-          "max-image-preview": "large" as const,
-          "max-snippet": -1,
-        },
-      };
   return {
-    title: metadata.title,
-    description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
+    ...metadata,
     openGraph: {
       title: "icons.growthepie.com",
       description:
@@ -65,7 +45,19 @@ export async function generateMetadata(): Promise<Metadata> {
       creatorId: "1636391104689094656",
       images: [`https://icons.growthepie.com/gtp_og.png`],
     },
-    robots,
+    robots: {
+      index: true,
+      follow: true,
+      nocache: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        noimageindex: false,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 }
 

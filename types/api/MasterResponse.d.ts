@@ -1,5 +1,4 @@
 ﻿export interface MasterResponse {
-  sources: { [key: string]: SouceType };
   current_version: string;
   chains: Chains;
   custom_logos: { [key: string]: CustomLogo };
@@ -28,10 +27,7 @@ export interface EthereumEvents {
   type: string;
 }
 
-export interface SourceType {
-  name: string;
-  url: string;
-}
+
 
 export interface CompositionTypes {
   name: string;

@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
         '/data-availability',
         {}
     );
-    const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
 
     const currentDate = new Date();
     currentDate.setHours(2, 0, 0, 0);
@@ -17,9 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
         title: metadata.title,
         description: metadata.description,
-        alternates: metadata.canonical
-            ? { canonical: metadata.canonical }
-            : undefined,
         openGraph: {
             images: [
                 {
@@ -30,7 +26,6 @@ export async function generateMetadata(): Promise<Metadata> {
                 },
             ],
         },
-        robots,
     };
 }
 

@@ -109,8 +109,7 @@ const Agents: QuickBiteData = createQuickBite({
         endpoints: {
           label: "Service Endpoints",
           type: "badges",
-          minWidth: 300,
-          maxVisibleBadges: 6,
+          minWidth: 250,
           isNumeric: false,
           sortByValue: false,
           badgeSources: [
@@ -151,12 +150,8 @@ const Agents: QuickBiteData = createQuickBite({
       cardView: {
         titleColumn: "agent",
         imageColumn: "image",
-        sections: [
-          { columns: ["rating", "feedback_count_valid", "unique_clients"], labelPosition: "bottom" },
-          { columns: ["origin_key", "x402_support"], labelPosition: "right", layout: "start" },
-          { columns: ["endpoints"], labelPosition: "hidden" },
-        ],
-        autoRowHeight: true,
+        topColumns: ["", "rating"],
+        bottomColumns: ["endpoints", "origin_key", "x402_support"],
       },
     }),
     "```",
@@ -256,11 +251,9 @@ const Agents: QuickBiteData = createQuickBite({
         },
         first_registered_date: {
           label: "First Registered Date",
-          type: "date",
-          dateFormat: "medium",
-          showTimeAgo: true,
-          minWidth: 140,
-          isNumeric: true,
+          type: "string",
+          minWidth: 120,
+          isNumeric: false,
           sortByValue: true,
         },
         total_registered: {
@@ -337,10 +330,8 @@ const Agents: QuickBiteData = createQuickBite({
       columnSortBy: "value",
       cardView: {
         titleColumn: "origin_key",
-        sections: [
-          { columns: ["total_registered", "valid_registrations"], labelPosition: "bottom" },
-          { columns: ["total_feedback", "unique_owners", "agents_per_owner"], labelPosition: "bottom" },
-        ]
+        topColumns: [null, "total_registered", "valid_registrations"],
+        bottomColumns: ["total_feedback", "unique_owners", "agents_per_owner"]
       },
     }),
     "```",
@@ -369,39 +360,27 @@ const Agents: QuickBiteData = createQuickBite({
     }),
     "```",
 
-    "## Endpoint Service Types",
-    "Count of different endpoint types provided by registered agents & services. One agent can provide multiple endpoints.",
-    "Web endpoints are standard HTTP/HTTPS APIs or frontends for interacting with an agent; MCP (Model Context Protocol) endpoints expose structured tools and data for AI-native integrations; A2A endpoints enable direct agent-to-agent communication; OASF endpoints follow a structured service framework for publishing agent capabilities; ENS endpoints use human-readable .eth names for resolution; DID endpoints provide decentralized identity documents; and Email endpoints bridge agents with traditional offchain communication.",
-    "```chart",
-    JSON.stringify({
-      type: "pie",
-      title: "Service Endpoint Share",
-      subtitle: "Breakdown of endpoint types published by ERC-8004 agents",
-      centerName: "SERVICE\nSHARE",
-      height: 400,
-      dataAsJson: {
-        pieData: {
-          url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
-          pathToData: "data.service_counts",
-          colors: ["#2151F5","#FFC300","#FE5468","#2bee6c","#8B5CF6","#19D9D6","#ff7ceb"],
-          xIndex: 0,
-          yIndex: 1,
-          tooltipDecimals: 0,
-          showPercentage: true,
-          nameMap: {
-            "web": "Web",
-            "mcp": "MCP",
-            "a2a": "A2A",
-            "oasf": "OASF",
-            "ens": "ENS",
-            "did": "DID",
-            "email": "Email",
-          },
-        },
-      },
-      caption: "Distribution of service endpoint types provided by registered agents.",
-    }),
-    "```",
+    //"```chart",
+    //JSON.stringify({
+    //  type: "pie",
+    //  title: "Count of Service Endpoints Provided",
+    //  subtitle: "Service endpoint distribution across registered agents. Can be more than 1 per agent.",
+    //  showXAsDate: false,
+    //  dataAsJson: {
+    //    meta: [
+    //      {
+    //        xIndex: 0,
+    //        yIndex: 1,
+    //        tooltipDecimals: 0,
+    //        url: "https://api.growthepie.com/v1/quick-bites/eip8004/service_counts.json",
+    //        pathToData: "data.service_counts.rows",
+    //      },
+    //    ],
+    //  },
+    //  height: 500,
+    //  caption: "Counts of declared service endpoint type (web, mcp, a2a, oasf, ens, did, email).",
+    //}),
+    //"```",
 
     "# Estimating AI Slop",
 

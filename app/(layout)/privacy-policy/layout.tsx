@@ -6,15 +6,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "/privacy-policy",
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
-  return {
-    title: metadata.title,
-    description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
-    robots,
-  };
+  return metadata;
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

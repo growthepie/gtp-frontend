@@ -27,7 +27,6 @@ import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
 import { IS_PRODUCTION } from "@/lib/helpers";
-import LandingEventsChart from "./LandingEventsChart";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -90,26 +89,26 @@ const MeetL2sMapCards = ({
         const metrics = (
           <>
             <div className="flex gap-x-[10px] items-center justify-between">
-              <div className="flex flex-col gap-y-[2px] w-[125px]">
-                <div className="numbers-md">{formatNumber(tableEntry?.users)}</div>
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">{formatNumber(tableEntry?.users)}</div>
                 <div className="text-xs">Weekly Active</div>
               </div>
-              <div className="flex flex-col gap-y-[2px] w-[125px]">
-                <div className="numbers-md">
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">
                   {userShare !== undefined && userShare !== null ? `${(userShare * 100).toFixed(2)}%` : "N/A"}
                 </div>
                 <div className="text-xs">User Share</div>
               </div>
             </div>
             <div className="flex gap-x-[10px] items-center justify-between">
-              <div className="flex flex-col gap-y-[2px] w-[125px]">
-                <div className="numbers-md">
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">
                   {crossChain !== undefined && crossChain !== null ? d3Format(crossChain > 0.01 ? ".1%" : ".1%")(crossChain) : "N/A"}
                 </div>
                 <div className="text-xs">Cross-Chain Activity</div>
               </div>
-              <div className="flex flex-col gap-y-[2px] w-[125px]">
-                <div className="numbers-md">{chainAges[chainKey] ?? "N/A"}</div>
+              <div className="flex flex-col gap-y-[5px] w-[125px]">
+                <div className="numbers-2xl">{chainAges[chainKey] ?? "N/A"}</div>
                 <div className="text-xs">Age</div>
               </div>
             </div>
@@ -256,10 +255,9 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
       {data && landing && master && AllChainsByKeys ? (
         <>
-
-          <Container className="w-full">
-           
-          {(IS_PRODUCTION ? (
+          <Container
+            className={`w-full`}
+          >
             <LandingChart
               data={data}
               master={master}
@@ -274,9 +272,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               metric={selectedTimeInterval}
               setSelectedMetric={setSelectedMetric}
             />
-            ) : (
-              <LandingEventsChart />
-            ))}
           </Container>
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
@@ -298,7 +293,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               Overview of the chains being part of the (wider) Ethereum ecosystem.
             </Subheading>
           </Container>
-    
           <Container className="pt-[15px]">
             <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
               <TopRowParent className="!justify-center lg:!justify-normal">

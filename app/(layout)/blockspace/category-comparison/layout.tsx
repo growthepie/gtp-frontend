@@ -10,7 +10,6 @@ export async function generateMetadata(): Promise<Metadata> {
     "/blockspace/category-comparison",
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
 
   const currentDate = new Date();
   // Set the time to 2 am
@@ -20,9 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
       title: metadata.title,
       description: metadata.description,
-      alternates: metadata.canonical
-        ? { canonical: metadata.canonical }
-        : undefined,
       openGraph: {
         images: [
           {
@@ -33,7 +29,6 @@ export async function generateMetadata(): Promise<Metadata> {
           },
         ],
       },
-      robots,
   };
 }
 

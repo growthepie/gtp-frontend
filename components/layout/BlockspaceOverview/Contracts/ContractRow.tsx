@@ -11,7 +11,6 @@ import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
 import useSWR from "swr";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
-import { getExplorerAddressUrl } from "@/lib/helpers";
 import { LabelsURLS, LandingURL, MasterURL } from "@/lib/urls";
 
 import {
@@ -393,7 +392,8 @@ export default function ContractRow({
               </div>
             </div>
             <Link
-              href={getExplorerAddressUrl(master.chains[sortedContracts[rowKey].chain].block_explorer, sortedContracts[rowKey].address)}
+              href={`${master.chains[sortedContracts[rowKey].chain].block_explorer
+                }address/${sortedContracts[rowKey].address}`}
               rel="noopener noreferrer"
               target="_blank"
             >

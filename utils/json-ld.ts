@@ -37,14 +37,6 @@ export const generateJsonLd = ({
     ],
   };
 
-  const searchAction = withSearchAction
-    ? ({
-        "@type": "SearchAction",
-        target: `${baseUrl}/?search=true&query={search_term_string}`,
-        "query-input": "required name=search_term_string",
-      } as any)
-    : undefined;
-
   const webSite: WebSite = {
     "@type": "WebSite",
     "@id": `${baseUrl}/#website`,
@@ -55,7 +47,13 @@ export const generateJsonLd = ({
     publisher: {
       "@id": organization["@id"],
     } as Organization,
-    ...(searchAction ? { potentialAction: searchAction } : {}),
+    ...(withSearchAction && {
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `https://growthepie.com/?search=true&query={search_term_string}`,
+        query: "required name=search_term_string",
+      },
+    }),
   };
 
   return {
@@ -63,6 +61,3 @@ export const generateJsonLd = ({
     "@graph": [organization, webSite],
   };
 };
-
-export const serializeJsonLd = (value: unknown) =>
-  JSON.stringify(value, null, 2).replace(/</g, "\\u003c");

@@ -438,23 +438,16 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   const percentages = values.map((v) => (v / total) * 100);
 
   // Example of allTooltipContent for the header area (could be extracted further if desired)
-  const overTimeWithData = Object.values(metricData.over_time).filter(
-    (chainData) => chainData.daily.data.length > 0
+  const maxUnix = Math.max(
+    ...Object.values(metricData.over_time).map(
+      (chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]
+    )
   );
-  const maxUnix = overTimeWithData.length > 0
-    ? Math.max(
-        ...overTimeWithData.map(
-          (chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]
-        )
-      )
-    : 0;
-  const minUnix = overTimeWithData.length > 0
-    ? Math.min(
-        ...overTimeWithData.map(
-          (chainData) => chainData.daily.data[0][0]
-        )
-      )
-    : 0;
+  const minUnix = Math.min(
+    ...Object.values(metricData.over_time).map(
+      (chainData) => chainData.daily.data[0][0]
+    )
+  );
   
   const allTooltipContent = useMemo(() => {
     const maxDate = dayjs.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
@@ -676,23 +669,16 @@ const ChainBar = memo(({
 
   // Compute tooltip data – e.g., first seen, min/max dates
   const firstSeen = dayjs(chainFirstSeen);
-  const chainBarOverTimeWithData = Object.values(metricData.over_time).filter(
-    (chainData) => chainData.daily.data.length > 0
+  const maxUnix = Math.max(
+    ...Object.values(metricData.over_time).map((chainData) =>
+      chainData.daily.data[chainData.daily.data.length - 1][0]
+    )
   );
-  const maxUnix = chainBarOverTimeWithData.length > 0
-    ? Math.max(
-        ...chainBarOverTimeWithData.map((chainData) =>
-          chainData.daily.data[chainData.daily.data.length - 1][0]
-        )
-      )
-    : 0;
-  const minUnix = chainBarOverTimeWithData.length > 0
-    ? Math.min(
-        ...chainBarOverTimeWithData.map((chainData) =>
-          chainData.daily.data[0][0]
-        )
-      )
-    : 0;
+  const minUnix = Math.min(
+    ...Object.values(metricData.over_time).map((chainData) =>
+      chainData.daily.data[0][0]
+    )
+  );
   const maxDate = dayjs.unix(maxUnix / 1000).utc().locale("en-GB").format("DD MMM YYYY");
   let min = selectedTimespan === "max"
     ? dayjs.unix(minUnix / 1000)

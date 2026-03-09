@@ -825,7 +825,7 @@ const Fusaka: QuickBiteData = {
   related: [],
   author: [{
     name: "Lorenz Lehmann",
-    xUsername: "LehmannLorenz",
+    xUsername: "lorenz234",
   },
   {
     name: "ETH Wave",

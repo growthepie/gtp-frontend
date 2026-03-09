@@ -106,12 +106,11 @@ const robinhoodStock: QuickBiteData = createQuickBite({
         },
         tokenization_date: {
           label: "Tokenized Since",
-          type: "date",
-          dateFormat: "medium",
-          showTimeAgo: true,
-          minWidth: 140,
+          type: "string",
+          minWidth: 80,
           isNumeric: false,
           sortByValue: true,
+          copyable: false
         },
         usd_stock_price: {
           label: "Stock Price",
@@ -283,7 +282,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
   related: [],
   author: [{
     name: "Lorenz Lehmann",
-    xUsername: "LehmannLorenz",
+    xUsername: "lorenz234",
   },
   {
     name: "ETH Wave",

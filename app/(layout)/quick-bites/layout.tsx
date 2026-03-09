@@ -8,13 +8,9 @@ export async function generateMetadata(): Promise<Metadata> {
     '/quick-bites',
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title || "Quick Bites | Ethereum Data Stories | growthepie",
     description: metadata.description || "Data-driven articles, updating daily with insights and stories from the Ethereum ecosystem.",
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
     openGraph: {
       images: [
         {
@@ -25,7 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
-    robots,
   };
 }
 

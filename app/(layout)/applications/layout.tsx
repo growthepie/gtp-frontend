@@ -18,19 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
     '/applications',
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title,
     description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
     openGraph: {
-      url: metadata.canonical ?? "https://www.growthepie.com/applications",
-      type: "website",
-      title: metadata.title,
-      description: metadata.description,
-      siteName: "growthepie",
       images: [
         {
           url: `https://api.growthepie.com/v1/og_images/applications-overview.png`,
@@ -40,23 +31,15 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
-    twitter: {
-      card: "summary_large_image",
-      title: metadata.title,
-      description: metadata.description,
-      images: [`https://api.growthepie.com/v1/og_images/applications-overview.png`],
-    },
-    robots,
   };
 }
 
 export default async function Layout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
   return (
-      <>
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",
@@ -109,6 +92,5 @@ export default async function Layout({
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>
-      </>
   )
 }

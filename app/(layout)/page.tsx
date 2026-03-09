@@ -12,7 +12,6 @@ import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/Landi
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
 import { LinkButton } from "@/components/layout/LinkButton";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import dynamic from "next/dynamic";
 const LandingSwiperItems = dynamic(() => import("@/components/layout/LandingSwiperItems"), { ssr: true });
 
@@ -21,15 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "/",
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
-  return {
-    title: metadata.title,
-    description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
-    robots,
-  };
+  return metadata;
 }
 
 export default async function Page() {
@@ -52,11 +43,11 @@ export default async function Page() {
         </div>
       </Container>
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        {IS_PRODUCTION && <LandingFirstHeaders />}
+        <LandingFirstHeaders />
       </Container>
       <LandingSwiperItems />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        {IS_PRODUCTION && <LandingSecondHeaders />}
+        <LandingSecondHeaders />
       </Container>
       <LandingUserBaseChart />
       {/* {!IS_PRODUCTION && ( */}

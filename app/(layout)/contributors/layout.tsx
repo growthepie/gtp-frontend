@@ -12,14 +12,9 @@ export async function generateMetadata(): Promise<Metadata> {
     '/contributors',
     {}
   );
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title,
     description: metadata.description,
-    alternates: metadata.canonical
-      ? { canonical: metadata.canonical }
-      : undefined,
-    robots,
   };
 }
 
@@ -45,7 +40,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             as="h1"
           />
           <Description>
-            Meet the team and the people who make it happen.
+            Meet the team and the people who make it happen. Being a public good, we rely on grants and public funding rounds, such as Gitcoin, Octant or Giveth.
+            Please support us whenever a round is active.
           </Description>
         </Section>
       </PageContainer>

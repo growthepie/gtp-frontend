@@ -7,7 +7,6 @@ export interface MetricDetails {
   metric_id: string;
   metric_name: string;
   timeseries: Timeseries;
-  source: string[];
   changes: Changes;
   summary: Summary;
 }
@@ -56,7 +55,6 @@ export interface SummaryPeriod {
 }
 
 export interface Timeseries {
-  hourly?: TimeseriesData;
   daily: TimeseriesData;
   weekly: TimeseriesData;
   monthly: TimeseriesData;

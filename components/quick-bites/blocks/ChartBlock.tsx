@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import Mustache from 'mustache';
+import ShowLoading from '@/components/layout/ShowLoading';
 
 /* 
 Mustache.js example for dynamic values
@@ -36,40 +37,34 @@ interface ChartBlockProps {
   block: ChartBlockType & { caption?: string };
 }
 
-interface PieSlice {
-  name: string;
-  y: number;
-  color: string;
-  tooltipDecimals?: number;
-}
-
-interface PieDataConfig {
-  url: string;
-  pathToData: string;
-  xIndex?: number;
-  yIndex?: number;
-  tooltipDecimals?: number;
-  colors: string | string[];
-  nameMap?: Record<string, string>;
-  showPercentage?: boolean;
+interface JsonMeta {
+  seriesAmount: number,
+  meta: {
+    type?: string,
+    name: string,
+    nameFromPath?: string,
+    nameIndex?: number,
+    color: string,
+    stacking?: string,
+    xIndex: number,
+    yIndex: number,
+    yaxis?: number,
+    suffix?: string,
+    prefix?: string,
+    url?: string,
+    pathToData?: string,
+    dashStyle?: Highcharts.DashStyleValue,
+    makeNegative?: boolean
+  }[]
 }
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { sharedState } = useQuickBite();
   const dynamicSeriesConfig = block.dataAsJson?.dynamicSeries;
-  const rawPieData = block.dataAsJson?.pieData;
-  const pieDataConfig = React.useMemo<PieDataConfig | null>(() => {
-    if (!rawPieData || Array.isArray(rawPieData)) return null;
-    if (typeof rawPieData === "object" && typeof rawPieData.url === "string") {
-      return rawPieData as PieDataConfig;
-    }
-    return null;
-  }, [rawPieData]);
 
   // Process URLs using Mustache to reflect the current sharedState.
   // This makes the `useSWR` key dynamic.
   const processedUrls = React.useMemo(() => {
-    if (dynamicSeriesConfig) return [];
     if (dynamicSeriesConfig) return [];
     const metaList = block.dataAsJson?.meta;
     if (!metaList?.length) return [];
@@ -120,29 +115,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     return rawUrl;
   }, [dynamicSeriesConfig, sharedState]);
 
-  const pieDataUrl = React.useMemo(() => {
-    if (!pieDataConfig?.url) return null;
-    const rawUrl = pieDataConfig.url;
-
-    if (rawUrl.includes('{{')) {
-      const requiredVars = (Mustache.parse(rawUrl) || [])
-        .filter(tag => tag[0] === 'name')
-        .map(tag => tag[1]);
-
-      const allVarsAvailable = requiredVars.every(v => sharedState[v] !== null && sharedState[v] !== undefined);
-      if (!allVarsAvailable) return null;
-
-      return Mustache.render(rawUrl, sharedState);
-    }
-
-    return rawUrl;
-  }, [pieDataConfig, sharedState]);
-
   // The key for useSWR is now `processedUrls`, which is dynamic.
   // SWR will automatically re-fetch when the key changes.
   const swrKey = dynamicSeriesConfig ? dynamicSeriesUrl : (processedUrls.length > 0 ? processedUrls : null);
-  const { data: unProcessedData } = useSWR(swrKey);
-  const { data: unProcessedPieData } = useSWR(pieDataUrl);
+  const { data: unProcessedData, error } = useSWR(swrKey);
 
   const dynamicDerived = React.useMemo(() => {
     if (!dynamicSeriesConfig || !unProcessedData) return null;
@@ -232,9 +208,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       if (meta.nameFromPath) {
         const sourceData = unProcessedData[index] ?? unProcessedData[0];
         const nameCandidates = getNestedValue(sourceData, meta.nameFromPath);
+        const nameIndex = meta.nameIndex ?? meta.yIndex;
 
-        if (Array.isArray(nameCandidates) && typeof nameCandidates[meta.yIndex] === "string") {
-          resolvedName = nameCandidates[meta.yIndex];
+        if (Array.isArray(nameCandidates) && typeof nameCandidates[nameIndex] === "string") {
+          resolvedName = nameCandidates[nameIndex];
         }
       }
 
@@ -245,82 +222,9 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     });
   }, [dynamicDerived?.meta, dynamicSeriesConfig, metaList, unProcessedData]);
 
-  const resolvedPieData = React.useMemo<PieSlice[]>(() => {
-    if (Array.isArray(rawPieData)) return rawPieData;
-    if (!pieDataConfig || !unProcessedPieData) return [];
-
-    const sourceData = pieDataConfig.pathToData
-      ? getNestedValue(unProcessedPieData, pieDataConfig.pathToData)
-      : unProcessedPieData;
-
-    if (!sourceData) return [];
-
-    const rows = Array.isArray(sourceData)
-      ? sourceData
-      : Array.isArray(sourceData.rows)
-        ? sourceData.rows
-        : [];
-
-    if (!rows.length) return [];
-
-    const rawPalette = typeof pieDataConfig.colors === "string"
-      ? getNestedValue(unProcessedPieData, pieDataConfig.colors)
-      : pieDataConfig.colors;
-
-    if (!Array.isArray(rawPalette) || rawPalette.length === 0) return [];
-
-    const palette = rawPalette
-      .filter((color): color is string => typeof color === "string" && color.length > 0);
-
-    if (palette.length === 0) return [];
-
-    const columns = Array.isArray(sourceData.columns) ? sourceData.columns : [];
-    const xIndex = pieDataConfig.xIndex ?? 0;
-    const yIndex = pieDataConfig.yIndex ?? 1;
-    const xColumnKey = typeof columns[xIndex] === "string" ? columns[xIndex] : undefined;
-    const yColumnKey = typeof columns[yIndex] === "string" ? columns[yIndex] : undefined;
-
-    return rows
-      .map((row: any, index: number) => {
-        let rawName: unknown;
-        let rawValue: unknown;
-
-        if (Array.isArray(row)) {
-          rawName = row[xIndex];
-          rawValue = row[yIndex];
-        } else if (row && typeof row === "object") {
-          if (xColumnKey && xColumnKey in row) {
-            rawName = row[xColumnKey];
-          } else {
-            rawName = Object.values(row)[xIndex];
-          }
-
-          if (yColumnKey && yColumnKey in row) {
-            rawValue = row[yColumnKey];
-          } else {
-            rawValue = Object.values(row)[yIndex];
-          }
-        } else {
-          return null;
-        }
-
-        const y = typeof rawValue === "number" ? rawValue : Number(rawValue);
-        if (!Number.isFinite(y)) return null;
-
-        const rawNameStr = String(rawName ?? `Slice ${index + 1}`);
-        const name = pieDataConfig.nameMap?.[rawNameStr] ?? rawNameStr;
-        const color = palette[index % palette.length];
-        const tooltipDecimals = pieDataConfig.tooltipDecimals;
-
-        return { name, y, color, tooltipDecimals };
-      })
-      .filter((point): point is PieSlice => point !== null);
-  }, [pieDataConfig, rawPieData, unProcessedPieData]);
-
   const passChartData = block.dataAsJson ? unProcessedData : block.data;
   const effectiveMeta = dynamicSeriesConfig ? (dynamicDerived?.meta || []) : (resolvedJsonMeta || metaList || []);
-  const hasPieData = block.chartType === 'pie' && resolvedPieData.length > 0;
-  const canRenderChart = (Boolean(passChartData) || hasPieData) && (!dynamicSeriesConfig || effectiveMeta.length > 0 || hasPieData);
+  const canRenderChart = Boolean(passChartData) && (!dynamicSeriesConfig || effectiveMeta.length > 0);
 
   // Don't render the chart if there's a filter key but no data yet.
   // This handles the initial state where a dropdown selection is needed.
@@ -344,7 +248,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       {canRenderChart && (
         <ChartWrapper
           chartType={block.chartType}
-          data={block.data ?? []}
+          data={block.data}
           margins={block.margins || 'normal'}
           options={block.options || {}}
           width={block.width || '100%'}
@@ -363,9 +267,6 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           disableTooltipSort={block.disableTooltipSort}
           seeMetricURL={block.seeMetricURL}
           yAxisLine={block.yAxisLine}
-          centerName={block.centerName}
-          pieData={resolvedPieData}
-          showPiePercentage={pieDataConfig?.showPercentage}
         />
       )}
       {block.caption && (

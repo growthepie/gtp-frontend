@@ -22,7 +22,6 @@ import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { cache } from "react";
-import { serializeJsonLd } from "@/utils/json-ld";
 
 type Props = {
   params: Promise<{ metric: string }>;
@@ -64,7 +63,6 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     getPageMetadata(`/fundamentals/${metric}`, {}),
     fetchMasterData(),
   ]);
-  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   const pageTitle = metricConfig.page?.title || metricConfig.label || metadata.title;
   const canonical = metadata.canonical ?? canonicalUrlForMetric(metric);
   const defaultDescription =
@@ -116,9 +114,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     other: {
       "last-modified": lastUpdated,
     },
-    robots,
   };
 }
+
+const serializeJsonLd = (value: unknown) =>
+  JSON.stringify(value, null, 2).replace(/</g, "\\u003c");
 
 export default async function Layout({
   children,
@@ -127,7 +127,7 @@ export default async function Layout({
   children: React.ReactNode;
   params: Promise<{ metric: string }>;
 }) {
-  const { metric } = await params;
+const { metric } = await params;
   const metricConfig = findMetricConfig(metric);
   if (!metricConfig) {
     track("404 Error", {
@@ -163,6 +163,7 @@ export default async function Layout({
     string,
     unknown
   >[];
+
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
       {jsonLdGraphs.map((graph, index) => (
@@ -175,7 +176,7 @@ export default async function Layout({
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">
-          <FundamentalsBackButton />
+<FundamentalsBackButton />
             <Title
               icon={pageData.icon as GTPIconName}
               title={pageTitle}
@@ -191,7 +192,7 @@ export default async function Layout({
               }
             />
           </div>
-          <Description>
+          <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

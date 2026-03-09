@@ -27,7 +27,7 @@ const CategoryBar = ({
   data: CategoryComparisonResponseData;
   master: MasterResponse | undefined;
   categories: any;
-  querySubcategories: string[] | undefined;
+  querySubcategories: Object | undefined;
   selectedCategory: string;
   setSelectedCategory: React.Dispatch<React.SetStateAction<string>>;
   checkSubcategory: (category: string, subcategory: string) => boolean;
@@ -36,12 +36,7 @@ const CategoryBar = ({
   handleSelectAllSubcategories: (category: string) => void;
   handleToggleSubcategory: (category: string, subcategory: string) => void;
 }) => {
-  const hasQuerySubcategories = Boolean(querySubcategories?.length);
-  const [openSub, setOpenSub] = useState(hasQuerySubcategories);
-
-  useEffect(() => {
-    setOpenSub(hasQuerySubcategories);
-  }, [hasQuerySubcategories]);
+  const [openSub, setOpenSub] = useState(querySubcategories ? true : false);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;

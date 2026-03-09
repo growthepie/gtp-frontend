@@ -11,13 +11,13 @@ import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
-import { getExplorerAddressUrl } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { GTPTooltipNew, GTPApplicationTooltip, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import Image from "next/image";
 import { Category } from "@/app/(layout)/applications/_components/Components";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
 import router from "next/router";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
@@ -279,23 +279,18 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   justify="end"
                   className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
                   extraRight={
-                    <GTPTooltipNew
-                      placement="top"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-50"
-                      trigger={
-                        <div className="pl-[2px]">
-                          <Icon icon="feather:info" className="size-[15px]" />
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Number of unique addresses that interacted with this contract/application.</div>
+                          </div>
                         </div>
-                      }
-                    >
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Number of unique addresses that interacted with this contract/application.</div>
-                        </div>
-                      </div>
-                    </GTPTooltipNew>
+                      </TooltipContent>
+                    </Tooltip>
                   }
                 >
                   # Users
@@ -307,23 +302,18 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   justify="end"
                   className="heading-small-xs relative pl-[10px] mr-0 pr-2 whitespace-nowrap"
                   extraRight={
-                    <GTPTooltipNew
-                      placement="top"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-50"
-                      trigger={
-                        <div className="pl-[2px]">
-                          <Icon icon="feather:info" className="size-[15px]" />
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Total gas fees spent by users on this contract/application.</div>
+                          </div>
                         </div>
-                      }
-                    >
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Total gas fees spent by users on this contract/application.</div>
-                        </div>
-                      </div>
-                    </GTPTooltipNew>
+                      </TooltipContent>
+                    </Tooltip>
                   }
                 >
                   Fees Spent
@@ -381,7 +371,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                           </div>
                           {master?.chains[chainKey]?.block_explorer && (
                             <Link
-                              href={getExplorerAddressUrl(master.chains[chainKey].block_explorer, row.address)}
+                              href={`${master.chains[chainKey].block_explorer}address/${row.address}`}
                               rel="noopener noreferrer"
                               target="_blank"
                             >
@@ -522,23 +512,18 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   justify="end"
                   className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
                   extraRight={
-                    <GTPTooltipNew
-                      placement="top"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-50"
-                      trigger={
-                        <div className="pl-[2px]">
-                          <Icon icon="feather:info" className="size-[15px]" />
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Percentage of users on this chain that also transacted on the destination chain.</div>
+                          </div>
                         </div>
-                      }
-                    >
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Percentage of users on this chain that also transacted on the destination chain.</div>
-                        </div>
-                      </div>
-                    </GTPTooltipNew>
+                      </TooltipContent>
+                    </Tooltip>
                   }
                 >
                   % of Users
@@ -550,23 +535,18 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   justify="end"
                   className="heading-small-xs relative pl-[10px] mr-0 whitespace-nowrap"
                   extraRight={
-                    <GTPTooltipNew
-                      placement="top"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-50"
-                      trigger={
-                        <div className="pl-[2px]">
-                          <Icon icon="feather:info" className="size-[15px]" />
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Number of users on this chain that also transacted on the destination chain.</div>
+                          </div>
                         </div>
-                      }
-                    >
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Number of users on this chain that also transacted on the destination chain.</div>
-                        </div>
-                      </div>
-                    </GTPTooltipNew>
+                      </TooltipContent>
+                    </Tooltip>
                   }
                 >
                   # of Users
@@ -578,23 +558,18 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                   justify="end"
                   className="heading-small-xs relative pl-[10px] mr-0 pr-2"
                   extraRight={
-                    <GTPTooltipNew
-                      placement="top"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-50"
-                      trigger={
-                        <div className="pl-[2px]">
-                          <Icon icon="feather:info" className="size-[15px]" />
+                    <Tooltip placement="top" allowInteract={false}>
+                      <TooltipTrigger className="pl-[2px]">
+                        <Icon icon="feather:info" className="size-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-y-[5px] items-center relative">
+                          <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div>Change in the number of cross-chain users compared to the previous period.</div>
+                          </div>
                         </div>
-                      }
-                    >
-                      <div className="flex flex-col gap-y-[5px] items-center relative">
-                        <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div>Change in the number of cross-chain users compared to the previous period.</div>
-                        </div>
-                      </div>
-                    </GTPTooltipNew>
+                      </TooltipContent>
+                    </Tooltip>
                   }
                 >
                   Growth

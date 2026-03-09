@@ -4,7 +4,6 @@ import { ContractsURL, MasterURL } from "../../../lib/urls";
 import { Contract } from "@/types/api/ContractsResponse";
 import { ContractsResponse } from "@/types/api/ContractsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { getExplorerAddressUrl } from "@/lib/helpers";
 import ShowLoading from "@/components/layout/ShowLoading";
 import useSWR from "swr";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -229,7 +228,8 @@ export default function ContractsPage(props: { params: Promise<any> }) {
               </div>
               {master?.chains[info.row.original.origin_key].block_explorer && (
                 <Link
-                  href={getExplorerAddressUrl(master?.chains[info.row.original.origin_key].block_explorer, info.getValue() as string)}
+                  href={`${master?.chains[info.row.original.origin_key].block_explorer
+                    }address/${info.getValue()}`}
                   target="_blank"
                 >
                   <Icon

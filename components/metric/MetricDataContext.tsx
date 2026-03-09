@@ -1,6 +1,7 @@
 import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
 import { Chain } from "@/lib/chains";
-import { MetricData } from "@/types/api/MetricsResponse";
+import { ChainData, MetricData } from "@/types/api/MetricsResponse";
+import { intersection } from "lodash";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 
@@ -12,7 +13,7 @@ type Timespans = {
     xMin: number;
     xMax: number;
   };
-};
+} | {};
 
 type MetricDataContextType = {
   data: MetricData | undefined;
@@ -34,8 +35,6 @@ type MetricDataContextType = {
   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
   selectedChains: string[];
   setSelectedChainsInDataContext: (chains: string[]) => void;
-
-  lastUpdatedUtc: string | null;
 
   // Loading states
   isLoading: boolean;
@@ -61,7 +60,6 @@ const MetricDataContext = createContext<MetricDataContextType>({
   allChainsByKeys: {},
   selectedChains: [],
   setSelectedChainsInDataContext: () => {},
-  lastUpdatedUtc: null,
   isLoading: false,
   isValidating: false,
 });
@@ -119,135 +117,74 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     ).map((chain) => chain.key);
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
-  const intervalBounds = useMemo(() => {
-    if (!data) return {};
-
-    const boundsByInterval: { [key: string]: { min: number; max: number } } = {};
-
-    const allChainKeys = Object.keys(data.chains);
-    const selectedAvailableKeys = allChainKeys.filter((chainKey) =>
-      selectedChains.includes(chainKey),
-    );
-
-    const computeBounds = (interval: string, preferredChainKeys: string[]) => {
-      const keysToScan = preferredChainKeys.length > 0 ? preferredChainKeys : allChainKeys;
-      const series = keysToScan
-        .map((chainKey) => data.chains[chainKey]?.[interval]?.data)
-        .filter((rows): rows is number[][] => Array.isArray(rows) && rows.length > 0);
-
-      if (series.length === 0) {
-        return { min: 0, max: 0 };
-      }
-
-      const min = series.reduce((acc, rows) => Math.min(acc, rows[0][0]), Infinity);
-      const max = series.reduce((acc, rows) => Math.max(acc, rows[rows.length - 1][0]), 0);
-
-      if (!Number.isFinite(min) || !Number.isFinite(max)) {
-        return { min: 0, max: 0 };
-      }
-
-      return { min, max };
-    };
-
-    const intervals = Array.from(
-      new Set([
-        ...data.timeIntervals,
-        ...allChainKeys.flatMap((chainKey) => Object.keys(data.chains[chainKey] ?? {})),
-      ]),
-    );
-
-    intervals.forEach((interval) => {
-      const selectedWithData = selectedAvailableKeys.filter((chainKey) => {
-        const rows = data.chains[chainKey]?.[interval]?.data;
-        return Array.isArray(rows) && rows.length > 0;
-      });
-      boundsByInterval[interval] = computeBounds(interval, selectedWithData);
-    });
-
-    return boundsByInterval;
-  }, [data, selectedChains]);
 
 
   const minDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return intervalBounds[selectedTimeInterval]?.min ?? 0;
-  }, [data, intervalBounds, selectedTimeInterval]);
+    return Object.keys(data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          if (!chain[selectedTimeInterval].data[0][0]) return acc;
+          return Math.min(
+            acc,
+            chain[selectedTimeInterval].data[0][0],
+          );
+        }
+        , Infinity) as number
+  }, [data, selectedChains, selectedTimeInterval])
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return intervalBounds[selectedTimeInterval]?.max ?? 0;
-  }, [data, intervalBounds, selectedTimeInterval]);
+    return Object.keys(data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          return Math.max(
+            acc,
+            chain[selectedTimeInterval].data[chain[selectedTimeInterval].data.length - 1][0],
+          );
+        }
+        , 0) as number
+
+  }, [data, selectedChains, selectedTimeInterval])
   
   const timeIntervals = useMemo(() => {
     if (!data) return [];
-    return data.timeIntervals.filter((interval) => {
-      return Object.values(data.chains).some((chain) => {
-        const rows = chain[interval]?.data;
-        return Array.isArray(rows) && rows.length > 0;
-      });
-    });
-  }, [data]);
+    return intersection(["daily", "weekly", "monthly", "quarterly"], Object.keys(Object.values(data.chains)[0]));
+  }, [data])
 
   const minUnixByTimeInterval = useMemo(() => {
-    if (!data) return {};
+    if (!data) return 0;
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
-      values[interval] = intervalBounds[interval]?.min ?? 0;
+      // find the min unix value across all chains for the interval
+      const minUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[0][0]).reduce((acc, curr) => Math.min(acc, curr), Infinity);
+      values[interval] = minUnix;
     });
     return values;
-  }, [data, timeIntervals, intervalBounds]);
+  }, [data, timeIntervals, selectedChains])
 
   const maxUnixByTimeInterval = useMemo(() => {
-    if (!data) return {};
+    if (!data) return 0;
     const values: { [key: string]: number } = {}
     timeIntervals.forEach((interval) => {
-      values[interval] = intervalBounds[interval]?.max ?? 0;
+      // find the max unix value across all chains for the interval
+      const maxUnix = Object.keys(data.chains).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => data.chains[chainKey][interval].data[data.chains[chainKey][interval].data.length - 1][0]).reduce((acc, curr) => Math.max(acc, curr), 0);
+      values[interval] = maxUnix;
     });
     return values;
-  }, [data, timeIntervals, intervalBounds]);
+  }, [data, timeIntervals, selectedChains])
 
   const timespans = useMemo(() => {
     if (!data) return {};
-    const [hourlybuffer, dailybuffer, weeklybuffer, monthlybuffer] = [0, 0, 0, 0];
+    const [dailybuffer, weeklybuffer, monthlybuffer ] = [0, 0, 0];
     const minUnix = minUnixByTimeInterval[selectedTimeInterval];
     const maxUnix = maxUnixByTimeInterval[selectedTimeInterval];
 
     const ts = {
-      "24h": {
-        label: "24 hours",
-        shortLabel: "24h",
-        value: 24,
-        xMin: maxUnix - 24 * 60 * 60 * 1000 - hourlybuffer,
-        xMax: maxUnix + hourlybuffer,
-      },
-      "3d": {
-        label: "3 days",
-        shortLabel: "3d",
-        value: 3,
-        xMin: maxUnix - 3 * 24 * 60 * 60 * 1000 - hourlybuffer,
-        xMax: maxUnix + hourlybuffer,
-      },
-      "7d": {
-        label: "7 days",
-        shortLabel: "7d",
-        value: 7,
-        xMin: maxUnix - 7 * 24 * 60 * 60 * 1000 - hourlybuffer,
-        xMax: maxUnix + hourlybuffer,
-      },
-      "30d": {
-        label: "30 days",
-        shortLabel: "30d",
-        value: 30,
-        xMin: maxUnix - 30 * 24 * 60 * 60 * 1000 - hourlybuffer,
-        xMax: maxUnix + hourlybuffer,
-      },
-      "maxH": {
-        label: "Max",
-        shortLabel: "Max",
-        value: 0,
-        xMin: minUnix - hourlybuffer,
-        xMax: maxUnix + hourlybuffer,
-      },
       "90d": {
         label: "90 days",
         shortLabel: "90d",
@@ -337,7 +274,6 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
   const log_default = metricsDict[metric_id]?.log_default || false;
 
-
   // if (!data) return <div>Loading...</div>;
 
   return (
@@ -361,7 +297,6 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
         selectedChains,
         setSelectedChainsInDataContext,
-        lastUpdatedUtc: data?.last_updated_utc ?? null,
         isLoading,
         isValidating,
       }}

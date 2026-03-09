@@ -4,8 +4,7 @@ import { GTPIcon } from "../../GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
 import { ChainOverview, GetRankingColor } from "@/lib/chains";
 import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse";
-import ReactEChartsCore from "echarts-for-react/lib/core";
-import { echarts } from "@/lib/echarts-setup";
+import ReactECharts from "echarts-for-react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useState, useCallback, useRef, useEffect } from "react";
 import dayjs from "@/lib/dayjs";
@@ -15,8 +14,7 @@ import { getFundamentalsByKey } from "@/lib/metrics";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { useTheme } from "next-themes";
 
-const formatLargeNumber = (value: number | null | undefined, decimals: number) => {
-    if (value == null || Number.isNaN(value)) return "—";
+const formatLargeNumber = (value: number, decimals: number) => {
     const absValue = Math.abs(value);
     if (absValue >= 1e9) {
         return (value / 1e9).toFixed(decimals) + 'B';
@@ -238,7 +236,7 @@ const MetricChart = ({
     prefix: string,
     suffix: string
 }) => {
-    const chartRef = useRef<ReactEChartsCore>(null);
+    const chartRef = useRef<ReactECharts>(null);
     const types = overviewData.data.kpi_cards[metricKey].sparkline.types;
     
     // Extract timestamps and values from the sparkline data
@@ -479,8 +477,7 @@ const MetricChart = ({
                 }
             }}
         >
-            <ReactEChartsCore
-                echarts={echarts}
+            <ReactECharts 
                 ref={chartRef}
                 option={option} 
                 style={{ height: '100%', width: '100%' }}
