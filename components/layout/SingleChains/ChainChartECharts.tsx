@@ -9,7 +9,7 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { useSWRConfig } from "swr";
-import { ChainsBaseURL, getChainMetricURL } from "@/lib/urls";
+import { getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChainsData, MetricData, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
@@ -20,7 +20,6 @@ import { IS_PRODUCTION } from "@/lib/helpers";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
-import { preload } from "swr";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
 import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 
@@ -36,7 +35,6 @@ const withOpacity = (color: string, opacity: number): string => {
   return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const transformMetricDetails = (details: MetricDetails): MetricData => {
   return {
@@ -1916,7 +1914,6 @@ export default function ChainChartECharts({
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
-              onMouseOver={() => preload(`${ChainsBaseURL}${prevChainKey}.json`, fetcher)}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
@@ -1944,7 +1941,6 @@ export default function ChainChartECharts({
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
-              onMouseOver={() => preload(`${ChainsBaseURL}${nextChainKey}.json`, fetcher)}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
             </div>
@@ -1988,7 +1984,6 @@ export default function ChainChartECharts({
                     key={index}
                     onMouseOver={() => {
                       setHoverChainKey(chain.key);
-                      preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
                     }}
                     onMouseLeave={() => setHoverChainKey(null)}
                   >
