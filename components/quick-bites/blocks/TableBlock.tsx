@@ -323,8 +323,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       }
 
       // Generate link if add_url is defined in column definition
-      if (columnDef?.add_url && typeof cellValue === 'string') {
-        cellObject.link = columnDef.add_url.replace('${cellValue}', cellValue);
+      if (columnDef?.add_url) {
+        const linkKey = columnDef.linkSourceKey;
+        const linkValue = linkKey !== undefined
+          ? (columnIndexMap[linkKey] !== undefined ? row[columnIndexMap[linkKey]] : undefined)
+          : cellValue;
+        if (typeof linkValue === 'string') {
+          cellObject.link = columnDef.add_url.replace('${cellValue}', linkValue);
+        }
       }
       if (infoTooltipText) {
         cellObject.infoTooltipText = infoTooltipText;
@@ -567,7 +573,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (formatted === null) return <EmptyCell />;
       if (colDef?.chip) {
         return (
-          <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+          <span className={`inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs flex-shrink-0 ${colDef?.uppercase ? 'uppercase' : ''}`}>
             {formatted}
           </span>
         );
@@ -1003,13 +1009,13 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     }
                     cellMainContent = formatted !== null ? (
                       colDef?.chip ? (
-                        <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+                        <span className={`inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs flex-shrink-0 ${colDef?.uppercase ? 'uppercase' : ''}`}>
                           {formatted}
                         </span>
                       ) : (
                         <>
                           {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''}`}>
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-green-500' : cellData.value < 0 ? 'text-red-500' : '') : ''}`}>
                             {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
                           </span>
                         </>
