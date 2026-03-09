@@ -13,38 +13,29 @@ function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
   }, {});
 }
 
+export type ProjectMetadata = {
+  owner_project: string;
+  display_name: string;
+  description: string | null;
+  main_github: string | null;
+  twitter: string | null;
+  website: string | null;
+  logo_path: string | null;
+  main_category: string | null;
+  sub_category: string | null;
+  sub_categories: string[] | null;
+  ecosystem_rank: number | null;
+  token_symbol: string | null;
+  features: string[] | null;
+  active_on: { [chainKey: string]: number } | null;
+  txcount: number | null;
+  on_apps_page: boolean;
+};
+
 export type ProjectsMetadataContextType = {
   isLoading: boolean;
-  ownerProjectToProjectData: {
-    [key: string]: {
-      owner_project: string;
-      display_name: string;
-      description: string | null;
-      main_github: string | null;
-      twitter: string | null;
-      website: string | null;
-      logo_path: string | null;
-      main_category: string | null;
-      sub_category: string | null;
-      sub_categories: string[] | null;
-      on_apps_page: boolean;
-    }
-  };
-  projectNameToProjectData: {
-    [key: string]: {
-      owner_project: string;
-      display_name: string;
-      description: string | null;
-      main_github: string | null;
-      twitter: string | null;
-      website: string | null;
-      logo_path: string | null;
-      main_category: string | null;
-      sub_category: string | null;
-      sub_categories: string[] | null;
-      on_apps_page: boolean;
-    }
-  };
+  ownerProjectToProjectData: { [key: string]: ProjectMetadata };
+  projectNameToProjectData: { [key: string]: ProjectMetadata };
   availableMainCategories: string[];
   filteredProjectsData: {
     types: string[];
@@ -79,6 +70,11 @@ export const ProjectsMetadataProvider = ({ children }: ProjectsMetadataProviderP
         main_category: project[projectsData.data.types.indexOf("main_category")],
         sub_category: project[projectsData.data.types.indexOf("sub_category")],
         sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
+        ecosystem_rank: project[projectsData.data.types.indexOf("ecosystem_rank")] ?? null,
+        token_symbol: project[projectsData.data.types.indexOf("token_symbol")] ?? null,
+        features: project[projectsData.data.types.indexOf("features")] ?? null,
+        active_on: project[projectsData.data.types.indexOf("active_on")] ?? null,
+        txcount: project[projectsData.data.types.indexOf("txcount")] ?? null,
         on_apps_page: true,
       }
       return acc;
@@ -98,6 +94,11 @@ export const ProjectsMetadataProvider = ({ children }: ProjectsMetadataProviderP
         main_category: project[projectsData.data.types.indexOf("main_category")],
         sub_category: project[projectsData.data.types.indexOf("sub_category")],
         sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
+        ecosystem_rank: project[projectsData.data.types.indexOf("ecosystem_rank")] ?? null,
+        token_symbol: project[projectsData.data.types.indexOf("token_symbol")] ?? null,
+        features: project[projectsData.data.types.indexOf("features")] ?? null,
+        active_on: project[projectsData.data.types.indexOf("active_on")] ?? null,
+        txcount: project[projectsData.data.types.indexOf("txcount")] ?? null,
         on_apps_page: true,
       }
       return acc;

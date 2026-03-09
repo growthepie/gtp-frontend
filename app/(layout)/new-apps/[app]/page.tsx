@@ -1,11 +1,16 @@
 "use client";
 import { useState, memo, useMemo, use, useEffect } from "react";
+import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
+import { useMaster } from "@/contexts/MasterContext";
+import { ProjectMetadata, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import Container from "@/components/layout/Container";
+import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
 import AppMetricCard from "@/components/apps/AppMetricCard";
@@ -16,6 +21,8 @@ import {
   GridTableRow,
 } from "@/components/layout/GridTable";
 import { Icon } from "@iconify/react";
+
+type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 // ─── Fake Data ───────────────────────────────────────────────────────────────
 
@@ -472,13 +479,131 @@ const AppOverviewMetaCol = ({
   </div>
 );
 
-const AboutApp = memo(({ app }: { app: typeof FAKE_APP }) => {
-  const [open, setOpen] = useState(true);
-  const total = app.chains.reduce((sum, c) => sum + c.share, 0);
+// ─── Active On Section ────────────────────────────────────────────────────────
 
-  const firstContractFormatted = new Date(app.first_contract_date)
-    .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
-    .replace(/\//g, ".");
+const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: string]: number }; txcount: number }) => {
+  const { AllChainsByKeys } = useMaster();
+  const { resolvedTheme } = useTheme();
+  const chainColorTheme = resolvedTheme === "light" ? "light" : "dark";
+  const [hoveredChain, setHoveredChain] = useState<string | null>(null);
+
+  const sorted = useMemo(
+    () => Object.entries(active_on).sort((a, b) => b[1] - a[1]),
+    [active_on],
+  );
+
+
+  const handleBarMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    let cumulative = 0;
+    for (const [chain, count] of sorted) {
+      cumulative += (count / txcount) * rect.width;
+      if (mouseX <= cumulative) {
+        setHoveredChain(chain);
+        return;
+      }
+    }
+  };
+
+  const hoveredEntry = hoveredChain ? sorted.find(([c]) => c === hoveredChain) : null;
+  const hoveredCount = hoveredEntry?.[1] ?? 0;
+  const hoveredPct = txcount > 0 ? ((hoveredCount / txcount) * 100).toFixed(1) : "0";
+  const hoveredColor = AllChainsByKeys[hoveredChain ?? ""]?.colors[chainColorTheme][0];
+  const hoveredLabel = AllChainsByKeys[hoveredChain ?? ""]?.label ?? hoveredChain;
+  const hoveredUrlKey = AllChainsByKeys[hoveredChain ?? ""]?.urlKey;
+
+  return (
+    <div className="flex flex-col gap-y-[6px] flex-1 min-w-[160px] max-w-[360px]">
+      <div className="heading-xxs text-color-text-secondary">Active on</div>
+
+      {/* Icon row */}
+      <div
+        className="flex flex-wrap items-center gap-[3px]"
+        onMouseLeave={() => setHoveredChain(null)}
+      >
+        {sorted.map(([chain]) => {
+          const chainData = AllChainsByKeys[chain];
+          const chainColor = AllChainsByKeys[chain]?.colors[chainColorTheme][0];
+          const isHovered = hoveredChain === chain;
+          return (
+            <div
+              key={chain}
+              className="flex items-center justify-center size-[22px] rounded-full transition-colors duration-150 cursor-default"
+              style={{ backgroundColor: isHovered ? "rgba(var(--ui-active), 1)" : "transparent" }}
+              onMouseEnter={() => setHoveredChain(chain)}
+            >
+              <GTPIcon
+                icon={`gtp:${chainData?.urlKey}-logo-monochrome` as GTPIconName}
+                className="!size-[24px]"
+                containerClassName="!size-[24px] flex items-center justify-center"
+                style={{ color: chainColor }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bar — visual uses overlapping pills; hover uses proportional math on container */}
+      <div
+        className="flex h-[13px] w-full rounded-full overflow-hidden cursor-default"
+        onMouseMove={handleBarMouseMove}
+        onMouseLeave={() => setHoveredChain(null)}
+      >
+        {sorted.map(([chain, count], index) => (
+          <div
+            key={chain + "-bar"}
+            className="relative h-full shrink-0 pointer-events-none"
+            style={{
+              marginRight: "-4px",
+              zIndex: 100 - index,
+              width: `${(count / txcount) * 100}%`,
+              backgroundColor: AllChainsByKeys[chain]?.colors[chainColorTheme][0],
+              borderTopRightRadius: "999px",
+              borderBottomRightRadius: "999px",
+            }}
+          >
+            {/* Solid overlay for dimming — avoids bleed-through in overlap zone */}
+            <div
+              className="absolute inset-0 bg-color-bg-default transition-opacity duration-150"
+              style={{
+                borderTopRightRadius: "999px",
+                borderBottomRightRadius: "999px",
+                opacity: hoveredChain && hoveredChain !== chain ? 0.65 : 0,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Hover info — fixed height prevents layout shift */}
+      <div className="flex items-center gap-x-[6px] h-[16px]">
+        {hoveredChain && hoveredEntry && (
+          <>
+            <GTPIcon
+              icon={`gtp:${hoveredUrlKey}-logo-monochrome` as GTPIconName}
+              className="!size-[12px]"
+              containerClassName="!size-[12px] flex items-center justify-center"
+              style={{ color: hoveredColor }}
+            />
+            <span className="text-xs font-medium" style={{ color: hoveredColor }}>
+              {hoveredLabel}
+            </span>
+            <span className="text-xs text-color-text-secondary">{hoveredPct}%</span>
+            <span className="text-xs text-color-text-secondary">
+              ({hoveredCount.toLocaleString("en-GB")} transactions)
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── About App ────────────────────────────────────────────────────────────────
+
+const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
+  const [open, setOpen] = useState(true);
 
   return (
     <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
@@ -509,121 +634,81 @@ const AboutApp = memo(({ app }: { app: typeof FAKE_APP }) => {
         }}
       >
         {/* Description */}
-        <p className="text-sm pb-[15px]">{app.description}</p>
+        <p className="text-sm pb-[15px]">{projectMetadata.description}</p>
 
         {/* Metadata row */}
         <div className="flex flex-wrap items-start gap-x-[30px] gap-y-[12px]">
 
           {/* First Contract Seen */}
           <AppOverviewMetaCol label="First Contract Seen">
-            {firstContractFormatted}
+            {Object.values(data.first_seen)[0] ? (
+              <div>{new Date(Object.values(data.first_seen)[0] as string).toLocaleDateString()}</div>
+            ) : (
+              "—"
+            )}
           </AppOverviewMetaCol>
 
           {/* Ecosystem Rank */}
           <AppOverviewMetaCol label="Ethereum Ecosystem Rank">
-            #{app.ecosystem_rank} out of {app.ecosystem_total.toLocaleString()} apps
+            #{projectMetadata.ecosystem_rank}
           </AppOverviewMetaCol>
 
           {/* Active on: icons + stacked bar */}
-          <div className="flex flex-col gap-y-[4px] flex-1 min-w-[160px] max-w-[360px]">
-            <div className="heading-xxs text-color-text-secondary">Active on</div>
-            <div className="flex items-center gap-x-[4px]">
-              {app.chains.map((chain) => (
-                <GTPIcon
-                  key={chain.key}
-                  icon={`gtp:${chain.key}-logo-monochrome` as GTPIconName}
-                  size="sm"
-                  containerClassName="!size-[20px] flex items-center justify-center"
-                  style={{ color: chain.color }}
-                />
-              ))}
-            </div>
-            <div className="flex h-[13px] w-full rounded-full overflow-hidden mt-[2px]">
-              {app.chains.map((chain, index) => (
-                <div
-                  key={chain.key}
-                  className="relative"
-                  style={{
-                    marginRight: "-4px",
-                    zIndex: 100 - index,
-                    width: `${(chain.share / total) * 100}%`,
-                    backgroundColor: chain.color, 
-                    borderTopRightRadius: "999px",
-                    borderBottomRightRadius: "999px",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+          {projectMetadata.active_on && projectMetadata.txcount && (
+            <ActiveOnSection
+              active_on={projectMetadata.active_on}
+              txcount={projectMetadata.txcount}
+            />
+          )}
 
           {/* Token */}
           <AppOverviewMetaCol label="Token">
-            {app.token ?? "—"}
+            {projectMetadata.token_symbol ?? "—"}
           </AppOverviewMetaCol>
 
           {/* Links */}
           <div className="flex flex-col gap-y-[4px]">
             <div className="heading-xxs text-color-text-secondary whitespace-nowrap">Links</div>
             <div className="flex flex-wrap items-center gap-[5px]">
-              {app.links.website && (
+              {projectMetadata.website && (
                 <GTPButton
                   size="sm"
                   leftIcon={"feather:globe" as GTPIconName}
                   label="Website"
-                  clickHandler={() => window.open(app.links.website, "_blank", "noopener,noreferrer")}
+                  clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
                 />
               )}
-              {app.links.socials && Object.keys(app.links.socials).length > 0 && (
-                <GTPButtonDropdown
-                  buttonProps={{
-                    size: "sm",
-                    leftIcon: "gtp-socials",
-                    rightIcon: "in-button-right-monochrome",
-                    label: "Socials",
-                  }}
-                  matchTriggerWidthToDropdown={true}
-                  openDirection="bottom"
-                  
-                  dropdownWidthClassName="w-[160px]"
-                  dropdownContent={
-                    <div className="flex flex-col gap-y-[2px] pb-[10px]">
-                      {Object.entries(app.links.socials).map(([name, href]) => (
-                        <Link
-                          key={name}
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex w-full items-center gap-x-[10px] justify-start text-sm font-semibold hover:bg-color-ui-hover px-[22px] py-[5px] transition-colors duration-200 whitespace-nowrap"
-                        >
-                          {name}
-                        </Link>
-                      ))}
-                    </div>
-                  }
+              {projectMetadata.twitter && (
+                <LinkDropdown
+                  icon="gtp-socials"
+                  label="Socials"
+                  links={[
+                    { icon: "ri:twitter-x-fill", label: "Twitter", href: `https://x.com/${projectMetadata.twitter}` },
+                  ]}
                 />
               )}
-              {app.links.github && (
+              {projectMetadata.main_github && (
                 <GTPButton
                   size="sm"
                   leftIcon={"github" as GTPIconName}
                   label="Github"
-                  clickHandler={() => window.open(app.links.github, "_blank", "noopener,noreferrer")}
+                  clickHandler={() => window.open(projectMetadata.main_github ?? "", "_blank", "noopener,noreferrer")}
                 />
               )}
-              {app.links.docs && (
+              {projectMetadata.website && (
                 <GTPButton
                   size="sm"
                   leftIcon="gtp-read"
                   label="Docs"
-                  clickHandler={() => window.open(app.links.docs, "_blank", "noopener,noreferrer")}
+                  clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
                 />
               )}
-              {app.links.governance && (
+              {projectMetadata.website && (
                 <GTPButton
                   size="sm"
                   leftIcon={"gtp-file-text" as GTPIconName}
                   label="Governance"
-                  clickHandler={() => window.open(app.links.governance!, "_blank", "noopener,noreferrer")}
+                  clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
                 />
               )}
             </div>
@@ -693,25 +778,26 @@ const ScreenshotsSection = memo(() => {
 ScreenshotsSection.displayName = "ScreenshotsSection";
 
 
-const FeaturedSection = memo(({ app }: { app: typeof FAKE_APP }) => {
+const FeaturedSection = memo(({ owner_project, projectMetadata }: { owner_project: string, projectMetadata: ProjectMetadata }) => {
   return (
     <div className="flex w-full rounded-[15px] gap-x-[15px] select-none">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <FeaturedCard key={i} app={app} />
+      {projectMetadata.features?.map((feature: string, i: number) => (
+        <FeaturedCard key={i} feature={feature} />
       ))}
     </div>
   );
 });
 
 
-const FeaturedCard = memo(({ app: _app }: { app: typeof FAKE_APP }) => {
+const FeaturedCard = memo(({ feature }: { feature: string }) => {
+ 
   return (
     <div className="flex w-full items-center justify-center h-[50px] rounded-[11px] bg-color-bg-default px-[13px] py-[5px] gap-x-[5px] select-none">
      
-        <GTPIcon icon="gtp-metrics-marketcap" className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
+        <GTPIcon icon={`gtp:${feature}-logo-monochrome` as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
         
         <div className="text-lg text-color-text-primary">
-          Featured
+          {feature}
         </div>
 
     </div>
@@ -722,12 +808,12 @@ FeaturedSection.displayName = "FeaturedSection";
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
+const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
   return (
     <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
-      <AboutApp app={app} />
+      <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
       <ScreenshotsSection />
-      <FeaturedSection app={app} />
+      <FeaturedSection owner_project={owner_project} projectMetadata={projectMetadata} />
       <div className="flex flex-col gap-y-[15px] pb-[10px]">
         <div className="flex items-center gap-x-[8px]">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
@@ -744,7 +830,7 @@ const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
         {/* Left column: KPI side cards */}
         <div className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
-          {app.kpi_cards.slice(0, 1).map((card) => (
+          {FAKE_APP.kpi_cards.slice(0, 1).map((card) => (
             <AppMetricCard
               key={card.key}
               label={card.label}
@@ -754,11 +840,11 @@ const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
               prefix={card.prefix}
               suffix={card.suffix}
               sparkline={card.sparkline}
-              color={app.accent_color}
+              color={FAKE_APP.accent_color}
             />
           ))}
           <PartitionLine />
-          {app.kpi_cards.slice(1).map((card) => (
+          {FAKE_APP.kpi_cards.slice(1).map((card) => (
             <AppMetricCard
               key={card.key}
               label={card.label}
@@ -768,11 +854,11 @@ const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
               prefix={card.prefix}
               suffix={card.suffix}
               sparkline={card.sparkline}
-              color={app.accent_color}
+              color={FAKE_APP.accent_color}
             />
           ))}
           <PartitionLine />
-          {app.kpi_cards.map((card) => (
+          {FAKE_APP.kpi_cards.map((card) => (
             <AppMetricCard
               key={card.key}
               label={card.label}
@@ -782,7 +868,7 @@ const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
               prefix={card.prefix}
               suffix={card.suffix}
               sparkline={card.sparkline}
-              color={app.accent_color}
+              color={FAKE_APP.accent_color}
             />
           ))}
           <PartitionLine />
@@ -791,7 +877,7 @@ const OverviewContent = memo(({ app }: { app: typeof FAKE_APP }) => {
 
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px]">
-          <ChainActivityCard chains={app.chains} />
+          <ChainActivityCard chains={FAKE_APP.chains} />
           <MostActiveContracts />
         
         </div>
@@ -858,15 +944,22 @@ export default function NewAppPage({
 }: {
   params: Promise<{ app: string }>;
 }) {
-  // params.app will be used to fetch real app data once API is wired up
   use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+
+
+  const { data, owner_project } = useApplicationDetailsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  const projectMetadata = ownerProjectToProjectData[owner_project];
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
     return searchParams.get("tab") || "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+
 
   // Sync tab selection to URL
   useEffect(() => {
@@ -885,15 +978,13 @@ export default function NewAppPage({
     }`;
     router.replace(newUrl, { scroll: false });
   }, [selectedTab, router, searchParams]);
-
-  // In a real implementation, app data would be fetched based on appSlug.
-  // For now we use fake data regardless of the slug.
-  const appData = FAKE_APP;
+  
+ 
 
   const TabContent = useMemo(() => {
     switch (selectedTab) {
       case "overview":
-        return <OverviewContent app={appData} />;
+        return <OverviewContent data={data} owner_project={owner_project} projectMetadata={projectMetadata} />;
       case "metrics":
         return <MetricsContent />;
       case "user_insights":
@@ -901,9 +992,11 @@ export default function NewAppPage({
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [selectedTab, appData]);
+  }, [data, selectedTab, owner_project, projectMetadata]);
 
   return (
+    <>
+    {owner_project && projectMetadata && (
     <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
       {/* Tab bar */}
       <SectionBar>
@@ -919,7 +1012,7 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={false}
               icon={tab.icon as GTPIconName}
-              header={tab.getHeader(appData)}
+              header={tab.getHeader(FAKE_APP)}
               index={index + 1}
               isHovered={hoveredTab === tab.key}
             />
@@ -932,5 +1025,7 @@ export default function NewAppPage({
         {TabContent}
       </div>
     </Container>
+    )}
+    </>
   );
 }
