@@ -361,6 +361,7 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         },
         showInMenu: parseShowInMenu(dropdownConfig),
         stateKey: dropdownConfig.stateKey || undefined,
+        labelStateKey: dropdownConfig.labelStateKey || undefined,
         multiSelect: dropdownConfig.multiSelect || false
       };
 
@@ -402,9 +403,10 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         readFromJSON: false,
         showInMenu: parseShowInMenu(dropdownConfig),
         stateKey: dropdownConfig.stateKey || undefined,
+        labelStateKey: dropdownConfig.labelStateKey || undefined,
         multiSelect: dropdownConfig.multiSelect || false
       };
-      
+
       return block;
     }
   } catch (error) {

@@ -87,16 +87,34 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
     return block.options || [];
   }, [block.readFromJSON, block.options, block.jsonData, jsonData]);
 
+  const labelStateKey = block.labelStateKey;
+
+  // Derive the label as a primitive so the effect below has a stable, comparable dependency
+  const resolvedLabel = React.useMemo(() => {
+    if (!labelStateKey || !selectedValue) return null;
+    return dropdownOptions.find(o => o.value === selectedValue)?.label ?? null;
+  }, [labelStateKey, selectedValue, dropdownOptions]);
+
+  // Sync the resolved label into sharedState (watches a primitive, not the array)
+  useEffect(() => {
+    if (labelStateKey && resolvedLabel !== null) {
+      setSharedState(labelStateKey, resolvedLabel);
+    }
+  }, [resolvedLabel]);
+
   const handleChange = (value: string | null, categoryKey?: string | null) => {
     console.log('handleChange', value);
     if (value === null && block.allowEmpty) {
       setSharedState(stateKey, null);
+      if (labelStateKey) setSharedState(labelStateKey, null);
       setExclusiveFilterKeys({ categoryKey: null, valueKey: null });
       setInclusiveFilterKeys({ categoryKey: null, valueKey: null });
     } else if (value !== null) {
-
       setSharedState(stateKey, value);
-
+      if (labelStateKey) {
+        const match = dropdownOptions.find(o => o.value === value);
+        if (match) setSharedState(labelStateKey, match.label);
+      }
       if (block.exclusive) {
         setExclusiveFilterKeys({ categoryKey: categoryKey || null, valueKey: value });
       } else if (block.inclusive) {

@@ -17,6 +17,7 @@ const StablecoinChain: QuickBiteData = {
       placeholder: "Choose a chain...",
       searchable: true,
       stateKey: "selectedChain",
+      labelStateKey: "selectedChainName",
       defaultValue: "arbitrum",
       allowEmpty: false,
       readFromJSON: true,
@@ -33,7 +34,7 @@ const StablecoinChain: QuickBiteData = {
     "```chart",
     JSON.stringify({
       type: "area",
-      title: "Stablecoin Breakdown",
+      title: "Stablecoin Breakdown for {{selectedChainName}}",
       subtitle: "Stacked circulating supply of top stablecoins.",
       showXAsDate: true,
       showZeroTooltip: false,
