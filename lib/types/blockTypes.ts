@@ -66,6 +66,7 @@ export interface TableBlock extends BaseBlock {
       copyable?: boolean; // Add this line
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
+      linkSourceKey?: string; // Use a different column's value for add_url substitution instead of cellValue
       sourceKey?: string; // Map display column key to a source key from JSON columns
       sourceIndex?: number; // Map display column key to a fixed source index
       infoTooltip?: { sourceKey?: string; text?: string }; // Optional info icon tooltip content
@@ -74,6 +75,7 @@ export interface TableBlock extends BaseBlock {
       showIcon?: boolean; // For chain type: show chain icon (default true)
       showLabel?: boolean; // For chain type: show chain name from AllChainsByKeys (default false)
       uppercase?: boolean; // Render text in uppercase
+      colorBySign?: boolean; // Color numeric values green (positive) or red (negative)
       chip?: boolean; // Render value as a monospace pill badge
       valueMap?: Record<string, string>; // Map raw values to display strings (case-insensitive lookup)
       valueMapShowKey?: boolean; // Show original key after mapped value, e.g. "US Dollar (USD)"
