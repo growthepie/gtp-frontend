@@ -11,7 +11,6 @@ import ethereumScaling from './qb-ethereum-scaling';
 import ethSupply from './qb-ETH-supply';
 import lineaTokenBurn from './qb-linea-burn';
 import Fusaka from './qb-fusaka';
-import Stablecoin from './qb-stablecoin';
 import Agents from './qb-eip8004';
 import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
