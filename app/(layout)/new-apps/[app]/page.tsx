@@ -641,11 +641,10 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
 
           {/* First Contract Seen */}
           <AppOverviewMetaCol label="First Contract Seen">
-            {Object.values(data.first_seen)[0] ? (
-              <div>{new Date(Object.values(data.first_seen)[0] as string).toLocaleDateString()}</div>
-            ) : (
-              "—"
+            {data.first_seen && (
+              <div>{new Date(data.first_seen).toLocaleDateString()}</div>
             )}
+
           </AppOverviewMetaCol>
 
           {/* Ecosystem Rank */}
@@ -809,6 +808,10 @@ FeaturedSection.displayName = "FeaturedSection";
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
+  const { data: masterData } = useMaster();
+
+  
+
   return (
     <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
       <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
@@ -830,49 +833,17 @@ const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: 
         {/* Left column: KPI side cards */}
         <div className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
-          {FAKE_APP.kpi_cards.slice(0, 1).map((card) => (
-            <AppMetricCard
-              key={card.key}
-              label={card.label}
-              icon={card.icon}
-              value={card.value}
-              prevValue={card.prev_value}
-              prefix={card.prefix}
-              suffix={card.suffix}
-              sparkline={card.sparkline}
-              color={FAKE_APP.accent_color}
+          {Object.keys(data.kpi_cards).map((metric) => (
+            <AppMetricCard 
+              key={metric} 
+              label={masterData?.app_metrics[metric].name ?? metric} 
+              value={data.kpi_cards[metric].current_values.data[0]} 
+              prevValue={data.kpi_cards[metric].wow_change.data[0]} 
+              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
+              color={"#627EEA"} 
+              icon={masterData?.app_metrics[metric].icon_name as GTPIconName} 
             />
-          ))}
-          <PartitionLine />
-          {FAKE_APP.kpi_cards.slice(1).map((card) => (
-            <AppMetricCard
-              key={card.key}
-              label={card.label}
-              icon={card.icon}
-              value={card.value}
-              prevValue={card.prev_value}
-              prefix={card.prefix}
-              suffix={card.suffix}
-              sparkline={card.sparkline}
-              color={FAKE_APP.accent_color}
-            />
-          ))}
-          <PartitionLine />
-          {FAKE_APP.kpi_cards.map((card) => (
-            <AppMetricCard
-              key={card.key}
-              label={card.label}
-              icon={card.icon}
-              value={card.value}
-              prevValue={card.prev_value}
-              prefix={card.prefix}
-              suffix={card.suffix}
-              sparkline={card.sparkline}
-              color={FAKE_APP.accent_color}
-            />
-          ))}
-          <PartitionLine />
-
+          ))} 
         </div>
 
         {/* Right column: main content */}
@@ -994,6 +965,9 @@ export default function NewAppPage({
     }
   }, [data, selectedTab, owner_project, projectMetadata]);
 
+
+  console.log(projectMetadata)
+  console.log(data)
   return (
     <>
     {owner_project && projectMetadata && (
