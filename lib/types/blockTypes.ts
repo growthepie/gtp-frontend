@@ -414,6 +414,7 @@ export interface DropdownBlock extends BaseBlock {
   searchable?: boolean;
   disabled?: boolean;
   stateKey?: string; // Key to use for storing the value in the shared state
+  labelStateKey?: string; // Optional key for also storing the selected option's label in the shared state
   multiSelect?: boolean;
   exclusive?: boolean;
   inclusive?: boolean;
