@@ -181,7 +181,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   const getPlaceholderText = () => {
     if (isOpen && searchable) {
-      return "Search options...";
+      return `${placeholder ?? ""}...`;
     }
     return placeholder;
   };

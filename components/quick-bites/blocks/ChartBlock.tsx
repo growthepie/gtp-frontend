@@ -141,8 +141,16 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   // The key for useSWR is now `processedUrls`, which is dynamic.
   // SWR will automatically re-fetch when the key changes.
   const swrKey = dynamicSeriesConfig ? dynamicSeriesUrl : (processedUrls.length > 0 ? processedUrls : null);
-  const { data: unProcessedData } = useSWR(swrKey);
-  const { data: unProcessedPieData } = useSWR(pieDataUrl);
+  const {
+    data: unProcessedData,
+    isLoading: isChartLoading,
+    isValidating: isChartValidating,
+  } = useSWR(swrKey, { keepPreviousData: true });
+  const {
+    data: unProcessedPieData,
+    isLoading: isPieLoading,
+    isValidating: isPieValidating,
+  } = useSWR(pieDataUrl, { keepPreviousData: true });
 
   const dynamicDerived = React.useMemo(() => {
     if (!dynamicSeriesConfig || !unProcessedData) return null;
@@ -321,10 +329,16 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const effectiveMeta = dynamicSeriesConfig ? (dynamicDerived?.meta || []) : (resolvedJsonMeta || metaList || []);
   const hasPieData = block.chartType === 'pie' && resolvedPieData.length > 0;
   const canRenderChart = (Boolean(passChartData) || hasPieData) && (!dynamicSeriesConfig || effectiveMeta.length > 0 || hasPieData);
+  const showInitialLoadingState =
+    (Boolean(swrKey) && isChartLoading && !unProcessedData) ||
+    (Boolean(pieDataUrl) && isPieLoading && !unProcessedPieData);
+  const showUpdatingState =
+    (Boolean(swrKey) && isChartValidating && !isChartLoading && Boolean(unProcessedData)) ||
+    (Boolean(pieDataUrl) && isPieValidating && !isPieLoading && Boolean(unProcessedPieData));
 
   // Don't render the chart if there's a filter key but no data yet.
   // This handles the initial state where a dropdown selection is needed.
-  if (block.filterOnStateKey && !unProcessedData) {
+  if (block.filterOnStateKey && !unProcessedData && !showInitialLoadingState) {
     const title = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
     return (
       <div className={`my-8 ${block.className || ''}`}>
@@ -340,33 +354,45 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
   return (
     <>
-    <div className={wrapperClassName}>
+    <div className={`${wrapperClassName} relative`} aria-busy={showUpdatingState}>
+      {showInitialLoadingState && !canRenderChart ? (
+        <div className="w-full h-[400px] flex items-center justify-center rounded-[15px] bg-color-bg-default text-xs text-color-text-secondary">
+          Loading chart...
+        </div>
+      ) : null}
       {canRenderChart && (
-        <ChartWrapper
-          chartType={block.chartType}
-          data={block.data ?? []}
-          margins={block.margins || 'normal'}
-          options={block.options || {}}
-          width={block.width || '100%'}
-          height={block.height || 400}
-          title={block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title}
-          subtitle={block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle}
-          jsonData={nestedData}
-          showXAsDate={block.showXAsDate}
-          showZeroTooltip={block.showZeroTooltip}
-          showTotalTooltip={block.showTotalTooltip}
-          jsonMeta={
-            effectiveMeta.length ? {
-              meta: effectiveMeta
-            } : undefined
-          }
-          disableTooltipSort={block.disableTooltipSort}
-          seeMetricURL={block.seeMetricURL}
-          yAxisLine={block.yAxisLine}
-          centerName={block.centerName}
-          pieData={resolvedPieData}
-          showPiePercentage={pieDataConfig?.showPercentage}
-        />
+        <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
+          <ChartWrapper
+            chartType={block.chartType}
+            data={block.data ?? []}
+            margins={block.margins || 'normal'}
+            options={block.options || {}}
+            width={block.width || '100%'}
+            height={block.height || 400}
+            title={block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title}
+            subtitle={block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle}
+            jsonData={nestedData}
+            showXAsDate={block.showXAsDate}
+            showZeroTooltip={block.showZeroTooltip}
+            showTotalTooltip={block.showTotalTooltip}
+            jsonMeta={
+              effectiveMeta.length ? {
+                meta: effectiveMeta
+              } : undefined
+            }
+            disableTooltipSort={block.disableTooltipSort}
+            seeMetricURL={block.seeMetricURL}
+            yAxisLine={block.yAxisLine}
+            centerName={block.centerName}
+            pieData={resolvedPieData}
+            showPiePercentage={pieDataConfig?.showPercentage}
+          />
+        </div>
+      )}
+      {showUpdatingState && (
+        <div className="pointer-events-none absolute right-[10px] top-[10px] z-[2] rounded-full border border-color-ui-hover bg-color-bg-default/90 px-[10px] py-[4px] text-xxs text-color-text-secondary backdrop-blur-[2px]">
+          Updating...
+        </div>
       )}
       {block.caption && (
         <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">

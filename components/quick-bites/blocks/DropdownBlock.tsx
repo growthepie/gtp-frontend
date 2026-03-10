@@ -11,14 +11,14 @@ interface DropdownBlockProps {
 }
 
 export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
-  const { sharedState, setSharedState, exclusiveFilterKeys, setExclusiveFilterKeys, inclusiveFilterKeys, setInclusiveFilterKeys } = useQuickBite();
+  const { sharedState, setSharedState, setExclusiveFilterKeys, setInclusiveFilterKeys } = useQuickBite();
   const stateKey = block.stateKey || 'defaultDropdown';
   const selectedValue = stateKey in sharedState ? sharedState[stateKey] : block.defaultValue || null;
   const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
 
   // on mount, set the shared state to the default value if it's not already set
   useEffect(() => {
-    if (!sharedState[stateKey] && block.defaultValue) {
+    if (!(stateKey in sharedState) && block.defaultValue) {
       setSharedState(stateKey, block.defaultValue || null);
       if (block.exclusive) {
         setExclusiveFilterKeys({ categoryKey: null, valueKey: block.defaultValue });
@@ -26,7 +26,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
         setInclusiveFilterKeys({ categoryKey: null, valueKey: block.defaultValue });
       }
     }
-  }, []);
+  }, [block.defaultValue, block.exclusive, block.inclusive, setExclusiveFilterKeys, setInclusiveFilterKeys, setSharedState, sharedState, stateKey]);
 
   // Get the actual options source - either from block or from JSON
   const dropdownOptions = React.useMemo((): DropdownOption[] => {
@@ -100,10 +100,9 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
     if (labelStateKey && resolvedLabel !== null) {
       setSharedState(labelStateKey, resolvedLabel);
     }
-  }, [resolvedLabel]);
+  }, [labelStateKey, resolvedLabel, setSharedState]);
 
   const handleChange = (value: string | null, categoryKey?: string | null) => {
-    console.log('handleChange', value);
     if (value === null && block.allowEmpty) {
       setSharedState(stateKey, null);
       if (labelStateKey) setSharedState(labelStateKey, null);
@@ -183,7 +182,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   return (
     <div className="my-6">
       {block.label && (
-        <label className="block text-sm font-medium mb-2">
+        <label className="block heading-xxs mb-2">
           {block.label}
         </label>
       )}
