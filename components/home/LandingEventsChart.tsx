@@ -146,7 +146,7 @@ const EventCard = ({
       {/* Icon — layout="position" so it animates from center to top-left as card expands */}
       <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
         <GTPIcon
-          icon={isSelected ? (EVENTS_BY_ID[event].image as GTPIconName) : "gtp-megaphone"}
+          icon={EVENTS_BY_ID[event].image as GTPIconName}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
           containerClassName="!size-[24px]"
         />
@@ -455,6 +455,8 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
         ? "Select series to show data"
         : "";
 
+  console.log(eventData);
+
   return (
     <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden">
       <GTPCardLayout className="h-[442px]"
@@ -491,7 +493,38 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 clickHandler={() => setSelectedRange(null)}
             />
           </GTPButtonContainer>
-       ) : undefined
+       ) : (
+        <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+            <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+              
+             
+
+            
+                  <GTPButton
+                    key={eventData.title + "top-tab-button"}
+                    label={eventData.title}
+                    size="sm"
+                    variant={"primary"}
+                    visualState={"active"}
+                    clickHandler={() => {
+                      setActiveOptionId(eventData.title);
+                      setSelectedRange(null);
+                    }}
+                  />
+      
+            </GTPButtonRow>
+          <GTPButton
+              label={!selectedRange ? undefined : ""}
+              leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
+              leftIconClassname={"text-color-text-primary"}
+              size={isMobile ? "xs" : "sm"}
+              className={!selectedRange ? "hidden" : "block"}
+              variant={!selectedRange ? "no-background" : "highlight"}
+              visualState="default"
+              clickHandler={() => setSelectedRange(null)}
+          />
+        </GTPButtonContainer>
+       )
        }
       >
         <div className="flex flex-col h-full min-h-0">
