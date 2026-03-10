@@ -555,13 +555,19 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                   )}
                 />
               ))}
-              {inactiveLegendCount > 0 && (
+              {legendItems.length > 1 && (
                 <GTPButton
-                  key="legend-more"
-                  label="Select All"
+                  key="legend-toggle-all"
+                  label={inactiveLegendCount === 0 ? "Deselect All" : "Select All"}
                   variant="primary"
                   size="xs"
-                  clickHandler={() => setInactiveSeriesNames(new Set())}
+                  clickHandler={() => {
+                    if (inactiveLegendCount === 0) {
+                      setInactiveSeriesNames(new Set(allSeriesNames));
+                    } else {
+                      setInactiveSeriesNames(new Set());
+                    }
+                  }}
                 />
               )}
             </div>
