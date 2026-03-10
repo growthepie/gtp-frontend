@@ -166,7 +166,7 @@ const FAKE_CONTRACTS: ContractEntry[] = [
   { name: "Multicall3", address: "0xcA11bde05977b3631167028862bE2a173976CA11", category: "Finance", subcategory: "Utility", txcount: 1547800, activeAddresses: 14, feesPaid: 34102.18 },
 ];
 
-const CONTRACT_GRID_COLS = "grid-cols-[minmax(130px,1fr),minmax(100px,auto),minmax(145px,auto),minmax(125px,auto),minmax(105px,auto),minmax(110px,auto)]";
+const CONTRACT_GRID_COLS = "grid-cols-[minmax(130px,1fr),150px,100px,125px,105px,110px]";
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
@@ -362,7 +362,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
         <div className="min-w-[800px]">
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
-            className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0"
+            className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0 !pr-[65px]"
           >
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
             <GridTableHeaderCellButton label="Contract"          metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
@@ -829,6 +829,8 @@ const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: 
         {/* Left column: KPI side cards */}
         <div className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
+          {data.kpi_cards && (
+            <>
           {Object.keys(data.kpi_cards).map((metric) => (
             <AppMetricCard 
               key={metric} 
@@ -839,7 +841,10 @@ const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: 
               color={"#627EEA"} 
               icon={masterData?.app_metrics[metric].icon_name as GTPIconName} 
             />
+
           ))} 
+          </>
+          )}
         </div>
 
         {/* Right column: main content */}
