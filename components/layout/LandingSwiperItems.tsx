@@ -20,6 +20,14 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 import { Carousel } from "@/components/Carousel";
 import { useUIContext } from "@/contexts/UIContext";
+import LandingAppHighlight from "./LandingAppHighlight";
+import Container from "./Container";
+import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
+import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
+import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
+import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
 
 const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) {
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
@@ -164,6 +172,59 @@ export default function LandingSwiperItems() {
           <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
         </div>
       ))}
+      <div className="h-full pb-[30px]">
+
+      <TimespanProvider timespans={{
+        "1d": {
+          shortLabel: "1d",
+          label: "1 day",
+          value: 1,
+        },
+        "7d": {
+          shortLabel: "7d",
+          label: "7 days",
+          value: 7,
+        },
+        "30d": {
+          shortLabel: "30d",
+          label: "30 days",
+          value: 30,
+        },
+        "90d": {
+          shortLabel: "90d",
+          label: "90 days",
+          value: 90,
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+        },
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+        },
+      } as {
+        [key: string]: {
+          label: string;
+          shortLabel: string;
+          value: number;
+        };
+      }}>
+        <MetricsProvider>
+          <SortProvider defaultOrder="desc" defaultKey="txcount">
+            <ProjectsMetadataProvider>
+              <ApplicationsDataProvider disableShowLoading={true}>
+                
+                <LandingAppHighlight />
+
+              </ApplicationsDataProvider>
+            </ProjectsMetadataProvider>
+          </SortProvider>
+        </MetricsProvider>
+      </TimespanProvider>
+      </div>
       {filteredMetricIds.map(
         (metric_id, index) => (
           <div
