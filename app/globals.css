@@ -720,3 +720,7 @@ input:focus-visible {
   opacity: 0;
   transition: opacity 100ms ease-out; /* Quick fade-out */
 }
+@keyframes event-progress-shrink {
+  from { width: 100%; }
+  to   { width: 0%;   }
+}
