@@ -21,7 +21,9 @@ import {
   GridTableHeaderCellButton,
   GridTableRow,
 } from "@/components/layout/GridTable";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { Icon } from "@iconify/react";
+import { useLocalStorage } from "usehooks-ts";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -164,7 +166,7 @@ const FAKE_CONTRACTS: ContractEntry[] = [
   { name: "Multicall3", address: "0xcA11bde05977b3631167028862bE2a173976CA11", category: "Finance", subcategory: "Utility", txcount: 1547800, activeAddresses: 14, feesPaid: 34102.18 },
 ];
 
-const CONTRACT_GRID_COLS = "grid-cols-[minmax(130px,1fr),100px,145px,125px,105px,110px]";
+const CONTRACT_GRID_COLS = "grid-cols-[minmax(130px,1fr),minmax(100px,auto),minmax(145px,auto),minmax(125px,auto),minmax(105px,auto),minmax(110px,auto)]";
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
@@ -309,13 +311,14 @@ const PlaceholderCard = ({ title }: { title: string }) => (
 
 
 
-const MostActiveContracts = () => {
+const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
     metric: "txcount",
     sortOrder: "desc",
   });
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  
   const sortedContracts = useMemo(() => {
     return [...FAKE_CONTRACTS].sort((a, b) => {
       const dir = sort.sortOrder === "asc" ? 1 : -1;
@@ -362,7 +365,7 @@ const MostActiveContracts = () => {
             className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0"
           >
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
-            <GridTableHeaderCellButton label="Contract"           metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
+            <GridTableHeaderCellButton label="Contract"          metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
             <GridTableHeaderCellButton label="Category"          metric="category"        sort={sort} setSort={setSort} justify="start" size="xs"  className="pl-[4px]"/>
             <GridTableHeaderCellButton label="Subcategory"       metric="subcategory"     sort={sort} setSort={setSort} justify="start" size="xs"  className="-ml-[4px]"/>
             <GridTableHeaderCellButton label="Transaction Count" metric="txcount"         sort={sort} setSort={setSort} justify="end"   size="xs" />
@@ -370,31 +373,39 @@ const MostActiveContracts = () => {
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs"  className="-mr-[12px]"/>
           </GridTableHeader>
 
-          <div className="flex flex-col gap-y-[3px] pt-[5px]">
-            {sortedContracts.map((contract) => (
+          <VerticalScrollContainer height={300} enableDragScroll={true}>
+            <div className="flex flex-col gap-y-[3px] pt-[5px]">
+            {Object.values(data.contracts_table["7d"].data).map((contract, index) => {
+
+
+              const types = data.contracts_table["7d"].types;
+
+
+
+              return (
               <GridTableRow
-                key={contract.address}
+                key={contract[types.indexOf("address")] + index.toString() + "CONTRACT_ROW"}
                 gridDefinitionColumns={CONTRACT_GRID_COLS}
                 className="h-[34px] text-[12px] !py-0 !gap-x-[10px]"
                 style={{ paddingLeft: "0px" }}
               >
                 {/* Contract name + copy + explorer */}
-                
+
                 <div className="flex items-center gap-x-[6px] min-w-0" >
                   <GTPIcon
                     icon="gtp-labeled"
                     className="!size-[16px] "
                     containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                   />
-               
-                  <span className="truncate text-xs">{contract.name}</span>
+
+                  <span className="truncate text-xs">{contract[types.indexOf("name")]}</span>
                   <div className="flex items-center gap-x-[4px] shrink-0">
                     <button
-                      onClick={() => handleCopy(contract.address)}
+                      onClick={() => handleCopy(contract[types.indexOf("address")] as string)}
                       className="text-color-text-secondary hover:text-color-text-primary transition-colors"
                     >
                       <Icon
-                        icon={copiedAddress === contract.address ? "feather:check" : "feather:copy"}
+                        icon={copiedAddress === contract[types.indexOf("address")] ? "feather:check" : "feather:copy"}
                         className="w-[11px] h-[11px]"
                       />
                     </button>
@@ -408,31 +419,32 @@ const MostActiveContracts = () => {
                 {/* Category badge */}
                 <div className="flex items-center bg-color-bg-medium h-full p-1 gap-x-[8px] ">
                   <GTPIcon icon={"gtp-defi" as GTPIconName} className="!size-[16px]" containerClassName="bg-color-ui-active rounded-full flex items-center justify-center" />
-                  <div className="text-xs">{contract.category}</div>
+                  <div className="text-xs">{contract[types.indexOf("main_category_key")]}</div>
                 </div>
 
                 {/* Subcategory */}
                 <div className="truncate text-xs">
-                  {contract.subcategory}
+                  {contract[types.indexOf("sub_category_key")] as string}
                 </div>
 
                 {/* Transaction Count */}
                 <div className="flex items-center justify-end numbers-xs">
-                  {contract.txcount.toLocaleString("en-GB")}
+                  {(contract[types.indexOf("txcount")] as number).toLocaleString("en-GB")}
                 </div>
 
                 {/* Active Addresses */}
                 <div className="flex items-center justify-end numbers-xs">
-                  {contract.activeAddresses.toLocaleString("en-GB")}
+                  {(contract[types.indexOf("daa")] as number).toLocaleString("en-GB")}
                 </div>
 
                 {/* Fees Paid */}
                 <div className="flex items-center justify-end numbers-xs">
-                  ${contract.feesPaid.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ${(contract[types.indexOf(`fees_paid_${showUsd ? "usd" : "eth"}`)] as number).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </GridTableRow>
-            ))}
-          </div>
+            )})}
+            </div>
+          </VerticalScrollContainer>
         </div>
       </div>
 
@@ -833,7 +845,7 @@ const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: 
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px]">
           <ChainActivityCard chains={FAKE_APP.chains} />
-          <MostActiveContracts />
+          <MostActiveContracts data={data} />
         
         </div>
       </div>
