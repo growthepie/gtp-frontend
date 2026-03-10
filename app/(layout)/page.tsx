@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full pt-[30px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full pt-[30px] pb-[15px] gap-y-[10px]">
         <Heading
           className="heading-large-xl max-w-[900px]"
           as="h1"
@@ -51,14 +51,25 @@ export default async function Page() {
             What is Ethereum?
           </LinkButton>
         </div>
+
+        <div className="flex gap-x-[8px] items-center pt-[15px]">
+          <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center" />
+          <Heading
+            className="heading-large-lg max-w-[900px]"
+            as="h1"
+          >
+            Ethereum Ecosystem Roundup
+          </Heading>
+        </div>
+        <div className="flex items-center gap-[10px]">
+          <Subheading className="text-md">
+            Discover what Ethereum is about. We compiled a selection of articles, metrics and apps for you here. Click and explore!
+          </Subheading>
+        </div>
       </Container>
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        {IS_PRODUCTION && <LandingFirstHeaders />}
-      </Container>
+
       <LandingSwiperItems />
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        {IS_PRODUCTION && <LandingSecondHeaders />}
-      </Container>
+
       <LandingUserBaseChart />
       {/* {!IS_PRODUCTION && ( */}
       <QuickBitesSection />

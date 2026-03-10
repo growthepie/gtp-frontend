@@ -671,7 +671,7 @@ export default function LandingEventsChart() {
   return (
     <ProjectsMetadataProvider>
       <EventDataPrefetcher />
-      <div className="flex flex-col gap-y-[15px] w-full pb-[30px] h-full min-h-0 overflow-hidden">
+      <div className="flex flex-col gap-y-[15px] w-full pt-[60px] pb-[30px] h-full min-h-0 overflow-hidden">
           {/*Heading */}
         <div className="flex items-center gap-x-[8px]">
           <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px]" />
