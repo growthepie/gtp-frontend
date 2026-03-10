@@ -45,7 +45,7 @@ const L2_ACTIVITY_SERIES: GTPChartSeries[] = [
 const l2ActivityEvent: EventExample = {
   title: "L2 Activity Growth",
   description: "Monthly L2 transaction count and active addresses across major rollups in 2024.",
-  question: "How fast is Layer 2 adoption growing?",
+  question: "Dummy: How fast is Layer 2 adoption growing?",
   image: "gtp-metrics-transaction-count",
   link: "/fundamentals/transaction-count",
   series: L2_ACTIVITY_SERIES,

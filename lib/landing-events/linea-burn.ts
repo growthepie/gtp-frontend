@@ -31,7 +31,7 @@ const LINEA_BURN_OPTIONS: EventOption[] = [
 const lineaBurnEvent: EventExample = {
   title: "Linea Token Burn",
   description: "Daily ETH burn and USD value from Linea's dual-token burn program.",
-  question: "How fast is Linea burning ETH?",
+  question: "Dummy: How fast is Linea burning ETH?",
   image: "linea-logo-monochrome",
   link: "/quick-bites/linea-burn",
   options: LINEA_BURN_OPTIONS,
