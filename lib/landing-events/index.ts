@@ -25,6 +25,17 @@ export const FEATURED_EVENT_IDS_MAX = (Object.keys(EVENTS_BY_ID) as EventId[]).s
   MAX_FEATURED_EVENTS,
 );
 
+/** All unique data-source URLs across every featured event, for eager prefetching. */
+export const ALL_EVENT_DATA_URLS: string[] = Array.from(
+  new Set(
+    FEATURED_EVENT_IDS_MAX.flatMap((id) =>
+      (EVENTS_BY_ID[id].options ?? [])
+        .map((opt) => opt.dataSource?.url)
+        .filter((url): url is string => typeof url === "string"),
+    ),
+  ),
+);
+
 if (process.env.NODE_ENV !== "production" && Object.keys(EVENTS_BY_ID).length > MAX_FEATURED_EVENTS) {
   console.warn(
     `[LandingEvents] EVENTS_BY_ID has more than ${MAX_FEATURED_EVENTS} items; only the first ${MAX_FEATURED_EVENTS} will be shown.`,

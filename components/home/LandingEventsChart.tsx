@@ -13,7 +13,7 @@ import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
-import { EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
+import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
 import { EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
 import { ApplicationsURLs } from "@/lib/urls";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
@@ -612,6 +612,17 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
   );
 };
 
+/**
+ * Eagerly fetches every event data URL on page load so the SWR cache is warm
+ * before the user clicks an event. ALL_EVENT_DATA_URLS is a static module-level
+ * constant, so the number of useSWR calls never changes between renders.
+ */
+const EventDataPrefetcher = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  ALL_EVENT_DATA_URLS.forEach((url) => useSWR(url));
+  return null;
+};
+
 export default function LandingEventsChart() {
 
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
@@ -619,6 +630,7 @@ export default function LandingEventsChart() {
 
   return (
     <ProjectsMetadataProvider>
+      <EventDataPrefetcher />
       <div className="flex flex-col gap-y-[15px] w-full pb-[30px] h-full min-h-0 overflow-hidden">
           {/*Heading */}
         <div className="flex items-center gap-x-[8px]">
