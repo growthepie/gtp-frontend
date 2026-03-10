@@ -264,7 +264,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
     {
     icon: "base-logo-monochrome",
     color: "#2151F5",
-    name: "Base",
+    name: "Base Chain",
     url: "/chains/base"
   },
   {
