@@ -28,8 +28,8 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "eth-supply": ethSupply,
   "linea-burn": lineaTokenBurn,
   "fusaka": Fusaka,
-  "stablecoin-chain": StablecoinChain,
-  "stablecoin-project": StablecoinProject,
+  "stablecoins-by-chains": StablecoinChain,
+  "stablecoins-by-project": StablecoinProject,
   "eip-8004": Agents,
   "octant-v2-migration": OctantV2Migration
 };
