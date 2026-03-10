@@ -87,6 +87,7 @@ export type ContractsQueueReturn = {
   chainByEip155: Record<string, { urlKey: string; color: string }>;
   chainIconRenderer: (value: string) => ReactNode;
   ownerProjectIconRenderer: (value: string) => ReactNode;
+  usageCategoryIconRenderer: (value: string) => ReactNode;
   usageCategoryOptions: SearchDropdownOption[];
   ownerProjectOptions: SearchDropdownOption[];
   defaultQueueChainId: string;
@@ -183,6 +184,8 @@ export function useContractsQueue({
         uniqueOptions.set(value, { value, label: (chain as { name: string }).name });
       }
     }
+    // Add Starknet (non-EVM, hardcoded)
+    uniqueOptions.set("starknet:SN_MAIN", { value: "starknet:SN_MAIN", label: "Starknet" });
     return Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
   }, [SupportedChainKeys, masterData]);
 
@@ -198,6 +201,8 @@ export function useContractsQueue({
         color: c.colors?.dark?.[0] ?? "#CDD8D3",
       };
     }
+    // Add Starknet (non-EVM, hardcoded)
+    map["starknet:SN_MAIN"] = { urlKey: "starknet", color: "#EC796B" };
     return map;
   }, [masterData]);
 
@@ -235,6 +240,46 @@ export function useContractsQueue({
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [masterData]);
+
+  const subToMainCategory = useMemo(() => {
+    if (!masterData?.blockspace_categories?.mapping) return {} as Record<string, string>;
+    const map: Record<string, string> = {};
+    for (const [mainKey, subKeys] of Object.entries(masterData.blockspace_categories.mapping)) {
+      for (const subKey of (subKeys as string[])) {
+        map[subKey] = mainKey;
+      }
+    }
+    return map;
+  }, [masterData]);
+
+  const USAGE_MAIN_ICONS: Record<string, string> = {
+    defi: "gtp-defi",
+    finance: "gtp-defi",
+    nft: "gtp-nft",
+    token_transfers: "gtp-tokentransfers",
+    utility: "gtp-utilities",
+    social: "gtp-socials",
+    cefi: "gtp-cefi",
+    cross_chain: "gtp-crosschain",
+    collectibles: "gtp-nft",
+    unlabeled: "gtp-unlabeled",
+  };
+
+  const usageCategoryIconRenderer = useCallback(
+    (value: string): ReactNode => {
+      if (!value) return null;
+      const mainCat = subToMainCategory[value] ?? value;
+      const iconName = USAGE_MAIN_ICONS[mainCat];
+      if (!iconName) return null;
+      return (
+        <Icon
+          icon={`gtp:${iconName}-monochrome`}
+          className="size-[15px] shrink-0 text-color-text-secondary"
+        />
+      );
+    },
+    [subToMainCategory],
+  );
 
   const ownerProjectOptions = useMemo<SearchDropdownOption[]>(
     () => {
@@ -303,8 +348,8 @@ export function useContractsQueue({
   );
 
   const currentQueueSignature = useMemo(
-    () => meaningfulRows.map(rowPreviewSignature).join("||"),
-    [meaningfulRows],
+    () => `${bulkController.queue.rows.length}:${meaningfulRows.map(rowPreviewSignature).join("||")}`,
+    [meaningfulRows, bulkController.queue.rows.length],
   );
 
   const isSingleFlow = meaningfulRows.length <= 1;
@@ -810,8 +855,9 @@ export function useContractsQueue({
   // ── Row CRUD ──────────────────────────────────────────────────────────────
 
   const addQueueRow = useCallback(() => {
+    const firstRowChainId = toStringValue(bulkController.queue.rows[0]?.chain_id).trim() || defaultQueueChainId;
     const row = prepareRowForQueue({
-      chain_id: defaultQueueChainId,
+      chain_id: firstRowChainId,
       owner_project: ownerProject.trim(),
     });
     bulkController.queue.addRow(row);
@@ -870,6 +916,7 @@ export function useContractsQueue({
     chainByEip155,
     chainIconRenderer,
     ownerProjectIconRenderer,
+    usageCategoryIconRenderer,
     usageCategoryOptions,
     ownerProjectOptions,
     defaultQueueChainId,

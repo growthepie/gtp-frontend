@@ -315,6 +315,7 @@ export default function ProjectEditPageClient() {
                 usageCategoryOptions={queueHook.usageCategoryOptions}
                 defaultQueueChainId={queueHook.defaultQueueChainId}
                 chainIconRenderer={queueHook.chainIconRenderer}
+                usageCategoryIconRenderer={queueHook.usageCategoryIconRenderer}
                 setQueueCellValue={queueHook.setQueueCellValue}
                 addQueueRow={queueHook.addQueueRow}
                 removeQueueRow={queueHook.removeQueueRow}
@@ -337,6 +338,8 @@ export default function ProjectEditPageClient() {
                 setClassifyError={queueHook.setClassifyError}
                 validateQueue={queueHook.validateQueue}
                 queueError={queueHook.queueError}
+                queueHasValidationResult={queueHook.queueHasValidationResult}
+                queueStats={queueHook.queueStats}
                 walletAddress={walletAddress}
                 isConnectingWallet={isConnectingWallet}
                 walletError={queueHook.walletError}
