@@ -1,4 +1,5 @@
 import arbitrumTimeboost from "./arbitrum-timeboost";
+import appCount from "./app-count";
 import topAppsEvent from "./top-apps";
 import eip8004 from "./eip-8004";
 import fusaka from "./fusaka";
@@ -7,6 +8,7 @@ import lineaBurn from "./linea-burn";
 
 export const EVENTS_BY_ID = {
   "eip-8004": eip8004,
+  "app-count": appCount,
   "fusaka": fusaka,
   "top-apps": topAppsEvent,
   "l2-activity": l2Activity,
