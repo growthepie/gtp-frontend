@@ -18,6 +18,7 @@ import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import {
   GridTableHeader,
+  GridTableHeaderCellButton,
   GridTableRow,
 } from "@/components/layout/GridTable";
 import { Icon } from "@iconify/react";
@@ -355,35 +356,18 @@ const MostActiveContracts = () => {
 
       {/* Scrollable table */}
       <div className="overflow-x-auto w-full">
-        <div className="min-w-[650px]">
+        <div className="min-w-[800px]">
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0"
           >
-            {/* ml-[31px] = icon (30px) + gap (6px) - button internal left-padding (5px) */}
-            {(["name", "category", "subcategory", "txcount", "activeAddresses", "feesPaid"] as const).map((metric, i) => {
-              const labels = ["Contract", "Category", "Subcategory", "Transaction Count", "Active Addresses", "Fees Paid (USD)"];
-              const isActive = sort.metric === metric;
-              const arrowIcon = (isActive && sort.sortOrder === "asc" ? "feather:arrow-up" : "feather:arrow-down") as GTPIconName;
-              return (
-                <GTPButton
-                  key={metric}
-                  label={labels[i]}
-                  size="xs"
-                  variant="primary"
-                  isSelected={isActive}
-                  rightIcon={arrowIcon}
-                  rightIconClassname={isActive ? "opacity-100" : "opacity-30"}
-                  className={i === 0 ? "ml-[31px]" : ""}
-                  clickHandler={() =>
-                    setSort((prev) => ({
-                      metric,
-                      sortOrder: prev.metric === metric ? (prev.sortOrder === "asc" ? "desc" : "asc") : "desc",
-                    }))
-                  }
-                />
-              );
-            })}
+            {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
+            <GridTableHeaderCellButton label="Contract"           metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
+            <GridTableHeaderCellButton label="Category"          metric="category"        sort={sort} setSort={setSort} justify="start" size="xs"  className="pl-[4px]"/>
+            <GridTableHeaderCellButton label="Subcategory"       metric="subcategory"     sort={sort} setSort={setSort} justify="start" size="xs"  className="-ml-[4px]"/>
+            <GridTableHeaderCellButton label="Transaction Count" metric="txcount"         sort={sort} setSort={setSort} justify="end"   size="xs" />
+            <GridTableHeaderCellButton label="Active Addresses"  metric="activeAddresses" sort={sort} setSort={setSort} justify="end"   size="xs" />
+            <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs"  className="-mr-[12px]"/>
           </GridTableHeader>
 
           <div className="flex flex-col gap-y-[3px] pt-[5px]">
@@ -403,7 +387,7 @@ const MostActiveContracts = () => {
                     containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                   />
                
-                  <span className="truncate font-medium">{contract.name}</span>
+                  <span className="truncate text-xs">{contract.name}</span>
                   <div className="flex items-center gap-x-[4px] shrink-0">
                     <button
                       onClick={() => handleCopy(contract.address)}
@@ -428,7 +412,7 @@ const MostActiveContracts = () => {
                 </div>
 
                 {/* Subcategory */}
-                <div className="truncate text-[11px] text-color-text-secondary">
+                <div className="truncate text-xs">
                   {contract.subcategory}
                 </div>
 
