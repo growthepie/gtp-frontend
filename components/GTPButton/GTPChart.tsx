@@ -1146,9 +1146,9 @@ export default function GTPChart({
         const prefixStd = percentageMode ? "" : (prefix ?? "");
         const suffixStd = percentageMode ? "" : (suffix ?? "");
         return `
-          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight pt-[5px]">
+          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight pt-[0px]">
             <div class="w-[15px] h-[10px]"></div>
-            <div class="tooltip-point-name heading-small-xxs">Total</div>
+            <div class="tooltip-point-name heading-small-xxs">Total:</div>
             <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
           </div>
         `;
