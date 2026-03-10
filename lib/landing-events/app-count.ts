@@ -5,7 +5,7 @@ const APPS_TOTAL_SERIES_META: EventSeriesMeta[] = [
     name: "Total Apps",
     color: "#CDD8D2",
     yIndex: 1,
-    seriesType: "line",
+    seriesType: "area",
   },
 ];
 
