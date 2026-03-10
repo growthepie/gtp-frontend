@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "../layout/Heading";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
-import { EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
+import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
 import { EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
 import { ApplicationsURLs } from "@/lib/urls";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
@@ -130,23 +130,25 @@ const buildDynamicSeriesFromSource = (
 const EventCard = ({
   event,
   isSelected,
+  hasInteracted,
   setSelectedEvent,
 }: {
   event: EventId;
   isSelected: boolean;
+  hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
 }) => {
   return (
     <motion.div
       layout
-      className={`flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
+      className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
       onClick={() => setSelectedEvent(event)}
       transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
     >
       {/* Icon — layout="position" so it animates from center to top-left as card expands */}
       <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
         <GTPIcon
-          icon={isSelected ? (EVENTS_BY_ID[event].image as GTPIconName) : "gtp-megaphone"}
+          icon={EVENTS_BY_ID[event].image as GTPIconName}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
           containerClassName="!size-[24px]"
         />
@@ -188,21 +190,34 @@ const EventCard = ({
           <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
         </Link>
       </motion.div>
+
+      {/* Auto-rotation progress bar — shrinks from full width to zero over 10 s.
+          Uses border-b on a 15px-tall element with rounded-bl-[15px] so the border
+          traces a visible quarter-circle arc on the left end, matching the card's
+          own corner radius. border-b follows element geometry; background fills do not. */}
+      {isSelected && !hasInteracted && (
+        <div
+          className="absolute bottom-0 left-0 h-[15px] rounded-bl-[15px] border-b-2 border-color-text-primary"
+          style={{ animation: "event-progress-shrink 10s linear forwards" }}
+        />
+      )}
     </motion.div>
   );
 };
 
 const SideEventsContainer = ({
   selectedEvent,
+  hasInteracted,
   setSelectedEvent,
 }: {
   selectedEvent: EventId;
+  hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
 }) => {
   return (
     <div className="flex flex-col gap-y-[10px] w-[390px] h-[442px] min-w-[300px] shrink min-h-0 self-stretch overflow-y-auto">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
-        <EventCard key={event} event={event} isSelected={selectedEvent === event} setSelectedEvent={setSelectedEvent} />
+        <EventCard key={event} event={event} isSelected={selectedEvent === event} hasInteracted={hasInteracted} setSelectedEvent={setSelectedEvent} />
       ))}
     </div>
   );
@@ -301,6 +316,8 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
     return Object.fromEntries(rows.map(({ _raw: _, ...r }) => [r.owner_project, r]));
   }, [appOverviewData]);
 
+  
+
   return (
     <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
       <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
@@ -369,7 +386,7 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
     </div>
   );
 };
-const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
+const LandingEventsChartContent = ({ selectedEvent, onInteract }: { selectedEvent: EventId; onInteract: () => void }) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -455,8 +472,9 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
         ? "Select series to show data"
         : "";
 
+  
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden">
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract}>
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
@@ -491,13 +509,45 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
                 clickHandler={() => setSelectedRange(null)}
             />
           </GTPButtonContainer>
-       ) : undefined
+       ) : (
+        <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+            <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+              
+             
+
+            
+                  <GTPButton
+                    key={eventData.title + "top-tab-button"}
+                    label={eventData.title}
+                    size="sm"
+                    variant={"primary"}
+                    visualState={"active"}
+                    clickHandler={() => {
+                      setActiveOptionId(eventData.title);
+                      setSelectedRange(null);
+                    }}
+                  />
+      
+            </GTPButtonRow>
+          <GTPButton
+              label={!selectedRange ? undefined : ""}
+              leftIcon={selectedRange ? "feather:zoom-out" as GTPIconName : "feather:zoom-in" as GTPIconName}
+              leftIconClassname={"text-color-text-primary"}
+              size={isMobile ? "xs" : "sm"}
+              className={!selectedRange ? "hidden" : "block"}
+              variant={!selectedRange ? "no-background" : "highlight"}
+              visualState="default"
+              clickHandler={() => setSelectedRange(null)}
+          />
+        </GTPButtonContainer>
+       )
        }
       >
         <div className="flex flex-col h-full min-h-0">
-          <div className="flex-1 min-h-0 w-full py-[15px] overflow-hidden">
+          <div className="flex-1 min-h-0 w-full py-[15px]  -overflow-hidden">
             <GTPChart
               series={activeSeries}
+
               stack={activeOption?.stack ?? false}
               snapToCleanBoundary={false}
               xAxisMin={selectedRange ? selectedRange[0] : undefined}
@@ -578,14 +628,50 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
   );
 };
 
-export default function LandingEventsChart() {
+/**
+ * Eagerly fetches every event data URL on page load so the SWR cache is warm
+ * before the user clicks an event. ALL_EVENT_DATA_URLS is a static module-level
+ * constant, so the number of useSWR calls never changes between renders.
+ */
+const EventDataPrefetcher = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  ALL_EVENT_DATA_URLS.forEach((url) => useSWR(url));
+  return null;
+};
 
+export default function LandingEventsChart() {
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
-   
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const hasInteractedRef = useRef(false);
+
+  const handleInteract = () => {
+    if (!hasInteractedRef.current) {
+      hasInteractedRef.current = true;
+      setHasInteracted(true);
+    }
+  };
+
+  // Auto-advance to the next event every 10 seconds until the user interacts
+  useEffect(() => {
+    if (hasInteracted) return;
+    const interval = setInterval(() => {
+      if (hasInteractedRef.current) {
+        clearInterval(interval);
+        return;
+      }
+      setSelectedEvent((current) => {
+        const currentIndex = FEATURED_EVENT_IDS_MAX.indexOf(current);
+        const nextIndex = (currentIndex + 1) % FEATURED_EVENT_IDS_MAX.length;
+        return FEATURED_EVENT_IDS_MAX[nextIndex];
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [hasInteracted]);
 
   return (
     <ProjectsMetadataProvider>
-      <div className="flex flex-col gap-y-[15px] w-full pb-[30px] h-full min-h-0 overflow-hidden">
+      <EventDataPrefetcher />
+      <div className="flex flex-col gap-y-[15px] w-full pt-[60px] pb-[30px] h-full min-h-0 overflow-hidden">
           {/*Heading */}
         <div className="flex items-center gap-x-[8px]">
           <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px]" />
@@ -593,9 +679,16 @@ export default function LandingEventsChart() {
 
         </div>
         <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
-          <SideEventsContainer selectedEvent={selectedEvent} setSelectedEvent={(event) => setSelectedEvent(event)}></SideEventsContainer>
+          <SideEventsContainer
+            selectedEvent={selectedEvent}
+            hasInteracted={hasInteracted}
+            setSelectedEvent={(event) => {
+              handleInteract();
+              setSelectedEvent(event);
+            }}
+          />
           {(EVENTS_BY_ID[selectedEvent].bodyType ?? "chart") === "chart" ? (
-            <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} />
+            <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} onInteract={handleInteract} />
           ) : (
             <LandingEventsCardContent key={selectedEvent} selectedEvent={selectedEvent} />
           )}
