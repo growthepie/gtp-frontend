@@ -50,6 +50,144 @@ const getMeasureCtx = () => {
   return _measureCtx;
 };
 
+// --- Y-axis tick helpers (module-level so they can be shared by yAxisLayout and chartOption) ---
+
+const Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO = 1.15;
+const Y_AXIS_PADDING_MULTIPLIER = 1.03;
+
+function getNiceStep(raw: number): number {
+  const safeRaw = Math.max(raw, Number.EPSILON);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
+  const normalized = safeRaw / magnitude;
+  if (normalized <= 1.5) return 1 * magnitude;
+  if (normalized <= 2.25) return 2 * magnitude;
+  if (normalized <= 3.75) return 2.5 * magnitude;
+  if (normalized <= 7.5) return 5 * magnitude;
+  return 10 * magnitude;
+}
+
+function tightenPositiveHeadroom({
+  paddedPosMax,
+  positiveBaseline,
+  initialStep,
+  minAllowedStep,
+}: {
+  paddedPosMax: number;
+  positiveBaseline: number;
+  initialStep: number;
+  minAllowedStep: number;
+}): { step: number; roundedPosMax: number } {
+  let step = initialStep;
+  let roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+  let previousStep = step;
+  while (roundedPosMax / positiveBaseline > Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO && step > minAllowedStep) {
+    const tightenedStep = getNiceStep(step / 1.6);
+    if (tightenedStep >= previousStep) break;
+    previousStep = step;
+    step = Math.max(tightenedStep, minAllowedStep);
+    roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+  }
+  return { step, roundedPosMax: Math.min(roundedPosMax, positiveBaseline * Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO) };
+}
+
+function computeYAxisTicks({
+  pairedSeries,
+  xAxisMin,
+  xAxisMax,
+  containerHeight,
+  percentageMode,
+  stack,
+  yAxisMin,
+  yAxisMaxOverride,
+}: {
+  pairedSeries: { pairedData: [number, number | null][] }[];
+  xAxisMin: number | undefined;
+  xAxisMax: number | undefined;
+  containerHeight: number;
+  percentageMode: boolean;
+  stack: boolean;
+  yAxisMin: number;
+  yAxisMaxOverride: number | undefined;
+}): { computedYAxisMin: number; computedYAxisMax: number; yAxisStep: number; splitCount: number } {
+  const shouldStack = stack || percentageMode;
+  const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
+  const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
+  const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
+  const isWithinVisibleRange = (ts: number) => ts >= visibleMinTs && ts <= visibleMaxTs;
+
+  const allValues = pairedSeries.flatMap((s) =>
+    s.pairedData
+      .filter(([ts]) => Number.isFinite(Number(ts)) && isWithinVisibleRange(Number(ts)))
+      .map((p) => p[1])
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
+  );
+
+  const maxSeriesValue =
+    shouldStack && pairedSeries.length > 0
+      ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
+          const pointTs = Number(point[0]);
+          if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return maxVal;
+          const stackedValue = pairedSeries.reduce((sum, s) => {
+            const pv = s.pairedData[index]?.[1];
+            return typeof pv === "number" && Number.isFinite(pv) ? sum + pv : sum;
+          }, 0);
+          return Math.max(maxVal, stackedValue);
+        }, 0)
+      : allValues.length > 0
+        ? Math.max(...allValues)
+        : 0;
+
+  const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  const hasNegativeValues = minSeriesValue < 0;
+
+  const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
+  const absoluteStep = getNiceStep(rawStep);
+  let yAxisStep = percentageMode ? 25 : absoluteStep;
+
+  let computedYAxisMin: number;
+  let computedYAxisMax: number;
+
+  if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
+    const posMax = Math.max(maxSeriesValue, 0);
+    const negMin = Math.min(minSeriesValue, 0);
+    const totalRange = posMax - negMin;
+    const rangeRawStep = totalRange / Math.max(splitCount, 1);
+    const initialStep = getNiceStep(rangeRawStep);
+    const minAllowedStep = getNiceStep(totalRange / Math.max(splitCount * 16, 1));
+    const tightened = tightenPositiveHeadroom({
+      paddedPosMax: posMax * Y_AXIS_PADDING_MULTIPLIER,
+      positiveBaseline: Math.max(posMax, Number.EPSILON),
+      initialStep,
+      minAllowedStep,
+    });
+    yAxisStep = tightened.step;
+    computedYAxisMax = posMax > 0 ? tightened.roundedPosMax : 0;
+    computedYAxisMin = Math.floor((negMin * Y_AXIS_PADDING_MULTIPLIER) / yAxisStep) * yAxisStep;
+  } else {
+    computedYAxisMin = yAxisMin;
+    computedYAxisMax =
+      yAxisMaxOverride !== undefined
+        ? yAxisMaxOverride
+        : percentageMode
+          ? 100
+          : (() => {
+              const posMax = Math.max(maxSeriesValue, 0);
+              if (posMax <= 0) return 0;
+              const minAllowedStep = getNiceStep(posMax / Math.max(splitCount * 16, 1));
+              const tightened = tightenPositiveHeadroom({
+                paddedPosMax: posMax * Y_AXIS_PADDING_MULTIPLIER,
+                positiveBaseline: posMax,
+                initialStep: yAxisStep,
+                minAllowedStep,
+              });
+              yAxisStep = tightened.step;
+              return tightened.roundedPosMax;
+            })();
+  }
+
+  return { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount };
+}
+
 // --- Public types ---
 
 export type GTPChartSeriesType = "line" | "area" | "bar";
@@ -131,6 +269,8 @@ export interface GTPChartProps {
   /** Minimum number of data points that must be visible after a drag-select zoom. Defaults to 2. */
   minDragSelectPoints?: number;
   showTooltipTimestamp?: boolean;
+  /** When true, appends a "Total" row at the bottom of the default tooltip showing the sum of all displayed data points. */
+  showTotal?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -176,6 +316,7 @@ export default function GTPChart({
   dragSelectIcon,
   minDragSelectPoints = 2,
   showTooltipTimestamp = false,
+  showTotal = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -715,6 +856,64 @@ export default function GTPChart({
     });
   }, [normalizedSeries, percentageMode]);
 
+  // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
+  const yAxisLayout = useMemo(
+    () =>
+      computeYAxisTicks({
+        pairedSeries,
+        xAxisMin,
+        xAxisMax,
+        containerHeight,
+        percentageMode,
+        stack,
+        yAxisMin,
+        yAxisMaxOverride,
+      }),
+    [pairedSeries, xAxisMin, xAxisMax, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
+  );
+
+  // --- Dynamic grid.left based on measured y-axis label widths ---
+  const dynamicGridLeft = useMemo(() => {
+    if (gridOverride?.left !== undefined) return gridOverride.left;
+
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
+    const tickCount = splitCount + 1;
+    const step = yAxisStep > 0 ? yAxisStep : Math.max((computedYAxisMax - computedYAxisMin) / splitCount, Number.EPSILON);
+
+    const ticks: number[] = [];
+    for (let i = 0; i < tickCount; i++) {
+      const v = computedYAxisMin + i * step;
+      if (v > computedYAxisMax + step * 0.01) break;
+      ticks.push(v);
+    }
+    // Always include the max tick
+    if (ticks[ticks.length - 1] < computedYAxisMax) ticks.push(computedYAxisMax);
+
+    const labels = ticks.map((v) =>
+      yAxisLabelFormatter
+        ? yAxisLabelFormatter(v)
+        : percentageMode
+          ? `${Math.round(v)}%`
+          : formatCompactNumber(v, decimals),
+    );
+
+    const ctx = getMeasureCtx();
+    const font = `500 10px Fira Sans, sans-serif`;
+    const maxLabelWidth = labels.reduce((max, label) => {
+      let w: number;
+      if (ctx) {
+        ctx.font = font;
+        w = ctx.measureText(label).width;
+      } else {
+        w = label.length * 6;
+      }
+      return Math.max(max, w);
+    }, 0);
+
+    // 6px left margin inside the grid + 8px gap between label and axis line
+    return Math.ceil(maxLabelWidth) + 14;
+  }, [gridOverride, yAxisLayout, yAxisLabelFormatter, percentageMode, decimals]);
+
   // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
   const timeAxisLayout = useMemo(() => {
     if (xAxisType !== "time") return undefined;
@@ -723,7 +922,7 @@ export default function GTPChart({
     );
     const barData = pairedSeries.filter((s) => s.seriesType === "bar").map((s) => s.pairedData);
     const g = {
-      left: gridOverride?.left ?? DEFAULT_GRID.left,
+      left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
@@ -736,17 +935,17 @@ export default function GTPChart({
       grid: g,
       snapToCleanBoundary,
     });
-  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary]);
+  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
 
   const effectiveGrid = useMemo(() => {
     const base = {
-      left: gridOverride?.left ?? DEFAULT_GRID.left,
+      left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
     return timeAxisLayout?.grid ?? base;
-  }, [gridOverride, timeAxisLayout]);
+  }, [dynamicGridLeft, gridOverride, timeAxisLayout]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
@@ -815,133 +1014,8 @@ export default function GTPChart({
   const chartOption = useMemo<EChartsOption>(() => {
     const shouldStack = stack || percentageMode;
 
-    // Y-axis smart scaling
-    const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
-    const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
-    const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
-    const isWithinVisibleRange = (timestamp: number) => timestamp >= visibleMinTs && timestamp <= visibleMaxTs;
-
-    const allValues = pairedSeries.flatMap((s) =>
-      s.pairedData
-        .filter(([timestamp]) => Number.isFinite(Number(timestamp)) && isWithinVisibleRange(Number(timestamp)))
-        .map((p) => p[1])
-        .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
-    );
-
-    const maxSeriesValue =
-      shouldStack && pairedSeries.length > 0
-        ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
-            const pointTimestamp = Number(point[0]);
-            if (!Number.isFinite(pointTimestamp) || !isWithinVisibleRange(pointTimestamp)) return maxVal;
-            const stackedValue = pairedSeries.reduce((sum, s) => {
-              const pointValue = s.pairedData[index]?.[1];
-              return typeof pointValue === "number" && Number.isFinite(pointValue) ? sum + pointValue : sum;
-            }, 0);
-            return Math.max(maxVal, stackedValue);
-          }, 0)
-        : allValues.length > 0
-          ? Math.max(...allValues)
-          : 0;
-
-    // Detect whether the data contains negative values
-    const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
-    const hasNegativeValues = minSeriesValue < 0;
-    const maxPositiveOvershootRatio = 1.15;
-
-    const getNiceStep = (raw: number) => {
-      const safeRaw = Math.max(raw, Number.EPSILON);
-      const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
-      const normalized = safeRaw / magnitude;
-
-      if (normalized <= 1.5) return 1 * magnitude;
-      if (normalized <= 2.25) return 2 * magnitude;
-      if (normalized <= 3.75) return 2.5 * magnitude;
-      if (normalized <= 7.5) return 5 * magnitude;
-      return 10 * magnitude;
-    };
-
-    const tightenPositiveHeadroom = ({
-      paddedPosMax,
-      positiveBaseline,
-      initialStep,
-      minAllowedStep,
-    }: {
-      paddedPosMax: number;
-      positiveBaseline: number;
-      initialStep: number;
-      minAllowedStep: number;
-    }) => {
-      let step = initialStep;
-      let roundedPosMax = Math.ceil(paddedPosMax / step) * step;
-      let previousStep = step;
-
-      while (roundedPosMax / positiveBaseline > maxPositiveOvershootRatio && step > minAllowedStep) {
-        const tightenedStep = getNiceStep(step / 1.6);
-        if (tightenedStep >= previousStep) break;
-        previousStep = step;
-        step = Math.max(tightenedStep, minAllowedStep);
-        roundedPosMax = Math.ceil(paddedPosMax / step) * step;
-      }
-
-      return {
-        step,
-        roundedPosMax: Math.min(roundedPosMax, positiveBaseline * maxPositiveOvershootRatio),
-      };
-    };
-
-    const axisPaddingMultiplier = 1.03;
-    const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
-    const absoluteStep = getNiceStep(rawStep);
-    let yAxisStep = percentageMode ? 25 : absoluteStep;
-
-    // For data with negatives, compute independent min/max with capped positive headroom.
-    let computedYAxisMin: number;
-    let computedYAxisMax: number;
-
-    if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
-      const posMax = Math.max(maxSeriesValue, 0);
-      const negMin = Math.min(minSeriesValue, 0);
-      const totalRange = posMax - negMin;
-      const rangeRawStep = totalRange / Math.max(splitCount, 1);
-      const initialStep = getNiceStep(rangeRawStep);
-      const minAllowedStep = getNiceStep(totalRange / Math.max(splitCount * 16, 1));
-      const paddedPosMax = posMax * axisPaddingMultiplier;
-      const positiveBaseline = Math.max(posMax, Number.EPSILON);
-
-      const tightened = tightenPositiveHeadroom({
-        paddedPosMax,
-        positiveBaseline,
-        initialStep,
-        minAllowedStep,
-      });
-
-      yAxisStep = tightened.step;
-      computedYAxisMax = posMax > 0 ? tightened.roundedPosMax : 0;
-      computedYAxisMin = Math.floor((negMin * axisPaddingMultiplier) / yAxisStep) * yAxisStep;
-    } else {
-      computedYAxisMin = yAxisMin;
-      computedYAxisMax =
-        yAxisMaxOverride !== undefined
-          ? yAxisMaxOverride
-          : percentageMode
-            ? 100
-            : (() => {
-                const posMax = Math.max(maxSeriesValue, 0);
-                if (posMax <= 0) return 0;
-
-                const paddedPosMax = posMax * axisPaddingMultiplier;
-                const minAllowedStep = getNiceStep(posMax / Math.max(splitCount * 16, 1));
-                const tightened = tightenPositiveHeadroom({
-                  paddedPosMax,
-                  positiveBaseline: posMax,
-                  initialStep: yAxisStep,
-                  minAllowedStep,
-                });
-
-                yAxisStep = tightened.step;
-                return tightened.roundedPosMax;
-              })();
-    }
+    // Y-axis tick values come from the shared yAxisLayout memo
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
 
     // Sort series for percentage mode (ascending by last value so smallest is on top)
     const sortedSeries = percentageMode
@@ -1344,11 +1418,25 @@ export default function GTPChart({
         })
         .join("");
 
+      const totalRow = (() => {
+        if (!showTotal) return "";
+        const total = displayPoints.reduce((sum, p) => sum + p.numericValue, 0);
+        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
+        const prefixStd = percentageMode ? "" : (prefix ?? "");
+        const suffixStd = percentageMode ? "" : (suffix ?? "");
+        return `
+          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight mt-[4px] border-t border-color-border pt-[4px]">
+            <div class="w-[15px] h-[10px]"></div>
+            <div class="tooltip-point-name text-xs">Total</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
+          </div>
+        `;
+      })();
 
       return `
         <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
           <div class="flex-1 flex ${showTooltipTimestamp ? "items-start" : "items-center"}  justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
-          
+
             <div class="">
               <div>${dateLabel}</div>
               <div class="text-xs font-medium text-color-text-primary ${showTooltipTimestamp ? "block" : "hidden"}">${timeLabel} UTC</div>
@@ -1357,6 +1445,7 @@ export default function GTPChart({
           </div>
           <div class="flex flex-col w-full">
             ${rows}
+            ${totalRow}
           </div>
         </div>
       `;
@@ -1447,7 +1536,6 @@ export default function GTPChart({
     areaOpacityOverride,
     barMaxWidth,
     chartTooltipPosition,
-    containerHeight,
     containerWidth,
     decimals,
     effectiveGrid,
@@ -1461,7 +1549,6 @@ export default function GTPChart({
     prefix,
     suffix,
     percentageMode,
-    snapToCleanBoundary,
     xAxisLines,
     pairedSeries,
     normalizedSeries,
@@ -1471,13 +1558,13 @@ export default function GTPChart({
     tooltipFormatter,
     tooltipTitle,
     showTooltipTimestamp,
+    showTotal,
     limitTooltipRows,
     xAxisMin,
     xAxisMax,
     xAxisType,
     yAxisLabelFormatter,
-    yAxisMaxOverride,
-    yAxisMin,
+    yAxisLayout,
   ]);
 
   const containerStyle: React.CSSProperties = {

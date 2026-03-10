@@ -528,9 +528,10 @@ const LandingEventsChartContent = ({ selectedEvent }: { selectedEvent: EventId }
        }
       >
         <div className="flex flex-col h-full min-h-0">
-          <div className="flex-1 min-h-0 w-full py-[15px] overflow-hidden">
+          <div className="flex-1 min-h-0 w-full py-[15px]  -overflow-hidden">
             <GTPChart
               series={activeSeries}
+
               stack={activeOption?.stack ?? false}
               snapToCleanBoundary={false}
               xAxisMin={selectedRange ? selectedRange[0] : undefined}
