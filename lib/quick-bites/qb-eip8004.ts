@@ -478,15 +478,82 @@ const Agents: QuickBiteData = createQuickBite({
   }],
   topics: [
     {
+      icon: "gtp-compare",
+      name: "AI",
+      url: "/blockspace/category-comparison"
+    },
+    {
       icon: "ethereum-logo-monochrome",
       color: "#94ABD3",
       name: "Ethereum Mainnet",
       url: "/chains/ethereum"
     },
     {
-      icon: "gtp-compare",
-      name: "AI",
-      url: "/blockspace/category-comparison"
+      
+      icon: "arbitrum-logo-monochrome",
+      color: "rgb(var(--chains-arbitrum-one))",
+      name: "Arbitrum One",
+      url: "/chains/arbitrum"
+    },
+    {
+      icon: "base-logo-monochrome",
+      color: "rgb(var(--chains-base))",
+      name: "Base Chain",
+      url: "/chains/base"
+    },
+    {
+      icon: "celo-logo-monochrome",
+      color: "rgb(var(--chains-celo))",
+      name: "Celo",
+      url: "/chains/celo"
+    },
+    {
+      icon: "linea-logo-monochrome",
+      color: "rgb(var(--chains-linea))",
+      name: "Linea",
+      url: "/chains/linea"
+    },
+    {
+      icon: "mantle-logo-monochrome",
+      color: "rgb(var(--chains-mantle))",
+      name: "Mantle",
+      url: "/chains/mantle"
+    },
+    {
+      icon: "megaeth-logo-monochrome",
+      color: "rgb(var(--chains-megaeth))",
+      name: "MegaETH",
+      url: "/chains/megaeth"
+    },
+    {
+      icon: "metis-logo-monochrome",
+      color: "rgb(var(--chains-metis))",
+      name: "Metis",
+      url: "/chains/metis"
+    },
+    {
+      icon: "optimism-logo-monochrome",
+      color: "rgb(var(--chains-op-mainnet))",
+      name: "OP Mainnet",
+      url: "/chains/op-mainnet"
+    },
+    {
+      icon: "polygon-pos-logo-monochrome",
+      color: "rgb(var(--chains-polygon-pos))",
+      name: "Polygon PoS",
+      url: "/chains/polygon-pos"
+    },
+    {
+      icon: "scroll-logo-monochrome",
+      color: "rgb(var(--chains-scroll))",
+      name: "Scroll",
+      url: "/chains/scroll"
+    },
+    {
+      icon: "taiko-logo-monochrome",
+      color: "rgb(var(--chains-taiko))",
+      name: "Taiko",
+      url: "/chains/taiko"
     },
   ],
   icon: "ethereum-logo-monochrome",

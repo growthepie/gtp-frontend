@@ -37,39 +37,83 @@ export const getAllQuickBites = (): (QuickBiteData & { slug: string })[] => {
 
 
 export const getRelatedQuickBites = (slug: string): RelatedData => {
-  const relatedData: RelatedData = {};
   const data = QUICK_BITES_DATA[slug];
-  if (!data) return relatedData;
+  const relatedData: RelatedData = {};
+  if (!data || !data.topics || data.topics.length === 0) return relatedData;
 
+  // Prioritise matches on the first 3 topics
+  const primaryTopicNames = new Set(data.topics.slice(0, 3).map((t) => t.name));
+  const secondaryTopicNames = new Set(data.topics.slice(3).map((t) => t.name));
 
-  Object.entries(QUICK_BITES_DATA).filter(([currentSlug, currentData]) => currentSlug !== slug).map(([currentSlug, currentData]) => {
- 
-    currentData.topics?.map(topic => {
-      
+  const primaryMatches: RelatedData = {};
+  const secondaryMatches: RelatedData = {};
 
-      data.topics?.map(t => {
+  Object.entries(QUICK_BITES_DATA)
+    .filter(([currentSlug]) => currentSlug !== slug)
+    .forEach(([currentSlug, currentData]) => {
+      if (!currentData.topics || currentData.topics.length === 0) return;
 
-     
-        if(t.name === topic.name) {
-          // Initialize the entry if it doesn't exist
-          if(!relatedData[currentSlug]) {
-            relatedData[currentSlug] = {
-              relatedTopics: [],
-              data: null
-            };
+      const matchedPrimary: string[] = [];
+      const matchedSecondary: string[] = [];
+
+      currentData.topics.forEach((topic) => {
+        if (primaryTopicNames.has(topic.name)) {
+          if (!matchedPrimary.includes(topic.name)) {
+            matchedPrimary.push(topic.name);
           }
-          
-          //add the topic to the relatedTopics array
-          relatedData[currentSlug].relatedTopics.push(topic.name);
-          relatedData[currentSlug].data = currentData;
+        } else if (secondaryTopicNames.has(topic.name)) {
+          if (!matchedSecondary.includes(topic.name)) {
+            matchedSecondary.push(topic.name);
+          }
         }
       });
+
+      if (matchedPrimary.length > 0) {
+        primaryMatches[currentSlug] = {
+          relatedTopics: matchedPrimary,
+          data: currentData,
+        };
+      } else if (matchedSecondary.length > 0) {
+        secondaryMatches[currentSlug] = {
+          relatedTopics: matchedSecondary,
+          data: currentData,
+        };
+      }
     });
+
+  // Build final result with bias toward primary topics.
+  // Take up to 3 primary matches (most recent first), then fill from secondary if needed.
+  const sortByDateDesc = (entries: [string, { relatedTopics: string[]; data: QuickBiteData | null }][]) =>
+    entries
+      .filter(([, value]) => value.data && value.data.date)
+      .sort(
+        (a, b) =>
+          new Date(b[1].data!.date).getTime() -
+          new Date(a[1].data!.date).getTime()
+      );
+
+  const primaryEntries = sortByDateDesc(Object.entries(primaryMatches));
+  const secondaryEntries = sortByDateDesc(Object.entries(secondaryMatches));
+
+  const maxRelated = 3;
+  const selectedEntries: [string, { relatedTopics: string[]; data: QuickBiteData | null }][] = [];
+
+  for (const entry of primaryEntries) {
+    if (selectedEntries.length >= maxRelated) break;
+    selectedEntries.push(entry);
+  }
+
+  if (selectedEntries.length < maxRelated) {
+    for (const entry of secondaryEntries) {
+      if (selectedEntries.length >= maxRelated) break;
+      selectedEntries.push(entry);
+    }
+  }
+
+  selectedEntries.forEach(([slugKey, value]) => {
+    relatedData[slugKey] = value;
   });
 
-
-
-  
   return relatedData;
 };
 
