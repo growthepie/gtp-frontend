@@ -17,9 +17,9 @@ import { Get_SupportedChainKeys } from "@/lib/chains";
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   kpi_cards:        KpiCards;
-  first_seen?:      Date;
-  contracts_table?: {[timespan: string]: ContractsTable};
-  last_updated_utc?: Date;
+  first_seen:      Date;
+  contracts_table: {[timespan: string]: ContractsTable};
+  last_updated_utc: Date;
 }
 
 export interface KpiCards {
@@ -66,7 +66,7 @@ export interface MetricData {
   avg:         boolean;
   over_time:   OverTime;
   // Removed from API — kept optional for backwards compatibility
-  aggregated?: Aggregated;
+  aggregated: Aggregated;
 }
 
 export interface Aggregated {
