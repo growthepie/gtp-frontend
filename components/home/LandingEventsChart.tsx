@@ -205,7 +205,7 @@ const resolveEventExample = (
   const description =
     event.description ?? `Daily ${metricLabel} on ${chainLabel}, highlighting its all-time high.`;
   const question =
-    event.question ?? `Has ${chainLabel} reached a new high in ${metricLabel}?`;
+    event.question ?? `Which chain has recently reached a new high in ${metricLabel}?`;
   const image = event.image ?? metricItem?.icon ?? "gtp-metrics-transaction-count";
   const link = event.link ?? `/fundamentals/${metricUrlKey}`;
 
