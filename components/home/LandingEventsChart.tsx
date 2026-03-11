@@ -646,8 +646,10 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
 
   const activeXAxisLines = useMemo(() => {
     const baseLines = activeOption?.xAxisLines ?? eventData.xAxisLines ?? [];
-    if (!eventData.athMeta || athXAxisLines.length === 0) return baseLines;
-    return [...baseLines, ...athXAxisLines];
+    // Disable ATH marker line for now.
+    // if (!eventData.athMeta || athXAxisLines.length === 0) return baseLines;
+    // return [...baseLines, ...athXAxisLines];
+    return baseLines;
   }, [activeOption?.xAxisLines, athXAxisLines, eventData.athMeta, eventData.xAxisLines]);
 
   const allSeriesNames = useMemo(() => selectedSeries.map((series) => series.name), [selectedSeries]);
