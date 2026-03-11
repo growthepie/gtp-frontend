@@ -10,6 +10,7 @@ import { GTPIconName } from '@/icons/gtp-icon-names';
 export interface DropdownOption {
   value: string;
   label: string;
+  logo?: string; // Optional image URL rendered as icon
 }
 
 interface DropdownProps {
@@ -21,6 +22,7 @@ interface DropdownProps {
   searchable?: boolean;
   className?: string;
   disabled?: boolean;
+  useChainIcons?: boolean; // Override chain icon auto-detection (default: auto-detect)
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -31,7 +33,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   onChange,
   searchable = true,
   className = '',
-  disabled = false
+  disabled = false,
+  useChainIcons,
 }) => {
   const { AllChainsByKeys } = useMaster();
   const [isOpen, setIsOpen] = useState(false);
@@ -52,10 +55,11 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   // Get selected option
   const selectedOption = useMemo(() => options.find(option => option.value === value), [options, value]);
-  const isChainDropdown = useMemo(
-    () => options.length > 0 && options.every((option) => Boolean(AllChainsByKeys?.[option.value])),
-    [options, AllChainsByKeys],
-  );
+  const isChainDropdown = useMemo(() => {
+    if (useChainIcons === false) return false;
+    if (useChainIcons === true) return true;
+    return options.length > 0 && options.every((option) => Boolean(AllChainsByKeys?.[option.value]));
+  }, [options, AllChainsByKeys, useChainIcons]);
 
   const getChainDisplay = (option: DropdownOption) => {
     if (!isChainDropdown) return null;
@@ -258,7 +262,9 @@ const Dropdown: React.FC<DropdownProps> = ({
                         ) : (
                           <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" />
                         )}
-                        {chainDisplay && (
+                        {option.logo ? (
+                          <img src={option.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                        ) : chainDisplay && (
                           <GTPIcon
                             icon={chainDisplay.icon as GTPIconName}
                             size="sm"
@@ -305,7 +311,9 @@ const Dropdown: React.FC<DropdownProps> = ({
                   />
                 ) : (
                   <div className="flex items-center gap-[10px] min-w-0">
-                    {selectedChainDisplay && (
+                    {selectedOption.logo ? (
+                      <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                    ) : selectedChainDisplay && (
                       <GTPIcon
                         icon={selectedChainDisplay.icon as GTPIconName}
                         size="sm"
@@ -320,7 +328,9 @@ const Dropdown: React.FC<DropdownProps> = ({
                 )
               ) : (
                 <div className="flex items-center gap-[10px] min-w-0">
-                  {selectedChainDisplay && (
+                  {selectedOption?.logo ? (
+                    <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                  ) : selectedChainDisplay && (
                     <GTPIcon
                       icon={selectedChainDisplay.icon as GTPIconName}
                       size="sm"

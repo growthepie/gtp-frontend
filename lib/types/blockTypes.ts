@@ -425,8 +425,11 @@ export interface DropdownBlock extends BaseBlock {
   jsonData?: {
     url: string;
     pathToOptions: string;
-    valueField?: string; // Field to use for option value (defaults to 'value')
-    labelField?: string; // Field to use for option label (defaults to 'label')
+    valueField?: string;    // Field to use for option value (defaults to 'value')
+    labelField?: string;    // Field to use for option label (defaults to 'label')
+    logoField?: string;     // Field to use for option logo image URL
+    logoPrefix?: string;    // Optional prefix prepended to the logoField value to build the full URL
+    useChainIcons?: boolean; // Whether to auto-render chain icons based on value key (default: auto-detect)
   };
 }
 
