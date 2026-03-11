@@ -4,10 +4,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState, type Re
 import { createWalletClient, custom, defineChain } from "viem";
 import Icon from "@/components/layout/Icon";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
-import {
-  clearProjectEditContractSeed,
-  readProjectEditContractSeed,
-} from "@/lib/project-edit-contract-seed";
+import { clearProjectEditContractSeed } from "@/lib/project-edit-contract-seed";
 import {
   AttestClient,
   createDynamicWalletAdapter,
@@ -182,8 +179,6 @@ export function useContractsQueue({
   setActiveStep,
 }: UseContractsQueueParams): ContractsQueueReturn {
   const csvInputRef = useRef<HTMLInputElement>(null!);
-  const importedContractSeedRef = useRef(false);
-
   const [oliCategories, setOliCategories] = useState<{ category_id: string; name: string }[]>([]);
   useEffect(() => {
     fetch("/api/labels/usage-categories")
@@ -406,9 +401,17 @@ export function useContractsQueue({
     validationOptions: { projects: normalizedProjects },
   });
 
+  const initialBulkRows = useMemo<AttestationRowInput[]>(
+    () =>
+      mode === "edit" && intent.source === "application-page"
+        ? []
+        : [{ chain_id: defaultQueueChainId, owner_project: ownerProject.trim() }],
+    [defaultQueueChainId, intent.source, mode, ownerProject],
+  );
+
   const bulkController = useBulkCsvAttestUI(attestClient, {
     mode: "simpleProfile",
-    initialRows: [{ chain_id: defaultQueueChainId, owner_project: ownerProject.trim() }],
+    initialRows: initialBulkRows,
     initialColumns: QUEUE_EDITABLE_FIELDS,
     allowedFields: QUEUE_EDITABLE_FIELDS,
     validationOptions: { projects: normalizedProjects, maxRows: MAX_QUEUE_ROWS },
@@ -509,50 +512,13 @@ export function useContractsQueue({
     bulkController.queue.setRows(nextRows);
   }, [ownerProject, bulkController.queue]);
 
-  // ── Seed import (from application page) ──────────────────────────────────
+  // ── Clear stale application-page seed state ──────────────────────────────
 
   useEffect(() => {
-    if (importedContractSeedRef.current) return;
     if (mode !== "edit" || intent.source !== "application-page") return;
-    const seed = readProjectEditContractSeed();
-    if (!seed) return;
-    const isStale = Date.now() - seed.created_at > 15 * 60 * 1000;
-    const expectedOwner = (intent.project || ownerProject).trim().toLowerCase();
-    const seedOwner = seed.owner_project.trim().toLowerCase();
-    if (isStale || (expectedOwner && seedOwner && expectedOwner !== seedOwner)) {
-      clearProjectEditContractSeed();
-      importedContractSeedRef.current = true;
-      return;
-    }
-    const seededRows = seed.rows
-      .map((row) =>
-        prepareRowForQueue({
-          chain_id: toStringValue(row.chain_id).trim(),
-          address: toStringValue(row.address).trim(),
-          contract_name: toStringValue(row.contract_name).trim(),
-          owner_project: toStringValue(row.owner_project).trim() || ownerProject.trim(),
-          usage_category: toStringValue(row.usage_category).trim(),
-        }),
-      )
-      .filter((row) => hasMeaningfulRowData(row))
-      .slice(0, MAX_QUEUE_ROWS);
     clearProjectEditContractSeed();
-    importedContractSeedRef.current = true;
-    if (seededRows.length === 0) return;
-    bulkController.queue.setRows(seededRows);
-    setQueueError(null);
-    setQueueErrorFromValidation(false);
-    setQueueSubmitPreview(null);
-    setSingleSubmitResult(null);
-    setBulkSubmitResult(null);
-    setLastSubmitChainId("");
-    setLastValidatedQueueFlow(null);
-    setLastValidatedQueueSignature("");
-    setLastValidatedSingleRowIndex(null);
-    setQueueValidated(false);
-    setShouldAutoValidateAfterImport(true);
     setActiveStep(2);
-  }, [mode, intent.source, intent.project, ownerProject, prepareRowForQueue, bulkController.queue, setActiveStep]);
+  }, [mode, intent.source, setActiveStep]);
 
   // ── Queue operations ──────────────────────────────────────────────────────
 

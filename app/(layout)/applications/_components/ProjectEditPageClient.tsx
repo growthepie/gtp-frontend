@@ -56,8 +56,18 @@ export default function ProjectEditPageClient() {
     disconnectWallet: disconnectWalletFromContext,
   } = useWalletConnection();
 
+  const initialActiveStep = useMemo<0 | 1 | 2 | 3 | 4>(() => {
+    if (intent.mode === "add") {
+      return 0;
+    }
+    if (intent.start === "contracts") {
+      return 2;
+    }
+    return 1;
+  }, [intent.mode, intent.start]);
+
   const [activeStep, setActiveStep] = useState<0 | 1 | 2 | 3 | 4>(
-    intent.mode === "add" ? 0 : 1,
+    initialActiveStep,
   );
   const [hoveredTab, setHoveredTab] = useState<"find" | "add" | null>(null);
   const [editSearchCaptureActive, setEditSearchCaptureActive] = useState(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -339,6 +339,17 @@ export function ContractsStep({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useLayoutEffect(() => {
+    if (activeStep !== 2) return;
+
+    const containerW = tableContainerRef.current?.getBoundingClientRect().width ?? 0;
+    if (containerW <= 0 || animFrameRef.current) return;
+
+    setTableContainerWidth(containerW);
+    applyColWidths(getColWidths(containerW, null, 0));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStep, nameColWidth, bulkController.queue.rows.length]);
 
   // Auto-advance to step 3 when all rows pass validation
   useEffect(() => {
