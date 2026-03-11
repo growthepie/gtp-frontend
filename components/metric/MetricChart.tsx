@@ -188,6 +188,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
         }}
         showTooltipTimestamp={timeIntervalKey === "hourly"}
+        showTotal={selectedScale === "stacked"}
       />
 
 

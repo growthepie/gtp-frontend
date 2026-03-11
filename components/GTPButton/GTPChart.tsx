@@ -97,6 +97,8 @@ export interface GTPChartProps {
   /** Minimum number of data points that must be visible after a drag-select zoom. Defaults to 2. */
   minDragSelectPoints?: number;
   showTooltipTimestamp?: boolean;
+  /** When true, appends a "Total" row at the bottom of the default tooltip showing the sum of all displayed data points. */
+  showTotal?: boolean;
 }
 
 // --- Component ---
@@ -138,6 +140,7 @@ export default function GTPChart({
   dragSelectIcon,
   minDragSelectPoints = 2,
   showTooltipTimestamp = false,
+  showTotal = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1136,11 +1139,25 @@ export default function GTPChart({
         })
         .join("");
 
+      const totalRow = (() => {
+        if (!showTotal) return "";
+        const total = displayPoints.reduce((sum, p) => sum + p.numericValue, 0);
+        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
+        const prefixStd = percentageMode ? "" : (prefix ?? "");
+        const suffixStd = percentageMode ? "" : (suffix ?? "");
+        return `
+          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight pt-[0px]">
+            <div class="w-[15px] h-[10px]"></div>
+            <div class="tooltip-point-name heading-small-xxs">Total:</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
+          </div>
+        `;
+      })();
 
       return `
         <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
           <div class="flex-1 flex ${showTooltipTimestamp ? "items-start" : "items-center"}  justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
-          
+
             <div class="">
               <div>${dateLabel}</div>
               <div class="text-xs font-medium text-color-text-primary ${showTooltipTimestamp ? "block" : "hidden"}">${timeLabel} UTC</div>
@@ -1149,6 +1166,7 @@ export default function GTPChart({
           </div>
           <div class="flex flex-col w-full">
             ${rows}
+            ${totalRow}
           </div>
         </div>
       `;
@@ -1299,6 +1317,7 @@ export default function GTPChart({
     yAxisLabelFormatter,
     yAxisMaxOverride,
     yAxisMin,
+    showTotal,
   ]);
 
   const containerStyle: React.CSSProperties = {
