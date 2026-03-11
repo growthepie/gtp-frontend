@@ -203,6 +203,10 @@ export interface GTPChartSeries {
   pattern?: "dashed";
   /** When true, line/area charts render their last visible segment as dashed. */
   dashedLastSegment?: boolean;
+  /** When true, draws a dotted horizontal markLine at the series' all-time high. */
+  showAllTimeHigh?: boolean;
+  /** Customize the ATH label prefix; the formatted value is appended automatically. */
+  allTimeHighLabel?: string;
 }
 
 export interface GTPChartTooltipParams {
@@ -1037,6 +1041,37 @@ export default function GTPChart({
       if (normalized === "solid") return "solid";
       return "solid";
     };
+    const formatTooltipValue = (value: number) => {
+      if (percentageMode) return `${value.toFixed(1)}%`;
+      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
+    };
+    const measureAthLabelWidth = (labelText: string) => {
+      const ctx = getMeasureCtx();
+      if (ctx) {
+        ctx.font = `${numbersXxsTypography.fontWeight} ${numbersXxsTypography.fontSize}px ${numbersXxsTypography.fontFamily}`;
+        return ctx.measureText(labelText).width + 24;
+      }
+      return labelText.length * 7 + 24;
+    };
+    const getAthLabelOffsetX = (labelText: string, timestamp: number) => {
+      if (!axisPixelMap) return 0;
+      const anchorX = axisPixelMap.timestampToPixel(timestamp);
+      if (!Number.isFinite(anchorX)) return 0;
+
+      const plotLeft = axisPixelMap.plotLeft;
+      const plotRight = axisPixelMap.plotLeft + axisPixelMap.plotWidth;
+      const labelHalfWidth = measureAthLabelWidth(labelText) / 2;
+      const edgePadding = 8;
+      const minCenterX = plotLeft + labelHalfWidth + edgePadding;
+      const maxCenterX = plotRight - labelHalfWidth - edgePadding;
+
+      if (!Number.isFinite(minCenterX) || !Number.isFinite(maxCenterX) || maxCenterX <= minCenterX) {
+        return 0;
+      }
+
+      const clampedCenterX = clamp(anchorX, minCenterX, maxCenterX);
+      return Math.round(clampedCenterX - anchorX);
+    };
 
     // Build series configs — each series determines its own type
     const echartsSeriesConfigs = sortedSeries.flatMap((s, index) => {
@@ -1169,29 +1204,100 @@ export default function GTPChart({
         }
       }
 
-      if (seriesOverrides) {
-        config = seriesOverrides(config, index);
+      const markLineData: unknown[] = [];
+      let athMarkPointData:
+        | {
+            coord: [number, number];
+            symbolSize: number;
+            tooltip: { show: false };
+            itemStyle: { color: string };
+            label: Record<string, unknown>;
+          }
+        | null = null;
+
+      if (s.showAllTimeHigh) {
+        const allPoints = s.pairedData.filter((point): point is [number, number] => {
+          const ts = Number(point[0]);
+          const value = point[1];
+          if (!Number.isFinite(ts)) return false;
+          return typeof value === "number" && Number.isFinite(value);
+        });
+
+        const athPoint = allPoints.reduce<[number, number] | null>((current, [timestamp, value]) => {
+          if (!current) return [timestamp, value];
+          if (value > current[1]) return [timestamp, value];
+          if (value === current[1] && timestamp > current[0]) return [timestamp, value];
+          return current;
+        }, null);
+
+        if (athPoint) {
+          const [lineColor] = resolveSeriesColors(s.color, fallbackColor);
+          const [athTimestamp, athValue] = athPoint;
+          const isAthVisible =
+            (!Number.isFinite(effectiveXMin) || athTimestamp >= Number(effectiveXMin)) &&
+            (!Number.isFinite(effectiveXMax) || athTimestamp <= Number(effectiveXMax));
+
+          if (isAthVisible) {
+            const lineStartTimestamp = Number.isFinite(effectiveXMin)
+              ? Number(effectiveXMin)
+              : allPoints[0]?.[0] ?? athTimestamp;
+            const athLabelPrefix = s.allTimeHighLabel?.trim();
+            const formattedAthValue = formatTooltipValue(athValue);
+            const athLabelText = athLabelPrefix
+              ? `${athLabelPrefix} ${formattedAthValue}`
+              : formattedAthValue;
+            const athLabelOffsetX = getAthLabelOffsetX(athLabelText, athTimestamp);
+
+            markLineData.push([
+              {
+                coord: [lineStartTimestamp, athValue],
+                symbol: "none",
+              },
+              {
+                coord: [athTimestamp, athValue],
+                symbol: "none",
+                lineStyle: {
+                  type: "dashed",
+                  color: withOpacity(lineColor, 0.45),
+                  opacity: 0.45,
+                  width: 1,
+                },
+                label: { show: false },
+              },
+            ]);
+
+            athMarkPointData = {
+              coord: [athTimestamp, athValue],
+              symbolSize: 0,
+              tooltip: { show: false },
+              itemStyle: { color: "transparent" },
+              label: {
+                show: true,
+                formatter: athLabelText,
+                position: "top",
+                distance: 6,
+                offset: [athLabelOffsetX, 2],
+                align: "center",
+                padding: [3, 6, 2, 6],
+                borderRadius: 999,
+                backgroundColor: lineColor.startsWith("#")
+                  ? withHexOpacity(lineColor, 0.66)
+                  : withOpacity(lineColor, 0.66),
+                fontSize: numbersXxsTypography.fontSize,
+                fontFamily: numbersXxsTypography.fontFamily,
+                lineHeight: numbersXxsTypography.lineHeight,
+                fontWeight: "medium",
+                color: textPrimary,
+                opacity: 1,
+              },
+            };
+          }
+        }
       }
 
       if (index === 0 && resolvedXAxisLines.length > 0) {
-        config.markLine = {
-          silent: true,
-          symbol: ["none", "none"],
-          label: {
-            show: true,
-            position: "insideEndTop",
-            rotate: 0,
-            fontFamily: "var(--font-raleway), sans-serif",
-            fontWeight: 500,
-            textStyle: {
-              fontFamily: "var(--font-raleway), sans-serif",
-              fontWeight: 500,
-            },
-          },
-          labelLayout: {
-            hideOverlap: false,
-          },
-          data: resolvedXAxisLines.map((line) => ({
+        markLineData.push(
+          ...resolvedXAxisLines.map((line) => ({
             xAxis: line.xValue,
             lineStyle: {
               color: line.lineColor ?? withOpacity(textPrimary, 0.7),
@@ -1223,7 +1329,43 @@ export default function GTPChart({
                 }
               : { show: false },
           })),
+        );
+      }
+
+      if (markLineData.length > 0) {
+        config.markLine = {
+          silent: true,
+          symbol: ["none", "none"],
+          label: {
+            show: false,
+            position: "insideEndTop",
+            rotate: 0,
+            fontFamily: "var(--font-raleway), sans-serif",
+            fontWeight: 500,
+            textStyle: {
+              fontFamily: "var(--font-raleway), sans-serif",
+              fontWeight: 500,
+            },
+          },
+          labelLayout: {
+            hideOverlap: false,
+          },
+          data: markLineData,
         };
+      }
+
+      if (athMarkPointData) {
+        config.markPoint = {
+          silent: true,
+          symbol: "circle",
+          symbolSize: 0,
+          tooltip: { show: false },
+          data: [athMarkPointData],
+        };
+      }
+
+      if (seriesOverrides) {
+        config = seriesOverrides(config, index);
       }
 
       const shouldRenderDashedTail =
@@ -1400,16 +1542,14 @@ export default function GTPChart({
           if (!Number.isFinite(v)) return "";
           const meta = normalizedSeries.find((s) => s.name === point.seriesName);
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
-          const formattedValue = percentageMode ? `${v.toFixed(1)}%` : formatCompactNumber(v, decimals);
+          const formattedValue = formatTooltipValue(v);
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
-          const prefixStd = percentageMode ? "" : (prefix ?? "");
-          const suffixStd = percentageMode ? "" : (suffix ?? "");
 
           return `
             <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
               <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${lineColor}"></div>
               <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
-              <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedValue}${suffixStd}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">${formattedValue}</div>
             </div>
             <div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
               <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
@@ -1421,14 +1561,12 @@ export default function GTPChart({
       const totalRow = (() => {
         if (!showTotal) return "";
         const total = displayPoints.reduce((sum, p) => sum + p.numericValue, 0);
-        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
-        const prefixStd = percentageMode ? "" : (prefix ?? "");
-        const suffixStd = percentageMode ? "" : (suffix ?? "");
+        const formattedTotal = formatTooltipValue(total);
         return `
           <div class="flex w-full space-x-1.5 items-center font-bold leading-tight mt-[4px] border-t border-color-border pt-[4px]">
             <div class="w-[15px] h-[10px]"></div>
             <div class="tooltip-point-name text-xs">Total</div>
-            <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">${formattedTotal}</div>
           </div>
         `;
       })();
@@ -1562,6 +1700,7 @@ export default function GTPChart({
     xAxisType,
     yAxisLabelFormatter,
     yAxisLayout,
+    axisPixelMap
   ]);
 
   const containerStyle: React.CSSProperties = {

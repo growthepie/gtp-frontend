@@ -149,6 +149,7 @@ type ResolvedEventExample = EventExample & {
 
 const ATH_VALUES_PATH = "details.timeseries.daily.data";
 const ATH_TYPES_PATH = "details.timeseries.daily.types";
+const ATH_MARK_LINE_LABEL = "ATH";
 
 const formatKeyLabel = (value: string) => {
   return value
@@ -293,7 +294,11 @@ const buildAthSeriesFromSource = (
     },
   ];
 
-  return buildSeriesFromSource(values, seriesMeta, xIndex);
+  return buildSeriesFromSource(values, seriesMeta, xIndex).map((series) => ({
+    ...series,
+    showAllTimeHigh: true,
+    allTimeHighLabel: ATH_MARK_LINE_LABEL,
+  }));
 };
 
 const buildAthXAxisLines = (
@@ -879,6 +884,8 @@ export default function LandingEventsChart() {
   }, [AllChainsByKeys]);
 
   const selectedEventData = resolvedEventsById[selectedEvent];
+
+  console.log("selectedEvent:", selectedEvent, "selectedEventData:", selectedEventData);
 
   const handleInteract = () => {
     if (!hasInteractedRef.current) {
