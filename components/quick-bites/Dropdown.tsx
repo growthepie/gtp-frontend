@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useMaster } from '@/contexts/MasterContext';
 import VerticalScrollContainer from '../VerticalScrollContainer';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 export interface DropdownOption {
   value: string;
@@ -259,7 +260,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                         )}
                         {chainDisplay && (
                           <GTPIcon
-                            icon={chainDisplay.icon}
+                            icon={chainDisplay.icon as GTPIconName}
                             size="sm"
                             style={{ color: chainDisplay.color }}
                             className="shrink-0"
@@ -306,7 +307,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   <div className="flex items-center gap-[10px] min-w-0">
                     {selectedChainDisplay && (
                       <GTPIcon
-                        icon={selectedChainDisplay.icon}
+                        icon={selectedChainDisplay.icon as GTPIconName}
                         size="sm"
                         style={{ color: selectedChainDisplay.color }}
                         className="shrink-0"
@@ -321,7 +322,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                 <div className="flex items-center gap-[10px] min-w-0">
                   {selectedChainDisplay && (
                     <GTPIcon
-                      icon={selectedChainDisplay.icon}
+                      icon={selectedChainDisplay.icon as GTPIconName}
                       size="sm"
                       style={{ color: selectedChainDisplay.color }}
                       className="shrink-0"
