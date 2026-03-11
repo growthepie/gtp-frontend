@@ -14,6 +14,10 @@ const TAB_INFO = {
         "header": "Fundamentals",
         "icon": "gtp:gtp-fundamentals",
     },
+    "quick_bites": {
+        "header": "Quick Bites",
+        "icon": "gtp:gtp-quick-bites",
+    },
     "economics": {
         "header": "Economics",
         "icon": "gtp:gtp-metrics-economics",
@@ -41,6 +45,7 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
     // add user_insights to chainInfo.tab_status if on DEV
     const tabStatus = {
         ...chainInfo.tab_status,
+        quick_bites: "active",
         ...(IS_PRODUCTION ? {} : { user_insights: "active" })
     }
 

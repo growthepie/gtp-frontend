@@ -54,8 +54,11 @@ interface PieDataConfig {
   showPercentage?: boolean;
 }
 
+const CHAIN_QUICK_BITES_TAB_BLOCK_CLASS = "chain-quick-bites-tab-block";
+
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const { sharedState } = useQuickBite();
+  const isChainQuickBitesTabChart = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_BLOCK_CLASS);
   const dynamicSeriesConfig = block.dataAsJson?.dynamicSeries;
   const rawPieData = block.dataAsJson?.pieData;
   const pieDataConfig = React.useMemo<PieDataConfig | null>(() => {
@@ -365,6 +368,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           centerName={block.centerName}
           pieData={resolvedPieData}
           showPiePercentage={pieDataConfig?.showPercentage}
+          isChainQuickBitesTabChart={isChainQuickBitesTabChart}
+          defaultFilteredSeriesNames={block.defaultFilteredSeriesNames}
         />
       )}
       {block.caption && (

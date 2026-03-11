@@ -167,6 +167,7 @@ const Agents: QuickBiteData = createQuickBite({
     JSON.stringify({
       type: "line",
       title: "Registrations & Reviews Over Time",
+      hideOnChainTabs: true,
       subtitle: "Two key event series over time.",
       showXAsDate: true,
       dataAsJson: {
@@ -376,6 +377,7 @@ const Agents: QuickBiteData = createQuickBite({
     JSON.stringify({
       type: "pie",
       title: "Service Endpoint Share",
+      hideOnChainTabs: true,
       subtitle: "Breakdown of endpoint types published by ERC-8004 agents",
       centerName: "SERVICE\nSHARE",
       height: 400,
@@ -437,6 +439,7 @@ const Agents: QuickBiteData = createQuickBite({
     JSON.stringify({
       type: "area",
       title: "AI Agent Quality Over Time",
+      hideOnChainTabs: true,
       subtitle: "100% stacked view of valid vs invalid AI-agent URIs.",
       showXAsDate: true,
       dataAsJson: {

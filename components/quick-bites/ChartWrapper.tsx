@@ -77,7 +77,11 @@ interface ChartWrapperProps {
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
+  isChainQuickBitesTabChart?: boolean;
+  defaultFilteredSeriesNames?: string[];
 }
+
+const normalizeSeriesLabel = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
   chartType,
@@ -100,6 +104,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   centerName,
   pieData,
   showPiePercentage = false,
+  isChainQuickBitesTabChart = false,
+  defaultFilteredSeriesNames = [],
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -458,6 +464,55 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
+  const filterableSeriesNames = useMemo(() => {
+    const source = chartType === 'pie' && resolvedPieData
+      ? resolvedPieData
+      : (jsonMeta?.meta || data || []);
+
+    if (!Array.isArray(source)) {
+      return [];
+    }
+
+    const names = source
+      .map((item: any) => (typeof item?.name === "string" ? item.name : ""))
+      .filter((name: string) => name.length > 0);
+
+    return Array.from(new Set(names));
+  }, [chartType, resolvedPieData, jsonMeta?.meta, data]);
+
+  const normalizedPreferredSeriesNames = useMemo(
+    () =>
+      defaultFilteredSeriesNames
+        .map((name) => name?.trim())
+        .filter((name): name is string => Boolean(name))
+        .map(normalizeSeriesLabel),
+    [defaultFilteredSeriesNames],
+  );
+
+  useEffect(() => {
+    if (!isChainQuickBitesTabChart) {
+      return;
+    }
+
+    if (filterableSeriesNames.length <= 1 || normalizedPreferredSeriesNames.length === 0) {
+      return;
+    }
+
+    const matchedSeriesName = filterableSeriesNames.find((name) =>
+      normalizedPreferredSeriesNames.includes(normalizeSeriesLabel(name)),
+    );
+
+    if (!matchedSeriesName) {
+      return;
+    }
+
+    setFilteredNames((prev) => {
+      if (prev.length > 0) {
+        return prev;
+      }
+      return [matchedSeriesName];
+    });
+  }, [isChainQuickBitesTabChart, filterableSeriesNames, normalizedPreferredSeriesNames]);
 
   
   if (loading) {
@@ -493,7 +548,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   
   return (
     <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
-      <div style={{ width, height }} className="relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
+      <div
+        style={{ width, height }}
+        className={`${isChainQuickBitesTabChart ? "chain-quick-bites-tab-chart-anchor " : ""}relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] `}
+      >
         <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
           <div className="flex items-center justify-center md:justify-between">
             <div className="flex items-center gap-x-[5px]">

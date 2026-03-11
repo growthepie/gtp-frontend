@@ -626,7 +626,8 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       seeMetricURL: chartConfig.seeMetricURL || null,
       yAxisLine: chartConfig.yAxisLine || [],
       showInMenu: parseShowInMenu(chartConfig),
-      filterOnStateKey: chartConfig.filterOnStateKey || undefined
+      filterOnStateKey: chartConfig.filterOnStateKey || undefined,
+      hideOnChainTabs: chartConfig.hideOnChainTabs === true,
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);

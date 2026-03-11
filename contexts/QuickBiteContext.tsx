@@ -26,8 +26,14 @@ interface FilterKeys {
 const QuickBiteContext = createContext<QuickBiteContextType | null>(null);
 
 // Create the provider component
-export const QuickBiteProvider = ({ children }: { children: React.ReactNode }) => {
-  const [sharedState, setSharedStateInternal] = useState<QuickBiteState>({});
+export const QuickBiteProvider = ({
+  children,
+  initialSharedState = {},
+}: {
+  children: React.ReactNode;
+  initialSharedState?: QuickBiteState;
+}) => {
+  const [sharedState, setSharedStateInternal] = useState<QuickBiteState>(initialSharedState);
   const [exclusiveFilterKeys, setExclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
   const [inclusiveFilterKeys, setInclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
 

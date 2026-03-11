@@ -230,6 +230,8 @@ export interface ChartBlock extends BaseBlock {
     columnKey: string;
   };
   toggleLabel?: string;
+  defaultFilteredSeriesNames?: string[];
+  hideOnChainTabs?: boolean;
   suppressWrapperSpacing?: boolean;
 }
 
