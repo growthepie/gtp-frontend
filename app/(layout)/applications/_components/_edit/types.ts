@@ -26,6 +26,7 @@ export type ContributionResult = {
   logoPullRequestUrl: string | null;
   yamlBranchName?: string;
   logoBranchName?: string | null;
+  combinedPullRequest?: boolean;
 };
 
 export type MatchField = "owner_project" | "website" | "github";

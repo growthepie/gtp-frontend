@@ -654,6 +654,7 @@ export function useProjectEditForm({
         logoPullRequestUrl?: string | null;
         yamlBranchName?: string;
         logoBranchName?: string | null;
+        combinedPullRequest?: boolean;
       };
 
       if (!response.ok || !data.yamlPullRequestUrl) {
@@ -666,6 +667,7 @@ export function useProjectEditForm({
         logoPullRequestUrl: data.logoPullRequestUrl ?? null,
         yamlBranchName: data.yamlBranchName,
         logoBranchName: data.logoBranchName,
+        combinedPullRequest: data.combinedPullRequest ?? false,
       });
       setActiveStep(2);
     } catch (error: any) {

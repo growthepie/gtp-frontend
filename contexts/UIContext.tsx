@@ -59,6 +59,8 @@ export type UIState = {
   setEthUsdSwitchEnabled: (value: Updater<boolean>) => void;
   projectEditMode: boolean;
   setProjectEditMode: (value: Updater<boolean>) => void;
+  searchBarCaptureActive: boolean;
+  setSearchBarCaptureActive: (value: Updater<boolean>) => void;
 };
 
 const getInitialSidebarOpen = () => {
@@ -142,6 +144,11 @@ export const useUIStore = create<UIState>((set) => ({
   setProjectEditMode: (value) =>
     set((state) => ({
       projectEditMode: resolveState(value, state.projectEditMode),
+    })),
+  searchBarCaptureActive: false,
+  setSearchBarCaptureActive: (value) =>
+    set((state) => ({
+      searchBarCaptureActive: resolveState(value, state.searchBarCaptureActive),
     })),
 }));
 

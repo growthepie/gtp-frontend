@@ -11,12 +11,18 @@ import type { QueueEditableField, QueueSubmitPreview, SearchDropdownOption } fro
 import { asString, getTxExplorerUrl, toStringValue, truncateHex } from "./utils";
 import { FieldDropdown, FieldDropdownButton, FieldInput } from "./FieldDropdown";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
-import type { ReactNode, ChangeEvent } from "react";
+import type { ReactNode, ChangeEvent, RefObject } from "react";
 import type { useBulkCsvAttestUI, useSingleAttestUI } from "@openlabels/oli-sdk/attest-ui";
 
 type ContractsStepProps = {
-  activeStep: 1 | 2 | 3 | 4;
-  setActiveStep: (step: 1 | 2 | 3 | 4) => void;
+  activeStep: 0 | 1 | 2 | 3 | 4;
+  setActiveStep: (step: 0 | 1 | 2 | 3 | 4) => void;
+  step2CardRef: RefObject<HTMLDivElement | null>;
+  step3CardRef: RefObject<HTMLDivElement | null>;
+  step4CardRef: RefObject<HTMLDivElement | null>;
+  step2HeaderRef: RefObject<HTMLButtonElement | null>;
+  step3HeaderRef: RefObject<HTMLButtonElement | null>;
+  step4HeaderRef: RefObject<HTMLButtonElement | null>;
 
   // Queue
   bulkController: ReturnType<typeof useBulkCsvAttestUI>;
@@ -86,11 +92,20 @@ type ContractsStepProps = {
   singleSubmitResult: OnchainSubmitResult | null;
   bulkSubmitResult: BulkOnchainSubmitResult | null;
   lastSubmitChainId: string;
+
+  // Survey
+  onSurveySubmit?: (data: { teamSize: string; goal: string; metric: string; other: string }) => void;
 };
 
 export function ContractsStep({
   activeStep,
   setActiveStep,
+  step2CardRef,
+  step3CardRef,
+  step4CardRef,
+  step2HeaderRef,
+  step3HeaderRef,
+  step4HeaderRef,
   bulkController,
   singleController,
   meaningfulRows,
@@ -140,6 +155,7 @@ export function ContractsStep({
   singleSubmitResult,
   bulkSubmitResult,
   lastSubmitChainId,
+  onSurveySubmit,
 }: ContractsStepProps) {
   const [activeRowDropdown, setActiveRowDropdown] = useState<string | null>(null);
   const [rowDropdownQuery, setRowDropdownQuery] = useState<Record<string, string>>({});
@@ -341,8 +357,9 @@ export function ContractsStep({
   return (
     <>
       {/* ── Step 2: Add Contracts ── */}
-      <div className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
+      <div ref={step2CardRef} className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
         <button
+          ref={step2HeaderRef}
           type="button"
           onClick={() => setActiveStep(2)}
           className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
@@ -898,18 +915,14 @@ export function ContractsStep({
               )}
             </div>
 
-            {queueError && (
-              <div className="mt-[8px] rounded-[12px] border border-color-negative/50 bg-color-negative/10 px-[12px] py-[10px] text-xs">
-                {queueError}
-              </div>
-            )}
           </div>
         )}
       </div>
 
       {/* ── Step 3: Connect Wallet ── */}
-      <div className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
+      <div ref={step3CardRef} className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
         <button
+          ref={step3HeaderRef}
           type="button"
           onClick={() => setActiveStep(3)}
           className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
@@ -1031,7 +1044,10 @@ export function ContractsStep({
                 variant="highlight"
                 size="sm"
                 rightIcon={"in-button-right" as any}
-                clickHandler={() => setActiveStep(4)}
+                clickHandler={() => {
+                  onSurveySubmit?.({ teamSize: surveyTeamSize, goal: surveyGoal, metric: surveyMetric, other: surveyOther });
+                  setActiveStep(4);
+                }}
                 className={
                   surveyTeamSize.trim() && surveyGoal.trim() && surveyMetric.trim()
                     ? "bg-color-text-primary text-color-bg-default"
@@ -1044,8 +1060,9 @@ export function ContractsStep({
       </div>
 
       {/* ── Step 4: Review & Submit ── */}
-      <div className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
+      <div ref={step4CardRef} className="rounded-[16px] border border-color-ui-shadow/40 bg-color-bg-default">
         <button
+          ref={step4HeaderRef}
           type="button"
           onClick={() => setActiveStep(4)}
           className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"

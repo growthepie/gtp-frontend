@@ -2,9 +2,10 @@
 
 import Icon from "@/components/layout/Icon";
 import type { ProjectMode } from "./types";
+import type { CSSProperties } from "react";
 
 type EditSidebarProps = {
-  activeStep: 1 | 2 | 3 | 4;
+  activeStep: 0 | 1 | 2 | 3 | 4;
   isMetadataSubmitted: boolean;
   localMode: ProjectMode;
   ownerProject: string;
@@ -15,6 +16,7 @@ type EditSidebarProps = {
   queueStats: { errors: number; warnings: number; suggestions: number; conversions: number };
   queueHasValidationResult: boolean;
   projectsError: string;
+  activeStepOffsetTop: number;
 };
 
 export function EditSidebar({
@@ -29,16 +31,26 @@ export function EditSidebar({
   queueStats,
   queueHasValidationResult,
   projectsError,
+  activeStepOffsetTop,
 }: EditSidebarProps) {
   return (
-    <aside className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px]">
+    <aside
+      className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px] xl:pt-[var(--edit-sidebar-offset-top)]"
+      style={{ "--edit-sidebar-offset-top": `${activeStepOffsetTop}px` } as CSSProperties}
+    >
       {/* Tips card */}
       <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40 bg-color-bg-default">
         <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow/40 px-[12px] py-[10px]">
           <Icon
             icon={
-              activeStep === 2
+              activeStep === 0
+                ? "feather:search"
+                : activeStep === 2
                 ? "feather:zap"
+                : activeStep === 3
+                ? "feather:help-circle"
+                : activeStep === 4
+                ? "feather:check-square"
                 : isMetadataSubmitted
                 ? "feather:check-circle"
                 : localMode === "edit"
@@ -48,8 +60,14 @@ export function EditSidebar({
             className="size-[14px] text-color-text-secondary"
           />
           <div className="text-sm font-medium">
-            {activeStep === 2
+            {activeStep === 0
+              ? "Search Tips"
+              : activeStep === 2
               ? "Contract Tips"
+              : activeStep === 3
+              ? "Wallet Tips"
+              : activeStep === 4
+              ? "Review Tips"
               : isMetadataSubmitted
               ? "Next Steps"
               : localMode === "edit"
@@ -57,8 +75,23 @@ export function EditSidebar({
               : "Adding Tips"}
           </div>
         </div>
-        <div className={`flex flex-col ${activeStep === 2 || isMetadataSubmitted ? "gap-y-[6px] p-[10px]" : "gap-y-[8px] p-[12px]"}`}>
-          {activeStep === 2 ? (
+        <div className={`flex flex-col ${activeStep === 2 || activeStep === 3 || activeStep === 4 || isMetadataSubmitted ? "gap-y-[6px] p-[10px]" : "gap-y-[8px] p-[12px]"}`}>
+          {activeStep === 0 ? (
+            <>
+              <TipRow icon="feather:search">
+                Search by project name, website, or owner_project key to check if it already exists.
+              </TipRow>
+              <TipRow icon="feather:alert-triangle" iconClassName="text-color-data-yellow">
+                Duplicate entries fragment data and break attribution — always search first.
+              </TipRow>
+              <TipRow icon="feather:edit-2">
+                Found it? Click <span className="font-medium">Edit</span> on the result to update the existing record instead.
+              </TipRow>
+              <TipRow icon="feather:type">
+                Not found? Once you&apos;re sure it&apos;s new, click <span className="font-medium">Add project details</span> to begin.
+              </TipRow>
+            </>
+          ) : activeStep === 2 ? (
             <>
               <TipRow icon="feather:zap">
                 Start with <span className="font-mono">Smart Paste</span> to bulk-add contracts, then review chain and category.
@@ -80,6 +113,36 @@ export function EditSidebar({
               </TipRow>
               <TipRow icon="feather:refresh-cw">
                 Editing an existing contract entry will overwrite it after approval.
+              </TipRow>
+            </>
+          ) : activeStep === 3 ? (
+            <>
+              <TipRow icon="feather:wallet">
+                Connect the wallet that will sign the attestation transaction onchain.
+              </TipRow>
+              <TipRow icon="feather:message-circle">
+                Answering the quick questions helps us understand your team, goals, and which metrics matter most to you.
+              </TipRow>
+              <TipRow icon="feather:bar-chart-2">
+                That context helps us prioritize product improvements and support the kinds of submissions you care about.
+              </TipRow>
+              <TipRow icon="feather:arrow-right-circle">
+                Once the wallet is connected and the questions are filled, continue to review before signing.
+              </TipRow>
+            </>
+          ) : activeStep === 4 ? (
+            <>
+              <TipRow icon="feather:file-text">
+                The review step shows the raw transaction input generated from the OLI framework payload.
+              </TipRow>
+              <TipRow icon="feather:eye">
+                Use it to sanity-check the final attestation data before you sign.
+              </TipRow>
+              <TipRow icon="feather:pen-tool">
+                Your labels are not added until you complete the wallet signature and submit the transaction.
+              </TipRow>
+              <TipRow icon="feather:alert-circle" iconClassName="text-color-data-yellow">
+                If you close the wallet modal or reject the signature, nothing gets written onchain.
               </TipRow>
             </>
           ) : isMetadataSubmitted ? (

@@ -1,59 +1,74 @@
 import { NextResponse } from "next/server";
+import yaml from "js-yaml";
 
 const GEMINI_API_BASE_URL =
   process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta";
 const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
-// Inlined from category_definitions.yml
-const CATEGORY_CONTEXT = `## CeFi
-- trading: Trading - Contracts primarily used for automated trading strategies like arbitrage, market-making, or complex MEV exploitation.
-- cex: Centralized Exchange - Wallets and contracts directly managed or operated by centralized exchanges (CEXs).
+const OLI_USAGE_CATEGORY_URL =
+  "https://raw.githubusercontent.com/openlabelsinitiative/OLI/refs/heads/main/1_label_schema/tags/valuesets/usage_category.yml";
+const GTP_MASTER_URL = "https://api.growthepie.com/v1/master.json";
 
-## DeFi
-- dex: Decentralized Exchange - Contracts facilitating peer-to-peer token swaps using automated market makers (AMMs) and liquidity pools.
-- lending: Lending - Contracts allowing users to lend their crypto assets to earn interest or borrow assets by providing collateral.
-- derivative: Derivative Exchange - Contracts enabling the creation and trading of financial derivatives (futures, options, perpetual swaps).
-- staking: Staking - Contracts enabling users to lock up tokens to secure a network, participate in governance, or earn yield.
-- index: Index - Crypto indexes designed to represent the overall performance of a specific segment of the cryptocurrency market.
-- rwa: Real World Assets - Contracts focused on tokenizing real-world assets (real estate, commodities, bonds) on the blockchain.
-- insurance: Insurance - Contracts from protocols offering insurance coverage against specific risks in the crypto space.
-- custody: Custody - Services involved in the secure storage and management of digital assets on behalf of individuals or businesses.
-- yield_vaults: Yield Vaults - Contracts with automated strategies (vaults) designed to maximize returns on deposited assets.
+interface OLIUsageCategory {
+  category_id: string;
+  name: string;
+  description?: string;
+}
 
-## NFT
-- nft_fi: NFT Finance - Contracts bridging the gap between NFTs and DeFi, enabling lending against NFTs or fractionalizing NFTs.
-- nft_marketplace: NFT Marketplace - Contracts from platforms facilitating the discovery, buying, selling, and auctioning of NFTs.
-- non_fungible_tokens: Non-Fungible Tokens - The core smart contracts defining specific NFT collections (ERC721, ERC1155).
+interface OLICategories {
+  context: string;
+  validIds: string[];
+}
 
-## Social
-- community: Community - Contracts and tools fostering community building, social interaction, or decentralized social networking.
-- gambling: Gambling - Contracts where outcomes are primarily determined by chance, involving wagering crypto assets.
-- gaming: Gaming - Contracts supporting blockchain-integrated games, managing in-game assets, currencies, and game logic.
-- governance: Governance - Contracts enabling decentralized decision-making processes for protocols, including token-based voting.
+let categoriesCache: OLICategories | null = null;
+let categoriesCacheTime = 0;
+const CATEGORIES_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-## Token Transfers
-- native_transfer: Native Transfer - Direct transfers of a blockchain's native currency between EOAs or contracts.
-- stablecoin: Stablecoin - ERC20 tokens designed to maintain a stable value, typically pegged to a fiat currency.
-- fungible_tokens: Fungible Tokens - Standardized token contracts (primarily ERC20) representing interchangeable assets.
+async function fetchOLICategories(): Promise<OLICategories> {
+  const now = Date.now();
+  if (categoriesCache && now - categoriesCacheTime < CATEGORIES_CACHE_TTL_MS) {
+    return categoriesCache;
+  }
 
-## Utility
-- erc4337: Account Abstraction (ERC4337) - Contracts implementing ERC-4337 for Account Abstraction (EntryPoint, Paymaster, Smart Account).
-- inscriptions: Inscriptions - Contracts or transactions primarily used to embed arbitrary data into transaction calldata.
-- oracle: Oracle - Services providing reliable external data to smart contracts (price feeds, weather, etc.).
-- depin: Decentralized Physical Infrastructure - Protocols coordinating physical infrastructure networks using blockchain.
-- developer_tools: Developer Tool - Tools, contracts, and transactions designed to aid the blockchain development lifecycle.
-- identity: Identity - Contracts from protocols managing decentralized digital identities and verification services.
-- privacy: Privacy - Protocols using cryptographic techniques to obfuscate transaction details.
-- airdrop: Airdrop - Smart contracts designed to distribute tokens or NFTs to a large number of addresses simultaneously.
-- payments: Payments - Contracts enabling streamlined payment flows (subscriptions, streaming payments, payroll).
-- donation: Donation - Platforms and contracts facilitating charitable donations and fundraising campaigns.
-- cybercrime: Cybercrime - Contracts involved in malicious activities (phishing, rug pulls, exploit contracts).
-- other: Others - Utility contracts that serve a specific purpose but don't neatly fit into predefined categories.
+  try {
+    // Fetch OLI categories and GTP supported sub_categories in parallel
+    const [oliResponse, gtpResponse] = await Promise.all([
+      fetch(OLI_USAGE_CATEGORY_URL),
+      fetch(GTP_MASTER_URL),
+    ]);
 
-## Cross-Chain
-- cc_communication: Cross-Chain Communication - Protocols enabling messaging and data transfer between different blockchains.
-- bridge: Bridge - Contracts facilitating the transfer of assets between different blockchains.
-- settlement: Settlement & Data Availability - Contracts used by Layer 2 solutions to post transaction batches or state roots to L1.`;
+    if (!oliResponse.ok) throw new Error(`OLI fetch failed: ${oliResponse.status}`);
+    const oliText = await oliResponse.text();
+    const oliData = yaml.load(oliText) as { categories: OLIUsageCategory[] };
+    const allCategories: OLIUsageCategory[] = oliData.categories ?? [];
+
+    // Filter to only categories GTP actually tracks
+    let supportedIds: Set<string> | null = null;
+    if (gtpResponse.ok) {
+      try {
+        const gtpData = await gtpResponse.json() as { blockspace_categories?: { sub_categories?: Record<string, string> } };
+        const subs = gtpData.blockspace_categories?.sub_categories;
+        if (subs) supportedIds = new Set(Object.keys(subs));
+      } catch { /* ignore — use full OLI list as fallback */ }
+    }
+
+    const categories = supportedIds
+      ? allCategories.filter((c) => supportedIds!.has(c.category_id))
+      : allCategories;
+
+    const context = categories
+      .map((c) => `- ${c.category_id}: ${c.name}${c.description ? ` - ${c.description}` : ""}`)
+      .join("\n");
+    const validIds = categories.map((c) => c.category_id);
+
+    categoriesCache = { context, validIds };
+    categoriesCacheTime = now;
+    return categoriesCache;
+  } catch {
+    // Fall back to empty if fetch fails — classifyContracts will handle gracefully
+    return { context: "", validIds: [] };
+  }
+}
 
 const CHAIN_MAPPING: Record<string, string> = {
   ethereum: "eip155:1",
@@ -212,31 +227,25 @@ ${text}`;
   }
 }
 
-const VALID_CATEGORY_IDS = [
-  "trading", "cex", "dex", "lending", "derivative", "staking", "index", "rwa",
-  "insurance", "custody", "yield_vaults", "nft_fi", "nft_marketplace",
-  "non_fungible_tokens", "community", "gambling", "gaming", "governance",
-  "native_transfer", "stablecoin", "fungible_tokens", "erc4337", "inscriptions",
-  "oracle", "depin", "developer_tools", "identity", "privacy", "airdrop",
-  "payments", "donation", "cybercrime", "other", "cc_communication", "bridge",
-  "settlement",
-];
-
 async function classifyContracts(
   contracts: ExtractedContract[],
   project: string,
   apiKey: string,
+  categories: OLICategories,
 ): Promise<Record<string, string>> {
   if (!contracts.length) return {};
 
-  const systemInstruction = `You are a blockchain contract classifier. Assign the most appropriate category_id from the provided list to each contract based on its name and project. Use ONLY the category_ids listed. If unsure, use "other".`;
+  const { context, validIds } = categories;
+  const fallbackId = validIds.includes("other") ? "other" : (validIds[0] ?? "other");
+
+  const systemInstruction = `You are a blockchain contract classifier. Assign the most appropriate category_id from the provided list to each contract based on its name and project. Use ONLY the category_ids listed. If unsure, use "${fallbackId}".`;
 
   const contractList = contracts
     .map((c) => `- address: ${c.address}, name: ${c.name}${project ? `, project: ${project}` : ""}`)
     .join("\n");
 
   const userPrompt = `# Category Definitions
-${CATEGORY_CONTEXT}
+${context}
 
 # Contracts to Classify
 ${contractList}
@@ -253,7 +262,7 @@ Return a JSON array where each element has "address" (the contract address) and 
         category_id: {
           type: "STRING",
           description: "The usage category",
-          enum: VALID_CATEGORY_IDS,
+          enum: validIds.length ? validIds : undefined,
         },
       },
       required: ["address", "category_id"],
@@ -265,7 +274,7 @@ Return a JSON array where each element has "address" (the contract address) and 
     const parsed = JSON.parse(content) as { address?: string; category_id?: string }[];
     const result: Record<string, string> = {};
     parsed.forEach((item) => {
-      if (item.address && item.category_id && VALID_CATEGORY_IDS.includes(item.category_id)) {
+      if (item.address && item.category_id && (validIds.length === 0 || validIds.includes(item.category_id))) {
         result[item.address.toLowerCase()] = item.category_id;
       }
     });
@@ -299,8 +308,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ rows: [] });
     }
 
-    // Step 2: Classify each contract into a usage category
-    const categories = await classifyContracts(contracts, project, apiKey);
+    // Step 2: Fetch OLI usage categories (cached) and classify each contract
+    const oliCategories = await fetchOLICategories();
+    const categories = await classifyContracts(contracts, project, apiKey, oliCategories);
 
     // Step 3: Map to AttestationRowInput shape
     const rows = contracts.map((c) => ({
@@ -308,7 +318,7 @@ export async function POST(request: Request) {
       address: c.address,
       contract_name: c.name,
       owner_project: project,
-      usage_category: categories[c.address] || "other",
+      usage_category: categories[c.address] || (oliCategories.validIds.includes("other") ? "other" : oliCategories.validIds[0] ?? "other"),
     }));
 
     return NextResponse.json({ rows });

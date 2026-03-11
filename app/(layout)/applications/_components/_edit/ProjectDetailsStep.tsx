@@ -16,11 +16,13 @@ import type {
 } from "./types";
 import { ensureAbsoluteUrl, isValidHttpUrl, normalizeOwnerProjectInput } from "./utils";
 import { FieldDropdown } from "./FieldDropdown";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, RefObject } from "react";
 
 type ProjectDetailsStepProps = {
-  activeStep: 1 | 2 | 3 | 4;
-  setActiveStep: (step: 1 | 2 | 3 | 4) => void;
+  activeStep: 0 | 1 | 2 | 3 | 4;
+  setActiveStep: (step: 0 | 1 | 2 | 3 | 4) => void;
+  cardRef: RefObject<HTMLDivElement | null>;
+  headerRef: RefObject<HTMLButtonElement | null>;
 
   form: ProjectFormState;
   setForm: React.Dispatch<React.SetStateAction<ProjectFormState>>;
@@ -77,6 +79,8 @@ type ProjectDetailsStepProps = {
 export function ProjectDetailsStep({
   activeStep,
   setActiveStep,
+  cardRef,
+  headerRef,
   form,
   setForm,
   logoUpload,
@@ -114,9 +118,10 @@ export function ProjectDetailsStep({
   submitProjectContribution,
 }: ProjectDetailsStepProps) {
   return (
-    <div className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
+    <div ref={cardRef} className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
       {/* Clickable header */}
       <button
+        ref={headerRef}
         type="button"
         onClick={() => setActiveStep(1)}
         className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
@@ -147,6 +152,8 @@ export function ProjectDetailsStep({
           {form.display_name || (isAddMode ? "Add project details" : "Edit project details")}
         </div>
         {activeStep !== 1 && (
+          (["website", "main_github", "twitter", "telegram"] as const).some((f) => form[f].trim()) || form.description.trim().length > 0
+        ) && (
           <div className="flex items-center gap-[5px] flex-wrap justify-end shrink-0">
             {(["website", "main_github", "twitter", "telegram"] as const).map((field) => {
               const icons = { website: "feather:globe", main_github: "ri:github-fill", twitter: "feather:twitter", telegram: "feather:send" };
@@ -523,7 +530,11 @@ export function ProjectDetailsStep({
                   <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
                   <div className="font-medium text-sm text-color-positive">Changes submitted — awaiting approval</div>
                 </div>
-                <p className="mt-[4px] text-xs text-color-text-primary">Your PR has been created. Maintainers will review it.</p>
+                <p className="mt-[4px] text-xs text-color-text-primary">
+                  {contributionResult.combinedPullRequest
+                    ? "One PR was created for the project update and logo. Maintainers will review it."
+                    : "Your PR has been created. Maintainers will review it."}
+                </p>
                 <div className="mt-[8px] flex flex-wrap gap-[6px]">
                   <Link
                     href={contributionResult.yamlPullRequestUrl}
@@ -535,7 +546,7 @@ export function ProjectDetailsStep({
                     Track PR on GitHub
                     <Icon icon="feather:external-link" className="size-[10px] shrink-0" />
                   </Link>
-                  {contributionResult.logoPullRequestUrl && (
+                  {contributionResult.logoPullRequestUrl && !contributionResult.combinedPullRequest && (
                     <Link
                       href={contributionResult.logoPullRequestUrl}
                       target="_blank"

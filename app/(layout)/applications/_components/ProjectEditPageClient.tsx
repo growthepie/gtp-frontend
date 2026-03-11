@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Container from "@/components/layout/Container";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-
 import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
 import {
@@ -40,10 +39,15 @@ export default function ProjectEditPageClient() {
   const intentKey = useMemo(() => getProjectEditIntentKey(intent), [intent]);
 
   const setProjectEditMode = useUIContext((state) => state.setProjectEditMode);
+  const setSearchBarCaptureActive = useUIContext((state) => state.setSearchBarCaptureActive);
+
   useEffect(() => {
     setProjectEditMode(true);
-    return () => setProjectEditMode(false);
-  }, [setProjectEditMode]);
+    return () => {
+      setProjectEditMode(false);
+      setSearchBarCaptureActive(false);
+    };
+  }, [setProjectEditMode, setSearchBarCaptureActive]);
 
   const {
     walletAddress,
@@ -52,8 +56,26 @@ export default function ProjectEditPageClient() {
     disconnectWallet: disconnectWalletFromContext,
   } = useWalletConnection();
 
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+  const [activeStep, setActiveStep] = useState<0 | 1 | 2 | 3 | 4>(
+    intent.mode === "add" ? 0 : 1,
+  );
   const [hoveredTab, setHoveredTab] = useState<"find" | "add" | null>(null);
+  const [editSearchCaptureActive, setEditSearchCaptureActive] = useState(false);
+  const [sidebarOffsetTop, setSidebarOffsetTop] = useState(0);
+  const tabsRef = useRef<HTMLDivElement | null>(null);
+  const mainColumnRef = useRef<HTMLDivElement | null>(null);
+  const projectDetailsCardRef = useRef<HTMLDivElement | null>(null);
+  const contractsCardRef = useRef<HTMLDivElement | null>(null);
+  const walletCardRef = useRef<HTMLDivElement | null>(null);
+  const reviewCardRef = useRef<HTMLDivElement | null>(null);
+  const projectDetailsHeaderRef = useRef<HTMLButtonElement | null>(null);
+  const contractsHeaderRef = useRef<HTMLButtonElement | null>(null);
+  const walletHeaderRef = useRef<HTMLButtonElement | null>(null);
+  const reviewHeaderRef = useRef<HTMLButtonElement | null>(null);
+  const hasHandledInitialStepScrollRef = useRef(false);
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+  const sidebarMeasureFrameRef = useRef<number | null>(null);
+  const scrollSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Form hook ──────────────────────────────────────────────────────────────
 
@@ -110,25 +132,54 @@ export default function ProjectEditPageClient() {
     await formHook.submitProjectContribution(setActiveStep);
   };
 
+  const clearProjectEditSearchMode = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.delete("search_mode");
+    const nextQuery = decodeURIComponent(nextParams.toString());
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    window.history.replaceState(null, "", nextUrl);
+  }, []);
+
   // Restore global search bar project selection
   useEffect(() => {
-    const handler = (e: Event) => {
-      const ownerProject = (e as CustomEvent<{ ownerProject: string }>).detail?.ownerProject;
+    const resolveProject = (ownerProject?: string) => {
       if (!ownerProject) return;
-      // Prefer the apps dataset (has logo_path etc.), fall back to full OSS directory
       const appsProject = ownerProjectToProjectData[ownerProject] as ProjectRecord | undefined;
-      const project =
+      return (
         appsProject ??
         (formHook.normalizedProjects.find(
           (p) => String(p.owner_project).toLowerCase() === ownerProject.toLowerCase(),
-        ) as ProjectRecord | undefined);
+        ) as ProjectRecord | undefined)
+      );
+    };
+
+    const handleSelectProject = (e: Event) => {
+      const ownerProject = (e as CustomEvent<{ ownerProject: string }>).detail?.ownerProject;
+      const project = resolveProject(ownerProject);
       if (!project) return;
       fillFormFromProject(project);
+      setEditSearchCaptureActive(false);
       setActiveStep(1);
+      clearProjectEditSearchMode();
     };
-    window.addEventListener("projectEditSelectProject", handler);
-    return () => window.removeEventListener("projectEditSelectProject", handler);
-  }, [fillFormFromProject, ownerProjectToProjectData, formHook.normalizedProjects]);
+
+    const handleSelectProjectContracts = (e: Event) => {
+      const ownerProject = (e as CustomEvent<{ ownerProject: string }>).detail?.ownerProject;
+      const project = resolveProject(ownerProject);
+      if (!project) return;
+      fillFormFromProject(project);
+      setEditSearchCaptureActive(false);
+      setActiveStep(2);
+      clearProjectEditSearchMode();
+    };
+    window.addEventListener("projectEditSelectProject", handleSelectProject);
+    window.addEventListener("projectEditSelectProjectContracts", handleSelectProjectContracts);
+    return () => {
+      window.removeEventListener("projectEditSelectProject", handleSelectProject);
+      window.removeEventListener("projectEditSelectProjectContracts", handleSelectProjectContracts);
+    };
+  }, [clearProjectEditSearchMode, fillFormFromProject, ownerProjectToProjectData, formHook.normalizedProjects]);
 
   // ── Queue hook ─────────────────────────────────────────────────────────────
 
@@ -147,16 +198,51 @@ export default function ProjectEditPageClient() {
     setActiveStep,
   });
 
+  // ── Survey → Airtable ──────────────────────────────────────────────────────
+
+  const handleSurveySubmit = useCallback(
+    (data: { teamSize: string; goal: string; metric: string; other: string }) => {
+      fetch("/api/labels/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          projectName: form.display_name || form.owner_project,
+          walletAddress: walletAddress ?? "",
+        }),
+      })
+        .then((res) => res.json().then((json) => {
+          if (!res.ok) console.error("[survey] error", res.status, json);
+        }))
+        .catch((err) => console.error("[survey] fetch failed:", err));
+    },
+    [form.display_name, form.owner_project, walletAddress],
+  );
+
   // ── Tabs: switchToAdd / switchToFind ───────────────────────────────────────
 
   const switchToAdd = () => {
     formHook.switchToAdd();
-    setActiveStep(1);
+    setEditSearchCaptureActive(false);
+    setActiveStep(0);
+    clearProjectEditSearchMode();
   };
 
   const switchToFind = () => {
     formHook.switchToFind();
-    setActiveStep(1);
+    setEditSearchCaptureActive(true);
+    setActiveStep(0);
+
+    if (typeof window !== "undefined") {
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.delete("search");
+      nextParams.set("search_mode", "edit");
+      nextParams.delete("query");
+      const nextQuery = decodeURIComponent(nextParams.toString());
+      const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+      window.history.replaceState(null, "", nextUrl);
+      window.dispatchEvent(new CustomEvent("focusSearchInput"));
+    }
   };
 
   // Handle "Add manually" from global search bar
@@ -164,7 +250,10 @@ export default function ProjectEditPageClient() {
     const handler = (e: Event) => {
       const { field, value } = (e as CustomEvent<{ field: string; value: string }>).detail ?? {};
       if (!field || !value) return;
-      switchToAdd();
+      formHook.switchToAdd();
+      setEditSearchCaptureActive(false);
+      setActiveStep(1);
+      clearProjectEditSearchMode();
       updateField(field as keyof typeof form, value as any);
     };
     window.addEventListener("projectEditAddManually", handler);
@@ -177,14 +266,32 @@ export default function ProjectEditPageClient() {
     const handler = (e: Event) => {
       const { website } = (e as CustomEvent<{ website: string }>).detail ?? {};
       if (!website) return;
-      switchToAdd();
+      formHook.switchToAdd();
+      setEditSearchCaptureActive(false);
+      setActiveStep(1);
+      clearProjectEditSearchMode();
       updateField("website", website);
       runProfiler(website);
     };
     window.addEventListener("projectEditAiProfile", handler);
     return () => window.removeEventListener("projectEditAiProfile", handler);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [clearProjectEditSearchMode]);
+
+  // ── Manage capture when in add-mode step 0 (without URL-driven focus mode) ──
+  useEffect(() => {
+    const capture = (isAddMode && activeStep === 0) || editSearchCaptureActive;
+    setSearchBarCaptureActive(capture);
+
+    // Disable legacy `search=true` focus mode on the add flow.
+    if (isAddMode) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("search") === "true") {
+        url.searchParams.delete("search");
+        window.history.replaceState(null, "", url.toString());
+      }
+    }
+  }, [isAddMode, activeStep, editSearchCaptureActive, setSearchBarCaptureActive]);
 
   const isMetadataSubmitted = Boolean(contributionResult);
 
@@ -196,13 +303,140 @@ export default function ProjectEditPageClient() {
       ? `https://api.growthepie.com/v1/apps/logos/${collapsedLogoPathFromData}`
       : "");
 
+  const scrollStepIntoView = useCallback((step: 0 | 1 | 2 | 3 | 4) => {
+    const target =
+      step === 0
+        ? tabsRef.current
+        : step === 1
+        ? projectDetailsCardRef.current
+        : step === 2
+        ? contractsCardRef.current
+        : step === 3
+        ? walletCardRef.current
+        : reviewCardRef.current;
+
+    if (!target || typeof window === "undefined") {
+      return;
+    }
+
+    if (scrollAnimationFrameRef.current !== null) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
+    }
+
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+
+    scrollAnimationFrameRef.current = window.requestAnimationFrame(() => {
+      scrollAnimationFrameRef.current = window.requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+        const scrollRoot = document.scrollingElement ?? document.documentElement;
+        const maxScrollTop = Math.max(0, scrollRoot.scrollHeight - window.innerHeight);
+        const centeredTop = window.scrollY + rect.top - Math.max(0, (window.innerHeight - rect.height) / 2);
+
+        window.scrollTo({
+          top: Math.min(Math.max(centeredTop, 0), maxScrollTop),
+          behavior,
+        });
+
+        scrollAnimationFrameRef.current = null;
+      });
+    });
+  }, [clearProjectEditSearchMode]);
+
+  useEffect(() => {
+    if (!hasHandledInitialStepScrollRef.current) {
+      hasHandledInitialStepScrollRef.current = true;
+      return;
+    }
+
+    scrollStepIntoView(activeStep);
+    if (scrollSettleTimeoutRef.current !== null) {
+      clearTimeout(scrollSettleTimeoutRef.current);
+    }
+    scrollSettleTimeoutRef.current = setTimeout(() => {
+      scrollStepIntoView(activeStep);
+      scrollSettleTimeoutRef.current = null;
+    }, 220);
+  }, [activeStep, scrollStepIntoView]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(scrollAnimationFrameRef.current);
+      }
+      if (sidebarMeasureFrameRef.current !== null) {
+        cancelAnimationFrame(sidebarMeasureFrameRef.current);
+      }
+      if (scrollSettleTimeoutRef.current !== null) {
+        clearTimeout(scrollSettleTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const measureSidebarOffset = () => {
+      const mainColumn = mainColumnRef.current;
+      const target =
+        activeStep === 1
+          ? projectDetailsHeaderRef.current
+          : activeStep === 2
+          ? contractsHeaderRef.current
+          : activeStep === 3
+          ? walletHeaderRef.current
+          : activeStep === 4
+          ? reviewHeaderRef.current
+          : null;
+
+      if (!mainColumn || !target || typeof window === "undefined" || window.innerWidth < 1280) {
+        setSidebarOffsetTop(0);
+        return;
+      }
+
+      const mainRect = mainColumn.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      setSidebarOffsetTop(Math.max(0, Math.round(targetRect.top - mainRect.top)));
+    };
+
+    const scheduleSidebarMeasurement = () => {
+      if (sidebarMeasureFrameRef.current !== null) {
+        cancelAnimationFrame(sidebarMeasureFrameRef.current);
+      }
+
+      sidebarMeasureFrameRef.current = window.requestAnimationFrame(() => {
+        measureSidebarOffset();
+        sidebarMeasureFrameRef.current = null;
+      });
+    };
+
+    scheduleSidebarMeasurement();
+    window.addEventListener("resize", scheduleSidebarMeasurement);
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleSidebarMeasurement();
+    });
+
+    if (mainColumnRef.current) resizeObserver.observe(mainColumnRef.current);
+    if (projectDetailsHeaderRef.current) resizeObserver.observe(projectDetailsHeaderRef.current);
+    if (contractsHeaderRef.current) resizeObserver.observe(contractsHeaderRef.current);
+    if (walletHeaderRef.current) resizeObserver.observe(walletHeaderRef.current);
+    if (reviewHeaderRef.current) resizeObserver.observe(reviewHeaderRef.current);
+
+    return () => {
+      window.removeEventListener("resize", scheduleSidebarMeasurement);
+      resizeObserver.disconnect();
+      if (sidebarMeasureFrameRef.current !== null) {
+        cancelAnimationFrame(sidebarMeasureFrameRef.current);
+        sidebarMeasureFrameRef.current = null;
+      }
+    };
+  }, [activeStep]);
+
   return (
     <Container className="pt-[30px] md:pt-[30px] pb-[60px] px-[16px] md:px-[32px]">
       <div className="w-full">
         <div className="flex w-full flex-col gap-y-[16px]">
 
           {/* ── Tabs: Find existing / Add new ── */}
-          <div className="w-full h-[46px] relative flex gap-[5px] items-center overflow-y-hidden">
+          <div ref={tabsRef} className="w-full h-[46px] relative flex gap-[5px] items-center overflow-y-hidden">
             {/* Find existing tab */}
             <div
               className={`relative transition-all duration-300 flex items-center justify-between rounded-full cursor-pointer flex-1
@@ -260,10 +494,13 @@ export default function ProjectEditPageClient() {
           <div className="grid grid-cols-1 gap-x-[8px] gap-y-[8px] xl:grid-cols-[minmax(0,1fr)_300px]">
 
             {/* Main column */}
-            <div className="flex flex-col gap-y-[8px]">
+            <div ref={mainColumnRef} className="flex flex-col gap-y-[8px]">
+
               <ProjectDetailsStep
                 activeStep={activeStep}
                 setActiveStep={setActiveStep}
+                cardRef={projectDetailsCardRef}
+                headerRef={projectDetailsHeaderRef}
                 form={form}
                 setForm={setForm}
                 logoUpload={logoUpload}
@@ -304,6 +541,12 @@ export default function ProjectEditPageClient() {
               <ContractsStep
                 activeStep={activeStep}
                 setActiveStep={setActiveStep}
+                step2CardRef={contractsCardRef}
+                step3CardRef={walletCardRef}
+                step4CardRef={reviewCardRef}
+                step2HeaderRef={contractsHeaderRef}
+                step3HeaderRef={walletHeaderRef}
+                step4HeaderRef={reviewHeaderRef}
                 bulkController={queueHook.bulkController}
                 singleController={queueHook.singleController}
                 meaningfulRows={queueHook.meaningfulRows}
@@ -355,6 +598,7 @@ export default function ProjectEditPageClient() {
                 singleSubmitResult={queueHook.singleSubmitResult}
                 bulkSubmitResult={queueHook.bulkSubmitResult}
                 lastSubmitChainId={queueHook.lastSubmitChainId}
+                onSurveySubmit={handleSurveySubmit}
               />
             </div>
 
@@ -371,6 +615,7 @@ export default function ProjectEditPageClient() {
               queueStats={queueHook.queueStats}
               queueHasValidationResult={queueHook.queueHasValidationResult}
               projectsError={projectsError}
+              activeStepOffsetTop={sidebarOffsetTop}
             />
           </div>
         </div>

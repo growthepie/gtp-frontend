@@ -97,6 +97,9 @@ const encodeContentPath = (value: string): string =>
 const decodeGitHubFileContent = (content: string): string =>
   Buffer.from(content.replace(/\n/g, ""), "base64").toString("utf8");
 
+const encodeGitHubFileContent = (content: string | Uint8Array): string =>
+  Buffer.from(content).toString("base64");
+
 const toNonEmptyStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
   return value.map((entry) => toNonEmptyString(entry)).filter(Boolean);
@@ -137,24 +140,37 @@ const toRepositoryRef = (input: {
   baseBranch: input.baseBranch,
 });
 
-const resolveContributionRepositories = () => ({
-  projects: toRepositoryRef({
+const resolveContributionRepositories = () => {
+  const projects = toRepositoryRef({
     owner: process.env.OLI_PROJECTS_REPO_OWNER || DEFAULT_CONTRIBUTION_REPOSITORIES.projects.owner,
     repo: process.env.OLI_PROJECTS_REPO_NAME || DEFAULT_CONTRIBUTION_REPOSITORIES.projects.repo,
     baseBranch:
       process.env.OLI_PROJECTS_REPO_BASE_BRANCH ||
       DEFAULT_CONTRIBUTION_REPOSITORIES.projects.baseBranch ||
       "main",
-  }),
-  logos: toRepositoryRef({
-    owner: process.env.OLI_LOGOS_REPO_OWNER || DEFAULT_CONTRIBUTION_REPOSITORIES.logos.owner,
-    repo: process.env.OLI_LOGOS_REPO_NAME || DEFAULT_CONTRIBUTION_REPOSITORIES.logos.repo,
-    baseBranch:
-      process.env.OLI_LOGOS_REPO_BASE_BRANCH ||
-      DEFAULT_CONTRIBUTION_REPOSITORIES.logos.baseBranch ||
-      "main",
-  }),
-});
+  });
+
+  const hasExplicitLogoRepositoryOverride = Boolean(
+    process.env.OLI_LOGOS_REPO_OWNER ||
+      process.env.OLI_LOGOS_REPO_NAME ||
+      process.env.OLI_LOGOS_REPO_BASE_BRANCH,
+  );
+
+  const logos = hasExplicitLogoRepositoryOverride
+    ? toRepositoryRef({
+        owner: process.env.OLI_LOGOS_REPO_OWNER || projects.owner,
+        repo: process.env.OLI_LOGOS_REPO_NAME || projects.repo,
+        baseBranch: process.env.OLI_LOGOS_REPO_BASE_BRANCH || projects.baseBranch || "main",
+      })
+    : projects;
+
+  return { projects, logos };
+};
+
+const repositoriesMatch = (left: GitHubRepositoryRef, right: GitHubRepositoryRef): boolean =>
+  left.owner === right.owner &&
+  left.repo === right.repo &&
+  (left.baseBranch || "main") === (right.baseBranch || "main");
 
 type EditMetadataPatch = {
   displayName: string;
@@ -315,6 +331,84 @@ const fetchExistingProjectFile = async (input: {
   return { filePath, yamlText };
 };
 
+const fetchExistingTargetFileSha = async (input: {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  filePath: string;
+}): Promise<string | null> => {
+  const response = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${encodeContentPath(input.filePath)}?ref=${encodeURIComponent(input.branch)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        Accept: "application/vnd.github+json",
+      },
+      cache: "no-store",
+    },
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Could not load existing file metadata for ${input.filePath}: HTTP ${response.status} ${body}`,
+    );
+  }
+
+  const payload = (await response.json()) as { sha?: string };
+  return payload.sha || null;
+};
+
+const upsertFileOnBranch = async (input: {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  filePath: string;
+  fileContent: string | Uint8Array;
+  commitMessage: string;
+}) => {
+  const existingSha = await fetchExistingTargetFileSha({
+    token: input.token,
+    owner: input.owner,
+    repo: input.repo,
+    branch: input.branch,
+    filePath: input.filePath,
+  });
+
+  const response = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${encodeContentPath(input.filePath)}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: input.commitMessage,
+        content: encodeGitHubFileContent(input.fileContent),
+        branch: input.branch,
+        ...(existingSha ? { sha: existingSha } : {}),
+      }),
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Could not update ${input.filePath} on branch ${input.branch}: HTTP ${response.status} ${body}`,
+    );
+  }
+};
+
 export async function POST(request: Request) {
   try {
     // Rate limit
@@ -428,6 +522,8 @@ export async function POST(request: Request) {
     let logoFilePath: string | null = null;
     let yamlBranchName: string;
     let logoBranchName: string | null = null;
+    let combinedPullRequest = false;
+    const useCombinedPullRequest = Boolean(logoContribution) && repositoriesMatch(repositories.projects, repositories.logos);
 
     if (mode === "edit") {
       const existingFile = await fetchExistingProjectFile({
@@ -476,13 +572,36 @@ export async function POST(request: Request) {
       yamlPullRequestUrl = yamlPullRequest.pullRequestUrl;
       yamlFilePath = existingFile.filePath;
       yamlBranchName = yamlPullRequest.branchName;
+      const yamlTargetOwner = yamlPullRequest.targetOwner;
 
-      if (logoContribution) {
+      if (logoContribution && useCombinedPullRequest) {
         const logoExtension = inferLogoExtension(
           logoContribution.fileName,
           logoContribution.mimeType,
         );
-        const computedLogoPath = `logos/images/${ownerProject}.${logoExtension}`;
+        const firstChar = ownerProject.charAt(0).toLowerCase();
+        const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
+        const logoTitle = `Update logo for ${displayName || ownerProject}`;
+        await upsertFileOnBranch({
+          token: githubToken,
+          owner: yamlTargetOwner,
+          repo: repositories.projects.repo,
+          branch: yamlBranchName,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
+        });
+        logoPullRequestUrl = yamlPullRequestUrl;
+        logoFilePath = computedLogoPath;
+        logoBranchName = yamlBranchName;
+        combinedPullRequest = true;
+      } else if (logoContribution) {
+        const logoExtension = inferLogoExtension(
+          logoContribution.fileName,
+          logoContribution.mimeType,
+        );
+        const firstChar = ownerProject.charAt(0).toLowerCase();
+        const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
         const logoTitle = `Update logo for ${displayName || ownerProject}`;
         const logoPullRequest = await pullRequestClient.createOrUpdatePullRequest({
           upstream: repositories.logos,
@@ -513,7 +632,7 @@ export async function POST(request: Request) {
           payload: draftPayload,
           existingProjectName: undefined,
         },
-        logo: logoContribution,
+        logo: undefined,
         repositories,
         targetOwner,
         autoCreateFork,
@@ -523,11 +642,63 @@ export async function POST(request: Request) {
       });
 
       yamlPullRequestUrl = result.yaml.pullRequest.pullRequestUrl;
-      logoPullRequestUrl = result.logo?.pullRequest.pullRequestUrl || null;
       yamlFilePath = result.yaml.filePath;
-      logoFilePath = result.logo?.filePath || null;
       yamlBranchName = result.yaml.pullRequest.branchName;
-      logoBranchName = result.logo?.pullRequest.branchName || null;
+      const yamlTargetOwner = result.yaml.pullRequest.targetOwner;
+
+      if (logoContribution && useCombinedPullRequest) {
+        const logoExtension = inferLogoExtension(
+          logoContribution.fileName,
+          logoContribution.mimeType,
+        );
+        const firstChar = ownerProject.charAt(0).toLowerCase();
+        const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
+        const logoTitle = `Add logo for ${displayName || ownerProject}`;
+        await upsertFileOnBranch({
+          token: githubToken,
+          owner: yamlTargetOwner,
+          repo: repositories.projects.repo,
+          branch: yamlBranchName,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
+        });
+        logoPullRequestUrl = yamlPullRequestUrl;
+        logoFilePath = computedLogoPath;
+        logoBranchName = yamlBranchName;
+        combinedPullRequest = true;
+      } else if (logoContribution) {
+        const logoExtension = inferLogoExtension(
+          logoContribution.fileName,
+          logoContribution.mimeType,
+        );
+        const firstChar = ownerProject.charAt(0).toLowerCase();
+        const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
+        const logoTitle = `Add logo for ${displayName || ownerProject}`;
+        const pullRequestClient = createGitHubPullRequestClient({
+          token: githubToken,
+        });
+        const logoPullRequest = await pullRequestClient.createOrUpdatePullRequest({
+          upstream: repositories.logos,
+          targetOwner,
+          autoCreateFork,
+          branchPrefix,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
+          pullRequestTitle: logoTitle,
+          pullRequestBody: [
+            "Added project logo via gtp-frontend.",
+            "",
+            `- slug: \`${ownerProject}\``,
+            `- file: \`${computedLogoPath}\``,
+            `- source: ${actorLabel}`,
+          ].join("\n"),
+        });
+        logoPullRequestUrl = logoPullRequest.pullRequestUrl;
+        logoFilePath = computedLogoPath;
+        logoBranchName = logoPullRequest.branchName;
+      }
     }
 
     return NextResponse.json({
@@ -537,6 +708,7 @@ export async function POST(request: Request) {
       logoFilePath,
       yamlBranchName,
       logoBranchName,
+      combinedPullRequest,
     });
   } catch (error: any) {
     return NextResponse.json(

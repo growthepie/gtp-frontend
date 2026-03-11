@@ -47,7 +47,9 @@ export const FieldDropdown = (props: FieldDropdownProps) => {
   const direction = props.direction ?? "down";
   const includeAnchorSpace = props.includeAnchorSpace ?? true;
   const anchorSpace = includeAnchorSpace ? topOffset : 0;
-  const items = "suggestions" in props ? props.suggestions : props.options;
+  const items = "suggestions" in props
+    ? (props as ProjectFieldDropdownProps).suggestions
+    : (props as OptionFieldDropdownProps).options;
   const open = items.length > 0;
   const visibleCount = Math.min(items.length, maxVisible);
   const itemsH = visibleCount * itemHeight + 8;
@@ -67,11 +69,11 @@ export const FieldDropdown = (props: FieldDropdownProps) => {
         }}
       >
         {"suggestions" in props
-          ? props.suggestions.map((project, i) => (
+          ? (props as ProjectFieldDropdownProps).suggestions.map((project, i) => (
               <button
                 key={`${asString(project.owner_project)}-${i}`}
                 type="button"
-                onMouseDown={() => props.onSelect(project)}
+                onMouseDown={() => (props as ProjectFieldDropdownProps).onSelect(project)}
                 className="shrink-0 w-full flex items-center gap-x-[10px] pl-[14px] pr-[10px] hover:bg-color-ui-hover transition-colors"
                 style={{ height: itemHeight }}
               >
@@ -86,22 +88,22 @@ export const FieldDropdown = (props: FieldDropdownProps) => {
                 </div>
               </button>
             ))
-          : props.options.map((option) => (
+          : (props as OptionFieldDropdownProps).options.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                onMouseDown={() => props.onSelectOption(option.value)}
+                onMouseDown={() => (props as OptionFieldDropdownProps).onSelectOption(option.value)}
                 className="shrink-0 w-full flex items-center gap-x-[10px] pl-[14px] pr-[10px] hover:bg-color-ui-hover transition-colors"
                 style={{ height: itemHeight }}
               >
-                {props.iconRenderer && (
+                {(props as OptionFieldDropdownProps).iconRenderer && (
                   <div className="shrink-0 flex items-center justify-center size-[18px]">
-                    {props.iconRenderer(option.value)}
+                    {(props as OptionFieldDropdownProps).iconRenderer!(option.value)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-xs font-medium truncate">{option.label}</div>
-                  {props.showSecondaryValue && (
+                  {(props as OptionFieldDropdownProps).showSecondaryValue && (
                     <div className="text-xxs text-color-text-secondary truncate leading-tight">
                       {option.value}
                     </div>
@@ -208,6 +210,72 @@ export const FieldDropdownButton = ({
           maxVisible={maxVisible}
         />
       )}
+    </div>
+  );
+};
+
+type FieldInputVariant = "form" | "row";
+
+type FieldInputProps = {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  variant?: FieldInputVariant;
+  disabled?: boolean;
+  error?: boolean;
+  mono?: boolean;
+  autoFocus?: boolean;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  className?: string;
+  inputClassName?: string;
+};
+
+const FIELD_INPUT_VARIANTS: Record<FieldInputVariant, { container: string; input: string }> = {
+  form: {
+    container: "rounded-[22px] h-[44px] bg-color-bg-medium px-[14px]",
+    input: "text-sm",
+  },
+  row: {
+    container: "rounded-full h-[24px] bg-color-bg-default pl-[6px] pr-[10px]",
+    input: "text-xs",
+  },
+};
+
+export const FieldInput = ({
+  value,
+  onChange,
+  placeholder,
+  variant = "form",
+  disabled,
+  error,
+  mono,
+  autoFocus,
+  onBlur,
+  onFocus,
+  className,
+  inputClassName,
+}: FieldInputProps) => {
+  const styles = FIELD_INPUT_VARIANTS[variant];
+
+  return (
+    <div className={`relative focus-within:z-50 ${className ?? ""}`}>
+      <div
+        className={`relative z-10 flex w-full items-center ${styles.container} ${
+          error ? "bg-color-negative/20 ring-1 ring-color-negative/50" : ""
+        }`}
+      >
+        <input
+          autoFocus={autoFocus}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          className={`flex-1 h-full bg-transparent border-none outline-none text-color-text-primary placeholder-color-text-secondary ${styles.input} ${mono ? "font-mono" : ""} ${inputClassName ?? ""}`}
+        />
+      </div>
     </div>
   );
 };
@@ -343,11 +411,9 @@ export const FieldOptionInput = ({
         className="absolute right-[6px] top-1/2 z-20 -translate-y-1/2 rounded-full p-[2px] hover:bg-color-ui-hover transition-colors"
         onClick={() => {
           if (disabled) return;
-          setOpen((prev) => {
-            const next = !prev;
-            if (next) setQuery(selectedLabel);
-            return next;
-          });
+          const next = !open;
+          if (next) setQuery(selectedLabel);
+          setOpen(next);
         }}
         disabled={disabled}
       >
@@ -385,72 +451,6 @@ export const FieldOptionInput = ({
           document.body,
         )
       )}
-    </div>
-  );
-};
-
-type FieldInputVariant = "form" | "row";
-
-type FieldInputProps = {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  variant?: FieldInputVariant;
-  disabled?: boolean;
-  error?: boolean;
-  mono?: boolean;
-  autoFocus?: boolean;
-  onBlur?: React.FocusEventHandler<HTMLInputElement>;
-  onFocus?: React.FocusEventHandler<HTMLInputElement>;
-  className?: string;
-  inputClassName?: string;
-};
-
-const FIELD_INPUT_VARIANTS: Record<FieldInputVariant, { container: string; input: string }> = {
-  form: {
-    container: "rounded-[22px] h-[44px] bg-color-bg-medium px-[14px]",
-    input: "text-sm",
-  },
-  row: {
-    container: "rounded-full h-[24px] bg-color-bg-default pl-[6px] pr-[10px]",
-    input: "text-xs",
-  },
-};
-
-export const FieldInput = ({
-  value,
-  onChange,
-  placeholder,
-  variant = "form",
-  disabled,
-  error,
-  mono,
-  autoFocus,
-  onBlur,
-  onFocus,
-  className,
-  inputClassName,
-}: FieldInputProps) => {
-  const styles = FIELD_INPUT_VARIANTS[variant];
-
-  return (
-    <div className={`relative focus-within:z-50 ${className ?? ""}`}>
-      <div
-        className={`relative z-10 flex w-full items-center ${styles.container} ${
-          error ? "bg-color-negative/20 ring-1 ring-color-negative/50" : ""
-        }`}
-      >
-        <input
-          autoFocus={autoFocus}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          disabled={disabled}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          className={`flex-1 h-full bg-transparent border-none outline-none text-color-text-primary placeholder-color-text-secondary ${styles.input} ${mono ? "font-mono" : ""} ${inputClassName ?? ""}`}
-        />
-      </div>
     </div>
   );
 };

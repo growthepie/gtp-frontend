@@ -40,7 +40,7 @@ type UseContractsQueueParams = {
   isConnectingWallet: boolean;
   connectWalletFromContext: () => Promise<void>;
   disconnectWalletFromContext: () => void;
-  setActiveStep: (step: 1 | 2 | 3 | 4) => void;
+  setActiveStep: (step: 0 | 1 | 2 | 3 | 4) => void;
 };
 
 export type ContractsQueueReturn = {
@@ -121,6 +121,41 @@ export type ContractsQueueReturn = {
   getQueueRowErrorMessages: (rowIndex: number) => string[];
 };
 
+// Static mapping from OLI/GTP category_id → GTP main category key (used for icon lookup)
+const CATEGORY_ICON_KEY: Record<string, string> = {
+  // finance (DeFi)
+  trading: "finance", cex: "finance", dex: "finance", lending: "finance",
+  derivative: "finance", staking: "finance", index: "finance", rwa: "finance",
+  insurance: "finance", custody: "finance", yield_vaults: "finance",
+  payments: "finance", prediction_markets: "finance",
+  // collectibles (NFT)
+  nft_fi: "collectibles", nft_marketplace: "collectibles", non_fungible_tokens: "collectibles",
+  // social
+  community: "social", gambling: "social", gaming: "social", governance: "social", identity: "social",
+  // token_transfers
+  native_transfer: "token_transfers", stablecoin: "token_transfers", fungible_tokens: "token_transfers",
+  // utility
+  erc4337: "utility", inscriptions: "utility", oracle: "utility", depin: "utility",
+  developer_tools: "utility", privacy: "utility", airdrop: "utility", donation: "utility",
+  cybercrime: "utility", other: "utility", contract_deployment: "utility",
+  contract_deplyoment: "utility", // OLI typo variant
+  ai: "utility",
+  // cross_chain
+  cc_communication: "cross_chain", bridge: "cross_chain", settlement: "cross_chain",
+  // unlabeled
+  unlabeled: "unlabeled",
+};
+
+const USAGE_MAIN_ICONS: Record<string, string> = {
+  finance: "gtp-defi",
+  collectibles: "gtp-nft",
+  token_transfers: "gtp-tokentransfers",
+  utility: "gtp-utilities",
+  social: "gtp-socials",
+  cross_chain: "gtp-crosschain",
+  unlabeled: "gtp-unlabeled",
+};
+
 export function useContractsQueue({
   ownerProject,
   normalizedProjects,
@@ -137,6 +172,16 @@ export function useContractsQueue({
 }: UseContractsQueueParams): ContractsQueueReturn {
   const csvInputRef = useRef<HTMLInputElement>(null!);
   const importedContractSeedRef = useRef(false);
+
+  const [oliCategories, setOliCategories] = useState<{ category_id: string; name: string }[]>([]);
+  useEffect(() => {
+    fetch("/api/labels/usage-categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data?.categories)) setOliCategories(data.categories);
+      })
+      .catch(() => {});
+  }, []);
   const prevOwnerProjectRef = useRef("");
   const lastSyncedSingleRowSignatureRef = useRef("");
 
@@ -150,6 +195,7 @@ export function useContractsQueue({
   const [lastValidatedQueueSignature, setLastValidatedQueueSignature] = useState("");
   const [lastValidatedQueueFlow, setLastValidatedQueueFlow] = useState<"single" | "bulk" | null>(null);
   const [lastValidatedSingleRowIndex, setLastValidatedSingleRowIndex] = useState<number | null>(null);
+  const [queueValidated, setQueueValidated] = useState(false);
   const [singleSubmitResult, setSingleSubmitResult] = useState<OnchainSubmitResult | null>(null);
   const [bulkSubmitResult, setBulkSubmitResult] = useState<BulkOnchainSubmitResult | null>(null);
   const [lastSubmitChainId, setLastSubmitChainId] = useState("");
@@ -232,44 +278,18 @@ export function useContractsQueue({
   );
 
   const usageCategoryOptions = useMemo<SearchDropdownOption[]>(() => {
-    if (!masterData?.blockspace_categories?.sub_categories) return [];
-    return Object.entries(masterData.blockspace_categories.sub_categories)
-      .map(([categoryKey, categoryLabel]) => ({
-        value: categoryKey,
-        label: categoryLabel as string,
-      }))
+    const supported = masterData?.blockspace_categories?.sub_categories ?? {};
+    return oliCategories
+      .filter((c) => c.category_id in supported)
+      .map((c) => ({ value: c.category_id, label: c.name ?? c.category_id }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [masterData]);
-
-  const subToMainCategory = useMemo(() => {
-    if (!masterData?.blockspace_categories?.mapping) return {} as Record<string, string>;
-    const map: Record<string, string> = {};
-    for (const [mainKey, subKeys] of Object.entries(masterData.blockspace_categories.mapping)) {
-      for (const subKey of (subKeys as string[])) {
-        map[subKey] = mainKey;
-      }
-    }
-    return map;
-  }, [masterData]);
-
-  const USAGE_MAIN_ICONS: Record<string, string> = {
-    defi: "gtp-defi",
-    finance: "gtp-defi",
-    nft: "gtp-nft",
-    token_transfers: "gtp-tokentransfers",
-    utility: "gtp-utilities",
-    social: "gtp-socials",
-    cefi: "gtp-cefi",
-    cross_chain: "gtp-crosschain",
-    collectibles: "gtp-nft",
-    unlabeled: "gtp-unlabeled",
-  };
+  }, [oliCategories, masterData]);
 
   const usageCategoryIconRenderer = useCallback(
     (value: string): ReactNode => {
       if (!value) return null;
-      const mainCat = subToMainCategory[value] ?? value;
-      const iconName = USAGE_MAIN_ICONS[mainCat];
+      const iconKey = CATEGORY_ICON_KEY[value];
+      const iconName = iconKey ? USAGE_MAIN_ICONS[iconKey] : undefined;
       if (!iconName) return null;
       return (
         <Icon
@@ -278,7 +298,7 @@ export function useContractsQueue({
         />
       );
     },
-    [subToMainCategory],
+    [],
   );
 
   const ownerProjectOptions = useMemo<SearchDropdownOption[]>(
@@ -348,8 +368,8 @@ export function useContractsQueue({
   );
 
   const currentQueueSignature = useMemo(
-    () => `${bulkController.queue.rows.length}:${meaningfulRows.map(rowPreviewSignature).join("||")}`,
-    [meaningfulRows, bulkController.queue.rows.length],
+    () => meaningfulRows.map(rowPreviewSignature).join("||"),
+    [meaningfulRows],
   );
 
   const isSingleFlow = meaningfulRows.length <= 1;
@@ -397,13 +417,6 @@ export function useContractsQueue({
     setQueueSubmitPreview(null);
   }, [currentQueueSignature, queueSubmitPreview]);
 
-  useEffect(() => {
-    if (!lastValidatedQueueFlow) return;
-    if (lastValidatedQueueSignature === currentQueueSignature) return;
-    setLastValidatedQueueFlow(null);
-    setLastValidatedQueueSignature("");
-    setLastValidatedSingleRowIndex(null);
-  }, [currentQueueSignature, lastValidatedQueueFlow, lastValidatedQueueSignature]);
 
   // ── Patch queue rows when owner project changes ───────────────────────────
 
@@ -467,6 +480,7 @@ export function useContractsQueue({
     setLastValidatedQueueFlow(null);
     setLastValidatedQueueSignature("");
     setLastValidatedSingleRowIndex(null);
+    setQueueValidated(false);
     setShouldAutoValidateAfterImport(true);
     setActiveStep(2);
   }, [mode, intent.source, intent.project, ownerProject, prepareRowForQueue, bulkController.queue, setActiveStep]);
@@ -506,6 +520,7 @@ export function useContractsQueue({
           ? merged
           : [prepareRowForQueue({ chain_id: defaultQueueChainId, owner_project: ownerProject.trim() })],
       );
+      setQueueValidated(false);
     },
     [bulkController, defaultQueueChainId, ownerProject, meaningfulRows, prepareRowForQueue],
   );
@@ -578,8 +593,7 @@ export function useContractsQueue({
 
   // ── Validation ────────────────────────────────────────────────────────────
 
-  const hasCurrentQueueValidation =
-    Boolean(lastValidatedQueueFlow) && lastValidatedQueueSignature === currentQueueSignature;
+  const hasCurrentQueueValidation = Boolean(lastValidatedQueueFlow);
 
   const runQueueValidation = useCallback(
     async (): Promise<{ flow: "single" | "bulk"; rows: AttestationRowInput[] } | null> => {
@@ -606,6 +620,7 @@ export function useContractsQueue({
           setLastValidatedQueueFlow("single");
           setLastValidatedQueueSignature(currentQueueSignature);
           setLastValidatedSingleRowIndex(sourceRowIndex);
+          setQueueValidated(result.valid);
           if (!result.valid) {
             const message = result.diagnostics.errors[0]?.message || "Single row validation failed.";
             setQueueError(message);
@@ -624,6 +639,7 @@ export function useContractsQueue({
         setLastValidatedQueueFlow("bulk");
         setLastValidatedQueueSignature(currentQueueSignature);
         setLastValidatedSingleRowIndex(null);
+        setQueueValidated(bulkResult.valid);
         if (!bulkResult.valid) {
           const message = bulkResult.diagnostics.errors[0]?.message || "Bulk validation failed.";
           setQueueError(message);
@@ -639,6 +655,7 @@ export function useContractsQueue({
         setLastValidatedQueueFlow(null);
         setLastValidatedQueueSignature("");
         setLastValidatedSingleRowIndex(null);
+        setQueueValidated(false);
         return null;
       }
     },
@@ -681,14 +698,7 @@ export function useContractsQueue({
     return bulkController.diagnostics.all;
   }, [hasCurrentQueueValidation, lastValidatedQueueFlow, singleController.validation.result, bulkController.diagnostics.all]);
 
-  const queueHasValidationResult = useMemo(
-    () =>
-      hasCurrentQueueValidation &&
-      (lastValidatedQueueFlow === "single"
-        ? Boolean(singleController.validation.result)
-        : Boolean(bulkController.validation.result)),
-    [hasCurrentQueueValidation, lastValidatedQueueFlow, singleController.validation.result, bulkController.validation.result],
-  );
+  const queueHasValidationResult = queueValidated;
 
   const getQueueRowErrorMessages = useCallback(
     (rowIndex: number): string[] => {
@@ -861,12 +871,14 @@ export function useContractsQueue({
       owner_project: ownerProject.trim(),
     });
     bulkController.queue.addRow(row);
+    setQueueValidated(false);
   }, [bulkController, defaultQueueChainId, ownerProject, prepareRowForQueue]);
 
   const removeQueueRow = useCallback(
     (rowIndex: number) => {
       bulkController.queue.removeRow(rowIndex);
       setQueueSubmitPreview(null);
+      setQueueValidated(false);
     },
     [bulkController],
   );
@@ -874,9 +886,8 @@ export function useContractsQueue({
   const setQueueCellValue = useCallback(
     (rowIndex: number, field: QueueEditableField, value: string) => {
       bulkController.queue.setCell(rowIndex, field, value);
-      setQueueError(null);
-      setQueueErrorFromValidation(false);
       setQueueSubmitPreview(null);
+      setQueueValidated(false);
     },
     [bulkController],
   );

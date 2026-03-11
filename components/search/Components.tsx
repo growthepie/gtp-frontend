@@ -141,6 +141,7 @@ export const HeaderSearchButton = () => {
   const isOpen = searchParams.get("search") === "true";
   const query = searchParams.get("query") || "";
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
 
   // read state from url
   const handleOpenSearch = useCallback(() => {
@@ -231,7 +232,10 @@ export const HeaderSearchButton = () => {
   // Listen for clear search or close event
   useEffect(() => {
     const handleClearSearchOrClose = () => {
-      if (query !== "") {
+      // In project edit mode, selection actions should fully dismiss the search surface.
+      if (projectEditMode) {
+        handleCloseSearch();
+      } else if (query !== "") {
         handleClearQuery();
       } else {
         setTimeout(() => {
@@ -242,7 +246,7 @@ export const HeaderSearchButton = () => {
 
     window.addEventListener('clearSearchOrClose', handleClearSearchOrClose);
     return () => window.removeEventListener('clearSearchOrClose', handleClearSearchOrClose);
-  }, [query, handleClearQuery, handleCloseSearch]);
+  }, [projectEditMode, query, handleClearQuery, handleCloseSearch]);
 
   if(isMobile){
     return (
@@ -273,6 +277,7 @@ export const SearchComponent = () => {
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
 
   const handleCloseSearch = () => {
     // get existing query params
@@ -284,27 +289,31 @@ export const SearchComponent = () => {
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
 
     window.history.replaceState(null, "", url);
-    setDocumentScroll(true);
+    if (!projectEditMode) setDocumentScroll(true);
   }
 
   // Handle initial scroll state when page loads with search parameters
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !projectEditMode) {
       setDocumentScroll(false);
     }
     return () => {
-      if (isOpen) {
+      if (isOpen && !projectEditMode) {
         setDocumentScroll(true);
       }
     };
-  }, [isOpen]);
+  }, [isOpen, projectEditMode]);
 
   if (!isOpen) return null;
 
   return (
     <>
       <SearchBar showMore={showMore} setShowMore={setShowMore} />
-      <GrayOverlay onClick={handleCloseSearch} />
+      {projectEditMode ? (
+        <div className="fixed inset-0 z-[105]" onClick={handleCloseSearch} />
+      ) : (
+        <GrayOverlay onClick={handleCloseSearch} />
+      )}
     </>
   )
 }
@@ -313,6 +322,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showMore?: any;
   setShowMore?: any;
   showSearchContainer?: boolean;
+  showFilters?: boolean;
   hideClearButtonOnMobile?: boolean; // Add this prop
   onInputFocus?: () => void;
   onInputBlur?: () => void;
@@ -427,7 +437,10 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
     }
 
     if (options.length === 0) {
-      updateCurrentText("");
+      startTransition(() => {
+        currentTextRef.current = "";
+        setCurrentText("");
+      });
       currentIndexRef.current = 0;
       isDeletingRef.current = false;
       return () => {
@@ -440,7 +453,10 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
 
     currentIndexRef.current = 0;
     isDeletingRef.current = false;
-    updateCurrentText("");
+    startTransition(() => {
+      currentTextRef.current = "";
+      setCurrentText("");
+    });
 
     const typingSpeed = 100;
     const deletingSpeed = 70;
@@ -502,7 +518,7 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
 };
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, showFilters=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -534,6 +550,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const [isFocused, setIsFocused] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const projectEditMode = useUIContext((state) => state.projectEditMode);
+    const searchBarCaptureActive = useUIContext((state) => state.searchBarCaptureActive);
+    const captureRef = useRef({ projectEditMode, searchBarCaptureActive });
+    useEffect(() => { captureRef.current = { projectEditMode, searchBarCaptureActive }; }, [projectEditMode, searchBarCaptureActive]);
 
     // Track client-side mount to prevent hydration mismatch
     useEffect(() => {
@@ -621,11 +640,25 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, [debouncedUpdateSearch]);
 
+    useEffect(() => {
+      const handleClearSearchOrClose = () => {
+        debouncedUpdateSearch.cancel();
+        setLocalQuery("");
+        localInputRef.current?.blur();
+      };
+
+      window.addEventListener("clearSearchOrClose", handleClearSearchOrClose);
+      return () => window.removeEventListener("clearSearchOrClose", handleClearSearchOrClose);
+    }, [debouncedUpdateSearch]);
+
     // on mount, add an event listener for keystrokes. If a alphanumeric key is pressed, focus the input and write the key to the input.
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         const input = document.getElementById('global-search-input') as HTMLInputElement | null;
         if (!input) return;
+
+        // In project edit mode, only route keystrokes to the search bar when step 0 (capture active)
+        if (captureRef.current.projectEditMode && !captureRef.current.searchBarCaptureActive) return;
 
         // Don't trigger search if modifier keys are pressed (Ctrl, Cmd, Alt, Shift)
         // This prevents interfering with shortcuts like Ctrl+C, Ctrl+V, etc.
@@ -719,7 +752,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               </div>
             </div>
             {/* second child: the filter selection container */}
-            <div className="hidden md:block">
+            <div className={`${showFilters ? "hidden md:block" : "hidden"}`}>
               <Filters showMore={showMore} setShowMore={setShowMore} />
             </div>
           </div>
@@ -1968,9 +2001,49 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     return [...appsResults, ...ossResults].slice(0, 20);
   }, [projectEditMode, memoizedQuery, ownerProjectToProjectData, ossProjects]);
 
+  const singleEditMatchOwnerProject = useMemo(() => {
+    if (!projectEditMode || editMatches.length !== 1) return null;
+    return editMatches[0].owner_project;
+  }, [editMatches, projectEditMode]);
+
+  const closeProjectEditSearch = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.delete("search");
+    nextParams.delete("query");
+    nextParams.delete("search_mode");
+    const nextQuery = decodeURIComponent(nextParams.toString());
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    window.history.replaceState(null, "", nextUrl);
+  }, []);
+
+  const projectEditSearchMode = searchParams.get("search_mode");
+
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {projectEditMode && memoizedQuery ? (
+      {projectEditMode && !memoizedQuery ? (
+        <div className="flex flex-col pt-[14px] pb-[18px] px-[14px] gap-y-[10px]">
+          <div className="flex items-center gap-x-[8px]">
+            <GTPIcon icon="gtp-search" size="sm" />
+            <div className="text-sm font-semibold font-raleway text-color-text-primary">
+              {projectEditSearchMode === "edit" ? "Search existing projects" : "Search before adding"}
+            </div>
+          </div>
+          <div className="flex flex-col gap-y-[8px]">
+            {[
+              { icon: "feather:alert-triangle", color: "text-color-data-yellow", text: "Duplicate entries fragment data and break attribution — always check first." },
+              { icon: "feather:search", color: "text-color-text-secondary", text: "Search by project name, website, owner_project key, or GitHub URL." },
+              { icon: "feather:edit-2", color: "text-color-text-secondary", text: "Found it? Select it from results to edit the existing record instead of adding a new one." },
+              { icon: "feather:plus-circle", color: "text-color-text-secondary", text: "Not found after searching? Close this and click \"Add project details\" to begin." },
+            ].map(({ icon, color, text }) => (
+              <div key={icon} className="flex items-start gap-x-[8px]">
+                <Icon icon={icon} className={`mt-[2px] size-[12px] shrink-0 ${color}`} />
+                <span className="text-xs text-color-text-primary leading-[1.5]">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : projectEditMode && memoizedQuery ? (
         <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px]">
           {/* ── Edit section ── */}
           {editMatches.length > 0 && (
@@ -1986,22 +2059,43 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                     ? `https://api.growthepie.com/v1/apps/logos/${p.logo_path}`
                     : null;
                   return (
-                    <button
-                      key={p.owner_project}
-                      type="button"
-                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[10px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent("projectEditSelectProject", { detail: { ownerProject: p.owner_project } }));
-                        window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
-                      }}
-                    >
-                      {logoSrc ? (
-                        <Image src={logoSrc} alt={p.display_name || p.owner_project} width={14} height={14} unoptimized className="rounded-[3px] object-cover" />
-                      ) : (
-                        <GTPIcon icon="gtp-project-monochrome" className="!w-[14px] !h-[14px] shrink-0" />
+                    <div key={p.owner_project} className="flex flex-wrap items-center gap-[5px]">
+                      <button
+                        type="button"
+                        className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[10px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                        onClick={() => {
+                          closeProjectEditSearch();
+                          window.dispatchEvent(new CustomEvent("projectEditSelectProject", { detail: { ownerProject: p.owner_project } }));
+                          window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                        }}
+                      >
+                        {logoSrc ? (
+                          <Image src={logoSrc} alt={p.display_name || p.owner_project} width={14} height={14} unoptimized className="rounded-[3px] object-cover" />
+                        ) : (
+                          <GTPIcon
+                            icon="gtp-project-monochrome"
+                            size="sm"
+                            className="!size-[12px]"
+                            containerClassName="!size-[14px] shrink-0 flex items-center justify-center"
+                          />
+                        )}
+                        <span>{p.display_name || p.owner_project}</span>
+                      </button>
+                      {singleEditMatchOwnerProject === p.owner_project && (
+                        <button
+                          type="button"
+                          className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                          onClick={() => {
+                            closeProjectEditSearch();
+                            window.dispatchEvent(new CustomEvent("projectEditSelectProjectContracts", { detail: { ownerProject: p.owner_project } }));
+                            window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                          }}
+                        >
+                          <Icon icon="gtp:gtp-label-add-monochrome" className="size-[12px] text-color-text-secondary" />
+                          Add Contracts
+                        </button>
                       )}
-                      <span>{p.display_name || p.owner_project}</span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -2044,6 +2138,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                       type="button"
                       className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
                       onClick={() => {
+                        closeProjectEditSearch();
                         window.dispatchEvent(new CustomEvent("projectEditAiProfile", { detail: { website: rawValue } }));
                         window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
                       }}
@@ -2056,6 +2151,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                     type="button"
                     className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
                     onClick={() => {
+                      closeProjectEditSearch();
                       window.dispatchEvent(new CustomEvent("projectEditAddManually", { detail: { field, value: rawValue } }));
                       window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
                     }}
@@ -2463,6 +2559,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
   const [hasOverflow, setHasOverflow] = useState(false);
   const [isScreenTall, setIsScreenTall] = useState(false);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
@@ -2528,7 +2625,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-color-bg-medium rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
+    <div className={`fixed ${projectEditMode ? "top-[90px] md:top-[90px]" : "top-[80px] md:top-[33px]"} left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-color-bg-medium rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center`}>
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
@@ -2614,7 +2711,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               // fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"} 
               className={`${pressedKey === 'Enter' ? "fill-color-ui-hover" : "fill-color-ui-active"}`}
             />
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" stroke-width="2" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" strokeWidth="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" className="text-color-text-primary stroke-color-text-primary" />
           </svg>
           <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
@@ -2632,5 +2729,3 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-
-

@@ -44,6 +44,8 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
   const isMobile = useUIContext((state) => state.isMobile);
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const toggleSidebar = useUIContext((state) => state.toggleSidebar);
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
+  const searchBarCaptureActive = useUIContext((state) => state.searchBarCaptureActive);
   const walletConnection = useWalletConnection();
   const toast = useToast();
   const walletAddressValue = walletAddressProp ?? walletConnection.walletAddress;
@@ -60,6 +62,8 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
   const [isWorkWithUsMenuOpen, setIsWorkWithUsMenuOpen] = useState(false);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [showInitialProjectEditTips, setShowInitialProjectEditTips] = useState(false);
+  const hasInitializedProjectEditTipsRef = useRef(false);
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -80,10 +84,14 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
   // Function to clear query following the same pattern as SearchBar
   const clearQuery = useCallback(() => {
     const sp = new URLSearchParams(window.location.search);
-    if (!sp.has("query")) return; // nothing to do
+    const hadQuery = sp.has("query");
+    const hadSearch = sp.has("search");
+    if (!hadQuery && !hadSearch) return;
     sp.delete("query");
-  
-    const next = `${pathname}?${decodeURIComponent(sp.toString())}`;
+    sp.delete("search");
+
+    const nextQuery = decodeURIComponent(sp.toString());
+    const next = nextQuery ? `${pathname}?${nextQuery}` : pathname;
     const current = `${window.location.pathname}${window.location.search}`;
     if (next !== current) {
       window.history.replaceState(null, "", next);
@@ -94,6 +102,26 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
+
+  useEffect(() => {
+    const isProjectEditCapture = projectEditMode && searchBarCaptureActive;
+    const hasQuery = query.trim().length > 0;
+
+    if (!isProjectEditCapture) {
+      setShowInitialProjectEditTips(false);
+      hasInitializedProjectEditTipsRef.current = false;
+      return;
+    }
+
+    if (!hasInitializedProjectEditTipsRef.current && !hasQuery) {
+      setShowInitialProjectEditTips(true);
+      hasInitializedProjectEditTipsRef.current = true;
+    }
+
+    if (hasQuery) {
+      setShowInitialProjectEditTips(false);
+    }
+  }, [projectEditMode, searchBarCaptureActive, query]);
 
   // Handle search activation
   const activateSearch = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
@@ -222,7 +250,9 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
   useEffect(() => {
     // For mobile: only when search is active
     // For desktop: when there are search results visible
-    const shouldHandleClicks = isMobile ? isSearchActive : (query && query.trim().length > 0);
+    const shouldHandleClicks = isMobile
+      ? isSearchActive
+      : showInitialProjectEditTips || isSearchActive || Boolean(query && query.trim().length > 0);
     
     if (!shouldHandleClicks) return;
 
@@ -241,13 +271,12 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
         if (isMobile) {
           // On mobile, if we're searching (not manually opened burger menu), just close search
           if (isSearchActive && !isBurgerMenuManuallyOpened) {
-            clearQuery(); // Close search, don't open burger menu
+            window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
           } else {
             setIsSearchActive(false);
           }
         } else {
-          // For desktop, clear the query to close search results
-          clearQuery();
+          window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
         }
       }
     };
@@ -263,19 +292,21 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [isMobile, isSearchActive, query, clearQuery, isBurgerMenuManuallyOpened]);
+  }, [isMobile, isSearchActive, query, clearQuery, isBurgerMenuManuallyOpened, showInitialProjectEditTips]);
 
   // Listen for clear search or close event from Filters component
   useEffect(() => {
     const handleClearSearchOrClose = () => {
-      if (query !== "") {
+      setIsSearchActive(false);
+      setShowInitialProjectEditTips(false);
+      if (query !== "" || projectEditMode) {
         clearQuery();
       }
     };
 
     window.addEventListener('clearSearchOrClose', handleClearSearchOrClose);
     return () => window.removeEventListener('clearSearchOrClose', handleClearSearchOrClose);
-  }, [query, clearQuery]);
+  }, [query, clearQuery, projectEditMode]);
 
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -621,7 +652,7 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   </div>
                 </div>
 
-                {/* Search Bar */}
+                {/* Search Bar — hidden when the overlay search is open to avoid duplicate */}
                 <div
                   ref={searchContainerRef}
                   className={`flex-1 min-w-0 relative h-[44px] ${isSidebarOpen ? "md:ml-[25px]" : "md:ml-[15px]"} ${isMobile && isSearchActive ? "-ml-[55px]" : ""
@@ -630,29 +661,38 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   // onMouseLeave={deactivateSearch}
                   onTouchStart={activateSearch}
                 >
-                  <SearchContainer>
-                    <SearchBar
-                      ref={searchInputRef}
-                      showMore={showMore}
-                      setShowMore={setShowMore}
-                      showSearchContainer={false}
-                      hideClearButtonOnMobile={true}
-                      onFocus={() => {
-                        if (!isMobile) return;
-                        const isQueryEmpty = !query || query.trim().length === 0;
-                        const noResultsShowing = totalResults === 0; // treat zero results as not showing
-                        // If no results are showing, allow opening even if it was manually closed before
-                        if (!isMobileMenuPopoverOpen && (isQueryEmpty || !menuWasManuallyClosed || noResultsShowing)) {
-                          setIsMobileMenuPopoverOpen(true);
-                          setIsBurgerMenuManuallyOpened(false);
-                          if (isQueryEmpty || noResultsShowing) setMenuWasManuallyClosed(false);
-                        }
-                        setIsSearchActive(true);
-                      }}
-                      onBlur={deactivateSearch}
-                    />
-
-                  </SearchContainer>
+                  {isOpen ? (
+                    <div className="w-full h-[44px]" />
+                  ) : (
+                    <SearchContainer>
+                      <SearchBar
+                        ref={searchInputRef}
+                        showMore={showMore}
+                        setShowMore={setShowMore}
+                        showSearchContainer={false}
+                        showFilters={showInitialProjectEditTips || isSearchActive || Boolean(query.trim())}
+                        hideClearButtonOnMobile={true}
+                        onFocus={() => {
+                          setShowInitialProjectEditTips(false);
+                          setIsSearchActive(true);
+                          if (!isMobile) return;
+                          const isQueryEmpty = !query || query.trim().length === 0;
+                          const noResultsShowing = totalResults === 0; // treat zero results as not showing
+                          // If no results are showing, allow opening even if it was manually closed before
+                          if (!isMobileMenuPopoverOpen && (isQueryEmpty || !menuWasManuallyClosed || noResultsShowing)) {
+                            setIsMobileMenuPopoverOpen(true);
+                            setIsBurgerMenuManuallyOpened(false);
+                            if (isQueryEmpty || noResultsShowing) setMenuWasManuallyClosed(false);
+                          }
+                        }}
+                        onBlur={() => {
+                          if (isMobile) {
+                            deactivateSearch();
+                          }
+                        }}
+                      />
+                    </SearchContainer>
+                  )}
                 </div>
 
                 {/* Active Filters Section */}
@@ -686,7 +726,7 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                     hideIfNoNotifications={true}
                     placement="bottom-start"
                   />
-                  {effectiveRightActionVariant === 'connectWallet' ? <WorkWithUs placement="bottom-start" mobile /> : <WorkWithUs placement="bottom-start" />}
+                  <WorkWithUs placement="bottom-start" />
                 </div>
 
 
