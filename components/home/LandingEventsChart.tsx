@@ -6,7 +6,7 @@ import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import GTPCardLayout from "../GTPButton/GTPCardLayout";
-import GTPChart, { GTPChartSeries } from "../GTPButton/GTPChart";
+import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
@@ -14,12 +14,14 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
-import { EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
-import { ApplicationsURLs } from "@/lib/urls";
+import { EventExample, EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
+import { ApplicationsURLs, getChainMetricURL } from "@/lib/urls";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
+import { useMaster } from "@/contexts/MasterContext";
+import { metricItems } from "@/lib/metrics";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -127,13 +129,213 @@ const buildDynamicSeriesFromSource = (
   return seriesList;
 };
 
+type AllTimeHighMeta = {
+  chainKey: string;
+  chainLabel: string;
+  metricKey: string;
+  metricLabel: string;
+  metricUrlKey: string;
+  color?: string;
+};
+
+type ResolvedEventExample = EventExample & {
+  title: string;
+  description: string;
+  question: string;
+  image: string;
+  link: string;
+  athMeta?: AllTimeHighMeta;
+};
+
+const ATH_VALUES_PATH = "details.timeseries.daily.data";
+const ATH_TYPES_PATH = "details.timeseries.daily.types";
+
+const formatKeyLabel = (value: string) => {
+  return value
+    .split(/[-_]/g)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
+const resolveMetricItem = (metricKey: string) => {
+  if (!metricKey) return undefined;
+  return metricItems.find((item) => item.urlKey === metricKey || item.key === metricKey);
+};
+
+const resolveMetricUrlKey = (metricKey: string) => {
+  const metricItem = resolveMetricItem(metricKey);
+  return metricItem?.urlKey ?? metricKey;
+};
+
+const getChainMetricUrlSafe = (chainKey: string, metricUrlKey: string) => {
+  try {
+    return getChainMetricURL(chainKey, metricUrlKey);
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[LandingEvents] Failed to build chain metric URL:", error);
+    }
+    return null;
+  }
+};
+
+const resolveEventExample = (
+  event: EventExample,
+  allChainsByKeys: Record<string, { label?: string; colors?: { light?: string[] } }> | null | undefined,
+): ResolvedEventExample => {
+  if (!event.allTimeHigh) {
+    return {
+      ...event,
+      title: event.title ?? "Untitled Event",
+      description: event.description ?? "",
+      question: event.question ?? "",
+      image: event.image ?? "gtp-ethereumlogo",
+      link: event.link ?? "/",
+    };
+  }
+
+  const { chainKey, metricKey } = event.allTimeHigh;
+  const metricItem = resolveMetricItem(metricKey);
+  const metricUrlKey = resolveMetricUrlKey(metricKey);
+  const metricLabel = metricItem?.label ?? formatKeyLabel(metricKey);
+  const chainLabel = allChainsByKeys?.[chainKey]?.label ?? formatKeyLabel(chainKey);
+  const chainColor = allChainsByKeys?.[chainKey]?.colors?.light?.[0];
+
+  const title = event.title ?? `All-Time High: ${metricLabel} for ${chainLabel}`;
+  const description =
+    event.description ?? `Daily ${metricLabel} on ${chainLabel}, highlighting its all-time high.`;
+  const question =
+    event.question ?? `Has ${chainLabel} reached a new high in ${metricLabel}?`;
+  const image = event.image ?? metricItem?.icon ?? "gtp-metrics-transaction-count";
+  const link = event.link ?? `/fundamentals/${metricUrlKey}`;
+
+  const athMeta: AllTimeHighMeta = {
+    chainKey,
+    chainLabel,
+    metricKey,
+    metricLabel,
+    metricUrlKey,
+    color: chainColor,
+  };
+
+  let options = event.options;
+  let defaultOptionId = event.defaultOptionId;
+  if (!options || options.length === 0) {
+    const url = getChainMetricUrlSafe(chainKey, metricUrlKey);
+    if (url) {
+      const optionId = `ath-${chainKey}-${metricUrlKey}`;
+      options = [
+        {
+          id: optionId,
+          label: metricLabel,
+          dataSource: {
+            url,
+            pathToData: ATH_VALUES_PATH,
+            xIndex: 0,
+          },
+        },
+      ];
+      defaultOptionId = defaultOptionId ?? optionId;
+    }
+  }
+
+  return {
+    ...event,
+    title,
+    description,
+    question,
+    image,
+    link,
+    options,
+    defaultOptionId,
+    athMeta,
+  };
+};
+
+const resolveAthIndices = (typesRaw: unknown, valuesRaw: unknown) => {
+  const types = Array.isArray(typesRaw)
+    ? typesRaw.map((type) => String(type).toLowerCase())
+    : [];
+  const fallbackRow = Array.isArray(valuesRaw)
+    ? valuesRaw.find((row) => Array.isArray(row))
+    : null;
+  const fallbackLength = Array.isArray(fallbackRow) ? fallbackRow.length : 0;
+  const xIndex = types.indexOf("unix") >= 0 ? types.indexOf("unix") : 0;
+
+  let yIndex = -1;
+  if (types.length > 0) {
+    yIndex = types.indexOf("usd");
+    if (yIndex < 0) yIndex = types.indexOf("eth");
+    if (yIndex < 0) yIndex = types.findIndex((_, idx) => idx !== xIndex);
+  } else if (fallbackLength > 1) {
+    yIndex = xIndex === 0 ? 1 : 0;
+  }
+
+  return { xIndex, yIndex: yIndex >= 0 ? yIndex : null };
+};
+
+const buildAthSeriesFromSource = (
+  sourceData: unknown,
+  athMeta: AllTimeHighMeta | undefined,
+): GTPChartSeries[] => {
+  if (!athMeta) return [];
+  const values = getNestedValue(sourceData, ATH_VALUES_PATH);
+  const types = getNestedValue(sourceData, ATH_TYPES_PATH);
+  const { xIndex, yIndex } = resolveAthIndices(types, values);
+  if (yIndex === null) return [];
+
+  const seriesMeta: EventSeriesMeta[] = [
+    {
+      name: athMeta.metricLabel,
+      color: athMeta.color ?? DEFAULT_COLORS[0],
+      yIndex,
+      seriesType: "area",
+    },
+  ];
+
+  return buildSeriesFromSource(values, seriesMeta, xIndex);
+};
+
+const buildAthXAxisLines = (
+  series: GTPChartSeries[],
+  athMeta: AllTimeHighMeta | undefined,
+): GTPChartXAxisLine[] => {
+  if (!athMeta || series.length === 0) return [];
+  const data = series[0]?.data ?? [];
+  let maxValue = -Infinity;
+  let maxTimestamp: number | null = null;
+
+  data.forEach(([timestamp, value]) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) return;
+    if (value > maxValue || (value === maxValue && (maxTimestamp === null || timestamp > maxTimestamp))) {
+      maxValue = value;
+      maxTimestamp = timestamp;
+    }
+  });
+
+  if (maxTimestamp === null) return [];
+  const seriesColor = Array.isArray(series[0]?.color) ? series[0]?.color[0] : series[0]?.color;
+
+  return [
+    {
+      xValue: maxTimestamp,
+      annotationText: "All-time high",
+      lineStyle: "dashed",
+      lineColor: seriesColor ?? athMeta.color,
+      textColor: seriesColor ?? athMeta.color,
+    },
+  ];
+};
+
 const EventCard = ({
   event,
+  eventData,
   isSelected,
   hasInteracted,
   setSelectedEvent,
 }: {
   event: EventId;
+  eventData: ResolvedEventExample;
   isSelected: boolean;
   hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
@@ -148,7 +350,7 @@ const EventCard = ({
       {/* Icon — layout="position" so it animates from center to top-left as card expands */}
       <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
         <GTPIcon
-          icon={EVENTS_BY_ID[event].image as GTPIconName}
+          icon={eventData.image as GTPIconName}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
           containerClassName="!size-[24px]"
         />
@@ -167,8 +369,8 @@ const EventCard = ({
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className="flex flex-col gap-y-[10px] h-full"
             >
-              <p className="heading-small-md">{EVENTS_BY_ID[event].title}</p>
-              <div className="flex h-full items-center pb-[30px]"><p className="text-xs">{EVENTS_BY_ID[event].description}</p></div>
+              <p className="heading-small-md">{eventData.title}</p>
+              <div className="flex h-full items-center pb-[30px]"><p className="text-xs">{eventData.description}</p></div>
             </motion.div>
           ) : (
             <motion.p
@@ -178,7 +380,7 @@ const EventCard = ({
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className="heading-small-xs"
             >
-              {EVENTS_BY_ID[event].question}
+              {eventData.question}
             </motion.p>
           )}
         </AnimatePresence>
@@ -186,7 +388,7 @@ const EventCard = ({
 
       {/* Chevron — layout="position" mirrors the icon treatment */}
       <motion.div layout="position" className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
-        <Link className="flex items-center justify-center" href={EVENTS_BY_ID[event].link}>
+        <Link className="flex items-center justify-center" href={eventData.link}>
           <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
         </Link>
       </motion.div>
@@ -209,15 +411,24 @@ const SideEventsContainer = ({
   selectedEvent,
   hasInteracted,
   setSelectedEvent,
+  eventsById,
 }: {
   selectedEvent: EventId;
   hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
+  eventsById: Record<EventId, ResolvedEventExample>;
 }) => {
   return (
     <div className="flex flex-col gap-y-[10px] w-[390px] h-[442px] min-w-[300px] shrink min-h-0 self-stretch overflow-y-auto">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
-        <EventCard key={event} event={event} isSelected={selectedEvent === event} hasInteracted={hasInteracted} setSelectedEvent={setSelectedEvent} />
+        <EventCard
+          key={event}
+          event={event}
+          eventData={eventsById[event]}
+          isSelected={selectedEvent === event}
+          hasInteracted={hasInteracted}
+          setSelectedEvent={setSelectedEvent}
+        />
       ))}
     </div>
   );
@@ -245,7 +456,7 @@ function calcPctChange(current: number, previous: number): number {
 const METRIC_COLS = ["gas_fees_eth", "gas_fees_usd", "txcount", "daa"] as const;
 type MetricKey = typeof METRIC_COLS[number];
 
-const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId }) => {
+const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExample }) => {
   const { data: appOverviewData } = useSWR<AppOverviewResponse>(
     ApplicationsURLs.overview.replace("{timespan}", "7d"),
   );
@@ -321,7 +532,7 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
   return (
     <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
       <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
-        {EVENTS_BY_ID[selectedEvent].cards?.map((card, index) => {
+        {eventData.cards?.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
           const isGasFees = card.metric === "gas_fees";
@@ -386,11 +597,10 @@ const LandingEventsCardContent = ({ selectedEvent }: { selectedEvent: EventId })
     </div>
   );
 };
-const LandingEventsChartContent = ({ selectedEvent, onInteract }: { selectedEvent: EventId; onInteract: () => void }) => {
+const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const eventData = EVENTS_BY_ID[selectedEvent];
   const options = eventData.options ?? EMPTY_OPTIONS;
   const hasOptions = options.length > 0;
   const showOptions = options.length > 1;
@@ -405,12 +615,15 @@ const LandingEventsChartContent = ({ selectedEvent, onInteract }: { selectedEven
     ? options.find((option) => option.id === activeOptionId) ?? options[0]
     : null;
   const activeDataSource = activeOption?.dataSource;
-  const activeXAxisLines = activeOption?.xAxisLines ?? eventData.xAxisLines ?? [];
   const { data: activeSourceData } = useSWR(activeDataSource?.url ?? null);
 
   const selectedSeries = useMemo(() => {
     if (activeOption?.series?.length) {
       return activeOption.series;
+    }
+
+    if (eventData.athMeta && activeSourceData) {
+      return buildAthSeriesFromSource(activeSourceData, eventData.athMeta);
     }
 
     if (activeDataSource?.dynamicSeries && activeSourceData) {
@@ -424,7 +637,18 @@ const LandingEventsChartContent = ({ selectedEvent, onInteract }: { selectedEven
     }
 
     return eventData.series ?? [];
-  }, [activeOption?.series, activeDataSource, activeSourceData, eventData.series]);
+  }, [activeOption?.series, activeDataSource, activeSourceData, eventData.athMeta, eventData.series]);
+
+  const athXAxisLines = useMemo(() => {
+    if (!eventData.athMeta) return [];
+    return buildAthXAxisLines(selectedSeries, eventData.athMeta);
+  }, [eventData.athMeta, selectedSeries]);
+
+  const activeXAxisLines = useMemo(() => {
+    const baseLines = activeOption?.xAxisLines ?? eventData.xAxisLines ?? [];
+    if (!eventData.athMeta || athXAxisLines.length === 0) return baseLines;
+    return [...baseLines, ...athXAxisLines];
+  }, [activeOption?.xAxisLines, athXAxisLines, eventData.athMeta, eventData.xAxisLines]);
 
   const allSeriesNames = useMemo(() => selectedSeries.map((series) => series.name), [selectedSeries]);
   const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
@@ -523,7 +747,7 @@ const LandingEventsChartContent = ({ selectedEvent, onInteract }: { selectedEven
                     variant={"primary"}
                     visualState={"active"}
                     clickHandler={() => {
-                      setActiveOptionId(eventData.title);
+                      setActiveOptionId(resolvedDefaultOptionId);
                       setSelectedRange(null);
                     }}
                   />
@@ -640,9 +864,19 @@ const EventDataPrefetcher = () => {
 };
 
 export default function LandingEventsChart() {
+  const { AllChainsByKeys } = useMaster();
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef = useRef(false);
+
+  const resolvedEventsById = useMemo(() => {
+    const entries = (Object.entries(EVENTS_BY_ID) as [EventId, EventExample][]).map(
+      ([id, event]) => [id, resolveEventExample(event, AllChainsByKeys)],
+    );
+    return Object.fromEntries(entries) as Record<EventId, ResolvedEventExample>;
+  }, [AllChainsByKeys]);
+
+  const selectedEventData = resolvedEventsById[selectedEvent];
 
   const handleInteract = () => {
     if (!hasInteractedRef.current) {
@@ -682,15 +916,16 @@ export default function LandingEventsChart() {
           <SideEventsContainer
             selectedEvent={selectedEvent}
             hasInteracted={hasInteracted}
+            eventsById={resolvedEventsById}
             setSelectedEvent={(event) => {
               handleInteract();
               setSelectedEvent(event);
             }}
           />
-          {(EVENTS_BY_ID[selectedEvent].bodyType ?? "chart") === "chart" ? (
-            <LandingEventsChartContent key={selectedEvent} selectedEvent={selectedEvent} onInteract={handleInteract} />
+          {(selectedEventData.bodyType ?? "chart") === "chart" ? (
+            <LandingEventsChartContent key={selectedEvent} eventData={selectedEventData} onInteract={handleInteract} />
           ) : (
-            <LandingEventsCardContent key={selectedEvent} selectedEvent={selectedEvent} />
+            <LandingEventsCardContent key={selectedEvent} eventData={selectedEventData} />
           )}
         </div>
       </div>
