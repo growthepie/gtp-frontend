@@ -7,7 +7,7 @@ const CURRENCIES_MAP = Object.fromEntries(
 
 const projectDropdown = {
   label: "Select a Project",
-  placeholder: "Choose a project...",
+  placeholder: "Choose a project",
   searchable: true,
   stateKey: "selectedProject",
   labelStateKey: "selectedProjectName",
@@ -34,8 +34,8 @@ const mainContent = [
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stablecoin Breakdown for {{selectedProjectName}}",
-    subtitle: "Stacked circulating supply of top stablecoins.",
+    title: "Stablecoin Supply for {{selectedProjectName}}",
+    subtitle: "Stacked circulating supply of top stablecoins for {{selectedProjectName}}.",
     showXAsDate: true,
     showZeroTooltip: false,
     showTotalTooltip: true,
@@ -57,7 +57,6 @@ const mainContent = [
   }),
   "```",
 
-  "## Stablecoin Breakdown Table",
   "```table",
   JSON.stringify({
     readFromJSON: true,
@@ -180,9 +179,9 @@ const mainContent = [
 ];
 
 const StablecoinProject: QuickBiteData = {
-  title: "Stablecoin Breakdown by Project",
-  shortTitle: "Stablecoins by Project",
-  subtitle: "Analyzing the composition and trends of stablecoins across different projects.",
+  title: "Stablecoin Supply Breakdown for Issuers",
+  shortTitle: "Stablecoins by Issuer",
+  subtitle: "Analyzing the composition and trends of stablecoins across different issuers.",
   content: [
     ...mainContent,
   ],

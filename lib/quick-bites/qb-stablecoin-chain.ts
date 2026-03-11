@@ -7,7 +7,7 @@ const CURRENCIES_MAP = Object.fromEntries(
 
 const chainDropdown = {
   label: "Select a Chain",
-  placeholder: "Choose a chain...",
+  placeholder: "Choose a chain",
   searchable: true,
   stateKey: "selectedChain",
   labelStateKey: "selectedChainName",
@@ -33,8 +33,8 @@ const mainContent = [
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stablecoin Breakdown for {{selectedChainName}}",
-    subtitle: "Stacked circulating supply of top stablecoins.",
+    title: "Stablecoin Supply for {{selectedChainName}}",
+    subtitle: "Stacked circulating supply of top stablecoins for {{selectedChainName}}.",
     showXAsDate: true,
     showZeroTooltip: false,
     showTotalTooltip: true,
@@ -178,8 +178,8 @@ const mainContent = [
 ];
 
 const StablecoinChain: QuickBiteData = {
-  title: "Stablecoin Breakdown by Chain",
-  shortTitle: "Stablecoins by Chain",
+  title: "Stablecoin Supply Breakdown for Chains",
+  shortTitle: "Stablecoins for Chains",
   subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
   content: [
     ...mainContent,
