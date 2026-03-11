@@ -185,7 +185,7 @@ const StablecoinProject: QuickBiteData = {
   content: [
     ...mainContent,
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/fusaka.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
   date: "2026-03-06",
   related: [],
