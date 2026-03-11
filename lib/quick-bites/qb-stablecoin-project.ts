@@ -5,26 +5,30 @@ const CURRENCIES_MAP = Object.fromEntries(
   Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
 );
 
+const projectDropdown = {
+  label: "Select a Project",
+  placeholder: "Choose a project...",
+  searchable: true,
+  stateKey: "selectedProject",
+  labelStateKey: "selectedProjectName",
+  defaultValue: "circlefin",
+  allowEmpty: false,
+  readFromJSON: true,
+  jsonData: {
+    url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-projects.json",
+    pathToOptions: "dropdown_values",
+    valueField: "owner_project",
+    labelField: "display_name",
+    logoField: "logo_path",
+    logoPrefix: "https://api.growthepie.com/v1/apps/logos/",
+  }
+};
+
 const mainContent = [
   "This page shows a breakdown of the total circulating stablecoin supply by issuing project. Select a project below to see how its stablecoins are distributed across chains, how supply has changed over time and which tokens it operates.",
 
   "```dropdown",
-  JSON.stringify({
-    label: "Select a Project",
-    placeholder: "Choose a project...",
-    searchable: true,
-    stateKey: "selectedProject",
-    labelStateKey: "selectedProjectName",
-    defaultValue: "circlefin",
-    allowEmpty: false,
-    readFromJSON: true,
-    jsonData: {
-      url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-projects.json",
-      pathToOptions: "dropdown_values",
-      valueField: "owner_project",
-      labelField: "display_name"
-    }
-  }),
+  JSON.stringify(projectDropdown),
   "```",
 
   "```chart",

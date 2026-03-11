@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { DropdownBlock as DropdownBlockType } from '@/lib/types/blockTypes';
 import Dropdown, { DropdownOption } from '@/components/quick-bites/Dropdown';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
@@ -54,9 +54,13 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
             const valueField = block.jsonData?.valueField || 'value';
             const labelField = block.jsonData?.labelField || 'label';
             
+            const logoField = block.jsonData?.logoField;
+            const logoPrefix = block.jsonData?.logoPrefix ?? '';
+            const rawLogo = logoField ? item[logoField] : undefined;
             return {
               value: item[valueField] || item.id || item.key || `option-${index}`,
-              label: item[labelField] || item.name || item.title || item[valueField] || `Option ${index + 1}`
+              label: item[labelField] || item.name || item.title || item[valueField] || `Option ${index + 1}`,
+              ...(rawLogo ? { logo: `${logoPrefix}${rawLogo}` } : {}),
             };
           }
           
@@ -196,6 +200,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
           onChange={handleChange}
           searchable={block.searchable}
           disabled={block.disabled}
+          useChainIcons={block.jsonData?.useChainIcons}
         />
       </div>
     </div>

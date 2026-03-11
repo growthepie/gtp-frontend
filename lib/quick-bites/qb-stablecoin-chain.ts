@@ -5,26 +5,29 @@ const CURRENCIES_MAP = Object.fromEntries(
   Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
 );
 
+const chainDropdown = {
+  label: "Select a Chain",
+  placeholder: "Choose a chain...",
+  searchable: true,
+  stateKey: "selectedChain",
+  labelStateKey: "selectedChainName",
+  defaultValue: "arbitrum",
+  allowEmpty: false,
+  readFromJSON: true,
+  jsonData: {
+    url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-chains.json",
+    pathToOptions: "dropdown_values",
+    valueField: "origin_key",
+    labelField: "name",
+    useChainIcons: true,
+  }
+};
+
 const mainContent = [
   "This page shows a breakdown of the total circulating stablecoin supply by chain. Select a chain below to explore which stablecoins dominate its ecosystem, how supply has changed over time and how different tokens compare in size.",
 
   "```dropdown",
-  JSON.stringify({
-    label: "Select a Chain",
-    placeholder: "Choose a chain...",
-    searchable: true,
-    stateKey: "selectedChain",
-    labelStateKey: "selectedChainName",
-    defaultValue: "arbitrum",
-    allowEmpty: false,
-    readFromJSON: true,
-    jsonData: {
-      url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-chains.json",
-      pathToOptions: "dropdown_values",
-      valueField: "origin_key",
-      labelField: "name"
-    }
-  }),
+  JSON.stringify(chainDropdown),
   "```",
 
   "```chart",
