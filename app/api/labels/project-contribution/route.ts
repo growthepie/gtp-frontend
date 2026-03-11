@@ -98,7 +98,9 @@ const decodeGitHubFileContent = (content: string): string =>
   Buffer.from(content.replace(/\n/g, ""), "base64").toString("utf8");
 
 const encodeGitHubFileContent = (content: string | Uint8Array): string =>
-  Buffer.from(content).toString("base64");
+  typeof content === "string"
+    ? Buffer.from(content, "utf8").toString("base64")
+    : Buffer.from(content).toString("base64");
 
 const toNonEmptyStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];

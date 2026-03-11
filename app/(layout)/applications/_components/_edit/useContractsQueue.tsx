@@ -11,6 +11,7 @@ import {
 import {
   AttestClient,
   createDynamicWalletAdapter,
+  type AttestationDiagnostic,
   type AttestationDiagnostics,
   type AttestationRowInput,
   type BulkOnchainSubmitResult,
@@ -156,6 +157,16 @@ const USAGE_MAIN_ICONS: Record<string, string> = {
   unlabeled: "gtp-unlabeled",
 };
 
+const normalizeUsageCategoryKey = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
+
+const toLooseUsageCategoryKey = (value: string): string =>
+  normalizeUsageCategoryKey(value).replace(/\b([a-z0-9]+)s\b/g, "$1");
+
 export function useContractsQueue({
   ownerProject,
   normalizedProjects,
@@ -285,6 +296,64 @@ export function useContractsQueue({
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [oliCategories, masterData]);
 
+  const resolveUsageCategoryValue = useCallback(
+    (value: string): string => {
+      const trimmed = value.trim();
+      if (!trimmed) return "";
+
+      const exact = usageCategoryOptions.find(
+        (option) => option.value === trimmed || option.label === trimmed,
+      );
+      if (exact) return exact.value;
+
+      const normalized = normalizeUsageCategoryKey(trimmed);
+      const loose = toLooseUsageCategoryKey(trimmed);
+      const match = usageCategoryOptions.find((option) => {
+        const optionValueNormalized = normalizeUsageCategoryKey(option.value);
+        const optionLabelNormalized = normalizeUsageCategoryKey(option.label);
+        return (
+          optionValueNormalized === normalized ||
+          optionLabelNormalized === normalized ||
+          toLooseUsageCategoryKey(option.value) === loose ||
+          toLooseUsageCategoryKey(option.label) === loose
+        );
+      });
+
+      return match?.value || trimmed;
+    },
+    [usageCategoryOptions],
+  );
+
+  const liveUsageCategorySet = useMemo(
+    () => new Set(usageCategoryOptions.map((option) => option.value)),
+    [usageCategoryOptions],
+  );
+
+  const filterCompatibleUsageCategoryDiagnostics = useCallback(
+    (
+      diagnostics: AttestationDiagnostics,
+      rows: AttestationRowInput[],
+    ): AttestationDiagnostics => {
+      const shouldFilter = (diagnostic: AttestationDiagnostic) => {
+        if (diagnostic.field !== "usage_category") return false;
+        if (!["CATEGORY_INVALID", "CATEGORY_SUGGESTIONS"].includes(diagnostic.code)) return false;
+        const rowIndex = typeof diagnostic.row === "number" ? diagnostic.row : 0;
+        const row = rows[rowIndex];
+        if (!row) return false;
+        const categoryValue = resolveUsageCategoryValue(toStringValue(row.usage_category).trim());
+        return categoryValue !== "" && liveUsageCategorySet.has(categoryValue);
+      };
+
+      return {
+        errors: diagnostics.errors.filter((diagnostic) => !shouldFilter(diagnostic)),
+        warnings: diagnostics.warnings,
+        conversions: diagnostics.conversions,
+        suggestions: diagnostics.suggestions.filter((diagnostic) => !shouldFilter(diagnostic)),
+      };
+    },
+    [liveUsageCategorySet, resolveUsageCategoryValue],
+  );
+
   const usageCategoryIconRenderer = useCallback(
     (value: string): ReactNode => {
       if (!value) return null;
@@ -354,9 +423,9 @@ export function useContractsQueue({
       address: toStringValue(row.address).trim().toLowerCase(),
       contract_name: toStringValue(row.contract_name).trim(),
       owner_project: toStringValue(row.owner_project).trim(),
-      usage_category: toStringValue(row.usage_category).trim(),
+      usage_category: resolveUsageCategoryValue(toStringValue(row.usage_category).trim()),
     }),
-    [defaultQueueChainId],
+    [defaultQueueChainId, resolveUsageCategoryValue],
   );
 
   const meaningfulRows = useMemo(
@@ -617,12 +686,17 @@ export function useContractsQueue({
           const sourceRowIndex = getSingleFlowRowIndex(normalizedRow);
           singleController.setRow(normalizedRow);
           const result = await singleController.validation.run({ projects: projectsForValidation });
+          const filteredDiagnostics = filterCompatibleUsageCategoryDiagnostics(
+            result.diagnostics,
+            [result.row],
+          );
+          const isValid = filteredDiagnostics.errors.length === 0;
           setLastValidatedQueueFlow("single");
           setLastValidatedQueueSignature(currentQueueSignature);
           setLastValidatedSingleRowIndex(sourceRowIndex);
-          setQueueValidated(result.valid);
-          if (!result.valid) {
-            const message = result.diagnostics.errors[0]?.message || "Single row validation failed.";
+          setQueueValidated(isValid);
+          if (!isValid) {
+            const message = filteredDiagnostics.errors[0]?.message || "Single row validation failed.";
             setQueueError(message);
             setQueueErrorFromValidation(true);
             return null;
@@ -636,19 +710,30 @@ export function useContractsQueue({
           projects: projectsForValidation,
           maxRows: MAX_QUEUE_ROWS,
         });
+        const filteredDiagnostics = filterCompatibleUsageCategoryDiagnostics(
+          bulkResult.diagnostics,
+          bulkResult.rows,
+        );
+        const invalidRowSet = new Set(
+          filteredDiagnostics.errors
+            .map((diagnostic) => diagnostic.row)
+            .filter((row): row is number => typeof row === "number"),
+        );
+        const validRows = bulkResult.rows.filter((_row, index) => !invalidRowSet.has(index));
+        const isValid = filteredDiagnostics.errors.length === 0;
         setLastValidatedQueueFlow("bulk");
         setLastValidatedQueueSignature(currentQueueSignature);
         setLastValidatedSingleRowIndex(null);
-        setQueueValidated(bulkResult.valid);
-        if (!bulkResult.valid) {
-          const message = bulkResult.diagnostics.errors[0]?.message || "Bulk validation failed.";
+        setQueueValidated(isValid);
+        if (!isValid) {
+          const message = filteredDiagnostics.errors[0]?.message || "Bulk validation failed.";
           setQueueError(message);
           setQueueErrorFromValidation(true);
           return null;
         }
         setQueueError(null);
         setQueueErrorFromValidation(false);
-        return { flow: "bulk", rows: bulkResult.validRows };
+        return { flow: "bulk", rows: validRows };
       } catch (error: any) {
         setQueueError(error?.message || "Validation failed.");
         setQueueErrorFromValidation(true);
@@ -670,6 +755,7 @@ export function useContractsQueue({
       normalizedProjects,
       currentQueueSignature,
       getSingleFlowRowIndex,
+      filterCompatibleUsageCategoryDiagnostics,
     ],
   );
 
@@ -693,10 +779,23 @@ export function useContractsQueue({
   const activeQueueDiagnostics = useMemo<AttestationDiagnostics>(() => {
     if (!hasCurrentQueueValidation) return EMPTY_QUEUE_DIAGNOSTICS;
     if (lastValidatedQueueFlow === "single") {
-      return singleController.validation.result?.diagnostics ?? EMPTY_QUEUE_DIAGNOSTICS;
+      const diagnostics = singleController.validation.result?.diagnostics ?? EMPTY_QUEUE_DIAGNOSTICS;
+      const row = singleController.validation.result?.row;
+      if (!row) return diagnostics;
+      return filterCompatibleUsageCategoryDiagnostics(diagnostics, [row]);
     }
-    return bulkController.diagnostics.all;
-  }, [hasCurrentQueueValidation, lastValidatedQueueFlow, singleController.validation.result, bulkController.diagnostics.all]);
+    return filterCompatibleUsageCategoryDiagnostics(
+      bulkController.diagnostics.all,
+      bulkController.queue.rows,
+    );
+  }, [
+    hasCurrentQueueValidation,
+    lastValidatedQueueFlow,
+    singleController.validation.result,
+    bulkController.diagnostics.all,
+    bulkController.queue.rows,
+    filterCompatibleUsageCategoryDiagnostics,
+  ]);
 
   const queueHasValidationResult = queueValidated;
 
@@ -706,18 +805,17 @@ export function useContractsQueue({
       if (lastValidatedQueueFlow === "single") {
         if (rowIndex !== lastValidatedSingleRowIndex) return [];
         return (
-          singleController.validation.result?.diagnostics.errors
+          activeQueueDiagnostics.errors
             .map((diagnostic) => diagnostic.message)
             .filter(Boolean) ?? []
         );
       }
-      return bulkController.diagnostics
-        .getRow(rowIndex)
-        .errors
+      return activeQueueDiagnostics.errors
+        .filter((diagnostic) => diagnostic.row === rowIndex)
         .map((diagnostic) => diagnostic.message)
         .filter(Boolean);
     },
-    [hasCurrentQueueValidation, lastValidatedQueueFlow, lastValidatedSingleRowIndex, singleController.validation.result, bulkController],
+    [hasCurrentQueueValidation, lastValidatedQueueFlow, lastValidatedSingleRowIndex, activeQueueDiagnostics.errors],
   );
 
   const queueStats = useMemo(() => {
@@ -885,11 +983,15 @@ export function useContractsQueue({
 
   const setQueueCellValue = useCallback(
     (rowIndex: number, field: QueueEditableField, value: string) => {
-      bulkController.queue.setCell(rowIndex, field, value);
+      bulkController.queue.setCell(
+        rowIndex,
+        field,
+        field === "usage_category" ? resolveUsageCategoryValue(value) : value,
+      );
       setQueueSubmitPreview(null);
       setQueueValidated(false);
     },
-    [bulkController],
+    [bulkController, resolveUsageCategoryValue],
   );
 
   return {
