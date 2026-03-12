@@ -179,14 +179,14 @@ const mainContent = [
 
 const StablecoinChain: QuickBiteData = {
   title: "Stablecoin Supply Breakdown for Chains",
-  shortTitle: "Stablecoins for Chains",
+  shortTitle: "Stablecoins by Chain",
   subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
   content: [
     ...mainContent,
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
-  date: "2026-03-06",
+  date: "2026-03-12",
   related: [],
   author: [{
     name: "Lorenz Lehmann",

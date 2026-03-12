@@ -187,7 +187,7 @@ const StablecoinProject: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
-  date: "2026-03-06",
+  date: "2026-03-12",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
