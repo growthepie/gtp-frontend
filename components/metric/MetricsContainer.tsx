@@ -71,6 +71,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const decimals = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
     const gweiOverrides = decimals && decimals > 6;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
+    const [topIsWrapping, setTopIsWrapping] = useState(false);
+    const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
     const metricConfig = findMetricConfig(metric);
 
 
@@ -221,7 +223,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
             
             topBar={
-                <GTPButtonContainer className=" ">
+                <GTPButtonContainer className=" " isWrapping={topIsWrapping} setIsWrapping={setTopIsWrapping}>
                     <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                     {timeIntervals.map((interval) => (
                         <GTPButton
@@ -401,9 +403,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 </GTPButtonContainer>
             }
             bottomBar={
-                <GTPButtonContainer className="gap-x-[5px] " style={{ display: "flex", flexDirection: "row", flexWrap: "nowrap" }}>
+                <GTPButtonContainer className="gap-x-[5px] " isWrapping={bottomIsWrapping} setIsWrapping={setBottomIsWrapping}>
                     
-                    <GTPButtonRow style={{ width: "auto"}}>
+                    <GTPButtonRow style={{ width: isMobile ? "100%" : "auto"}}>
                      
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
@@ -440,7 +442,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                      
                     </GTPButtonRow>
                    
-                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end w-full @[967px]:w-auto">
+                   <div className="flex items-center gap-x-[8px] h-full text-xxs text-color-text-secondary justify-end" style={{ width: isMobile ? "100%" : "auto" }}>
                     <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                         <GTPButton
                             label="Absolute"

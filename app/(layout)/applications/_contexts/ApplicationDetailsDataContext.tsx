@@ -16,12 +16,34 @@ import { Get_SupportedChainKeys } from "@/lib/chains";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
-  first_seen:       Date;
-  // contracts:        Contracts;
-  contracts_table:  {[timespan: string]: ContractsTable};
+  kpi_cards:        KpiCards;
+  first_seen:      Date;
+  contracts_table: {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
 }
 
+export interface KpiCards {
+  txcount:  KpiCard;
+  daa:      KpiCard;
+  gas_fees: KpiCard;
+  [key: string]: KpiCard;
+}
+
+export interface KpiCard {
+  sparkline:      KpiSparkline;
+  current_values: KpiValues;
+  wow_change:     KpiValues;
+}
+
+export interface KpiSparkline {
+  types: string[];
+  data:  number[][];
+}
+
+export interface KpiValues {
+  types: string[];
+  data:  number[];
+}
 export interface Contracts {
   types: string[];
   data:  Array<Array<number | null | string>>;
@@ -43,7 +65,8 @@ export interface MetricData {
   metric_name: string;
   avg:         boolean;
   over_time:   OverTime;
-  aggregated:  Aggregated;
+  // Removed from API — kept optional for backwards compatibility
+  aggregated: Aggregated;
 }
 
 export interface Aggregated {
@@ -208,9 +231,10 @@ export const ApplicationDetailsDataProvider = ({
 
         // Filter aggregated.data
         if (metric.aggregated && metric.aggregated.data) {
-          Object.keys(metric.aggregated.data).forEach(chain => {
+          const aggData = metric.aggregated.data;
+          Object.keys(aggData).forEach(chain => {
             if (!supportedChainKeys.includes(chain)) {
-              delete metric.aggregated.data[chain];
+              delete aggData[chain];
             }
           });
         }
@@ -219,8 +243,9 @@ export const ApplicationDetailsDataProvider = ({
 
     // Filter out unsupported chains from contracts_table
     if (filteredData.contracts_table) {
-      Object.keys(filteredData.contracts_table).forEach(timespan => {
-        const contractsTable = filteredData.contracts_table[timespan];
+      const contractsTable0 = filteredData.contracts_table;
+      Object.keys(contractsTable0).forEach(timespan => {
+        const contractsTable = contractsTable0[timespan];
         if (contractsTable && contractsTable.data) {
           const originKeyIndex = contractsTable.types.indexOf('origin_key');
           if (originKeyIndex !== -1) {
@@ -244,7 +269,7 @@ export const ApplicationDetailsDataProvider = ({
             const { ethereum, ...otherChains } = metric.over_time;
             metric.over_time = otherChains;
           }
-          
+
           // Filter out Ethereum from aggregated data
           if (metric.aggregated && metric.aggregated.data && metric.aggregated.data['ethereum']) {
             const { ethereum, ...otherChains } = metric.aggregated.data;
@@ -255,10 +280,9 @@ export const ApplicationDetailsDataProvider = ({
       
       // Filter out Ethereum from contracts_table for all timespans
       if (filteredData.contracts_table) {
-        Object.keys(filteredData.contracts_table).forEach(timespan => {
-          
-          
-          const contractsTable = filteredData.contracts_table[timespan];
+        const contractsTableData = filteredData.contracts_table;
+        Object.keys(contractsTableData).forEach(timespan => {
+          const contractsTable = contractsTableData[timespan];
           if (contractsTable && contractsTable.data) {
             // Find the index of origin_key in the types array
             const originKeyIndex = contractsTable.types.indexOf('origin_key');
@@ -268,7 +292,6 @@ export const ApplicationDetailsDataProvider = ({
               contractsTable.data = contractsTable.data.filter(row => {
                 const originKey = String(row[originKeyIndex]).toLowerCase();
                 return originKey !== 'ethereum' && (selectedSeriesName ? originKey === selectedSeriesName : true);
-                return originKey !== 'ethereum' && (selectedSeriesName ? originKey === selectedSeriesName : true);
               });
             }
           }
@@ -277,21 +300,23 @@ export const ApplicationDetailsDataProvider = ({
     }
     
     return filteredData;
-  }, [applicationDetailsData, focusEnabled, selectedSeriesName, selectedTimespan]);
+  }, [applicationDetailsData, focusEnabled, selectedSeriesName, master]);
 
 
 
 
 
   const contracts = useMemo(() => {
-    if (!filteredApplicationDetailsData) return [];
-    return contractsSorter(getContractDictArray(filteredApplicationDetailsData.contracts_table[selectedTimespan]).filter(contract => {
+    if (!filteredApplicationDetailsData?.contracts_table) return [];
+    const table = filteredApplicationDetailsData.contracts_table[selectedTimespan];
+    if (!table) return [];
+    return contractsSorter(getContractDictArray(table).filter(contract => {
       if(selectedSeriesName) {
         return contract.origin_key === selectedSeriesName;
       }
       return true;
     }), sort.metric, sort.sortOrder as SortOrder);
-  }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
+  }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder, selectedSeriesName]);
 
   if( applicationDetailsError ) {
     return notFound();

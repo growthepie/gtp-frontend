@@ -11,25 +11,30 @@ export async function generateMetadata(): Promise<Metadata> {
     "/blockspace/chain-overview",
     {}
   );
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
 
   const currentDate = new Date();
   // Set the time to 2 am
   currentDate.setHours(2, 0, 0, 0);
   // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
     const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
-    return {
-      title: metadata.title,
-      description: metadata.description,
-      openGraph: {
-        images: [
-          {
-            url: `https://api.growthepie.com/v1/og_images/blockspace/chain-overview.png`,
-            width: 1200,
-            height: 627,
-            alt: "growthepie.com",
-          },
-        ],
-      },
+  return {
+    title: metadata.title,
+    description: metadata.description,
+    alternates: metadata.canonical
+      ? { canonical: metadata.canonical }
+      : undefined,
+    openGraph: {
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/blockspace/chain-overview.png`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+    },
+    robots,
   };
 }
 

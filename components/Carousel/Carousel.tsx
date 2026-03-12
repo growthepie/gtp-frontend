@@ -69,6 +69,7 @@ export default function Carousel({
   className = "",
   desktopRightPadding = false,
   bottomOffset = -12,
+  noFade = false,
   onSlideChange,
   onInit,
 }: CarouselProps) {
@@ -264,7 +265,7 @@ export default function Carousel({
 
   return (
     <Container
-      className={`!px-0 ${focusMode ? "" : "fade-edge-div"} pb-[24px] -mb-[24px] ${className} !select-none`}
+      className={`!px-0 ${focusMode || noFade ? "" : "fade-edge-div"} pb-[24px] -mb-[24px] ${className} !select-none`}
     >
       <div
         ref={containerRef}

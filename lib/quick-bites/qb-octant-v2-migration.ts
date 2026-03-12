@@ -184,10 +184,10 @@ const octantV2Migration: QuickBiteData = createQuickBite({
   }],
   topics: [
     {
-      icon: "ethereum-logo-monochrome",
-      color: "#94ABD3",
-      name: "Ethereum Mainnet",
-      url: "/chains/ethereum"
+      icon: "octant-monochrome",
+      color: "var(--ui-active)",
+      name: "Octant Tracker",
+      url: "/trackers/octant"
     },
   ],
 });

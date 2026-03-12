@@ -12,21 +12,31 @@ import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/Landi
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
 import { LinkButton } from "@/components/layout/LinkButton";
+import { IS_PRODUCTION } from "@/lib/helpers";
 import dynamic from "next/dynamic";
 const LandingSwiperItems = dynamic(() => import("@/components/layout/LandingSwiperItems"), { ssr: true });
 
 export async function generateMetadata(): Promise<Metadata> {
+  
   const metadata = await getPageMetadata(
     "/",
     {}
   );
-  return metadata;
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
+  return {
+    title: metadata.title,
+    description: metadata.description,
+    alternates: metadata.canonical
+      ? { canonical: metadata.canonical }
+      : undefined,
+    robots,
+  };
 }
 
 export default async function Page() {
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full pt-[30px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full pt-[30px] pb-[15px] gap-y-[10px]">
         <Heading
           className="heading-large-xl max-w-[900px]"
           as="h1"
@@ -41,41 +51,30 @@ export default async function Page() {
             What is Ethereum?
           </LinkButton>
         </div>
+
+        <div className="flex gap-x-[8px] items-center pt-[15px]">
+          <GTPIcon icon="gtp-ethereumlogo" className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center" />
+          <Heading
+            className="heading-large-lg max-w-[900px]"
+            as="h1"
+          >
+            Ethereum Ecosystem Roundup
+          </Heading>
+        </div>
+        <div className="flex items-center gap-[10px]">
+          <Subheading className="text-md">
+            Discover what Ethereum is about. We compiled a selection of articles, metrics and apps for you here. Click and explore!
+          </Subheading>
+        </div>
       </Container>
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <LandingFirstHeaders />
-      </Container>
+
       <LandingSwiperItems />
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <LandingSecondHeaders />
-      </Container>
+
       <LandingUserBaseChart />
       {/* {!IS_PRODUCTION && ( */}
       <QuickBitesSection />
       {/* )} */}
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-            <GTPIcon
-              icon="gtp-project"
-              size="lg"
-            />
-            <Heading
-              id="layer-2-traction-title"
-              className="heading-large-lg"
-            >
-              Top Applications
-            </Heading>
-          </div>
-          <SectionButtonLink href="/applications" label="See more Applications" shortLabel="More Apps" />
-        </div>
-        <Subheading className="text-md">
-          Applications in the Ethereum ecosystem that showed the strongest growth in the past 7 days.
-        </Subheading>
-      </Container>
-      <Container className="">
-        <LandingTopContracts />
-      </Container>
+
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <GTPIcon

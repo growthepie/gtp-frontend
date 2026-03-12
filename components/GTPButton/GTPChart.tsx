@@ -1,8 +1,8 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
-import { EChartsOption } from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
+import type { EChartsOption } from "echarts";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
@@ -21,7 +21,16 @@ import {
   DEFAULT_COLORS,
   DEFAULT_GRID,
 } from "@/lib/echarts-utils";
-import { buildTimeXAxisLayout } from "@/lib/echarts-x-axis-layout";
+import {
+  buildTimeXAxisLayout,
+  enumerateTickPositions,
+  createPlainLabelFormatter,
+  computeVisibleXAxisLabels,
+  computeSubtickPixelPositions,
+  type VisibleLabel,
+} from "@/lib/echarts-x-axis-layout";
+
+const TOOLTIP_AUTO_HIDE_MS = 3000;
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -30,6 +39,154 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 
 const WATERMARK_CLASS =
   "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+
+// Singleton canvas context for precise text width measurement (avoids char-width heuristics)
+let _measureCtx: CanvasRenderingContext2D | null | undefined;
+const getMeasureCtx = () => {
+  if (_measureCtx !== undefined) return _measureCtx;
+  if (typeof document === "undefined") { _measureCtx = null; return null; }
+  const c = document.createElement("canvas");
+  _measureCtx = c.getContext("2d");
+  return _measureCtx;
+};
+
+// --- Y-axis tick helpers (module-level so they can be shared by yAxisLayout and chartOption) ---
+
+const Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO = 1.15;
+const Y_AXIS_PADDING_MULTIPLIER = 1.03;
+
+function getNiceStep(raw: number): number {
+  const safeRaw = Math.max(raw, Number.EPSILON);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
+  const normalized = safeRaw / magnitude;
+  if (normalized <= 1.5) return 1 * magnitude;
+  if (normalized <= 2.25) return 2 * magnitude;
+  if (normalized <= 3.75) return 2.5 * magnitude;
+  if (normalized <= 7.5) return 5 * magnitude;
+  return 10 * magnitude;
+}
+
+function tightenPositiveHeadroom({
+  paddedPosMax,
+  positiveBaseline,
+  initialStep,
+  minAllowedStep,
+}: {
+  paddedPosMax: number;
+  positiveBaseline: number;
+  initialStep: number;
+  minAllowedStep: number;
+}): { step: number; roundedPosMax: number } {
+  let step = initialStep;
+  let roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+  let previousStep = step;
+  while (roundedPosMax / positiveBaseline > Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO && step > minAllowedStep) {
+    const tightenedStep = getNiceStep(step / 1.6);
+    if (tightenedStep >= previousStep) break;
+    previousStep = step;
+    step = Math.max(tightenedStep, minAllowedStep);
+    roundedPosMax = Math.ceil(paddedPosMax / step) * step;
+  }
+  return { step, roundedPosMax: Math.min(roundedPosMax, positiveBaseline * Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO) };
+}
+
+function computeYAxisTicks({
+  pairedSeries,
+  xAxisMin,
+  xAxisMax,
+  containerHeight,
+  percentageMode,
+  stack,
+  yAxisMin,
+  yAxisMaxOverride,
+}: {
+  pairedSeries: { pairedData: [number, number | null][] }[];
+  xAxisMin: number | undefined;
+  xAxisMax: number | undefined;
+  containerHeight: number;
+  percentageMode: boolean;
+  stack: boolean;
+  yAxisMin: number;
+  yAxisMaxOverride: number | undefined;
+}): { computedYAxisMin: number; computedYAxisMax: number; yAxisStep: number; splitCount: number } {
+  const shouldStack = stack || percentageMode;
+  const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
+  const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
+  const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
+  const isWithinVisibleRange = (ts: number) => ts >= visibleMinTs && ts <= visibleMaxTs;
+
+  const allValues = pairedSeries.flatMap((s) =>
+    s.pairedData
+      .filter(([ts]) => Number.isFinite(Number(ts)) && isWithinVisibleRange(Number(ts)))
+      .map((p) => p[1])
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
+  );
+
+  const maxSeriesValue =
+    shouldStack && pairedSeries.length > 0
+      ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
+          const pointTs = Number(point[0]);
+          if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return maxVal;
+          const stackedValue = pairedSeries.reduce((sum, s) => {
+            const pv = s.pairedData[index]?.[1];
+            return typeof pv === "number" && Number.isFinite(pv) ? sum + pv : sum;
+          }, 0);
+          return Math.max(maxVal, stackedValue);
+        }, 0)
+      : allValues.length > 0
+        ? Math.max(...allValues)
+        : 0;
+
+  const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  const hasNegativeValues = minSeriesValue < 0;
+
+  const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
+  const absoluteStep = getNiceStep(rawStep);
+  let yAxisStep = percentageMode ? 25 : absoluteStep;
+
+  let computedYAxisMin: number;
+  let computedYAxisMax: number;
+
+  if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
+    const posMax = Math.max(maxSeriesValue, 0);
+    const negMin = Math.min(minSeriesValue, 0);
+    const totalRange = posMax - negMin;
+    const rangeRawStep = totalRange / Math.max(splitCount, 1);
+    const initialStep = getNiceStep(rangeRawStep);
+    const minAllowedStep = getNiceStep(totalRange / Math.max(splitCount * 16, 1));
+    const tightened = tightenPositiveHeadroom({
+      paddedPosMax: posMax * Y_AXIS_PADDING_MULTIPLIER,
+      positiveBaseline: Math.max(posMax, Number.EPSILON),
+      initialStep,
+      minAllowedStep,
+    });
+    yAxisStep = tightened.step;
+    computedYAxisMax = posMax > 0 ? tightened.roundedPosMax : 0;
+    computedYAxisMin = Math.floor((negMin * Y_AXIS_PADDING_MULTIPLIER) / yAxisStep) * yAxisStep;
+  } else {
+    computedYAxisMin = yAxisMin;
+    computedYAxisMax =
+      yAxisMaxOverride !== undefined
+        ? yAxisMaxOverride
+        : percentageMode
+          ? 100
+          : (() => {
+              const posMax = Math.max(maxSeriesValue, 0);
+              if (posMax <= 0) return 0;
+              const minAllowedStep = getNiceStep(posMax / Math.max(splitCount * 16, 1));
+              const tightened = tightenPositiveHeadroom({
+                paddedPosMax: posMax * Y_AXIS_PADDING_MULTIPLIER,
+                positiveBaseline: posMax,
+                initialStep: yAxisStep,
+                minAllowedStep,
+              });
+              yAxisStep = tightened.step;
+              return tightened.roundedPosMax;
+            })();
+  }
+
+  return { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount };
+}
 
 // --- Public types ---
 
@@ -46,6 +203,10 @@ export interface GTPChartSeries {
   pattern?: "dashed";
   /** When true, line/area charts render their last visible segment as dashed. */
   dashedLastSegment?: boolean;
+  /** When true, draws a dotted horizontal markLine at the series' all-time high. */
+  showAllTimeHigh?: boolean;
+  /** Customize the ATH label prefix; the formatted value is appended automatically. */
+  allTimeHighLabel?: string;
 }
 
 export interface GTPChartTooltipParams {
@@ -54,10 +215,24 @@ export interface GTPChartTooltipParams {
   color?: string;
 }
 
+export type GTPChartXAxisLine = {
+  xValue: number;
+  annotationText?: string;
+  annotationPositionX?: number;
+  annotationPositionY?: number;
+  lineStyle?: "Dash" | "Dashed" | "Dotted" | "Dot" | "Solid" | "dash" | "dashed" | "dotted" | "dot" | "solid";
+  lineColor?: string;
+  lineWidth?: number;
+  textColor?: string;
+  textFontSize?: number;
+  backgroundColor?: string;
+};
+
 export interface GTPChartProps {
   series: GTPChartSeries[];
   stack?: boolean;
   percentageMode?: boolean;
+  snapToCleanBoundary?: boolean;
   xAxisType?: "time" | "category";
   xAxisLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
@@ -87,6 +262,7 @@ export interface GTPChartProps {
   seriesOverrides?: (series: Record<string, unknown>, index: number) => Record<string, unknown>;
   height?: string | number;
   className?: string;
+  xAxisLines?: GTPChartXAxisLine[];
   /** Called when the user completes a click-and-drag on the chart. Receives the x-axis values at
    *  the drag start and drag end (always xStart ≤ xEnd). */
   onDragSelect?: (xStart: number, xEnd: number) => void;
@@ -101,12 +277,15 @@ export interface GTPChartProps {
   showTotal?: boolean;
 }
 
+type EChartsInstance = ReturnType<typeof echarts.init>;
+
 // --- Component ---
 
 export default function GTPChart({
   series,
   stack = false,
   percentageMode = false,
+  snapToCleanBoundary = true,
   xAxisType = "time",
   xAxisMin,
   xAxisMax,
@@ -135,6 +314,7 @@ export default function GTPChart({
   seriesOverrides,
   height = "100%",
   className,
+  xAxisLines,
   onDragSelect,
   dragSelectOverlayColor = "#3b82f6",
   dragSelectIcon,
@@ -145,7 +325,7 @@ export default function GTPChart({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
-  const echartsRef = useRef<InstanceType<typeof ReactECharts> | null>(null);
+  const echartsRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
   const dragStartPixelRef = useRef<number | null>(null);
   const dragStartAxisXRef = useRef<number | null>(null);
   const latestAxisXRef = useRef<number | null>(null);
@@ -238,7 +418,7 @@ export default function GTPChart({
   // Resize when container height settles — fixes charts that mount before their container has a final height.
   useEffect(() => {
     if (containerHeight <= 0) return;
-    echartsRef.current?.getEchartsInstance?.()?.resize();
+    (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
   }, [containerHeight, minHeight, maxHeight]);
 
   // Typography
@@ -326,7 +506,7 @@ export default function GTPChart({
   };
 
   const getSeriesPointXFromOption = useCallback((seriesIndex: number, dataIndex: number): number | null => {
-    const option = echartsRef.current?.getEchartsInstance?.()?.getOption?.();
+    const option = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.getOption?.();
     const optionSeries = Array.isArray(option?.series) ? option.series[seriesIndex] : undefined;
     if (!optionSeries) return null;
     const data = (optionSeries as { data?: unknown[] }).data;
@@ -407,7 +587,7 @@ export default function GTPChart({
     return null;
   }, [getSeriesPointXFromOption, snapToNearestDataX]);
 
-  const querySnappedXAtPixel = useCallback((instance: echarts.ECharts, pixelX: number): number | null => {
+  const querySnappedXAtPixel = useCallback((instance: EChartsInstance, pixelX: number): number | null => {
     const chartWidth = instance.getWidth();
     if (!Number.isFinite(chartWidth) || chartWidth <= 0) {
       return latestAxisXRef.current;
@@ -439,11 +619,11 @@ export default function GTPChart({
 
   useEffect(() => {
     if (!onDragSelect) return;
-    let subscribedInstance: echarts.ECharts | null = null;
+    let subscribedInstance: EChartsInstance | null = null;
     let axisPointerHandler: ((params: AxisPointerPayload) => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
-      const instance = echartsRef.current?.getEchartsInstance?.();
+      const instance = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined);
       if (!instance) return;
 
       const handler = (params: AxisPointerPayload) => {
@@ -470,7 +650,7 @@ export default function GTPChart({
     if (!onDragSelect) return;
     const DRAG_THRESHOLD = 4;
     let isDragging = false;
-    let zr: ReturnType<echarts.ECharts["getZr"]> | null = null;
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
     let zrDom: HTMLElement | null = null;
     let mouseUpListener: ((event: MouseEvent) => void) | null = null;
     let onMouseDownHandler: ((event: { event?: { button?: number }; offsetX?: number }) => void) | null = null;
@@ -479,7 +659,7 @@ export default function GTPChart({
     let onGlobalOutHandler: (() => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
-      const instance = echartsRef.current?.getEchartsInstance?.();
+      const instance = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined);
       if (!instance) return;
       zr = instance.getZr();
       zrDom = (zr?.dom as HTMLElement | undefined) ?? null;
@@ -605,6 +785,60 @@ export default function GTPChart({
     };
   }, [onDragSelect, querySnappedXAtPixel]);
 
+  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
+  useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
+    let onMoveHandler: (() => void) | null = null;
+
+    const clearHideTimer = () => {
+      if (hideTimer !== null) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+    };
+
+    const scheduleHide = () => {
+      clearHideTimer();
+      hideTimer = setTimeout(() => {
+        const instance = echartsRef.current?.getEchartsInstance?.();
+        instance?.dispatchAction({ type: "hideTip" });
+      }, TOOLTIP_AUTO_HIDE_MS);
+    };
+
+    const frame = requestAnimationFrame(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+      zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
+      if (!zr) return;
+      onMoveHandler = scheduleHide;
+      zr.on("mousemove", onMoveHandler);
+    });
+
+    const handleOutsideTap = (e: TouchEvent) => {
+      if (!containerRef.current) return;
+      const touch = e.touches[0] ?? e.changedTouches[0];
+      if (!touch) return;
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!containerRef.current.contains(target)) {
+        clearHideTimer();
+        const instance = echartsRef.current?.getEchartsInstance?.();
+        instance?.dispatchAction({ type: "hideTip" });
+      }
+    };
+
+    document.addEventListener("touchstart", handleOutsideTap, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearHideTimer();
+      document.removeEventListener("touchstart", handleOutsideTap);
+      if (zr && onMoveHandler) {
+        zr.off("mousemove", onMoveHandler);
+      }
+    };
+  }, []);
+
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
     return normalizedSeries.map((s) => {
@@ -626,179 +860,166 @@ export default function GTPChart({
     });
   }, [normalizedSeries, percentageMode]);
 
-  // Build ECharts option
-  const chartOption = useMemo<EChartsOption>(() => {
-    const shouldStack = stack || percentageMode;
-    const grid = {
-      left: gridOverride?.left ?? DEFAULT_GRID.left,
+  // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
+  const yAxisLayout = useMemo(
+    () =>
+      computeYAxisTicks({
+        pairedSeries,
+        xAxisMin,
+        xAxisMax,
+        containerHeight,
+        percentageMode,
+        stack,
+        yAxisMin,
+        yAxisMaxOverride,
+      }),
+    [pairedSeries, xAxisMin, xAxisMax, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
+  );
+
+  // --- Dynamic grid.left based on measured y-axis label widths ---
+  const dynamicGridLeft = useMemo(() => {
+    if (gridOverride?.left !== undefined) return gridOverride.left;
+
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
+    const tickCount = splitCount + 1;
+    const step = yAxisStep > 0 ? yAxisStep : Math.max((computedYAxisMax - computedYAxisMin) / splitCount, Number.EPSILON);
+
+    const ticks: number[] = [];
+    for (let i = 0; i < tickCount; i++) {
+      const v = computedYAxisMin + i * step;
+      if (v > computedYAxisMax + step * 0.01) break;
+      ticks.push(v);
+    }
+    // Always include the max tick
+    if (ticks[ticks.length - 1] < computedYAxisMax) ticks.push(computedYAxisMax);
+
+    const labels = ticks.map((v) =>
+      yAxisLabelFormatter
+        ? yAxisLabelFormatter(v)
+        : percentageMode
+          ? `${Math.round(v)}%`
+          : formatCompactNumber(v, decimals),
+    );
+
+    const ctx = getMeasureCtx();
+    const font = `500 10px Fira Sans, sans-serif`;
+    const maxLabelWidth = labels.reduce((max, label) => {
+      let w: number;
+      if (ctx) {
+        ctx.font = font;
+        w = ctx.measureText(label).width;
+      } else {
+        w = label.length * 6;
+      }
+      return Math.max(max, w);
+    }, 0);
+
+    // 6px left margin inside the grid + 8px gap between label and axis line
+    return Math.ceil(maxLabelWidth) + 14;
+  }, [gridOverride, yAxisLayout, yAxisLabelFormatter, percentageMode, decimals]);
+
+  // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
+  const timeAxisLayout = useMemo(() => {
+    if (xAxisType !== "time") return undefined;
+    const allTs = pairedSeries.flatMap((s) =>
+      s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
+    );
+    const barData = pairedSeries.filter((s) => s.seriesType === "bar").map((s) => s.pairedData);
+    const g = {
+      left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
+    return buildTimeXAxisLayout({
+      timestamps: allTs,
+      barSeriesData: barData,
+      xAxisMin,
+      xAxisMax,
+      grid: g,
+      snapToCleanBoundary,
+    });
+  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
 
-    // Y-axis smart scaling
-    const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
-    const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
-    const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
-    const isWithinVisibleRange = (timestamp: number) => timestamp >= visibleMinTs && timestamp <= visibleMaxTs;
+  const effectiveGrid = useMemo(() => {
+    const base = {
+      left: dynamicGridLeft,
+      right: gridOverride?.right ?? DEFAULT_GRID.right,
+      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
+    };
+    return timeAxisLayout?.grid ?? base;
+  }, [dynamicGridLeft, gridOverride, timeAxisLayout]);
 
-    const allValues = pairedSeries.flatMap((s) =>
-      s.pairedData
-        .filter(([timestamp]) => Number.isFinite(Number(timestamp)) && isWithinVisibleRange(Number(timestamp)))
-        .map((p) => p[1])
-        .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
-    );
-    const allTimestamps = pairedSeries.flatMap((s) =>
-      s.pairedData
-        .map((p) => Number(p[0]))
-        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
-    );
-    // X-axis layout is resolved in one pipeline so label width, grid padding, and tick density
-    // all derive from the same source of truth.
-    const barSeriesData = pairedSeries
-      .filter((seriesItem) => seriesItem.seriesType === "bar")
-      .map((seriesItem) => seriesItem.pairedData);
-    const timeAxisLayout = xAxisType === "time"
-      ? buildTimeXAxisLayout({
-          timestamps: allTimestamps,
-          barSeriesData,
-          xAxisMin,
-          xAxisMax,
-          xAxisLabelFormatter,
-          containerWidth,
-          grid,
-        })
-      : undefined;
-    const effectiveGrid = timeAxisLayout?.grid ?? grid;
-    const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
-    const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
-    const xAxisSplitNumber = xAxisType === "time" ? timeAxisLayout?.splitNumber : undefined;
-    const xAxisMinInterval = xAxisType === "time" ? timeAxisLayout?.minInterval : undefined;
-    const xAxisFixedInterval = xAxisType === "time" ? timeAxisLayout?.minInterval : undefined;
-    const defaultXFormatter = (value: number | string) => {
-      if (timeAxisLayout) {
-        return timeAxisLayout.defaultLabelFormatter(value);
+  const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
+  const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
+
+  // --- Shared pixel mapper for overlay labels and subticks ---
+  const axisPixelMap = useMemo(() => {
+    const aMin = Number.isFinite(Number(effectiveXMin)) ? Number(effectiveXMin) : NaN;
+    const aMax = Number.isFinite(Number(effectiveXMax)) ? Number(effectiveXMax) : NaN;
+    if (!Number.isFinite(aMin) || !Number.isFinite(aMax) || aMax <= aMin) return null;
+
+    const plotLeft = effectiveGrid.left;
+    const plotWidth = Math.round(containerWidth) - effectiveGrid.left - effectiveGrid.right;
+    if (plotWidth <= 0) return null;
+
+    const axisRange = aMax - aMin;
+    const timestampToPixel = (ts: number): number => plotLeft + ((ts - aMin) / axisRange) * plotWidth;
+
+    return { aMin, aMax, plotLeft, plotWidth, timestampToPixel };
+  }, [effectiveXMin, effectiveXMax, effectiveGrid, containerWidth]);
+
+  // --- Custom x-axis label overlay ---
+  const overlayLabels = useMemo<VisibleLabel[]>(() => {
+    if (xAxisType !== "time" || !timeAxisLayout || !axisPixelMap) return [];
+    const { firstTick, lastTick, minInterval, rangeDays } = timeAxisLayout;
+    if (firstTick === undefined || lastTick === undefined) return [];
+
+    const ticks = enumerateTickPositions(firstTick, lastTick, minInterval, axisPixelMap.aMax);
+
+    const formatter = xAxisLabelFormatter
+      ? ((ts: number, _isFirst: boolean) => ({ text: (xAxisLabelFormatter as (v: number) => string)(ts), isBold: false }))
+      : createPlainLabelFormatter(rangeDays);
+
+    const measureText = (text: string, isBold: boolean): number => {
+      const ctx = getMeasureCtx();
+      if (ctx) {
+        ctx.font = isBold
+          ? `bold ${textSmTypography.fontSize}px ${textSmTypography.fontFamily}`
+          : `${textXxsTypography.fontWeight} ${textXxsTypography.fontSize}px ${textXxsTypography.fontFamily}`;
+        return ctx.measureText(text).width + 2;
       }
-      return String(value);
-    };
-    const resolvedXAxisLabelFormatter =
-      (timeAxisLayout?.labelFormatter ?? xAxisLabelFormatter ?? defaultXFormatter) as
-        (value: number | string) => string;
-
-    const maxSeriesValue =
-      shouldStack && pairedSeries.length > 0
-        ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
-            const pointTimestamp = Number(point[0]);
-            if (!Number.isFinite(pointTimestamp) || !isWithinVisibleRange(pointTimestamp)) return maxVal;
-            const stackedValue = pairedSeries.reduce((sum, s) => {
-              const pointValue = s.pairedData[index]?.[1];
-              return typeof pointValue === "number" && Number.isFinite(pointValue) ? sum + pointValue : sum;
-            }, 0);
-            return Math.max(maxVal, stackedValue);
-          }, 0)
-        : allValues.length > 0
-          ? Math.max(...allValues)
-          : 0;
-
-    // Detect whether the data contains negative values
-    const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
-    const hasNegativeValues = minSeriesValue < 0;
-    const maxPositiveOvershootRatio = 1.15;
-
-    const getNiceStep = (raw: number) => {
-      const safeRaw = Math.max(raw, Number.EPSILON);
-      const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
-      const normalized = safeRaw / magnitude;
-
-      if (normalized <= 1.5) return 1 * magnitude;
-      if (normalized <= 2.25) return 2 * magnitude;
-      if (normalized <= 3.75) return 2.5 * magnitude;
-      if (normalized <= 7.5) return 5 * magnitude;
-      return 10 * magnitude;
+      return text.length * (isBold ? 7.5 : 5.5) + 4;
     };
 
-    const tightenPositiveHeadroom = ({
-      paddedPosMax,
-      positiveBaseline,
-      initialStep,
-      minAllowedStep,
-    }: {
-      paddedPosMax: number;
-      positiveBaseline: number;
-      initialStep: number;
-      minAllowedStep: number;
-    }) => {
-      let step = initialStep;
-      let roundedPosMax = Math.ceil(paddedPosMax / step) * step;
-      let previousStep = step;
+    return computeVisibleXAxisLabels({
+      ticks, containerWidth, labelFormatter: formatter, measureText, timestampToPixel: axisPixelMap.timestampToPixel, minGap: 16,
+    });
+  }, [xAxisType, timeAxisLayout, axisPixelMap, containerWidth, textSmTypography, textXxsTypography, xAxisLabelFormatter]);
 
-      while (roundedPosMax / positiveBaseline > maxPositiveOvershootRatio && step > minAllowedStep) {
-        const tightenedStep = getNiceStep(step / 1.6);
-        if (tightenedStep >= previousStep) break;
-        previousStep = step;
-        step = Math.max(tightenedStep, minAllowedStep);
-        roundedPosMax = Math.ceil(paddedPosMax / step) * step;
-      }
+  // --- Subtick positions (unlabeled intermediate tick marks) ---
+  const subtickPixels = useMemo<number[]>(() => {
+    if (xAxisType !== "time" || !timeAxisLayout || !axisPixelMap || overlayLabels.length === 0) return [];
 
-      return {
-        step,
-        roundedPosMax: Math.min(roundedPosMax, positiveBaseline * maxPositiveOvershootRatio),
-      };
-    };
+    const labeledTimestamps = new Set(overlayLabels.map((l) => l.timestamp));
+    return computeSubtickPixelPositions({
+      mainIntervalMs: timeAxisLayout.minInterval,
+      axisMin: axisPixelMap.aMin,
+      axisMax: axisPixelMap.aMax,
+      plotLeft: axisPixelMap.plotLeft,
+      plotWidth: axisPixelMap.plotWidth,
+      labeledTimestamps,
+      timestampToPixel: axisPixelMap.timestampToPixel,
+    });
+  }, [xAxisType, timeAxisLayout, axisPixelMap, overlayLabels]);
 
-    const axisPaddingMultiplier = 1.03;
-    const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
-    const absoluteStep = getNiceStep(rawStep);
-    let yAxisStep = percentageMode ? 25 : absoluteStep;
+  // Build ECharts option
+  const chartOption = useMemo<EChartsOption>(() => {
+    const shouldStack = stack || percentageMode;
 
-    // For data with negatives, compute independent min/max with capped positive headroom.
-    let computedYAxisMin: number;
-    let computedYAxisMax: number;
-
-    if (hasNegativeValues && yAxisMin === 0 && yAxisMaxOverride === undefined && !percentageMode) {
-      const posMax = Math.max(maxSeriesValue, 0);
-      const negMin = Math.min(minSeriesValue, 0);
-      const totalRange = posMax - negMin;
-      const rangeRawStep = totalRange / Math.max(splitCount, 1);
-      const initialStep = getNiceStep(rangeRawStep);
-      const minAllowedStep = getNiceStep(totalRange / Math.max(splitCount * 16, 1));
-      const paddedPosMax = posMax * axisPaddingMultiplier;
-      const positiveBaseline = Math.max(posMax, Number.EPSILON);
-
-      const tightened = tightenPositiveHeadroom({
-        paddedPosMax,
-        positiveBaseline,
-        initialStep,
-        minAllowedStep,
-      });
-
-      yAxisStep = tightened.step;
-      computedYAxisMax = posMax > 0 ? tightened.roundedPosMax : 0;
-      computedYAxisMin = Math.floor((negMin * axisPaddingMultiplier) / yAxisStep) * yAxisStep;
-    } else {
-      computedYAxisMin = yAxisMin;
-      computedYAxisMax =
-        yAxisMaxOverride !== undefined
-          ? yAxisMaxOverride
-          : percentageMode
-            ? 100
-            : (() => {
-                const posMax = Math.max(maxSeriesValue, 0);
-                if (posMax <= 0) return 0;
-
-                const paddedPosMax = posMax * axisPaddingMultiplier;
-                const minAllowedStep = getNiceStep(posMax / Math.max(splitCount * 16, 1));
-                const tightened = tightenPositiveHeadroom({
-                  paddedPosMax,
-                  positiveBaseline: posMax,
-                  initialStep: yAxisStep,
-                  minAllowedStep,
-                });
-
-                yAxisStep = tightened.step;
-                return tightened.roundedPosMax;
-              })();
-    }
+    // Y-axis tick values come from the shared yAxisLayout memo
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
 
     // Sort series for percentage mode (ascending by last value so smallest is on top)
     const sortedSeries = percentageMode
@@ -811,6 +1032,46 @@ export default function GTPChart({
 
     const defaultAreaOpacity = shouldStack ? 0.36 : 0.22;
     const resolvedAreaOpacity = areaOpacityOverride ?? defaultAreaOpacity;
+
+    const resolvedXAxisLines = (xAxisLines ?? []).filter((line) => Number.isFinite(line.xValue));
+    const mapLineStyle = (lineStyle?: GTPChartXAxisLine["lineStyle"]) => {
+      const normalized = lineStyle?.toLowerCase();
+      if (normalized === "dash" || normalized === "dashed") return "dashed";
+      if (normalized === "dot" || normalized === "dotted") return "dotted";
+      if (normalized === "solid") return "solid";
+      return "solid";
+    };
+    const formatTooltipValue = (value: number) => {
+      if (percentageMode) return `${value.toFixed(1)}%`;
+      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
+    };
+    const measureAthLabelWidth = (labelText: string) => {
+      const ctx = getMeasureCtx();
+      if (ctx) {
+        ctx.font = `${numbersXxsTypography.fontWeight} ${numbersXxsTypography.fontSize}px ${numbersXxsTypography.fontFamily}`;
+        return ctx.measureText(labelText).width + 24;
+      }
+      return labelText.length * 7 + 24;
+    };
+    const getAthLabelOffsetX = (labelText: string, timestamp: number) => {
+      if (!axisPixelMap) return 0;
+      const anchorX = axisPixelMap.timestampToPixel(timestamp);
+      if (!Number.isFinite(anchorX)) return 0;
+
+      const plotLeft = axisPixelMap.plotLeft;
+      const plotRight = axisPixelMap.plotLeft + axisPixelMap.plotWidth;
+      const labelHalfWidth = measureAthLabelWidth(labelText) / 2;
+      const edgePadding = 8;
+      const minCenterX = plotLeft + labelHalfWidth + edgePadding;
+      const maxCenterX = plotRight - labelHalfWidth - edgePadding;
+
+      if (!Number.isFinite(minCenterX) || !Number.isFinite(maxCenterX) || maxCenterX <= minCenterX) {
+        return 0;
+      }
+
+      const clampedCenterX = clamp(anchorX, minCenterX, maxCenterX);
+      return Math.round(clampedCenterX - anchorX);
+    };
 
     // Build series configs — each series determines its own type
     const echartsSeriesConfigs = sortedSeries.flatMap((s, index) => {
@@ -941,6 +1202,166 @@ export default function GTPChart({
           config.itemStyle = { color: posGradient };
           config.emphasis = { itemStyle: { color: posGradientEmphasis } };
         }
+      }
+
+      const markLineData: unknown[] = [];
+      let athMarkPointData:
+        | {
+            coord: [number, number];
+            symbolSize: number;
+            tooltip: { show: false };
+            itemStyle: { color: string };
+            label: Record<string, unknown>;
+          }
+        | null = null;
+
+      if (s.showAllTimeHigh) {
+        const allPoints = s.pairedData.filter((point): point is [number, number] => {
+          const ts = Number(point[0]);
+          const value = point[1];
+          if (!Number.isFinite(ts)) return false;
+          return typeof value === "number" && Number.isFinite(value);
+        });
+
+        const athPoint = allPoints.reduce<[number, number] | null>((current, [timestamp, value]) => {
+          if (!current) return [timestamp, value];
+          if (value > current[1]) return [timestamp, value];
+          if (value === current[1] && timestamp > current[0]) return [timestamp, value];
+          return current;
+        }, null);
+
+        if (athPoint) {
+          const [lineColor] = resolveSeriesColors(s.color, fallbackColor);
+          const [athTimestamp, athValue] = athPoint;
+          const isAthVisible =
+            (!Number.isFinite(effectiveXMin) || athTimestamp >= Number(effectiveXMin)) &&
+            (!Number.isFinite(effectiveXMax) || athTimestamp <= Number(effectiveXMax));
+
+          if (isAthVisible) {
+            const lineStartTimestamp = Number.isFinite(effectiveXMin)
+              ? Number(effectiveXMin)
+              : allPoints[0]?.[0] ?? athTimestamp;
+            const athLabelPrefix = s.allTimeHighLabel?.trim();
+            const formattedAthValue = formatTooltipValue(athValue);
+            const athLabelText = athLabelPrefix
+              ? `${athLabelPrefix} ${formattedAthValue}`
+              : formattedAthValue;
+            const athLabelOffsetX = getAthLabelOffsetX(athLabelText, athTimestamp);
+
+            markLineData.push([
+              {
+                coord: [lineStartTimestamp, athValue],
+                symbol: "none",
+              },
+              {
+                coord: [athTimestamp, athValue],
+                symbol: "none",
+                lineStyle: {
+                  type: "dashed",
+                  color: withOpacity(lineColor, 0.45),
+                  opacity: 0.45,
+                  width: 1,
+                },
+                label: { show: false },
+              },
+            ]);
+
+            athMarkPointData = {
+              coord: [athTimestamp, athValue],
+              symbolSize: 0,
+              tooltip: { show: false },
+              itemStyle: { color: "transparent" },
+              label: {
+                show: true,
+                formatter: athLabelText,
+                position: "top",
+                distance: 6,
+                offset: [athLabelOffsetX, 2],
+                align: "center",
+                padding: [3, 6, 2, 6],
+                borderRadius: 999,
+                backgroundColor: lineColor.startsWith("#")
+                  ? withHexOpacity(lineColor, 0.66)
+                  : withOpacity(lineColor, 0.66),
+                fontSize: numbersXxsTypography.fontSize,
+                fontFamily: numbersXxsTypography.fontFamily,
+                lineHeight: numbersXxsTypography.lineHeight,
+                fontWeight: "medium",
+                color: textPrimary,
+                opacity: 1,
+              },
+            };
+          }
+        }
+      }
+
+      if (index === 0 && resolvedXAxisLines.length > 0) {
+        markLineData.push(
+          ...resolvedXAxisLines.map((line) => ({
+            xAxis: line.xValue,
+            lineStyle: {
+              color: line.lineColor ?? withOpacity(textPrimary, 0.7),
+              width: line.lineWidth ?? 1,
+              type: mapLineStyle(line.lineStyle),
+            },
+            label: line.annotationText
+              ? {
+                  show: true,
+                  formatter: line.annotationText,
+                  position: "insideEndTop",
+                  rotate: 0,
+                  distance: -8,
+                  align: "left",
+                  verticalAlign: "middle",
+                  color: line.textColor ?? textPrimary,
+                  fontSize: line.textFontSize ?? 9,
+                  fontFamily: "var(--font-raleway), sans-serif",
+                  fontWeight: 500,
+                  textStyle: {
+                    color: line.textColor ?? textPrimary,
+                    fontSize: line.textFontSize ?? 9,
+                    fontFamily: "var(--font-raleway), sans-serif",
+                    fontWeight: 500,
+                  },
+                  backgroundColor: line.backgroundColor ?? "transparent",
+                  padding: [2, 6],
+                  offset: [line.annotationPositionX ?? 0, line.annotationPositionY ?? 0],
+                }
+              : { show: false },
+          })),
+        );
+      }
+
+      if (markLineData.length > 0) {
+        config.markLine = {
+          silent: true,
+          symbol: ["none", "none"],
+          label: {
+            show: false,
+            position: "insideEndTop",
+            rotate: 0,
+            fontFamily: "var(--font-raleway), sans-serif",
+            fontWeight: 500,
+            textStyle: {
+              fontFamily: "var(--font-raleway), sans-serif",
+              fontWeight: 500,
+            },
+          },
+          labelLayout: {
+            hideOverlap: false,
+          },
+          data: markLineData,
+        };
+      }
+
+      if (athMarkPointData) {
+        config.markPoint = {
+          silent: true,
+          symbol: "circle",
+          symbolSize: 0,
+          tooltip: { show: false },
+          data: [athMarkPointData],
+        };
       }
 
       if (seriesOverrides) {
@@ -1121,16 +1542,14 @@ export default function GTPChart({
           if (!Number.isFinite(v)) return "";
           const meta = normalizedSeries.find((s) => s.name === point.seriesName);
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
-          const formattedValue = percentageMode ? `${v.toFixed(1)}%` : formatCompactNumber(v, decimals);
+          const formattedValue = formatTooltipValue(v);
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
-          const prefixStd = percentageMode ? "" : (prefix ?? "");
-          const suffixStd = percentageMode ? "" : (suffix ?? "");
 
           return `
             <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
               <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${lineColor}"></div>
               <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
-              <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedValue}${suffixStd}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">${formattedValue}</div>
             </div>
             <div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
               <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
@@ -1175,7 +1594,6 @@ export default function GTPChart({
     const baseOption: EChartsOption = {
       animation,
       backgroundColor: "transparent",
-
       grid: {
         ...effectiveGrid,
       },
@@ -1184,39 +1602,10 @@ export default function GTPChart({
         show: true,
         min: effectiveXMin,
         max: effectiveXMax,
-        splitNumber: xAxisSplitNumber,
-        interval: xAxisFixedInterval,
-        minInterval: xAxisMinInterval,
         boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
-        axisTick: { show: false },
-        axisLabel: {
-          color: textPrimary,
-          fontSize: textXxsTypography.fontSize,
-          fontFamily: textXxsTypography.fontFamily,
-          fontWeight: textXxsTypography.fontWeight,
-          alignMinLabel: xAxisType === "time" ? "left" : undefined,
-          alignMaxLabel: xAxisType === "time" ? "right" : undefined,
-          hideOverlap: true,
-          margin: 8,
-          formatter: resolvedXAxisLabelFormatter,
-          rich: {
-            yearBold: {
-              color: textPrimary,
-              fontSize: textSmTypography.fontSize,
-              fontFamily: textSmTypography.fontFamily,
-              fontWeight: 700,
-              lineHeight: textXxsTypography.lineHeight,
-            },
-            dateBold: {
-              color: textPrimary,
-              fontSize: textSmTypography.fontSize,
-              fontFamily: textSmTypography.fontFamily,
-              fontWeight: 700,
-              lineHeight: textXxsTypography.lineHeight,
-            },
-          },
-        },
+        axisTick: { show: xAxisType !== "time" },
+        axisLabel: { show: xAxisType !== "time" },
         splitLine: { show: false },
       } as any,
       yAxis: {
@@ -1287,10 +1676,10 @@ export default function GTPChart({
     areaOpacityOverride,
     barMaxWidth,
     chartTooltipPosition,
-    containerHeight,
-    containerWidth,
     decimals,
-    gridOverride,
+    effectiveGrid,
+    effectiveXMin,
+    effectiveXMax,
     hasBarSeries,
     textPrimary,
     lineWidth,
@@ -1299,20 +1688,17 @@ export default function GTPChart({
     prefix,
     suffix,
     percentageMode,
+    xAxisLines,
     pairedSeries,
     normalizedSeries,
     seriesOverrides,
     smooth,
     stack,
-    textSmTypography,
-    textXxsTypography,
     tooltipFormatter,
     tooltipTitle,
     showTooltipTimestamp,
+    showTotal,
     limitTooltipRows,
-    xAxisLabelFormatter,
-    xAxisMin,
-    xAxisMax,
     xAxisType,
     yAxisLabelFormatter,
     yAxisMaxOverride,
@@ -1334,8 +1720,9 @@ export default function GTPChart({
       style={containerStyle}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
-        <ReactECharts
+        <ReactEChartsCore
           ref={echartsRef}
+          echarts={echarts}
           option={chartOption}
           notMerge
           lazyUpdate
@@ -1343,6 +1730,53 @@ export default function GTPChart({
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
+      {xAxisType === "time" && overlayLabels.length > 0 && (
+        <div
+          className="pointer-events-none absolute left-0 right-0 bottom-0"
+          style={{ height: effectiveGrid.bottom }}
+        >
+          {subtickPixels.map((px) => (
+            <div
+              key={`sub-${px}`}
+              className="absolute top-0"
+              style={{
+                left: px,
+                width: 1,
+                height: 3,
+                backgroundColor: withOpacity(textPrimary, 0.3),
+              }}
+            />
+          ))}
+          {overlayLabels.map((label) => {
+            const snappedX = Math.round(label.pixelX);
+            return (
+              <div
+                key={`tick-${label.timestamp}`}
+                className="absolute top-0"
+                style={{
+                  left: snappedX,
+                  width: 1,
+                  height: 15,
+                  backgroundColor: withOpacity(textPrimary, 0.3),
+                }}
+              />
+            );
+          })}
+          {overlayLabels.map((label) => (
+            <span
+              key={`label-${label.timestamp}`}
+              className={`absolute whitespace-nowrap ${label.isBold ? "heading-xxxs scale-[1.4]" : "text-xxs"} ${label.align === "left" ? "text-left translate-x-0" : label.align === "right" ? "text-right -translate-x-full" : "text-center -translate-x-1/2"}`}
+              style={{
+                left: Math.round(label.pixelX),
+                top: label.isBold ? 18 : 19,
+                color: textPrimary,
+              }}
+            >
+              {label.text}
+            </span>
+          ))}
+        </div>
+      )}
       {onDragSelect && dragOverlay && (
         <div
           className="pointer-events-none absolute inset-y-0 z-30 flex items-center justify-center border-x"

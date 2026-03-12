@@ -9,6 +9,7 @@ import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { GTPButton, GTPButtonSize } from "@/components/GTPButton/GTPButton";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -290,6 +291,95 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
     </div>
   );
 }
+
+// Compensation offsets neutralise the visual gap introduced by GTPButton's own
+// padding (1px wrapper + button-side-padding) so that content inside the button
+// lines up with the row-cell edge on each side.
+// Values come from FIGMA_BUTTON_SIZE → paddingByIconVariant["right"] (the
+// "label + sort-arrow" variant that GridTableHeaderCellButton always uses).
+const CELL_BUTTON_OFFSET: Record<GTPButtonSize, { left: string; right: string }> = {
+  xs: { left: "-ml-[6px]",  right: "-mr-[4px]"  }, // 1+5=6 left, 1+3=4 right
+  sm: { left: "-ml-[16px]", right: "-mr-[6px]"  }, // 1+15=16 left, 1+5=6 right
+  md: { left: "-ml-[16px]", right: "-mr-[6px]"  }, // same as sm
+  lg: { left: "-ml-[16px]", right: "-mr-[6px]"  }, // 1+15=16 left, 1+5=6 right
+};
+
+type GridTableHeaderCellButtonProps = {
+  label: string;
+  metric?: string;
+  sort?: { metric: string; sortOrder: string };
+  setSort?: React.Dispatch<React.SetStateAction<{ metric: string; sortOrder: string }>>;
+  onSort?: () => void;
+  justify?: "start" | "end" | "center";
+  size?: GTPButtonSize;
+  /** Extra className applied to the outer flex container — use for column-specific offsets e.g. `pl-[36px]` */
+  className?: string;
+};
+
+/**
+ * A grid-table header cell that renders a GTPButton sort trigger and
+ * compensates for the button's internal padding so the label/icon visually
+ * aligns with the corresponding GridTableRow cell content.
+ *
+ * - justify="start"  → label left-aligns with row content (applies -ml compensation)
+ * - justify="end"    → sort-arrow right-aligns with row content (applies -mr compensation)
+ * - className        → forwarded to the outer container, use for column-level offsets
+ *                      (e.g. `pl-[36px]` when the row cell starts with an icon)
+ */
+export const GridTableHeaderCellButton = ({
+  label,
+  metric,
+  sort,
+  setSort,
+  onSort,
+  justify = "start",
+  size = "xs",
+  className,
+}: GridTableHeaderCellButtonProps) => {
+  const isActive = metric ? sort?.metric === metric : false;
+  const arrowIcon = (
+    isActive && sort?.sortOrder === "asc" ? "feather:arrow-up" : "feather:arrow-down"
+  ) as GTPIconName;
+
+  const handleSort = () => {
+    if (onSort) onSort();
+    if (metric && sort && setSort) {
+      setSort({
+        metric,
+        sortOrder:
+          sort.metric === metric
+            ? sort.sortOrder === "asc" ? "desc" : "asc"
+            : "desc",
+      });
+    }
+  };
+
+  const alignClass =
+    justify === "end" ? "justify-end" :
+    justify === "center" ? "justify-center" :
+    "justify-start";
+
+  // Compensation className applied to the GTPButton outer div so its visible
+  // content aligns with the cell edge rather than being inset by button padding.
+  const compensationClass =
+    justify === "end"   ? CELL_BUTTON_OFFSET[size].right :
+    justify === "start" ? CELL_BUTTON_OFFSET[size].left  :
+    "";
+
+  return (
+    <div className={`flex items-center ${alignClass} ${className ?? ""}`}>
+      <GTPButton
+        label={label}
+        size={size}
+        rightIcon={arrowIcon}
+        rightIconClassname={isActive ? "opacity-100" : "opacity-30"}
+        isSelected={isActive}
+        clickHandler={handleSort}
+        className={compensationClass}
+      />
+    </div>
+  );
+};
 
 type HorizontalScrollContainerProps = {
   className?: string;
