@@ -28,7 +28,7 @@ const EIP8004_OPTIONS: EventOption[] = [
   },
   {
     id: "eip-8004-chain-breakdown",
-    label: "Registrations by Chain",
+    label: "Daily Registrations by Chain",
     dataSource: {
       url: "https://api.growthepie.com/v1/quick-bites/eip8004/registered_cumulative.json",
       pathToData: "data.timeseries.values",

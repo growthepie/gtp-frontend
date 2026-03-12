@@ -46,7 +46,7 @@ const topAppsEvent: EventExample = {
   title: "Top Apps",
   description: "The top apps in the Ethereum ecosystem.",
   question: "What apps are driving activity in the Ethereum ecosystem?",
-  image: "gtp-blobs-ethereum",
+  image: "gtp-project",
   link: "/applications",
   cards: APP_CARDS,
   bodyType: "card",
