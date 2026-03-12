@@ -200,7 +200,7 @@ const StablecoinChain: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
 };
 
 export default StablecoinChain;

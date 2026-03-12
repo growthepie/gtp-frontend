@@ -201,7 +201,7 @@ const StablecoinProject: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
 };
 
 export default StablecoinProject;
