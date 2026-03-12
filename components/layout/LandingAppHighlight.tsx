@@ -16,16 +16,24 @@ export default function LandingAppHighlight() {
     useEffect(() => {
         if (!filteredProjectsData || randomIndices !== null) return;
         const iconIndex = filteredProjectsData.types.indexOf("logo_path");
+        const ownerIndex = filteredProjectsData.types.indexOf("owner_project");
         if (iconIndex === -1) return;
         const dataLen = filteredProjectsData.data.length;
         const indices: number[] = [];
+        const seenOwners = new Set<string>();
         let attempts = 0;
         while (indices.length < 7 && attempts < dataLen * 3) {
             attempts++;
             const idx = Math.floor(Math.random() * dataLen);
             const project = filteredProjectsData.data[idx];
-            if (typeof project?.[iconIndex] === "string" && !indices.includes(idx)) {
+            const owner = ownerIndex !== -1 ? project?.[ownerIndex] : null;
+            if (
+                typeof project?.[iconIndex] === "string" &&
+                !indices.includes(idx) &&
+                (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
+            ) {
                 indices.push(idx);
+                if (typeof owner === "string") seenOwners.add(owner);
             }
         }
         // eslint-disable-next-line react-hooks/set-state-in-effect

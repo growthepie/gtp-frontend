@@ -141,29 +141,30 @@ const EventCard = ({
   setSelectedEvent: (event: EventId) => void;
 }) => {
   const isMobile = useMediaQuery("(max-width: 1024px)");
+  // On mobile the card lives inside a fixed-height carousel slide, so always
+  // show the expanded state and skip the layout height animation.
+  const showExpanded = isSelected || isMobile;
 
   return (
     <motion.div
-      layout
-      className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
+      layout={!isMobile}
+      className={`relative flex w-full h-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${showExpanded ? "bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
       onClick={() => setSelectedEvent(event)}
       transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
     >
-      {/* Icon — layout="position" so it animates from center to top-left as card expands */}
-      <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
+      {/* Icon */}
+      <motion.div layout={!isMobile ? "position" : false} className="shrink-0">
         <GTPIcon
           icon={EVENTS_BY_ID[event].image as GTPIconName}
-          className={isSelected ? "!size-[24px]" : "!size-[16px]"}
+          className="!size-[24px]"
           containerClassName="!size-[24px]"
         />
       </motion.div>
 
-      {/* Content — AnimatePresence swaps between the two text states with opacity only.
-          The card's own layout animation handles the height change, so no height
-          animation is needed here (which was causing the squishing/pushing effect). */}
-      <div className={`flex flex-col w-full min-w-0 ${isSelected ? "h-full" : "justify-center"}`}>
+      {/* Content */}
+      <div className="flex flex-col w-full min-w-0 h-full">
         <AnimatePresence mode="wait" initial={false}>
-          {isSelected ? (
+          {showExpanded ? (
             <motion.div
               key="selected"
               initial={{ opacity: 0 }}
@@ -180,7 +181,7 @@ const EventCard = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.25, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="heading-small-xs"
+              className="heading-small-xs self-center"
             >
               {EVENTS_BY_ID[event].question}
             </motion.p>
@@ -188,17 +189,14 @@ const EventCard = ({
         </AnimatePresence>
       </div>
 
-      {/* Chevron — layout="position" mirrors the icon treatment */}
-      <motion.div layout="position" className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
+      {/* Chevron */}
+      <motion.div layout={!isMobile ? "position" : false} className="shrink-0 flex items-center justify-center h-full">
         <Link className="flex items-center justify-center" href={EVENTS_BY_ID[event].link}>
-          <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
+          <GTPIcon icon={showExpanded ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
         </Link>
       </motion.div>
 
-      {/* Auto-rotation progress bar — shrinks from full width to zero over 10 s.
-          Uses border-b on a 15px-tall element with rounded-bl-[15px] so the border
-          traces a visible quarter-circle arc on the left end, matching the card's
-          own corner radius. border-b follows element geometry; background fills do not. */}
+      {/* Auto-rotation progress bar */}
       {isSelected && !hasInteracted && (
         <div
           className="absolute bottom-0 left-0 h-[15px] rounded-bl-[15px] border-b-2 border-color-text-primary"
@@ -240,14 +238,15 @@ const SideEventsContainer = ({
       <div className="w-full pb-[15px] lg:pb-0">
         <Carousel
           ariaId="events-carousel"
-          heightClass="h-[100px]"
+          heightClass="h-[120px] sm:h-[100px]"
           breakpoints={{ 0: { slidesPerView: 0, centered: false, gap: 15 } }}
           pagination="dots"
           arrows={false}
-          padding={{ mobile: 30, desktop: 20 }}
+          padding={{ mobile: 5, desktop: 0 }}
           bottomOffset={-20}
           onInit={(api) => { emblaApiRef.current = api; }}
           onSlideChange={handleSlideChange}
+          noFade
         >
           {FEATURED_EVENT_IDS_MAX.map((event) => (
             <div key={event} className="h-full flex items-center w-full">
