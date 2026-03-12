@@ -259,24 +259,9 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
           <Container className="w-full">
            
-          {(IS_PRODUCTION ? (
-            <LandingChart
-              data={data}
-              master={master}
-              sources={landing.data.metrics.engagement.source}
-              cross_chain_users={data.cross_chain_users}
-              cross_chain_users_comparison={data.cross_chain_users_comparison}
-              latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}
-              latest_total_comparison={focusEnabled ? data.latest_total_comparison_l2 : data.latest_total_comparison}
-              l2_dominance={data.l2_dominance}
-              l2_dominance_comparison={data.l2_dominance_comparison}
-              selectedMetric={selectedMetric}
-              metric={selectedTimeInterval}
-              setSelectedMetric={setSelectedMetric}
-            />
-            ) : (
-              <LandingEventsChart />
-            ))}
+
+            <LandingEventsChart />
+         
           </Container>
           <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
