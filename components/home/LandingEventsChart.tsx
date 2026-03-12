@@ -770,7 +770,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
 
   
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract}>
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract} >
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
@@ -940,6 +940,7 @@ export default function LandingEventsChart() {
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef = useRef(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resolvedEventsById = useMemo(() => {
     const entries = (Object.entries(EVENTS_BY_ID) as [EventId, EventExample][]).map(
@@ -950,14 +951,38 @@ export default function LandingEventsChart() {
 
   const selectedEventData = resolvedEventsById[selectedEvent];
 
-  console.log("selectedEvent:", selectedEvent, "selectedEventData:", selectedEventData);
-
   const handleInteract = () => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
     if (!hasInteractedRef.current) {
       hasInteractedRef.current = true;
       setHasInteracted(true);
     }
   };
+
+  const handleMouseLeave = () => {
+    if (!hasInteractedRef.current) return;
+    resetTimerRef.current = setTimeout(() => {
+      hasInteractedRef.current = false;
+      setHasInteracted(false);
+      resetTimerRef.current = null;
+    }, 3000);
+  };
+
+  const handleMouseEnter = () => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   // Auto-advance to the next event every 10 seconds until the user interacts
   useEffect(() => {
@@ -986,7 +1011,7 @@ export default function LandingEventsChart() {
           <Heading className="heading-large-lg">Trending Topics in the Ecosystem</Heading>
 
         </div>
-        <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           <SideEventsContainer
             selectedEvent={selectedEvent}
             hasInteracted={hasInteracted}
