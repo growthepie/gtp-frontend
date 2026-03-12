@@ -11,6 +11,7 @@ import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import type { EmblaCarouselType } from "embla-carousel";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
@@ -20,6 +21,7 @@ import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
+import { Carousel } from "@/components/Carousel";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -138,12 +140,14 @@ const EventCard = ({
   hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
 }) => {
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+
   return (
     <motion.div
       layout
       className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
       onClick={() => setSelectedEvent(event)}
-      transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
+      transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
     >
       {/* Icon — layout="position" so it animates from center to top-left as card expands */}
       <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
@@ -163,7 +167,7 @@ const EventCard = ({
             <motion.div
               key="selected"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.15, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.15, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className="flex flex-col gap-y-[10px] h-full"
             >
@@ -174,7 +178,7 @@ const EventCard = ({
             <motion.p
               key="question"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.25, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.25, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className="heading-small-xs"
             >
@@ -214,6 +218,52 @@ const SideEventsContainer = ({
   hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
 }) => {
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const emblaApiRef = useRef<EmblaCarouselType | null>(null);
+  const slideChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // When selectedEvent changes externally (e.g. auto-advance), scroll the carousel to match
+  useEffect(() => {
+    const index = FEATURED_EVENT_IDS_MAX.indexOf(selectedEvent);
+    if (index !== -1) emblaApiRef.current?.scrollTo(index);
+  }, [selectedEvent]);
+
+  const handleSlideChange = (index: number) => {
+    if (slideChangeTimerRef.current) clearTimeout(slideChangeTimerRef.current);
+    slideChangeTimerRef.current = setTimeout(() => {
+      setSelectedEvent(FEATURED_EVENT_IDS_MAX[index]);
+    }, 300);
+  };
+
+  if (isMobile) {
+    return (
+      <div className="w-full pb-[15px] lg:pb-0">
+        <Carousel
+          ariaId="events-carousel"
+          heightClass="h-[100px]"
+          breakpoints={{ 0: { slidesPerView: 0, centered: false, gap: 15 } }}
+          pagination="dots"
+          arrows={false}
+          padding={{ mobile: 30, desktop: 20 }}
+          bottomOffset={-20}
+          onInit={(api) => { emblaApiRef.current = api; }}
+          onSlideChange={handleSlideChange}
+        >
+          {FEATURED_EVENT_IDS_MAX.map((event) => (
+            <div key={event} className="h-full flex items-center w-full">
+              <EventCard
+                event={event}
+                isSelected={selectedEvent === event}
+                hasInteracted={hasInteracted}
+                setSelectedEvent={setSelectedEvent}
+              />
+            </div>
+          ))}
+        </Carousel>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-y-[10px] w-[390px] h-[442px] min-w-[300px] shrink min-h-0 self-stretch overflow-y-auto">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
