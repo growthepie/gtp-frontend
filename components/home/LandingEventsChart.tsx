@@ -355,7 +355,7 @@ const EventCard = ({
   return (
     <motion.div
       layout={!isMobile}
-      className={`relative flex w-full h-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${showExpanded ? "bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
+      className={`relative flex w-full ${isMobile ? "h-full" : ""} overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${showExpanded ? "bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
       onClick={() => setSelectedEvent(event)}
       transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
     >
@@ -369,7 +369,7 @@ const EventCard = ({
       </motion.div>
 
       {/* Content */}
-      <div className="flex flex-col w-full min-w-0 h-full">
+      <div className={`flex flex-col w-full min-w-0 ${isMobile ? "h-full" : ""}`}>
         <AnimatePresence mode="wait" initial={false}>
           {showExpanded ? (
             <motion.div
@@ -377,10 +377,10 @@ const EventCard = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.15, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="flex flex-col gap-y-[10px] h-full"
+              className={`flex flex-col gap-y-[10px] ${isMobile ? "h-full" : ""}`}
             >
               <p className="heading-small-md">{eventData.title}</p>
-              <div className="flex h-full items-center pb-[30px]"><p className="text-xs">{eventData.description}</p></div>
+              <div className={`flex ${isMobile ? "h-full" : ""} items-center pb-[30px]`}><p className="text-xs">{eventData.description}</p></div>
             </motion.div>
           ) : (
             <motion.p
@@ -461,6 +461,7 @@ const SideEventsContainer = ({
             <div key={event} className="h-full flex items-center w-full">
               <EventCard
                 event={event}
+                eventData={eventsById[event]}
                 isSelected={selectedEvent === event}
                 hasInteracted={hasInteracted}
                 setSelectedEvent={setSelectedEvent}
