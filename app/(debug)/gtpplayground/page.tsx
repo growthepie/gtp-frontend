@@ -2,6 +2,7 @@
 
 import { type ReactNode, useMemo, useRef, useState } from "react";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
+import GTPDropdown, { type GTPDropdownContentSize, type GTPDropdownOption } from "@/components/GTPDropdown/GTPDropdown";
 import GTPTabBar from "@/components/GTPButton/GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPButton/GTPTabButtonSet";
 import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPButton/GTPUniversalChart";
@@ -43,9 +44,53 @@ const TIMESPAN_OPTIONS = [
   { id: "1y", label: "1Y" },
 ];
 
+const DROPDOWN_OPTIONS: GTPDropdownOption[] = [
+  {
+    value: "arbitrum",
+    label: "Arbitrum",
+    icon: "arbitrum-logo-monochrome",
+    keywords: ["arb", "orbit"],
+  },
+  {
+    value: "base",
+    label: "Base",
+    icon: "base-logo-monochrome",
+    keywords: ["coinbase"],
+  },
+  {
+    value: "optimism",
+    label: "Optimism",
+    icon: "optimism-logo-monochrome",
+    keywords: ["op"],
+  },
+  {
+    value: "linea",
+    label: "Linea",
+    icon: "linea-logo-monochrome",
+  },
+  {
+    value: "starknet",
+    label: "Starknet",
+    icon: "starknet-logo-monochrome",
+  },
+  {
+    value: "zksync-era",
+    label: "zkSync Era Ecosystem",
+    icon: "zksync-era-logo-monochrome",
+    keywords: ["matter labs", "zk"],
+  },
+  {
+    value: "megaeth",
+    label: "MegaETH (Disabled)",
+    icon: "megaeth-logo-monochrome",
+    disabled: true,
+  },
+];
+
 const VARIANTS: ButtonVariant[] = ["primary", "highlight", "no-background"];
 const VISUAL_STATES: ButtonVisualState[] = ["default", "hover", "active", "disabled"];
 const SIZES: ButtonSize[] = ["xs", "sm", "md", "lg"];
+const DROPDOWN_CONTENT_SIZES: GTPDropdownContentSize[] = ["sm", "md"];
 
 const TAB_SET_LEFT_ITEMS: GTPTabButtonSetItem[] = [
   { id: "hourly", label: "1h" },
@@ -231,6 +276,12 @@ export default function GTPButtonShowcasePage() {
   const [legacyClickCount, setLegacyClickCount] = useState(0);
   const [selectedMetric, setSelectedMetric] = useState("ecosystem");
   const [selectedTimespan, setSelectedTimespan] = useState("30d");
+  const [selectedDropdownNetwork, setSelectedDropdownNetwork] = useState("arbitrum");
+  const [selectedNoSearchDropdownNetwork, setSelectedNoSearchDropdownNetwork] = useState("optimism");
+  const [selectedDisabledDropdownNetwork] = useState("base");
+  const [dropdownTriggerSize, setDropdownTriggerSize] = useState<ButtonSize>("md");
+  const [dropdownSearchSize, setDropdownSearchSize] = useState<GTPDropdownContentSize>("sm");
+  const [dropdownOptionSize, setDropdownOptionSize] = useState<GTPDropdownContentSize>("sm");
 
   const [iconLeftClicks, setIconLeftClicks] = useState(0);
   const [iconRightClicks, setIconRightClicks] = useState(0);
@@ -283,7 +334,7 @@ export default function GTPButtonShowcasePage() {
           <h1 className="heading-small-md lg:heading-small-lg">GTP Playground</h1>
           <p className="text-sm text-color-text-secondary">
             Routes: <code>/gtpplayground</code> and <code>/debug/gtpplayground</code>. This page demonstrates every current prop and behavior in{" "}
-            <code>components/GTPButton/GTPButton.tsx</code>.
+            <code>components/GTPButton/GTPButton.tsx</code> plus the higher-level design-system primitives built on top of it.
           </p>
         </header>
 
@@ -533,6 +584,126 @@ export default function GTPButtonShowcasePage() {
         </ShowcaseSection>
 
         <ShowcaseSection
+          title="GTPDropdown"
+          description={
+            <>
+              Figma node <code>7026:108434</code>. The trigger reuses <code>GTPButton</code>; the search row and option rows stay internal to{" "}
+              <code>GTPDropdown</code>.
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-4">
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.08em] text-color-text-secondary">Trigger Size</div>
+                <div className="flex flex-wrap gap-2">
+                  {SIZES.map((size) => (
+                    <GTPButton
+                      key={`dropdown-trigger-size-${size}`}
+                      label={size}
+                      size="xs"
+                      variant={dropdownTriggerSize === size ? "primary" : "no-background"}
+                      visualState={dropdownTriggerSize === size ? "active" : "default"}
+                      clickHandler={() => setDropdownTriggerSize(size)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.08em] text-color-text-secondary">Search Size</div>
+                <div className="flex flex-wrap gap-2">
+                  {DROPDOWN_CONTENT_SIZES.map((size) => (
+                    <GTPButton
+                      key={`dropdown-search-size-${size}`}
+                      label={size}
+                      size="xs"
+                      variant={dropdownSearchSize === size ? "primary" : "no-background"}
+                      visualState={dropdownSearchSize === size ? "active" : "default"}
+                      clickHandler={() => setDropdownSearchSize(size)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.08em] text-color-text-secondary">Option Size</div>
+                <div className="flex flex-wrap gap-2">
+                  {DROPDOWN_CONTENT_SIZES.map((size) => (
+                    <GTPButton
+                      key={`dropdown-option-size-${size}`}
+                      label={size}
+                      size="xs"
+                      variant={dropdownOptionSize === size ? "primary" : "no-background"}
+                      visualState={dropdownOptionSize === size ? "active" : "default"}
+                      clickHandler={() => setDropdownOptionSize(size)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[260px_260px_minmax(0,1fr)]">
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.08em] text-color-text-secondary">Primary Example</div>
+                <GTPDropdown
+                  options={DROPDOWN_OPTIONS}
+                  value={selectedDropdownNetwork}
+                  size={dropdownTriggerSize}
+                  searchSize={dropdownSearchSize}
+                  optionSize={dropdownOptionSize}
+                  onChange={(nextValue) => setSelectedDropdownNetwork(nextValue)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.08em] text-color-text-secondary">Supporting States</div>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <div className="text-xxs text-color-text-secondary">No Search</div>
+                    <GTPDropdown
+                      options={DROPDOWN_OPTIONS}
+                      value={selectedNoSearchDropdownNetwork}
+                      searchable={false}
+                      size={dropdownTriggerSize}
+                      optionSize={dropdownOptionSize}
+                      onChange={(nextValue) => setSelectedNoSearchDropdownNetwork(nextValue)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xxs text-color-text-secondary">Disabled State</div>
+                    <GTPDropdown
+                      options={DROPDOWN_OPTIONS}
+                      value={selectedDisabledDropdownNetwork}
+                      searchable={false}
+                      disabled
+                      size={dropdownTriggerSize}
+                      optionSize={dropdownOptionSize}
+                      onChange={() => undefined}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <pre className="overflow-x-auto rounded-[12px] border border-color-bg-default bg-color-bg-default p-3 text-xxs">
+{JSON.stringify(
+  {
+    dropdownTriggerSize,
+    dropdownSearchSize,
+    dropdownOptionSize,
+    selectedDropdownNetwork,
+    selectedNoSearchDropdownNetwork,
+    selectedDisabledDropdownNetwork,
+  },
+  null,
+  2,
+)}
+              </pre>
+            </div>
+          </div>
+        </ShowcaseSection>
+
+        <ShowcaseSection
           title="Universal Chart Component"
           description={
             <>
@@ -667,3 +838,6 @@ export default function GTPButtonShowcasePage() {
     </main>
   );
 }
+
+
+
