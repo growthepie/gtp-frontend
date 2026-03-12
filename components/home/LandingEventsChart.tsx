@@ -27,6 +27,13 @@ import { metricItems } from "@/lib/metrics";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
+const CARD_COLLAPSED_H = 54;
+const CARD_GAP = 10;
+const SIDE_CONTAINER_H = 442;
+const CARD_EXPANDED_H =
+  SIDE_CONTAINER_H -
+  (FEATURED_EVENT_IDS_MAX.length - 1) * (CARD_COLLAPSED_H + CARD_GAP);
+
 const getNestedValue = (obj: unknown, path: string) => {
   return path.split(".").reduce((current, key) => {
     if (!current || typeof current !== "object") return undefined;
@@ -354,25 +361,27 @@ const EventCard = ({
 
   return (
     <motion.div
-      layout={!isMobile}
-      className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${
+      initial={!isMobile ? { height: isSelected ? CARD_EXPANDED_H : CARD_COLLAPSED_H } : undefined}
+      animate={!isMobile ? { height: isSelected ? CARD_EXPANDED_H : CARD_COLLAPSED_H } : undefined}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ borderRadius: "15px" }}
+      className={`relative flex w-full shrink-0 overflow-hidden border-[1px] border-color-bg-medium py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${
         isMobile
           ? "h-full bg-color-ui-active items-start"
           : isSelected
-            ? "flex-1 min-h-0 bg-color-ui-active items-start"
-            : "h-[54px] shrink-0 bg-color-bg-default hover:bg-color-ui-hover items-center"
+            ? "bg-color-ui-active items-start"
+            : "bg-color-bg-default hover:bg-color-ui-hover items-center"
       }`}
       onClick={() => setSelectedEvent(event)}
-      transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
     >
       {/* Icon */}
-      <motion.div layout={!isMobile ? "position" : false} className="shrink-0">
+      <div className="shrink-0">
         <GTPIcon
           icon={eventData.image as GTPIconName}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
-          containerClassName="!size-[24px]"
+          containerClassName="!size-[24px] flex items-center justify-center"
         />
-      </motion.div>
+      </div>
 
       {/* Content */}
       <div className={`flex flex-col w-full min-w-0 ${isMobile ? "h-full" : ""}`}>
@@ -394,7 +403,7 @@ const EventCard = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.3, delay: 0.25, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="heading-small-xs self-center"
+              className="heading-small-xs self-start"
             >
               {eventData.question}
             </motion.p>
@@ -402,12 +411,12 @@ const EventCard = ({
         </AnimatePresence>
       </div>
 
-      {/* Chevron — layout="position" mirrors the icon treatment */}
-      <motion.div layout="position" className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
+      {/* Chevron */}
+      <div className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
         <Link className="flex items-center justify-center" href={eventData.link}>
           <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
         </Link>
-      </motion.div>
+      </div>
 
       {/* Auto-rotation progress bar */}
       {isSelected && !hasInteracted && (
