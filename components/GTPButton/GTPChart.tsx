@@ -1674,6 +1674,7 @@ export default function GTPChart({
   }, [
     animation,
     areaOpacityOverride,
+    axisPixelMap,
     barMaxWidth,
     chartTooltipPosition,
     decimals,
@@ -1701,9 +1702,7 @@ export default function GTPChart({
     limitTooltipRows,
     xAxisType,
     yAxisLabelFormatter,
-    yAxisMaxOverride,
-    yAxisMin,
-    showTotal,
+    yAxisLayout,
   ]);
 
   const containerStyle: React.CSSProperties = {
