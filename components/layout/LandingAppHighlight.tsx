@@ -50,16 +50,16 @@ export default function LandingAppHighlight() {
         <div className="flex w-full gap-[10px] h-full">
             {/* Large left card — width derived from height via aspect-square */}
             <Link className="flex justify-center relative aspect-square h-full rounded-[15px] bg-color-bg-default border-color-bg-medium border-[1px]"
-                href={`/applications/${randomProjects?.length > 0 ? randomProjects[5][filteredProjectsData?.types?.indexOf("owner_project") ?? 0] : ""}`}
+                href={`/applications/${randomProjects?.length > 0 ? randomProjects[0][filteredProjectsData?.types?.indexOf("owner_project") ?? 0] : ""}`}
             >
                 <div className="absolute top-[15px] heading-large-sm text-color-text-primary"> Explore Apps </div>
                 <div className="absolute inset-0 flex items-center justify-center pt-[45px]">
                     <div className="relative h-full aspect-square">
                         <Image
-                            src={`https://api.growthepie.com/v1/apps/logos/${randomProjects?.length > 0 ? randomProjects[5][filteredProjectsData?.types?.indexOf("logo_path") ?? 0] : ""}`}
+                            src={`https://api.growthepie.com/v1/apps/logos/${randomProjects?.length > 0 ? randomProjects[0][filteredProjectsData?.types?.indexOf("logo_path") ?? 0] : ""}`}
                             fill={true}
                             className="rounded-full px-[10px] py-[10px] object-contain"
-                            alt={randomProjects?.length > 0 ? randomProjects[5][filteredProjectsData?.types?.indexOf("display_name") ?? 0] : ""}
+                            alt={randomProjects?.length > 0 ? randomProjects[0][filteredProjectsData?.types?.indexOf("display_name") ?? 0] : ""}
                         />
                     </div>
                 </div>

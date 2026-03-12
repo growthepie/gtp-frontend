@@ -355,9 +355,15 @@ const EventCard = ({
   return (
     <motion.div
       layout={!isMobile}
-      className={`relative flex w-full ${isMobile ? "h-full" : ""} overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${showExpanded ? "bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
+      className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${
+        isMobile
+          ? "h-full bg-color-ui-active items-start"
+          : isSelected
+            ? "flex-1 min-h-0 bg-color-ui-active items-start"
+            : "h-[54px] shrink-0 bg-color-bg-default hover:bg-color-ui-hover items-center"
+      }`}
       onClick={() => setSelectedEvent(event)}
-      transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
+      transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
     >
       {/* Icon */}
       <motion.div layout={!isMobile ? "position" : false} className="shrink-0">
@@ -375,7 +381,7 @@ const EventCard = ({
             <motion.div
               key="selected"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.15, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.3, delay: 0.15, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className={`flex flex-col gap-y-[10px] ${isMobile ? "h-full" : ""}`}
             >
@@ -386,7 +392,7 @@ const EventCard = ({
             <motion.p
               key="question"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.4, delay: 0.25, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.3, delay: 0.25, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
               className="heading-small-xs self-center"
             >
@@ -474,7 +480,7 @@ const SideEventsContainer = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-[10px] w-[390px] h-[442px] min-w-[300px] shrink min-h-0 self-stretch overflow-y-auto">
+    <div className="flex flex-col gap-y-[10px] w-[390px] min-w-[300px] h-[442px] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
