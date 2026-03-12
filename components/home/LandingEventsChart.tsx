@@ -533,8 +533,9 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+
   const projectDataMap = useMemo<Record<string, AggregatedProjectData>>(() => {
-    if (!appOverviewData) return {};
+    if (!appOverviewData || !ownerProjectToProjectData ) return {};
 
     const types = appOverviewData.data.types as string[];
     const col = {
@@ -595,14 +596,27 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     }
 
     return Object.fromEntries(rows.map(({ _raw: _, ...r }) => [r.owner_project, r]));
-  }, [appOverviewData]);
+  }, [appOverviewData, ownerProjectToProjectData]);
+
 
   
+
+  const resolvedCards = useMemo(() => {
+    if (eventData.topAppsMetric && Object.keys(projectDataMap).length > 0) {
+      const metricKey = eventData.topAppsMetric as MetricKey;
+      return Object.values(projectDataMap)
+        .filter((p) => p.metrics[metricKey])
+        .sort((a, b) => a.metrics[metricKey].rank - b.metrics[metricKey].rank)
+        .slice(0, 9)
+        .map((p) => ({ owner_project: p.owner_project, metric: eventData.topAppsMetric! }));
+    }
+    return eventData.cards ?? [];
+  }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
   return (
     <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
       <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
-        {eventData.cards?.map((card, index) => {
+        {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
           const isGasFees = card.metric === "gas_fees";
@@ -636,7 +650,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                   <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
                   <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
                     <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
-                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : "-"}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
+                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : ""}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
                     </span>
                   </span>
                 </div>
