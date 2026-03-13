@@ -69,6 +69,7 @@ export default function ProjectEditPageClient() {
   const [activeStep, setActiveStep] = useState<0 | 1 | 2 | 3 | 4>(
     initialActiveStep,
   );
+  const [hasContinuedWithoutEdits, setHasContinuedWithoutEdits] = useState(false);
   const [hoveredTab, setHoveredTab] = useState<"find" | "add" | null>(null);
   const [editSearchCaptureActive, setEditSearchCaptureActive] = useState(false);
   const [sidebarOffsetTop, setSidebarOffsetTop] = useState(0);
@@ -107,6 +108,7 @@ export default function ProjectEditPageClient() {
     collapsedLogoSrc,
     validationErrors,
     hasBlockingErrors,
+    hasFormChanges,
     canSubmitContribution,
     hasFormChangedSinceSubmission,
     formSuggestions,
@@ -141,6 +143,11 @@ export default function ProjectEditPageClient() {
   const submitProjectContribution = async () => {
     await formHook.submitProjectContribution(setActiveStep);
   };
+
+  const continueWithoutEdits = useCallback(() => {
+    setHasContinuedWithoutEdits(true);
+    setActiveStep(2);
+  }, []);
 
   const clearProjectEditSearchMode = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -190,6 +197,12 @@ export default function ProjectEditPageClient() {
       window.removeEventListener("projectEditSelectProjectContracts", handleSelectProjectContracts);
     };
   }, [clearProjectEditSearchMode, fillFormFromProject, ownerProjectToProjectData, formHook.normalizedProjects]);
+
+  useEffect(() => {
+    if (isAddMode || hasFormChanges) {
+      setHasContinuedWithoutEdits(false);
+    }
+  }, [hasFormChanges, isAddMode]);
 
   // ── Queue hook ─────────────────────────────────────────────────────────────
 
@@ -303,7 +316,16 @@ export default function ProjectEditPageClient() {
     }
   }, [isAddMode, activeStep, editSearchCaptureActive, setSearchBarCaptureActive]);
 
-  const isMetadataSubmitted = Boolean(contributionResult);
+  const shouldAutoCompleteMetadata =
+    !isAddMode &&
+    intent.source === "application-page" &&
+    intent.focus === "contracts" &&
+    intent.start === "contracts";
+
+  const isMetadataSubmitted =
+    Boolean(contributionResult) ||
+    hasContinuedWithoutEdits ||
+    (shouldAutoCompleteMetadata && !hasFormChanges);
 
   // collapsed logo for tab display
   const collapsedLogoPathFromData = ownerProjectToProjectData[form.owner_project.trim()]?.logo_path;
@@ -541,11 +563,14 @@ export default function ProjectEditPageClient() {
                 enhanceDescription={enhanceDescription}
                 allProjectMatches={allProjectMatches}
                 submitError={submitError}
+                isMetadataSubmitted={isMetadataSubmitted}
                 contributionResult={contributionResult}
+                hasFormChanges={hasFormChanges}
                 hasFormChangedSinceSubmission={hasFormChangedSinceSubmission}
                 canSubmitContribution={canSubmitContribution}
                 isSubmittingContribution={isSubmittingContribution}
                 submitProjectContribution={submitProjectContribution}
+                continueWithoutEdits={continueWithoutEdits}
               />
 
               <ContractsStep
@@ -609,6 +634,7 @@ export default function ProjectEditPageClient() {
                 bulkSubmitResult={queueHook.bulkSubmitResult}
                 lastSubmitChainId={queueHook.lastSubmitChainId}
                 onSurveySubmit={handleSurveySubmit}
+                isMetadataSubmitted={isMetadataSubmitted}
               />
             </div>
 

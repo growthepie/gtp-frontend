@@ -13,6 +13,7 @@ import { isMap, isSeq, parseDocument, YAMLMap, YAMLSeq } from "yaml";
 
 // ---------------------------------------------------------------------------
 // In-memory rate limiter — 5 requests per IP per hour
+// Bypass with: OLI_DISABLE_RATE_LIMIT=true (dev/testing only)
 // ---------------------------------------------------------------------------
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -21,6 +22,9 @@ const MAX_LOGO_BASE64_BYTES = 700_000; // ~500 KB binary
 const ipBuckets = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfterSecs: number } {
+  if (["1", "true", "yes", "on"].includes((process.env.OLI_DISABLE_RATE_LIMIT ?? "").trim().toLowerCase())) {
+    return { allowed: true, retryAfterSecs: 0 };
+  }
   const now = Date.now();
   const bucket = ipBuckets.get(ip);
   if (!bucket || now >= bucket.resetAt) {
@@ -272,28 +276,68 @@ const applyAdditiveSocialPatch = (
   setUrlEntry(document, sequence, 0, url);
 };
 
+// Move `key` to immediately after `afterKey` in the map's item list.
+// No-op if either key is absent.
+// NOTE: only works on documents parsed WITHOUT keepSourceTokens.
+const moveKeyAfter = (map: YAMLMap, key: string, afterKey: string) => {
+  const getKey = (item: any): string | undefined => {
+    if (typeof item.key === "string") return item.key;
+    if (item.key && typeof item.key.value !== "undefined") return String(item.key.value);
+    return undefined;
+  };
+  const keyIndex = map.items.findIndex((item) => getKey(item) === key);
+  const afterIndex = map.items.findIndex((item) => getKey(item) === afterKey);
+  if (keyIndex === -1 || afterIndex === -1) return;
+
+  const [pair] = map.items.splice(keyIndex, 1);
+  // After the splice the reference index shifts by -1 when afterKey came after key.
+  const insertAt = afterIndex < keyIndex ? afterIndex + 1 : afterIndex;
+  map.items.splice(insertAt, 0, pair);
+};
+
 const patchExistingProjectYaml = (
   yamlText: string,
   patch: EditMetadataPatch,
 ): string => {
-  const document = parseDocument(yamlText, {
-    keepSourceTokens: true,
-  });
-  if (document.errors.length > 0) {
-    throw new Error(`Could not parse existing project YAML: ${document.errors[0]?.message || "unknown error"}`);
+  // ── Pass 1: apply value patches with source-token preservation ────────────
+  // keepSourceTokens keeps original formatting for existing keys, but new keys
+  // are appended to the end of the token stream and cannot be repositioned via
+  // node-tree reordering alone.
+  const doc1 = parseDocument(yamlText, { keepSourceTokens: true });
+  if (doc1.errors.length > 0) {
+    throw new Error(`Could not parse existing project YAML: ${doc1.errors[0]?.message || "unknown error"}`);
   }
 
-  const root = ensureRootMap(document);
-  root.set("display_name", patch.displayName);
+  const root1 = ensureRootMap(doc1);
+  root1.set("display_name", patch.displayName);
   if (patch.description) {
-    root.set("description", patch.description);
+    root1.set("description", patch.description);
   }
-  applyAdditiveUrlPatch(document, root, "websites", patch.websites);
-  applyAdditiveUrlPatch(document, root, "github", patch.github);
-  applyAdditiveSocialPatch(document, root, "twitter", patch.twitter);
-  applyAdditiveSocialPatch(document, root, "telegram", patch.telegram);
+  applyAdditiveUrlPatch(doc1, root1, "websites", patch.websites);
+  applyAdditiveUrlPatch(doc1, root1, "github", patch.github);
+  applyAdditiveSocialPatch(doc1, root1, "twitter", patch.twitter);
+  applyAdditiveSocialPatch(doc1, root1, "telegram", patch.telegram);
 
-  return String(document);
+  const intermediate = String(doc1);
+
+  // ── Pass 2: re-parse without source tokens and reorder keys ───────────────
+  // Without keepSourceTokens the serializer respects item order in the node
+  // tree, so moveKeyAfter reliably repositions newly added keys.
+  const doc2 = parseDocument(intermediate);
+  if (doc2.errors.length > 0) {
+    // Shouldn't happen — intermediate is valid yaml produced by pass 1.
+    return intermediate;
+  }
+
+  if (isMap(doc2.contents)) {
+    const root2 = doc2.contents as YAMLMap;
+    moveKeyAfter(root2, "description", "display_name");
+    moveKeyAfter(root2, "websites", "description");
+    moveKeyAfter(root2, "github", "websites");
+    moveKeyAfter(root2, "social", "github");
+  }
+
+  return String(doc2);
 };
 
 const fetchExistingProjectFile = async (input: {
@@ -367,6 +411,47 @@ const fetchExistingTargetFileSha = async (input: {
   return payload.sha || null;
 };
 
+type GitHubContentEntry = {
+  type?: string;
+  name?: string;
+  path?: string;
+  sha?: string;
+};
+
+const listDirectoryEntries = async (input: {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  directoryPath: string;
+}): Promise<GitHubContentEntry[]> => {
+  const response = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${encodeContentPath(input.directoryPath)}?ref=${encodeURIComponent(input.branch)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        Accept: "application/vnd.github+json",
+      },
+      cache: "no-store",
+    },
+  );
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Could not load directory metadata for ${input.directoryPath}: HTTP ${response.status} ${body}`,
+    );
+  }
+
+  const payload = (await response.json()) as GitHubContentEntry[] | GitHubContentEntry;
+  return Array.isArray(payload) ? payload : [];
+};
+
 const upsertFileOnBranch = async (input: {
   token: string;
   owner: string;
@@ -408,6 +493,97 @@ const upsertFileOnBranch = async (input: {
     throw new Error(
       `Could not update ${input.filePath} on branch ${input.branch}: HTTP ${response.status} ${body}`,
     );
+  }
+};
+
+const deleteFileOnBranch = async (input: {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  filePath: string;
+  sha: string;
+  commitMessage: string;
+}) => {
+  const response = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/contents/${encodeContentPath(input.filePath)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: input.commitMessage,
+        branch: input.branch,
+        sha: input.sha,
+      }),
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Could not delete ${input.filePath} on branch ${input.branch}: HTTP ${response.status} ${body}`,
+    );
+  }
+};
+
+const replaceLogoVariantsOnBranch = async (input: {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  ownerProject: string;
+  filePath: string;
+  fileContent: Uint8Array;
+  commitMessage: string;
+}) => {
+  await upsertFileOnBranch({
+    token: input.token,
+    owner: input.owner,
+    repo: input.repo,
+    branch: input.branch,
+    filePath: input.filePath,
+    fileContent: input.fileContent,
+    commitMessage: input.commitMessage,
+  });
+
+  const slashIndex = input.filePath.lastIndexOf("/");
+  const directoryPath = input.filePath.slice(0, slashIndex);
+  const expectedFileName = input.filePath.slice(slashIndex + 1);
+  const slugPrefix = `${input.ownerProject}.`;
+  const entries = await listDirectoryEntries({
+    token: input.token,
+    owner: input.owner,
+    repo: input.repo,
+    branch: input.branch,
+    directoryPath,
+  });
+
+  for (const entry of entries) {
+    if (
+      entry.type !== "file" ||
+      typeof entry.name !== "string" ||
+      !entry.name.startsWith(slugPrefix) ||
+      entry.name === expectedFileName ||
+      typeof entry.path !== "string" ||
+      typeof entry.sha !== "string"
+    ) {
+      continue;
+    }
+
+    await deleteFileOnBranch({
+      token: input.token,
+      owner: input.owner,
+      repo: input.repo,
+      branch: input.branch,
+      filePath: entry.path,
+      sha: entry.sha,
+      commitMessage: input.commitMessage,
+    });
   }
 };
 
@@ -584,11 +760,12 @@ export async function POST(request: Request) {
         const firstChar = ownerProject.charAt(0).toLowerCase();
         const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
         const logoTitle = `Update logo for ${displayName || ownerProject}`;
-        await upsertFileOnBranch({
+        await replaceLogoVariantsOnBranch({
           token: githubToken,
           owner: yamlTargetOwner,
           repo: repositories.projects.repo,
           branch: yamlBranchName,
+          ownerProject,
           filePath: computedLogoPath,
           fileContent: logoContribution.fileBytes,
           commitMessage: logoTitle,
@@ -621,6 +798,16 @@ export async function POST(request: Request) {
             `- file: \`${computedLogoPath}\``,
             `- source: ${actorLabel}`,
           ].join("\n"),
+        });
+        await replaceLogoVariantsOnBranch({
+          token: githubToken,
+          owner: logoPullRequest.targetOwner,
+          repo: repositories.logos.repo,
+          branch: logoPullRequest.branchName,
+          ownerProject,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
         });
         logoPullRequestUrl = logoPullRequest.pullRequestUrl;
         logoFilePath = computedLogoPath;
@@ -656,11 +843,12 @@ export async function POST(request: Request) {
         const firstChar = ownerProject.charAt(0).toLowerCase();
         const computedLogoPath = `data/logos/${firstChar}/${ownerProject}.${logoExtension}`;
         const logoTitle = `Add logo for ${displayName || ownerProject}`;
-        await upsertFileOnBranch({
+        await replaceLogoVariantsOnBranch({
           token: githubToken,
           owner: yamlTargetOwner,
           repo: repositories.projects.repo,
           branch: yamlBranchName,
+          ownerProject,
           filePath: computedLogoPath,
           fileContent: logoContribution.fileBytes,
           commitMessage: logoTitle,
@@ -696,6 +884,16 @@ export async function POST(request: Request) {
             `- file: \`${computedLogoPath}\``,
             `- source: ${actorLabel}`,
           ].join("\n"),
+        });
+        await replaceLogoVariantsOnBranch({
+          token: githubToken,
+          owner: logoPullRequest.targetOwner,
+          repo: repositories.logos.repo,
+          branch: logoPullRequest.branchName,
+          ownerProject,
+          filePath: computedLogoPath,
+          fileContent: logoContribution.fileBytes,
+          commitMessage: logoTitle,
         });
         logoPullRequestUrl = logoPullRequest.pullRequestUrl;
         logoFilePath = computedLogoPath;

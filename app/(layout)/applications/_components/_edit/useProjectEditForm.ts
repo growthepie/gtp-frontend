@@ -669,7 +669,6 @@ export function useProjectEditForm({
         logoBranchName: data.logoBranchName,
         combinedPullRequest: data.combinedPullRequest ?? false,
       });
-      setActiveStep(2);
     } catch (error: any) {
       setSubmitError(error?.message || "Failed to submit project contribution.");
     } finally {

@@ -95,6 +95,9 @@ type ContractsStepProps = {
 
   // Survey
   onSurveySubmit?: (data: { teamSize: string; goal: string; metric: string; other: string }) => void;
+
+  // Step gating
+  isMetadataSubmitted: boolean;
 };
 
 export function ContractsStep({
@@ -156,6 +159,7 @@ export function ContractsStep({
   bulkSubmitResult,
   lastSubmitChainId,
   onSurveySubmit,
+  isMetadataSubmitted,
 }: ContractsStepProps) {
   const [activeRowDropdown, setActiveRowDropdown] = useState<string | null>(null);
   const [rowDropdownQuery, setRowDropdownQuery] = useState<Record<string, string>>({});
@@ -167,6 +171,9 @@ export function ContractsStep({
   const [surveyGoal, setSurveyGoal] = useState("");
   const [surveyMetric, setSurveyMetric] = useState("");
   const [surveyOther, setSurveyOther] = useState("");
+
+  // Tracks whether the user has explicitly proceeded through step 3 via the "Continue to review" button
+  const [step3Completed, setStep3Completed] = useState(false);
 
   // Error block
   const [errorExpanded, setErrorExpanded] = useState(false);
@@ -372,8 +379,9 @@ export function ContractsStep({
         <button
           ref={step2HeaderRef}
           type="button"
-          onClick={() => setActiveStep(2)}
-          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+          onClick={() => { if (activeStep >= 2 || isMetadataSubmitted) setActiveStep(2); }}
+          disabled={activeStep < 2 && !isMetadataSubmitted}
+          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
             <Icon
@@ -910,10 +918,10 @@ export function ContractsStep({
                     ? "Validating..."
                     : "Validate queue"
                 }
-                variant={queueHasValidationResult && queueStats.errors === 0 ? "primary" : "highlight"}
+                variant={meaningfulRows.length > 0 && !(queueHasValidationResult && queueStats.errors === 0) ? "highlight" : "primary"}
                 size="sm"
                 clickHandler={validateQueue}
-                disabled={bulkController.validation.isRunning || singleController.validation.isRunning}
+                disabled={bulkController.validation.isRunning || singleController.validation.isRunning || meaningfulRows.length === 0}
               />
               {queueHasValidationResult && queueStats.errors === 0 && meaningfulRows.length > 0 && (
                 <GTPButton
@@ -935,8 +943,9 @@ export function ContractsStep({
         <button
           ref={step3HeaderRef}
           type="button"
-          onClick={() => setActiveStep(3)}
-          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+          onClick={() => { if (activeStep >= 3 || (queueHasValidationResult && queueStats.errors === 0 && meaningfulRows.length > 0)) setActiveStep(3); }}
+          disabled={activeStep < 3 && !(queueHasValidationResult && queueStats.errors === 0 && meaningfulRows.length > 0)}
+          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
             <Icon
@@ -945,13 +954,13 @@ export function ContractsStep({
             />
           </div>
           <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-            walletAddress
+            step3Completed && !!walletAddress
               ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
               : activeStep === 3
               ? "bg-color-text-primary text-color-bg-default"
               : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
           }`}>
-            {walletAddress ? <Icon icon="feather:check" className="size-[13px]" /> : 3}
+            {step3Completed && !!walletAddress ? <Icon icon="feather:check" className="size-[13px]" /> : 3}
           </div>
           <GTPIcon icon="gtp-wallet" size="sm" className="shrink-0" />
           <div className="flex-1 min-w-0">
@@ -1057,6 +1066,7 @@ export function ContractsStep({
                 rightIcon={"in-button-right" as any}
                 clickHandler={() => {
                   onSurveySubmit?.({ teamSize: surveyTeamSize, goal: surveyGoal, metric: surveyMetric, other: surveyOther });
+                  setStep3Completed(true);
                   setActiveStep(4);
                 }}
                 className={
@@ -1075,8 +1085,9 @@ export function ContractsStep({
         <button
           ref={step4HeaderRef}
           type="button"
-          onClick={() => setActiveStep(4)}
-          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left"
+          onClick={() => { if (activeStep >= 4 || step3Completed) setActiveStep(4); }}
+          disabled={activeStep < 4 && !step3Completed}
+          className="w-full flex items-center gap-x-[12px] px-[16px] py-[14px] hover:bg-color-bg-medium/30 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <div className="shrink-0 size-[26px] rounded-full border border-color-ui-shadow/40 flex items-center justify-center bg-color-bg-default hover:bg-color-ui-hover transition-colors">
             <Icon

@@ -69,11 +69,14 @@ type ProjectDetailsStepProps = {
 
   // Submission
   submitError: string | null;
+  isMetadataSubmitted: boolean;
   contributionResult: ContributionResult | null;
+  hasFormChanges: boolean;
   hasFormChangedSinceSubmission: boolean;
   canSubmitContribution: boolean;
   isSubmittingContribution: boolean;
   submitProjectContribution: () => Promise<void>;
+  continueWithoutEdits: () => void;
 };
 
 export function ProjectDetailsStep({
@@ -111,12 +114,34 @@ export function ProjectDetailsStep({
   enhanceDescription,
   allProjectMatches,
   submitError,
+  isMetadataSubmitted,
   contributionResult,
+  hasFormChanges,
   hasFormChangedSinceSubmission,
   canSubmitContribution,
   isSubmittingContribution,
   submitProjectContribution,
+  continueWithoutEdits,
 }: ProjectDetailsStepProps) {
+  const showContinueWithoutEdits =
+    !isAddMode &&
+    !hasFormChanges &&
+    !isSubmittingContribution &&
+    !(Boolean(contributionResult) && !hasFormChangedSinceSubmission);
+  const existingLogoPath = ownerProjectToProjectData[form.owner_project.trim()]?.logo_path;
+  const hasLogoSubmission = Boolean(
+    contributionResult?.combinedPullRequest || contributionResult?.logoPullRequestUrl,
+  );
+  const successMessage = !hasLogoSubmission
+    ? "Your project detail changes were received. Maintainers will review them."
+    : contributionResult?.combinedPullRequest
+    ? existingLogoPath
+      ? "Your project detail changes and logo update were received in one PR. Maintainers will review them."
+      : "Your project detail changes and logo addition were received in one PR. Maintainers will review them."
+    : existingLogoPath
+    ? "Your project detail changes and logo update were received. Maintainers will review them."
+    : "Your project detail changes and logo addition were received. Maintainers will review them.";
+
   return (
     <div ref={cardRef} className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
       {/* Clickable header */}
@@ -133,13 +158,13 @@ export function ProjectDetailsStep({
           />
         </div>
         <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-          contributionResult
+          isMetadataSubmitted
             ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
             : activeStep === 1
             ? "bg-color-text-primary text-color-bg-default"
             : "bg-color-bg-medium border border-color-ui-shadow/60 text-color-text-secondary"
         }`}>
-          {contributionResult ? <Icon icon="feather:check" className="size-[13px]" /> : 1}
+          {isMetadataSubmitted ? <Icon icon="feather:check" className="size-[13px]" /> : 1}
         </div>
         {collapsedLogoSrc ? (
           <div className="relative size-[24px] shrink-0 overflow-hidden rounded-[4px] border border-color-ui-shadow/60">
@@ -315,26 +340,33 @@ export function ProjectDetailsStep({
                 {/* Owner project key */}
                 <div>
                   <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Owner project key</label>
-                  <div className="relative focus-within:z-50">
-                    <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
-                      <input
-                        value={form.owner_project}
-                        onChange={(e) => updateField("owner_project", normalizeOwnerProjectInput(e.target.value))}
-                        onFocus={() => setActiveDropdownField("owner_project")}
-                        onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
-                        placeholder="owner_project"
-                        className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                      />
+                  {isAddMode ? (
+                    <div className="relative focus-within:z-50">
+                      <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
+                        <input
+                          value={form.owner_project}
+                          onChange={(e) => updateField("owner_project", normalizeOwnerProjectInput(e.target.value))}
+                          onFocus={() => setActiveDropdownField("owner_project")}
+                          onBlur={() => setTimeout(() => setActiveDropdownField(null), 150)}
+                          placeholder="owner_project"
+                          className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
+                        />
+                      </div>
+                      {activeDropdownField === "owner_project" && (
+                        <FieldDropdown suggestions={ownerProjectSuggestions} onSelect={fillFormFromProject} />
+                      )}
                     </div>
-                    {activeDropdownField === "owner_project" && (
-                      <FieldDropdown suggestions={ownerProjectSuggestions} onSelect={fillFormFromProject} />
-                    )}
-                  </div>
+                  ) : (
+                    <div className="flex w-full items-center bg-color-bg-medium/50 rounded-[22px] h-[44px] px-[14px] opacity-60 cursor-not-allowed select-none">
+                      <span className="flex-1 text-sm text-color-text-primary">{form.owner_project}</span>
+                      <Icon icon="feather:lock" className="size-[12px] text-color-text-secondary shrink-0" />
+                    </div>
+                  )}
                   {validationErrors.owner_project ? (
                     <p className="mt-[6px] text-xs text-color-negative">{validationErrors.owner_project}</p>
-                  ) : (
+                  ) : isAddMode ? (
                     <p className="mt-[6px] text-xs text-color-text-primary">Use a short lowercase key, for example: uniswap.</p>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Display name */}
@@ -530,11 +562,7 @@ export function ProjectDetailsStep({
                   <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
                   <div className="font-medium text-sm text-color-positive">Changes submitted — awaiting approval</div>
                 </div>
-                <p className="mt-[4px] text-xs text-color-text-primary">
-                  {contributionResult.combinedPullRequest
-                    ? "One PR was created for the project update and logo. Maintainers will review it."
-                    : "Your PR has been created. Maintainers will review it."}
-                </p>
+                <p className="mt-[4px] text-xs text-color-text-primary">{successMessage}</p>
                 <div className="mt-[8px] flex flex-wrap gap-[6px]">
                   <Link
                     href={contributionResult.yamlPullRequestUrl}
@@ -571,11 +599,21 @@ export function ProjectDetailsStep({
                   ? "Creating PR..."
                   : isAddMode
                   ? "Add project"
-                  : "Edit project"}
+                  : "Save edits"}
                 disabled={!canSubmitContribution || (Boolean(contributionResult) && !hasFormChangedSinceSubmission)}
                 clickHandler={submitProjectContribution}
                 className={`rounded-full px-[14px] py-[9px] text-sm transition-all disabled:opacity-60 ${(canSubmitContribution && !(Boolean(contributionResult) && !hasFormChangedSinceSubmission)) ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}`}
               />
+              {showContinueWithoutEdits && (
+                <GTPButton
+                  variant="highlight"
+                  size="sm"
+                  label="Continue without edits"
+                  rightIcon="in-button-right"
+                  clickHandler={continueWithoutEdits}
+                  className="rounded-full px-[14px] py-[9px] text-sm"
+                />
+              )}
               {contributionResult && !hasFormChangedSinceSubmission && (
                 <GTPButton
                   variant="highlight"
