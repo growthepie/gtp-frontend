@@ -12,7 +12,6 @@ import Heading from "@/components/layout/Heading";
 import Search from "./_components/Search";
 import Controls from "./_components/Controls";
 import { PageTitleAndDescriptionAndControls } from "./_components/Components";
-import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
