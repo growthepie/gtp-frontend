@@ -2567,6 +2567,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           </div>
         </div>
       )}
+      </>
+      )}
     </div>
   )
 }
