@@ -609,6 +609,10 @@ export default function GTPUniversalChart({
   }, [isDownloadingChartSnapshot, metricLabel]);
   const metricCatalogIcon =
     (metricContextType === "data-availability" ? daMetricItems : metricItems).find((item) => item.key === metricId)?.icon;
+  const reversePerformer = Boolean(
+    (metricContextType === "data-availability" ? daMetricItems : metricItems).find((item) => item.key === metricId)
+      ?.page?.reversePerformer,
+  );
   const metricIcon =
     normalizeMetricIcon(metricInfo?.icon) ??
     normalizeMetricIcon(metricCatalogIcon) ??
@@ -1343,7 +1347,11 @@ export default function GTPUniversalChart({
               ...point,
               numericValue: Number(point.value[1]),
             }))
-            .sort((a, b) => b.numericValue - a.numericValue);
+            .sort((a, b) =>
+              reversePerformer
+                ? a.numericValue - b.numericValue
+                : b.numericValue - a.numericValue,
+            );
           const maxTooltipValue = Math.max(...sortedPoints.map((point) => Math.abs(point.numericValue)), 0);
 
           const rows = sortedPoints
@@ -1424,6 +1432,7 @@ export default function GTPUniversalChart({
     isStackedMode,
     metricLabel,
     numbersXxsTypography,
+    reversePerformer,
     textXxsTypography,
   ]);
 
