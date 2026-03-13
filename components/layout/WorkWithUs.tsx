@@ -8,10 +8,9 @@ import { useRouter } from "next/navigation";
 
 type WorkWithUsProps = {
   placement: Placement;
-  mobile?: boolean;
 };
 
-export default function WorkWithUs({ placement = "bottom-end", mobile = false }: WorkWithUsProps) {
+export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -54,10 +53,10 @@ export default function WorkWithUs({ placement = "bottom-end", mobile = false }:
         onOpenChange={setOpen}
         openOn="both"
         placement={placement}
-        collapsedSize={{ width: mobile ? 44 : 170, height: 44 }}
+        collapsedSize={{ width: 44, height: 44 }}
         expandedSize={{ width: 286, height: "auto" }}
-        className="pointer-events-auto shrink-0"
-        triggerClassName="!px-0 md:!px-[5px]"
+        className="pointer-events-auto shrink-0 !w-auto"
+        triggerClassName="!px-0"
         contentPadding="30px 0 0 0"
         renderTrigger={({ open, props }) => (
           <button
@@ -75,17 +74,17 @@ export default function WorkWithUs({ placement = "bottom-end", mobile = false }:
               setOpen(false);
               router.push("/sales");
             }}
-            className={`relative flex items-center w-full h-full rounded-full overflow-hidden ${open ? '' : ''}`}
-            aria-label="Notifications"
+            className={`relative flex h-full w-full items-center rounded-full overflow-hidden ${
+              open ? "justify-start" : "justify-center"
+            }`}
+            aria-label="Work with us"
           >
             <GTPIcon 
-              icon="gtp-socials" size="md"
-              containerClassName={`!size-[44px] min-w-[44px] flex items-center justify-center`}
+              icon="gtp-socials"
+              size="md"
+              containerClassName="!size-[44px] min-w-[44px] shrink-0 flex items-center justify-center"
              />
-            {/* <div className="heading-small-sm">Work with us</div> */}
-            <div className={`heading-small-sm whitespace-nowrap ${open ? 'opacity-100' : 'opacity-0'} md:opacity-100 transition-opacity duration-500`}>
-              Work with us
-            </div>
+            {open && <div className="heading-small-sm whitespace-nowrap opacity-100 transition-opacity duration-500">Work with us</div>}
           </button>
         )}
       />

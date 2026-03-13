@@ -1,17 +1,18 @@
 import { TimespanProvider } from "./_contexts/TimespanContext";
 import { MetricsProvider } from "./_contexts/MetricsContext";
 import { SortProvider } from "./_contexts/SortContext";
+import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
+import { Metadata } from "next";
+import { getPageMetadata } from "@/lib/metadata";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import ApplicationsRouteHeader from "./_components/ApplicationsRouteHeader";
 import Container from "@/components/layout/Container";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import Search from "./_components/Search";
 import Controls from "./_components/Controls";
-import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
 import { PageTitleAndDescriptionAndControls } from "./_components/Components";
 import { Metadata } from "next";
-import { getPageMetadata } from "@/lib/metadata";
-import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
