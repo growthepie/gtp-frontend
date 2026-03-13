@@ -1561,12 +1561,14 @@ export default function GTPChart({
       const totalRow = (() => {
         if (!showTotal) return "";
         const total = displayPoints.reduce((sum, p) => sum + p.numericValue, 0);
-        const formattedTotal = formatTooltipValue(total);
+        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
+        const prefixStd = percentageMode ? "" : (prefix ?? "");
+        const suffixStd = percentageMode ? "" : (suffix ?? "");
         return `
-          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight mt-[4px] border-t border-color-border pt-[4px]">
+          <div class="flex w-full space-x-1.5 items-center font-bold leading-tight pt-[0px]">
             <div class="w-[15px] h-[10px]"></div>
-            <div class="tooltip-point-name text-xs">Total</div>
-            <div class="flex-1 text-right justify-end flex numbers-xs">${formattedTotal}</div>
+            <div class="tooltip-point-name heading-small-xxs">Total:</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
           </div>
         `;
       })();
@@ -1672,6 +1674,7 @@ export default function GTPChart({
   }, [
     animation,
     areaOpacityOverride,
+    axisPixelMap,
     barMaxWidth,
     chartTooltipPosition,
     decimals,
@@ -1700,7 +1703,6 @@ export default function GTPChart({
     xAxisType,
     yAxisLabelFormatter,
     yAxisLayout,
-    axisPixelMap
   ]);
 
   const containerStyle: React.CSSProperties = {

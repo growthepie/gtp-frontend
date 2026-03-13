@@ -1,14 +1,17 @@
 "use client";
-import { useState, memo, useMemo, use, useEffect } from "react";
+import { useState, memo, useMemo, use, useEffect, useCallback } from "react";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { ProjectMetadata, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ApplicationsURLs } from "@/lib/urls";
 import Container from "@/components/layout/Container";
+import { GrayOverlay } from "@/components/layout/Backgrounds";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
@@ -24,8 +27,30 @@ import {
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
+import useSWR from "swr";
+import { createPortal } from "react-dom";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
+
+type ApplicationEnrichmentScreenshot = {
+  alt_text: string | null;
+  caption: string | null;
+  page_id: string;
+  priority: number | null;
+  title: string | null;
+  url: string | null;
+};
+
+type ApplicationEnrichmentFeature = {
+  feature: string;
+};
+
+type ApplicationEnrichmentData = {
+  screenshots?: ApplicationEnrichmentScreenshot[] | null;
+  features?: {
+    product_features?: ApplicationEnrichmentFeature[] | null;
+  } | null;
+};
 
 // ─── Fake Data ───────────────────────────────────────────────────────────────
 
@@ -40,35 +65,56 @@ function generateSparkline(points: number, base: number, variance: number) {
   return values;
 }
 
-// Fake screenshots — first entry is the feature/hero image (wider flex-[2]),
-// the rest are standard UI screenshots (flex-[1]).
-const FAKE_SCREENSHOTS = [
-  {
-    label: "Swap Interface",
-    bg: "linear-gradient(135deg, #d4f500 0%, #a3e635 40%, #c084fc 100%)",
-    flex: 2,
-  },
-  {
-    label: "Token Selection",
-    bg: "linear-gradient(160deg, #1e1b4b 0%, #4c1d95 50%, #312e81 100%)",
-    flex: 1,
-  },
-  {
-    label: "Chain Selector",
-    bg: "linear-gradient(160deg, #1e1b4b 0%, #6d28d9 50%, #4c1d95 100%)",
-    flex: 1,
-  },
-  {
-    label: "Route Preview",
-    bg: "linear-gradient(160deg, #1e1b4b 0%, #5b21b6 50%, #3b0764 100%)",
-    flex: 1,
-  },
-  {
-    label: "Settings",
-    bg: "linear-gradient(160deg, #1e1b4b 0%, #7c3aed 50%, #4c1d95 100%)",
-    flex: 1,
-  },
-];
+function createEnrichmentHeaders(url: string): Headers {
+  const headers = new Headers();
+
+  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  headers.set("Pragma", "no-cache");
+  headers.set("Expires", "0");
+
+  if (
+    url.includes("api.growthepie.com") &&
+    process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN
+  ) {
+    headers.set(
+      "X-Developer-Token",
+      process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN,
+    );
+  }
+
+  return headers;
+}
+
+async function applicationEnrichmentFetcher(
+  url: string,
+): Promise<ApplicationEnrichmentData | null> {
+  const response = await fetch(url, {
+    method: "GET",
+    headers: createEnrichmentHeaders(url),
+  });
+
+  if (response.ok) {
+    return response.json();
+  }
+
+  if (response.status === 404 || response.status === 403) {
+    return null;
+  }
+
+  const error: Error & { status?: number } = new Error(
+    `HTTP ${response.status}: ${response.statusText}`,
+  );
+  error.status = response.status;
+  throw error;
+}
+
+function getAppScrapeAssetUrl(
+  ownerProject: string,
+  pageId: string,
+  filename: string,
+) {
+  return `https://api.growthepie.com/v1/apps/scrape/${ownerProject}/${pageId}/${filename}`;
+}
 
 const FAKE_APP = {
   name: "Uniswap",
@@ -718,8 +764,19 @@ AboutApp.displayName = "AboutApp";
 
 // ─── Screenshots Section ──────────────────────────────────────────────────────
 
-const ScreenshotsSection = memo(() => {
+const ScreenshotsSection = memo(({
+  owner_project,
+  screenshots,
+}: {
+  owner_project: string;
+  screenshots: ApplicationEnrichmentScreenshot[];
+}) => {
   const [open, setOpen] = useState(true);
+  const [selectedScreenshotIndex, setSelectedScreenshotIndex] = useState<number | null>(null);
+
+  if (!screenshots.length) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
@@ -742,41 +799,304 @@ const ScreenshotsSection = memo(() => {
       {/* Collapsible body */}
       <div
         style={{
-          maxHeight: open ? 300 : 0,
+          maxHeight: open ? 380 : 0,
           paddingTop: open ? "12px" : 0,
           overflow: "hidden",
           opacity: open ? 1 : 0,
           transition: "max-height 0.35s ease-in-out, opacity 0.3s ease-in-out, padding-top 0.3s ease-in-out",
         }}
       >
-        <div className="flex gap-x-[8px] h-[168px]">
-          {FAKE_SCREENSHOTS.map((shot, i) => (
-            <div
-              key={i}
-              className="rounded-[10px] overflow-hidden min-w-0 flex items-end"
-              style={{
-                flex: shot.flex,
-                background: shot.bg,
-              }}
-            >
-              {/* Ghost label for placeholder legibility */}
-              <div className="w-full px-[10px] py-[8px] text-[11px] font-semibold text-white/60 truncate">
-                {shot.label}
-              </div>
-            </div>
-          ))}
+        <div className="flex h-[220px] gap-x-[10px] overflow-x-auto pb-[4px]">
+          {screenshots.map((shot, i) => {
+            const imageUrl = getAppScrapeAssetUrl(
+              owner_project,
+              shot.page_id,
+              "thumb.webp",
+            );
+            const title = shot.title?.trim() || `Screenshot ${i + 1}`;
+            const caption = shot.caption?.trim();
+
+            return (
+              <button
+                key={shot.page_id}
+                type="button"
+                onClick={() => setSelectedScreenshotIndex(i)}
+                className="group relative flex min-w-[220px] items-end overflow-hidden rounded-[16px] bg-color-bg-medium text-left transition-all duration-300 hover:-translate-y-[2px] focus:outline-none focus:ring-2 focus:ring-[#d4f500]/60"
+                style={{
+                  flex: i === 0 ? 2 : 1,
+                }}
+                title={title}
+              >
+                <Image
+                  src={imageUrl}
+                  alt={shot.alt_text?.trim() || title}
+                  fill
+                  sizes="(max-width: 768px) 80vw, 25vw"
+                  className="object-cover [object-position:center_top] scale-[1.01] transform-gpu transition-transform duration-500 group-hover:scale-[1.05]"
+                />
+                <div className="absolute -inset-[1px] bg-[linear-gradient(180deg,rgba(5,12,11,0.08)_0%,rgba(5,12,11,0.16)_38%,rgba(5,12,11,0.88)_100%)]" />
+                <div className="relative z-[1] w-full px-[12px] py-[12px]">
+                  <div className="truncate text-[13px] font-semibold text-white">
+                    {title}
+                  </div>
+                  {caption && (
+                    <div className="mt-[2px] line-clamp-2 text-[11px] leading-[1.35] text-white/75">
+                      {caption}
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
+      <ScreenshotsLightbox
+        owner_project={owner_project}
+        screenshots={screenshots}
+        selectedIndex={selectedScreenshotIndex}
+        onClose={() => setSelectedScreenshotIndex(null)}
+        onSelect={setSelectedScreenshotIndex}
+      />
     </div>
   );
 });
 ScreenshotsSection.displayName = "ScreenshotsSection";
 
+const ScreenshotsLightbox = memo(({
+  owner_project,
+  screenshots,
+  selectedIndex,
+  onClose,
+  onSelect,
+}: {
+  owner_project: string;
+  screenshots: ApplicationEnrichmentScreenshot[];
+  selectedIndex: number | null;
+  onClose: () => void;
+  onSelect: (index: number) => void;
+}) => {
+  const selectedScreenshot =
+    selectedIndex !== null ? screenshots[selectedIndex] : null;
 
-const FeaturedSection = memo(({ owner_project, projectMetadata }: { owner_project: string, projectMetadata: ProjectMetadata }) => {
+  const selectPrevious = useCallback(() => {
+    if (selectedIndex === null) return;
+    onSelect((selectedIndex - 1 + screenshots.length) % screenshots.length);
+  }, [onSelect, screenshots.length, selectedIndex]);
+
+  const selectNext = useCallback(() => {
+    if (selectedIndex === null) return;
+    onSelect((selectedIndex + 1) % screenshots.length);
+  }, [onSelect, screenshots.length, selectedIndex]);
+
+  useEffect(() => {
+    if (selectedIndex === null) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+      if (event.key === "ArrowLeft") {
+        selectPrevious();
+      }
+      if (event.key === "ArrowRight") {
+        selectNext();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose, selectNext, selectPrevious, selectedIndex]);
+
+  if (!selectedScreenshot || selectedIndex === null) {
+    return null;
+  }
+
+  const imageUrl = getAppScrapeAssetUrl(
+    owner_project,
+    selectedScreenshot.page_id,
+    "screenshot.webp",
+  );
+  const title =
+    selectedScreenshot.title?.trim() || `Screenshot ${selectedIndex + 1}`;
+  const caption = selectedScreenshot.caption?.trim();
+  const sourceUrl = selectedScreenshot.url?.trim();
+
+  return createPortal(
+    <>
+      <GrayOverlay onClick={onClose} zIndex={1200} />
+      <div
+        className="fixed inset-0 z-[1201] flex items-center justify-center p-[10px] md:p-[24px]"
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <div
+          className="relative flex h-full max-h-[calc(100vh-20px)] w-full max-w-[1440px] flex-col overflow-hidden rounded-[24px] bg-color-bg-medium p-[5px] shadow-[0px_0px_50px_0px_#000000]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex min-h-0 flex-1 flex-col gap-[5px]">
+            <div className="flex items-center justify-between gap-[10px] rounded-[20px] bg-color-bg-default px-[15px] py-[10px] md:px-[20px]">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold text-color-text-primary">
+                  {title}
+                </div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-color-text-secondary">
+                  {selectedIndex + 1} / {screenshots.length}
+                </div>
+              </div>
+              <div className="flex items-center gap-[5px]">
+                {sourceUrl && (
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden items-center rounded-full bg-color-bg-medium px-[12px] py-[8px] text-[11px] font-medium text-color-text-primary transition-colors hover:bg-color-ui-hover md:inline-flex"
+                  >
+                    Visit page
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex size-[36px] items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary transition-colors hover:bg-color-ui-hover"
+                  aria-label="Close screenshots viewer"
+                >
+                  <Icon icon="feather:x" className="size-[18px]" />
+                </button>
+              </div>
+            </div>
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-[5px] md:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="relative min-h-[320px] overflow-hidden rounded-[20px] bg-color-bg-default">
+                <div className="h-full overflow-auto px-[12px] py-[12px] md:px-[18px] md:py-[18px]">
+                  <div className="mx-auto flex min-h-full w-full max-w-[980px] items-start justify-center">
+                    <Image
+                      src={imageUrl}
+                      alt={selectedScreenshot.alt_text?.trim() || title}
+                      width={1600}
+                      height={2400}
+                      sizes="100vw"
+                      priority
+                      className="h-auto w-full rounded-[16px] bg-color-bg-medium"
+                    />
+                  </div>
+                </div>
+
+                {screenshots.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={selectPrevious}
+                      className="absolute left-[12px] top-1/2 inline-flex size-[42px] -translate-y-1/2 items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary shadow-standard transition-colors hover:bg-color-ui-hover"
+                      aria-label="Previous screenshot"
+                    >
+                      <Icon icon="feather:chevron-left" className="size-[20px]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={selectNext}
+                      className="absolute right-[12px] top-1/2 inline-flex size-[42px] -translate-y-1/2 items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary shadow-standard transition-colors hover:bg-color-ui-hover"
+                      aria-label="Next screenshot"
+                    >
+                      <Icon icon="feather:chevron-right" className="size-[20px]" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex min-h-0 flex-col gap-[5px]">
+                <div className="rounded-[20px] bg-color-bg-default px-[14px] py-[14px] md:px-[16px]">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-color-text-secondary">
+                    Screenshot details
+                  </div>
+                  {caption ? (
+                    <div className="mt-[8px] text-[13px] leading-[1.55] text-color-text-primary">
+                      {caption}
+                    </div>
+                  ) : (
+                    <div className="mt-[8px] text-[13px] leading-[1.55] text-color-text-secondary">
+                      No caption provided for this capture.
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden rounded-[20px] bg-color-bg-default md:overflow-y-auto md:overflow-x-hidden">
+                  <div className="flex gap-[10px] p-[12px] md:flex-col md:p-[14px]">
+                    {screenshots.map((shot, index) => {
+                      const thumbUrl = getAppScrapeAssetUrl(
+                        owner_project,
+                        shot.page_id,
+                        "thumb.webp",
+                      );
+                      const thumbTitle =
+                        shot.title?.trim() || `Screenshot ${index + 1}`;
+                      const isActive = selectedIndex === index;
+
+                      return (
+                        <button
+                          key={shot.page_id}
+                          type="button"
+                          onClick={() => onSelect(index)}
+                          className={`group flex min-w-[144px] gap-[10px] rounded-[16px] p-[8px] text-left transition-all ${
+                            isActive
+                              ? "bg-color-bg-medium shadow-standard"
+                              : "bg-color-bg-default hover:bg-color-bg-medium"
+                          }`}
+                        >
+                          <div className="relative h-[74px] w-[88px] shrink-0 overflow-hidden rounded-[10px] bg-color-bg-medium">
+                            <Image
+                              src={thumbUrl}
+                              alt={shot.alt_text?.trim() || thumbTitle}
+                              fill
+                              sizes="160px"
+                              className="object-cover [object-position:center_top]"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate text-[12px] font-semibold text-color-text-primary">
+                              {thumbTitle}
+                            </div>
+                            <div className="mt-[4px] text-[10px] uppercase tracking-[0.16em] text-color-text-secondary">
+                              {index + 1} / {screenshots.length}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body,
+  );
+});
+ScreenshotsLightbox.displayName = "ScreenshotsLightbox";
+
+
+const FeaturedSection = memo(({
+  features,
+}: {
+  features: string[];
+}) => {
+  if (!features.length) {
+    return null;
+  }
+
   return (
-    <div className="flex w-full rounded-[15px] gap-x-[15px] select-none">
-      {projectMetadata.features?.map((feature: string, i: number) => (
+    <div className="flex w-full flex-wrap gap-[10px] rounded-[15px] select-none">
+      {features.map((feature: string, i: number) => (
         <FeaturedCard key={i} feature={feature} />
       ))}
     </div>
@@ -787,14 +1107,10 @@ const FeaturedSection = memo(({ owner_project, projectMetadata }: { owner_projec
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
-    <div className="flex w-full items-center justify-center h-[50px] rounded-[11px] bg-color-bg-default px-[13px] py-[5px] gap-x-[5px] select-none">
-     
-        <GTPIcon icon={`gtp:${feature}-logo-monochrome` as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
-        
-        <div className="text-lg text-color-text-primary">
-          {feature}
-        </div>
-
+    <div className="flex min-h-[50px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
+      <div className="text-center text-base text-color-text-primary">
+        {feature}
+      </div>
     </div>
   );
 });
@@ -803,16 +1119,44 @@ FeaturedSection.displayName = "FeaturedSection";
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-const OverviewContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
+const OverviewContent = memo(({
+  data,
+  owner_project,
+  projectMetadata,
+  enrichmentData,
+}: {
+  data: ApplicationDetailsData;
+  owner_project: string;
+  projectMetadata: ProjectMetadata;
+  enrichmentData: ApplicationEnrichmentData | null | undefined;
+}) => {
   const { data: masterData } = useMaster();
+  const screenshots = useMemo(
+    () =>
+      [...(enrichmentData?.screenshots ?? [])]
+        .filter((screenshot) => Boolean(screenshot?.page_id))
+        .sort((a, b) => (a.priority ?? Number.MAX_SAFE_INTEGER) - (b.priority ?? Number.MAX_SAFE_INTEGER)),
+    [enrichmentData],
+  );
+  const features = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (enrichmentData?.features?.product_features ?? [])
+            .map((entry) => entry.feature.trim())
+            .filter(Boolean),
+        ),
+      ),
+    [enrichmentData],
+  );
 
   
 
   return (
     <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
       <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
-      <ScreenshotsSection />
-      <FeaturedSection owner_project={owner_project} projectMetadata={projectMetadata} />
+      <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
+      <FeaturedSection features={features} />
       <div className="flex flex-col gap-y-[15px] pb-[10px]">
         <div className="flex items-center gap-x-[8px]">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
@@ -924,6 +1268,16 @@ export default function NewAppPage({
 
   const { data, owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data: enrichmentData } = useSWR<ApplicationEnrichmentData | null>(
+    owner_project
+      ? ApplicationsURLs.enrichment.replace("{owner_project}", owner_project)
+      : null,
+    applicationEnrichmentFetcher,
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    },
+  );
 
   const projectMetadata = ownerProjectToProjectData[owner_project];
 
@@ -956,7 +1310,14 @@ export default function NewAppPage({
   const TabContent = useMemo(() => {
     switch (selectedTab) {
       case "overview":
-        return <OverviewContent data={data} owner_project={owner_project} projectMetadata={projectMetadata} />;
+        return (
+          <OverviewContent
+            data={data}
+            owner_project={owner_project}
+            projectMetadata={projectMetadata}
+            enrichmentData={enrichmentData}
+          />
+        );
       case "metrics":
         return <MetricsContent />;
       case "user_insights":
@@ -964,11 +1325,7 @@ export default function NewAppPage({
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [data, selectedTab, owner_project, projectMetadata]);
-
-
-  console.log(projectMetadata)
-  console.log(data)
+  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
   return (
     <>
     {owner_project && projectMetadata && (

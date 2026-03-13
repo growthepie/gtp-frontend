@@ -11,6 +11,7 @@ import { GTPButton } from "../GTPButton/GTPButton";
 import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
 import GTPButtonRow from "../GTPButton/GTPButtonRow";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import type { EmblaCarouselType } from "embla-carousel";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
@@ -20,10 +21,18 @@ import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
+import { Carousel } from "@/components/Carousel";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 
 const EMPTY_OPTIONS: EventOption[] = [];
+
+const CARD_COLLAPSED_H = 54;
+const CARD_GAP = 10;
+const SIDE_CONTAINER_H = 442;
+const CARD_EXPANDED_H =
+  SIDE_CONTAINER_H -
+  (FEATURED_EVENT_IDS_MAX.length - 1) * (CARD_COLLAPSED_H + CARD_GAP);
 
 const getNestedValue = (obj: unknown, path: string) => {
   return path.split(".").reduce((current, key) => {
@@ -345,45 +354,56 @@ const EventCard = ({
   hasInteracted: boolean;
   setSelectedEvent: (event: EventId) => void;
 }) => {
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  // On mobile the card lives inside a fixed-height carousel slide, so always
+  // show the expanded state and skip the layout height animation.
+  const showExpanded = isSelected || isMobile;
+
   return (
     <motion.div
-      layout
-      className={`relative flex w-full overflow-hidden border-[1px] border-color-bg-medium rounded-[15px] py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${isSelected ? "flex-1 min-h-0 bg-color-ui-active items-start" : "h-[54px] bg-color-bg-default hover:bg-color-ui-hover items-center"}`}
+      initial={!isMobile ? { height: isSelected ? CARD_EXPANDED_H : CARD_COLLAPSED_H } : undefined}
+      animate={!isMobile ? { height: isSelected ? CARD_EXPANDED_H : CARD_COLLAPSED_H } : undefined}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ borderRadius: "15px" }}
+      className={`relative flex w-full shrink-0 overflow-hidden border-[1px] border-color-bg-medium py-[10px] px-[15px] gap-x-[10px] cursor-pointer ${
+        isMobile
+          ? "h-full bg-color-ui-active items-start"
+          : isSelected
+            ? "bg-color-ui-active items-start"
+            : "bg-color-bg-default hover:bg-color-ui-hover items-center"
+      }`}
       onClick={() => setSelectedEvent(event)}
-      transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
     >
-      {/* Icon — layout="position" so it animates from center to top-left as card expands */}
-      <motion.div layout="position" className={`shrink-0 ${isSelected ? "" : "pt-[6px]"}`}>
+      {/* Icon */}
+      <div className="shrink-0">
         <GTPIcon
           icon={eventData.image as GTPIconName}
           className={isSelected ? "!size-[24px]" : "!size-[16px]"}
-          containerClassName="!size-[24px]"
+          containerClassName="!size-[24px] flex items-center justify-center"
         />
-      </motion.div>
+      </div>
 
-      {/* Content — AnimatePresence swaps between the two text states with opacity only.
-          The card's own layout animation handles the height change, so no height
-          animation is needed here (which was causing the squishing/pushing effect). */}
-      <div className={`flex flex-col w-full min-w-0 ${isSelected ? "h-full" : "justify-center"}`}>
+      {/* Content */}
+      <div className={`flex flex-col w-full min-w-0 ${isMobile ? "h-full" : ""}`}>
         <AnimatePresence mode="wait" initial={false}>
-          {isSelected ? (
+          {showExpanded ? (
             <motion.div
               key="selected"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.15, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.3, delay: 0.15, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="flex flex-col gap-y-[10px] h-full"
+              className={`flex flex-col gap-y-[10px] ${isMobile ? "h-full" : ""}`}
             >
               <p className="heading-small-md">{eventData.title}</p>
-              <div className="flex h-full items-center pb-[30px]"><p className="text-xs">{eventData.description}</p></div>
+              <div className={`flex ${isMobile ? "h-full" : ""} items-center pb-[30px]`}><p className="text-xs">{eventData.description}</p></div>
             </motion.div>
           ) : (
             <motion.p
               key="question"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.25, ease: "easeOut" } }}
+              animate={{ opacity: 1, transition: { duration: 0.3, delay: 0.25, ease: "easeOut" } }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className="heading-small-xs"
+              className="heading-small-xs self-start"
             >
               {eventData.question}
             </motion.p>
@@ -391,17 +411,14 @@ const EventCard = ({
         </AnimatePresence>
       </div>
 
-      {/* Chevron — layout="position" mirrors the icon treatment */}
-      <motion.div layout="position" className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
+      {/* Chevron */}
+      <div className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
         <Link className="flex items-center justify-center" href={eventData.link}>
           <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
         </Link>
-      </motion.div>
+      </div>
 
-      {/* Auto-rotation progress bar — shrinks from full width to zero over 10 s.
-          Uses border-b on a 15px-tall element with rounded-bl-[15px] so the border
-          traces a visible quarter-circle arc on the left end, matching the card's
-          own corner radius. border-b follows element geometry; background fills do not. */}
+      {/* Auto-rotation progress bar */}
       {isSelected && !hasInteracted && (
         <div
           className="absolute bottom-0 left-0 h-[15px] rounded-bl-[15px] border-b-2 border-color-text-primary"
@@ -423,8 +440,56 @@ const SideEventsContainer = ({
   setSelectedEvent: (event: EventId) => void;
   eventsById: Record<EventId, ResolvedEventExample>;
 }) => {
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const emblaApiRef = useRef<EmblaCarouselType | null>(null);
+  const slideChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // When selectedEvent changes externally (e.g. auto-advance), scroll the carousel to match
+  useEffect(() => {
+    const index = FEATURED_EVENT_IDS_MAX.indexOf(selectedEvent);
+    if (index !== -1) emblaApiRef.current?.scrollTo(index);
+  }, [selectedEvent]);
+
+  const handleSlideChange = (index: number) => {
+    if (slideChangeTimerRef.current) clearTimeout(slideChangeTimerRef.current);
+    slideChangeTimerRef.current = setTimeout(() => {
+      setSelectedEvent(FEATURED_EVENT_IDS_MAX[index]);
+    }, 300);
+  };
+
+  if (isMobile) {
+    return (
+      <div className="w-full pb-[15px] lg:pb-0">
+        <Carousel
+          ariaId="events-carousel"
+          heightClass="h-[120px] sm:h-[100px]"
+          breakpoints={{ 0: { slidesPerView: 0, centered: false, gap: 15 } }}
+          pagination="dots"
+          arrows={false}
+          padding={{ mobile: 5, desktop: 0 }}
+          bottomOffset={-20}
+          onInit={(api) => { emblaApiRef.current = api; }}
+          onSlideChange={handleSlideChange}
+          noFade
+        >
+          {FEATURED_EVENT_IDS_MAX.map((event) => (
+            <div key={event} className="h-full flex items-center w-full">
+              <EventCard
+                event={event}
+                eventData={eventsById[event]}
+                isSelected={selectedEvent === event}
+                hasInteracted={hasInteracted}
+                setSelectedEvent={setSelectedEvent}
+              />
+            </div>
+          ))}
+        </Carousel>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-y-[10px] w-[390px] h-[442px] min-w-[300px] shrink min-h-0 self-stretch overflow-y-auto">
+    <div className="flex flex-col gap-y-[10px] w-[390px] min-w-[300px] h-[442px] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
@@ -468,8 +533,9 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+
   const projectDataMap = useMemo<Record<string, AggregatedProjectData>>(() => {
-    if (!appOverviewData) return {};
+    if (!appOverviewData || !ownerProjectToProjectData ) return {};
 
     const types = appOverviewData.data.types as string[];
     const col = {
@@ -530,14 +596,27 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     }
 
     return Object.fromEntries(rows.map(({ _raw: _, ...r }) => [r.owner_project, r]));
-  }, [appOverviewData]);
+  }, [appOverviewData, ownerProjectToProjectData]);
+
 
   
+
+  const resolvedCards = useMemo(() => {
+    if (eventData.topAppsMetric && Object.keys(projectDataMap).length > 0) {
+      const metricKey = eventData.topAppsMetric as MetricKey;
+      return Object.values(projectDataMap)
+        .filter((p) => p.metrics[metricKey])
+        .sort((a, b) => a.metrics[metricKey].rank - b.metrics[metricKey].rank)
+        .slice(0, 9)
+        .map((p) => ({ owner_project: p.owner_project, metric: eventData.topAppsMetric! }));
+    }
+    return eventData.cards ?? [];
+  }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
   return (
     <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
       <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
-        {eventData.cards?.map((card, index) => {
+        {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
           const isGasFees = card.metric === "gas_fees";
@@ -571,7 +650,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                   <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
                   <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
                     <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
-                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : "-"}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
+                      {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : ""}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
                     </span>
                   </span>
                 </div>
@@ -705,7 +784,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
 
   
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract}>
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract} >
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
@@ -875,6 +954,7 @@ export default function LandingEventsChart() {
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef = useRef(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resolvedEventsById = useMemo(() => {
     const entries = (Object.entries(EVENTS_BY_ID) as [EventId, EventExample][]).map(
@@ -885,14 +965,38 @@ export default function LandingEventsChart() {
 
   const selectedEventData = resolvedEventsById[selectedEvent];
 
-  console.log("selectedEvent:", selectedEvent, "selectedEventData:", selectedEventData);
-
   const handleInteract = () => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
     if (!hasInteractedRef.current) {
       hasInteractedRef.current = true;
       setHasInteracted(true);
     }
   };
+
+  const handleMouseLeave = () => {
+    if (!hasInteractedRef.current) return;
+    resetTimerRef.current = setTimeout(() => {
+      hasInteractedRef.current = false;
+      setHasInteracted(false);
+      resetTimerRef.current = null;
+    }, 3000);
+  };
+
+  const handleMouseEnter = () => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   // Auto-advance to the next event every 10 seconds until the user interacts
   useEffect(() => {
@@ -921,7 +1025,7 @@ export default function LandingEventsChart() {
           <Heading className="heading-large-lg">Trending Topics in the Ecosystem</Heading>
 
         </div>
-        <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-wrap items-stretch gap-[15px] flex-1 min-h-0 overflow-y-auto" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           <SideEventsContainer
             selectedEvent={selectedEvent}
             hasInteracted={hasInteracted}

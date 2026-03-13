@@ -38,6 +38,7 @@ export type EventExample = {
   link?: string;
   series?: GTPChartSeries[];
   cards?: { owner_project: string, metric: string }[];
+  topAppsMetric?: string;
   options?: EventOption[];
   defaultOptionId?: string;
   bodyType?: "chart" | "card";
