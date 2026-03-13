@@ -5,33 +5,36 @@ const CURRENCIES_MAP = Object.fromEntries(
   Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
 );
 
+const chainDropdown = {
+  label: "Select a Chain",
+  placeholder: "Choose a chain",
+  searchable: true,
+  stateKey: "selectedChain",
+  labelStateKey: "selectedChainName",
+  defaultValue: "arbitrum",
+  allowEmpty: false,
+  readFromJSON: true,
+  jsonData: {
+    url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-chains.json",
+    pathToOptions: "dropdown_values",
+    valueField: "origin_key",
+    labelField: "name",
+    useChainIcons: true,
+  }
+};
+
 const mainContent = [
   "This page shows a breakdown of the total circulating stablecoin supply by chain. Select a chain below to explore which stablecoins dominate its ecosystem, how supply has changed over time and how different tokens compare in size.",
 
   "```dropdown",
-  JSON.stringify({
-    label: "Select a Chain",
-    placeholder: "Choose a chain...",
-    searchable: true,
-    stateKey: "selectedChain",
-    labelStateKey: "selectedChainName",
-    defaultValue: "arbitrum",
-    allowEmpty: false,
-    readFromJSON: true,
-    jsonData: {
-      url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-chains.json",
-      pathToOptions: "dropdown_values",
-      valueField: "origin_key",
-      labelField: "name"
-    }
-  }),
+  JSON.stringify(chainDropdown),
   "```",
 
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stablecoin Breakdown for {{selectedChainName}}",
-    subtitle: "Stacked circulating supply of top stablecoins.",
+    title: "Stablecoin Supply for {{selectedChainName}}",
+    subtitle: "Stacked circulating supply of top stablecoins for {{selectedChainName}}.",
     showXAsDate: true,
     showZeroTooltip: false,
     showTotalTooltip: true,
@@ -175,15 +178,15 @@ const mainContent = [
 ];
 
 const StablecoinChain: QuickBiteData = {
-  title: "Stablecoin Breakdown by Chain",
+  title: "Stablecoin Supply Breakdown for Chains",
   shortTitle: "Stablecoins by Chain",
   subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
   content: [
     ...mainContent,
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/fusaka.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
-  date: "2026-03-06",
+  date: "2026-03-12",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
@@ -197,7 +200,7 @@ const StablecoinChain: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
 };
 
 export default StablecoinChain;

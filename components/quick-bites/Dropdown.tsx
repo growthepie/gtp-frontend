@@ -2,14 +2,15 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Icon } from '@iconify/react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { useMaster } from '@/contexts/MasterContext';
 import VerticalScrollContainer from '../VerticalScrollContainer';
-import { Badge } from '../layout/FloatingBar/Badge';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 export interface DropdownOption {
   value: string;
   label: string;
+  logo?: string; // Optional image URL rendered as icon
 }
 
 interface DropdownProps {
@@ -21,6 +22,7 @@ interface DropdownProps {
   searchable?: boolean;
   className?: string;
   disabled?: boolean;
+  useChainIcons?: boolean; // Override chain icon auto-detection (default: auto-detect)
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -31,8 +33,10 @@ const Dropdown: React.FC<DropdownProps> = ({
   onChange,
   searchable = true,
   className = '',
-  disabled = false
+  disabled = false,
+  useChainIcons,
 }) => {
+  const { AllChainsByKeys } = useMaster();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -51,6 +55,24 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   // Get selected option
   const selectedOption = useMemo(() => options.find(option => option.value === value), [options, value]);
+  const isChainDropdown = useMemo(() => {
+    if (useChainIcons === false) return false;
+    if (useChainIcons === true) return true;
+    return options.length > 0 && options.every((option) => Boolean(AllChainsByKeys?.[option.value]));
+  }, [options, AllChainsByKeys, useChainIcons]);
+
+  const getChainDisplay = (option: DropdownOption) => {
+    if (!isChainDropdown) return null;
+
+    const chain = AllChainsByKeys?.[option.value];
+    if (!chain) return null;
+
+    return {
+      icon: `gtp:${chain.urlKey}-logo-monochrome`,
+      color: chain.colors.dark[0],
+    };
+  };
+  const selectedChainDisplay = selectedOption ? getChainDisplay(selectedOption) : null;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,6 +107,13 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   // Handle keyboard navigation
   useEffect(() => {
+    const selectValue = (selectedValue: string) => {
+      onChange(selectedValue);
+      setIsOpen(false);
+      setSearchTerm('');
+      setHighlightedIndex(-1);
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen) return;
 
@@ -104,10 +133,10 @@ const Dropdown: React.FC<DropdownProps> = ({
         case 'Enter':
           event.preventDefault();
           if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-            handleSelect(filteredOptions[highlightedIndex].value);
+            selectValue(filteredOptions[highlightedIndex].value);
           } else if (searchTerm && filteredOptions.length > 0) {
             // If no option is highlighted but there's a search term, select the first filtered option
-            handleSelect(filteredOptions[0].value);
+            selectValue(filteredOptions[0].value);
           }
           break;
         case 'Escape':
@@ -120,7 +149,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, highlightedIndex, filteredOptions, searchTerm]);
+  }, [isOpen, highlightedIndex, filteredOptions, searchTerm, onChange]);
 
   // Focus input when dropdown opens
   useEffect(() => {
@@ -129,10 +158,10 @@ const Dropdown: React.FC<DropdownProps> = ({
     }
   }, [isOpen, searchable]);
 
-  // Reset highlighted index when search term changes
-  useEffect(() => {
-    setHighlightedIndex(-1);
-  }, [searchTerm]);
+  const handleContainerClick = () => {
+    if (disabled) return;
+    setIsOpen(true);
+  };
 
   const handleSelect = (selectedValue: string | null) => {
     onChange(selectedValue);
@@ -141,29 +170,23 @@ const Dropdown: React.FC<DropdownProps> = ({
     setHighlightedIndex(-1);
   };
 
-  const handleContainerClick = () => {
-    if (disabled) return;
-    setIsOpen(true);
+  const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleSelect(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setHighlightedIndex(-1);
     if (!isOpen) {
       setIsOpen(true);
     }
   };
 
-  // Function to display content in the trigger
-  const getDisplayContent = () => {
-    if (isOpen && searchable) {
-      return searchTerm;
-    }
-    return selectedOption?.label || '';
-  };
-
   const getPlaceholderText = () => {
     if (isOpen && searchable) {
-      return "Search options...";
+      return `${placeholder ?? ""}...`;
     }
     return placeholder;
   };
@@ -196,7 +219,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             ${isOpen ? "max-h-[400px]" : "max-h-0"} 
             transition-[max-height] duration-300 overflow-hidden
             absolute left-0 right-0 top-[22px] z-[16]
-            bg-color-ui-active rounded-b-[22px] ${isOpen ? "shadow-[0px_0px_50px_0px_#000000]" : ""}
+            bg-color-ui-active rounded-b-[22px] ${isOpen ? "shadow-standard" : ""}
           `}
         >
             <div className='h-[30px]' />
@@ -214,31 +237,45 @@ const Dropdown: React.FC<DropdownProps> = ({
                 </div>
               ) : (
                 <div className="space-y-[5px]">
-                  {filteredOptions.map((option, index) => (
-                    <div
-                      key={option.value}
-                      onClick={() => handleSelect(option.value)}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      className={`
-                        w-full px-[15px] py-[10px] text-left text-xs
-                        flex items-center gap-x-[10px]
-                        cursor-pointer
-                        ${option.value === value
-                          ? 'bg-color-bg-medium hover:bg-color-ui-hover'
-                          : 'hover:bg-color-bg-medium'
-                        }
-                      `}
-                      role="option"
-                      aria-selected={option.value === value}
-                    >
-                      {selectedOption === option ? (
-                        <GTPIcon icon="gtp-checkmark-single-select-monochrome" size="sm" />
-                      ) : (
-                        <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" />
-                      )}
-                      <span className="truncate flex-1 text-color-text-primary">{option.label}</span>
-                    </div>
-                  ))}
+                  {filteredOptions.map((option, index) => {
+                    const chainDisplay = getChainDisplay(option);
+
+                    return (
+                      <div
+                        key={option.value}
+                        onClick={() => handleSelect(option.value)}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        className={`
+                          w-full px-[15px] py-[10px] text-left text-xs
+                          flex items-center gap-x-[10px]
+                          cursor-pointer
+                          ${option.value === value
+                            ? 'bg-color-bg-medium hover:bg-color-ui-hover'
+                            : 'hover:bg-color-bg-medium'
+                          }
+                        `}
+                        role="option"
+                        aria-selected={option.value === value}
+                      >
+                        {selectedOption === option ? (
+                          <GTPIcon icon="gtp-checkmark-single-select-monochrome" size="sm" />
+                        ) : (
+                          <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" />
+                        )}
+                        {option.logo ? (
+                          <img src={option.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                        ) : chainDisplay && (
+                          <GTPIcon
+                            icon={chainDisplay.icon as GTPIconName}
+                            size="sm"
+                            style={{ color: chainDisplay.color }}
+                            className="shrink-0"
+                          />
+                        )}
+                        <span className="truncate flex-1 text-color-text-primary">{option.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </VerticalScrollContainer>
@@ -250,7 +287,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           onClick={handleContainerClick}
           className={`
             relative w-full min-h-[44px] 
-            bg-color-bg-default hover:bg-color-bg-medium 
+            bg-color-bg-medium dark:bg-color-bg-default hover:bg-color-bg-medium 
             rounded-[22px] 
             transition-all duration-300
             cursor-pointer z-[18]
@@ -261,34 +298,68 @@ const Dropdown: React.FC<DropdownProps> = ({
 
             {/* Input/Display Area */}
             <div className="flex-1 min-w-0 flex items-center gap-[10px]">
-              {selectedOption && (
-                <div className="flex items-center gap-x-[10px]">
-                  <Badge
-                    label={selectedOption.label.split('|')[0]}
-                    leftIcon="feather:tag"
-                    leftIconColor="rgb(var(--text-primary))"
-                    rightIcon="in-button-close-monochrome"
-                    rightIconColor="#FE5468"
-                    onClick={() => handleSelect(null)}
-                   />
+              {searchable ? (
+                isOpen || !selectedOption ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleInputChange}
+                    placeholder={getPlaceholderText()}
+                    className={`w-full bg-transparent text-color-text-primary border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
+                    disabled={disabled}
+                  />
+                ) : (
+                  <div className="flex items-center gap-[10px] min-w-0">
+                    {selectedOption.logo ? (
+                      <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                    ) : selectedChainDisplay && (
+                      <GTPIcon
+                        icon={selectedChainDisplay.icon as GTPIconName}
+                        size="sm"
+                        style={{ color: selectedChainDisplay.color }}
+                        className="shrink-0"
+                      />
+                    )}
+                    <span className="text-color-text-primary text-xs truncate">
+                      {selectedOption.label.split('|')[0]}
+                    </span>
+                  </div>
+                )
+              ) : (
+                <div className="flex items-center gap-[10px] min-w-0">
+                  {selectedOption?.logo ? (
+                    <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                  ) : selectedChainDisplay && (
+                    <GTPIcon
+                      icon={selectedChainDisplay.icon as GTPIconName}
+                      size="sm"
+                      style={{ color: selectedChainDisplay.color }}
+                      className="shrink-0"
+                    />
+                  )}
+                  <span className="text-color-text-primary text-xs truncate">
+                    {selectedOption?.label.split('|')[0] || placeholder}
+                  </span>
                 </div>
               )}
-              {searchable ? (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleInputChange}
-                  placeholder={getPlaceholderText()}
-                  className={`w-full bg-transparent text-color-text-primary  border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
-                  disabled={disabled}
-                />
-              ) : (
-                <span className="text-color-text-primary text-xs truncate">
-                  {selectedOption?.label || placeholder}
-                </span>
-              )}
             </div>
+
+            {allowEmpty && selectedOption && !disabled && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="flex items-center justify-center text-color-text-secondary hover:text-color-text-primary transition-colors"
+                aria-label="Clear selection"
+              >
+                <GTPIcon
+                  icon="in-button-close-monochrome"
+                  className="!size-[12px]"
+                  containerClassName='!size-[12px]'
+                  size="sm"
+                />
+              </button>
+            )}
 
             {/* Right Icon */}
               <GTPIcon

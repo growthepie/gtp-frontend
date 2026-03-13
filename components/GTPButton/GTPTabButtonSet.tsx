@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton, GTPButtonSize } from "./GTPButton";
 
@@ -24,7 +24,7 @@ interface GTPTabButtonSetProps {
   children?: ReactNode;
 }
 
-export default function GTPTabButtonSet({
+const GTPTabButtonSet = forwardRef<HTMLDivElement, GTPTabButtonSetProps>(function GTPTabButtonSet({
   items,
   selectedId,
   size = "sm",
@@ -33,12 +33,13 @@ export default function GTPTabButtonSet({
   className,
   style,
   children,
-}: GTPTabButtonSetProps) {
+}: GTPTabButtonSetProps, ref) {
   const containerFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
   const buttonFillClassName = fill === "full" ? "flex-1" : fill === "mobile" ? "flex-1 md:flex-none" : "";
 
   return (
     <div
+      ref={ref}
       className={`inline-flex  items-center w-full gap-[2px] rounded-full ring-[0.5px] ring-inset ring-color-bg-default py-[2px] px-[2px] ${containerFillClassName} ${
         className ?? ""
       }`}
@@ -69,4 +70,6 @@ export default function GTPTabButtonSet({
       })}
     </div>
   );
-}
+});
+
+export default GTPTabButtonSet;

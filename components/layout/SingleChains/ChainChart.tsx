@@ -30,9 +30,8 @@ import {
 } from "@/lib/chains";
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
-import { ChainsBaseURL, MasterURL, getChainMetricURL } from "@/lib/urls";
+import { getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData, MetricData, Changes, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
@@ -67,8 +66,6 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const transformMetricDetails = (details: MetricDetails): MetricData => {
   return {
@@ -2058,9 +2055,6 @@ export default function ChainChart({
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
-              onMouseOver={() => {
-                preload(`${ChainsBaseURL}${prevChainKey}.json`, fetcher);
-              }}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
@@ -2102,9 +2096,6 @@ export default function ChainChart({
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
-              onMouseOver={() => {
-                preload(`${ChainsBaseURL}${nextChainKey}.json`, fetcher);
-              }}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
             </div>
@@ -2166,7 +2157,6 @@ export default function ChainChart({
                   key={index}
                   onMouseOver={() => {
                     setHoverChainKey(chain.key);
-                    preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
                   }}
                   onMouseLeave={() => {
                     setHoverChainKey(null);

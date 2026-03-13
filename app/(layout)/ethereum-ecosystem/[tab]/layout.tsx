@@ -19,6 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `/ethereum-ecosystem/${tab}`,
     {}
   );
+  const canonical = `https://www.growthepie.com/ethereum-ecosystem/${tab}`;
+  const robots = metadata?.noIndex ? { index: false, follow: false } : undefined;
 
   if (!metadata) {
     return {
@@ -30,6 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: metadata.title,
     description: metadata.description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       images: [
         {
@@ -40,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       ],
     },
+    robots,
   };
 }
 

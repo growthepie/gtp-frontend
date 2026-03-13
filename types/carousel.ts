@@ -83,6 +83,8 @@ export type CarouselProps = {
   desktopRightPadding?: boolean;
   /** Bottom offset for pagination dots (default: -15) */
   bottomOffset?: number;
+  /** Disable the fade mask on the left/right edges */
+  noFade?: boolean;
   /** Callback when slide changes */
   onSlideChange?: (index: number) => void;
   /** Callback when carousel is ready */

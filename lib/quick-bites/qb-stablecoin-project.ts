@@ -5,33 +5,37 @@ const CURRENCIES_MAP = Object.fromEntries(
   Object.entries(fiatData).map(([code, info]) => [code, { symbol: info.symbol, name: info.name, country: info.country}])
 );
 
+const projectDropdown = {
+  label: "Select a Project",
+  placeholder: "Choose a project",
+  searchable: true,
+  stateKey: "selectedProject",
+  labelStateKey: "selectedProjectName",
+  defaultValue: "circlefin",
+  allowEmpty: false,
+  readFromJSON: true,
+  jsonData: {
+    url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-projects.json",
+    pathToOptions: "dropdown_values",
+    valueField: "owner_project",
+    labelField: "display_name",
+    logoField: "logo_path",
+    logoPrefix: "https://api.growthepie.com/v1/apps/logos/",
+  }
+};
+
 const mainContent = [
   "This page shows a breakdown of the total circulating stablecoin supply by issuing project. Select a project below to see how its stablecoins are distributed across chains, how supply has changed over time and which tokens it operates.",
 
   "```dropdown",
-  JSON.stringify({
-    label: "Select a Project",
-    placeholder: "Choose a project...",
-    searchable: true,
-    stateKey: "selectedProject",
-    labelStateKey: "selectedProjectName",
-    defaultValue: "circlefin",
-    allowEmpty: false,
-    readFromJSON: true,
-    jsonData: {
-      url: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-projects.json",
-      pathToOptions: "dropdown_values",
-      valueField: "owner_project",
-      labelField: "display_name"
-    }
-  }),
+  JSON.stringify(projectDropdown),
   "```",
 
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stablecoin Breakdown for {{selectedProjectName}}",
-    subtitle: "Stacked circulating supply of top stablecoins.",
+    title: "Stablecoin Supply for {{selectedProjectName}}",
+    subtitle: "Stacked circulating supply of top stablecoins for {{selectedProjectName}}.",
     showXAsDate: true,
     showZeroTooltip: false,
     showTotalTooltip: true,
@@ -53,7 +57,6 @@ const mainContent = [
   }),
   "```",
 
-  "## Stablecoin Breakdown Table",
   "```table",
   JSON.stringify({
     readFromJSON: true,
@@ -176,15 +179,15 @@ const mainContent = [
 ];
 
 const StablecoinProject: QuickBiteData = {
-  title: "Stablecoin Breakdown by Project",
-  shortTitle: "Stablecoins by Project",
-  subtitle: "Analyzing the composition and trends of stablecoins across different projects.",
+  title: "Stablecoin Supply Breakdown for Issuers",
+  shortTitle: "Stablecoins by Issuer",
+  subtitle: "Analyzing the composition and trends of stablecoins across different issuers.",
   content: [
     ...mainContent,
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/fusaka.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
-  date: "2026-03-06",
+  date: "2026-03-12",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
@@ -198,7 +201,7 @@ const StablecoinProject: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
 };
 
 export default StablecoinProject;

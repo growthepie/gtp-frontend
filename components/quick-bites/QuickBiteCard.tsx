@@ -135,7 +135,10 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
           
           return (
             <div className="flex gap-x-[5px]">
-              {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
+              {topics
+                .filter(topic => topicFilter ? topicFilter.includes(topic.name) : true)
+                .slice(0, 3)
+                .map((topic) => {
                 const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
               
                 // Resolve chain information if this is a chain URL

@@ -150,6 +150,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   ]);
 
   const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
+  const visibleSelectedChains = selectedChains.slice(0, 9);
+  const hiddenSelectedChainsCount = Math.max(selectedChains.length - visibleSelectedChains.length, 0);
 
   return (
     <div className="w-full overflow-hidden  "
@@ -169,9 +171,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         limitTooltipRows={10}
         watermarkMetricName={metricMeta?.name ?? null}
         showWatermark
-        height={containerMobile ? 300 : collapseTable ? 400 : 440}
-        minHeight={containerMobile ? 300 : collapseTable ? 400 : 440}
-        maxHeight={containerMobile ? 300 : collapseTable ? 400 : 440}
+        height={containerMobile ? 300 : 415}
+        minHeight={containerMobile ? 300 : 415}
+        maxHeight={containerMobile ? 300 : 415}
         emptyStateMessage="Select chains to show their historic data"
         onDragSelect={(xStart, xEnd) => {
           
@@ -193,10 +195,10 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
 
 
       {collapseTable && (
-        <div className="h-[30px] w-full  flex items-center justify-center gap-[5px]" 
+        <div className="h-[30px] w-full relative bottom-[9px]  flex items-center justify-center gap-[5px]" 
         
         >
-          {selectedChains.map((chain) => (
+          {visibleSelectedChains.map((chain) => (
             <GTPButton
               key={chain}
               label={master?.chains?.[chain]?.name}
@@ -212,6 +214,14 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
               leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
             />
           ))}
+          {hiddenSelectedChainsCount > 0 && (
+            <GTPButton
+              key={"hidden-chains"}
+              label={`+${hiddenSelectedChainsCount} chains`}
+              variant="primary"
+              size="xs"
+            />
+          )}
         </div>
       )}
       

@@ -663,7 +663,7 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
 
 
 
-const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: string, href: string, color?: string }) => {
+export const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: string, href: string, color?: string }) => {
 
 
   return (
@@ -681,7 +681,7 @@ const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: 
 }
 
 
-const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, links: { icon?: string, label: string, href: string }[] }) => {
+export const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, links: { icon?: string, label: string, href: string }[] }) => {
   const [linkHeight, setLinkHeight] = useState(26);
   const [panelWidth, setPanelWidth] = useState<number | null>(null);
   const [chipBaseWidth, setChipBaseWidth] = useState<number | null>(null);

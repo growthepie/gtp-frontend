@@ -4,17 +4,13 @@ import ClientQuickBitePage from './ClientQuickBitePage';
 import { getQuickBiteBySlug } from '@/lib/quick-bites/quickBites';
 import type { Metadata } from 'next';
 import {
+  generateSeo,
   generateJsonLdArticle,
   generateJsonLdBreadcrumbs,
-  generateSeo,
 } from '@/lib/quick-bites/seo_helper';
+import { serializeJsonLd } from '@/utils/json-ld';
 
 type Props = { params: Promise<{ slug: string }> };
-
-type QbModule = {
-  jsonLdFaq?: unknown;
-  jsonLdDatasets?: unknown[];
-};
 
 // ----- SEO: generate <head> metadata -----
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -48,20 +44,29 @@ export default async function Page({ params }: Props) {
   const qb = getQuickBiteBySlug(slug);
   if (!qb) return notFound();
 
-  const serializeJsonLd = (data: unknown) =>
-    JSON.stringify(data, null, 2).replace(/</g, '\\u003c');
-
   const jsonLdArticle = generateJsonLdArticle(slug, qb, {
     dateModified: qb.date,
     language: 'en',
   });
   const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(slug, qb);
 
+  // Try optional per-QB exports (prefer data embedded in qb)
+  let jsonLdFaq: any | undefined = qb.jsonLdFaq;
+  let jsonLdDatasets: any[] = qb.jsonLdDatasets ?? [];
+  try {
+    // This import must also be server-safe
+    const mod = require(`@/lib/quick-bites/${slug}.ts`);
+    if (!jsonLdFaq && mod.jsonLdFaq) jsonLdFaq = mod.jsonLdFaq;
+    if (jsonLdDatasets.length === 0 && mod.jsonLdDatasets) {
+      jsonLdDatasets = mod.jsonLdDatasets;
+    }
+  } catch {}
+
   const graphs = [
     jsonLdArticle,
     jsonLdBreadcrumbs,
-    ...(qb.jsonLdFaq ? [qb.jsonLdFaq] : []),
-    ...(qb.jsonLdDatasets ?? []),
+    ...(jsonLdFaq ? [jsonLdFaq] : []),
+    ...jsonLdDatasets,
   ];
 
   return (

@@ -6,17 +6,32 @@ import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import ApplicationsRouteHeader from "./_components/ApplicationsRouteHeader";
-
+import Container from "@/components/layout/Container";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import Heading from "@/components/layout/Heading";
+import Search from "./_components/Search";
+import Controls from "./_components/Controls";
+import { PageTitleAndDescriptionAndControls } from "./_components/Components";
+import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
     '/applications',
     {}
   );
+  const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
   return {
     title: metadata.title,
     description: metadata.description,
+    alternates: metadata.canonical
+      ? { canonical: metadata.canonical }
+      : undefined,
     openGraph: {
+      url: metadata.canonical ?? "https://www.growthepie.com/applications",
+      type: "website",
+      title: metadata.title,
+      description: metadata.description,
+      siteName: "growthepie",
       images: [
         {
           url: `https://api.growthepie.com/v1/og_images/applications-overview.png`,
@@ -26,15 +41,23 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: metadata.title,
+      description: metadata.description,
+      images: [`https://api.growthepie.com/v1/og_images/applications-overview.png`],
+    },
+    robots,
   };
 }
 
 export default async function Layout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
   return (
+      <>
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",
@@ -77,12 +100,16 @@ export default async function Layout({
           <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ProjectsMetadataProvider>
               <ApplicationsDataProvider>
-                <ApplicationsRouteHeader />
+                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
+                <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot>
+                  <PageTitleAndDescriptionAndControls />
+                </Container>
                   {children}
               </ApplicationsDataProvider>
             </ProjectsMetadataProvider>
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>
+      </>
   )
 }
