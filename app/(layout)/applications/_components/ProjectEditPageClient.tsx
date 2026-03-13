@@ -19,6 +19,7 @@ import { useContractsQueue } from "./_edit/useContractsQueue";
 import { ProjectDetailsStep } from "./_edit/ProjectDetailsStep";
 import { ContractsStep } from "./_edit/ContractsStep";
 import { EditSidebar } from "./_edit/EditSidebar";
+import { SmartBackButton } from "@/components/SmartBackButton";
 
 export default function ProjectEditPageClient() {
   const pathname = usePathname();
@@ -469,6 +470,7 @@ export default function ProjectEditPageClient() {
 
           {/* ── Tabs: Find existing / Add new ── */}
           <div ref={tabsRef} className="w-full h-[46px] relative flex gap-[5px] items-center overflow-y-hidden">
+            <SmartBackButton fallbackHref="/applications" variant="desktop" className="!flex shrink-0" />
             {/* Find existing tab */}
             <div
               className={`relative transition-all duration-300 flex items-center justify-between rounded-full cursor-pointer flex-1
