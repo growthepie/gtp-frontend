@@ -24,6 +24,7 @@ import { ApplicationIcon } from "@/app/(layout)/applications/_components/Compone
 import { Carousel } from "@/components/Carousel";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
+import HorizontalScrollContainer from "../HorizontalScrollContainer";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -489,7 +490,7 @@ const SideEventsContainer = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-[10px] w-[390px] min-w-[300px] h-[442px] overflow-hidden">
+    <div className="flex flex-col gap-y-[10px] min-w-[300px] h-[442px] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
@@ -614,8 +615,15 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
   return (
-    <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
-      <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
+    <div className="flex-1 min-w-[300px]">
+      <HorizontalScrollContainer
+        includeMargin={false}
+        enableDragScroll={true}
+        hideScrollbar={false}
+        forcedMinWidth={780}
+        className="sm:pt-0 pt-[30px]"
+      >
+        <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px]">
         {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
@@ -639,7 +647,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[15px] pt-[5px] h-full pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className="px-[15px] min-w-[250px] h-[130px] pt-[5px] pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
@@ -677,7 +685,8 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             </Link>
           );
         })}
-      </div>
+        </div>
+      </HorizontalScrollContainer>
     </div>
   );
 };
@@ -784,12 +793,12 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
 
   
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract} >
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden @[436px]:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
           <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
-              <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+              <GTPButtonRow wrap onWrapChange={setIsWrapping} className={`${isWrapping ? "justify-center items-center" : ""}`} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
 
@@ -797,7 +806,9 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                     <GTPButton
                       key={option.id}
                       label={option.label}
-                      size="sm"
+                      innerStyle={{ width: "100%" }}  
+                      size={"sm"}
+                      className={`${isWrapping ? "w-full justify-center md:w-auto md:justify-normal" : ""}`}
                       variant={isActive ? "primary" : "no-background"}
                       visualState={isActive ? "active" : "default"}
                       clickHandler={() => {
