@@ -624,7 +624,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 
 
 
-
+//
   return (
     <div className="flex-1 min-w-[300px] ">
       <HorizontalScrollContainer
