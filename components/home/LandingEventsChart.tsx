@@ -490,7 +490,7 @@ const SideEventsContainer = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-[10px] min-w-[300px] h-[442px] overflow-hidden">
+    <div className="flex flex-col gap-y-[10px] min-w-[300px] h-[442px] w-[30%] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
@@ -615,15 +615,15 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
   return (
-    <div className="flex-1 min-w-[300px]">
+    <div className="flex-1 min-w-[300px] ">
       <HorizontalScrollContainer
         includeMargin={false}
         enableDragScroll={true}
         hideScrollbar={false}
         forcedMinWidth={780}
-        className="sm:pt-0 pt-[30px]"
+        className="h-full "
       >
-        <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px]">
+        <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px] h-[442px]">
         {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
@@ -647,7 +647,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[15px] min-w-[250px] h-[130px] pt-[5px] pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className="px-[15px] min-w-[250px] h-full pt-[5px] pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
@@ -793,7 +793,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
 
   
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden @[436px]:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden xs:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
