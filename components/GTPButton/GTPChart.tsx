@@ -275,6 +275,8 @@ export interface GTPChartProps {
   showTooltipTimestamp?: boolean;
   /** When true, appends a "Total" row at the bottom of the default tooltip showing the sum of all displayed data points. */
   showTotal?: boolean;
+  /** When true, default tooltip rows are sorted from smallest value to largest value. */
+  reverseTooltipOrder?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -321,6 +323,7 @@ export default function GTPChart({
   minDragSelectPoints = 2,
   showTooltipTimestamp = false,
   showTotal = false,
+  reverseTooltipOrder = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1043,6 +1046,26 @@ export default function GTPChart({
     };
     const formatTooltipValue = (value: number) => {
       if (percentageMode) return `${value.toFixed(1)}%`;
+      const resolvedPrefix = prefix ?? "";
+      const resolvedSuffix = suffix ?? "";
+      const resolvedDecimals =
+        typeof decimals === "number" && Number.isFinite(decimals)
+          ? Math.max(0, Math.floor(decimals))
+          : 2;
+
+      if (
+        resolvedPrefix === "$" &&
+        resolvedSuffix.trim().length === 0 &&
+        resolvedDecimals >= 4 &&
+        Number.isFinite(value) &&
+        value > 0
+      ) {
+        const threshold = 10 ** -resolvedDecimals;
+        if (value < threshold) {
+          return `< $${threshold.toFixed(resolvedDecimals)}`;
+        }
+      }
+
       return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
     };
     const measureAthLabelWidth = (labelText: string) => {
@@ -1494,7 +1517,11 @@ export default function GTPChart({
 
       const sortedPoints = validPoints
         .map((p) => ({ ...p, numericValue: Number(p.value[1]) }))
-        .sort((a, b) => b.numericValue - a.numericValue);
+        .sort((a, b) =>
+          reverseTooltipOrder
+            ? a.numericValue - b.numericValue
+            : b.numericValue - a.numericValue,
+        );
       const dedupedSortedPoints = sortedPoints.filter(
         (point, pointIdx, collection) =>
           collection.findIndex((candidate) => candidate.seriesName === point.seriesName) === pointIdx,
@@ -1699,6 +1726,7 @@ export default function GTPChart({
     tooltipTitle,
     showTooltipTimestamp,
     showTotal,
+    reverseTooltipOrder,
     limitTooltipRows,
     xAxisType,
     yAxisLabelFormatter,

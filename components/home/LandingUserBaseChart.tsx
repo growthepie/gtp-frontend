@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -163,25 +163,14 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
   } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
 
 
-  const [data, setData] = useState<any>(null);
-
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
-
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
   
-
   const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
 
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
-
-  useEffect(() => {
-    if (landing) {
-      setData(landing.data.metrics.engagement[selectedTimeInterval]);
-    }
-  }, [landing, selectedTimeInterval]);
 
   const { resolvedTheme } = useTheme();
 
@@ -254,7 +243,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
         fullScreen={true}
       />
 
-      {data && landing && master && AllChainsByKeys ? (
+      {landing && master && AllChainsByKeys ? (
         <>
 
           <Container className="w-full">
