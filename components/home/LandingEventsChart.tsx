@@ -2,9 +2,10 @@
 
 import Heading from "../layout/Heading";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GTPIcon } from "../layout/GTPIcon";
+import { GTPIcon, sizeClassMap } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
+import Image from "next/image";
 import GTPCardLayout from "../GTPButton/GTPCardLayout";
 import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
@@ -22,9 +23,11 @@ import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import { Carousel } from "@/components/Carousel";
-import { useMaster } from "@/contexts/MasterContext";
+import { MasterProvider, useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { chain, size } from "lodash";
+import { useTheme } from "next-themes";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -490,7 +493,7 @@ const SideEventsContainer = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-[10px] min-w-[300px] h-[442px] w-[30%] overflow-hidden">
+    <div className="flex flex-col gap-y-[10px] min-w-[390px] h-[442px] w-[30%] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
@@ -533,6 +536,9 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   );
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { data: master, AllChainsByKeys } = useMaster();
+
+  const { theme } = useTheme();
 
 
   const projectDataMap = useMemo<Record<string, AggregatedProjectData>>(() => {
@@ -614,13 +620,17 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     return eventData.cards ?? [];
   }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
+
+
+
   return (
     <div className="flex-1 min-w-[300px] ">
       <HorizontalScrollContainer
         includeMargin={false}
         enableDragScroll={true}
+        paddingRight={0}
         hideScrollbar={false}
-        forcedMinWidth={780}
+        forcedMinWidth={900}
         className="h-full "
       >
         <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px] h-[442px]">
@@ -630,6 +640,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
           const isGasFees = card.metric === "gas_fees";
           const metricData = isGasFees ? projectData?.metrics[`gas_fees_${showUsd ? "usd" : "eth"}`] : projectData?.metrics[card.metric];
           const positiveChangeColor = metricData?.change_pct && metricData.change_pct > 0
+
           const metricSuffix = (() => {
             switch (card.metric) {
               case "gas_fees":
@@ -647,39 +658,75 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[15px] min-w-[250px] h-full pt-[5px] pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className="px-[10px] min-w-[250px] h-full pt-[5px] pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
-                  <span className="numbers-xs">{metricData ? metricData.num_contracts.toLocaleString("en-GB") : "—"}</span>
-                  <span className="text-xs text-color-text-secondary">&nbsp;contracts</span>
-                </div>
-                <div className="">
-                  <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
-                  <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
-                    <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
+                <span className="text-xxs text-color-text-secondary">Rank&nbsp;</span>
+                  <span className="numbers-xxs">{metricData ? metricData.rank : "—" }&nbsp;
+                    <span className={`numbers-xxs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
                       {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : ""}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
                     </span>
                   </span>
                 </div>
-              </div>
-              <div className="flex w-full justify-end items-center">
                 <div className="">
-                  <span className="numbers-sm">
+                <div className="">
+                  <span className="numbers-xxs">
                     {metricData
                       ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
                       : "—"}
                   </span>
-                  <span className="text-xs text-color-text-secondary">&nbsp;{metricSuffix}</span>
+                  
+                </div>
                 </div>
               </div>
+              <div className="flex w-full justify-end items-center -mt-[5px]">
+                <span className="text-xxs text-color-text-secondary">{metricSuffix}</span>
+              </div>
               <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
-                <ApplicationIcon owner_project={card.owner_project} size="sm" />
-                <span className="heading-small-md text-color-text-primary">
+              <div className={`flex items-center justify-center select-none rounded-full `}>
+                  {ownerProjectToProjectData[card.owner_project] && ownerProjectToProjectData[card.owner_project].logo_path ? (
+                    <div className="p-[4.5px] bg-color-bg-medium rounded-full flex items-center justify-center">
+                      <Image
+                        src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[card.owner_project].logo_path}`}
+                        width={18} height={18}
+                        className="select-none rounded-full"
+                        alt={card.owner_project}
+                        onDragStart={(e) => e.preventDefault()}
+                        loading="eager"
+                        priority={true}
+                      />
+                    </div>
+                  ) : (
+                    <div className={`flex items-center justify-center size-[26px] bg-color-ui-active !bg-transparent rounded-full`}>
+                      <GTPIcon icon="gtp-project-monochrome" size="sm" className="text-color-ui-hover" />
+                    </div>
+                  )}
+                </div>
+                <span className="heading-large-xs text-color-text-primary">
                   {metadata?.display_name || card.owner_project}
                 </span>
                 <div className="p-[5px] bg-color-bg-medium rounded-full flex items-center justify-center">
                   <GTPIcon icon="gtp-chevronright-monochrome" className="!size-[11px]" containerClassName="!size-[16px] flex items-center justify-center" />
+                </div>
+                
+              </div>
+              <div className="justify-between items-center flex w-full ">
+                <div className="flex items-center gap-x-[5px]">
+                  <GTPIcon icon={`gtp-${master?.app_metrics[card.metric]?.icon}` as GTPIconName} className="!size-[12px]" containerClassName="!size-[16px] flex items-center justify-center" />
+                  <span className="text-xxs text-color-text-primary">{master?.app_metrics[card.metric]?.name}</span>
+                </div>
+                <div className="flex items-center gap-x-[1px]">
+                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).map((chain) => (
+                    <Link href={`/chains/${AllChainsByKeys[chain].urlKey}`} key={chain} className="flex items-center">
+                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className="!size-[10px]" containerClassName="!size-[16px] flex items-center justify-center" 
+                      style={{
+                        color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
+                      }}
+                      />
+                      
+                    </Link>
+                  ))}
                 </div>
               </div>
             </Link>
