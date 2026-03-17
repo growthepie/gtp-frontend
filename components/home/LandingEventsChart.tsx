@@ -2,9 +2,10 @@
 
 import Heading from "../layout/Heading";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GTPIcon } from "../layout/GTPIcon";
+import { GTPIcon, sizeClassMap } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
+import Image from "next/image";
 import GTPCardLayout from "../GTPButton/GTPCardLayout";
 import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPButton/GTPChart";
 import { GTPButton } from "../GTPButton/GTPButton";
@@ -16,14 +17,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
 import { EventExample, EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
-import { ApplicationsURLs, getChainMetricURL } from "@/lib/urls";
+import { ApplicationsURLs, getChainMetricURL, MetricURLKeyToAPIKey } from "@/lib/urls";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import { Carousel } from "@/components/Carousel";
-import { useMaster } from "@/contexts/MasterContext";
+import { MasterProvider, useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
+import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { chain, size } from "lodash";
+import { useTheme } from "next-themes";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -142,6 +146,7 @@ type AllTimeHighMeta = {
   chainKey: string;
   chainLabel: string;
   metricKey: string;
+  metricApiKey: string;
   metricLabel: string;
   metricUrlKey: string;
   color?: string;
@@ -207,6 +212,7 @@ const resolveEventExample = (
   const { chainKey, metricKey } = event.allTimeHigh;
   const metricItem = resolveMetricItem(metricKey);
   const metricUrlKey = resolveMetricUrlKey(metricKey);
+  const metricApiKey = MetricURLKeyToAPIKey[metricUrlKey] ?? metricItem?.key ?? metricKey;
   const metricLabel = metricItem?.label ?? formatKeyLabel(metricKey);
   const chainLabel = allChainsByKeys?.[chainKey]?.label ?? formatKeyLabel(chainKey);
   const chainColor = allChainsByKeys?.[chainKey]?.colors?.light?.[0];
@@ -223,6 +229,7 @@ const resolveEventExample = (
     chainKey,
     chainLabel,
     metricKey,
+    metricApiKey,
     metricLabel,
     metricUrlKey,
     color: chainColor,
@@ -282,6 +289,25 @@ const resolveAthIndices = (typesRaw: unknown, valuesRaw: unknown) => {
   }
 
   return { xIndex, yIndex: yIndex >= 0 ? yIndex : null };
+};
+
+const resolveTypesPathFromValuesPath = (pathToData: string | undefined) => {
+  if (!pathToData) return null;
+  if (pathToData.endsWith(".values")) return pathToData.replace(/\.values$/, ".types");
+  if (pathToData.endsWith(".data")) return pathToData.replace(/\.data$/, ".types");
+  return null;
+};
+
+const toTypeToken = (value: unknown) => String(value ?? "").trim().toLowerCase();
+
+const matchesUnitToken = (typeToken: string, unit: "usd" | "eth") => {
+  const token = typeToken.toLowerCase();
+  return (
+    token === unit ||
+    token.startsWith(`${unit}_`) ||
+    token.endsWith(`_${unit}`) ||
+    token.includes(`_${unit}_`)
+  );
 };
 
 const buildAthSeriesFromSource = (
@@ -489,7 +515,7 @@ const SideEventsContainer = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-[10px] w-[390px] min-w-[300px] h-[442px] overflow-hidden">
+    <div className="flex flex-col gap-y-[10px] min-w-[390px] h-[442px] w-[30%] overflow-hidden">
       {FEATURED_EVENT_IDS_MAX.map((event) => (
         <EventCard
           key={event}
@@ -530,8 +556,13 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   const { data: appOverviewData } = useSWR<AppOverviewResponse>(
     ApplicationsURLs.overview.replace("{timespan}", "7d"),
   );
+  const isMobile = useMediaQuery("(max-width: 1760px)");
+  console.log(isMobile)
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { data: master, AllChainsByKeys } = useMaster();
+
+  const { theme } = useTheme();
 
 
   const projectDataMap = useMemo<Record<string, AggregatedProjectData>>(() => {
@@ -613,15 +644,27 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     return eventData.cards ?? [];
   }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
+
+
+//
   return (
-    <div className="flex flex-col gap-y-[10px] h-[442px] flex-1 overflow-y-auto">
-      <div className="grid grid-cols-3 h-full gap-x-[10px] gap-y-[10px]">
+    <div className="flex-1 min-w-[300px] ">
+      <HorizontalScrollContainer
+        includeMargin={false}
+        enableDragScroll={true}
+        paddingRight={0}
+        hideScrollbar={false}
+        forcedMinWidth={850}
+        className="h-full "
+      >
+        <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px] h-[442px]">
         {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
           const isGasFees = card.metric === "gas_fees";
           const metricData = isGasFees ? projectData?.metrics[`gas_fees_${showUsd ? "usd" : "eth"}`] : projectData?.metrics[card.metric];
           const positiveChangeColor = metricData?.change_pct && metricData.change_pct > 0
+
           const metricSuffix = (() => {
             switch (card.metric) {
               case "gas_fees":
@@ -639,49 +682,91 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[15px] pt-[5px] h-full pb-[10px] bg-transparent hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className="px-[10px] min-w-[250px] h-full pt-[5px] pb-[10px] bg-transparent group hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
-                  <span className="numbers-xs">{metricData ? metricData.num_contracts.toLocaleString("en-GB") : "—"}</span>
-                  <span className="text-xs text-color-text-secondary">&nbsp;contracts</span>
-                </div>
-                <div className="">
-                  <span className="text-xs text-color-text-secondary">Rank&nbsp;</span>
-                  <span className="numbers-xs">{metricData ? metricData.rank : "—" }&nbsp;
-                    <span className={`numbers-xs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
+                <span className={` group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}>Rank&nbsp;</span>
+                  <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}>{metricData ? metricData.rank : "—" }&nbsp;
+                    <span className={`numbers-xxs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
                       {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : ""}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
                     </span>
                   </span>
                 </div>
-              </div>
-              <div className="flex w-full justify-end items-center">
                 <div className="">
-                  <span className="numbers-sm">
-                    {metricData
-                      ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
-                      : "—"}
-                  </span>
-                  <span className="text-xs text-color-text-secondary">&nbsp;{metricSuffix}</span>
+                  <div className="">
+                    <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}>
+                      {metricData
+                        ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
+                        : "—"}
+                    </span>   
+                  </div>
                 </div>
               </div>
+              <div className="flex w-full justify-end items-center -mt-[5px]">
+                <span className={`group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}>{metricSuffix}</span>
+              </div>
               <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
-                <ApplicationIcon owner_project={card.owner_project} size="sm" />
-                <span className="heading-small-md text-color-text-primary">
+              <div className={`flex items-center justify-center select-none rounded-full `}>
+                  {ownerProjectToProjectData[card.owner_project] && ownerProjectToProjectData[card.owner_project].logo_path ? (
+                    <div className="p-[4.5px] group-hover:bg-color-ui-hover bg-color-bg-medium rounded-full flex items-center justify-center">
+                      <Image
+                        src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[card.owner_project].logo_path}`}
+                        width={18} height={18}
+                        className="select-none rounded-full"
+                        alt={card.owner_project}
+                        onDragStart={(e) => e.preventDefault()}
+                        loading="eager"
+                        priority={true}
+                      />
+                    </div>
+                  ) : (
+                    <div className={`flex items-center justify-center size-[26px] bg-color-ui-active !bg-transparent rounded-full`}>
+                      <GTPIcon icon="gtp-project-monochrome" size="sm" className="text-color-ui-hover" />
+                    </div>
+                  )}
+                </div>
+                <span className={`text-left text-color-text-primary w-full ${isMobile ? "heading-small-xxs" : "heading-small-sm "}`}>
                   {metadata?.display_name || card.owner_project}
                 </span>
-                <div className="p-[5px] bg-color-bg-medium rounded-full flex items-center justify-center">
+                <div className="p-[5px] group-hover:bg-color-ui-hover bg-color-bg-medium rounded-full flex items-center justify-center">
                   <GTPIcon icon="gtp-chevronright-monochrome" className="!size-[11px]" containerClassName="!size-[16px] flex items-center justify-center" />
+                </div>
+                
+              </div>
+              <div className="justify-between items-center flex w-full gap-x-[10px] ">
+                <div className="flex items-center gap-x-[5px]">
+                  <GTPIcon icon={`gtp-${master?.app_metrics[card.metric]?.icon}` as GTPIconName} className={`${isMobile ? "!size-[10px]" : "!size-[16px]"}`} containerClassName="!size-[16px] flex items-center justify-center" />
+                  <span className={`${!isMobile ? "text-xs" : "text-xxs "} text-nowrap text-color-text-primary`}>{master?.app_metrics[card.metric]?.name}</span>
+                </div>
+                <div className={`flex items-center ${isMobile ? "gap-x-[1px]" : "gap-x-[5px]"} overflow-hidden pr-[5px]`}>
+                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).slice(0, 5).map((chain) => (
+                    <Link href={`/chains/${AllChainsByKeys[chain].urlKey}`} key={chain} className="flex items-center">
+                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={`${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName="!size-[16px] flex items-center justify-center" 
+                      style={{
+                        color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
+                      }}
+                      />
+                      
+                    </Link>
+                  ))}
+                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length > 5 && (
+                    <div className={`flex items-center justify-center bg-color-bg-medium rounded-full px-[5px] py-[3px] 2xl:text-xxs text-xxxs group-hover:bg-color-ui-hover`}>
+                      +{Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length - 5} More
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
           );
         })}
-      </div>
+        </div>
+      </HorizontalScrollContainer>
     </div>
   );
 };
 const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
+  const { metrics } = useMaster();
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -734,7 +819,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     // if (!eventData.athMeta || athXAxisLines.length === 0) return baseLines;
     // return [...baseLines, ...athXAxisLines];
     return baseLines;
-  }, [activeOption?.xAxisLines, athXAxisLines, eventData.athMeta, eventData.xAxisLines]);
+  }, [activeOption?.xAxisLines, eventData.xAxisLines]);
 
   const allSeriesNames = useMemo(() => selectedSeries.map((series) => series.name), [selectedSeries]);
   const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
@@ -782,14 +867,84 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
         ? "Select series to show data"
         : "";
 
+  const selectedTypeTokens = useMemo(() => {
+    if (!activeSourceData) return [] as string[];
+
+    const typesPath = eventData.athMeta
+      ? ATH_TYPES_PATH
+      : resolveTypesPathFromValuesPath(activeDataSource?.pathToData);
+    if (!typesPath) return [] as string[];
+
+    const rawTypes = getNestedValue(activeSourceData, typesPath);
+    if (!Array.isArray(rawTypes)) return [] as string[];
+
+    const normalizedTypes = rawTypes.map(toTypeToken);
+    let selectedIndexes: number[] = [];
+
+    if (eventData.athMeta) {
+      const values = getNestedValue(activeSourceData, ATH_VALUES_PATH);
+      const { yIndex } = resolveAthIndices(rawTypes, values);
+      if (yIndex !== null) {
+        selectedIndexes = [yIndex];
+      }
+    } else if (activeDataSource?.series?.length) {
+      selectedIndexes = activeDataSource.series.map((seriesMeta) => seriesMeta.yIndex);
+    } else if (activeDataSource?.dynamicSeries) {
+      const yStartIndex = activeDataSource.dynamicSeries.ystartIndex ?? 1;
+      selectedIndexes = normalizedTypes.map((_, index) => index).filter((index) => index >= yStartIndex);
+    } else {
+      const xIndex = activeDataSource?.xIndex ?? 0;
+      selectedIndexes = normalizedTypes.map((_, index) => index).filter((index) => index !== xIndex);
+    }
+
+    return selectedIndexes
+      .map((index) => normalizedTypes[index])
+      .filter((token): token is string => Boolean(token));
+  }, [activeDataSource, activeSourceData, eventData.athMeta]);
+
+  const resolvedValueFormat = (() => {
+    const detectedUnit = selectedTypeTokens.some((token) => matchesUnitToken(token, "usd"))
+      ? "usd"
+      : selectedTypeTokens.some((token) => matchesUnitToken(token, "eth"))
+        ? "eth"
+        : null;
+
+    const athMetricInfo = eventData.athMeta?.metricApiKey
+      ? metrics?.[eventData.athMeta.metricApiKey]
+      : undefined;
+    if (athMetricInfo?.units) {
+      const unitCandidates = [detectedUnit, "value", "usd", "eth"]
+        .filter((candidate): candidate is string => typeof candidate === "string")
+        .filter((candidate, index, arr) => arr.indexOf(candidate) === index);
+
+      for (const unitKey of unitCandidates) {
+        const unit = athMetricInfo.units[unitKey];
+        if (!unit) continue;
+        return {
+          prefix: unit.prefix ?? undefined,
+          suffix: unit.suffix ?? undefined,
+          decimals: unit.decimals_tooltip ?? unit.decimals,
+        };
+      }
+    }
+
+    if (detectedUnit === "usd") {
+      return { prefix: "$", suffix: undefined, decimals: 2 };
+    }
+    if (detectedUnit === "eth") {
+      return { prefix: undefined, suffix: " ETH", decimals: 4 };
+    }
+    return undefined;
+  })();
+
   
   return (
-    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden" onMouseEnter={onInteract} >
+    <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden xs:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
       <GTPCardLayout className="h-[442px]"
        topBar={
         showOptions ? (
           <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
-              <GTPButtonRow wrap onWrapChange={setIsWrapping} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
+              <GTPButtonRow wrap onWrapChange={setIsWrapping} className={`${isWrapping ? "justify-center items-center" : ""}`} style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
                 {options.map((option) => {
                   const isActive = option.id === activeOptionId;
 
@@ -797,7 +952,9 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                     <GTPButton
                       key={option.id}
                       label={option.label}
-                      size="sm"
+                      innerStyle={{ width: "100%" }}  
+                      size={"sm"}
+                      className={`${isWrapping ? "w-full justify-center md:w-auto md:justify-normal" : ""}`}
                       variant={isActive ? "primary" : "no-background"}
                       visualState={isActive ? "active" : "default"}
                       clickHandler={() => {
@@ -857,7 +1014,9 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
           <div className="flex-1 min-h-0 w-full py-[15px]  -overflow-hidden">
             <GTPChart
               series={activeSeries}
-
+              prefix={resolvedValueFormat?.prefix}
+              suffix={resolvedValueFormat?.suffix}
+              decimals={resolvedValueFormat?.decimals}
               stack={activeOption?.stack ?? false}
               snapToCleanBoundary={false}
               xAxisMin={selectedRange ? selectedRange[0] : undefined}

@@ -528,6 +528,27 @@ const MetricTable = ({
     return "";
   }
 
+  const getTinyUsdThresholdLabel = useCallback(
+    (rawValue: number, decimals?: number, prefix?: string, suffix?: string) => {
+      if (prefix !== "$") return null;
+      if ((suffix ?? "").trim().length > 0) return null;
+      if (!Number.isFinite(rawValue) || rawValue <= 0) return null;
+
+      const resolvedDecimals =
+        typeof decimals === "number" && Number.isFinite(decimals)
+          ? Math.max(0, Math.floor(decimals))
+          : 2;
+
+      if (resolvedDecimals < 4) return null;
+
+      const threshold = 10 ** -resolvedDecimals;
+      if (rawValue >= threshold) return null;
+
+      return `< $${threshold.toFixed(resolvedDecimals)}`;
+    },
+    [],
+  );
+
   const getDisplayValue = useCallback(
     (item: any) => {
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
@@ -568,12 +589,12 @@ const MetricTable = ({
       //   // value = formatNumber(values[0]);
       // }
 
+      let rawDisplayValue = Number(lastValues[item.chain.key]);
       let value;
       if (!focusEnabled && item.chain.key !== "ethereum") {
-        value = formatNumber(lastValues[item.chain.key]);
+        value = formatNumber(rawDisplayValue);
       } else if (lastValues[item.chain.key] !== undefined) {
-
-        value = formatNumber(lastValues[item.chain.key]);
+        value = formatNumber(rawDisplayValue);
       } else {
         value = lastValues[item.chain.key];
       }
@@ -586,17 +607,31 @@ const MetricTable = ({
             prefix = "";
             suffix = " Gwei";
             const ethValue = values[types.indexOf("eth")];
-            value = typeof ethValue === "number" && Number.isFinite(ethValue)
-              ? formatNumber(ethValue * 1000000000, decimals)
-              : "0";
+            if (typeof ethValue === "number" && Number.isFinite(ethValue)) {
+              rawDisplayValue = ethValue * 1000000000;
+              value = formatNumber(rawDisplayValue, decimals);
+            } else {
+              rawDisplayValue = 0;
+              value = "0";
+            }
           }
         } else {
           const usdValue = values[types.indexOf("usd")];
-          value = typeof usdValue === "number" && Number.isFinite(usdValue)
-            ? formatNumber(usdValue, decimals)
-            : "0";
+          if (typeof usdValue === "number" && Number.isFinite(usdValue)) {
+            rawDisplayValue = usdValue;
+            value = formatNumber(rawDisplayValue, decimals);
+          } else {
+            rawDisplayValue = 0;
+            value = "0";
+          }
         }
       }
+
+      const tinyUsdLabel = getTinyUsdThresholdLabel(rawDisplayValue, decimals, prefix, suffix);
+      if (tinyUsdLabel) {
+        return { value: tinyUsdLabel, prefix: "", suffix: "" };
+      }
+
       return { value, prefix, suffix };
     },
     [
@@ -607,7 +642,8 @@ const MetricTable = ({
       showUsd,
       showGwei,
       lastValueTimeIntervalKey,
-      focusEnabled
+      focusEnabled,
+      getTinyUsdThresholdLabel,
     ],
   );
 
