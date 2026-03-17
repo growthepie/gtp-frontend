@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { ALL_EVENT_DATA_URLS, EVENTS_BY_ID, FEATURED_EVENT_IDS_MAX, type EventId } from "../../lib/landing-events";
 import { EventExample, EventOption, EventSeriesMeta } from "../../lib/landing-events/types";
-import { ApplicationsURLs, getChainMetricURL } from "@/lib/urls";
+import { ApplicationsURLs, getChainMetricURL, MetricURLKeyToAPIKey } from "@/lib/urls";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
@@ -146,6 +146,7 @@ type AllTimeHighMeta = {
   chainKey: string;
   chainLabel: string;
   metricKey: string;
+  metricApiKey: string;
   metricLabel: string;
   metricUrlKey: string;
   color?: string;
@@ -211,6 +212,7 @@ const resolveEventExample = (
   const { chainKey, metricKey } = event.allTimeHigh;
   const metricItem = resolveMetricItem(metricKey);
   const metricUrlKey = resolveMetricUrlKey(metricKey);
+  const metricApiKey = MetricURLKeyToAPIKey[metricUrlKey] ?? metricItem?.key ?? metricKey;
   const metricLabel = metricItem?.label ?? formatKeyLabel(metricKey);
   const chainLabel = allChainsByKeys?.[chainKey]?.label ?? formatKeyLabel(chainKey);
   const chainColor = allChainsByKeys?.[chainKey]?.colors?.light?.[0];
@@ -227,6 +229,7 @@ const resolveEventExample = (
     chainKey,
     chainLabel,
     metricKey,
+    metricApiKey,
     metricLabel,
     metricUrlKey,
     color: chainColor,
@@ -286,6 +289,25 @@ const resolveAthIndices = (typesRaw: unknown, valuesRaw: unknown) => {
   }
 
   return { xIndex, yIndex: yIndex >= 0 ? yIndex : null };
+};
+
+const resolveTypesPathFromValuesPath = (pathToData: string | undefined) => {
+  if (!pathToData) return null;
+  if (pathToData.endsWith(".values")) return pathToData.replace(/\.values$/, ".types");
+  if (pathToData.endsWith(".data")) return pathToData.replace(/\.data$/, ".types");
+  return null;
+};
+
+const toTypeToken = (value: unknown) => String(value ?? "").trim().toLowerCase();
+
+const matchesUnitToken = (typeToken: string, unit: "usd" | "eth") => {
+  const token = typeToken.toLowerCase();
+  return (
+    token === unit ||
+    token.startsWith(`${unit}_`) ||
+    token.endsWith(`_${unit}`) ||
+    token.includes(`_${unit}_`)
+  );
 };
 
 const buildAthSeriesFromSource = (
@@ -744,6 +766,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   );
 };
 const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
+  const { metrics } = useMaster();
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -796,7 +819,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     // if (!eventData.athMeta || athXAxisLines.length === 0) return baseLines;
     // return [...baseLines, ...athXAxisLines];
     return baseLines;
-  }, [activeOption?.xAxisLines, athXAxisLines, eventData.athMeta, eventData.xAxisLines]);
+  }, [activeOption?.xAxisLines, eventData.xAxisLines]);
 
   const allSeriesNames = useMemo(() => selectedSeries.map((series) => series.name), [selectedSeries]);
   const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
@@ -843,6 +866,76 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
       : activeSeries.length === 0
         ? "Select series to show data"
         : "";
+
+  const selectedTypeTokens = useMemo(() => {
+    if (!activeSourceData) return [] as string[];
+
+    const typesPath = eventData.athMeta
+      ? ATH_TYPES_PATH
+      : resolveTypesPathFromValuesPath(activeDataSource?.pathToData);
+    if (!typesPath) return [] as string[];
+
+    const rawTypes = getNestedValue(activeSourceData, typesPath);
+    if (!Array.isArray(rawTypes)) return [] as string[];
+
+    const normalizedTypes = rawTypes.map(toTypeToken);
+    let selectedIndexes: number[] = [];
+
+    if (eventData.athMeta) {
+      const values = getNestedValue(activeSourceData, ATH_VALUES_PATH);
+      const { yIndex } = resolveAthIndices(rawTypes, values);
+      if (yIndex !== null) {
+        selectedIndexes = [yIndex];
+      }
+    } else if (activeDataSource?.series?.length) {
+      selectedIndexes = activeDataSource.series.map((seriesMeta) => seriesMeta.yIndex);
+    } else if (activeDataSource?.dynamicSeries) {
+      const yStartIndex = activeDataSource.dynamicSeries.ystartIndex ?? 1;
+      selectedIndexes = normalizedTypes.map((_, index) => index).filter((index) => index >= yStartIndex);
+    } else {
+      const xIndex = activeDataSource?.xIndex ?? 0;
+      selectedIndexes = normalizedTypes.map((_, index) => index).filter((index) => index !== xIndex);
+    }
+
+    return selectedIndexes
+      .map((index) => normalizedTypes[index])
+      .filter((token): token is string => Boolean(token));
+  }, [activeDataSource, activeSourceData, eventData.athMeta]);
+
+  const resolvedValueFormat = (() => {
+    const detectedUnit = selectedTypeTokens.some((token) => matchesUnitToken(token, "usd"))
+      ? "usd"
+      : selectedTypeTokens.some((token) => matchesUnitToken(token, "eth"))
+        ? "eth"
+        : null;
+
+    const athMetricInfo = eventData.athMeta?.metricApiKey
+      ? metrics?.[eventData.athMeta.metricApiKey]
+      : undefined;
+    if (athMetricInfo?.units) {
+      const unitCandidates = [detectedUnit, "value", "usd", "eth"]
+        .filter((candidate): candidate is string => typeof candidate === "string")
+        .filter((candidate, index, arr) => arr.indexOf(candidate) === index);
+
+      for (const unitKey of unitCandidates) {
+        const unit = athMetricInfo.units[unitKey];
+        if (!unit) continue;
+        return {
+          prefix: unit.prefix ?? undefined,
+          suffix: unit.suffix ?? undefined,
+          decimals: unit.decimals_tooltip ?? unit.decimals,
+        };
+      }
+    }
+
+    if (detectedUnit === "usd") {
+      return { prefix: "$", suffix: undefined, decimals: 2 };
+    }
+    if (detectedUnit === "eth") {
+      return { prefix: undefined, suffix: " ETH", decimals: 4 };
+    }
+    return undefined;
+  })();
 
   
   return (
@@ -921,7 +1014,9 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
           <div className="flex-1 min-h-0 w-full py-[15px]  -overflow-hidden">
             <GTPChart
               series={activeSeries}
-
+              prefix={resolvedValueFormat?.prefix}
+              suffix={resolvedValueFormat?.suffix}
+              decimals={resolvedValueFormat?.decimals}
               stack={activeOption?.stack ?? false}
               snapToCleanBoundary={false}
               xAxisMin={selectedRange ? selectedRange[0] : undefined}
