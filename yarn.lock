@@ -1705,10 +1705,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@openlabels/oli-sdk@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@openlabels/oli-sdk/-/oli-sdk-0.2.0.tgz#8f04935fd4dda3162b8690b049bd3409d1c10e78"
-  integrity sha512-zm3O9TPByMj3d42ZtERtJg7TetRdQyAbWhHnt2vTmMG6+wqzdNq774rwzXR9kB4tgtXja43gTNDJ39gJ+5rjEA==
+"@openlabels/oli-sdk@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@openlabels/oli-sdk/-/oli-sdk-0.2.4.tgz#2c2c8330e4e93f134aa5f1597b34cbe90a29ea16"
+  integrity sha512-oU9U9s4rjsRi452sWn8I/rUohQ+CvXjPInhSJuweW/RYrd8l5JzPuhu7tD//FxauF9xzEk1mhFJV2TSOiU1s2w==
   dependencies:
     js-sha3 "^0.9.3"
     js-yaml "^4.1.0"

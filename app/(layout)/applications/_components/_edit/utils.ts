@@ -198,18 +198,11 @@ export const truncateMiddle = (addr: string, start = 12, end = 6): string => {
   return `${addr.slice(0, start)}...${addr.slice(-end)}`;
 };
 
-export const BLOCKSCOUT_TX_URLS: Record<string, string> = {
-  "8453":  "https://base.blockscout.com/tx/",
-  "1":     "https://eth.blockscout.com/tx/",
-  "10":    "https://optimism.blockscout.com/tx/",
-  "42161": "https://arbitrum.blockscout.com/tx/",
-  "137":   "https://polygon.blockscout.com/tx/",
-};
+export const getTxExplorerUrl = (_chainId: string, txHash: string): string =>
+  `https://base.blockscout.com/tx/${txHash}`;
 
-export const getTxExplorerUrl = (chainId: string, txHash: string): string => {
-  const base = BLOCKSCOUT_TX_URLS[chainId] ?? `https://blockscout.com/chain/${chainId}/tx/`;
-  return `${base}${txHash}`;
-};
+export const getAttestationUrl = (_chainId: string, uid: string): string =>
+  `https://base.easscan.org/attestation/view/${uid}`;
 
 export const hasMeaningfulRowData = (row: { address?: unknown; contract_name?: unknown; owner_project?: unknown; usage_category?: unknown }): boolean => {
   const address = toStringValue(row.address).trim();
