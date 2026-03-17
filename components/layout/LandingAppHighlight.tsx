@@ -47,8 +47,10 @@ export default function LandingAppHighlight() {
         return randomIndices.map((i) => filteredProjectsData.data[i]);
     }, [filteredProjectsData, randomIndices]);
    
-    console.log(randomProjects[0]);
+    
     return (
+        <>
+        {randomProjects.length > 0 && (
 
         <div className="flex w-full gap-[10px] h-full">
             {/* Large left card — width derived from height via aspect-square */}
@@ -149,6 +151,7 @@ export default function LandingAppHighlight() {
                 ))}
             </div>
         </div>
-
+        )}
+        </>
     );
 }
