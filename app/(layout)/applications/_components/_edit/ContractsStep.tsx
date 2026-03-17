@@ -8,7 +8,7 @@ import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { validateAddressForChain } from "@openlabels/oli-sdk/validation";
 import type { AttestationRowInput, BulkOnchainSubmitResult, OnchainSubmitResult, PreparedAttestation, ProjectRecord } from "@openlabels/oli-sdk";
 import type { QueueEditableField, QueueSubmitPreview, SearchDropdownOption } from "./types";
-import { asString, getTxExplorerUrl, toStringValue, truncateHex } from "./utils";
+import { asString, getAttestationUrl, getTxExplorerUrl, toStringValue, truncateHex } from "./utils";
 import { FieldDropdown, FieldDropdownButton, FieldInput } from "./FieldDropdown";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import type { ReactNode, ChangeEvent, RefObject } from "react";
@@ -368,7 +368,7 @@ export function ContractsStep({
 
   const openChainDropdown = (rowIndex: number, selectedLabel: string) => {
     const key = `chain-${rowIndex}`;
-    setRowDropdownQuery((prev) => ({ ...prev, [key]: selectedLabel }));
+    setRowDropdownQuery((prev) => ({ ...prev, [key]: "" }));
     setActiveRowDropdown(key);
   };
 
@@ -635,9 +635,9 @@ export function ContractsStep({
                                       }}
                                       onFocus={() => {
                                         setActiveRowDropdown(chainDropdownKey);
-                                        setRowDropdownQuery((prev) => ({ ...prev, [chainDropdownKey]: selectedChainLabel }));
+                                        setRowDropdownQuery((prev) => ({ ...prev, [chainDropdownKey]: "" }));
                                       }}
-                                      placeholder="Select chain"
+                                      placeholder={selectedChainLabel || "Select chain"}
                                       className="flex-1 h-full bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
                                     />
                                     <button
@@ -738,7 +738,7 @@ export function ContractsStep({
                                   type="button"
                                   className={`size-[28px] rounded-full flex items-center justify-center transition-colors ${ownerInvalid ? "bg-color-negative/15 outline outline-1 outline-color-negative/40" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
                                   onClick={() => {
-                                    setRowDropdownQuery((prev) => ({ ...prev, [ownerDropdownKey]: selectedOwnerLabel }));
+                                    setRowDropdownQuery((prev) => ({ ...prev, [ownerDropdownKey]: "" }));
                                     setActiveRowDropdown(ownerDropdownKey);
                                   }}
                                   title={selectedOwnerLabel || "Owner"}
@@ -764,9 +764,9 @@ export function ContractsStep({
                                     }}
                                     onFocus={() => {
                                       setActiveRowDropdown(ownerDropdownKey);
-                                      setRowDropdownQuery((prev) => ({ ...prev, [ownerDropdownKey]: selectedOwnerLabel }));
+                                      setRowDropdownQuery((prev) => ({ ...prev, [ownerDropdownKey]: "" }));
                                     }}
-                                    placeholder="Select owner"
+                                    placeholder={selectedOwnerLabel || "Select owner"}
                                     className="flex-1 h-full min-w-0 bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
                                   />
                                   <button
@@ -806,7 +806,7 @@ export function ContractsStep({
                                   type="button"
                                   className={`size-[28px] rounded-full flex items-center justify-center transition-colors ${categoryInvalid ? "bg-color-negative/15 outline outline-1 outline-color-negative/40" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
                                   onClick={() => {
-                                    setRowDropdownQuery((prev) => ({ ...prev, [usageDropdownKey]: selectedUsageLabel }));
+                                    setRowDropdownQuery((prev) => ({ ...prev, [usageDropdownKey]: "" }));
                                     setActiveRowDropdown(usageDropdownKey);
                                   }}
                                   title={selectedUsageLabel || "Category"}
@@ -834,9 +834,9 @@ export function ContractsStep({
                                     }}
                                     onFocus={() => {
                                       setActiveRowDropdown(usageDropdownKey);
-                                      setRowDropdownQuery((prev) => ({ ...prev, [usageDropdownKey]: selectedUsageLabel }));
+                                      setRowDropdownQuery((prev) => ({ ...prev, [usageDropdownKey]: "" }));
                                     }}
-                                    placeholder="Select category"
+                                    placeholder={selectedUsageLabel || "Select category"}
                                     className="flex-1 h-full min-w-0 bg-transparent border-none outline-none text-xs text-color-text-primary placeholder-color-text-secondary"
                                   />
                                   <button
@@ -1224,50 +1224,46 @@ export function ContractsStep({
               </div>
             )}
 
-            {(singleSubmitResult || bulkSubmitResult) && (
-              <div className="rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
-                <div className="flex items-center gap-x-[8px]">
-                  <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
-                  <div className="font-medium text-sm text-color-positive">Attestation submitted</div>
+            {(singleSubmitResult || bulkSubmitResult) && (() => {
+              const result = singleSubmitResult || bulkSubmitResult!;
+              const txHash = result.txHash;
+              const uid = result.uids?.[0];
+              return (
+                <div className="rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
+                  <div className="flex items-center gap-x-[8px]">
+                    <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
+                    <div className="font-medium text-sm text-color-positive">Attestation submitted</div>
+                  </div>
+                  <p className="mt-[4px] text-xs text-color-text-primary">Status: {result.status}</p>
+                  <div className="mt-[8px] flex flex-wrap gap-[6px]">
+                    {txHash && (
+                      <Link
+                        href={getTxExplorerUrl(lastSubmitChainId, txHash)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-x-[5px] rounded-full border border-color-positive/30 bg-color-positive/10 px-[10px] py-[5px] text-xs text-color-positive hover:bg-color-positive/20 transition-colors"
+                      >
+                        <Icon icon="feather:hash" className="size-[11px] shrink-0" />
+                        Tx: {truncateHex(txHash, 8, 6)}
+                        <Icon icon="feather:external-link" className="size-[10px] shrink-0" />
+                      </Link>
+                    )}
+                    {uid && (
+                      <Link
+                        href={getAttestationUrl(lastSubmitChainId, uid)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-x-[5px] rounded-full border border-color-ui-shadow bg-color-bg-default px-[10px] py-[5px] text-xs hover:bg-color-ui-hover transition-colors"
+                      >
+                        <Icon icon="feather:shield" className="size-[11px] shrink-0" />
+                        Attestation UID: {truncateHex(uid, 8, 6)}
+                        <Icon icon="feather:external-link" className="size-[10px] shrink-0" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-                {singleSubmitResult && (
-                  <div className="mt-[4px] text-xs text-color-text-primary">
-                    Status: {singleSubmitResult.status}
-                    {singleSubmitResult.txHash && (
-                      <div className="mt-[2px]">
-                        Tx:{" "}
-                        <Link
-                          href={getTxExplorerUrl(lastSubmitChainId, singleSubmitResult.txHash)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono underline hover:opacity-70 break-all"
-                        >
-                          {truncateHex(singleSubmitResult.txHash, 18, 16)}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {bulkSubmitResult && (
-                  <div className="mt-[4px] text-xs text-color-text-primary">
-                    Status: {bulkSubmitResult.status}
-                    {bulkSubmitResult.txHash && (
-                      <div className="mt-[2px]">
-                        Tx:{" "}
-                        <Link
-                          href={getTxExplorerUrl(lastSubmitChainId, bulkSubmitResult.txHash)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono underline hover:opacity-70 break-all"
-                        >
-                          {truncateHex(bulkSubmitResult.txHash, 18, 16)}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>

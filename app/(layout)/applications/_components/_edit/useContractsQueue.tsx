@@ -8,14 +8,13 @@ import { clearProjectEditContractSeed } from "@/lib/project-edit-contract-seed";
 import {
   AttestClient,
   createDynamicWalletAdapter,
-  type AttestationDiagnostic,
   type AttestationDiagnostics,
   type AttestationRowInput,
   type BulkOnchainSubmitResult,
   type OnchainSubmitResult,
-  type PreparedAttestation,
   type ProjectRecord,
 } from "@openlabels/oli-sdk";
+import type { UsageCategoryRegistry } from "@openlabels/oli-sdk/chains";
 import { useBulkCsvAttestUI, useSingleAttestUI } from "@openlabels/oli-sdk/attest-ui";
 import type { parseProjectEditIntent } from "@/lib/project-edit-intent";
 import type { ProjectMode, QueueEditableField, QueueSubmitPreview, SearchDropdownOption } from "./types";
@@ -180,11 +179,24 @@ export function useContractsQueue({
 }: UseContractsQueueParams): ContractsQueueReturn {
   const csvInputRef = useRef<HTMLInputElement>(null!);
   const [oliCategories, setOliCategories] = useState<{ category_id: string; name: string }[]>([]);
+  const [usageCategoryRegistry, setUsageCategoryRegistry] = useState<UsageCategoryRegistry | undefined>(undefined);
   useEffect(() => {
     fetch("/api/labels/usage-categories")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data?.categories)) setOliCategories(data.categories);
+        if (Array.isArray(data?.categories)) {
+          setOliCategories(data.categories);
+          const records = (data.categories as { category_id: string; name: string; description?: string }[]).map((c) => ({
+            id: c.category_id,
+            name: c.name,
+            description: c.description,
+          }));
+          setUsageCategoryRegistry({
+            all: records,
+            allowed: records,
+            allowedIds: new Set(records.map((r) => r.id)),
+          });
+        }
       })
       .catch(() => {});
   }, []);
@@ -319,36 +331,6 @@ export function useContractsQueue({
     [usageCategoryOptions],
   );
 
-  const liveUsageCategorySet = useMemo(
-    () => new Set(usageCategoryOptions.map((option) => option.value)),
-    [usageCategoryOptions],
-  );
-
-  const filterCompatibleUsageCategoryDiagnostics = useCallback(
-    (
-      diagnostics: AttestationDiagnostics,
-      rows: AttestationRowInput[],
-    ): AttestationDiagnostics => {
-      const shouldFilter = (diagnostic: AttestationDiagnostic) => {
-        if (diagnostic.field !== "usage_category") return false;
-        if (!["CATEGORY_INVALID", "CATEGORY_SUGGESTIONS"].includes(diagnostic.code)) return false;
-        const rowIndex = typeof diagnostic.row === "number" ? diagnostic.row : 0;
-        const row = rows[rowIndex];
-        if (!row) return false;
-        const categoryValue = resolveUsageCategoryValue(toStringValue(row.usage_category).trim());
-        return categoryValue !== "" && liveUsageCategorySet.has(categoryValue);
-      };
-
-      return {
-        errors: diagnostics.errors.filter((diagnostic) => !shouldFilter(diagnostic)),
-        warnings: diagnostics.warnings,
-        conversions: diagnostics.conversions,
-        suggestions: diagnostics.suggestions.filter((diagnostic) => !shouldFilter(diagnostic)),
-      };
-    },
-    [liveUsageCategorySet, resolveUsageCategoryValue],
-  );
-
   const usageCategoryIconRenderer = useCallback(
     (value: string): ReactNode => {
       if (!value) return null;
@@ -398,7 +380,7 @@ export function useContractsQueue({
       chain_id: defaultQueueChainId,
       owner_project: ownerProject.trim(),
     },
-    validationOptions: { projects: normalizedProjects },
+    validationOptions: { projects: normalizedProjects, usageCategoryRegistry },
   });
 
   const initialBulkRows = useMemo<AttestationRowInput[]>(
@@ -414,7 +396,7 @@ export function useContractsQueue({
     initialRows: initialBulkRows,
     initialColumns: QUEUE_EDITABLE_FIELDS,
     allowedFields: QUEUE_EDITABLE_FIELDS,
-    validationOptions: { projects: normalizedProjects, maxRows: MAX_QUEUE_ROWS },
+    validationOptions: { projects: normalizedProjects, maxRows: MAX_QUEUE_ROWS, usageCategoryRegistry },
   });
 
   // ── Row helpers ───────────────────────────────────────────────────────────
@@ -651,11 +633,8 @@ export function useContractsQueue({
           const normalizedRow = prepareRowForQueue(row);
           const sourceRowIndex = getSingleFlowRowIndex(normalizedRow);
           singleController.setRow(normalizedRow);
-          const result = await singleController.validation.run({ projects: projectsForValidation });
-          const filteredDiagnostics = filterCompatibleUsageCategoryDiagnostics(
-            result.diagnostics,
-            [result.row],
-          );
+          const result = await singleController.validation.run({ projects: projectsForValidation, usageCategoryRegistry });
+          const filteredDiagnostics = result.diagnostics;
           const isValid = filteredDiagnostics.errors.length === 0;
           setLastValidatedQueueFlow("single");
           setLastValidatedQueueSignature(currentQueueSignature);
@@ -675,11 +654,9 @@ export function useContractsQueue({
         const bulkResult = await bulkController.validation.run({
           projects: projectsForValidation,
           maxRows: MAX_QUEUE_ROWS,
+          usageCategoryRegistry,
         });
-        const filteredDiagnostics = filterCompatibleUsageCategoryDiagnostics(
-          bulkResult.diagnostics,
-          bulkResult.rows,
-        );
+        const filteredDiagnostics = bulkResult.diagnostics;
         const invalidRowSet = new Set(
           filteredDiagnostics.errors
             .map((diagnostic) => diagnostic.row)
@@ -721,7 +698,7 @@ export function useContractsQueue({
       normalizedProjects,
       currentQueueSignature,
       getSingleFlowRowIndex,
-      filterCompatibleUsageCategoryDiagnostics,
+      usageCategoryRegistry,
     ],
   );
 
@@ -745,22 +722,14 @@ export function useContractsQueue({
   const activeQueueDiagnostics = useMemo<AttestationDiagnostics>(() => {
     if (!hasCurrentQueueValidation) return EMPTY_QUEUE_DIAGNOSTICS;
     if (lastValidatedQueueFlow === "single") {
-      const diagnostics = singleController.validation.result?.diagnostics ?? EMPTY_QUEUE_DIAGNOSTICS;
-      const row = singleController.validation.result?.row;
-      if (!row) return diagnostics;
-      return filterCompatibleUsageCategoryDiagnostics(diagnostics, [row]);
+      return singleController.validation.result?.diagnostics ?? EMPTY_QUEUE_DIAGNOSTICS;
     }
-    return filterCompatibleUsageCategoryDiagnostics(
-      bulkController.diagnostics.all,
-      bulkController.queue.rows,
-    );
+    return bulkController.diagnostics.all;
   }, [
     hasCurrentQueueValidation,
     lastValidatedQueueFlow,
     singleController.validation.result,
     bulkController.diagnostics.all,
-    bulkController.queue.rows,
-    filterCompatibleUsageCategoryDiagnostics,
   ]);
 
   const queueHasValidationResult = queueValidated;

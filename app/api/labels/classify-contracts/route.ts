@@ -1,69 +1,40 @@
 import { NextResponse } from "next/server";
-import yaml from "js-yaml";
+import { createUsageCategoryRegistry } from "@openlabels/oli-sdk/chains";
 
 const GEMINI_API_BASE_URL =
   process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta";
 const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
-const OLI_USAGE_CATEGORY_URL =
-  "https://raw.githubusercontent.com/openlabelsinitiative/OLI/refs/heads/main/1_label_schema/tags/valuesets/usage_category.yml";
 const GTP_MASTER_URL = "https://api.growthepie.com/v1/master.json";
-
-interface OLIUsageCategory {
-  category_id: string;
-  name: string;
-  description?: string;
-}
 
 interface OLICategories {
   context: string;
   validIds: string[];
 }
 
-let categoriesCache: OLICategories | null = null;
-let categoriesCacheTime = 0;
-const CATEGORIES_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-
 async function fetchOLICategories(): Promise<OLICategories> {
-  const now = Date.now();
-  if (categoriesCache && now - categoriesCacheTime < CATEGORIES_CACHE_TTL_MS) {
-    return categoriesCache;
-  }
-
   try {
-    // Fetch OLI categories and GTP supported sub_categories in parallel
-    const [oliResponse, gtpResponse] = await Promise.all([
-      fetch(OLI_USAGE_CATEGORY_URL),
-      fetch(GTP_MASTER_URL),
-    ]);
-
-    if (!oliResponse.ok) throw new Error(`OLI fetch failed: ${oliResponse.status}`);
-    const oliText = await oliResponse.text();
-    const oliData = yaml.load(oliText) as { categories: OLIUsageCategory[] };
-    const allCategories: OLIUsageCategory[] = oliData.categories ?? [];
-
-    // Filter to only categories GTP actually tracks
-    let supportedIds: Set<string> | null = null;
+    // Fetch GTP master to determine which categories are supported
+    let allowedIds: string[] | undefined;
+    const gtpResponse = await fetch(GTP_MASTER_URL);
     if (gtpResponse.ok) {
       try {
         const gtpData = await gtpResponse.json() as { blockspace_categories?: { sub_categories?: Record<string, string> } };
         const subs = gtpData.blockspace_categories?.sub_categories;
-        if (subs) supportedIds = new Set(Object.keys(subs));
+        if (subs) allowedIds = Object.keys(subs);
       } catch { /* ignore — use full OLI list as fallback */ }
     }
 
-    const categories = supportedIds
-      ? allCategories.filter((c) => supportedIds!.has(c.category_id))
-      : allCategories;
+    // SDK handles in-process caching internally
+    const registry = await createUsageCategoryRegistry({ allowedIds, revalidateSeconds: 3600 });
+    const categories = registry.allowed;
 
     const context = categories
-      .map((c) => `- ${c.category_id}: ${c.name}${c.description ? ` - ${c.description}` : ""}`)
+      .map((c) => `- ${c.id}: ${c.name}${c.description ? ` - ${c.description}` : ""}`)
       .join("\n");
-    const validIds = categories.map((c) => c.category_id);
+    const validIds = categories.map((c) => c.id);
 
-    categoriesCache = { context, validIds };
-    categoriesCacheTime = now;
-    return categoriesCache;
+    return { context, validIds };
   } catch {
     // Fall back to empty if fetch fails — classifyContracts will handle gracefully
     return { context: "", validIds: [] };
