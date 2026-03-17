@@ -417,9 +417,9 @@ const EventCard = ({
 
       {/* Chevron */}
       <div className={`shrink-0 ${isSelected ? "flex items-center justify-center h-full" : ""}`}>
-        <Link className="flex items-center justify-center" href={eventData.link}>
+        <div className="flex items-center justify-center" >
           <GTPIcon icon={isSelected ? "gtp-chevronright" : "gtp-chevronright-monochrome"} className="!size-[16px]" containerClassName="!size-[16px]" />
-        </Link>
+        </div>
       </div>
 
       {/* Auto-rotation progress bar */}
@@ -631,7 +631,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 
 
 
-//
+
   return (
     <div className="flex-1 min-w-[300px] 2xs:mt-0 mt-[30px] ">
       <HorizontalScrollContainer
@@ -880,10 +880,11 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
         ? "Select series to show data"
         : "";
 
+       
   
   return (
     <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden xs:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
-      <GTPCardLayout className="h-[442px]"
+      <GTPCardLayout className="h-[442px]" mobileBreakpoint={0}
        topBar={
         showOptions ? (
           <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
@@ -952,9 +953,30 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
         </GTPButtonContainer>
        )
        }
+       bottomBar={
+        <GTPButtonContainer className="flex items-center justify-center">
+          <GTPButtonRow>
+            <Link href={eventData.link} className="flex w-full items-center justify-end">
+              <GTPButton
+                label="See More"
+                variant="primary"
+                size="sm"
+                clickHandler={() => {
+                  setActiveOptionId(resolvedDefaultOptionId);
+                  setSelectedRange(null);
+                }}
+                rightIcon={"gtp-chevronright-monochrome" as GTPIconName}
+                rightIconClassname="!w-[10px] !h-[10px]"
+                rightIconContainerClassName="!w-[16px] !h-[16px]"
+               />
+            </Link>
+          </GTPButtonRow>
+
+        </GTPButtonContainer>
+       }
       >
         <div className="flex flex-col h-full min-h-0">
-          <div className="flex-1 min-h-0 w-full py-[15px]  -overflow-hidden">
+          <div className="flex-1 min-h-0 w-full pt-[15px] pb-[30px]  -overflow-hidden">
             <GTPChart
               series={activeSeries}
 
@@ -976,8 +998,8 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
               minDragSelectPoints={2}
             />
           </div>
-          {legendItems.length > 0 && (
-            <div className="h-[30px] w-full relative bottom-[6px] flex items-center justify-center gap-[5px]">
+          {legendItems.length > 1 && (
+            <div className="h-[30px] w-full relative bottom-[26px] flex items-center justify-center gap-[5px]">
               {visibleLegendItems.map((item) => (
                 <GTPButton
                   key={item.name}
