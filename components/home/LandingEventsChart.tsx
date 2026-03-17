@@ -633,7 +633,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 
 //
   return (
-    <div className="flex-1 min-w-[300px]  @[376px]:mt-0 mt-[30px]">
+    <div className="flex-1 min-w-[300px]  @[376px]:mt-[30px] mt-[0px]">
       <HorizontalScrollContainer
         includeMargin={false}
         enableDragScroll={true}
