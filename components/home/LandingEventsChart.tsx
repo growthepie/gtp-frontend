@@ -534,8 +534,10 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   const { data: appOverviewData } = useSWR<AppOverviewResponse>(
     ApplicationsURLs.overview.replace("{timespan}", "7d"),
   );
-  const isMobile = useMediaQuery("(max-width: 1760px)");
-  console.log(isMobile)
+  const isMobile = useMediaQuery("(max-width: 1364px)");
+  const reduceIcons = useMediaQuery("(max-width: 1120px)");
+  const finalShrink = useMediaQuery("(max-width: 624px)");
+
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { data: master, AllChainsByKeys } = useMaster();
@@ -623,16 +625,22 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   }, [eventData.topAppsMetric, eventData.cards, projectDataMap]);
 
 
+  const showIcons = useMemo(() => {
+    return reduceIcons ? 3 : 5;
+  }, [reduceIcons]);
+
+
 
 //
   return (
-    <div className="flex-1 min-w-[300px] ">
+    <div className="flex-1 min-w-[300px]  @[376px]:mt-0 mt-[30px]">
       <HorizontalScrollContainer
         includeMargin={false}
         enableDragScroll={true}
         paddingRight={0}
         hideScrollbar={false}
-        forcedMinWidth={850}
+  
+        forcedMinWidth={350}
         className="h-full "
       >
         <div className="grid grid-cols-3 gap-x-[10px] gap-y-[10px] h-[442px]">
@@ -660,20 +668,36 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[10px] min-w-[250px] h-full pt-[5px] pb-[10px] bg-transparent group hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className="px-[10px]  h-full pt-[5px] pb-[10px] bg-transparent group hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
-                <span className={` group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}>Rank&nbsp;</span>
-                  <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}>{metricData ? metricData.rank : "—" }&nbsp;
-                    <span className={`numbers-xxs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}>
+                <span className={` group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}
+                style={{
+                  fontSize: finalShrink ? "8px" : "",
+                }}
+                >Rank&nbsp;</span>
+                  <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}
+                  style={{
+                    fontSize: finalShrink ? "8px" : "",
+                  }}
+                  >{metricData ? metricData.rank : "—" }&nbsp;
+                    <span className={`numbers-xxs ${positiveChangeColor ? "text-color-positive" : "text-color-negative"}`}
+                    style={{
+                      fontSize: finalShrink ? "8px" : "",
+                    }}
+                    >
                       {metricData?.change_pct && metricData.change_pct !== Infinity ? `${positiveChangeColor ? "+" : ""}${metricData.change_pct.toFixed(0)}%` : metricData?.change_pct === Infinity ? "+999%" : ""}
                     </span>
                   </span>
                 </div>
                 <div className="">
                   <div className="">
-                    <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}>
+                    <span className={`${!isMobile ? "numbers-xs" : "numbers-xxs "}`}
+                    style={{
+                      fontSize: finalShrink ? "8px" : "",
+                    }}
+                    >
                       {metricData
                         ? `${isGasFees ? (showUsd ? "$" : "Ξ") : ""}${metricData.value.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
                         : "—"}
@@ -682,10 +706,14 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                 </div>
               </div>
               <div className="flex w-full justify-end items-center -mt-[5px]">
-                <span className={`group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}>{metricSuffix}</span>
+                <span className={`group-hover:text-color-text-primary text-color-text-secondary ${!isMobile ? "text-xs" : "text-xxs "}`}
+                style={{
+                  fontSize: finalShrink ? "8px" : "",
+                }}
+                >{metricSuffix}</span>
               </div>
               <div className="flex w-full h-full gap-x-[5px] justify-between items-center">
-              <div className={`flex items-center justify-center select-none rounded-full `}>
+              <div className={`flex items-center justify-center select-none rounded-full min-w-[16px] `}>
                   {ownerProjectToProjectData[card.owner_project] && ownerProjectToProjectData[card.owner_project].logo_path ? (
                     <div className="p-[4.5px] group-hover:bg-color-ui-hover bg-color-bg-medium rounded-full flex items-center justify-center">
                       <Image
@@ -704,23 +732,27 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                     </div>
                   )}
                 </div>
-                <span className={`text-left text-color-text-primary w-full ${isMobile ? "heading-small-xxs" : "heading-small-sm "}`}>
+                <span className={`text-left text-color-text-primary w-full ${isMobile ? "heading-small-xxs" : "heading-small-sm "}`}
+                style={{
+                  fontSize: finalShrink ? "8px" : "",
+                  lineHeight: finalShrink ? "10px" : "",
+                }}
+                >
                   {metadata?.display_name || card.owner_project}
                 </span>
                 <div className="p-[5px] group-hover:bg-color-ui-hover bg-color-bg-medium rounded-full flex items-center justify-center">
-                  <GTPIcon icon="gtp-chevronright-monochrome" className="!size-[11px]" containerClassName="!size-[16px] flex items-center justify-center" />
+                  <GTPIcon icon="gtp-chevronright-monochrome" className={`${isMobile ? finalShrink ? "!size-[7px]" : "!size-[11px]" : "!size-[11px]"}`} containerClassName={`${isMobile ? finalShrink ? "!size-[7px]" : "!size-[11px]" : "!size-[11px]"} flex items-center justify-center`} />
                 </div>
                 
               </div>
-              <div className="justify-between items-center flex w-full gap-x-[10px] ">
+              <div className="justify-between items-center flex w-full gap-x-[2px] ">
                 <div className="flex items-center gap-x-[5px]">
                   <GTPIcon icon={`gtp-${master?.app_metrics[card.metric]?.icon}` as GTPIconName} className={`${isMobile ? "!size-[10px]" : "!size-[16px]"}`} containerClassName="!size-[16px] flex items-center justify-center" />
-                  <span className={`${!isMobile ? "text-xs" : "text-xxs "} text-nowrap text-color-text-primary`}>{master?.app_metrics[card.metric]?.name}</span>
                 </div>
-                <div className={`flex items-center ${isMobile ? "gap-x-[1px]" : "gap-x-[5px]"} overflow-hidden pr-[5px]`}>
-                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).slice(0, 5).map((chain) => (
+                <div className={`flex items-center ${isMobile ? "gap-x-[3px]" : "gap-x-[5px]"} overflow-hidden pr-[5px]`}>
+                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).slice(0, showIcons).map((chain) => (
                     <Link href={`/chains/${AllChainsByKeys[chain].urlKey}`} key={chain} className="flex items-center">
-                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={`${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName="!size-[16px] flex items-center justify-center" 
+                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={` ${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName={` flex items-center justify-center ${isMobile ? "!size-[10px]" : "!size-[16px]"}`} 
                       style={{
                         color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
                       }}
@@ -728,9 +760,13 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                       
                     </Link>
                   ))}
-                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length > 5 && (
-                    <div className={`flex items-center justify-center bg-color-bg-medium rounded-full px-[5px] py-[3px] 2xl:text-xxs text-xxxs group-hover:bg-color-ui-hover`}>
-                      +{Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length - 5} More
+                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length > showIcons && (
+                    <div className={`items-center justify-center bg-color-bg-medium rounded-full px-[3px] py-[3px] text-xxxs group-hover:bg-color-ui-hover ${finalShrink ? "hidden" : "flex"}`}
+                    style={{
+                      fontSize: isMobile ? "7px" : "8px",
+                    }}
+                    >
+                      +{Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length - showIcons} More
                     </div>
                   )}
                 </div>
