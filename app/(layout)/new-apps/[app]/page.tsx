@@ -1183,7 +1183,7 @@ const OverviewContent = memo(({
               prevValue={data.kpi_cards[metric].wow_change.data[0]} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
               color={"#627EEA"} 
-              icon={masterData?.app_metrics[metric].icon_name as GTPIconName} 
+              icon={(masterData?.app_metrics[metric]?.icon ?? "gtp-fundamentals") as GTPIconName} 
             />
 
           ))} 
