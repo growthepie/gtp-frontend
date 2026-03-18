@@ -333,7 +333,7 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         return null;
       }
 
-      const { url, pathToOptions, valueField, labelField } = dropdownConfig.jsonData;
+      const { url, pathToOptions, valueField, labelField, logoField, logoPrefix, useChainIcons } = dropdownConfig.jsonData;
       if (!url || !pathToOptions) {
         console.error('Error parsing dropdown data: jsonData must include url and pathToOptions');
         return null;
@@ -356,11 +356,15 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         jsonData: {
           url,
           pathToOptions,
-          valueField: valueField || 'value', // Default to 'value'
-          labelField: labelField || 'label'  // Default to 'label'
+          valueField: valueField || 'value',
+          labelField: labelField || 'label',
+          ...(logoField !== undefined && { logoField }),
+          ...(logoPrefix !== undefined && { logoPrefix }),
+          ...(useChainIcons !== undefined && { useChainIcons }),
         },
         showInMenu: parseShowInMenu(dropdownConfig),
         stateKey: dropdownConfig.stateKey || undefined,
+        labelStateKey: dropdownConfig.labelStateKey || undefined,
         multiSelect: dropdownConfig.multiSelect || false
       };
 
@@ -402,9 +406,10 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         readFromJSON: false,
         showInMenu: parseShowInMenu(dropdownConfig),
         stateKey: dropdownConfig.stateKey || undefined,
+        labelStateKey: dropdownConfig.labelStateKey || undefined,
         multiSelect: dropdownConfig.multiSelect || false
       };
-      
+
       return block;
     }
   } catch (error) {

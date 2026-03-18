@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { TableBlock as TableBlockType } from "@/lib/types/blockTypes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -197,7 +197,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     return rawUrl;
   }, [block.readFromJSON, block.jsonData, sharedState]);
 
-  const { data: jsonData, error, isLoading } = useSWR(url);
+  const { data: jsonData, error, isLoading, isValidating } = useSWR(url, { keepPreviousData: true });
 
   const dynamicColumnKeys = useMemo(() => {
     if (!block.readFromJSON || !jsonData) return block.columnDefinitions || {};
@@ -262,13 +262,15 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
   // Minimum width the table needs: sum of all column minWidths + row horizontal padding
   const minTableWidth = useMemo(() => {
-    const total = columnKeyOrder.reduce((sum, columnKey) => {
+    return columnKeyOrder.reduce((sum, columnKey) => {
       const colDef = columnDefinitions[columnKey];
       return sum + (colDef?.minWidth || 120);
     }, 0) + 20; // 20px for row padding (px-[5px] + pr-[15px])
-    minTableWidthRef.current = total;
-    return total;
   }, [columnKeyOrder, columnDefinitions]);
+
+  useEffect(() => {
+    minTableWidthRef.current = minTableWidth;
+  }, [minTableWidth]);
 
   const processedRows = useMemo(() => {
     if (!block.readFromJSON || !jsonData) {
@@ -323,8 +325,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       }
 
       // Generate link if add_url is defined in column definition
-      if (columnDef?.add_url && typeof cellValue === 'string') {
-        cellObject.link = columnDef.add_url.replace('${cellValue}', cellValue);
+      if (columnDef?.add_url) {
+        const linkKey = columnDef.linkSourceKey;
+        const linkValue = linkKey !== undefined
+          ? (columnIndexMap[linkKey] !== undefined ? row[columnIndexMap[linkKey]] : undefined)
+          : cellValue;
+        if (typeof linkValue === 'string') {
+          cellObject.link = columnDef.add_url.replace('${cellValue}', linkValue);
+        }
       }
       if (infoTooltipText) {
         cellObject.infoTooltipText = infoTooltipText;
@@ -419,7 +427,15 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     return undefined;
   };
 
-  if (block.readFromJSON && isLoading) return <div className="my-8 text-center">Loading table data...</div>;
+  const showInitialLoadingState = block.readFromJSON && isLoading && !jsonData;
+  const showUpdatingState = block.readFromJSON && isValidating && !isLoading && !!jsonData;
+  const updatingBadge = showUpdatingState ? (
+    <div className="pointer-events-none absolute right-[10px] top-[10px] z-[2] rounded-full border border-color-ui-hover bg-color-bg-default/90 px-[10px] py-[4px] text-xxs text-color-text-secondary backdrop-blur-[2px]">
+      Updating...
+    </div>
+  ) : null;
+
+  if (showInitialLoadingState) return <div className="my-8 text-center">Loading table data...</div>;
   if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
 
@@ -567,7 +583,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (formatted === null) return <EmptyCell />;
       if (colDef?.chip) {
         return (
-          <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+          <span className={`inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs flex-shrink-0 ${colDef?.uppercase ? 'uppercase' : ''}`}>
             {formatted}
           </span>
         );
@@ -712,18 +728,21 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     );
 
     return (
-      <div ref={containerRef} className={`my-8 ${block.className || ''}`}>
+      <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
         {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
-        {isScrollable ? (
-          <VerticalScrollContainer
-            height={340}
-            scrollbarAbsolute={true}
-            scrollbarPosition="right"
-            paddingRight={30}
-          >
-            {cardGrid}
-          </VerticalScrollContainer>
-        ) : cardGrid}
+        <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
+          {isScrollable ? (
+            <VerticalScrollContainer
+              height={340}
+              scrollbarAbsolute={true}
+              scrollbarPosition="right"
+              paddingRight={30}
+            >
+              {cardGrid}
+            </VerticalScrollContainer>
+          ) : cardGrid}
+        </div>
+        {updatingBadge}
       </div>
     );
   }
@@ -754,13 +773,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   }).join(' ');
 
     return (
-    <div ref={containerRef} className={`my-8 ${block.className || ''}`}>
+    <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
       {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
 
-      <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
-        {(() => {
-          const isScrollable = block.scrollable !== false;
-          const tableHeader = (
+      <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
+        <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
+          {(() => {
+            const isScrollable = block.scrollable !== false;
+            const tableHeader = (
             <GridTableHeader style={{ gridTemplateColumns }} className={`group heading-small-xs !gap-x-0 !px-[5px] !pr-[15px] select-none min-h-[34px] !pt-0 !pb-0 !items-end`}>
               {columnKeyOrder.map((columnKey, colIdx) => {
                 const mappedKey = columnDefinitions[columnKey]?.sourceKey || columnKey;
@@ -1003,13 +1023,13 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     }
                     cellMainContent = formatted !== null ? (
                       colDef?.chip ? (
-                        <span className="inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs uppercase flex-shrink-0">
+                        <span className={`inline-flex items-center rounded-full border border-color-ui-hover px-[8px] h-[18px] numbers-xs flex-shrink-0 ${colDef?.uppercase ? 'uppercase' : ''}`}>
                           {formatted}
                         </span>
                       ) : (
                         <>
                           {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''}`}>
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-green-500' : cellData.value < 0 ? 'text-red-500' : '') : ''}`}>
                             {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
                           </span>
                         </>
@@ -1126,25 +1146,27 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
             ))}
             </div>
           );
-          return isScrollable ? (
-            <VerticalScrollContainer
-              height={340}
-              scrollbarAbsolute={true}
-              scrollbarPosition="right"
-              paddingRight={30}
-              className="w-full min-w-[600px]"
-              header={tableHeader}
-            >
-              {tableRows}
-            </VerticalScrollContainer>
-          ) : (
-            <div className="w-full min-w-[600px]">
-              {tableHeader}
-              {tableRows}
-            </div>
-          );
-        })()}
-      </HorizontalScrollContainer>
+            return isScrollable ? (
+              <VerticalScrollContainer
+                height={340}
+                scrollbarAbsolute={true}
+                scrollbarPosition="right"
+                paddingRight={30}
+                className="w-full min-w-[600px]"
+                header={tableHeader}
+              >
+                {tableRows}
+              </VerticalScrollContainer>
+            ) : (
+              <div className="w-full min-w-[600px]">
+                {tableHeader}
+                {tableRows}
+              </div>
+            );
+          })()}
+        </HorizontalScrollContainer>
+      </div>
+      {updatingBadge}
     </div>
   );
 };

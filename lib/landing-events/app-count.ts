@@ -39,10 +39,10 @@ const APP_COUNT_OPTIONS: EventOption[] = [
 ];
 
 const appCountEvent: EventExample = {
-  title: "App Count",
+  title: "Active Apps in the Ethereum Ecosystem",
   description: "Weekly active app counts across the Ethereum ecosystem, with chain-level breakdowns.",
   question: "How many apps are active in the Ethereum ecosystem?",
-  image: "gtp-metrics-ethereum-ecosystem",
+  image: "gtp-project",
   link: "/applications",
   options: APP_COUNT_OPTIONS,
   defaultOptionId: "apps-total",

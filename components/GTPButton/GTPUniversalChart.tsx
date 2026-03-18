@@ -4,6 +4,7 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { echarts } from "@/lib/echarts-setup";
 import type { EChartsOption } from "echarts";
 import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { iconNames } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
@@ -539,6 +540,7 @@ export default function GTPUniversalChart({
     key: "absolute",
     direction: "desc",
   });
+  const [showUsd] = useLocalStorage("showUsd", true);
 
   const syncTableScrollMetrics = useCallback(() => {
     const scrollElement = tableScrollRef.current;
@@ -607,8 +609,12 @@ export default function GTPUniversalChart({
       setIsDownloadingChartSnapshot(false);
     }
   }, [isDownloadingChartSnapshot, metricLabel]);
-  const metricCatalogIcon =
-    (metricContextType === "data-availability" ? daMetricItems : metricItems).find((item) => item.key === metricId)?.icon;
+  const metricCatalogItem = (metricContextType === "data-availability" ? daMetricItems : metricItems).find(
+    (item) => item.key === metricId,
+  );
+  const metricCatalogIcon = metricCatalogItem?.icon;
+  const reversePerformer = Boolean(metricCatalogItem?.page?.reversePerformer);
+  const showGwei = Boolean(metricCatalogItem?.page?.showGwei);
   const metricIcon =
     normalizeMetricIcon(metricInfo?.icon) ??
     normalizeMetricIcon(metricCatalogIcon) ??
@@ -727,23 +733,38 @@ export default function GTPUniversalChart({
         const valueTypes = intervalData.types ?? [];
         const usdValueIndex = valueTypes.indexOf("usd");
         const ethValueIndex = valueTypes.indexOf("eth");
-        const valueIndex = usdValueIndex >= 0 ? usdValueIndex : ethValueIndex >= 0 ? ethValueIndex : Math.min(1, valueTypes.length - 1);
+        const valueIndex = showUsd
+          ? (usdValueIndex >= 0 ? usdValueIndex : ethValueIndex >= 0 ? ethValueIndex : Math.min(1, valueTypes.length - 1))
+          : (ethValueIndex >= 0 ? ethValueIndex : usdValueIndex >= 0 ? usdValueIndex : Math.min(1, valueTypes.length - 1));
+        const useGweiForSeries = showGwei && !showUsd && valueTypes[valueIndex] === "eth";
+        const valueMultiplier = useGweiForSeries ? 1_000_000_000 : 1;
 
         const series = intervalData.data
           .filter((point) => point.length > valueIndex)
-          .map((point) => [point[0], Number(point[valueIndex] ?? 0)] as [number, number]);
+          .map((point) => [point[0], Number(point[valueIndex] ?? 0) * valueMultiplier] as [number, number]);
 
         const summary = chainData.summary?.[summaryKey];
         const summaryTypes: string[] = summary?.types ?? valueTypes;
         const summaryUsdIndex = summaryTypes.indexOf("usd");
         const summaryEthIndex = summaryTypes.indexOf("eth");
-        const summaryValueIndex =
-          summaryUsdIndex >= 0
-            ? summaryUsdIndex
-            : summaryEthIndex >= 0
+        const summaryValueIndex = showUsd
+          ? (
+            summaryUsdIndex >= 0
+              ? summaryUsdIndex
+              : summaryEthIndex >= 0
+                ? summaryEthIndex
+                : Math.min(valueIndex, Math.max((summary?.data?.length ?? 1) - 1, 0))
+          )
+          : (
+            summaryEthIndex >= 0
               ? summaryEthIndex
-              : Math.min(valueIndex, Math.max((summary?.data?.length ?? 1) - 1, 0));
-        const value = Number(summary?.data?.[summaryValueIndex] ?? series[series.length - 1]?.[1] ?? 0);
+              : summaryUsdIndex >= 0
+                ? summaryUsdIndex
+                : Math.min(valueIndex, Math.max((summary?.data?.length ?? 1) - 1, 0))
+          );
+        const useGweiForSummary = showGwei && !showUsd && summaryTypes[summaryValueIndex] === "eth";
+        const summaryMultiplier = useGweiForSummary ? 1_000_000_000 : 1;
+        const value = Number(summary?.data?.[summaryValueIndex] ?? series[series.length - 1]?.[1] ?? 0) * summaryMultiplier;
 
         const changesBucket =
           chainData.changes?.[intervalKey] ??
@@ -753,7 +774,9 @@ export default function GTPUniversalChart({
         const changeTypes: string[] = changesBucket?.types ?? [];
         const changeUsdIndex = changeTypes.indexOf("usd");
         const changeEthIndex = changeTypes.indexOf("eth");
-        const changeValueIndex = changeUsdIndex >= 0 ? changeUsdIndex : changeEthIndex >= 0 ? changeEthIndex : 0;
+        const changeValueIndex = showUsd
+          ? (changeUsdIndex >= 0 ? changeUsdIndex : changeEthIndex >= 0 ? changeEthIndex : 0)
+          : (changeEthIndex >= 0 ? changeEthIndex : changeUsdIndex >= 0 ? changeUsdIndex : 0);
         const change1d = getChangePercent(changesBucket, changeValueIndex, ["1d", "24h"]);
         const change7d = getChangePercent(changesBucket, changeValueIndex, ["7d", "1w"]);
         const change28d = getChangePercent(changesBucket, changeValueIndex, ["28d", "4w", "30d", "1m"]);
@@ -783,7 +806,7 @@ export default function GTPUniversalChart({
       .filter(Boolean) as UniversalChartTableRow[];
 
     return rows.sort((a, b) => b.value - a.value);
-  }, [AllChainsByKeys, AllDALayersByKeys, contextTimeIntervalKey, isMetricContextActive, metricAllChainsByKeys, metricChainKeys, metricData]);
+  }, [AllChainsByKeys, AllDALayersByKeys, contextTimeIntervalKey, isMetricContextActive, metricAllChainsByKeys, metricChainKeys, metricData, showGwei, showUsd]);
 
   const sourceRows = contextRows;
   const displayRows = useMemo(() => {
@@ -842,6 +865,7 @@ export default function GTPUniversalChart({
   );
   const isPercentageMode = effectiveBottomRightSelectedId === "percentage";
   const isStackedMode = effectiveBottomRightSelectedId === "stacked";
+  const showStackedTotalInTooltip = isStackedMode && metricInfo?.all_l2s_aggregate === "sum";
   const allChainsSelected = displayRows.length > 0 && selectedChainCount === displayRows.length;
 
   const activeChainRows = useMemo(
@@ -956,6 +980,59 @@ export default function GTPUniversalChart({
     };
   }, [effectiveAggregation]);
 
+  const formatTableMetricValue = useCallback(
+    (value: number) => {
+      if (isPercentageMode) {
+        return formatPercentValue(value);
+      }
+
+      const availableUnits = metricInfo?.units ? Object.keys(metricInfo.units) : [];
+      const tableUnitKey = showUsd
+        ? (
+          availableUnits.includes("usd")
+            ? "usd"
+            : availableUnits.includes("eth")
+              ? "eth"
+              : availableUnits[0]
+        )
+        : (
+          availableUnits.includes("eth")
+            ? "eth"
+            : availableUnits.includes("usd")
+              ? "usd"
+              : availableUnits[0]
+        );
+      const unitConfig = tableUnitKey ? metricInfo?.units?.[tableUnitKey] : undefined;
+
+      if (showGwei && !showUsd && tableUnitKey === "eth") {
+        const useCompact = Math.abs(value) >= 1_000_000;
+        const numberFormatter = new Intl.NumberFormat("en-US", {
+          notation: useCompact ? "compact" : "standard",
+          minimumFractionDigits: useCompact ? 0 : 2,
+          maximumFractionDigits: useCompact ? 1 : 2,
+        });
+        return `${numberFormatter.format(value)} Gwei`;
+      }
+
+      if (unitConfig) {
+        const absValue = Math.abs(value);
+        const useCompact = absValue >= 1_000_000;
+        const decimals = useCompact
+          ? Math.min(unitConfig.decimals ?? 1, 1)
+          : (unitConfig.decimals_tooltip ?? unitConfig.decimals ?? 2);
+        const numberFormatter = new Intl.NumberFormat("en-US", {
+          notation: useCompact ? "compact" : "standard",
+          minimumFractionDigits: useCompact ? 0 : decimals,
+          maximumFractionDigits: decimals,
+        });
+        return `${unitConfig.prefix ?? ""}${numberFormatter.format(value)}${unitConfig.suffix ?? ""}`;
+      }
+
+      return formatTableNumber(value);
+    },
+    [isPercentageMode, metricInfo, showGwei, showUsd],
+  );
+
   const tableRows = useMemo(() => {
     const maxValue = Math.max(...displayRows.map((row) => row.value), 1);
     const mappedRows = displayRows.map((row) => {
@@ -966,7 +1043,7 @@ export default function GTPUniversalChart({
       return {
         ...row,
         selected: selectedChainSet.has(row.chain),
-        absoluteLabel: formatTableNumber(row.value),
+        absoluteLabel: formatTableMetricValue(row.value),
         change1Label: formatSignedPercent(change1),
         change2Label: formatSignedPercent(change2),
         change3Label: formatSignedPercent(change3),
@@ -1006,7 +1083,7 @@ export default function GTPUniversalChart({
 
       return a.label.localeCompare(b.label);
     });
-  }, [displayRows, effectiveAggregation, selectedChainSet, tableSort.direction, tableSort.key]);
+  }, [displayRows, effectiveAggregation, formatTableMetricValue, selectedChainSet, tableSort.direction, tableSort.key]);
 
   const selectedTableRows = useMemo(() => tableRows.filter((row) => row.selected), [tableRows]);
   const deselectedTableRows = useMemo(() => tableRows.filter((row) => !row.selected), [tableRows]);
@@ -1021,23 +1098,26 @@ export default function GTPUniversalChart({
       const chainData = (metricData.chains as Record<string, any>)?.[chainKey];
       const intervalData = (chainData?.[intervalKey] as { types?: string[] } | undefined) ?? chainData?.daily;
       const types = intervalData?.types ?? [];
-      if (types.includes("usd")) {
-        return "usd";
-      }
-      if (types.includes("eth")) {
-        return "eth";
+      if (showUsd) {
+        if (types.includes("usd")) return "usd";
+        if (types.includes("eth")) return "eth";
+      } else {
+        if (types.includes("eth")) return "eth";
+        if (types.includes("usd")) return "usd";
       }
     }
 
     const availableUnits = metricInfo?.units ? Object.keys(metricInfo.units) : [];
-    if (availableUnits.includes("usd")) {
-      return "usd";
-    }
-    if (availableUnits.includes("eth")) {
-      return "eth";
+    if (showUsd) {
+      if (availableUnits.includes("usd")) return "usd";
+      if (availableUnits.includes("eth")) return "eth";
+    } else {
+      if (availableUnits.includes("eth")) return "eth";
+      if (availableUnits.includes("usd")) return "usd";
     }
     return availableUnits[0] ?? "value";
-  }, [contextTimeIntervalKey, isMetricContextActive, metricChainKeys, metricData, metricInfo]);
+  }, [contextTimeIntervalKey, isMetricContextActive, metricChainKeys, metricData, metricInfo, showUsd]);
+  const useGweiFormatting = showGwei && !showUsd && metricValueUnitKey === "eth";
   const formatChartMetricValue = useCallback(
     (value: number, { compact = false }: { compact?: boolean } = {}) => {
       if (isPercentageMode) {
@@ -1045,6 +1125,15 @@ export default function GTPUniversalChart({
       }
 
       const unitConfig = metricInfo?.units?.[metricValueUnitKey];
+      if (useGweiFormatting) {
+        const useCompact = compact || Math.abs(value) >= 1_000_000;
+        const numberFormatter = new Intl.NumberFormat("en-US", {
+          notation: useCompact ? "compact" : "standard",
+          minimumFractionDigits: useCompact ? 0 : 2,
+          maximumFractionDigits: useCompact ? 1 : 2,
+        });
+        return `${numberFormatter.format(value)} Gwei`;
+      }
       if (unitConfig) {
         const absValue = Math.abs(value);
         const useCompact = compact || absValue >= 1_000_000;
@@ -1065,7 +1154,7 @@ export default function GTPUniversalChart({
       }
       return formatCompactNumber(value);
     },
-    [isPercentageMode, metricInfo, metricValueUnitKey],
+    [isPercentageMode, metricInfo, metricValueUnitKey, useGweiFormatting],
   );
   const chartTooltipPosition = useCallback(
     (
@@ -1343,7 +1432,11 @@ export default function GTPUniversalChart({
               ...point,
               numericValue: Number(point.value[1]),
             }))
-            .sort((a, b) => b.numericValue - a.numericValue);
+            .sort((a, b) =>
+              reversePerformer
+                ? a.numericValue - b.numericValue
+                : b.numericValue - a.numericValue,
+            );
           const maxTooltipValue = Math.max(...sortedPoints.map((point) => Math.abs(point.numericValue)), 0);
 
           const rows = sortedPoints
@@ -1368,6 +1461,15 @@ export default function GTPUniversalChart({
               `;
             })
             .join("");
+          const totalValue = sortedPoints.reduce((sum, point) => sum + point.numericValue, 0);
+          const totalRow = showStackedTotalInTooltip
+            ? `
+                <div class="ml-[18px] mt-[2px] pt-[4px] border-t border-color-text-primary/25 flex w-full space-x-1.5 items-center font-medium leading-tight">
+                  <div class="tooltip-point-name text-xs font-semibold">Total:</div>
+                  <div class="flex-1 text-right justify-end flex numbers-xs">${formatChartMetricValue(totalValue)}</div>
+                </div>
+              `
+            : "";
 
           return `
             <div class="${UNIVERSAL_CHART_TOOLTIP_CONTAINER_CLASS}">
@@ -1377,6 +1479,7 @@ export default function GTPUniversalChart({
               </div>
               <div class="flex flex-col w-full">
                 ${rows}
+                ${totalRow}
               </div>
             </div>
           `;
@@ -1424,6 +1527,8 @@ export default function GTPUniversalChart({
     isStackedMode,
     metricLabel,
     numbersXxsTypography,
+    reversePerformer,
+    showStackedTotalInTooltip,
     textXxsTypography,
   ]);
 
@@ -2220,7 +2325,7 @@ export default function GTPUniversalChart({
               <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}>
                 <div
                   ref={chartTooltipHostRef}
-                  className="relative w-full rounded-[14px] overflow-hidden"
+                  className="relative w-full overflow-hidden"
                   style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
                 >
                   <ReactEChartsCore

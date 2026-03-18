@@ -115,6 +115,7 @@ export const LabelsParquetURLS = {
 export const ApplicationsURLs = {
   overview: "https://api.growthepie.com/v1/apps/app_overview_{timespan}.json",
   details: "https://api.growthepie.com/v1/apps/details/{owner_project}.json",
+  enrichment: "https://api.growthepie.com/v1/apps/scrape/{owner_project}/enrichment.json",
 };
 export const ApplicationsParquetURLs = {
   overview: "https://api.growthepie.com/v1/apps/app_overview_test.parquet",

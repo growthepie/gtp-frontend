@@ -67,13 +67,16 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
       : master?.da_metrics?.[metric_id];
   }, [master, metric_id, metric_type]);
 
-  const showGwei = useMemo(() => {
+  const [showGwei, reversePerformer] = useMemo(() => {
     const navItem =
       metric_type === "fundamentals"
         ? metricItems.find((item) => item.key === metric_id)
         : daMetricItems.find((item) => item.key === metric_id);
 
-    return Boolean(navItem?.page?.showGwei);
+    return [
+      Boolean(navItem?.page?.showGwei),
+      Boolean(navItem?.page?.reversePerformer),
+    ] as const;
   }, [metric_id, metric_type]);
 
   const chartSeries = useMemo<GTPChartSeries[]>(() => {
@@ -190,6 +193,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
         }}
         showTooltipTimestamp={timeIntervalKey === "hourly"}
+        showTotal={selectedScale === "stacked"}
+        reverseTooltipOrder={reversePerformer}
       />
 
 

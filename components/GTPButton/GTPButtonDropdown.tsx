@@ -149,11 +149,11 @@ export default function GTPButtonDropdown({
   return (
     <div
       ref={rootRef}
-      className={`relative inline-flex pointer-events-none ${matchTriggerWidthToDropdown && isOpen ? dropdownWidthClassName : ""} ${
+      className={`relative inline-flex pointer-events-none ${isOpen ? "z-dropdown" : ""} ${matchTriggerWidthToDropdown && isOpen ? dropdownWidthClassName : ""} ${
         className ?? ""
       }`}
     >
-      <div className="relative z-[30] inline-flex w-full pointer-events-auto">
+      <div className="relative z-10 inline-flex w-full pointer-events-auto">
         <GTPButton
           {...buttonProps}
           fill={matchTriggerWidthToDropdown && isOpen ? "full" : buttonProps.fill}
@@ -165,7 +165,7 @@ export default function GTPButtonDropdown({
 
       {isOpen ? (
         <div
-          className={`absolute z-[20] transition-all duration-200 ease-out ${DEFAULT_DROPDOWN_CLASS_NAME} ${dropdownWidthClassName} ${getDirectionClassName(openDirection)} ${getAlignClassName(openAlign)} ${
+          className={`absolute z-0 transition-all duration-200 ease-out ${DEFAULT_DROPDOWN_CLASS_NAME} ${dropdownWidthClassName} ${getDirectionClassName(openDirection)} ${getAlignClassName(openAlign)} ${
             allowInteract ? "pointer-events-auto" : "pointer-events-none"
           } ${dropdownClassName ?? ""}`}
           style={dropdownOffsetStyle}

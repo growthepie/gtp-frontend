@@ -32,6 +32,7 @@ import { Switch } from "@/components/Switch";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 import ViewToggle from "@/components/ViewToggle";
 import { Carousel } from "@/components/Carousel";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 
 // Preload data for the overview page
@@ -650,7 +651,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   );
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
+    <Link href={{ pathname: !IS_PRODUCTION ? `/new-apps/${application.owner_project}` : `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
       <GridTableRow
         // gridDefinitionColumns={gridColumns}
         className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
@@ -664,7 +665,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
       >
         <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
           <div
-            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-color-bg-medium"
+            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_rgb(var(--ui-active))_0%,_rgb(var(--ui-active))_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-color-bg-medium"
           >
             <ApplicationIcon owner_project={application.owner_project} size="sm" />
           </div>

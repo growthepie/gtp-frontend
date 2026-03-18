@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useContext, useMemo } from 'react';
+import React, { createContext, useState, useContext, useMemo, useCallback, startTransition } from 'react';
 
 // Define the shape of the context state
 interface QuickBiteState {
@@ -34,16 +34,53 @@ export const QuickBiteProvider = ({
   initialSharedState?: QuickBiteState;
 }) => {
   const [sharedState, setSharedStateInternal] = useState<QuickBiteState>(initialSharedState);
-  const [exclusiveFilterKeys, setExclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
-  const [inclusiveFilterKeys, setInclusiveFilterKeys] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
+  const [exclusiveFilterKeys, setExclusiveFilterKeysInternal] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
+  const [inclusiveFilterKeys, setInclusiveFilterKeysInternal] = useState<FilterKeys>({ categoryKey: null, valueKey: null });
 
-  const setSharedState = (key: string, value: any) => {
+  const setSharedState = useCallback((key: string, value: any) => {
+    startTransition(() => {
+      setSharedStateInternal(prevState => {
+        if (Object.is(prevState[key], value)) {
+          return prevState;
+        }
 
-    setSharedStateInternal(prevState => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+        return {
+          ...prevState,
+          [key]: value,
+        };
+      });
+    });
+  }, []);
+
+  const setExclusiveFilterKeys = useCallback((keys: FilterKeys) => {
+    startTransition(() => {
+      setExclusiveFilterKeysInternal((prevKeys) => {
+        if (
+          prevKeys.categoryKey === keys.categoryKey &&
+          prevKeys.valueKey === keys.valueKey
+        ) {
+          return prevKeys;
+        }
+
+        return keys;
+      });
+    });
+  }, []);
+
+  const setInclusiveFilterKeys = useCallback((keys: FilterKeys) => {
+    startTransition(() => {
+      setInclusiveFilterKeysInternal((prevKeys) => {
+        if (
+          prevKeys.categoryKey === keys.categoryKey &&
+          prevKeys.valueKey === keys.valueKey
+        ) {
+          return prevKeys;
+        }
+
+        return keys;
+      });
+    });
+  }, []);
 
   const contextValue = useMemo(() => ({
     sharedState,
@@ -52,7 +89,7 @@ export const QuickBiteProvider = ({
     setExclusiveFilterKeys,
     inclusiveFilterKeys,
     setInclusiveFilterKeys,
-  }), [sharedState, exclusiveFilterKeys, inclusiveFilterKeys]);
+  }), [sharedState, setSharedState, exclusiveFilterKeys, setExclusiveFilterKeys, inclusiveFilterKeys, setInclusiveFilterKeys]);
 
   return (
     <QuickBiteContext.Provider value={contextValue}>

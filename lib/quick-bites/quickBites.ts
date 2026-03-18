@@ -1,6 +1,5 @@
 import { QuickBiteData, QuickBiteWithSlug, RelatedData } from '@/lib/types/quickBites';
 import QUICK_BITES_DATA from '.';
-import { stringToDOM } from 'million';
 
 export default QUICK_BITES_DATA;
 

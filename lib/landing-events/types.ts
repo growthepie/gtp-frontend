@@ -31,15 +31,20 @@ export type EventOption = {
 };
 
 export type EventExample = {
-  title: string;
-  description: string;
-  question: string;
-  image: string;
-  link: string;
+  title?: string;
+  description?: string;
+  question?: string;
+  image?: string;
+  link?: string;
   series?: GTPChartSeries[];
   cards?: { owner_project: string, metric: string }[];
+  topAppsMetric?: string;
   options?: EventOption[];
   defaultOptionId?: string;
   bodyType?: "chart" | "card";
   xAxisLines?: GTPChartXAxisLine[];
+  allTimeHigh?: {
+    chainKey: string;
+    metricKey: string;
+  };
 };

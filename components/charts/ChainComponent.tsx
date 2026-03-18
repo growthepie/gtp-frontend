@@ -62,7 +62,6 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from '../layout/GTPIcon';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatNumberWithSI } from '../layout/EthAgg/AggChart';
-import { A } from 'million/dist/shared/million.485bbee4';
 
 
 const COLORS = {
