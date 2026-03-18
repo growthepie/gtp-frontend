@@ -35,13 +35,15 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const isApplicationsOverviewPage =
-    pathname === "/applications" || pathname.startsWith("/chains/");
+  const isLegacyApplicationsRoute =
+    pathname === "/applications" ||
+    pathname.startsWith("/applications/") ||
+    pathname.startsWith("/chains/");
 
   const availableMetrics = useMemo(() => {
     if (!masterData) return {};
 
-    if (!isApplicationsOverviewPage) {
+    if (!isLegacyApplicationsRoute) {
       return masterData.app_metrics;
     }
 
@@ -50,7 +52,7 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
     );
 
     return Object.keys(fundamentalMetrics).length > 0 ? fundamentalMetrics : masterData.app_metrics;
-  }, [masterData, isApplicationsOverviewPage]);
+  }, [masterData, isLegacyApplicationsRoute]);
 
   const validMetrics = useMemo(() => Object.keys(availableMetrics), [availableMetrics]);
 
