@@ -8,7 +8,6 @@ import Header from "@/components/layout/Header";
 // import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import Head from "./head";
-import Share from "@/components/Share";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
@@ -217,12 +216,6 @@ export default function RootLayout({
                   </main>
                   {/* <BottomBanner /> */}
                   <Footer />
-                </div>
-              </div>
-              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1920px] justify-end">
-                <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
-                    {/* <Details /> */}
-                    <Share />
                 </div>
               </div>
             </div>
