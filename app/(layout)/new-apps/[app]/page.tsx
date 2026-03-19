@@ -52,6 +52,40 @@ type ApplicationEnrichmentData = {
   } | null;
 };
 
+const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  year: "numeric",
+});
+
+function getActiveSinceLabel(firstSeen?: ApplicationDetailsData["first_seen"]) {
+  if (!firstSeen) {
+    return null;
+  }
+
+  const earliestChainDate = Object.entries(firstSeen)
+    .filter(([chain, date]) => chain !== "all" && typeof date === "string")
+    .map(([, date]) => ({
+      timestamp: Date.parse(date),
+    }))
+    .filter(({ timestamp }) => !Number.isNaN(timestamp))
+    .sort((a, b) => a.timestamp - b.timestamp)[0];
+
+  if (earliestChainDate) {
+    return activeSinceDateFormatter.format(new Date(earliestChainDate.timestamp));
+  }
+
+  if (typeof firstSeen.all !== "string") {
+    return null;
+  }
+
+  const allTimestamp = Date.parse(firstSeen.all);
+  if (Number.isNaN(allTimestamp)) {
+    return null;
+  }
+
+  return activeSinceDateFormatter.format(new Date(allTimestamp));
+}
+
 const GTP_ICON_NAMES_SET = new Set<string>(iconNames);
 
 function normalizeAppMetricIcon(value: unknown): GTPIconName | undefined {
@@ -651,8 +685,8 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
             <span className="text-xs font-medium" style={{ color: hoveredColor }}>
               {hoveredLabel}
             </span>
-            <span className="text-xs text-color-text-secondary">{hoveredPct}%</span>
-            <span className="text-xs text-color-text-secondary">
+            <span className="text-xs text-color-text-primary">{hoveredPct}%</span>
+            <span className="text-xs text-color-text-primary">
               ({hoveredCount.toLocaleString("en-GB")} transactions)
             </span>
           </>
@@ -666,6 +700,10 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
 
 const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
   const [open, setOpen] = useState(true);
+  const activeSinceLabel = useMemo(
+    () => getActiveSinceLabel(data.first_seen),
+    [data.first_seen],
+  );
 
   return (
     <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
@@ -702,11 +740,8 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
         <div className="flex flex-wrap items-start gap-x-[30px] gap-y-[12px]">
 
           {/* First Contract Seen */}
-          <AppOverviewMetaCol label="First Contract Seen">
-            {data.first_seen && (
-              <div>{new Date(data.first_seen).toLocaleDateString()}</div>
-            )}
-
+          <AppOverviewMetaCol label="Active Since">
+            <div>{activeSinceLabel ?? "—"}</div>
           </AppOverviewMetaCol>
 
           {/* Ecosystem Rank */}
