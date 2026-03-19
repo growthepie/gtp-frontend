@@ -773,14 +773,14 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                 </div>
                 <div className={`flex items-center ${isMobile ? "gap-x-[3px]" : "gap-x-[5px]"} overflow-hidden pr-[5px]`}>
                   {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).slice(0, showIcons).map((chain) => (
-                    <Link href={`/chains/${AllChainsByKeys[chain].urlKey}`} key={chain} className="flex items-center">
+                    <div key={chain + "event-card-icon"} className="flex items-center">
                       <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={` ${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName={` flex items-center justify-center ${isMobile ? "!size-[10px]" : "!size-[16px]"}`} 
                       style={{
                         color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
                       }}
                       />
                       
-                    </Link>
+                    </div>
                   ))}
                   {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length > showIcons && (
                     <div className={`items-center justify-center bg-color-bg-medium rounded-full px-[3px] py-[3px] text-xxxs group-hover:bg-color-ui-hover ${finalShrink ? "hidden" : "flex"}`}

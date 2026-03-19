@@ -16,7 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
-import AppMetricCard from "@/components/apps/AppMetricCard";
+import GTPMetricCard from "@/components/apps/AppMetricCard";
 import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import {
@@ -1176,7 +1176,7 @@ const OverviewContent = memo(({
           {data.kpi_cards && (
             <>
           {Object.keys(data.kpi_cards).map((metric) => (
-            <AppMetricCard 
+            <GTPMetricCard 
               key={metric} 
               label={masterData?.app_metrics[metric].name ?? metric} 
               value={data.kpi_cards[metric].current_values.data[0]} 
