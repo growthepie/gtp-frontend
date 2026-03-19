@@ -36,6 +36,8 @@ const Controls = memo(() => {
     setSort({...sort, metric: selected[selected.length - 1]});
   }, [setSort, sort]);
 
+  console.log("metricsDef", metricsDef);
+
   return (
     <>
       <TopRowContainer className="gap-y-[10px] rounded-t-[15px] rounded-b-[24px] flex-col-reverse">
@@ -43,7 +45,7 @@ const Controls = memo(() => {
           <MultipleSelectTopRowChild 
             handleNext={handleNextMetric}
             handlePrev={handlePrevMetric}
-            options={Object.keys(metricsDef).map((key) => ({
+            options={Object.keys(metricsDef).filter((key) => metricsDef[key].fundamental).map((key) => ({
               key,
               name: metricsDef[key].name,
               icon: metricIcons[key] ? metricIcons[key] : "",
