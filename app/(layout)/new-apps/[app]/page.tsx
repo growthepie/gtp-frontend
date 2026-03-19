@@ -29,6 +29,7 @@ import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
 import useSWR from "swr";
 import { createPortal } from "react-dom";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -254,19 +255,7 @@ type ContractEntry = {
   feesPaid: number;
 };
 
-
-const FAKE_CONTRACTS: ContractEntry[] = [
-  { name: "UniswapV3Pool", address: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640", category: "Finance", subcategory: "DEX", txcount: 19825301, activeAddresses: 90, feesPaid: 557350.37 },
-  { name: "SwapRouter02", address: "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45", category: "Finance", subcategory: "DEX", txcount: 14203847, activeAddresses: 74, feesPaid: 412890.12 },
-  { name: "NonfungiblePositionManager", address: "0xc36442b4a4522e871399cd717abdd847ab11fe88", category: "Finance", subcategory: "Liquidity", txcount: 9541200, activeAddresses: 55, feesPaid: 289430.50 },
-  { name: "QuoterV2", address: "0x61ffe014ba17989e743c5f6cb21bf9697530b21e", category: "Finance", subcategory: "Price Oracle", txcount: 7823150, activeAddresses: 41, feesPaid: 198750.22 },
-  { name: "FeeModule", address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", category: "Finance", subcategory: "Prediction Markets", txcount: 5102340, activeAddresses: 36, feesPaid: 143200.88 },
-  { name: "UniswapV3Factory", address: "0x1f98431c8ad98523631ae4a59f267346ea31f984", category: "Finance", subcategory: "Infrastructure", txcount: 3984720, activeAddresses: 29, feesPaid: 98540.15 },
-  { name: "WETH9", address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", category: "Finance", subcategory: "Wrapped Asset", txcount: 2861050, activeAddresses: 21, feesPaid: 67320.44 },
-  { name: "Multicall3", address: "0xcA11bde05977b3631167028862bE2a173976CA11", category: "Finance", subcategory: "Utility", txcount: 1547800, activeAddresses: 14, feesPaid: 34102.18 },
-];
-
-const CONTRACT_GRID_COLS = "grid-cols-[minmax(130px,1fr),150px,100px,125px,105px,110px]";
+const CONTRACT_GRID_COLS = "grid-cols-[220px,135px,minmax(150px,1fr),125px,105px,90px]";
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
@@ -418,21 +407,17 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   });
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  
-  const sortedContracts = useMemo(() => {
-    return [...FAKE_CONTRACTS].sort((a, b) => {
-      const dir = sort.sortOrder === "asc" ? 1 : -1;
-      switch (sort.metric) {
-        case "name": return dir * a.name.localeCompare(b.name);
-        case "category": return dir * a.category.localeCompare(b.category);
-        case "subcategory": return dir * a.subcategory.localeCompare(b.subcategory);
-        case "txcount": return dir * (a.txcount - b.txcount);
-        case "activeAddresses": return dir * (a.activeAddresses - b.activeAddresses);
-        case "feesPaid": return dir * (a.feesPaid - b.feesPaid);
-        default: return 0;
-      }
-    });
-  }, [sort]);
+  const { data: master } = useMaster();
+  const iconNames = {
+    "finance": "gtp-defi",
+    "collectibles": "gtp-nft",
+    "token_transfers": "gtp-tokentransfers",
+    "utility": "gtp-utilities",
+    "social": "gtp-socials",
+    "cefi": "gtp-cefi",
+    "cross_chain": "gtp-crosschain",
+  }
+
 
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -475,16 +460,32 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
           <VerticalScrollContainer height={300} enableDragScroll={true}>
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
-            {Object.values(data.contracts_table["7d"].data).map((contract, index) => {
+            {Object.values(data.contracts_table["1d"].data).map((contract, index) => {
 
 
-              const types = data.contracts_table["7d"].types;
+              const types = data.contracts_table["1d"].types;
+             
+              const contractMap = {
+                address: contract[types.indexOf("address")],
+                name: contract[types.indexOf("name")],
+                main_category_key: contract[types.indexOf("main_category_key")],
+                sub_category_key: contract[types.indexOf("sub_category_key")],
+                origin_key: contract[types.indexOf("origin_key")],
+                txcount: contract[types.indexOf("txcount")],
+                daa: contract[types.indexOf("daa")],
+                fees_paid: showUsd ? contract[types.indexOf("fees_paid_usd")] : contract[types.indexOf("fees_paid_eth")],
+                verified: contract[types.indexOf("verified")],
+              }
 
+              const prefix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.prefix ?? "";
+              const suffix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.suffix ?? "";
+              const decimals = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.decimals ?? 2;
+              const mainCategoryIcon = iconNames[contractMap.main_category_key as string] ?? "gtp-unknown";
 
-
+              
               return (
               <GridTableRow
-                key={contract[types.indexOf("address")] + index.toString() + "CONTRACT_ROW"}
+                key={contractMap.address + index.toString() + "CONTRACT_ROW"}
                 gridDefinitionColumns={CONTRACT_GRID_COLS}
                 className="h-[34px] text-[12px] !py-0 !gap-x-[10px]"
                 style={{ paddingLeft: "0px" }}
@@ -498,48 +499,65 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                     containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                   />
 
-                  <span className="truncate text-xs">{contract[types.indexOf("name")]}</span>
+                  <span className="truncate text-xs">{(contractMap.name as string)?.slice(0, 30) ?? "Unlabeled"}{(contractMap.name as string)?.length > 30 ? "..." : ""}</span>
                   <div className="flex items-center gap-x-[4px] shrink-0">
-                    <button
-                      onClick={() => handleCopy(contract[types.indexOf("address")] as string)}
+                    {contractMap.verified ? (
+                      <GTPTooltipNew
+                        placement="right"
+                        size="fit"
+                        allowInteract={true}
+                        trigger={<div className="w-[12px] h-[12px] flex items-center justify-center">
+                          <GTPIcon
+                            icon="gtp-verified"
+                            className="!size-[12px]"
+                            containerClassName="!size-[12px] flex items-center justify-center"
+                          />
+                        </div>}
+                      >
+                        <div className="text-xs pl-[15px]">Verified</div>
+                      </GTPTooltipNew>
+                    ) : null}
+                    {/* <button
+                      onClick={() => handleCopy(contractMap.address as string)}
                       className="text-color-text-secondary hover:text-color-text-primary transition-colors"
                     >
                       <Icon
-                        icon={copiedAddress === contract[types.indexOf("address")] ? "feather:check" : "feather:copy"}
+                        icon={copiedAddress === contractMap.address ? "feather:check" : "feather:copy"}
                         className="w-[11px] h-[11px]"
                       />
                     </button>
                     <Icon
                       icon="gtp:gtp-block-explorer-alt"
                       className="w-[11px] h-[11px] text-color-text-secondary"
-                    />
+                    /> */}
+                    
                   </div>
                 </div>
 
                 {/* Category badge */}
                 <div className="flex items-center bg-color-bg-medium h-full p-1 gap-x-[8px] ">
-                  <GTPIcon icon={"gtp-defi" as GTPIconName} className="!size-[16px]" containerClassName="bg-color-ui-active rounded-full flex items-center justify-center" />
-                  <div className="text-xs">{contract[types.indexOf("main_category_key")]}</div>
+                  <GTPIcon icon={mainCategoryIcon} className="!size-[16px]" containerClassName="bg-color-ui-active rounded-full flex items-center justify-center" />
+                  <div className="text-xs">{master?.blockspace_categories.main_categories?.[contractMap.main_category_key as string] ?? "Unlabeled"}</div>
                 </div>
 
                 {/* Subcategory */}
                 <div className="truncate text-xs">
-                  {contract[types.indexOf("sub_category_key")] as string}
+                  {master?.blockspace_categories.sub_categories?.[contractMap.sub_category_key as string] ?? "Unlabeled"}
                 </div>
 
                 {/* Transaction Count */}
                 <div className="flex items-center justify-end numbers-xs">
-                  {(contract[types.indexOf("txcount")] as number).toLocaleString("en-GB")}
+                  {(contractMap.txcount as number).toLocaleString("en-GB")}
                 </div>
 
                 {/* Active Addresses */}
                 <div className="flex items-center justify-end numbers-xs">
-                  {(contract[types.indexOf("daa")] as number).toLocaleString("en-GB")}
+                  {(contractMap.daa as number).toLocaleString("en-GB")}
                 </div>
 
                 {/* Fees Paid */}
                 <div className="flex items-center justify-end numbers-xs">
-                  ${(contract[types.indexOf(`fees_paid_${showUsd ? "usd" : "eth"}`)] as number).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {prefix}{(contractMap.fees_paid as number).toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
                 </div>
               </GridTableRow>
             )})}
