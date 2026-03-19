@@ -33,7 +33,7 @@ export default function LandingAppHighlight() {
             const txcount = Number(project?.[txcountIndex]);
             if (
                 typeof project?.[iconIndex] === "string" &&
-                txcount >= 50000 &&
+                txcount >= 10000 &&
                 !indices.includes(idx) &&
                 (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
             ) {
