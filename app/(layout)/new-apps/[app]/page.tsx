@@ -9,7 +9,7 @@ import { GrayOverlay } from "@/components/layout/Backgrounds";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIconName, iconNames } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -51,6 +51,26 @@ type ApplicationEnrichmentData = {
     product_features?: ApplicationEnrichmentFeature[] | null;
   } | null;
 };
+
+const GTP_ICON_NAMES_SET = new Set<string>(iconNames);
+
+function normalizeAppMetricIcon(value: unknown): GTPIconName | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const rawIcon = value.trim();
+  if (!rawIcon) {
+    return undefined;
+  }
+
+  const candidates = rawIcon.startsWith("gtp:")
+    ? [rawIcon.slice(4)]
+    : [rawIcon, `gtp-${rawIcon}`];
+
+  const matchedIcon = candidates.find((candidate) => GTP_ICON_NAMES_SET.has(candidate));
+  return matchedIcon as GTPIconName | undefined;
+}
 
 // ─── Fake Data ───────────────────────────────────────────────────────────────
 
@@ -1180,10 +1200,10 @@ const OverviewContent = memo(({
               key={metric} 
               label={masterData?.app_metrics[metric].name ?? metric} 
               value={data.kpi_cards[metric].current_values.data[0]} 
-              prevValue={data.kpi_cards[metric].wow_change.data[0]} 
+              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
               color={"#627EEA"} 
-              icon={masterData?.app_metrics[metric].icon_name as GTPIconName} 
+              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
           ))} 

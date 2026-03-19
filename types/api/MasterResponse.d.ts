@@ -137,7 +137,6 @@ export interface MetricInfo {
   monthly_agg: "sum" | "avg" | "maa";
   source: string[];
   supported_chains: string[];
-  icon_name: string;
 }
 
 export interface DataAvailabilityLayers {
