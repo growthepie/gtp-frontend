@@ -17,9 +17,13 @@ import { Get_SupportedChainKeys } from "@/lib/chains";
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   kpi_cards:        KpiCards;
-  first_seen:      Date;
+  first_seen:       FirstSeenByChain;
   contracts_table: {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
+}
+
+export interface FirstSeenByChain {
+  [chain: string]: string;
 }
 
 export interface KpiCards {
@@ -257,6 +261,14 @@ export const ApplicationDetailsDataProvider = ({
         }
       });
     }
+
+    if (filteredData.first_seen) {
+      filteredData.first_seen = Object.fromEntries(
+        Object.entries(filteredData.first_seen).filter(([chain]) => {
+          return chain === "all" || supportedChainKeys.includes(chain);
+        }),
+      );
+    }
   
     if (focusEnabled) {
       // Filter out Ethereum from metrics
@@ -276,6 +288,11 @@ export const ApplicationDetailsDataProvider = ({
             metric.aggregated.data = otherChains;
           }
         });
+      }
+
+      if (filteredData.first_seen?.ethereum) {
+        const { ethereum, ...otherChains } = filteredData.first_seen;
+        filteredData.first_seen = otherChains;
       }
       
       // Filter out Ethereum from contracts_table for all timespans

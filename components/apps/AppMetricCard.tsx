@@ -217,7 +217,6 @@ export default function GTPMetricCard({
   label,
   icon,
   value,
-  prevValue,
   wowChange: wowChangeProp,
   prefix = "",
   suffix = "",
@@ -230,8 +229,6 @@ export default function GTPMetricCard({
   const computedWowChange =
     wowChangeProp !== undefined
       ? wowChangeProp
-      : prevValue !== undefined && prevValue !== 0
-      ? ((value - prevValue) / prevValue) * 100
       : 0;
   const isPositive = computedWowChange >= 0;
 
