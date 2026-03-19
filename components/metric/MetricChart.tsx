@@ -126,7 +126,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           color: colors ? [colors[0], colors[1]] : undefined,
           pattern: "dashed",
           dashedLastSegment:
-            selectedScale === "absolute" && timeIntervalKey === "monthly",
+            selectedScale === "absolute" && (timeIntervalKey === "monthly" || timeIntervalKey === "weekly"),
         };
         return series;
       })
