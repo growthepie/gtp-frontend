@@ -871,20 +871,44 @@ export default function GTPChart({
     [decimals, percentageMode, prefix, suffix],
   );
 
+  // Compute the actual rendered x-axis bounds before yAxisLayout so the y-max
+  // calculation accounts for data in the expanded range (clean-boundary snap
+  // can pull effectiveXMin earlier than the raw xAxisMin prop; bar padding can
+  // extend effectiveXMax beyond xAxisMax). A dummy grid is fine here because
+  // buildTimeXAxisLayout's min/max output does not depend on the grid argument.
+  const effectiveXBounds = useMemo(() => {
+    if (xAxisType !== "time") return { min: xAxisMin, max: xAxisMax };
+    const allTs = pairedSeries.flatMap((s) =>
+      s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
+    );
+    const barData = pairedSeries
+      .filter((s) => s.seriesType === "bar")
+      .map((s) => s.pairedData);
+    const layout = buildTimeXAxisLayout({
+      timestamps: allTs,
+      barSeriesData: barData,
+      xAxisMin,
+      xAxisMax,
+      grid: { left: 0, right: 0, top: 0, bottom: 0 },
+      snapToCleanBoundary,
+    });
+    return { min: layout.min, max: layout.max };
+  }, [pairedSeries, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
+
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const yAxisLayout = useMemo(
     () =>
       computeYAxisTicks({
         pairedSeries,
-        xAxisMin,
-        xAxisMax,
+        xAxisMin: effectiveXBounds.min,
+        xAxisMax: effectiveXBounds.max,
         containerHeight,
         percentageMode,
         stack,
         yAxisMin,
         yAxisMaxOverride,
       }),
-    [pairedSeries, xAxisMin, xAxisMax, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
+    [pairedSeries, effectiveXBounds, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
   );
 
   // --- Dynamic grid.left based on measured y-axis label widths ---
