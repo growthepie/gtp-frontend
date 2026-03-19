@@ -19,7 +19,8 @@ export default function LandingAppHighlight() {
         if (!filteredProjectsData || randomIndices !== null) return;
         const iconIndex = filteredProjectsData.types.indexOf("logo_path");
         const ownerIndex = filteredProjectsData.types.indexOf("owner_project");
-        if (iconIndex === -1) return;
+        const txcountIndex = filteredProjectsData.types.indexOf("txcount");
+        if (iconIndex === -1 || txcountIndex === -1) return;
         const dataLen = filteredProjectsData.data.length;
         const indices: number[] = [];
         const seenOwners = new Set<string>();
@@ -29,8 +30,10 @@ export default function LandingAppHighlight() {
             const idx = Math.floor(Math.random() * dataLen);
             const project = filteredProjectsData.data[idx];
             const owner = ownerIndex !== -1 ? project?.[ownerIndex] : null;
+            const txcount = Number(project?.[txcountIndex]);
             if (
                 typeof project?.[iconIndex] === "string" &&
+                txcount >= 10000 &&
                 !indices.includes(idx) &&
                 (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
             ) {
