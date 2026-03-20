@@ -444,7 +444,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
       {/* Scrollable table */}
       <div className="overflow-x-auto w-full">
-        <div className="min-w-[800px]">
+        <div className="">
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0 !pr-[65px]"
@@ -452,7 +452,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
             <GridTableHeaderCellButton label="Contract"          metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
             <GridTableHeaderCellButton label="Category"          metric="category"        sort={sort} setSort={setSort} justify="start" size="xs"  className="pl-[4px]"/>
-            <GridTableHeaderCellButton label="Subcategory"       metric="subcategory"     sort={sort} setSort={setSort} justify="start" size="xs"  className="-ml-[4px]"/>
+            <GridTableHeaderCellButton label="Subcategory"       metric="subcategory"     sort={sort} setSort={setSort} justify="start" size="xs"  className=""/>
             <GridTableHeaderCellButton label="Transaction Count" metric="txcount"         sort={sort} setSort={setSort} justify="end"   size="xs" />
             <GridTableHeaderCellButton label="Active Addresses"  metric="activeAddresses" sort={sort} setSort={setSort} justify="end"   size="xs" />
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs"  className="-mr-[12px]"/>
@@ -516,7 +516,21 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                       >
                         <div className="text-xs pl-[15px]">Verified</div>
                       </GTPTooltipNew>
-                    ) : null}
+                    ) :                       
+                  <GTPTooltipNew
+                    placement="right"
+                    size="fit"
+                    allowInteract={true}
+                    trigger={<div className="w-[12px] h-[12px] flex items-center justify-center">
+                      <GTPIcon
+                        icon="gtp-unverified-monochrome"
+                        className="!size-[12px]"
+                        containerClassName="!size-[12px] flex items-center justify-center"
+                      />
+                    </div>}
+                  >
+                    <div className="text-xs pl-[15px]">Unverified</div>
+                  </GTPTooltipNew>}
                     {/* <button
                       onClick={() => handleCopy(contractMap.address as string)}
                       className="text-color-text-secondary hover:text-color-text-primary transition-colors"
@@ -541,7 +555,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                 </div>
 
                 {/* Subcategory */}
-                <div className="truncate text-xs">
+                <div className="truncate text-xs min-w-0">
                   {master?.blockspace_categories.sub_categories?.[contractMap.sub_category_key as string] ?? "Unlabeled"}
                 </div>
 
