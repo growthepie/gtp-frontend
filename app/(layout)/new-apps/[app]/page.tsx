@@ -619,7 +619,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             rightIcon={"in-button-right-monochrome" as GTPIconName}
             className="z-30"
           />
-          <div className="absolute -top-[1px] h-[23px] rounded-full  w-[192px]"
+          <div className="absolute -top-[0.5px] h-[22px] rounded-full  w-[192px]"
           style={{
             background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
 
