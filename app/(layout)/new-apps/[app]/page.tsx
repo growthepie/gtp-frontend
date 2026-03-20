@@ -418,6 +418,35 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
     "cross_chain": "gtp-crosschain",
   }
 
+  const sortedContracts = useMemo(() => {
+    const types = data.contracts_table["7d"].types;
+
+    const metricToTypeKey: Record<string, string> = {
+      name: "name",
+      category: "main_category_key",
+      subcategory: "sub_category_key",
+      txcount: "txcount",
+      activeAddresses: "daa",
+      feesPaid: showUsd ? "fees_paid_usd" : "fees_paid_eth",
+    };
+
+    const stringMetrics = new Set(["name", "category", "subcategory"]);
+
+    const typeKey = metricToTypeKey[sort.metric] ?? "txcount";
+    const colIdx = types.indexOf(typeKey);
+    const dir = sort.sortOrder === "asc" ? 1 : -1;
+    
+
+    return [...Object.values(data.contracts_table["7d"].data)].sort((a, b) => {
+      const aVal = a[colIdx];
+      const bVal = b[colIdx];
+      if (stringMetrics.has(sort.metric)) {
+        return dir * ((bVal as string ?? "").localeCompare(aVal as string ?? ""));
+      }
+      return sort.metric === "feesPaid" ? dir * ((bVal as number ?? 0) - (aVal as number ?? 0)) : dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
+    });
+  }, [data.contracts_table, sort, showUsd]);
+
 
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -438,7 +467,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
           Most Active Contracts
         </div>
       </div>
-      <div className="text-xxs text-color-text-secondary">
+      <div className="text-xs text-color-text-primary">
         See the most active contracts for this application in the last 7 days.
       </div>
 
@@ -460,10 +489,10 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
           <VerticalScrollContainer height={300} enableDragScroll={true}>
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
-            {Object.values(data.contracts_table["1d"].data).map((contract, index) => {
+            {sortedContracts.map((contract, index) => {
 
 
-              const types = data.contracts_table["1d"].types;
+              const types = data.contracts_table["7d"].types;
              
               const contractMap = {
                 address: contract[types.indexOf("address")],
@@ -581,13 +610,24 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       </div>
 
       {/* Footer CTA */}
-      <div className="flex justify-end pt-[2px]">
-        <GTPButton
-          label="Don't see your app? Label here."
-          size="sm"
-          rightIcon={"in-button-right-monochrome" as GTPIconName}
-        />
+      <div className="relative w-full flex  items-center justify-end">
+        
+          <GTPButton
+            label="Don't see your app? Label here."
+            leftIcon={"oli-open-labels-initiative" as GTPIconName}
+            size="xs"
+            rightIcon={"in-button-right-monochrome" as GTPIconName}
+            className="z-30"
+          />
+          <div className="absolute -top-[1px] h-[23px] rounded-full  w-[192px]"
+          style={{
+            background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+
+          }}
+          ></div>
+        
       </div>
+      
     </div>
   );
 };
