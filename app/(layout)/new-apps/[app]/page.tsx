@@ -26,7 +26,7 @@ import {
 } from "@/components/layout/GridTable";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { Icon } from "@iconify/react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import useSWR from "swr";
 import { createPortal } from "react-dom";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
@@ -255,7 +255,7 @@ type ContractEntry = {
   feesPaid: number;
 };
 
-const CONTRACT_GRID_COLS = "grid-cols-[220px,135px,minmax(150px,1fr),125px,105px,90px]";
+const CONTRACT_GRID_COLS = "grid-cols-[220px,135px,minmax(150px,1fr),110px,105px,100px]";
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
@@ -408,6 +408,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { data: master } = useMaster();
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const iconNames = {
     "finance": "gtp-defi",
     "collectibles": "gtp-nft",
@@ -455,7 +456,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   };
 
   return (
-    <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[15px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[15px] py-[15px] gap-y-[10px]">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
@@ -472,8 +473,8 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       </div>
 
       {/* Scrollable table */}
-      <div className="overflow-x-auto w-full">
-        <div className="">
+      <div className="overflow-x-auto w-full bg">
+        <div className=" ">
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0 !pr-[65px]"
@@ -487,7 +488,13 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs"  className="-mr-[12px]"/>
           </GridTableHeader>
 
-          <VerticalScrollContainer height={300} enableDragScroll={true}>
+          <VerticalScrollContainer 
+            height={300} 
+            enableDragScroll={isMobile ? true : false}
+            className=""
+
+          
+          >
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
             {sortedContracts.map((contract, index) => {
 
@@ -779,20 +786,69 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
 
   return (
     <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
-      {/* Header: toggle + "App Overview" */}
-      <div
-        className="flex items-center gap-x-[10px] cursor-pointer w-fit"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <GTPIcon
-          icon="in-button-right-monochrome"
-          size="sm"
-          className="!size-[14px]"
-          containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
-            open ? "rotate-90" : "rotate-0"
-          }`}
-        />
-        <div className="heading-large-md text-color-text-secondary">App Overview</div>
+      {/* Header row: toggle + title + links (when closed) */}
+      <div className="flex items-center justify-between gap-x-[10px]">
+        <div
+          className="flex items-center gap-x-[10px] cursor-pointer"
+          onClick={() => setOpen((v) => !v)}
+        >
+          <GTPIcon
+            icon="in-button-right-monochrome"
+            size="sm"
+            className="!size-[14px]"
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
+              open ? "rotate-90" : "rotate-0"
+            }`}
+          />
+          <div className="heading-large-md text-color-text-secondary">{projectMetadata.display_name}</div>
+        </div>
+
+        {/* Links inline with header — shown only when closed */}
+        {!open && (
+          <div className="flex flex-wrap items-center gap-[5px]">
+            {projectMetadata.website && (
+              <GTPButton
+                size="sm"
+                leftIcon={"feather:globe" as GTPIconName}
+                label="Website"
+                clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+              />
+            )}
+            {projectMetadata.twitter && (
+              <LinkDropdown
+                icon="gtp-socials"
+                label="Socials"
+                links={[
+                  { icon: "ri:twitter-x-fill", label: "Twitter", href: `https://x.com/${projectMetadata.twitter}` },
+                ]}
+              />
+            )}
+            {projectMetadata.main_github && (
+              <GTPButton
+                size="sm"
+                leftIcon={"github" as GTPIconName}
+                label="Github"
+                clickHandler={() => window.open(projectMetadata.main_github ?? "", "_blank", "noopener,noreferrer")}
+              />
+            )}
+            {projectMetadata.website && (
+              <GTPButton
+                size="sm"
+                leftIcon="gtp-read"
+                label="Docs"
+                clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+              />
+            )}
+            {projectMetadata.website && (
+              <GTPButton
+                size="sm"
+                leftIcon={"gtp-file-text" as GTPIconName}
+                label="Governance"
+                clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Collapsible body */}
