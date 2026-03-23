@@ -9,7 +9,7 @@ import { getExplorerAddressUrl } from "@/lib/helpers";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, Category } from "../_components/Components";
-import { memo, ReactNode, useEffect, useMemo, useState, use } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useState, use } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
@@ -27,6 +27,7 @@ import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
 import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { buildProjectEditHref } from "@/lib/project-edit-intent";
 
 // dynamic import to prevent server-side rendering of the chart component
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
@@ -41,6 +42,14 @@ export default function Page(props: Props) {
   const {
     owner_project
   } = params;
+  useApplicationDetailsData();
+  const editContractsHref = buildProjectEditHref({
+    mode: "edit",
+    source: "application-page",
+    project: owner_project,
+    focus: "contracts",
+    start: "contracts",
+  });
 
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
@@ -116,8 +125,7 @@ export default function Page(props: Props) {
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
+                  href={editContractsHref}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
                 />
@@ -128,8 +136,7 @@ export default function Page(props: Props) {
                   icon={"oli-open-labels-initiative" as GTPIconName}
                   iconSize="md"
                   iconBackground="bg-transparent"
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
+                  href={editContractsHref}
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit"
                   containerClassName=""
@@ -142,7 +149,7 @@ export default function Page(props: Props) {
           </div>
         </div>
       </Container>
-      <ContractsTable />
+      <ContractsTable editContractsHref={editContractsHref} />
       <Container>
         {/* <div className="rounded-md bg-color-ui-active/60 h-[152px] w-full"></div> */}
         <div className="pt-[30px] pb-[15px]">
@@ -269,15 +276,14 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   );
 }
 
-const ContractsTable = () => {
+const ContractsTable = ({ editContractsHref }: { editContractsHref: string }) => {
   const { data, owner_project, contracts, sort, setSort, setSelectedSeriesName: setSelectedSeriesNameApps } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, data: master } = useMaster();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
-
   const {selectedSeriesName, setSelectedSeriesName} = useChartSync();
 
 
@@ -295,7 +301,7 @@ const ContractsTable = () => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")} 28px`,
     [selectedMetricKeys]
   );
 
@@ -354,6 +360,7 @@ const ContractsTable = () => {
               </GridTableHeaderCell>
             )
           })}
+          <div />
         </GridTableHeader>
         {/* <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
         <VerticalVirtuosoScrollContainer
@@ -375,7 +382,9 @@ const ContractsTable = () => {
 
               return (
                 <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-                  <ContractsTableRow contract={contracts[index]}  />
+                  <ContractsTableRow
+                    contract={contracts[index]}
+                  />
                 </div>
               )
             }}
@@ -435,7 +444,11 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
+const ContractsTableRow = memo(({
+  contract,
+}: {
+  contract: ContractDict;
+}) => {
   const { data } = useApplicationDetailsData();
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -443,6 +456,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [isRowHovered, setIsRowHovered] = useState(false);
   const { data: master } = useMaster();
 
 
@@ -457,7 +471,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,1fr) ${selectedMetricKeys.map(() => `140px`).join(" ")} 28px`,
     [selectedMetricKeys]
   );
 
@@ -468,16 +482,17 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
 
   
   return (
+    <div onMouseEnter={() => setIsRowHovered(true)} onMouseLeave={() => setIsRowHovered(false)}>
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
+      className={`group relative text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
       style={{
         gridTemplateColumns: gridColumns,
       }}
     >
       <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
         <div
-          className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_rgb(var(--ui-active))_0%,_rgb(var(--ui-active))_72.5%,_transparent_90%)]"
+          className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_var(--ui-active)_0%,_var(--ui-active)_72.5%,_transparent_90%)]"
         >
           <div className="size-[26px] flex items-center justify-center">
             <GTPIcon icon={`${(contract.origin_key as string).replaceAll("_", "-")}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />
@@ -539,7 +554,9 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
           <ContractValue contract={contract} metric={selectedMetrics[index]} />
         </div>
       ))}
+      <div className="w-full" />
     </GridTableRow>
+    </div>
   )
 });
 
@@ -552,20 +569,18 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
 
-  const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
-  const [medianMetric, setMedianMetric] = useState(selectedMetrics[0]);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  useEffect(() => {
-    if (Object.keys(metricsDef).includes(sort.metric)) {
-      let key = sort.metric;
-      if (sort.metric === "gas_fees")
-        key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-
-      setMedianMetricKey(key);
-      setMedianMetric(sort.metric);
+  const medianMetricKey = useMemo(() => {
+    if (!Object.keys(metricsDef).includes(sort.metric)) {
+      return selectedMetrics[0];
     }
 
-  }, [metricsDef, sort.metric, showUsd]);
+    if (sort.metric === "gas_fees") {
+      return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    }
+
+    return sort.metric;
+  }, [metricsDef, selectedMetrics, showUsd, sort.metric]);
 
 
 
@@ -619,7 +634,7 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   const { containerRef, showLeftGradient, showRightGradient } =
     useDragScroll("horizontal", 0.96, { snap: true, snapThreshold: 0.2 });
 
-  const onScroll = () => {
+  const onScroll = useCallback(() => {
     if (containerRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect();
       const containerCenter = containerRect.left + containerRect.width / 2;
@@ -641,16 +656,19 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
       setIsFirst(closestIndex === 0);
       setIsLast(closestIndex === children.length - 1);
     }
-  };
+  }, [containerRef]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     container.addEventListener("scroll", onScroll);
-    // Run once on mount to set the active index correctly.
-    onScroll();
     return () => container.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [containerRef, onScroll]);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(onScroll);
+    return () => cancelAnimationFrame(frameId);
+  }, [onScroll]);
 
   return (
     <div

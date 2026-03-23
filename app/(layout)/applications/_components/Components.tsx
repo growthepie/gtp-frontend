@@ -34,6 +34,7 @@ import { SmartBackButton } from "@/components/SmartBackButton";
 type ApplicationIconProps = {
   owner_project: string;
   size: "sm" | "md" | "lg";
+  className?: string;
 };
 
 export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
@@ -49,7 +50,7 @@ export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
   return null;
 }
 
-export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
+export const ApplicationIcon = ({ owner_project, size, className }: ApplicationIconProps) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const sizeClassMap = {
     sm: "size-[26px]",
@@ -70,7 +71,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
   };
 
   return (
-    <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full ${sizeClassMap[size]}`}>
+    <div className={className ?? `flex items-center justify-center select-none bg-color-ui-active rounded-full ${sizeClassMap[size]}`}>
       {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
         <Image
           src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
@@ -133,8 +134,7 @@ export const PageTitleAndDescriptionAndControls = () => {
                 iconSize="md"
                 iconBackground="bg-transparent"
                 rightIcon={"feather:arrow-right" as GTPIconName}
-                href="https://www.openlabelsinitiative.org/?gtp.applications"
-                newTab
+                href="/applications/add"
                 gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                 className="w-fit hidden md:block"
               />
@@ -149,9 +149,7 @@ export const PageTitleAndDescriptionAndControls = () => {
         </div>
         <div className="flex md:hidden">
           <Link
-            href="https://www.openlabelsinitiative.org/?gtp.applications"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/applications/add"
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
             <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">

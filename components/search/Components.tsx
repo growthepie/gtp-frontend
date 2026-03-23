@@ -27,6 +27,7 @@ import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
+import { useUIContext } from "@/contexts/UIContext";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -201,6 +202,7 @@ export const HeaderSearchButton = () => {
   const isOpen = searchParams.get("search") === "true";
   const query = searchParams.get("query") || "";
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
 
   // read state from url
   const handleOpenSearch = useCallback(() => {
@@ -291,7 +293,10 @@ export const HeaderSearchButton = () => {
   // Listen for clear search or close event
   useEffect(() => {
     const handleClearSearchOrClose = () => {
-      if (query !== "") {
+      // In project edit mode, selection actions should fully dismiss the search surface.
+      if (projectEditMode) {
+        handleCloseSearch();
+      } else if (query !== "") {
         handleClearQuery();
       } else {
         setTimeout(() => {
@@ -302,7 +307,7 @@ export const HeaderSearchButton = () => {
 
     window.addEventListener('clearSearchOrClose', handleClearSearchOrClose);
     return () => window.removeEventListener('clearSearchOrClose', handleClearSearchOrClose);
-  }, [query, handleClearQuery, handleCloseSearch]);
+  }, [projectEditMode, query, handleClearQuery, handleCloseSearch]);
 
   if(isMobile){
     return (
@@ -333,6 +338,7 @@ export const SearchComponent = () => {
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
 
   const handleCloseSearch = () => {
     // get existing query params
@@ -344,27 +350,31 @@ export const SearchComponent = () => {
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
 
     window.history.replaceState(null, "", url);
-    setDocumentScroll(true);
+    if (!projectEditMode) setDocumentScroll(true);
   }
 
   // Handle initial scroll state when page loads with search parameters
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !projectEditMode) {
       setDocumentScroll(false);
     }
     return () => {
-      if (isOpen) {
+      if (isOpen && !projectEditMode) {
         setDocumentScroll(true);
       }
     };
-  }, [isOpen]);
+  }, [isOpen, projectEditMode]);
 
   if (!isOpen) return null;
 
   return (
     <>
       <SearchBar showMore={showMore} setShowMore={setShowMore} />
-      <GrayOverlay onClick={handleCloseSearch} />
+      {projectEditMode ? (
+        <div className="fixed inset-0 z-[105]" onClick={handleCloseSearch} />
+      ) : (
+        <GrayOverlay onClick={handleCloseSearch} />
+      )}
     </>
   )
 }
@@ -373,6 +383,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showMore?: any;
   setShowMore?: any;
   showSearchContainer?: boolean;
+  showFilters?: boolean;
   hideClearButtonOnMobile?: boolean; // Add this prop
   onInputFocus?: () => void;
   onInputBlur?: () => void;
@@ -380,19 +391,45 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
+const DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS = [
+  " Chains",
+  " Metrics",
+  " Applications",
+  " Quick Bites",
+  " and more...",
+];
+
 // Hook to cycle through animated placeholder options with typewriter effect
-const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false) => {
-  // Use searchbar_items from master JSON if available, otherwise fall back to default options
-  const defaultOptions = [" Chains", " Metrics", " Applications", " Quick Bites", " and more..."];
+const PROJECT_EDIT_PLACEHOLDER_OPTIONS = [
+  " a website URL, e.g. https://uniswap.org",
+  " a GitHub link, e.g. https://github.com/uniswap",
+  " a Twitter link, e.g. https://x.com/uniswap",
+  " a project name, e.g. Uniswap",
+];
+
+const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, isMounted: boolean = false, overrideOptions?: string[]) => {
   const searchbarItems = masterData?.['searchbar_items'] as string[] | undefined;
-  
+  const searchbarItemsSignature = Array.isArray(searchbarItems)
+    ? searchbarItems.join("|")
+    : "";
+  const normalizedSearchbarItems = useMemo(() => {
+    if (!searchbarItemsSignature) {
+      return [];
+    }
+    return searchbarItemsSignature
+      .split("|")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }, [searchbarItemsSignature]);
+
   // Get most recent quick bite shortTitle once (memoized to avoid re-checking on each loop)
   const mostRecentQuickBiteTitle = useMemo(() => {
+    if (overrideOptions) return null;
     try {
       const allQuickBites = getAllQuickBites()
         .filter(qb => qb.showInMenu !== false && qb.date) // Filter out hidden bites and ones without dates
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
-      
+
       if (allQuickBites.length > 0) {
         return ` ${allQuickBites[0].shortTitle}`; // Return shortTitle (same as used in menu items)
       }
@@ -400,28 +437,31 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
       console.error('Error getting most recent quick bite:', error);
     }
     return null;
-  }, []); // Empty deps array - only check once on mount
-  
+  }, [overrideOptions]); // Empty deps array - only check once on mount
+
   const options = useMemo(() => {
-    const searchbarItemsFromMaster = masterData?.searchbar_items;
+    if (overrideOptions) return overrideOptions;
+    const searchbarItemsFromMaster = normalizedSearchbarItems;
     let baseOptions: string[];
     if (searchbarItemsFromMaster && searchbarItemsFromMaster.length > 0) {
       baseOptions = searchbarItemsFromMaster.map(item => ` ${item}`);
     } else {
-      baseOptions = defaultOptions;
+      baseOptions = DEFAULT_ANIMATED_PLACEHOLDER_OPTIONS;
     }
-    
+
     // Append most recent quick bite title before wrapping back to start
     if (mostRecentQuickBiteTitle) {
       return [...baseOptions, mostRecentQuickBiteTitle];
     }
-    
+
     return baseOptions;
-  }, [masterData, mostRecentQuickBiteTitle, defaultOptions]);
+  }, [normalizedSearchbarItems, mostRecentQuickBiteTitle, overrideOptions]);
   
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const currentIndexRef = useRef(0);
+  const isDeletingRef = useRef(false);
+  const animationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentTextRef = useRef("");
   const prevActiveRef = useRef<boolean>(false);
 
   // Separate effect to handle reset when transitioning from active to inactive
@@ -432,67 +472,103 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
     // Only reset when transitioning from active to inactive
     if (wasActive && !isCurrentlyActive) {
       startTransition(() => {
-        setCurrentIndex(0);
+        currentIndexRef.current = 0;
+        isDeletingRef.current = false;
+        currentTextRef.current = "";
         setCurrentText("");
-        setIsDeleting(false);
       });
     }
     
     prevActiveRef.current = isCurrentlyActive;
   }, [isMounted, isActive]);
 
+  const updateCurrentText = useCallback((value: string) => {
+    currentTextRef.current = value;
+    setCurrentText(value);
+  }, []);
+
   useEffect(() => {
-    // Don't animate on server-side or before mount to prevent hydration mismatch
     if (!isMounted || !isActive) {
-      return;
+      return () => {
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+        }
+      };
     }
 
-    const currentOption = options[currentIndex];
-    
-    // Typing speed (milliseconds per character)
+    if (options.length === 0) {
+      startTransition(() => {
+        currentTextRef.current = "";
+        setCurrentText("");
+      });
+      currentIndexRef.current = 0;
+      isDeletingRef.current = false;
+      return () => {
+        if (animationTimeoutRef.current) {
+          clearTimeout(animationTimeoutRef.current);
+          animationTimeoutRef.current = null;
+        }
+      };
+    }
+
+    currentIndexRef.current = 0;
+    isDeletingRef.current = false;
+    startTransition(() => {
+      currentTextRef.current = "";
+      setCurrentText("");
+    });
+
     const typingSpeed = 100;
-    // Deleting speed (milliseconds per character)
     const deletingSpeed = 70;
-    // Pause after typing complete (milliseconds)
     const pauseAfterTyping = 2000;
-    // Pause after deleting complete (milliseconds)
     const pauseAfterDeleting = 500;
 
-    let timeoutId: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Typing phase
-      if (currentText.length < currentOption.length) {
-        // Continue typing
-        timeoutId = setTimeout(() => {
-          setCurrentText(currentOption.slice(0, currentText.length + 1));
-        }, typingSpeed);
-      } else {
-        // Finished typing, wait then start deleting
-        timeoutId = setTimeout(() => {
-          setIsDeleting(true);
-        }, pauseAfterTyping);
+    const runAnimation = () => {
+      if (!isMounted || !isActive || options.length === 0) {
+        return;
       }
-    } else {
-      // Deleting phase
-      if (currentText.length > 0) {
-        // Continue deleting
-        timeoutId = setTimeout(() => {
-          setCurrentText(currentText.slice(0, -1));
-        }, deletingSpeed);
-      } else {
-        // Finished deleting, wait then move to next option
-        timeoutId = setTimeout(() => {
-          setIsDeleting(false);
-          setCurrentIndex((prev) => (prev + 1) % options.length);
-        }, pauseAfterDeleting);
-      }
-    }
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      const safeIndex = options.length > 0 ? currentIndexRef.current % options.length : 0;
+      const currentOption = options[safeIndex];
+      if (!currentOption) {
+        return;
+      }
+
+      let delay = typingSpeed;
+
+      if (!isDeletingRef.current) {
+        const nextText = currentOption.slice(0, currentTextRef.current.length + 1);
+        if (nextText.length <= currentTextRef.current.length) {
+          isDeletingRef.current = true;
+          delay = pauseAfterTyping;
+        } else {
+          updateCurrentText(nextText);
+          delay = typingSpeed;
+        }
+      } else {
+        if (currentTextRef.current.length > 0) {
+          const nextText = currentTextRef.current.slice(0, -1);
+          updateCurrentText(nextText);
+          delay = deletingSpeed;
+        } else {
+          isDeletingRef.current = false;
+          currentIndexRef.current = (currentIndexRef.current + 1) % Math.max(options.length, 1);
+          delay = pauseAfterDeleting;
+        }
+      }
+
+      animationTimeoutRef.current = setTimeout(runAnimation, delay);
     };
-  }, [isMounted, isActive, currentIndex, currentText, isDeleting, options]);
+
+    animationTimeoutRef.current = setTimeout(runAnimation, 0);
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
+      }
+    };
+  }, [isMounted, isActive, options, updateCurrentText]);
 
   // Return consistent value during SSR to prevent hydration mismatch
   if (!isMounted) {
@@ -503,7 +579,7 @@ const useAnimatedPlaceholder = (isActive: boolean, masterData?: MasterResponse, 
 };
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, showFilters=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, placeholder = "Search: chains, metrics, applications, quick bites and more...", ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -534,14 +610,23 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const { totalMatches } = useSearchBuckets();
     const [isFocused, setIsFocused] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    
+    const projectEditMode = useUIContext((state) => state.projectEditMode);
+    const searchBarCaptureActive = useUIContext((state) => state.searchBarCaptureActive);
+    const captureRef = useRef({ projectEditMode, searchBarCaptureActive });
+    useEffect(() => { captureRef.current = { projectEditMode, searchBarCaptureActive }; }, [projectEditMode, searchBarCaptureActive]);
+
     // Track client-side mount to prevent hydration mismatch
     useEffect(() => {
       setIsMounted(true);
     }, []);
-    
+
     // Animated placeholder - only animate when input is empty and mounted (hook must always be called)
-    const animatedPlaceholder = useAnimatedPlaceholder(localQuery.length === 0, masterData, isMounted);
+    const animatedPlaceholder = useAnimatedPlaceholder(
+      localQuery.length === 0,
+      masterData,
+      isMounted,
+      projectEditMode ? PROJECT_EDIT_PLACEHOLDER_OPTIONS : undefined,
+    );
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);
@@ -646,11 +731,25 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       };
     }, [debouncedUpdateSearch]);
 
+    useEffect(() => {
+      const handleClearSearchOrClose = () => {
+        debouncedUpdateSearch.cancel();
+        setLocalQuery("");
+        localInputRef.current?.blur();
+      };
+
+      window.addEventListener("clearSearchOrClose", handleClearSearchOrClose);
+      return () => window.removeEventListener("clearSearchOrClose", handleClearSearchOrClose);
+    }, [debouncedUpdateSearch]);
+
     // on mount, add an event listener for keystrokes. If a alphanumeric key is pressed, focus the input and write the key to the input.
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         const input = document.getElementById('global-search-input') as HTMLInputElement | null;
         if (!input) return;
+
+        // In project edit mode, only route keystrokes to the search bar when step 0 (capture active)
+        if (captureRef.current.projectEditMode && !captureRef.current.searchBarCaptureActive) return;
 
         // Don't trigger search if modifier keys are pressed (Ctrl, Cmd, Alt, Shift)
         // This prevents interfering with shortcuts like Ctrl+C, Ctrl+V, etc.
@@ -744,7 +843,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               </div>
             </div>
             {/* second child: the filter selection container */}
-            <div className="hidden md:block">
+            <div className={`${showFilters ? "hidden md:block" : "hidden"}`}>
               <Filters showMore={showMore} setShowMore={setShowMore} />
             </div>
           </div>
@@ -1507,8 +1606,24 @@ export const SearchBadge = memo(({
 
 SearchBadge.displayName = 'SearchBadge';
 
+// Detect which project form field a query string likely belongs to
+const detectProjectQueryField = (q: string): { field: "website" | "main_github" | "twitter" | "display_name"; label: string } => {
+  const t = q.trim().toLowerCase();
+  if (t.includes("github.com") || t.startsWith("https://github") || t.startsWith("github.com")) {
+    return { field: "main_github", label: "GitHub URL" };
+  }
+  if (t.includes("x.com") || t.includes("twitter.com") || t.startsWith("@")) {
+    return { field: "twitter", label: "Twitter / X" };
+  }
+  if (t.startsWith("http://") || t.startsWith("https://") || t.includes(".xyz") || t.includes(".io") || t.includes(".com") || t.includes(".org") || t.includes(".finance")) {
+    return { field: "website", label: "website URL" };
+  }
+  return { field: "display_name", label: "project name" };
+};
+
 const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
   const { AllChainsByKeys, data: masterData } = useMaster();
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [viewportHeight, setViewportHeight] = useState<number>(0);
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
@@ -1957,9 +2072,297 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
   }, []);
 
+  // Project-edit mode: search the full OSS directory
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  // Fetch the full OSS directory when in project-edit mode so every project is searchable,
+  // not just those in the filtered apps dataset.
+  const { data: ossRawData } = useSWR<{ data: { types: string[]; data: unknown[][] } }>(
+    projectEditMode ? "https://api.growthepie.com/v1/labels/projects.json" : null,
+  );
+  const ossProjects = useMemo(() => {
+    if (!ossRawData?.data) return [];
+    const { types, data } = ossRawData.data;
+    const idx = (f: string) => types.indexOf(f);
+    return data
+      .map((row) => ({
+        owner_project: String(row[idx("owner_project")] ?? ""),
+        display_name: String(row[idx("display_name")] ?? row[idx("owner_project")] ?? ""),
+        main_github: row[idx("main_github")] != null ? String(row[idx("main_github")]) : null,
+        twitter: row[idx("twitter")] != null ? String(row[idx("twitter")]) : null,
+        website: row[idx("website")] != null ? String(row[idx("website")]) : null,
+        logo_path: row[idx("logo_path")] != null ? String(row[idx("logo_path")]) : null,
+      }))
+      .filter((p) => !!p.owner_project);
+  }, [ossRawData]);
+
+  const editMatches = useMemo(() => {
+    if (!projectEditMode || !memoizedQuery || memoizedQuery.length < 2) return [];
+    const q = memoizedQuery.toLowerCase();
+    // Raw query preserves hyphens so "omni-network" matches owner keys that contain "-"
+    const qRaw = (query || "").trim().toLowerCase();
+
+    // Normalize a URL to "host/path" for domain-aware matching (strips protocol, www., trailing slash)
+    const normalizeForMatch = (value: string): string => {
+      const v = value.trim();
+      if (!v) return "";
+      try {
+        const url = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+        const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+        const path = url.pathname.replace(/\/+$/, "").toLowerCase();
+        return `${host}${path}`;
+      } catch {
+        return v.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+      }
+    };
+
+    const extractSLD = (norm: string): string => {
+      const host = norm.split("/")[0];
+      const parts = host.split(".");
+      return parts.length >= 2 ? parts[parts.length - 2] : host;
+    };
+
+    const qNorm = normalizeForMatch(q);
+    const isUrlQuery = /^https?:\/\/|\./.test(memoizedQuery.trim());
+    const qSLD = isUrlQuery && qNorm ? extractSLD(qNorm) : "";
+
+    // Extract the first path segment and host from a URL-shaped query
+    const qHost = qNorm.split("/")[0];
+    const qPathFirst = qNorm.includes("/")
+      ? qNorm.slice(qHost.length + 1).split("/")[0].toLowerCase()
+      : "";
+
+    type Entry = { owner_project: string; display_name: string | null; main_github: string | null; twitter: string | null; website: string | null; logo_path: string | null };
+
+    const matchProject = (p: Entry): boolean => {
+      if (
+        p.owner_project.toLowerCase().includes(qRaw) ||
+        (p.display_name || "").toLowerCase().includes(qRaw)
+      ) return true;
+
+      if (isUrlQuery && qNorm) {
+        if (qNorm.includes("/")) {
+          // GitHub / GitLab / Bitbucket: match org name against main_github
+          // main_github can be a bare org name ("growthepie") or a full URL
+          if (/^(github|gitlab|bitbucket)\./.test(qHost) && qPathFirst) {
+            const ghVal = (p.main_github || "").toLowerCase();
+            return new RegExp(`(^|/)${qPathFirst}(/|$)`).test(ghVal);
+          }
+
+          // X / Twitter: match handle against twitter field
+          // twitter is stored as a bare handle ("growthepie_eth") or occasionally a full URL
+          if ((qHost === "x.com" || qHost === "twitter.com") && qPathFirst) {
+            const twVal = (p.twitter || "").toLowerCase()
+              .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
+              .replace(/^@/, "")
+              .replace(/\/.*$/, "");
+            return twVal === qPathFirst;
+          }
+
+          // Other URL with path: prefix-match against website
+          const websiteNorm = normalizeForMatch(p.website || "");
+          return !!websiteNorm && websiteNorm.startsWith(qNorm);
+        }
+
+        // Domain-only: SLD matching for cross-TLD / subdomain flexibility
+        if (!qSLD) return false;
+        const websiteNorm = normalizeForMatch(p.website || "");
+        const githubNorm = normalizeForMatch(p.main_github || "");
+        return (
+          (!!websiteNorm && extractSLD(websiteNorm) === qSLD) ||
+          (!!githubNorm && extractSLD(githubNorm) === qSLD)
+        );
+      }
+
+      // Plain text: also search website, github org, and twitter handle
+      const twRaw = (p.twitter || "").toLowerCase();
+      const twHandle = twRaw
+        .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
+        .replace(/^@/, "")
+        .replace(/\/.*$/, "");
+      return (
+        (p.website || "").toLowerCase().includes(q) ||
+        (p.main_github || "").toLowerCase().includes(q) ||
+        twHandle.includes(q) ||
+        twRaw.includes(q)
+      );
+    };
+
+    // Search apps dataset first, then OSS directory for projects not already found
+    const appsResults = Object.values(ownerProjectToProjectData).filter(matchProject) as Entry[];
+    const appsKeys = new Set(appsResults.map((p) => p.owner_project.toLowerCase()));
+    const ossResults = ossProjects.filter(
+      (p) => !appsKeys.has(p.owner_project.toLowerCase()) && matchProject(p),
+    );
+
+    return [...appsResults, ...ossResults].slice(0, 20);
+  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData, ossProjects]);
+
+  const singleEditMatchOwnerProject = useMemo(() => {
+    if (!projectEditMode || editMatches.length !== 1) return null;
+    return editMatches[0].owner_project;
+  }, [editMatches, projectEditMode]);
+
+  const closeProjectEditSearch = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.delete("search");
+    nextParams.delete("query");
+    nextParams.delete("search_mode");
+    const nextQuery = decodeURIComponent(nextParams.toString());
+    const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+    window.history.replaceState(null, "", nextUrl);
+  }, []);
+
+  const projectEditSearchMode = searchParams.get("search_mode");
+
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {memoizedQuery && allFilteredData.length > 0 && <div
+      {projectEditMode && !memoizedQuery ? (
+        <div className="flex flex-col pt-[14px] pb-[18px] px-[14px] gap-y-[10px]">
+          <div className="flex items-center gap-x-[8px]">
+            <GTPIcon icon="gtp-search" size="sm" />
+            <div className="text-sm font-semibold font-raleway text-color-text-primary">
+              {projectEditSearchMode === "edit" ? "Search existing projects" : "Search before adding"}
+            </div>
+          </div>
+          <div className="flex flex-col gap-y-[8px]">
+            {[
+              { icon: "feather:alert-triangle", color: "text-color-data-yellow", text: "Duplicate entries fragment data and break attribution — always check first." },
+              { icon: "feather:search", color: "text-color-text-secondary", text: "Search by project name, website, owner_project key, or GitHub URL." },
+              { icon: "feather:edit-2", color: "text-color-text-secondary", text: "Found it? Select it from results to edit the existing record instead of adding a new one." },
+              { icon: "feather:plus-circle", color: "text-color-text-secondary", text: "Not found after searching? Close this and click \"Add project details\" to begin." },
+            ].map(({ icon, color, text }) => (
+              <div key={icon} className="flex items-start gap-x-[8px]">
+                <Icon icon={icon} className={`mt-[2px] size-[12px] shrink-0 ${color}`} />
+                <span className="text-xs text-color-text-primary leading-[1.5]">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : projectEditMode && memoizedQuery ? (
+        <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px]">
+          {/* ── Edit section ── */}
+          {editMatches.length > 0 && (
+            <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div className="flex gap-x-[10px] items-center shrink-0">
+                <GTPIcon icon="gtp-project" size="md" className="max-sm:size-[15px]" />
+                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Edit</div>
+                <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+              </div>
+              <div className="flex flex-wrap gap-[5px]">
+                {editMatches.map((p) => {
+                  const logoSrc = p.logo_path
+                    ? `https://api.growthepie.com/v1/apps/logos/${p.logo_path}`
+                    : null;
+                  return (
+                    <div key={p.owner_project} className="flex flex-wrap items-center gap-[5px]">
+                      <button
+                        type="button"
+                        className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[10px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                        onClick={() => {
+                          closeProjectEditSearch();
+                          window.dispatchEvent(new CustomEvent("projectEditSelectProject", { detail: { ownerProject: p.owner_project } }));
+                          window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                        }}
+                      >
+                        {logoSrc ? (
+                          <Image src={logoSrc} alt={p.display_name || p.owner_project} width={14} height={14} unoptimized className="rounded-[3px] object-cover" />
+                        ) : (
+                          <GTPIcon
+                            icon="gtp-project-monochrome"
+                            size="sm"
+                            className="!size-[12px]"
+                            containerClassName="!size-[14px] shrink-0 flex items-center justify-center"
+                          />
+                        )}
+                        <span>{p.display_name || p.owner_project}</span>
+                      </button>
+                      {singleEditMatchOwnerProject === p.owner_project && (
+                        <button
+                          type="button"
+                          className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                          onClick={() => {
+                            closeProjectEditSearch();
+                            window.dispatchEvent(new CustomEvent("projectEditSelectProjectContracts", { detail: { ownerProject: p.owner_project } }));
+                            window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                          }}
+                        >
+                          <Icon icon="gtp:gtp-label-add-monochrome" className="size-[12px] text-color-text-secondary" />
+                          Add Contracts
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* ── Add section ── */}
+          {(() => {
+            const { field, label } = detectProjectQueryField(memoizedQuery);
+            // Use raw query value (not memoizedQuery) to avoid normalizeString stripping hyphens from URLs
+            const rawValue = query || memoizedQuery;
+
+            // If editMatches already found this project, tell the user instead of offering to add it
+            if (editMatches.length > 0) {
+              return (
+                <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
+                  <div className="flex gap-x-[10px] items-center shrink-0">
+                    <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px] opacity-40" />
+                    <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] opacity-40">Add</div>
+                    <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-x-[6px] text-xs text-color-text-secondary">
+                    <Icon icon="feather:alert-circle" className="size-[12px] shrink-0" />
+                    <span>Project already exists — select it above to edit.</span>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
+                <div className="flex gap-x-[10px] items-center shrink-0">
+                  <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px]" />
+                  <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Add</div>
+                  <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+                </div>
+                <div className="flex flex-wrap items-center gap-[5px]">
+                  <span className="text-xs text-color-text-secondary">Add &quot;{memoizedQuery}&quot; as {label}:</span>
+                  {field === "website" && (
+                    <button
+                      type="button"
+                      className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                      onClick={() => {
+                        closeProjectEditSearch();
+                        window.dispatchEvent(new CustomEvent("projectEditAiProfile", { detail: { website: rawValue } }));
+                        window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                      }}
+                    >
+                      <Icon icon="feather:cpu" className="size-[12px] text-color-text-secondary" />
+                      AI Profile
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
+                    onClick={() => {
+                      closeProjectEditSearch();
+                      window.dispatchEvent(new CustomEvent("projectEditAddManually", { detail: { field, value: rawValue } }));
+                      window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
+                    }}
+                  >
+                    <Icon icon="feather:edit-2" className="size-[12px] text-color-text-secondary" />
+                    Add manually
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      ) : (
+      <>{memoizedQuery && allFilteredData.length > 0 && <div
         key={memoizedQuery}
         className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
         {allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
@@ -2165,6 +2568,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )
@@ -2394,6 +2799,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
+  const projectEditMode = useUIContext((state) => state.projectEditMode);
   const [hasOverflow, setHasOverflow] = useState(false);
   const [isScreenTall, setIsScreenTall] = useState(false);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
@@ -2459,7 +2865,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-color-bg-medium rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
+    <div className={`fixed ${projectEditMode ? "top-[90px] md:top-[90px]" : "top-[80px] md:top-[33px]"} left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-color-bg-medium rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center`}>
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
@@ -2545,7 +2951,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               // fill={pressedKey === 'Enter' ? "#5A6462" : "#151A19"} 
               className={`${pressedKey === 'Enter' ? "fill-color-ui-hover" : "fill-color-ui-active"}`}
             />
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" stroke-width="2" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" strokeWidth="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" className="text-color-text-primary stroke-color-text-primary" />
           </svg>
           <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
@@ -2563,5 +2969,3 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-
-

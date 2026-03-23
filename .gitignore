@@ -63,3 +63,4 @@ test-analytics.mjs
 *.png
 
 .claude/
+.env*.local
