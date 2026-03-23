@@ -255,7 +255,7 @@ type ContractEntry = {
   feesPaid: number;
 };
 
-const CONTRACT_GRID_COLS = "grid-cols-[220px,135px,minmax(150px,1fr),110px,105px,100px]";
+const CONTRACT_GRID_COLS = "grid-cols-[minmax(200px,220px),130px,minmax(140px,1fr),105px,105px,100px]";
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
@@ -456,7 +456,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   };
 
   return (
-    <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[15px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] pl-[15px] py-[15px] gap-y-[10px]">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
@@ -473,7 +473,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       </div>
 
       {/* Scrollable table */}
-      <div className="overflow-x-auto w-full bg">
+      <div className="overflow-x-auto w-full ">
         <div className=" ">
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
@@ -489,9 +489,11 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
           </GridTableHeader>
 
           <VerticalScrollContainer 
-            height={300} 
+            height={320} 
             enableDragScroll={isMobile ? true : false}
-            className=""
+            className=" pr-[30px]"
+            scrollbarPosition="right"
+            scrollbarAbsolute={true}
 
           
           >
@@ -535,7 +537,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                     containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                   />
 
-                  <span className="truncate text-xs">{(contractMap.name as string)?.slice(0, 30) ?? "Unlabeled"}{(contractMap.name as string)?.length > 30 ? "..." : ""}</span>
+                  <span className="truncate text-xs">{contractMap.name as string}</span>
                   <div className="flex items-center gap-x-[4px] shrink-0">
                     {contractMap.verified ? (
                       <GTPTooltipNew
@@ -591,12 +593,12 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                 </div>
 
                 {/* Subcategory */}
-                <div className="truncate text-xs min-w-0">
+                <div className="truncate text-xs min-w-0 ">
                   {master?.blockspace_categories.sub_categories?.[contractMap.sub_category_key as string] ?? "Unlabeled"}
                 </div>
 
                 {/* Transaction Count */}
-                <div className="flex items-center justify-end numbers-xs">
+                <div className="flex items-center justify-end numbers-xs  ">
                   {(contractMap.txcount as number).toLocaleString("en-GB")}
                 </div>
 
@@ -617,7 +619,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       </div>
 
       {/* Footer CTA */}
-      <div className="relative w-full flex  items-center justify-end">
+      <div className="relative w-full flex  items-center justify-end pr-[30px]">
         
           <GTPButton
             label="Don't see your app? Label here."
@@ -1352,7 +1354,7 @@ const OverviewContent = memo(({
         </div>
       </div>
       {/* Two-column grid: side cards left, main cards right */}
-      <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px] items-start">
+      <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,auto)_minmax(490px,auto)] gap-[10px] items-start">
         {/* Left column: KPI side cards */}
         <div className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
@@ -1375,7 +1377,7 @@ const OverviewContent = memo(({
         </div>
 
         {/* Right column: main content */}
-        <div className="flex flex-col gap-y-[10px]">
+        <div className="flex flex-col gap-y-[10px] h-full">
           {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
           <MostActiveContracts data={data} />
         
