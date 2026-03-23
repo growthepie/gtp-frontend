@@ -41,7 +41,7 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-const STANDARDIZED_CHAIN_QUICK_BITE_CHART_HEIGHT = 400;
+const STANDARDIZED_CHAIN_QUICK_BITE_CHART_HEIGHT = 506;
 const STANDARDIZED_CHAIN_QUICK_BITE_CHART_WIDTH = "100%";
 const CHAIN_QUICK_BITES_TAB_BLOCK_CLASS = "chain-quick-bites-tab-block";
 
@@ -258,9 +258,20 @@ const shouldIncludeChainQuickBitesChart = (
   chart: QuickBiteChartBlock,
   matchedDropdownStateByKey: Record<string, string>,
   dropdownStateKeys: Set<string>,
+  normalizedChainCandidates: Set<string>,
 ) => {
   if (chart.hideOnChainTabs) {
     return false;
+  }
+
+  if (Array.isArray(chart.showOnChainTabs) && chart.showOnChainTabs.length > 0) {
+    const hasChainMatch = chart.showOnChainTabs.some((chain) =>
+      matchesChainOption(chain, normalizedChainCandidates),
+    );
+
+    if (!hasChainMatch) {
+      return false;
+    }
   }
 
   const filterStateKey = chart.filterOnStateKey?.stateKey;
@@ -280,12 +291,13 @@ const extractChartBlocks = (
   blocks: ContentBlock[],
   matchedDropdownStateByKey: Record<string, string>,
   dropdownStateKeys: Set<string>,
+  normalizedChainCandidates: Set<string>,
 ): ContentBlock[] => {
   const extracted: ContentBlock[] = [];
 
   for (const block of blocks) {
     if (block.type === "chart") {
-      if (shouldIncludeChainQuickBitesChart(block, matchedDropdownStateByKey, dropdownStateKeys)) {
+      if (shouldIncludeChainQuickBitesChart(block, matchedDropdownStateByKey, dropdownStateKeys, normalizedChainCandidates)) {
         extracted.push(block);
       }
       continue;
@@ -293,7 +305,7 @@ const extractChartBlocks = (
 
     if (block.type === "chart-toggle") {
       const visibleCharts = block.charts.filter((chart) =>
-        shouldIncludeChainQuickBitesChart(chart, matchedDropdownStateByKey, dropdownStateKeys),
+        shouldIncludeChainQuickBitesChart(chart, matchedDropdownStateByKey, dropdownStateKeys, normalizedChainCandidates),
       );
       if (!visibleCharts.length) {
         continue;
@@ -308,7 +320,14 @@ const extractChartBlocks = (
 
     if (block.type === "container" && Array.isArray(block.blocks)) {
       for (const nestedBlockGroup of block.blocks) {
-        extracted.push(...extractChartBlocks(nestedBlockGroup, matchedDropdownStateByKey, dropdownStateKeys));
+        extracted.push(
+          ...extractChartBlocks(
+            nestedBlockGroup,
+            matchedDropdownStateByKey,
+            dropdownStateKeys,
+            normalizedChainCandidates,
+          ),
+        );
       }
     }
   }
@@ -344,6 +363,16 @@ const withStandardizedQuickBiteChartHeight = (
     };
   }
 
+  return block;
+};
+
+const appendQuickBiteLayoutClass = (block: ContentBlock, className: string): ContentBlock => {
+  if (block.type === "chart" || block.type === "chart-toggle") {
+    return {
+      ...block,
+      className: `${block.className ?? ""} ${className}`.trim(),
+    };
+  }
   return block;
 };
 
@@ -424,6 +453,11 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
 
       try {
         const dropdownDataCache = new Map<string, Promise<any>>();
+        const normalizedChainCandidates = new Set(
+          [chainKey, chainName, chainShortName]
+            .map((value) => normalizeChainMatchValue(value))
+            .filter((value) => value.length > 0),
+        );
         const relatedQuickBites = getRelatedQuickBitesByTopic(chainName);
         const sortedQuickBites = Object.entries(relatedQuickBites)
           .map(([slug, related]) => ({ slug, data: related.data }))
@@ -443,7 +477,12 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
               chainShortName,
               dropdownDataCache,
             );
-            const chartBlocks = extractChartBlocks(blocks, initialSharedState, dropdownStateKeys);
+            const chartBlocks = extractChartBlocks(
+              blocks,
+              initialSharedState,
+              dropdownStateKeys,
+              normalizedChainCandidates,
+            );
 
             return {
               slug,
@@ -595,7 +634,8 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
             icon="gtp:gtp-quick-bites"
             enableDropdown={true}
             defaultDropdown={true}
-            childrenHeight={Math.max(group.chartBlocks.length, 1) * 560}
+            removeChildrenTopPadding
+            childrenHeight={Math.max(group.chartBlocks.length, 1) * 587 + 60}
             rowEnd={
               <Link
                 href={`/quick-bites/${group.slug}`}
@@ -607,30 +647,44 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
               </Link>
             }
           >
-            <div
-              className={
-                group.chartBlocks.length > 1
-                  ? "grid grid-cols-1 lg:grid-cols-2 gap-[15px]"
-                  : "flex flex-col gap-y-[15px]"
-              }
-            >
-              {group.chartBlocks.map((block) => {
-                const chartItemId = `${group.slug}-${block.id}`;
-                const topPadding = chartTopPaddingById[chartItemId] ?? 0;
+            <div className="pt-[30px] pb-[15px]">
+              <div
+                className={
+                  group.chartBlocks.length > 1
+                    ? "grid grid-cols-1 lg:grid-cols-2 gap-y-[30px] gap-x-[30px]"
+                    : "flex flex-col items-center gap-y-[30px]"
+                }
+              >
+                {group.chartBlocks.map((block, blockIndex) => {
+                  const chartItemId = `${group.slug}-${block.id}`;
+                  const topPadding = chartTopPaddingById[chartItemId] ?? 0;
+                  const isSingleChartGroup = group.chartBlocks.length === 1;
+                  const standardizedBlock = withStandardizedQuickBiteChartHeight(block, defaultFilteredSeriesNames);
+                  const shouldFlushRightEdge = group.chartBlocks.length > 1 && blockIndex % 2 === 1;
+                  const shouldFlushLeftEdge = group.chartBlocks.length > 1 && blockIndex % 2 === 0;
+                  const blockWithLayoutClass = shouldFlushRightEdge
+                    ? appendQuickBiteLayoutClass(standardizedBlock, "chain-quick-bites-tab-right-flush")
+                    : shouldFlushLeftEdge
+                      ? appendQuickBiteLayoutClass(standardizedBlock, "chain-quick-bites-tab-left-flush")
+                      : standardizedBlock;
 
-                return (
-                  <div
-                    key={chartItemId}
-                    className="min-w-0"
-                    ref={(node) => {
-                      chartItemRefs.current[chartItemId] = node;
-                    }}
-                    style={topPadding > 0 ? { paddingTop: `${topPadding}px` } : undefined}
-                  >
-                    <Block block={withStandardizedQuickBiteChartHeight(block, defaultFilteredSeriesNames)} />
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={chartItemId}
+                      className={`min-w-0 ${isSingleChartGroup ? "w-full max-w-[1250px]" : ""}`}
+                      ref={(node) => {
+                        chartItemRefs.current[chartItemId] = node;
+                      }}
+                      style={topPadding > 0 ? { paddingTop: `${topPadding}px` } : undefined}
+                    >
+                      <Block
+                        block={blockWithLayoutClass}
+                        chainQuickBitesTitleSuffix={chainName}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </ChainSectionHead>
         </QuickBiteProvider>

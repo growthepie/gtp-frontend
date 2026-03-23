@@ -50,6 +50,9 @@ type BuildTimeXAxisLayoutParams = {
   xAxisMax?: number;
   grid: Grid;
   snapToCleanBoundary?: boolean;
+  tickIntervalMs?: number;
+  tickAlignToCleanBoundary?: boolean;
+  barEdgePaddingRatio?: number;
 };
 
 // --- Tick interval table (deterministic, based on effective range) ---
@@ -95,11 +98,13 @@ const getBarBoundsWithPadding = ({
   xAxisMin,
   xAxisMax,
   xAxisRangeMs,
+  edgePaddingRatio = 0.25,
 }: {
   barSeriesData: Array<[number, number | null][]>;
   xAxisMin?: number;
   xAxisMax?: number;
   xAxisRangeMs?: number;
+  edgePaddingRatio?: number;
 }) => {
   if (barSeriesData.length === 0) {
     return { min: xAxisMin, max: xAxisMax };
@@ -142,7 +147,8 @@ const getBarBoundsWithPadding = ({
     return { min: xAxisMin, max: xAxisMax };
   }
 
-  const pad = Number.isFinite(edgeInterval) ? Number(edgeInterval) * 0.25 : 0;
+  const safePaddingRatio = Number.isFinite(edgePaddingRatio) ? Math.max(0, edgePaddingRatio) : 0.25;
+  const pad = Number.isFinite(edgeInterval) ? Number(edgeInterval) * safePaddingRatio : 0;
   return { min: minBase - pad, max: maxBase + pad };
 };
 
@@ -495,6 +501,9 @@ export const buildTimeXAxisLayout = ({
   xAxisMax,
   grid,
   snapToCleanBoundary: snapToCleanBoundaryEnabled = true,
+  tickIntervalMs,
+  tickAlignToCleanBoundary,
+  barEdgePaddingRatio,
 }: BuildTimeXAxisLayoutParams): TimeAxisLayout => {
   const dedupedTimestamps = Array.from(
     new Set(timestamps.filter((timestamp) => Number.isFinite(timestamp))),
@@ -512,11 +521,19 @@ export const buildTimeXAxisLayout = ({
       : undefined;
   const rangeDays = typeof xAxisRangeMs === "number" ? xAxisRangeMs / DAY_MS : 365;
 
-  const interval = getTickInterval(rangeDays);
+  const interval =
+    typeof tickIntervalMs === "number" && Number.isFinite(tickIntervalMs) && tickIntervalMs > 0
+      ? tickIntervalMs
+      : getTickInterval(rangeDays);
+  const snapTicksToCleanBoundary = tickAlignToCleanBoundary ?? snapToCleanBoundaryEnabled;
 
   // Snap axis min to a clean boundary so ticks land on round values.
   const snappedMin =
     effectiveMin !== undefined && snapToCleanBoundaryEnabled
+      ? snapToCleanBoundary(effectiveMin, interval)
+      : effectiveMin;
+  const snappedTickStart =
+    effectiveMin !== undefined && snapTicksToCleanBoundary
       ? snapToCleanBoundary(effectiveMin, interval)
       : effectiveMin;
 
@@ -525,10 +542,11 @@ export const buildTimeXAxisLayout = ({
     xAxisMin: snappedMin ?? xAxisMin,
     xAxisMax,
     xAxisRangeMs,
+    edgePaddingRatio: barEdgePaddingRatio,
   });
 
   const resolvedMax = bounds.max ?? effectiveMax;
-  const firstTick = snappedMin;
+  const firstTick = snappedTickStart;
   const lastTick =
     firstTick !== undefined && resolvedMax !== undefined
       ? findLastVisibleTick(firstTick, resolvedMax, interval)

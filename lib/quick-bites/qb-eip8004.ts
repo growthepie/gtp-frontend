@@ -170,6 +170,10 @@ const Agents: QuickBiteData = createQuickBite({
       hideOnChainTabs: true,
       subtitle: "Two key event series over time.",
       showXAsDate: true,
+      useNewChart: true,
+      snapToCleanBoundary: false,
+      timeAxisTickIntervalDays: 7,
+      timeAxisTickAlignToCleanBoundary: true,
       dataAsJson: {
         meta: [
           {

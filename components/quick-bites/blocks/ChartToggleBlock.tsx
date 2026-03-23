@@ -3,21 +3,28 @@
 import React from 'react';
 import { ChartBlock as ChartBlockType, ChartToggleBlock as ChartToggleBlockType } from '@/lib/types/blockTypes';
 import { ChartBlock } from './ChartBlock';
+import GTPButtonRow from '@/components/GTPButton/GTPButtonRow';
+import { GTPButton } from '@/components/GTPButton/GTPButton';
 
 interface ChartToggleBlockProps {
   block: ChartToggleBlockType;
+  chainQuickBitesTitleSuffix?: string;
 }
 
 const CHAIN_QUICK_BITES_TAB_BLOCK_CLASS = "chain-quick-bites-tab-block";
+const CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS = "chain-quick-bites-tab-right-flush";
+const CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS = "chain-quick-bites-tab-left-flush";
 
 const clampIndex = (index: number, max: number) => {
   if (max <= 0) return 0;
   return Math.min(Math.max(index, 0), max - 1);
 };
 
-export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => {
+export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chainQuickBitesTitleSuffix }) => {
   const charts = block.charts ?? [];
   const isChainQuickBitesTabBlock = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_BLOCK_CLASS);
+  const isChainQuickBitesTabRightFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS);
+  const isChainQuickBitesTabLeftFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS);
 
   const initialIndex = React.useMemo(() => {
     const defaultIndex = typeof block.defaultIndex === 'number' ? block.defaultIndex : 0;
@@ -81,6 +88,8 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
   const selectedChartWidth = selectedChart?.width ?? "100%";
   const selectedChartMargins = selectedChart?.margins ?? "normal";
   const controlsWrapperClass = selectedChartMargins === "none" ? "px-0" : "md:px-[35px]";
+  const showControls = !isChainQuickBitesTabBlock || charts.length > 1;
+  const showExternalControls = showControls && !isChainQuickBitesTabBlock;
   const segmentedLayoutClass = block.layout === 'segmented'
     ? hasMultipleOptionRows && isChainQuickBitesTabBlock
       ? 'bg-color-bg-default rounded-[20px] p-1'
@@ -91,8 +100,36 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
     ? {
         ...selectedChart,
         suppressWrapperSpacing: true,
+        className: [
+          selectedChart.className,
+          isChainQuickBitesTabRightFlush ? CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS : null,
+          isChainQuickBitesTabLeftFlush ? CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS : null,
+        ]
+          .filter((className): className is string => Boolean(className))
+          .join(" "),
       }
     : undefined;
+  const chainQuickBitesTopBar = showControls && isChainQuickBitesTabBlock ? (
+    <div ref={optionsContainerRef}>
+      <GTPButtonRow wrap className="!w-auto">
+        {charts.map((chart, index) => {
+          const isActive = index === activeIndex;
+          const label = chart.toggleLabel || chart.title || `Chart ${index + 1}`;
+          return (
+            <GTPButton
+              key={chart.id || `${label}-${index}`}
+              label={label}
+              size="sm"
+              variant={isActive ? "primary" : "no-background"}
+              visualState={isActive ? "active" : "default"}
+              clickHandler={() => setActiveIndex(index)}
+              className="justify-center"
+            />
+          );
+        })}
+      </GTPButtonRow>
+    </div>
+  ) : undefined;
 
   const renderDescription = () => {
     if (!block.description) {
@@ -107,47 +144,67 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
     );
   };
 
+  const wrapperClassName = `${isChainQuickBitesTabBlock ? '' : 'my-8'} ${block.className || ''}`.trim();
+
   return (
-    <div className={`my-8 ${block.className || ''}`}>
-      {block.title && (
+    <div className={wrapperClassName}>
+      {!isChainQuickBitesTabBlock && block.title && (
         <h3 className="heading-small-xxs md:heading-small-xs xl:heading-small-sm text-color-text-primary mb-1">
           {block.title}
         </h3>
       )}
-      {renderDescription()}
-      <div className={controlsWrapperClass}>
-        <div className="max-w-full" style={{ width: selectedChartWidth }}>
-          <div
-            ref={optionsContainerRef}
-            className={`flex flex-wrap md:items-start items-center w-full md:justify-normal justify-evenly gap-2 ${segmentedLayoutClass}`}
-          >
-            {charts.map((chart, index) => {
-              const isActive = index === activeIndex;
-              const label = chart.toggleLabel || chart.title || `Chart ${index + 1}`;
-              return (
-                <button
-                  key={chart.id || `${label}-${index}`}
-                  type="button"
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                    isActive
-                      ? 'bg-color-ui-active'
-                      : 'bg-color-bg-default hover:bg-color-ui-hover'
-                  }`}
-                  onClick={() => setActiveIndex(index)}
-                  aria-pressed={isActive}
-                >
-                  {label}
-                </button>
-              );
-            })}
+      {!isChainQuickBitesTabBlock ? renderDescription() : null}
+      {showExternalControls && (
+        <div className={controlsWrapperClass}>
+          <div className="max-w-full" style={{ width: selectedChartWidth }}>
+            <div
+              ref={optionsContainerRef}
+              className={`flex flex-wrap md:items-start items-center w-full md:justify-normal justify-evenly gap-2 ${segmentedLayoutClass}`}
+            >
+              {charts.map((chart, index) => {
+                const isActive = index === activeIndex;
+                const label = chart.toggleLabel || chart.title || `Chart ${index + 1}`;
+                return (
+                  <button
+                    key={chart.id || `${label}-${index}`}
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                      isActive
+                        ? 'bg-color-ui-active'
+                        : 'bg-color-bg-default hover:bg-color-ui-hover'
+                    }`}
+                    onClick={() => setActiveIndex(index)}
+                    aria-pressed={isActive}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
-      {chartForRender && (
-        <div className="mt-[15px]">
-          <ChartBlock key={chartForRender.id} block={chartForRender} />
-        </div>
       )}
+      {chartForRender
+        ? showExternalControls
+          ? (
+            <div className="mt-[15px]">
+              <ChartBlock
+                key={chartForRender.id}
+                block={chartForRender}
+                chainQuickBitesTopBar={chainQuickBitesTopBar}
+                chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix}
+              />
+            </div>
+          )
+          : (
+            <ChartBlock
+              key={chartForRender.id}
+              block={chartForRender}
+              chainQuickBitesTopBar={chainQuickBitesTopBar}
+              chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix}
+            />
+          )
+        : null}
     </div>
   );
 };

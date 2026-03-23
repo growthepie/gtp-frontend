@@ -168,6 +168,11 @@ export interface ChartBlock extends BaseBlock {
     color: string;
   }[];
   disableTooltipSort?: boolean;
+  useNewChart?: boolean;
+  snapToCleanBoundary?: boolean;
+  timeAxisTickIntervalDays?: number;
+  timeAxisTickAlignToCleanBoundary?: boolean;
+  timeAxisBarEdgePaddingRatio?: number;
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
@@ -235,6 +240,7 @@ export interface ChartBlock extends BaseBlock {
   toggleLabel?: string;
   defaultFilteredSeriesNames?: string[];
   hideOnChainTabs?: boolean;
+  showOnChainTabs?: string[];
   suppressWrapperSpacing?: boolean;
 }
 

@@ -15,6 +15,7 @@ const ChainSectionHead = ({
   defaultDropdown,
   rowEnd,
   disabled,
+  removeChildrenTopPadding = false,
 }: {
   title: string;
   icon?: string;
@@ -27,6 +28,7 @@ const ChainSectionHead = ({
   defaultDropdown?: boolean;
   rowEnd?: React.ReactNode | null;
   disabled?: boolean;
+  removeChildrenTopPadding?: boolean;
 }) => {
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
@@ -134,7 +136,7 @@ const ChainSectionHead = ({
           transition: "all 0.4s",
         }}
       >
-        <div className="pt-[5px]">{children ? children : ""}</div>
+        <div className={removeChildrenTopPadding ? "" : "pt-[5px]"}>{children ? children : ""}</div>
       </div>
     </div>
   );

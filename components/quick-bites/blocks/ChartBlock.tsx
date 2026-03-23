@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import Mustache from 'mustache';
+import { GTPIcon } from '@/components/layout/GTPIcon';
 
 /* 
 Mustache.js example for dynamic values
@@ -34,6 +35,8 @@ const ChartWrapper = dynamic(() => import('../ChartWrapper'), {
 
 interface ChartBlockProps {
   block: ChartBlockType & { caption?: string };
+  chainQuickBitesTopBar?: React.ReactNode;
+  chainQuickBitesTitleSuffix?: string;
 }
 
 interface PieSlice {
@@ -55,10 +58,16 @@ interface PieDataConfig {
 }
 
 const CHAIN_QUICK_BITES_TAB_BLOCK_CLASS = "chain-quick-bites-tab-block";
+const CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS = "chain-quick-bites-tab-right-flush";
+const CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS = "chain-quick-bites-tab-left-flush";
+const CHAIN_QUICK_BITES_TAB_CONTAINER_HEIGHT = 587;
+const CHAIN_QUICK_BITES_TAB_HEADER_HEIGHT = 81;
 
-export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
+export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTopBar, chainQuickBitesTitleSuffix }) => {
   const { sharedState } = useQuickBite();
   const isChainQuickBitesTabChart = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_BLOCK_CLASS);
+  const isChainQuickBitesTabRightFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS);
+  const isChainQuickBitesTabLeftFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS);
   const dynamicSeriesConfig = block.dataAsJson?.dynamicSeries;
   const rawPieData = block.dataAsJson?.pieData;
   const pieDataConfig = React.useMemo<PieDataConfig | null>(() => {
@@ -343,9 +352,13 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   // This handles the initial state where a dropdown selection is needed.
   if (block.filterOnStateKey && !unProcessedData && !showInitialLoadingState) {
     const title = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
+    const emptyStateWrapperClassName = `${isChainQuickBitesTabChart ? '' : 'my-8'} ${block.className || ''}`.trim();
     return (
-      <div className={`my-8 ${block.className || ''}`}>
-        <div className="w-full h-[400px] flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg">
+      <div className={emptyStateWrapperClassName}>
+        <div
+          className="w-full flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg"
+          style={{ height: block.height ?? 400 }}
+        >
           <h3 className="text-lg font-bold text-forest-900 dark:text-forest-100">{title}</h3>
           <p className="text-forest-700 dark:text-forest-400">Please make a selection to view the chart.</p>
         </div>
@@ -353,27 +366,94 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     );
   }
 
-  const wrapperClassName = `${block.suppressWrapperSpacing ? '' : 'my-8'} ${block.className || ''}`.trim();
+  const wrapperClassName = `${(block.suppressWrapperSpacing || isChainQuickBitesTabChart) ? '' : 'my-8'} ${block.className || ''}`.trim();
+  const resolvedTitle = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
+  const resolvedSubtitle = block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle;
+  const resolvedCaption = block.caption && block.caption.includes("{{") ? Mustache.render(block.caption, sharedState) : block.caption;
+  const hasTemplateDrivenSelection =
+    (typeof block.title === "string" && block.title.includes("{{")) ||
+    (typeof block.subtitle === "string" && block.subtitle.includes("{{")) ||
+    (Array.isArray(block.dataAsJson?.meta) &&
+      block.dataAsJson.meta.some((metaEntry) => typeof metaEntry.url === "string" && metaEntry.url.includes("{{"))) ||
+    (typeof block.dataAsJson?.dynamicSeries?.url === "string" &&
+      block.dataAsJson.dynamicSeries.url.includes("{{")) ||
+    (!Array.isArray(block.dataAsJson?.pieData) &&
+      typeof block.dataAsJson?.pieData?.url === "string" &&
+      block.dataAsJson.pieData.url.includes("{{"));
+  const shouldAppendChainNameToTitle =
+    isChainQuickBitesTabChart &&
+    Boolean(chainQuickBitesTitleSuffix?.trim()) &&
+    (Boolean(block.filterOnStateKey?.stateKey) || hasTemplateDrivenSelection);
+  const resolvedTitleWithChainSuffix = (() => {
+    if (!shouldAppendChainNameToTitle) {
+      return resolvedTitle;
+    }
+
+    const titleText = typeof resolvedTitle === "string" ? resolvedTitle.trim() : "";
+    const chainSuffix = chainQuickBitesTitleSuffix?.trim() || "";
+
+    if (!titleText || !chainSuffix) {
+      return resolvedTitle;
+    }
+
+    const normalizedTitle = titleText.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const normalizedSuffix = chainSuffix.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (normalizedSuffix && normalizedTitle.includes(normalizedSuffix)) {
+      return resolvedTitle;
+    }
+
+    return `${titleText} ${chainSuffix}`;
+  })();
+  const chainTabHeaderText = resolvedCaption || resolvedSubtitle;
+  const chainTabHeaderClassName = "px-[2px] pb-[8px]";
 
   return (
     <>
-    <div className={`${wrapperClassName} relative`} aria-busy={showUpdatingState}>
+    <div
+      className={`${wrapperClassName} relative ${isChainQuickBitesTabChart ? "flex flex-col" : ""}`}
+      style={isChainQuickBitesTabChart ? { height: `${CHAIN_QUICK_BITES_TAB_CONTAINER_HEIGHT}px` } : undefined}
+      aria-busy={showUpdatingState}
+    >
+      {isChainQuickBitesTabChart && (resolvedTitleWithChainSuffix || chainTabHeaderText) ? (
+        <div
+          className={chainTabHeaderClassName}
+          style={isChainQuickBitesTabChart ? { minHeight: `${CHAIN_QUICK_BITES_TAB_HEADER_HEIGHT}px` } : undefined}
+        >
+          {resolvedTitleWithChainSuffix ? (
+            <div className="flex items-center gap-x-[8px]">
+              <GTPIcon icon="gtp-quick-bites" size="sm" />
+              <h3 className="heading-small-sm text-color-text-primary">
+                {resolvedTitleWithChainSuffix}
+              </h3>
+            </div>
+          ) : null}
+          {chainTabHeaderText ? (
+            <p className="text-sm text-color-text-primary mt-[15px]">
+              {chainTabHeaderText}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {showInitialLoadingState && !canRenderChart ? (
-        <div className="w-full h-[400px] flex items-center justify-center rounded-[15px] bg-color-bg-default text-xs text-color-text-secondary">
+        <div
+          className="w-full flex items-center justify-center rounded-[15px] bg-color-bg-default text-xs text-color-text-secondary"
+          style={{ height: block.height ?? 400 }}
+        >
           Loading chart...
         </div>
       ) : null}
       {canRenderChart && (
-        <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
+        <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'} ${isChainQuickBitesTabChart ? 'flex-1 min-h-0' : ''}`}>
           <ChartWrapper
             chartType={block.chartType}
             data={block.data ?? []}
             margins={block.margins || 'normal'}
             options={block.options || {}}
-            width={block.width || '100%'}
+            width={isChainQuickBitesTabChart ? '100%' : (block.width || '100%')}
             height={block.height || 400}
-            title={block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title}
-            subtitle={block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle}
+            title={resolvedTitleWithChainSuffix}
+            subtitle={resolvedSubtitle}
             jsonData={nestedData}
             showXAsDate={block.showXAsDate}
             showZeroTooltip={block.showZeroTooltip}
@@ -384,6 +464,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
               } : undefined
             }
             disableTooltipSort={block.disableTooltipSort}
+            useNewChart={block.useNewChart}
+            snapToCleanBoundary={block.snapToCleanBoundary}
+            timeAxisTickIntervalDays={block.timeAxisTickIntervalDays}
+            timeAxisTickAlignToCleanBoundary={block.timeAxisTickAlignToCleanBoundary}
+            timeAxisBarEdgePaddingRatio={block.timeAxisBarEdgePaddingRatio}
             seeMetricURL={block.seeMetricURL}
             yAxisLine={block.yAxisLine}
             centerName={block.centerName}
@@ -391,6 +476,9 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
             showPiePercentage={pieDataConfig?.showPercentage}
             isChainQuickBitesTabChart={isChainQuickBitesTabChart}
             defaultFilteredSeriesNames={block.defaultFilteredSeriesNames}
+            chainQuickBitesTopBar={chainQuickBitesTopBar}
+            quickBiteTabRightEdgeFlush={isChainQuickBitesTabRightFlush}
+            quickBiteTabLeftEdgeFlush={isChainQuickBitesTabLeftFlush}
           />
         </div>
       )}
@@ -399,9 +487,9 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           Updating...
         </div>
       )}
-      {block.caption && (
+      {block.caption && !isChainQuickBitesTabChart && (
         <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
-          {block.caption}
+          {resolvedCaption}
         </figcaption>
       )}
     </div>

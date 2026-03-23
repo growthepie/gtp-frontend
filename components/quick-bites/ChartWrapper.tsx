@@ -21,6 +21,13 @@ import highchartsPatternFill from 'highcharts/modules/pattern-fill';
 import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
 import ChartWatermark from '@/components/layout/ChartWatermark';
+import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPButton/GTPChart";
+import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
+import { GTPButton } from "@/components/GTPButton/GTPButton";
+import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
+import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
+import { downloadElementAsImage } from "@/components/GTPButton/chartSnapshotHelpers";
 import "@/app/highcharts.axis.css";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
@@ -77,11 +84,78 @@ interface ChartWrapperProps {
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
+  useNewChart?: boolean;
+  snapToCleanBoundary?: boolean;
+  timeAxisTickIntervalDays?: number;
+  timeAxisTickAlignToCleanBoundary?: boolean;
+  timeAxisBarEdgePaddingRatio?: number;
   isChainQuickBitesTabChart?: boolean;
   defaultFilteredSeriesNames?: string[];
+  chainQuickBitesTopBar?: React.ReactNode;
+  quickBiteTabRightEdgeFlush?: boolean;
+  quickBiteTabLeftEdgeFlush?: boolean;
 }
 
 const normalizeSeriesLabel = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CHAIN_QUICKBITES_HEADER_ICON = "gtp-quick-bites-monochrome" as const;
+const mapToGTPSeriesType = (value: string | undefined, fallback: ChartWrapperProps["chartType"]): GTPChartSeries["seriesType"] => {
+  const normalized = (value || fallback || "line").toLowerCase();
+  if (normalized === "column" || normalized === "bar") return "bar";
+  if (normalized === "area") return "area";
+  return "line";
+};
+
+const isStackingMode = (stacking: unknown): stacking is "normal" | "percent" =>
+  stacking === "normal" || stacking === "percent";
+
+const getFirstSeriesTimestamp = (processedData: any): number => {
+  if (!Array.isArray(processedData)) return Number.POSITIVE_INFINITY;
+
+  const firstNonZeroPoint = processedData.find((point: any) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const [timestamp, value] = point;
+    return Number.isFinite(Number(timestamp)) && typeof value === "number" && Number.isFinite(value) && value !== 0;
+  });
+
+  if (firstNonZeroPoint) {
+    return Number(firstNonZeroPoint[0]);
+  }
+
+  const firstNumericPoint = processedData.find((point: any) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const [timestamp, value] = point;
+    return Number.isFinite(Number(timestamp)) && typeof value === "number" && Number.isFinite(value);
+  });
+
+  return firstNumericPoint ? Number(firstNumericPoint[0]) : Number.POSITIVE_INFINITY;
+};
+
+const trimLeadingZeroValues = (seriesData: Array<[number, number | null]>): Array<[number, number | null]> => {
+  if (!Array.isArray(seriesData) || seriesData.length === 0) {
+    return seriesData;
+  }
+
+  const firstNonZeroIndex = seriesData.findIndex((point) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const value = point[1];
+    return typeof value === "number" && Number.isFinite(value) && value !== 0;
+  });
+
+  return seriesData.map((point, index) => {
+    if (index >= firstNonZeroIndex && firstNonZeroIndex !== -1) {
+      return point;
+    }
+
+    const timestamp = Number(point?.[0]);
+    const value = point?.[1];
+    if (!Number.isFinite(timestamp) || typeof value !== "number" || !Number.isFinite(value)) {
+      return point;
+    }
+
+    return [timestamp, null];
+  });
+};
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
   chartType,
@@ -101,18 +175,30 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   disableTooltipSort = false,
   showZeroTooltip = true,
   showTotalTooltip = false,
+  useNewChart = true,
+  snapToCleanBoundary,
+  timeAxisTickIntervalDays,
+  timeAxisTickAlignToCleanBoundary,
+  timeAxisBarEdgePaddingRatio,
   centerName,
   pieData,
   showPiePercentage = false,
   isChainQuickBitesTabChart = false,
   defaultFilteredSeriesNames = [],
+  chainQuickBitesTopBar,
+  quickBiteTabRightEdgeFlush = false,
+  quickBiteTabLeftEdgeFlush = false,
 }) => {
   const chartRef = useRef<any>(null);
+  const chartCardRef = useRef<HTMLDivElement | null>(null);
   const { theme } = useTheme();
   const [isChartReady, setIsChartReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
+  const [hoverLegendSeriesName, setHoverLegendSeriesName] = useState<string | null>(null);
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+  const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false, selectedScale = "normal") => {
@@ -221,10 +307,51 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           ]).sort((a, b) => a[0] - b[0]); // Sort by timestamp
         }
 
-        return rawData;
+        return trimLeadingZeroValues(rawData as Array<[number, number | null]>);
       })()
     }));
   }, [jsonMeta, jsonData]);
+
+  const shouldSortStackedSeriesByAge = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => isStackingMode(series?.stacking));
+  }, [jsonMeta?.meta]);
+
+  const orderedSeriesEntries = useMemo(() => {
+    if (!jsonMeta?.meta) return [];
+
+    const baseEntries = jsonMeta.meta.map((series, index) => {
+      const processedData = processedSeriesData[index]?.processedData ?? [];
+      return {
+        series,
+        originalIndex: index,
+        processedData,
+        firstTimestamp: getFirstSeriesTimestamp(processedData),
+      };
+    });
+
+    if (!shouldSortStackedSeriesByAge) {
+      return baseEntries;
+    }
+
+    const sortStackGroup = (groupEntries: typeof baseEntries) => {
+      const stackedEntries = groupEntries
+        .filter((entry) => isStackingMode(entry.series?.stacking))
+        .sort((a, b) => {
+          if (a.firstTimestamp !== b.firstTimestamp) {
+            return a.firstTimestamp - b.firstTimestamp;
+          }
+          return a.originalIndex - b.originalIndex;
+        });
+
+      const nonStackedEntries = groupEntries.filter((entry) => !isStackingMode(entry.series?.stacking));
+      return [...stackedEntries, ...nonStackedEntries];
+    };
+
+    const primaryEntries = baseEntries.filter((entry) => !entry.series?.oppositeYAxis);
+    const secondaryEntries = baseEntries.filter((entry) => entry.series?.oppositeYAxis === true);
+
+    return [...sortStackGroup(primaryEntries), ...sortStackGroup(secondaryEntries)];
+  }, [jsonMeta?.meta, processedSeriesData, shouldSortStackedSeriesByAge]);
 
   const filteredSeries = useMemo(() => {
     return processedSeriesData.filter(series => 
@@ -232,8 +359,213 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     );
   }, [processedSeriesData, filteredNames]);
 
+  const renderWithGTPChart = useMemo(() => {
+    return useNewChart && chartType !== "pie" && processedSeriesData.length > 0;
+  }, [chartType, processedSeriesData.length, useNewChart]);
+
+  const gtpSeries = useMemo<GTPChartSeries[]>(() => {
+    if (!renderWithGTPChart || orderedSeriesEntries.length === 0) return [];
+
+    return orderedSeriesEntries.flatMap(({ series, processedData }) => {
+      if (!Array.isArray(processedData)) return [];
+
+      const axisIndex: 0 | 1 = series.oppositeYAxis ? 1 : 0;
+
+      // `processedData` is derived from `jsonData` as `[x, y]` pairs where `y` can be null.
+      // Cast is safe because we normalize `null` values in `processedSeriesData` below.
+      const data = processedData as [number, number | null][];
+
+      return [
+        {
+          name: series.name,
+          data,
+          color: series.color,
+          yAxisIndex: axisIndex,
+          seriesType: mapToGTPSeriesType(series.type, chartType),
+        } satisfies GTPChartSeries,
+      ];
+    }).filter((series) => filteredNames.length === 0 || filteredNames.includes(series.name));
+  }, [chartType, filteredNames, orderedSeriesEntries, renderWithGTPChart]);
+
+  const hasGTPSecondaryAxis = useMemo(
+    () => gtpSeries.some((series) => series.yAxisIndex === 1),
+    [gtpSeries],
+  );
+
+  const gtpPrimaryFormat = useMemo(() => {
+    const sourceMeta = jsonMeta?.meta ?? [];
+    const firstPrimarySeries = gtpSeries.find((series) => (series.yAxisIndex ?? 0) === 0);
+    const firstPrimaryMeta = sourceMeta.find((meta) => meta.name === firstPrimarySeries?.name) ?? sourceMeta.find((meta) => !meta.oppositeYAxis);
+
+    return {
+      prefix: firstPrimaryMeta?.prefix,
+      suffix: firstPrimaryMeta?.suffix,
+      decimals: firstPrimaryMeta?.tooltipDecimals,
+    };
+  }, [gtpSeries, jsonMeta?.meta]);
+
+  const gtpSecondaryFormat = useMemo(() => {
+    const sourceMeta = jsonMeta?.meta ?? [];
+    const firstSecondarySeries = gtpSeries.find((series) => (series.yAxisIndex ?? 0) === 1);
+    const firstSecondaryMeta = sourceMeta.find((meta) => meta.name === firstSecondarySeries?.name) ?? sourceMeta.find((meta) => meta.oppositeYAxis);
+
+    return {
+      prefix: firstSecondaryMeta?.prefix,
+      suffix: firstSecondaryMeta?.suffix,
+      decimals: firstSecondaryMeta?.tooltipDecimals,
+    };
+  }, [gtpSeries, jsonMeta?.meta]);
+
+  const gtpXAxisLines = useMemo<GTPChartXAxisLine[]>(() => {
+    if (!yAxisLine?.length) return [];
+
+    const mapLineStyle = (style: string | undefined): GTPChartXAxisLine["lineStyle"] => {
+      if (!style) return undefined;
+      const normalized = style.toLowerCase();
+      if (normalized.includes("dot")) return "dotted";
+      if (normalized.includes("dash")) return "dashed";
+      return "solid";
+    };
+
+    const normalizeColorValue = (value: string | undefined) => value?.trim().toLowerCase();
+    const isLikelyCssColorValue = (value: string) =>
+      /^(#|rgb\(|rgba\(|hsl\(|hsla\(|var\(|transparent$)/i.test(value.trim());
+
+    return yAxisLine
+      .filter((line) => Number.isFinite(line.xValue))
+      .map((line) => {
+        const normalizedTextColor = normalizeColorValue(line.textColor);
+        const normalizedBackgroundColor = normalizeColorValue(line.backgroundColor);
+        const hasEqualTextAndBackground =
+          Boolean(normalizedTextColor) &&
+          Boolean(normalizedBackgroundColor) &&
+          normalizedTextColor === normalizedBackgroundColor;
+
+        const fallbackBackgroundColor =
+          typeof line.backgroundColor === "string" && !isLikelyCssColorValue(line.backgroundColor)
+            ? "transparent"
+            : line.backgroundColor;
+        const fallbackTextColor =
+          typeof line.textColor === "string" && !isLikelyCssColorValue(line.textColor)
+            ? undefined
+            : line.textColor;
+
+        return {
+          xValue: line.xValue,
+          annotationText: line.annotationText,
+          annotationPositionX: line.annotationPositionX,
+          annotationPositionY: line.annotationPositionY,
+          lineStyle: mapLineStyle(line.lineStyle),
+          lineColor: line.lineColor,
+          lineWidth: line.lineWidth,
+          textColor: hasEqualTextAndBackground ? undefined : fallbackTextColor,
+          textFontSize: line.textFontSize ? Number.parseFloat(line.textFontSize) : undefined,
+          backgroundColor: hasEqualTextAndBackground ? "transparent" : fallbackBackgroundColor,
+        };
+      });
+  }, [yAxisLine]);
+
+  const gtpStack = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => series.stacking === "normal" || series.stacking === "percent");
+  }, [jsonMeta?.meta]);
+
+  const gtpPercentageMode = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => series.stacking === "percent");
+  }, [jsonMeta?.meta]);
+
+  const gtpXAxisMin = useMemo(() => {
+    if (!renderWithGTPChart || gtpSeries.length === 0) return undefined;
+
+    let minTimestampNonZero: number | undefined;
+    let minTimestampAnyValue: number | undefined;
+
+    gtpSeries.forEach((series) => {
+      series.data.forEach(([timestamp, value]) => {
+        const numericTimestamp = Number(timestamp);
+        if (!Number.isFinite(numericTimestamp)) return;
+        if (typeof value !== "number" || !Number.isFinite(value)) return;
+
+        if (minTimestampAnyValue === undefined || numericTimestamp < minTimestampAnyValue) {
+          minTimestampAnyValue = numericTimestamp;
+        }
+
+        if (value !== 0 && (minTimestampNonZero === undefined || numericTimestamp < minTimestampNonZero)) {
+          minTimestampNonZero = numericTimestamp;
+        }
+      });
+    });
+
+    return minTimestampNonZero ?? minTimestampAnyValue;
+  }, [gtpSeries, renderWithGTPChart]);
+
+  const computedTimeAxisTickConfig = useMemo(() => {
+    const explicitIntervalMs =
+      typeof timeAxisTickIntervalDays === "number" &&
+      Number.isFinite(timeAxisTickIntervalDays) &&
+      timeAxisTickIntervalDays > 0
+        ? timeAxisTickIntervalDays * DAY_MS
+        : undefined;
+
+    if (explicitIntervalMs !== undefined) {
+      return {
+        intervalMs: explicitIntervalMs,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    if (!renderWithGTPChart || !showXAsDate || gtpSeries.length === 0) {
+      return {
+        intervalMs: undefined as number | undefined,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    const timestamps = gtpSeries.flatMap((series) =>
+      series.data
+        .map(([timestamp]) => Number(timestamp))
+        .filter((timestamp) => Number.isFinite(timestamp)),
+    );
+
+    if (timestamps.length === 0) {
+      return {
+        intervalMs: undefined as number | undefined,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    const minTimestamp = Math.min(...timestamps);
+    const maxTimestamp = Math.max(...timestamps);
+    const rangeMs = Math.max(0, maxTimestamp - minTimestamp);
+    const rangeDays = rangeMs / DAY_MS;
+
+    // Quickbite default: when monthly spacing would only produce 1-2 ticks,
+    // fall back to weekly ticks to preserve readable time context.
+    if (rangeDays > 30) {
+      const projectedMonthlyTicks = Math.floor(rangeMs / (30 * DAY_MS)) + 1;
+      if (projectedMonthlyTicks < 3) {
+        return {
+          intervalMs: 7 * DAY_MS,
+          alignToCleanBoundary: timeAxisTickAlignToCleanBoundary ?? true,
+        };
+      }
+    }
+
+    return {
+      intervalMs: undefined as number | undefined,
+      alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+    };
+  }, [
+    gtpSeries,
+    renderWithGTPChart,
+    showXAsDate,
+    timeAxisTickAlignToCleanBoundary,
+    timeAxisTickIntervalDays,
+  ]);
+
   const minTimestampDelta = useMemo(() => {
-    const seriesToInspect = filteredSeries.length ? filteredSeries : processedSeriesData;
+    const seriesToInspect = renderWithGTPChart && gtpSeries.length > 0
+      ? gtpSeries.map((series) => ({ processedData: series.data }))
+      : (filteredSeries.length ? filteredSeries : processedSeriesData);
     let smallestDelta = Number.POSITIVE_INFINITY;
 
     seriesToInspect.forEach((series: any) => {
@@ -252,7 +584,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     });
 
     return smallestDelta === Number.POSITIVE_INFINITY ? null : smallestDelta;
-  }, [filteredSeries, processedSeriesData]);
+  }, [filteredSeries, gtpSeries, processedSeriesData, renderWithGTPChart]);
 
   const shouldShowTimeInTooltip = showXAsDate && !!minTimestampDelta && minTimestampDelta < 24 * 60 * 60 * 1000;
   
@@ -467,7 +799,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const filterableSeriesNames = useMemo(() => {
     const source = chartType === 'pie' && resolvedPieData
       ? resolvedPieData
-      : (jsonMeta?.meta || data || []);
+      : (orderedSeriesEntries.length > 0 ? orderedSeriesEntries.map((entry) => entry.series) : (jsonMeta?.meta || data || []));
 
     if (!Array.isArray(source)) {
       return [];
@@ -478,7 +810,52 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       .filter((name: string) => name.length > 0);
 
     return Array.from(new Set(names));
-  }, [chartType, resolvedPieData, jsonMeta?.meta, data]);
+  }, [chartType, resolvedPieData, orderedSeriesEntries, jsonMeta?.meta, data]);
+
+  const legendCategories = useMemo(() => {
+    const source = chartType === 'pie' && resolvedPieData
+      ? resolvedPieData
+      : (orderedSeriesEntries.length > 0 ? orderedSeriesEntries.map((entry) => entry.series) : (jsonMeta?.meta || data || []));
+    return Array.isArray(source) ? source : [];
+  }, [chartType, resolvedPieData, orderedSeriesEntries, jsonMeta?.meta, data]);
+
+  const primaryLegendCategories = useMemo(
+    () => legendCategories.filter((series: any) => !series.oppositeYAxis),
+    [legendCategories],
+  );
+
+  const secondaryLegendCategories = useMemo(
+    () => legendCategories.filter((series: any) => series.oppositeYAxis === true),
+    [legendCategories],
+  );
+
+  const toggleLegendCategory = useCallback((name: string) => {
+    if (!name) return;
+    setFilteredNames((prev) => {
+      if (!prev.includes(name)) {
+        const next = [...prev, name];
+        if (next.length === legendCategories.length) {
+          return [];
+        }
+        return next;
+      }
+      return prev.filter((seriesName) => seriesName !== name);
+    });
+  }, [legendCategories.length]);
+
+  const handleDownloadChartSnapshot = useCallback(async () => {
+    if (isDownloadingChartSnapshot) return;
+    if (typeof window === "undefined") return;
+    const cardElement = chartCardRef.current;
+    if (!cardElement) return;
+
+    setIsDownloadingChartSnapshot(true);
+    try {
+      await downloadElementAsImage(cardElement, title ?? "quickbite-chart");
+    } finally {
+      setIsDownloadingChartSnapshot(false);
+    }
+  }, [isDownloadingChartSnapshot, title]);
 
   const normalizedPreferredSeriesNames = useMemo(
     () =>
@@ -546,20 +923,94 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
  
   
+  const wrapperPaddingClass = isChainQuickBitesTabChart
+    ? "px-0"
+    : margins === "none"
+      ? "px-0"
+      : quickBiteTabRightEdgeFlush
+        ? "md:px-[35px] lg:pl-[35px] lg:pr-0"
+        : quickBiteTabLeftEdgeFlush
+          ? "md:px-[35px] lg:pl-0 lg:pr-[35px]"
+          : "md:px-[35px]";
+  const quickBitesTabWrapperStyle = isChainQuickBitesTabChart
+    ? {
+        width: "100%",
+        maxWidth: "1250px",
+        marginLeft: quickBiteTabRightEdgeFlush ? "auto" : undefined,
+      }
+    : undefined;
+
   return (
-    <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
+    <div className={`relative ${wrapperPaddingClass}`} style={quickBitesTabWrapperStyle}>
       <div
+        ref={chartCardRef}
         style={{ width, height }}
-        className={`${isChainQuickBitesTabChart ? "chain-quick-bites-tab-chart-anchor " : ""}relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] `}
+        className={`${
+          isChainQuickBitesTabChart
+            ? `chain-quick-bites-tab-chart-anchor bg-color-bg-default rounded-[18px] px-[8px] pb-[42px] ${
+                chainQuickBitesTopBar ? "pt-[38px]" : "pt-[8px]"
+              }`
+            : "bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md md:p-[15px]"
+        } relative flex flex-col gap-y-[12px] h-full`}
       >
-        <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
-          <div className="flex items-center justify-center md:justify-between">
-            <div className="flex items-center gap-x-[5px]">
-              <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
-              <div className="heading-small-md">{title}</div>
+        {isChainQuickBitesTabChart ? (
+          <>
+            {chainQuickBitesTopBar ? (
+              <div className="absolute inset-x-0 top-0 z-[30]">
+                <div className="w-full bg-color-bg-medium rounded-full p-[2px]">
+                  <div className="mr-auto w-fit">{chainQuickBitesTopBar}</div>
+                </div>
+              </div>
+            ) : null}
+            {title ? (
+              <div className="flex items-center gap-x-[6px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
+                <GTPIcon
+                  icon={CHAIN_QUICKBITES_HEADER_ICON}
+                  className="!w-[12px] !h-[12px] text-color-text-primary"
+                  containerClassName="!w-[12px] !h-[12px]"
+                />
+                <span className="text-xxs text-color-text-primary/85">{title}</span>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
+            <div className="flex items-center justify-center md:justify-between">
+              <div className="flex items-center gap-x-[5px]">
+                <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
+                <div className="heading-small-md">{title}</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        {renderWithGTPChart ? (
+          <div className="relative h-full min-h-0 flex-1">
+            <GTPChart
+              series={gtpSeries}
+              stack={gtpStack}
+              percentageMode={gtpPercentageMode}
+              preserveStackOrder={shouldSortStackedSeriesByAge}
+              xAxisMin={gtpXAxisMin}
+              snapToCleanBoundary={snapToCleanBoundary ?? false}
+              timeAxisTickIntervalMs={computedTimeAxisTickConfig.intervalMs}
+              timeAxisTickAlignToCleanBoundary={computedTimeAxisTickConfig.alignToCleanBoundary}
+              timeAxisBarEdgePaddingRatio={timeAxisBarEdgePaddingRatio ?? 0}
+              hidePrimaryYAxisWhenEmpty
+              prefix={gtpPrimaryFormat.prefix}
+              suffix={gtpPrimaryFormat.suffix}
+              decimals={gtpPrimaryFormat.decimals}
+              secondaryPrefix={gtpSecondaryFormat.prefix}
+              secondarySuffix={gtpSecondaryFormat.suffix}
+              secondaryDecimals={gtpSecondaryFormat.decimals}
+              xAxisLines={gtpXAxisLines}
+              showTooltipTimestamp={shouldShowTimeInTooltip}
+              showTotal={showTotalTooltip && !hasGTPSecondaryAxis}
+              reverseTooltipOrder={false}
+              height="100%"
+              showWatermark={false}
+            />
+          </div>
+        ) : (
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart chart={chartRef.current} options={options || {}}
               plotOptions={{
@@ -710,6 +1161,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             <YAxis
               id="0"
               type={options?.yAxis?.[0]?.type}
+              reversedStacks={shouldSortStackedSeriesByAge ? false : undefined}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -734,8 +1186,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
-              {chartType !== 'pie' && jsonMeta && jsonMeta.meta && jsonMeta.meta
-              .map((series: any, index: number) => {
+              {chartType !== 'pie' && orderedSeriesEntries
+              .map(({ series, processedData }) => {
                 // filter out series that are not on the opposite y axis and not filtered out
                 const showSeries = !series.oppositeYAxis && (filteredNames.length === 0 || filteredNames.includes(series.name));
                 if(!showSeries) return null;
@@ -753,7 +1205,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={processedSeriesData[index].processedData}
+                    data={processedData}
                     color={series.color}
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
@@ -795,6 +1247,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               id="1"
               type={options?.yAxis?.[1]?.type || options?.yAxis?.[0]?.type}
               opposite={true}
+              reversedStacks={shouldSortStackedSeriesByAge ? false : undefined}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -820,8 +1273,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
               
             >
-              {jsonMeta && jsonMeta.meta && jsonMeta.meta
-              .map((series: any, index: number) => {
+              {orderedSeriesEntries
+              .map(({ series, processedData }) => {
                 // filter out series that are not on the opposite y axis and not filtered out
                 const showSeries = series.oppositeYAxis === true && (filteredNames.length === 0 || filteredNames.includes(series.name));
                 if(!showSeries) return null;
@@ -838,7 +1291,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={processedSeriesData[index].processedData} 
+                    data={processedData} 
                     color={series.color} 
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
@@ -1021,6 +1474,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           </HighchartsChart>
         </HighchartsProvider>
+        )}
         {chartType === 'pie' && centerName && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="text-xxxs font-bold leading-[120%] text-center max-w-[80px]">
@@ -1036,11 +1490,88 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
-          <div className="flex flex-col gap-y-[5px]">
-            {/*Categories*/}
-            <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
-              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
+        {isChainQuickBitesTabChart ? (
+          <>
+            {legendCategories.length > 0 && (
+              <div className="min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
+                {[...primaryLegendCategories, ...secondaryLegendCategories].map((category: any) => {
+                  const isActive = filteredNames.length === 0 || filteredNames.includes(category.name);
+                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
+
+                  return (
+                    <GTPButton
+                      key={category.name}
+                      label={category.name}
+                      variant={isActive ? "primary" : "no-background"}
+                      size="xs"
+                      clickHandler={() => toggleLegendCategory(category.name)}
+                      onMouseEnter={() => setHoverLegendSeriesName(category.name)}
+                      onMouseLeave={() => setHoverLegendSeriesName(null)}
+                      rightIcon={
+                        hoverLegendSeriesName === category.name
+                          ? isActive
+                            ? "in-button-close"
+                            : "in-button-plus"
+                          : undefined
+                      }
+                      rightIconClassname="!w-[12px] !h-[12px]"
+                      textClassName={isActive ? undefined : "text-color-text-secondary"}
+                      className={isActive ? undefined : "border border-color-bg-medium"}
+                      leftIconOverride={(
+                        <div
+                          className="min-w-[6px] min-h-[6px] rounded-full"
+                          style={{ backgroundColor: seriesColor, opacity: isActive ? 1 : 0.35 }}
+                        />
+                      )}
+                    />
+                  );
+                })}
+                {filteredNames.length > 0 && (
+                  <GTPButton
+                    label="Reset"
+                    variant="highlight"
+                    size="xs"
+                    leftIcon="gtp-close-monochrome"
+                    clickHandler={() => setFilteredNames([])}
+                  />
+                )}
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 z-[30]">
+              <GTPButtonContainer>
+                <div className="mr-auto">
+                  <GTPButtonRow className="shrink-0">
+                    <GTPButtonDropdown
+                      openDirection="top"
+                      matchTriggerWidthToDropdown
+                      buttonProps={{
+                        label: "Share",
+                        labelDisplay: "active",
+                        leftIcon: "gtp-share-monochrome",
+                        size: "xs",
+                        variant: "no-background",
+                      }}
+                      isOpen={isSharePopoverOpen}
+                      onOpenChange={setIsSharePopoverOpen}
+                      dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                    />
+                    <GTPButton
+                      leftIcon="gtp-download-monochrome"
+                      size="xs"
+                      variant="no-background"
+                      visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                      disabled={isDownloadingChartSnapshot}
+                      clickHandler={handleDownloadChartSnapshot}
+                    />
+                  </GTPButtonRow>
+                </div>
+              </GTPButtonContainer>
+            </div>
+          </>
+        ) : (
+          <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
+            <div className="flex flex-col gap-y-[5px]">
+              <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
                 {(chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data)).filter((series: any) => !series.oppositeYAxis).map((category: any) => {
                   const allCategories: any[] = chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data);
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
@@ -1053,9 +1584,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
                           if (newFilteredNames.length === allCategories.length) {
-                            return []; // Reset to empty if all would be selected
+                            return [];
                           }
                           return newFilteredNames;
                         });
@@ -1068,23 +1598,20 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     </div>
                   )
                 })}
-                
-              {/* </div> */}
-              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
+
                 {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
                   let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
                   if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
                     bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
                   }
-                  
+
                   return (
                     <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                       if(!filteredNames.includes(category.name)) {
                         setFilteredNames((prev) => {
                           const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
                           if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
-                            return []; // Reset to empty if all would be selected
+                            return [];
                           }
                           return newFilteredNames;
                         });
@@ -1097,36 +1624,30 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     </div>
                   )
                 })}
-                
-              {/* </div> */}
-            </div>
-            {filteredNames && filteredNames.length > 0 && (
-              <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
-                <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
-                <div className="text-xxxs whitespace-nowrap">Reset</div>
               </div>
-            )}
-          </div>
-          <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
-            <div className="flex flex-row md:flex-col gap-y-[2px]">
-              
-              {/* <div className="text-[10px]"><span className="font-bold">Chart type:</span>{` ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
-              <div className="md:hidden md:mx-0 mx-1 flex items-center relative bottom-[6px] justify-center ">-</div>
-              <div className="text-[10px]"><span className="font-bold">Aggregation:</span>{` 7-Day Rolling Average`}</div> */}
+              {filteredNames && filteredNames.length > 0 && (
+                <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
+                  <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
+                  <div className="text-xxxs whitespace-nowrap">Reset</div>
+                </div>
+              )}
             </div>
-            {seeMetricURL && (
-              <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
-                border: `1px solid transparent`,
-              backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box'
-            }}>
-              <div className="heading-small-xs text-color-text-primary">See metric page</div>
-              <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
-            </a>
-            )}
+            <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
+              <div className="flex flex-row md:flex-col gap-y-[2px]"></div>
+              {seeMetricURL && (
+                <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+                  border: `1px solid transparent`,
+                backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
+                backgroundOrigin: 'border-box',
+                backgroundClip: 'padding-box, border-box'
+              }}>
+                <div className="heading-small-xs text-color-text-primary">See metric page</div>
+                <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
+              </a>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
