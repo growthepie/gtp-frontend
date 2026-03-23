@@ -658,6 +658,24 @@ const AppOverviewMetaCol = ({
 
 // ─── Active On Section ────────────────────────────────────────────────────────
 
+function clampSegmentWidths(naturalPx: number[], minPx: number, totalPx: number): number[] {
+  const clamped = naturalPx.map((px) => Math.max(px, minPx));
+  const excess = clamped.reduce((a, b) => a + b, 0) - totalPx;
+  if (excess <= 0) return clamped;
+  const shrinkableTotal = clamped.reduce(
+    (a, px, i) => a + (naturalPx[i] >= minPx ? px : 0),
+    0,
+  );
+  return clamped.map((px, i) => {
+    if (naturalPx[i] < minPx) return px;
+    return px - (px / shrinkableTotal) * excess;
+  });
+}
+
+const BAR_NOTIONAL = 10_000;
+const BAR_OVERLAP = 8;
+const BAR_MIN_SEG = 500;
+
 const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: string]: number }; txcount: number }) => {
   const { AllChainsByKeys } = useMaster();
   const { resolvedTheme } = useTheme();
@@ -669,21 +687,37 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
     [active_on],
   );
 
+  const totalCount = useMemo(
+    () => sorted.reduce((acc, [, c]) => acc + c, 0),
+    [sorted],
+  );
+
+  const filtered = useMemo(
+    () => sorted.filter(([, count]) => totalCount > 0 && count / totalCount >= 0.005),
+    [sorted, totalCount],
+  );
+
+  const renderPx = useMemo(() => {
+    const naturalPx = filtered.map(([, count]) =>
+      totalCount > 0 ? (count / totalCount) * BAR_NOTIONAL : 0,
+    );
+    return clampSegmentWidths(naturalPx, BAR_MIN_SEG, BAR_NOTIONAL);
+  }, [filtered, totalCount]);
 
   const handleBarMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     let cumulative = 0;
-    for (const [chain, count] of sorted) {
-      cumulative += (count / txcount) * rect.width;
+    for (let i = 0; i < filtered.length; i++) {
+      cumulative += (renderPx[i] / BAR_NOTIONAL) * rect.width;
       if (mouseX <= cumulative) {
-        setHoveredChain(chain);
+        setHoveredChain(filtered[i][0]);
         return;
       }
     }
   };
 
-  const hoveredEntry = hoveredChain ? sorted.find(([c]) => c === hoveredChain) : null;
+  const hoveredEntry = hoveredChain ? filtered.find(([c]) => c === hoveredChain) : null;
   const hoveredCount = hoveredEntry?.[1] ?? 0;
   const hoveredPct = txcount > 0 ? ((hoveredCount / txcount) * 100).toFixed(1) : "0";
   const hoveredColor = AllChainsByKeys[hoveredChain ?? ""]?.colors[chainColorTheme][0];
@@ -699,7 +733,7 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
         className="flex flex-wrap items-center gap-[3px]"
         onMouseLeave={() => setHoveredChain(null)}
       >
-        {sorted.map(([chain]) => {
+        {filtered.map(([chain]) => {
           const chainData = AllChainsByKeys[chain];
           const chainColor = AllChainsByKeys[chain]?.colors[chainColorTheme][0];
           const isHovered = hoveredChain === chain;
@@ -727,30 +761,30 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
         onMouseMove={handleBarMouseMove}
         onMouseLeave={() => setHoveredChain(null)}
       >
-        {sorted.map(([chain, count], index) => (
-          <div
-            key={chain + "-bar"}
-            className="relative h-full shrink-0 pointer-events-none"
-            style={{
-              marginRight: "-4px",
-              zIndex: 100 - index,
-              width: `${(count / txcount) * 100}%`,
-              backgroundColor: AllChainsByKeys[chain]?.colors[chainColorTheme][0],
-              borderTopRightRadius: "999px",
-              borderBottomRightRadius: "999px",
-            }}
-          >
-            {/* Solid overlay for dimming — avoids bleed-through in overlap zone */}
+        {filtered.map(([chain], index) => {
+          const isFirst = index === 0;
+          const isLast = index === filtered.length - 1;
+          const leftExtra = isFirst ? 0 : BAR_OVERLAP;
+          const rightExtra = isLast ? 0 : BAR_OVERLAP;
+          const widthPct = (renderPx[index] / BAR_NOTIONAL) * 100;
+          const isDimmed = hoveredChain !== null && hoveredChain !== chain;
+
+          return (
             <div
-              className="absolute inset-0 bg-color-bg-default transition-opacity duration-150"
+              key={chain + "-bar"}
+              className="h-full rounded-full shrink-0 pointer-events-none"
               style={{
-                borderTopRightRadius: "999px",
-                borderBottomRightRadius: "999px",
-                opacity: hoveredChain && hoveredChain !== chain ? 0.65 : 0,
+                width: `calc(${widthPct}% + ${leftExtra + rightExtra}px)`,
+                marginLeft: isFirst ? 0 : `-${leftExtra}px`,
+                marginRight: isLast ? 0 : `-${rightExtra}px`,
+                zIndex: sorted.length - index,
+                backgroundColor: AllChainsByKeys[chain]?.colors[chainColorTheme][0],
+                opacity: isDimmed ? 0.35 : 1,
+                transition: "opacity 0.15s",
               }}
             />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Hover info — fixed height prevents layout shift */}
@@ -1289,6 +1323,69 @@ const FeaturedSection = memo(({
 });
 
 
+const SimilarAppsSection = memo(({ owner_project }: { owner_project: string }) => {
+
+  const { filteredProjectsData } = useProjectsMetadata();
+  const [randomIndices, setRandomIndices] = useState<number[] | null>(null);
+
+  useEffect(() => {
+      if (!filteredProjectsData || randomIndices !== null) return;
+      const iconIndex = filteredProjectsData.types.indexOf("logo_path");
+      const ownerIndex = filteredProjectsData.types.indexOf("owner_project");
+      const txcountIndex = filteredProjectsData.types.indexOf("txcount");
+      if (iconIndex === -1 || txcountIndex === -1) return;
+      const dataLen = filteredProjectsData.data.length;
+      const indices: number[] = [];
+      const seenOwners = new Set<string>();
+      let attempts = 0;
+      while (indices.length < 6 && attempts < dataLen * 3) {
+          attempts++;
+          const idx = Math.floor(Math.random() * dataLen);
+          const project = filteredProjectsData.data[idx];
+          const owner = ownerIndex !== -1 ? project?.[ownerIndex] : null;
+          const txcount = Number(project?.[txcountIndex]);
+          if (
+              typeof project?.[iconIndex] === "string" &&
+              txcount >= 10000 &&
+              !indices.includes(idx) &&
+              (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
+          ) {
+              indices.push(idx);
+              if (typeof owner === "string") seenOwners.add(owner);
+          }
+      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRandomIndices(indices);
+  }, [filteredProjectsData, randomIndices]);
+
+  const randomProjects = useMemo(() => {
+      if (!filteredProjectsData || !randomIndices) return [];
+      return randomIndices.map((i) => filteredProjectsData.data[i]);
+  }, [filteredProjectsData, randomIndices]);
+
+
+  
+  return (
+    <div className="flex justify-between items-center gap-y-[10px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+      <div className="flex items-center gap-x-[8px]">
+        <GTPIcon icon={"gtp:gtp-project" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] relative bottom-[2px] flex items-center justify-center"/>
+        <div className="heading-large-md text-color-text-primary">
+          Similar Applications
+        </div>
+      </div>
+      <div className="flex items-center gap-x-[8px]">
+        {randomProjects.map((project) => (
+          <div key={project.owner_project} className="p-[8px] bg-color-bg-medium rounded-full">
+            <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
+            <div className="text-sm text-color-text-primary">{project.display_name}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+SimilarAppsSection.displayName = "SimilarAppsSection";
+
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
@@ -1383,6 +1480,7 @@ const OverviewContent = memo(({
         
         </div>
       </div>
+      <SimilarAppsSection owner_project={owner_project} />
     </div>
   );
 });
