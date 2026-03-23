@@ -9,14 +9,14 @@ import { GrayOverlay } from "@/components/layout/Backgrounds";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIconName, iconNames } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
-import AppMetricCard from "@/components/apps/AppMetricCard";
+import GTPMetricCard from "@/components/apps/AppMetricCard";
 import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import {
@@ -51,6 +51,60 @@ type ApplicationEnrichmentData = {
     product_features?: ApplicationEnrichmentFeature[] | null;
   } | null;
 };
+
+const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  year: "numeric",
+});
+
+function getActiveSinceLabel(firstSeen?: ApplicationDetailsData["first_seen"]) {
+  if (!firstSeen) {
+    return null;
+  }
+
+  const earliestChainDate = Object.entries(firstSeen)
+    .filter(([chain, date]) => chain !== "all" && typeof date === "string")
+    .map(([, date]) => ({
+      timestamp: Date.parse(date),
+    }))
+    .filter(({ timestamp }) => !Number.isNaN(timestamp))
+    .sort((a, b) => a.timestamp - b.timestamp)[0];
+
+  if (earliestChainDate) {
+    return activeSinceDateFormatter.format(new Date(earliestChainDate.timestamp));
+  }
+
+  if (typeof firstSeen.all !== "string") {
+    return null;
+  }
+
+  const allTimestamp = Date.parse(firstSeen.all);
+  if (Number.isNaN(allTimestamp)) {
+    return null;
+  }
+
+  return activeSinceDateFormatter.format(new Date(allTimestamp));
+}
+
+const GTP_ICON_NAMES_SET = new Set<string>(iconNames);
+
+function normalizeAppMetricIcon(value: unknown): GTPIconName | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const rawIcon = value.trim();
+  if (!rawIcon) {
+    return undefined;
+  }
+
+  const candidates = rawIcon.startsWith("gtp:")
+    ? [rawIcon.slice(4)]
+    : [rawIcon, `gtp-${rawIcon}`];
+
+  const matchedIcon = candidates.find((candidate) => GTP_ICON_NAMES_SET.has(candidate));
+  return matchedIcon as GTPIconName | undefined;
+}
 
 // ─── Fake Data ───────────────────────────────────────────────────────────────
 
@@ -631,8 +685,8 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
             <span className="text-xs font-medium" style={{ color: hoveredColor }}>
               {hoveredLabel}
             </span>
-            <span className="text-xs text-color-text-secondary">{hoveredPct}%</span>
-            <span className="text-xs text-color-text-secondary">
+            <span className="text-xs text-color-text-primary">{hoveredPct}%</span>
+            <span className="text-xs text-color-text-primary">
               ({hoveredCount.toLocaleString("en-GB")} transactions)
             </span>
           </>
@@ -646,6 +700,10 @@ const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: strin
 
 const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
   const [open, setOpen] = useState(true);
+  const activeSinceLabel = useMemo(
+    () => getActiveSinceLabel(data.first_seen),
+    [data.first_seen],
+  );
 
   return (
     <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
@@ -682,11 +740,8 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
         <div className="flex flex-wrap items-start gap-x-[30px] gap-y-[12px]">
 
           {/* First Contract Seen */}
-          <AppOverviewMetaCol label="First Contract Seen">
-            {data.first_seen && (
-              <div>{new Date(data.first_seen).toLocaleDateString()}</div>
-            )}
-
+          <AppOverviewMetaCol label="Active Since">
+            <div>{activeSinceLabel ?? "—"}</div>
           </AppOverviewMetaCol>
 
           {/* Ecosystem Rank */}
@@ -1176,14 +1231,14 @@ const OverviewContent = memo(({
           {data.kpi_cards && (
             <>
           {Object.keys(data.kpi_cards).map((metric) => (
-            <AppMetricCard 
+            <GTPMetricCard 
               key={metric} 
               label={masterData?.app_metrics[metric].name ?? metric} 
               value={data.kpi_cards[metric].current_values.data[0]} 
-              prevValue={data.kpi_cards[metric].wow_change.data[0]} 
+              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
               color={"#627EEA"} 
-              icon={masterData?.app_metrics[metric].icon_name as GTPIconName} 
+              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
           ))} 
@@ -1193,7 +1248,7 @@ const OverviewContent = memo(({
 
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px]">
-          <ChainActivityCard chains={FAKE_APP.chains} />
+          {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
           <MostActiveContracts data={data} />
         
         </div>

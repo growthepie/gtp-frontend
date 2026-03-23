@@ -72,7 +72,7 @@ module.exports = {
         mdl: "1000px",
         xs: "480px",
         "2xs": "420px",
-        "3xs": "340px",
+        "3xs": "395px",
       },
       colors: {
         positive: "#4CFF7E",

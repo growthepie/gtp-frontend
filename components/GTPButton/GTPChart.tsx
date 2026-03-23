@@ -275,6 +275,8 @@ export interface GTPChartProps {
   showTooltipTimestamp?: boolean;
   /** When true, appends a "Total" row at the bottom of the default tooltip showing the sum of all displayed data points. */
   showTotal?: boolean;
+  /** When true, default tooltip rows are sorted from smallest value to largest value. */
+  reverseTooltipOrder?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -321,6 +323,7 @@ export default function GTPChart({
   minDragSelectPoints = 2,
   showTooltipTimestamp = false,
   showTotal = false,
+  reverseTooltipOrder = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -860,20 +863,52 @@ export default function GTPChart({
     });
   }, [normalizedSeries, percentageMode]);
 
+  const formatDefaultYAxisTick = useCallback(
+    (value: number) => {
+      if (percentageMode) return `${Math.round(value)}%`;
+      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
+    },
+    [decimals, percentageMode, prefix, suffix],
+  );
+
+  // Compute the actual rendered x-axis bounds before yAxisLayout so the y-max
+  // calculation accounts for data in the expanded range (clean-boundary snap
+  // can pull effectiveXMin earlier than the raw xAxisMin prop; bar padding can
+  // extend effectiveXMax beyond xAxisMax). A dummy grid is fine here because
+  // buildTimeXAxisLayout's min/max output does not depend on the grid argument.
+  const effectiveXBounds = useMemo(() => {
+    if (xAxisType !== "time") return { min: xAxisMin, max: xAxisMax };
+    const allTs = pairedSeries.flatMap((s) =>
+      s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
+    );
+    const barData = pairedSeries
+      .filter((s) => s.seriesType === "bar")
+      .map((s) => s.pairedData);
+    const layout = buildTimeXAxisLayout({
+      timestamps: allTs,
+      barSeriesData: barData,
+      xAxisMin,
+      xAxisMax,
+      grid: { left: 0, right: 0, top: 0, bottom: 0 },
+      snapToCleanBoundary,
+    });
+    return { min: layout.min, max: layout.max };
+  }, [pairedSeries, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
+
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const yAxisLayout = useMemo(
     () =>
       computeYAxisTicks({
         pairedSeries,
-        xAxisMin,
-        xAxisMax,
+        xAxisMin: effectiveXBounds.min,
+        xAxisMax: effectiveXBounds.max,
         containerHeight,
         percentageMode,
         stack,
         yAxisMin,
         yAxisMaxOverride,
       }),
-    [pairedSeries, xAxisMin, xAxisMax, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
+    [pairedSeries, effectiveXBounds, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
   );
 
   // --- Dynamic grid.left based on measured y-axis label widths ---
@@ -894,11 +929,7 @@ export default function GTPChart({
     if (ticks[ticks.length - 1] < computedYAxisMax) ticks.push(computedYAxisMax);
 
     const labels = ticks.map((v) =>
-      yAxisLabelFormatter
-        ? yAxisLabelFormatter(v)
-        : percentageMode
-          ? `${Math.round(v)}%`
-          : formatCompactNumber(v, decimals),
+      yAxisLabelFormatter ? yAxisLabelFormatter(v) : formatDefaultYAxisTick(v),
     );
 
     const ctx = getMeasureCtx();
@@ -916,7 +947,7 @@ export default function GTPChart({
 
     // 6px left margin inside the grid + 8px gap between label and axis line
     return Math.ceil(maxLabelWidth) + 14;
-  }, [gridOverride, yAxisLayout, yAxisLabelFormatter, percentageMode, decimals]);
+  }, [formatDefaultYAxisTick, gridOverride, yAxisLayout, yAxisLabelFormatter]);
 
   // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
   const timeAxisLayout = useMemo(() => {
@@ -1043,6 +1074,26 @@ export default function GTPChart({
     };
     const formatTooltipValue = (value: number) => {
       if (percentageMode) return `${value.toFixed(1)}%`;
+      const resolvedPrefix = prefix ?? "";
+      const resolvedSuffix = suffix ?? "";
+      const resolvedDecimals =
+        typeof decimals === "number" && Number.isFinite(decimals)
+          ? Math.max(0, Math.floor(decimals))
+          : 2;
+
+      if (
+        resolvedPrefix === "$" &&
+        resolvedSuffix.trim().length === 0 &&
+        resolvedDecimals >= 4 &&
+        Number.isFinite(value) &&
+        value > 0
+      ) {
+        const threshold = 10 ** -resolvedDecimals;
+        if (value < threshold) {
+          return `< $${threshold.toFixed(resolvedDecimals)}`;
+        }
+      }
+
       return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
     };
     const measureAthLabelWidth = (labelText: string) => {
@@ -1460,10 +1511,6 @@ export default function GTPChart({
       return [solidConfig, dashedTailConfig];
     });
 
-    // Default Y-axis formatter
-    const defaultYFormatter = (value: number) =>
-      percentageMode ? `${Math.round(value)}%` : formatCompactNumber(value, decimals);
-
     // Default tooltip formatter
     const defaultTooltipFormatter = (params: unknown) => {
       const points = Array.isArray(params) ? params : [params];
@@ -1494,32 +1541,49 @@ export default function GTPChart({
 
       const sortedPoints = validPoints
         .map((p) => ({ ...p, numericValue: Number(p.value[1]) }))
-        .sort((a, b) => b.numericValue - a.numericValue);
+        .sort((a, b) =>
+          reverseTooltipOrder
+            ? a.numericValue - b.numericValue
+            : b.numericValue - a.numericValue,
+        );
       const dedupedSortedPoints = sortedPoints.filter(
         (point, pointIdx, collection) =>
           collection.findIndex((candidate) => candidate.seriesName === point.seriesName) === pointIdx,
       );
+      type TooltipDisplayPoint = {
+        value: [number, number];
+        seriesName: string;
+        color?: string;
+        numericValue: number;
+        showUpToPrefix?: boolean;
+      };
 
       const resolvedTooltipRowLimit =
         typeof limitTooltipRows === "number" && Number.isFinite(limitTooltipRows)
           ? Math.max(1, Math.floor(limitTooltipRows))
           : undefined;
 
-      let displayPoints = dedupedSortedPoints;
+      let displayPoints: TooltipDisplayPoint[] = dedupedSortedPoints;
       if (resolvedTooltipRowLimit !== undefined && dedupedSortedPoints.length > resolvedTooltipRowLimit) {
         const visiblePointCount = Math.max(0, resolvedTooltipRowLimit - 1);
         const visiblePoints = dedupedSortedPoints.slice(0, visiblePointCount);
         const overflowPoints = dedupedSortedPoints.slice(visiblePointCount);
-        const overflowSum = overflowPoints.reduce((sum, point) => sum + point.numericValue, 0);
+        const overflowValue = reverseTooltipOrder
+          ? overflowPoints.reduce(
+              (maxValue, point) => Math.max(maxValue, point.numericValue),
+              Number.NEGATIVE_INFINITY,
+            )
+          : overflowPoints.reduce((sum, point) => sum + point.numericValue, 0);
         const othersColor = withOpacity(textPrimary, 0.55);
 
         displayPoints = [
           ...visiblePoints,
           {
-            value: [timestamp, overflowSum] as [number, number],
+            value: [timestamp, overflowValue] as [number, number],
             seriesName: `${overflowPoints.length} Others`,
             color: othersColor,
-            numericValue: overflowSum,
+            numericValue: overflowValue,
+            showUpToPrefix: reverseTooltipOrder,
           },
         ];
       }
@@ -1543,13 +1607,16 @@ export default function GTPChart({
           const meta = normalizedSeries.find((s) => s.name === point.seriesName);
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
           const formattedValue = formatTooltipValue(v);
+          const valueWithPrefix = point.showUpToPrefix
+            ? `<span class="font-bold">Up to&nbsp;</span>${formattedValue}`
+            : formattedValue;
           const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(v) / maxTooltipValue) * 100, 0, 100) : 0;
 
           return `
             <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
               <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${lineColor}"></div>
               <div class="tooltip-point-name text-xs">${escapeHtml(point.seriesName)}</div>
-              <div class="flex-1 text-right justify-end flex numbers-xs">${formattedValue}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">${valueWithPrefix}</div>
             </div>
             <div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
               <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:${barWidth}%; background-color:${lineColor}"></div>
@@ -1560,7 +1627,7 @@ export default function GTPChart({
 
       const totalRow = (() => {
         if (!showTotal) return "";
-        const total = displayPoints.reduce((sum, p) => sum + p.numericValue, 0);
+        const total = dedupedSortedPoints.reduce((sum, p) => sum + p.numericValue, 0);
         const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
         const prefixStd = percentageMode ? "" : (prefix ?? "");
         const suffixStd = percentageMode ? "" : (suffix ?? "");
@@ -1624,7 +1691,7 @@ export default function GTPChart({
           formatter: (value: number) => {
             const formatted = yAxisLabelFormatter
               ? yAxisLabelFormatter(value)
-              : defaultYFormatter(value);
+              : formatDefaultYAxisTick(value);
             return `{num|${formatted}}`;
           },
           rich: {
@@ -1699,9 +1766,11 @@ export default function GTPChart({
     tooltipTitle,
     showTooltipTimestamp,
     showTotal,
+    reverseTooltipOrder,
     limitTooltipRows,
     xAxisType,
     yAxisLabelFormatter,
+    formatDefaultYAxisTick,
     yAxisLayout,
   ]);
 

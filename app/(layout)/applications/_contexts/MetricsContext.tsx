@@ -35,30 +35,47 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const isLegacyApplicationsRoute =
+    pathname === "/applications" ||
+    pathname.startsWith("/applications/") ||
+    pathname.startsWith("/chains/");
+
+  const availableMetrics = useMemo(() => {
+    if (!masterData) return {};
+
+    if (!isLegacyApplicationsRoute) {
+      return masterData.app_metrics;
+    }
+
+    const fundamentalMetrics = Object.fromEntries(
+      Object.entries(masterData.app_metrics).filter(([, metric]) => metric.fundamental),
+    );
+
+    return Object.keys(fundamentalMetrics).length > 0 ? fundamentalMetrics : masterData.app_metrics;
+  }, [masterData, isLegacyApplicationsRoute]);
+
+  const validMetrics = useMemo(() => Object.keys(availableMetrics), [availableMetrics]);
 
   // Validate and sanitize localStorage value
   const validatedSavedMetrics = useMemo(() => {
     if (!masterData) return DEFAULT_METRIC;
 
     try {
-      // Get valid metrics from master data
-      const validMetrics = Object.keys(masterData.app_metrics);
-
       // Parse saved metrics and filter out invalid ones
       const metricsArray = savedMetrics.split(',').filter(m => m && validMetrics.includes(m));
 
       // If no valid metrics remain, return default
       if (metricsArray.length === 0) {
-        return DEFAULT_METRIC;
+        return validMetrics.includes(DEFAULT_METRIC) ? DEFAULT_METRIC : validMetrics[0] || DEFAULT_METRIC;
       }
 
       return metricsArray.join(',');
     } catch (error) {
       // If any error occurs (malformed data, etc.), return default
       console.warn('Invalid savedMetrics in localStorage, using default:', error);
-      return DEFAULT_METRIC;
+      return validMetrics.includes(DEFAULT_METRIC) ? DEFAULT_METRIC : validMetrics[0] || DEFAULT_METRIC;
     }
-  }, [masterData, savedMetrics]);
+  }, [masterData, savedMetrics, validMetrics]);
 
   // Priority: URL params > validated localStorage > DEFAULT_METRIC
   const urlMetric = searchParams.get("metric");
@@ -75,8 +92,6 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   // Sync URL params to localStorage, or localStorage to URL on mount
   useEffect(() => {
     if (!masterData) return;
-
-    const validMetrics = Object.keys(masterData.app_metrics);
 
     // Case 1: URL has metric param (user clicked a shared link)
     if (urlMetric) {
@@ -115,8 +130,6 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
     // Create a new URLSearchParams object
     const newSearchParams = new URLSearchParams(searchParams.toString());
 
-    const validMetrics = Object.keys(masterData.app_metrics);
-
     const newMetrics = metrics.filter(metric => validMetrics.includes(metric));
 
     // Save to localStorage for persistence
@@ -132,17 +145,22 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
     // Use Next.js router with scroll: false to preserve scroll position
     const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
     router.replace(url, { scroll: false });
-  }, [metricsFromParams, masterData, searchParams, pathname, setSavedMetrics, router]);
+  }, [metricsFromParams, masterData, searchParams, pathname, setSavedMetrics, router, validMetrics]);
   
   
   // Filter selected metrics to only include valid ones
   const orderedMetrics = useMemo(() => {
     if (!masterData) return [DEFAULT_METRIC];
-    
-    const validMetrics = Object.keys(masterData.app_metrics);
+
     const metrics = metricsFromParams.split(',');
-    return metrics.filter(metric => validMetrics.includes(metric));
-  }, [masterData, metricsFromParams]);
+    const filteredMetrics = metrics.filter(metric => validMetrics.includes(metric));
+
+    if (filteredMetrics.length > 0) {
+      return filteredMetrics;
+    }
+
+    return validMetrics.includes(DEFAULT_METRIC) ? [DEFAULT_METRIC] : validMetrics.slice(0, 1);
+  }, [masterData, metricsFromParams, validMetrics]);
   
   // Map metrics to their actual data keys
   const selectedMetricKeys = useMemo(() => {
@@ -156,13 +174,13 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   
   // Create the context value
   const contextValue = useMemo(() => ({
-    metricsDef: masterData ? masterData.app_metrics : {},
+    metricsDef: availableMetrics,
     metricIcons,
     selectedMetrics: orderedMetrics,
     setSelectedMetrics,
     selectedMetricKeys,
   }), [
-    masterData, 
+    availableMetrics,
     orderedMetrics, 
     setSelectedMetrics, 
     selectedMetricKeys,

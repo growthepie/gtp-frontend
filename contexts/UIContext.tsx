@@ -7,6 +7,7 @@ import Highcharts from "highcharts/highstock";
 import { create } from "zustand";
 
 export const MOBILE_BREAKPOINT = 768;
+export const SIDEBAR_OPEN_BREAKPOINT = 1440;
 
 export type EmbedData = {
   width: number;
@@ -68,7 +69,7 @@ const getInitialSidebarOpen = () => {
     // server render: rely on CSS to collapse for smaller viewports
     return true;
   }
-  return window.innerWidth >= 1280;
+  return window.innerWidth >= SIDEBAR_OPEN_BREAKPOINT;
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -210,21 +211,23 @@ export const UIContextProvider = ({ children }: ProviderProps) => {
   
     setIsSafariBrowser(isSafari);
     setIsMobile(initialWidth < MOBILE_BREAKPOINT);
-    setIsSidebarOpen(initialWidth >= 1280);
+    setIsSidebarOpen(initialWidth >= SIDEBAR_OPEN_BREAKPOINT);
     setIsLessThan2xl(initialWidth < 1536);
     prevWindowWidthRef.current = initialWidth;
   
     // Debounced version for the heavier layout updates
     const debouncedUpdateLayout = debounce(() => {
       const currentWidth = window.innerWidth;
-      const isExpanding = currentWidth > prevWindowWidthRef.current;
-  
+      const prevWidth = prevWindowWidthRef.current;
+      const crossedAbove = prevWidth < SIDEBAR_OPEN_BREAKPOINT && currentWidth >= SIDEBAR_OPEN_BREAKPOINT;
+      const crossedBelow = prevWidth >= SIDEBAR_OPEN_BREAKPOINT && currentWidth < SIDEBAR_OPEN_BREAKPOINT;
+
       setIsMobile(currentWidth < MOBILE_BREAKPOINT);
       setIsLessThan2xl(currentWidth < 1536);
       setIsSidebarOpen((prev) =>
-        currentWidth >= 1280 ? (isExpanding ? prev : true) : false,
+        crossedAbove ? true : crossedBelow ? false : prev,
       );
-  
+
       prevWindowWidthRef.current = currentWidth;
     }, 50);
   

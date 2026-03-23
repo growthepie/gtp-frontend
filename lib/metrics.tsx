@@ -403,7 +403,7 @@ export const daMetricItems: MetricItem[] = [
         "DA Fees Paid refers to the fees collected by the Data Availability layer for processing and storing data blobs.",
       why: "Analyzing Fees Paid helps in understanding the economic sustainability of the DA layer. It reflects the cost associated with data availability services and can indicate the financial health of the network. Additionally, it provides insights into the demand for data posting and the efficiency of fee structures.",
       icon: "gtp-da-fees-paid",
-      showGwei: false,
+      showGwei: true,
     },
     key: "fees_paid",
     urlKey: "fees-paid",

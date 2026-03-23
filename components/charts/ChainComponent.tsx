@@ -62,6 +62,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from '../layout/GTPIcon';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatNumberWithSI } from '../layout/EthAgg/AggChart';
+
+
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
