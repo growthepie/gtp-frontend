@@ -179,7 +179,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.engagement[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement?.[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
@@ -254,7 +254,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
         fullScreen={true}
       />
 
-      {data && landing && master && AllChainsByKeys ? (
+      {landing && master && AllChainsByKeys ? (
         <>
 
           <Container className="w-full">
