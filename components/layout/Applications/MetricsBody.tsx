@@ -251,7 +251,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
                 >
                     <GTPChart
-                        height="446px"
+                        height={280}
+                        compactXAxis
+                        ySplitNumber={4}
                         series={seriesData.map((s) => ({
                             ...s,
                             color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
