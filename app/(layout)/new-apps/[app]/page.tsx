@@ -22,6 +22,7 @@ import useSWR from "swr";
 import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
+import MetricsBody from "@/components/layout/Applications/MetricsBody";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -539,15 +540,10 @@ OverviewContent.displayName = "OverviewContent";
 
 // ─── Metrics Tab ──────────────────────────────────────────────────────────────
 
-const MetricsContent = memo(() => (
-  <div className="flex flex-col gap-y-[15px]">
-    <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] min-h-[400px] items-center justify-center gap-y-[10px]">
-      <GTPIcon icon="gtp-fundamentals" size="lg" className="opacity-30" />
-      <div className="heading-large-md opacity-50">Metrics</div>
-      <div className="text-sm text-color-text-secondary text-center max-w-[400px]">
-        Detailed on-chain metrics for this application will appear here.
-      </div>
-    </div>
+const MetricsContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => (
+  <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
+    <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} forceClose={true} />
+    <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
   </div>
 ));
 MetricsContent.displayName = "MetricsContent";
@@ -597,11 +593,9 @@ export default function NewAppPage({
   use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-
-
   const { data, owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
+
   const { data: enrichmentData } = useSWR<ApplicationEnrichmentData | null>(
     owner_project
       ? ApplicationsURLs.enrichment.replace("{owner_project}", owner_project)
@@ -619,7 +613,6 @@ export default function NewAppPage({
     return searchParams.get("tab") || "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
-
 
   // Sync tab selection to URL
   useEffect(() => {
@@ -639,8 +632,6 @@ export default function NewAppPage({
     router.replace(newUrl, { scroll: false });
   }, [selectedTab, router, searchParams]);
   
- 
-
   const TabContent = useMemo(() => {
     switch (selectedTab) {
       case "overview":
@@ -653,13 +644,14 @@ export default function NewAppPage({
           />
         );
       case "metrics":
-        return <MetricsContent />;
+        return <MetricsContent data={data} owner_project={owner_project} projectMetadata={projectMetadata} />;
       case "user_insights":
         return <UserInsightsContent />;
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
   }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
+
   return (
     <>
     {owner_project && projectMetadata && (
@@ -687,7 +679,7 @@ export default function NewAppPage({
       </SectionBar>
 
       {/* Tab content */}
-      <div className={selectedTab !== "overview" ? "pt-[15px]" : ""}>
+      <div className={selectedTab !== "overview" ? "" : ""}>
         {TabContent}
       </div>
     </Container>

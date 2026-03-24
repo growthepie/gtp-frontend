@@ -7,9 +7,9 @@ import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
-
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
+import { formatNumber } from "@/app/(layout)/applications/_components/Components";
 
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -17,7 +17,7 @@ const BAR_NOTIONAL = 10_000;
 const BAR_OVERLAP = 8;
 const BAR_MIN_SEG = 500;
 
-const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => {
+const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = false }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, forceClose?: boolean }) => {
 
     const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
@@ -54,24 +54,26 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
     }
 
       
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(forceClose ? false : true);
     const activeSinceLabel = getActiveSinceLabel(data.first_seen);
+
+
   
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
         {/* Header row: toggle + title + links (when closed) */}
         <div className="flex items-center justify-between gap-x-[10px]">
           <div
-            className="flex items-center gap-x-[10px] cursor-pointer"
-            onClick={() => setOpen((v) => !v)}
+            className={`flex items-center gap-x-[10px]  ${forceClose ? "cursor-default" : "cursor-pointer"}`}
+            onClick={() => forceClose ? null : setOpen((v) => !v)}
           >
             <GTPIcon
               icon="in-button-right-monochrome"
               size="sm"
               className="!size-[14px]"
-              containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
+              containerClassName={`!size-[26px]  !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
                 open ? "rotate-90" : "rotate-0"
-              }`}
+                } ${forceClose ? "hidden" : "flex"}`}
             />
             <div className="heading-large-md text-color-text-secondary">{projectMetadata.display_name}</div>
           </div>
@@ -131,6 +133,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
             paddingTop: open ? "12px" : 0,
             overflow: "visible",
             opacity: open ? 1 : 0,
+            pointerEvents: open ? "auto" : "none",
             transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding-top 0.3s ease-in-out",
           }}
         >
@@ -280,9 +283,10 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
     const hoveredCount = hoveredEntry?.[1] ?? 0;
     const hoveredPct = txcount > 0 ? ((hoveredCount / txcount) * 100).toFixed(1) : "0";
     const hoveredColor = AllChainsByKeys[hoveredChain ?? ""]?.colors[chainColorTheme][0];
-    const hoveredLabel = AllChainsByKeys[hoveredChain ?? ""]?.label ?? hoveredChain;
+    const hoveredLabel = AllChainsByKeys[hoveredChain ?? ""]?.name_short ?? hoveredChain;
     const hoveredUrlKey = AllChainsByKeys[hoveredChain ?? ""]?.urlKey;
   
+
     return (
       <div className="flex flex-col gap-y-[6px] flex-1 min-w-[160px] max-w-[360px]">
         <div className="heading-xxs text-color-text-secondary">Active on</div>
@@ -356,12 +360,12 @@ const AboutApp = memo(({ data, owner_project, projectMetadata }: { data: Applica
                 containerClassName="!size-[12px] flex items-center justify-center"
                 style={{ color: hoveredColor }}
               />
-              <span className="text-xs font-medium" style={{ color: hoveredColor }}>
+              <span className="text-xs " style={{ color: hoveredColor }}>
                 {hoveredLabel}
               </span>
               <span className="text-xs text-color-text-primary">{hoveredPct}%</span>
               <span className="text-xs text-color-text-primary">
-                ({hoveredCount.toLocaleString("en-GB")} transactions)
+                ({formatNumber(hoveredCount)} transactions)
               </span>
             </>
           )}

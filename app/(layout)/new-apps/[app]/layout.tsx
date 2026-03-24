@@ -118,9 +118,14 @@ export default async function Layout(props: {
         "7d":   { shortLabel: "7d",  label: "7 days",  value: 7 },
         "30d":  { shortLabel: "30d", label: "30 days", value: 30 },
         "90d":  { shortLabel: "90d", label: "90 days", value: 90 },
+        "180d": { shortLabel: "180d", label: "180 days", value: 180 },
         "365d": { shortLabel: "1y",  label: "1 year",  value: 365 },
+        
         max:    { shortLabel: "Max", label: "Max",     value: 0 },
-      }}>
+      }}
+      
+      defaultTimespan="90d"
+      >
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ProjectsMetadataProvider>
