@@ -8,6 +8,8 @@ import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import Mustache from 'mustache';
 import { GTPIcon } from '@/components/layout/GTPIcon';
+import GTPButtonRow from '@/components/GTPButton/GTPButtonRow';
+import { GTPButton } from '@/components/GTPButton/GTPButton';
 
 /* 
 Mustache.js example for dynamic values
@@ -370,6 +372,110 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
   const resolvedTitle = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
   const resolvedSubtitle = block.subtitle && block.subtitle.includes("{{") ? Mustache.render(block.subtitle, sharedState) : block.subtitle;
   const resolvedCaption = block.caption && block.caption.includes("{{") ? Mustache.render(block.caption, sharedState) : block.caption;
+  const isChainQuickBitesTabSideBySide =
+    isChainQuickBitesTabChart && (isChainQuickBitesTabRightFlush || isChainQuickBitesTabLeftFlush);
+  const inferredTimeIntervalLabel = (() => {
+    const aggregationLabelByKey: Record<string, string> = {
+      daily: "Daily",
+      weekly: "Weekly",
+      monthly: "Monthly",
+    };
+
+    const firstAggregation = Array.isArray(effectiveMeta)
+      ? effectiveMeta
+          .map((metaEntry) => {
+            if (typeof metaEntry !== "object" || metaEntry === null || !("aggregation" in metaEntry)) {
+              return undefined;
+            }
+            const aggregationValue = (metaEntry as { aggregation?: unknown }).aggregation;
+            return typeof aggregationValue === "string" ? aggregationValue : undefined;
+          })
+          .find((aggregationValue): aggregationValue is string => typeof aggregationValue === "string")
+      : undefined;
+
+    if (firstAggregation) {
+      const normalizedAggregation = String(firstAggregation).toLowerCase();
+      if (aggregationLabelByKey[normalizedAggregation]) {
+        return aggregationLabelByKey[normalizedAggregation];
+      }
+    }
+
+    const classifyCadence = (deltaMs: number) => {
+      const dayMs = 24 * 60 * 60 * 1000;
+      const days = deltaMs / dayMs;
+      if (days < 0.75) return "Hourly";
+      if (days <= 1.5) return "Daily";
+      if (days <= 10) return "Weekly";
+      if (days <= 18) return "Bi-weekly";
+      if (days <= 45) return "Monthly";
+      if (days <= 100) return "Quarterly";
+      return "Yearly";
+    };
+
+    const xIndex = (() => {
+      const firstMeta = Array.isArray(effectiveMeta) ? effectiveMeta[0] : undefined;
+      if (typeof firstMeta?.xIndex === "number") {
+        return firstMeta.xIndex;
+      }
+      return 0;
+    })();
+
+    if (Array.isArray(nestedData)) {
+      for (const seriesRows of nestedData) {
+        if (!Array.isArray(seriesRows)) {
+          continue;
+        }
+
+        const timestamps = seriesRows
+          .map((row: any) => (Array.isArray(row) ? Number(row[xIndex]) : NaN))
+          .filter((timestamp: number) => Number.isFinite(timestamp));
+
+        if (timestamps.length < 2) {
+          continue;
+        }
+
+        const uniqueSortedTimestamps = Array.from(new Set(timestamps)).sort((a, b) => a - b);
+        if (uniqueSortedTimestamps.length < 2) {
+          continue;
+        }
+
+        const deltas = uniqueSortedTimestamps
+          .slice(1)
+          .map((timestamp, index) => timestamp - uniqueSortedTimestamps[index])
+          .filter((delta) => Number.isFinite(delta) && delta > 0)
+          .sort((a, b) => a - b);
+
+        if (deltas.length === 0) {
+          continue;
+        }
+
+        const medianDelta = deltas[Math.floor(deltas.length / 2)];
+        if (Number.isFinite(medianDelta) && medianDelta > 0) {
+          return classifyCadence(medianDelta);
+        }
+      }
+    }
+
+    return "Interval";
+  })();
+  const fallbackChainQuickBitesTopBar = (() => {
+    if (!isChainQuickBitesTabSideBySide || chainQuickBitesTopBar) {
+      return undefined;
+    }
+
+    return (
+      <GTPButtonRow wrap className="!w-auto">
+        <GTPButton
+          label={inferredTimeIntervalLabel}
+          size="sm"
+          variant="primary"
+          visualState="active"
+          className="justify-center"
+        />
+      </GTPButtonRow>
+    );
+  })();
+  const effectiveChainQuickBitesTopBar = chainQuickBitesTopBar ?? fallbackChainQuickBitesTopBar;
   const hasTemplateDrivenSelection =
     (typeof block.title === "string" && block.title.includes("{{")) ||
     (typeof block.subtitle === "string" && block.subtitle.includes("{{")) ||
@@ -476,7 +582,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
             showPiePercentage={pieDataConfig?.showPercentage}
             isChainQuickBitesTabChart={isChainQuickBitesTabChart}
             defaultFilteredSeriesNames={block.defaultFilteredSeriesNames}
-            chainQuickBitesTopBar={chainQuickBitesTopBar}
+            chainQuickBitesTopBar={effectiveChainQuickBitesTopBar}
             quickBiteTabRightEdgeFlush={isChainQuickBitesTabRightFlush}
             quickBiteTabLeftEdgeFlush={isChainQuickBitesTabLeftFlush}
           />

@@ -932,10 +932,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         : quickBiteTabLeftEdgeFlush
           ? "md:px-[35px] lg:pl-0 lg:pr-[35px]"
           : "md:px-[35px]";
+  const isSingleChainQuickBitesTabChart =
+    isChainQuickBitesTabChart && !quickBiteTabRightEdgeFlush && !quickBiteTabLeftEdgeFlush;
   const quickBitesTabWrapperStyle = isChainQuickBitesTabChart
     ? {
         width: "100%",
-        maxWidth: "1250px",
+        maxWidth: isSingleChainQuickBitesTabChart ? undefined : "1250px",
         marginLeft: quickBiteTabRightEdgeFlush ? "auto" : undefined,
       }
     : undefined;

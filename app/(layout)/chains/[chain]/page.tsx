@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
 import { useState, useMemo, memo, useEffect, use, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChartECharts from "@/components/layout/SingleChains/ChainChartECharts";
@@ -26,7 +25,6 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
-import { Icon } from "@iconify/react";
 import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
@@ -38,6 +36,7 @@ import { ContentBlock } from "@/lib/types/blockTypes";
 import Block from "@/components/quick-bites/Block";
 import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
+import { GTPButton } from "@/components/GTPButton/GTPButton";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -422,6 +421,7 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
 });
 
 const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master: any }) => {
+  const router = useRouter();
   const chainName = master?.chains?.[chainKey]?.name || "";
   const chainShortName = master?.chains?.[chainKey]?.name_short || "";
   const defaultFilteredSeriesNames = useMemo(
@@ -637,14 +637,16 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
             removeChildrenTopPadding
             childrenHeight={Math.max(group.chartBlocks.length, 1) * 587 + 60}
             rowEnd={
-              <Link
-                href={`/quick-bites/${group.slug}`}
-                className="cursor-pointer min-w-[28px] min-h-[28px] bg-color-ui-active rounded-full flex justify-center items-center"
-                aria-label={`Open quick bite: ${group.title}`}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Icon icon="fluent:arrow-right-32-filled" className="w-[15px] h-[15px] text-color-text-primary" />
-              </Link>
+              <div onClick={(event) => event.stopPropagation()}>
+                <GTPButton
+                  size="sm"
+                  variant="primary"
+                  visualState="active"
+                  leftIcon="in-button-right-monochrome"
+                  clickHandler={() => router.push(`/quick-bites/${group.slug}`)}
+                  className="cursor-pointer"
+                />
+              </div>
             }
           >
             <div className="pt-[30px] pb-[15px]">
@@ -671,7 +673,7 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
                   return (
                     <div
                       key={chartItemId}
-                      className={`min-w-0 ${isSingleChartGroup ? "w-full max-w-[1250px]" : ""}`}
+                      className={`min-w-0 ${isSingleChartGroup ? "w-full" : ""}`}
                       ref={(node) => {
                         chartItemRefs.current[chartItemId] = node;
                       }}
