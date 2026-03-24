@@ -304,6 +304,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                             : "in-button-close"
                                           : undefined
                                     }
+                                    animateRightIcon
                                     rightIconClassname="!w-[12px] !h-[12px]"
                                     textClassName={inactiveSeriesNames.has(s.name) ? "text-color-text-secondary" : undefined}
                                     className={inactiveSeriesNames.has(s.name) ? "border border-color-bg-medium" : undefined}

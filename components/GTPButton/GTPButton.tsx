@@ -36,6 +36,7 @@ export interface GTPButtonProps {
   leftIconStyle?: React.CSSProperties;
   leftIconOverride?: React.ReactNode;
   rightIconOverride?: React.ReactNode;
+  animateRightIcon?: boolean;
   onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
@@ -176,10 +177,18 @@ export const GTPButton = ({
   rightIconContainerClassName,
   leftIconContainerClassName,
   leftIconStyle,
+  animateRightIcon = false,
   onMouseEnter,
   onMouseLeave,
 }: GTPButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Keep the last known icon so it can animate out when rightIcon becomes undefined
+  const [lastRightIcon, setLastRightIcon] = useState(rightIcon);
+  if (rightIcon && rightIcon !== lastRightIcon) {
+    setLastRightIcon(rightIcon);
+  }
+  const animatedRightIconValue = rightIcon ?? lastRightIcon;
 
   const hasLabel = Boolean(label);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
@@ -197,8 +206,8 @@ export const GTPButton = ({
   );
   const iconVariant = resolveIconVariant({
     hasLabel: shouldShowLabel,
-    hasLeftIcon: Boolean(leftIcon),
-    hasRightIcon: Boolean(rightIcon),
+    hasLeftIcon: Boolean(leftIcon) || Boolean(leftIconOverride),
+    hasRightIcon: Boolean(rightIcon) || (animateRightIcon && Boolean(animatedRightIconValue)),
   });
 
   const isResponsive = size === null;
@@ -298,7 +307,17 @@ export const GTPButton = ({
             animate={isAnimatedLabelMode}
           />
         )}
-        {displayRightIcon && (
+        {animateRightIcon ? (
+          <GTPButtonAnimatedIcon
+            icon={animatedRightIconValue}
+            show={Boolean(rightIcon)}
+            iconClassName={iconSizeClassName}
+            disabled={isDisabled}
+            clickHandler={rightIconClickHandler}
+            classNameModifier={rightIconClassname}
+            iconContainerClassName={rightIconContainerClassName}
+          />
+        ) : displayRightIcon && (
           <GTPButtonIcon
             icon={rightIcon}
             iconClassName={iconSizeClassName}
@@ -369,6 +388,49 @@ const GTPButtonIcon = ({
       onKeyDown={handleKeyDown}
     >
       {iconNode}
+    </span>
+  );
+};
+
+const GTPButtonAnimatedIcon = ({
+  icon,
+  show,
+  iconClassName,
+  disabled,
+  clickHandler,
+  classNameModifier,
+  iconContainerClassName,
+}: {
+  icon?: GTPIconName;
+  show: boolean;
+  iconClassName: string;
+  disabled: boolean;
+  clickHandler?: () => void;
+  classNameModifier?: string;
+  iconContainerClassName?: string;
+}) => {
+  return (
+    <span
+      style={{
+        display: "grid",
+        gridTemplateColumns: show ? "1fr" : "0fr",
+        opacity: show ? 1 : 0,
+        transition: "grid-template-columns 200ms ease-out, opacity 200ms ease-out",
+      }}
+      aria-hidden={!show}
+    >
+      <span style={{ overflow: "hidden", minWidth: 0 }}>
+        {icon && (
+          <GTPButtonIcon
+            icon={icon}
+            iconClassName={iconClassName}
+            disabled={disabled}
+            clickHandler={clickHandler}
+            classNameModifier={classNameModifier}
+            iconContainerClassName={iconContainerClassName}
+          />
+        )}
+      </span>
     </span>
   );
 };
