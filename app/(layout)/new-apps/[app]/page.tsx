@@ -23,7 +23,8 @@ import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
 import MetricsBody from "@/components/layout/Applications/MetricsBody";
-
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 
@@ -375,7 +376,7 @@ const FeaturedSection = memo(({
 });
 
 
-const SimilarAppsSection = memo(({ owner_project }: { owner_project: string }) => {
+const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_project: string, projectMetadata: ProjectMetadata }) => {
 
   const { filteredProjectsData } = useProjectsMetadata();
   const [randomIndices, setRandomIndices] = useState<number[] | null>(null);
@@ -426,12 +427,52 @@ const SimilarAppsSection = memo(({ owner_project }: { owner_project: string }) =
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
-        {randomProjects.map((project) => (
-          <div key={project.owner_project} className="p-[8px] bg-color-bg-medium rounded-full">
-            <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
-            <div className="text-sm text-color-text-primary">{project.display_name}</div>
-          </div>
-        ))}
+        {randomProjects.filter((project) => project.sub_category !== projectMetadata.sub_category && project.sub_category !== null).map((project) => {
+          const logoPath = project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0];
+          const displayName = project[filteredProjectsData?.types?.indexOf("display_name") ?? 0];
+          
+          return (
+
+          <GTPTooltipNew
+            size="md"
+            key={project.name}
+            placement="bottom-start"
+            allowInteract={true}
+            trigger={
+              <Link key={project.name} className="p-[8px] bg-color-bg-medium rounded-full"
+              href={`/new-apps/${project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0]}`}
+              >
+                <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
+                <div className="text-sm text-color-text-primary">{project.display_name}</div>
+              </Link>
+
+            }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+        >
+          <ApplicationTooltip application={{
+            owner_project: project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
+            origin_keys: project[filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
+            num_contracts: project[filteredProjectsData?.types?.indexOf("num_contracts") ?? 0],
+            gas_fees_eth: project[filteredProjectsData?.types?.indexOf("gas_fees_eth") ?? 0],
+            gas_fees_usd: project[filteredProjectsData?.types?.indexOf("gas_fees_usd") ?? 0],
+            prev_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("prev_gas_fees_eth") ?? 0],
+            txcount: project[filteredProjectsData?.types?.indexOf("txcount") ?? 0],
+            prev_txcount: project[filteredProjectsData?.types?.indexOf("prev_txcount") ?? 0],
+            daa: project[filteredProjectsData?.types?.indexOf("daa") ?? 0],
+            prev_daa: project[filteredProjectsData?.types?.indexOf("prev_daa") ?? 0],
+            gas_fees_eth_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_eth_change_pct") ?? 0],
+            gas_fees_usd_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_usd_change_pct") ?? 0],
+            txcount_change_pct: project[filteredProjectsData?.types?.indexOf("txcount_change_pct") ?? 0],
+            daa_change_pct: project[filteredProjectsData?.types?.indexOf("daa_change_pct") ?? 0],
+            rank_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_eth") ?? 0],
+            rank_gas_fees_usd: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_usd") ?? 0],
+            rank_txcount: project[filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
+            rank_daa: project[filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
+        }} />
+        </GTPTooltipNew>
+
+        )})}
       </div>
     </div>
   );
@@ -532,7 +573,7 @@ const OverviewContent = memo(({
         
         </div>
       </div>
-      <SimilarAppsSection owner_project={owner_project} />
+      <SimilarAppsSection owner_project={owner_project} projectMetadata={projectMetadata} />
     </div>
   );
 });

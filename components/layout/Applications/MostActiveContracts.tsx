@@ -130,8 +130,6 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                   fees_paid: showUsd ? contract[types.indexOf("fees_paid_usd")] : contract[types.indexOf("fees_paid_eth")],
                   verified: contract[types.indexOf("verified")],
                 };
-                console.log(contract);
-                console.log(types);
 
                 const prefix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.prefix ?? "";
                 const suffix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.suffix ?? "";
