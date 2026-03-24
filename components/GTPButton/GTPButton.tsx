@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, MouseEvent, MouseEventHandler } from "react";
+import { KeyboardEvent, MouseEvent, MouseEventHandler, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "../layout/GTPIcon";
 
@@ -11,7 +11,7 @@ type GTPButtonIconVariant = "none" | "left" | "right" | "both" | "alone";
 
 export interface GTPButtonProps {
   label?: string;
-  labelDisplay?: "always" | "active";
+  labelDisplay?: "always" | "active" | "hover";
   rightIcon?: GTPIconName;
   leftIcon?: GTPIconName;
   isSelected?: boolean;
@@ -179,13 +179,22 @@ export const GTPButton = ({
   onMouseEnter,
   onMouseLeave,
 }: GTPButtonProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const hasLabel = Boolean(label);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
   const resolvedState: GTPButtonState = disabled
     ? "disabled"
     : visualState ?? (isSelected ? "active" : "default");
-  const isActiveLabelMode = hasLabel && labelDisplay === "active";
-  const shouldShowLabel = hasLabel && (!isActiveLabelMode || resolvedState === "active");
+
+  // "active" and "hover" modes both animate the label in/out
+  const isAnimatedLabelMode = hasLabel && (labelDisplay === "active" || labelDisplay === "hover");
+  const shouldShowLabel = hasLabel && (
+    labelDisplay === "always" ||
+    (labelDisplay === "active" && resolvedState === "active") ||
+    // Also respect forced hover visual state so controlled components work
+    (labelDisplay === "hover" && (isHovered || resolvedState === "hover"))
+  );
   const iconVariant = resolveIconVariant({
     hasLabel: shouldShowLabel,
     hasLeftIcon: Boolean(leftIcon),
@@ -247,10 +256,16 @@ export const GTPButton = ({
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
         }`}
-        aria-label={isActiveLabelMode && !shouldShowLabel ? label : undefined}
+        aria-label={isAnimatedLabelMode && !shouldShowLabel ? label : undefined}
         onClick={clickHandler}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        onMouseEnter={(e) => {
+          if (labelDisplay === "hover") setIsHovered(true);
+          onMouseEnter?.(e);
+        }}
+        onMouseLeave={(e) => {
+          if (labelDisplay === "hover") setIsHovered(false);
+          onMouseLeave?.(e);
+        }}
         disabled={isDisabled}
         style={{
           ...(buttonGapStyle !== undefined && { gap: `${buttonGapStyle}px` }),
@@ -280,7 +295,7 @@ export const GTPButton = ({
             textClassName={textClassName}
             buttonTextClassName={buttonTextClassName}
             show={shouldShowLabel}
-            animate={isActiveLabelMode}
+            animate={isAnimatedLabelMode}
           />
         )}
         {displayRightIcon && (
@@ -383,15 +398,25 @@ const GTPButtonAnimatedLabel = ({
     );
   }
 
+  // Grid trick: animating grid-template-columns from 0fr→1fr handles any
+  // dynamic label width without needing a fixed max-width cap.
+  // The outer span drives the width animation; the middle span clips overflow
+  // so text doesn't bleed during the transition; the inner span preserves
+  // the natural text width so 1fr can expand to the correct size.
   return (
     <span
-      className={`inline-flex overflow-hidden transition-[max-width,opacity] duration-200 ease-out ${
-        show ? "max-w-[24rem] opacity-100" : "max-w-0 opacity-0"
-      }`}
+      style={{
+        display: "grid",
+        gridTemplateColumns: show ? "1fr" : "0fr",
+        opacity: show ? 1 : 0,
+        transition: "grid-template-columns 200ms ease-out, opacity 200ms ease-out",
+      }}
       aria-hidden={!show}
     >
-      <span className={`${textClassName} ${buttonTextClassName} whitespace-nowrap`}>
-        {label}
+      <span style={{ overflow: "hidden", minWidth: 0 }}>
+        <span className={`${textClassName} ${buttonTextClassName ?? ""} whitespace-nowrap`}>
+          {label}
+        </span>
       </span>
     </span>
   );

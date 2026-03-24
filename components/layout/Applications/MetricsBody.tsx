@@ -27,10 +27,6 @@ const INTERVALS = {
         label: "Daily",
         value: "daily",
     },
-    weekly: {
-        label: "Weekly",
-        value: "weekly",
-    },
 } as const;
 
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
@@ -39,6 +35,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const [timeInterval, setTimeInterval] = useState("daily");
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
+    const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     
 
 
@@ -50,16 +47,28 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <div className="flex items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm  ">Chains Selected</div>
                     <div className="flex items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {Object.keys(projectMetadata.active_on ?? {}).map((chain) => {
+                    {Object.keys(projectMetadata.active_on ?? {}).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
-                                key={chain}
+                                key={chain + i}
                                 label={AllChainsByKeys[chain]?.name_short}
                                 leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
                                 leftIconStyle={{ color: chainColor }}
-                                visualState="active"
+                                visualState={deselectedChains.includes(chain) ? "default" : "active"}
+                                labelDisplay={i < 5 ? "always" : "hover"}
                                 size="md"
+                                clickHandler={() => {
+                                    setDeselectedChains((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(chain)) {
+                                            next.delete(chain);
+                                        } else {
+                                            next.add(chain);
+                                        }
+                                        return Array.from(next);
+                                    });
+                                }}
                             />
                         )
                     })}
@@ -110,7 +119,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             </div>
             <div className="grid grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {}).map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} />
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} />
                 ))}
             </div>
         </div>
@@ -118,7 +127,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal}: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[] }) => {
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
@@ -129,7 +138,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
 
     const seriesData = useMemo(() => {
-        const chains = Object.keys(data.metrics[metric].over_time);
+        const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
         const perChain = chains.map((chain) => ({
             name: chain,
             data: data.metrics[metric].over_time[chain].daily.data.map(
@@ -156,7 +165,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             name: "Total",
             data: Array.from(totals.entries()).sort((a, b) => a[0] - b[0]) as [number, number | null][],
         }];
-    }, [data, metric, selectedTotal]);
+    }, [data, metric, selectedTotal, deselectedChains]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -266,7 +275,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         className="mb-[30px]"
                     />
                     
-                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[30px] h-[20px]" 
+                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 
                     >
                         {!selectedTotal && seriesData.map((s) => (
                             <div className="" key={s.name + "app-metric-chart-legend"}
