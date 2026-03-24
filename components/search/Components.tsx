@@ -50,6 +50,15 @@ function normalizeString(str: string | null | undefined) {
 const RECENT_SEARCHES_STORAGE_KEY = "gtp:recent-searches";
 const MAX_RECENT_SEARCHES = 5;
 const MIN_RECENT_SEARCH_LENGTH = 2;
+const RECENT_RESULTS_STORAGE_KEY = "gtp:recent-results";
+const MAX_RECENT_RESULTS = 5;
+
+type RecentResultEntry = {
+  label: string;
+  url: string;
+  icon?: string;
+  color?: string;
+};
 
 function readRecentSearches(): string[] {
   if (typeof window === "undefined") return [];
@@ -106,6 +115,100 @@ function saveRecentSearch(query: string) {
   ].slice(0, MAX_RECENT_SEARCHES);
 
   writeRecentSearches(next);
+}
+
+function readRecentResults(): RecentResultEntry[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = localStorage.getItem(RECENT_RESULTS_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    const deduped: RecentResultEntry[] = [];
+    for (const entry of parsed) {
+      if (!entry || typeof entry !== "object") continue;
+
+      const recentEntry = entry as RecentResultEntry;
+      const label = isNonEmptyString(recentEntry.label)
+        ? recentEntry.label.trim()
+        : "";
+      const url = isNonEmptyString(recentEntry.url)
+        ? recentEntry.url.trim()
+        : "";
+      const icon = isNonEmptyString(recentEntry.icon)
+        ? recentEntry.icon.trim()
+        : undefined;
+      const color = isNonEmptyString(recentEntry.color)
+        ? recentEntry.color.trim()
+        : undefined;
+
+      if (!label || !url) continue;
+      if (deduped.some((item) => item.url === url)) continue;
+
+      deduped.push({ label, url, icon, color });
+      if (deduped.length >= MAX_RECENT_RESULTS) break;
+    }
+
+    return deduped;
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentResults(results: RecentResultEntry[]) {
+  if (typeof window === "undefined") return;
+
+  const sanitized: RecentResultEntry[] = [];
+  for (const entry of results) {
+    if (!entry || typeof entry !== "object") continue;
+
+    const label = isNonEmptyString(entry.label) ? entry.label.trim() : "";
+    const url = isNonEmptyString(entry.url) ? entry.url.trim() : "";
+    if (!label || !url) continue;
+
+    if (sanitized.some((item) => item.url === url)) continue;
+
+    sanitized.push({
+      label,
+      url,
+      icon: isNonEmptyString(entry.icon) ? entry.icon.trim() : undefined,
+      color: isNonEmptyString(entry.color) ? entry.color.trim() : undefined,
+    });
+
+    if (sanitized.length >= MAX_RECENT_RESULTS) break;
+  }
+
+  if (sanitized.length === 0) {
+    localStorage.removeItem(RECENT_RESULTS_STORAGE_KEY);
+  } else {
+    localStorage.setItem(RECENT_RESULTS_STORAGE_KEY, JSON.stringify(sanitized));
+  }
+
+  window.dispatchEvent(new CustomEvent("recentResultsUpdated"));
+}
+
+function saveRecentResult(result: RecentResultEntry) {
+  if (!result || !isNonEmptyString(result.label) || !isNonEmptyString(result.url)) return;
+
+  const sanitizedResult: RecentResultEntry = {
+    label: result.label.trim(),
+    url: result.url.trim(),
+    icon: isNonEmptyString(result.icon) ? result.icon.trim() : undefined,
+    color: isNonEmptyString(result.color) ? result.color.trim() : undefined,
+  };
+
+  if (!sanitizedResult.label || !sanitizedResult.url) return;
+
+  const existing = readRecentResults();
+  const next = [
+    sanitizedResult,
+    ...existing.filter((item) => item.url !== sanitizedResult.url),
+  ].slice(0, MAX_RECENT_RESULTS);
+
+  writeRecentResults(next);
 }
 
 const SEARCH_RESULT_CONTEXT_MAX_CHARS = 32;
@@ -1519,7 +1622,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | HTMLDivElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
   const focusOutTimeoutRef = useRef<number | null>(null);
+  const filtersRootRef = useRef<HTMLDivElement | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentResults, setRecentResults] = useState<RecentResultEntry[]>([]);
   const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
 
   const searchParams = useSearchParams();
@@ -1530,24 +1635,41 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const refreshRecentSearches = useCallback(() => {
     setRecentSearches(readRecentSearches());
   }, []);
+  const refreshRecentResults = useCallback(() => {
+    setRecentResults(readRecentResults());
+  }, []);
 
   useEffect(() => {
     refreshRecentSearches();
+    refreshRecentResults();
     const handleRecentSearchesUpdated = () => {
       refreshRecentSearches();
     };
+    const handleRecentResultsUpdated = () => {
+      refreshRecentResults();
+    };
 
     window.addEventListener("recentSearchesUpdated", handleRecentSearchesUpdated);
+    window.addEventListener("recentResultsUpdated", handleRecentResultsUpdated);
     window.addEventListener("storage", handleRecentSearchesUpdated);
+    window.addEventListener("storage", handleRecentResultsUpdated);
     return () => {
       window.removeEventListener("recentSearchesUpdated", handleRecentSearchesUpdated);
+      window.removeEventListener("recentResultsUpdated", handleRecentResultsUpdated);
       window.removeEventListener("storage", handleRecentSearchesUpdated);
+      window.removeEventListener("storage", handleRecentResultsUpdated);
     };
-  }, [refreshRecentSearches]);
+  }, [refreshRecentResults, refreshRecentSearches]);
 
   useEffect(() => {
     const updateFocusedState = () => {
-      setIsSearchInputFocused(isGlobalSearchInputElement(document.activeElement));
+      const activeElement = document.activeElement;
+      const isInputFocused = isGlobalSearchInputElement(activeElement);
+      const isInsideFilters =
+        !!activeElement &&
+        !!filtersRootRef.current &&
+        filtersRootRef.current.contains(activeElement);
+      setIsSearchInputFocused(isInputFocused || isInsideFilters);
     };
 
     const handleFocusOut = () => {
@@ -1614,13 +1736,50 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     applyRecentSearchToInput(recentQuery);
   }, [applyRecentSearchToInput]);
 
+  const focusGlobalSearchInput = useCallback(() => {
+    const input = document.getElementById("global-search-input") as HTMLInputElement | null;
+    if (!input) return;
+    input.focus();
+    setIsSearchInputFocused(true);
+  }, []);
+
   const handleClearRecentSearches = useCallback(() => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(RECENT_SEARCHES_STORAGE_KEY);
       window.dispatchEvent(new CustomEvent("recentSearchesUpdated"));
     }
     setRecentSearches([]);
-  }, []);
+    if (recentResults.length > 0) {
+      requestAnimationFrame(() => {
+        focusGlobalSearchInput();
+      });
+    }
+  }, [focusGlobalSearchInput, recentResults.length]);
+
+  const handleClearRecentResults = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(RECENT_RESULTS_STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent("recentResultsUpdated"));
+    }
+    setRecentResults([]);
+    if (recentSearches.length > 0) {
+      requestAnimationFrame(() => {
+        focusGlobalSearchInput();
+      });
+    }
+  }, [focusGlobalSearchInput, recentSearches.length]);
+
+  const handleClearRecentSearchesMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleClearRecentSearches();
+  }, [handleClearRecentSearches]);
+
+  const handleClearRecentResultsMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleClearRecentResults();
+  }, [handleClearRecentResults]);
 
   const getKey = useCallback((label: string, type: string) => {
     return String(`${type}::${label}`);
@@ -1635,6 +1794,11 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     !memoizedQuery &&
     isSearchInputFocused &&
     recentSearches.length > 0;
+  const showRecentResults =
+    !isMobile &&
+    !memoizedQuery &&
+    isSearchInputFocused &&
+    recentResults.length > 0;
 
   useEffect(() => {
     // reset lastBucketIndeces
@@ -1958,7 +2122,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   }, []);
 
   return (
-    <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
+    <div ref={filtersRootRef} className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {memoizedQuery && allFilteredData.length > 0 && <div
         key={memoizedQuery}
         className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
@@ -2141,14 +2305,15 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 <div className="text-xxs text-color-text-secondary">
                   Last {MAX_RECENT_SEARCHES} searches
                 </div>
-                <HeaderButton
-                  size="sm"
-                  className="!px-[10px] !h-[24px]"
-                  onClick={handleClearRecentSearches}
-                  ariaLabel="Clear recent searches"
-                >
-                  <span className="text-xxs text-color-text-primary">Clear</span>
-                </HeaderButton>
+                <div onMouseDown={handleClearRecentSearchesMouseDown}>
+                  <HeaderButton
+                    size="sm"
+                    className="!px-[10px] !h-[24px]"
+                    ariaLabel="Clear recent searches"
+                  >
+                    <span className="text-xxs text-color-text-primary">Clear</span>
+                  </HeaderButton>
+                </div>
               </div>
               <div className="flex flex-wrap gap-[5px]">
                 {recentSearches.map((recentQuery) => (
@@ -2160,6 +2325,51 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                     rightIcon=""
                     onClick={() => handleRecentSearchClick(recentQuery)}
                   />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showRecentResults && (
+        <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+          <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden">
+            <div className="flex gap-x-[10px] items-center shrink-0 md:h-[24px]">
+              <div className="flex items-center justify-center size-[15px]">
+                <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
+              </div>
+              <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                <span className="text-color-text-primary">Recent Results</span>
+              </div>
+              <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
+            </div>
+
+            <div className="flex flex-col gap-[8px] w-full">
+              <div className="flex items-center justify-between gap-x-[10px] md:h-[24px]">
+                <div className="text-xxs text-color-text-secondary">
+                  Last {MAX_RECENT_RESULTS} visited results
+                </div>
+                <div onMouseDown={handleClearRecentResultsMouseDown}>
+                  <HeaderButton
+                    size="sm"
+                    className="!px-[10px] !h-[24px]"
+                    ariaLabel="Clear recent results"
+                  >
+                    <span className="text-xxs text-color-text-primary">Clear</span>
+                  </HeaderButton>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-[5px]">
+                {recentResults.map((recentResult) => (
+                  <Link key={`${recentResult.url}::${recentResult.label}`} href={recentResult.url}>
+                    <SearchBadge
+                      className="!cursor-pointer"
+                      label={recentResult.label}
+                      leftIcon={recentResult.icon || "feather:clock"}
+                      leftIconColor={recentResult.color || "rgb(var(--text-primary))"}
+                      rightIcon=""
+                    />
+                  </Link>
                 ))}
               </div>
             </div>
@@ -2247,6 +2457,17 @@ export const BucketItem = ({
           : ``
       : item.url;
 
+  const persistRecentResult = () => {
+    if (!isNonEmptyString(item?.label) || !isNonEmptyString(targetUrl)) return;
+
+    saveRecentResult({
+      label: item.label.trim(),
+      url: targetUrl.trim(),
+      icon: isNonEmptyString(item?.icon) ? item.icon : undefined,
+      color: isNonEmptyString(item?.color) ? item.color : undefined,
+    });
+  };
+
   return (
     <Link
       data-selected={isSelected ? "true" : "false"}
@@ -2262,6 +2483,7 @@ export const BucketItem = ({
         // Check if this is a keyboard-triggered click or a new tab open (Ctrl/Cmd+Click)
         const isKeyboardClick = keyboardClickItemKeyRef.current === itemKey;
         const isNewTabClick = e.ctrlKey || e.metaKey;
+        const shouldPersistRecentResult = isKeyboardClick || !isNewTabClick;
         
         // Handle bucket matches: check both with and without trailing space
         const cleanBucket = bucket.trim();
@@ -2305,6 +2527,9 @@ export const BucketItem = ({
         }
         // Track the result click for other buckets
         track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+        if (shouldPersistRecentResult) {
+          persistRecentResult();
+        }
       }}
 
       onAuxClick={(e) => {
@@ -2353,6 +2578,7 @@ export const BucketItem = ({
           } else {
             // Track keyboard selection for other buckets (Enter key on regular items)
             track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
+            persistRecentResult();
           }
         }
       }}
