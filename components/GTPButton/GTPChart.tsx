@@ -99,6 +99,7 @@ function computeYAxisTicks({
   stack,
   yAxisMin,
   yAxisMaxOverride,
+  ySplitNumber,
 }: {
   pairedSeries: { pairedData: [number, number | null][] }[];
   xAxisMin: number | undefined;
@@ -108,10 +109,10 @@ function computeYAxisTicks({
   stack: boolean;
   yAxisMin: number;
   yAxisMaxOverride: number | undefined;
+  ySplitNumber: number | undefined;
 }): { computedYAxisMin: number; computedYAxisMax: number; yAxisStep: number; splitCount: number } {
   const shouldStack = stack || percentageMode;
-  const splitCount = clamp(Math.round((containerHeight || 512) / 120), 4, 5);
-  console.log(`computeYAxisTicks: containerHeight=${containerHeight}, splitCount=${splitCount}`);
+  const splitCount = ySplitNumber ?? clamp(Math.round((containerHeight || 512) / 120), 4, 5);
   const visibleMinTs = Number.isFinite(xAxisMin) ? Number(xAxisMin) : -Infinity;
   const visibleMaxTs = Number.isFinite(xAxisMax) ? Number(xAxisMax) : Infinity;
   const isWithinVisibleRange = (ts: number) => ts >= visibleMinTs && ts <= visibleMaxTs;
@@ -140,6 +141,30 @@ function computeYAxisTicks({
 
   const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
   const hasNegativeValues = minSeriesValue < 0;
+
+  // When ySplitNumber is set, compute a clean step that divides evenly
+  // into splitCount intervals, then snap max/min to step boundaries.
+  if (ySplitNumber !== undefined && !percentageMode && yAxisMaxOverride === undefined) {
+    const posMax = Math.max(maxSeriesValue, 0);
+    const negMin = Math.min(minSeriesValue, 0);
+    const rawRange = (posMax - Math.min(negMin, yAxisMin)) * Y_AXIS_PADDING_MULTIPLIER;
+    const rawStep = Math.max(rawRange, Number.EPSILON) / ySplitNumber;
+    const step = getNiceStep(rawStep);
+
+    let computedYAxisMax = posMax > 0 ? Math.ceil((posMax * Y_AXIS_PADDING_MULTIPLIER) / step) * step : 0;
+    let computedYAxisMin: number;
+
+    if (hasNegativeValues && yAxisMin === 0) {
+      computedYAxisMin = Math.floor((negMin * Y_AXIS_PADDING_MULTIPLIER) / step) * step;
+    } else {
+      computedYAxisMin = yAxisMin;
+      // Re-snap max so (max - min) is exactly divisible by step
+      const totalSteps = Math.ceil((computedYAxisMax - computedYAxisMin) / step);
+      computedYAxisMax = computedYAxisMin + totalSteps * step;
+    }
+
+    return { computedYAxisMin, computedYAxisMax, yAxisStep: step, splitCount };
+  }
 
   const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
   const absoluteStep = getNiceStep(rawStep);
@@ -280,8 +305,10 @@ export interface GTPChartProps {
   reverseTooltipOrder?: boolean;
   /** When true, renders a tighter x-axis with shorter ticks, smaller labels, and reduced bottom grid padding. */
   compactXAxis?: boolean;
-  /** When set, uses ECharts splitNumber instead of the computed interval for y-axis ticks. */
+  /** Overrides the auto-computed split count for y-axis ticks. Controls how many intervals the y-axis is divided into. */
   ySplitNumber?: number;
+  /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
+  decimalPercentage?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -331,6 +358,7 @@ export default function GTPChart({
   reverseTooltipOrder = false,
   compactXAxis = false,
   ySplitNumber,
+  decimalPercentage = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -873,9 +901,13 @@ export default function GTPChart({
   const formatDefaultYAxisTick = useCallback(
     (value: number) => {
       if (percentageMode) return `${Math.round(value)}%`;
+      if (decimalPercentage) {
+        const pct = value * 100;
+        return `${Number.isInteger(pct) ? pct : pct.toFixed(1)}%`;
+      }
       return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
     },
-    [decimals, percentageMode, prefix, suffix],
+    [decimals, percentageMode, decimalPercentage, prefix, suffix],
   );
 
   // Compute the actual rendered x-axis bounds before yAxisLayout so the y-max
@@ -903,6 +935,7 @@ export default function GTPChart({
   }, [pairedSeries, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
+  const effectiveYMaxOverride = decimalPercentage && yAxisMaxOverride === undefined ? 1 : yAxisMaxOverride;
   const yAxisLayout = useMemo(
     () =>
       computeYAxisTicks({
@@ -913,9 +946,10 @@ export default function GTPChart({
         percentageMode,
         stack,
         yAxisMin,
-        yAxisMaxOverride,
+        yAxisMaxOverride: effectiveYMaxOverride,
+        ySplitNumber,
       }),
-    [pairedSeries, effectiveXBounds, containerHeight, percentageMode, stack, yAxisMin, yAxisMaxOverride],
+    [pairedSeries, effectiveXBounds, containerHeight, percentageMode, stack, yAxisMin, effectiveYMaxOverride, ySplitNumber],
   );
 
   // --- Dynamic grid.left based on measured y-axis label widths ---
@@ -1085,6 +1119,7 @@ export default function GTPChart({
     };
     const formatTooltipValue = (value: number) => {
       if (percentageMode) return `${value.toFixed(1)}%`;
+      if (decimalPercentage) return `${(value * 100).toFixed(1)}%`;
       const resolvedPrefix = prefix ?? "";
       const resolvedSuffix = suffix ?? "";
       const resolvedDecimals =
@@ -1689,9 +1724,7 @@ export default function GTPChart({
         type: "value",
         min: computedYAxisMin,
         max: computedYAxisMax,
-        ...(ySplitNumber !== undefined
-          ? { splitNumber: ySplitNumber }
-          : { interval: yAxisStep }),
+        interval: yAxisStep,
         axisLine: { show: false },
         axisTick: { show: false },
         axisLabel: {
@@ -1783,7 +1816,8 @@ export default function GTPChart({
     yAxisLabelFormatter,
     formatDefaultYAxisTick,
     yAxisLayout,
-    ySplitNumber
+    ySplitNumber,
+    decimalPercentage
   ]);
 
   const containerStyle: React.CSSProperties = {

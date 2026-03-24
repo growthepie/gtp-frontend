@@ -252,8 +252,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 >
                     <GTPChart
                         height={280}
-                        compactXAxis
-                        ySplitNumber={4}
                         series={seriesData.map((s) => ({
                             ...s,
                             color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
@@ -262,6 +260,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         }))}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
+                        compactXAxis
+                        ySplitNumber={2}
+                        decimalPercentage={["success_rate"].includes(metric)}
                         className="mb-[30px]"
                     />
                     
