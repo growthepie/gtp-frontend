@@ -242,11 +242,11 @@ export default function GTPMetricCard({
 
   return (
     <div
-      className="group relative rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover xs:p-[10px] p-[15px] w-full flex justify-between h-2xl transition-colors duration-200 cursor-pointer"
+      className="group relative rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover xs:p-[10px] p-[15px]  flex justify-between h-2xl transition-colors duration-200 cursor-pointer"
       onClick={onClick}
     >
       {/* Left: icon + label */}
-      <div className="flex items-center gap-x-[10px] w-[80px] md:min-w-[175px]">
+      <div className="flex items-center gap-x-[10px] w-[80px] md:min-w-[175px] ">
         {leftIcon ?? (icon && (
           <GTPIcon
             icon={icon}
@@ -258,7 +258,7 @@ export default function GTPMetricCard({
       </div>
 
       {/* Middle: sparkline */}
-      <div className="flex-1 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible">
+      <div className="flex-1 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible ">
         <SparklineChart
           values={sparkline}
           timestamps={timestamps}
@@ -270,7 +270,7 @@ export default function GTPMetricCard({
       </div>
 
       {/* Right: value + WoW */}
-      <div className="flex flex-col gap-y-[2px] justify-center items-end min-w-[90px] md:min-w-[120px] pl-[5px] group-hover:pr-[20px] transition-all duration-200">
+      <div className="flex flex-col gap-y-[2px] justify-center items-end min-w-[80px] md:min-w-[90px] pl-[5px] group-hover:pr-[20px] transition-all duration-200 ">
         <div className="numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color }}>
           {prefix}{formatLargeNumber(value, 2)}{suffix}
         </div>
