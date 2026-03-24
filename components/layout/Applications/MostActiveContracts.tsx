@@ -13,6 +13,8 @@ import {
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
+import { theme } from "highcharts";
+import { useTheme } from "next-themes";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -25,7 +27,8 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   });
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { data: master } = useMaster();
+  const { data: master, AllChainsByKeys } = useMaster();
+  const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
   const iconNames = {
     "finance": "gtp-defi",
@@ -70,6 +73,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
     setCopiedAddress(address);
     setTimeout(() => setCopiedAddress(null), 1000);
   };
+
 
   return (
     <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] pl-[15px] py-[15px] gap-y-[10px]">
@@ -120,12 +124,14 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                   name: contract[types.indexOf("name")],
                   main_category_key: contract[types.indexOf("main_category_key")],
                   sub_category_key: contract[types.indexOf("sub_category_key")],
-                  origin_key: contract[types.indexOf("origin_key")],
+                  chain_key: contract[types.indexOf("origin_key")],
                   txcount: contract[types.indexOf("txcount")],
                   daa: contract[types.indexOf("daa")],
                   fees_paid: showUsd ? contract[types.indexOf("fees_paid_usd")] : contract[types.indexOf("fees_paid_eth")],
                   verified: contract[types.indexOf("verified")],
                 };
+                console.log(contract);
+                console.log(types);
 
                 const prefix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.prefix ?? "";
                 const suffix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.suffix ?? "";
@@ -142,9 +148,10 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                     {/* Contract name + copy + explorer */}
                     <div className="flex items-center gap-x-[6px] min-w-0">
                       <GTPIcon
-                        icon="gtp-labeled"
+                        icon={`gtp:${AllChainsByKeys[contractMap.chain_key as string].urlKey}-logo-monochrome` as GTPIconName}
                         className="!size-[16px]"
                         containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
+                        style={{ color: AllChainsByKeys[contractMap.chain_key as string].colors[theme ?? "dark"][0] }}
                       />
                       <span className="truncate text-xs">{contractMap.name as string}</span>
                       <div className="flex items-center gap-x-[4px] shrink-0">
