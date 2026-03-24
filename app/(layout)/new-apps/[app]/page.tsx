@@ -487,19 +487,19 @@ const OverviewContent = memo(({
   
 
   return (
-    <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
+    <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
       <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
       <FeaturedSection features={features} />
-      <div className="flex flex-col gap-y-[15px] pb-[10px]">
-        <div className="flex items-center gap-x-[8px]">
+      <div className="flex flex-col gap-y-[15px] py-[15px]">
+        <div className="flex items-center gap-x-[8px] ">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
           <div className="heading-large-md text-color-text-primary">
             Metrics and contracts at a glance
           </div>
         </div>
         <div className="text-sm ">
-        The Market Cap is the total value of all circulating tokens, calculated by multiplying the current price of a single token by the total number of tokens in circulation.
+          The Market Cap is the total value of all circulating tokens, calculated by multiplying the current price of a single token by the total number of tokens in circulation.
         </div>
       </div>
       {/* Two-column grid: side cards left, main cards right */}
@@ -655,7 +655,7 @@ export default function NewAppPage({
   return (
     <>
     {owner_project && projectMetadata && (
-    <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
+    <Container className="flex flex-col gap-y-[10px] pt-[45px] md:pt-[30px] select-none">
       {/* Tab bar */}
       <SectionBar>
         {TABS.map((tab, index) => (

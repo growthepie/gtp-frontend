@@ -76,7 +76,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
 
   return (
-    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] pl-[15px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px]">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
