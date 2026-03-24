@@ -26,12 +26,14 @@ export interface GTPButtonProps {
   buttonType?: "button" | "submit" | "reset";
   rightIconClassname?: string;
   leftIconClassname?: string;
+  styleModifier?: React.CSSProperties;
   rightIconClickHandler?: () => void;
   leftIconClickHandler?: () => void;
   clickHandler?: () => void;
   innerStyle?: React.CSSProperties;
   rightIconContainerClassName?: string;
   leftIconContainerClassName?: string;
+  leftIconStyle?: React.CSSProperties;
   leftIconOverride?: React.ReactNode;
   rightIconOverride?: React.ReactNode;
   onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
@@ -173,6 +175,7 @@ export const GTPButton = ({
   rightIconOverride,
   rightIconContainerClassName,
   leftIconContainerClassName,
+  leftIconStyle,
   onMouseEnter,
   onMouseLeave,
 }: GTPButtonProps) => {
@@ -263,6 +266,7 @@ export const GTPButton = ({
             clickHandler={leftIconClickHandler}
             classNameModifier={leftIconClassname}
             iconContainerClassName={leftIconContainerClassName}
+            styleModifier={leftIconStyle}
           />
         )}
         {leftIconOverride && (
@@ -301,6 +305,7 @@ const GTPButtonIcon = ({
   clickHandler,
   classNameModifier,
   iconContainerClassName,
+  styleModifier,
 }: {
   icon?: GTPIconName;
   iconClassName: string;
@@ -308,6 +313,7 @@ const GTPButtonIcon = ({
   clickHandler?: () => void;
   classNameModifier?: string;
   iconContainerClassName?: string;
+  styleModifier?: React.CSSProperties;
 }) => {
   if (!icon) {
     return null;
@@ -318,6 +324,7 @@ const GTPButtonIcon = ({
       icon={icon}
       className={`${iconClassName} ${classNameModifier ?? ""} text-current`}
       containerClassName={`${iconClassName}  ${classNameModifier ?? ""} ${iconContainerClassName}`}
+      style={styleModifier}
     />
   );
 
