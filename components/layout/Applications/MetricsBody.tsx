@@ -143,7 +143,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
         const perChain = chains.map((chain) => ({
             name: chain,
-            data: data.metrics[metric].over_time[chain].daily.data.map(
+            data: data.metrics[metric].over_time[chain][timeInterval].data.map(
                 (d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
             ),
         }));
@@ -167,7 +167,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             name: "Total",
             data: Array.from(totals.entries()).sort((a, b) => a[0] - b[0]) as [number, number | null][],
         }];
-    }, [data, metric, selectedTotal, deselectedChains]);
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
