@@ -9,7 +9,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { useRouter } from "next/navigation";
 import { getFundamentalsByKey } from "@/lib/metrics";
 import { useTheme } from "next-themes";
-import GTPMetricCard from "@/components/apps/AppMetricCard";
+import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
 import MetricRankingIcon from "./MetricRankingIcon";
 
 export default function MetricCards({

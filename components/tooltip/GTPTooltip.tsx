@@ -7,6 +7,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useSearchParams } from "next/navigation";
 import { getGTPTooltipContainerClass, GTP_TOOLTIP_SIZE_CLASS_MAP, GTPTooltipSize } from "./tooltipShared";
+import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
 
 import { computePosition, flip, shift, offset, arrow, Placement, autoUpdate } from '@floating-ui/dom';
 import { FloatingPortal, safePolygon, useDismiss, useFloating, useHover, useInteractions, useMergeRefs, useRole } from "@floating-ui/react";
@@ -495,16 +496,18 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
 
         return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <GTPIcon
-              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-              size="sm"
-              className="select-none"
-            />
-          </Link>}
+          {ownerProjectToProjectData[owner_project][key] && (
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
+          )}
         </div>
         )
       })}
@@ -523,16 +526,18 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
     <div className="flex items-center gap-x-[5px]">
       {ownerProjectToProjectData[owner_project] && APPLICATION_LINK_KEYS.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <GTPIcon
-              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-              size="sm"
-              className="select-none"
-            />
-          </Link>}
+          {ownerProjectToProjectData[owner_project][key] && (
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
+          )}
         </div>
       ))}
     </div>

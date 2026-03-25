@@ -67,6 +67,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                                 </div>
                                 
                             </div>
+                            <div className="flex items-center gap-x-[8px]">
                             {comingSoon && (
                                 <div className="flex items-center py-[2px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full overflow-hidden" style={{ width: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `50px` : "50px" }}>
                                     <div className="heading-small-xxxs transition-all text-nowrap text-background w-full text-center">
@@ -75,12 +76,13 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                                 </div>
                             )}
                             {isLocked && (
-                                <div className="flex items-center py-[2px] bg-color-bg-default rounded-full overflow-hidden" style={{ maxWidth: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `30px` : "auto" }}>
+                                <div className="flex items-center p-[2px] bg-color-bg-default rounded-full overflow-hidden" style={{ maxWidth: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `30px` : "auto" }}>
                                     <div className="heading-small-xxxs transition-all text-nowrap text-inherit ">
                                         <GTPIcon icon={"feather:lock" as GTPIconName} size="sm" className="!size-[15px]" containerClassName="!size-[15px]" />
                                     </div>
                                 </div>
                             )}
+                            </div>
                         </div>
                     }
                     containerClass="flex flex-col gap-y-[10px]"
