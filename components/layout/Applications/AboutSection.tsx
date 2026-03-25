@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { formatNumber } from "@/app/(layout)/applications/_components/Components";
+import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
 
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -86,7 +87,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                   size="sm"
                   leftIcon={"feather:globe" as GTPIconName}
                   label="Website"
-                  clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+                  clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
                 />
               )}
               {projectMetadata.twitter && (
@@ -175,7 +176,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                     size="sm"
                     leftIcon={"feather:globe" as GTPIconName}
                     label="Website"
-                    clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
                   />
                 )}
                 {projectMetadata.twitter && (

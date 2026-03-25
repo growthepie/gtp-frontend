@@ -30,6 +30,7 @@ import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 import { SmartBackButton } from "@/components/SmartBackButton";
+import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -442,44 +443,71 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
   if (mobile) {
     return (
       <div className="flex flex-col items-center justify-start gap-y-[10px]">
-        {validLinks.map(({ key, icon, prefix }) => (
-          <Link
-            key={key}
-            href={`${prefix}${projectData[key]}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center"
-          >
-            <Icon icon={icon} className="size-[15px] select-none" />
-          </Link>
-        ))}
+        {validLinks.map(({ key, icon, prefix }) => {
+          const href = `${prefix}${projectData[key]}`;
+          const className = "flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center";
+
+          if (key === "website") {
+            return (
+              <ExternalLink key={key} href={href} className={className} onClick={(e) => e.stopPropagation()}>
+                <Icon icon={icon} className="size-[15px] select-none" />
+              </ExternalLink>
+            );
+          }
+
+          return (
+            <Link
+              key={key}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={className}
+            >
+              <Icon icon={icon} className="size-[15px] select-none" />
+            </Link>
+          );
+        })}
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-x-[10px]">
-      {validLinks.map(({ key, icon, prefix }) => (
-        <Link
-          key={key}
-          href={`${prefix}${projectData[key]}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`}
-        >
-          {key === "website" ? (
-            <>
-              <ApplicationIcon owner_project={owner_project} size="md" />
-              <div className="text-xxxs">Website</div>
-              <div className="size-[24px] rounded-full bg-color-bg-medium flex justify-center items-center">
-                <Icon icon="feather:arrow-right" className="size-[17px] text-color-text-primary" />
-              </div>
-            </>
-          ) : (
-            <Icon icon={icon} className="size-[24px] select-none" />
-          )}
-        </Link>
-      ))}
+      {validLinks.map(({ key, icon, prefix }) => {
+        const href = `${prefix}${projectData[key]}`;
+        const className = `${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`;
+        const content = key === "website" ? (
+          <>
+            <ApplicationIcon owner_project={owner_project} size="md" />
+            <div className="text-xxxs">Website</div>
+            <div className="size-[24px] rounded-full bg-color-bg-medium flex justify-center items-center">
+              <Icon icon="feather:arrow-right" className="size-[17px] text-color-text-primary" />
+            </div>
+          </>
+        ) : (
+          <Icon icon={icon} className="size-[24px] select-none" />
+        );
+
+        if (key === "website") {
+          return (
+            <ExternalLink key={key} href={href} className={className} onClick={(e) => e.stopPropagation()}>
+              {content}
+            </ExternalLink>
+          );
+        }
+
+        return (
+          <Link
+            key={key}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={className}
+          >
+            {content}
+          </Link>
+        );
+      })}
     </div>
   );
 });
@@ -836,15 +864,29 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
 
             return (
               <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
-                {ownerProjectToProjectData[owner_project][key] && <Link
-                  href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                  target="_blank"
-                >
-                  <Icon
-                    icon={icons[index]}
-                    className="w-[15px] h-[15px] select-none"
-                  />
-                </Link>}
+                {ownerProjectToProjectData[owner_project][key] && (
+                  key === "website" ? (
+                    <ExternalLink
+                      href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Icon
+                        icon={icons[index]}
+                        className="w-[15px] h-[15px] select-none"
+                      />
+                    </ExternalLink>
+                  ) : (
+                    <Link
+                      href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+                      target="_blank"
+                    >
+                      <Icon
+                        icon={icons[index]}
+                        className="w-[15px] h-[15px] select-none"
+                      />
+                    </Link>
+                  )
+                )}
               </div>
             )
           })}
