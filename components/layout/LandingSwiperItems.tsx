@@ -79,7 +79,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["eip-8004"];
+const quickBiteIds = ["celo-anniversary-report"];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
