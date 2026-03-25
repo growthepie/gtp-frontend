@@ -45,6 +45,7 @@ const celoAnniversaryReport: QuickBiteData = createQuickBite({
   title: "Celo: 1 Year as Ethereum Layer 2",
   subtitle: "This report celebrates the 1 year anniversary of Celo's transition to an Ethereum Layer 2.",
   shortTitle: "Report: Celo L2",
+  showInMenu: true,
   content: [
     "```container",
     JSON.stringify({
