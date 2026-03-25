@@ -277,7 +277,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                 onMouseLeave={() => setHoverSeriesName(null)}
                             >
                                 <GTPButton
-                                    label={selectedTotal ? "Total" : AllChainsByKeys[s.name]?.name_short ?? s.name}
+                                    label={selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name}
                                     variant="primary"
                                     size="xs"
                                     clickHandler={() => {
