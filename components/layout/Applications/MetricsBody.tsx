@@ -1,3 +1,4 @@
+import React from "react";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
@@ -119,7 +120,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             </div>
             <div className="grid grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {}).map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} />
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
             </div>
         </div>
@@ -127,9 +128,9 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[] }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
-    const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
+    const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
@@ -213,38 +214,31 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                                                    <GTPButton
-                            label={!collapseTable ? undefined : "Open Table"}
-                            leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
-                            size={"sm"}
-                            variant={!collapseTable ? "no-background" : "highlight"}
-                            visualState="default"
-                            clickHandler={() => setCollapseTable(!collapseTable)}
-                        />
                      
-                        <GTPButtonDropdown
-                            openDirection="top"
-                            matchTriggerWidthToDropdown
-                            buttonProps={{
-                                label: "Share",
-                                labelDisplay: "active",
-                                leftIcon: "gtp-share-monochrome",
-                                size: "sm",
-                                variant: "no-background",
-                            }}
-                            isOpen={isSharePopoverOpen}
-                            onOpenChange={setIsSharePopoverOpen}
-                            dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
-                        />
-                      
-                        <GTPButton
-                            leftIcon="gtp-download-monochrome"
-                            size={"sm"}
-                            variant="no-background"
-                            visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
-                            disabled={isDownloadingChartSnapshot}
-                            clickHandler={() => setIsDownloadingChartSnapshot(true)}
-                        />
+                            <GTPButtonDropdown
+                                openDirection="top"
+                                matchTriggerWidthToDropdown
+                                buttonProps={{
+                                    label: "Share",
+                                    labelDisplay: "active",
+                                    leftIcon: "gtp-share-monochrome",
+                                    size: "sm",
+                                    variant: "no-background",
+                                }}
+                                className="!size-[28px]"
+                                isOpen={isSharePopoverOpen}
+                                onOpenChange={setIsSharePopoverOpen}
+                                dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                            />
+                        
+                            <GTPButton
+                                leftIcon="gtp-download-monochrome"
+                                size={"sm"}
+                                variant="no-background"
+                                visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                                disabled={isDownloadingChartSnapshot}
+                                clickHandler={() => setIsDownloadingChartSnapshot(true)}
+                            />
                         </GTPButtonRow>
                         <GTPButtonRow wrap={false}
                             className="flex-nowrap"
@@ -277,28 +271,29 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                     
                     <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 
                     >
-                        {!selectedTotal && seriesData.map((s) => (
+                        {seriesData.map((s) => (
                             <div className="" key={s.name + "app-metric-chart-legend"}
                                 onMouseEnter={() => setHoverSeriesName(s.name)}
                                 onMouseLeave={() => setHoverSeriesName(null)}
                             >
                                 <GTPButton
-                                    label={AllChainsByKeys[s.name]?.name_short ?? s.name}
+                                    label={selectedTotal ? "Total" : AllChainsByKeys[s.name]?.name_short ?? s.name}
                                     variant="primary"
                                     size="xs"
                                     clickHandler={() => {
-                                        setInactiveSeriesNames((prev) => {
+                                        if(selectedTotal) return;
+                                        setDeselectedChains((prev) => {
                                             const next = new Set(prev);
                                             if (next.has(s.name)) {
                                                 next.delete(s.name);
                                             } else {
                                                 next.add(s.name);
                                             }
-                                            return next;
+                                            return Array.from(next);
                                         });
                                     }}
                                     rightIcon={
-                                        hoverSeriesName === s.name
+                                        hoverSeriesName === s.name && !selectedTotal
                                           ? inactiveSeriesNames.has(s.name)
                                             ? "in-button-plus"
                                             : "in-button-close"

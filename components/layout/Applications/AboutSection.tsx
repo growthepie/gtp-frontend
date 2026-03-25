@@ -318,36 +318,44 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
           })}
         </div>
   
-        {/* Bar — visual uses overlapping pills; hover uses proportional math on container */}
-        <div
-          className="flex h-[13px] w-full rounded-full overflow-hidden cursor-default"
-          onMouseMove={handleBarMouseMove}
-          onMouseLeave={() => setHoveredChain(null)}
-        >
-          {filtered.map(([chain], index) => {
-            const isFirst = index === 0;
-            const isLast = index === filtered.length - 1;
-            const leftExtra = isFirst ? 0 : BAR_OVERLAP;
-            const rightExtra = isLast ? 0 : BAR_OVERLAP;
-            const widthPct = (renderPx[index] / BAR_NOTIONAL) * 100;
-            const isDimmed = hoveredChain !== null && hoveredChain !== chain;
-  
-            return (
-              <div
-                key={chain + "-bar"}
-                className="h-full rounded-full shrink-0 pointer-events-none"
-                style={{
-                  width: `calc(${widthPct}% + ${leftExtra + rightExtra}px)`,
-                  marginLeft: isFirst ? 0 : `-${leftExtra}px`,
-                  marginRight: isLast ? 0 : `-${rightExtra}px`,
-                  zIndex: sorted.length - index,
-                  backgroundColor: AllChainsByKeys[chain]?.colors[chainColorTheme][0],
-                  opacity: isDimmed ? 0.35 : 1,
-                  transition: "opacity 0.15s",
-                }}
-              />
-            );
-          })}
+        {/* Bar — outer ring matches MetricChainBreakdownBar sizing */}
+        <div className="flex items-center h-[12px] w-full rounded-full p-[2px]">
+          <div
+            className="flex h-[10px] w-full rounded-full overflow-hidden cursor-default bg-black/60"
+            onMouseMove={handleBarMouseMove}
+            onMouseLeave={() => setHoveredChain(null)}
+          >
+            {filtered.map(([chain], index) => {
+              const isFirst = index === 0;
+              const isLast = index === filtered.length - 1;
+              const leftExtra = isFirst ? 0 : BAR_OVERLAP;
+              const rightExtra = isLast ? 0 : BAR_OVERLAP;
+              const widthPct = (renderPx[index] / BAR_NOTIONAL) * 100;
+              const baseColor = AllChainsByKeys[chain]?.colors[chainColorTheme][0];
+              const isHovered = hoveredChain === chain;
+              const isDimmed = hoveredChain !== null && !isHovered;
+              const bgColor = isDimmed
+                ? `color-mix(in srgb, ${baseColor} 15%, rgb(var(--bg-default)) 85%)`
+                : baseColor;
+
+              return (
+                <div
+                  key={chain + "-bar"}
+                  className="h-full rounded-r-full shrink-0 pointer-events-none"
+                  style={{
+                    position: "relative",
+                    width: `calc(${widthPct}% + ${leftExtra + rightExtra}px)`,
+                    marginLeft: isFirst ? 0 : `-${leftExtra}px`,
+                    marginRight: isLast ? 0 : `-${rightExtra}px`,
+                    zIndex: sorted.length - index,
+                    backgroundColor: bgColor,
+                    boxShadow: isHovered ? `0 0 10px ${baseColor}66` : "none",
+                    transition: "box-shadow 150ms, background-color 150ms",
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
   
         {/* Hover info — fixed height prevents layout shift */}

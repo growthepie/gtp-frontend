@@ -427,10 +427,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
-        {randomProjects.filter((project) => project.sub_category !== projectMetadata.sub_category && project.sub_category !== null).map((project) => {
-          const logoPath = project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0];
-          const displayName = project[filteredProjectsData?.types?.indexOf("display_name") ?? 0];
-          
+        {randomProjects.filter((project) => project.sub_category === projectMetadata.sub_category && project.sub_category !== null && project.owner_project !== projectMetadata.owner_project).map((project) => {
           return (
 
           <GTPTooltipNew
