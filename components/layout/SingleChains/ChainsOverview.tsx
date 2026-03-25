@@ -21,6 +21,7 @@ import { useMediaQuery } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
+import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
 
 
 const socials = {
@@ -500,8 +501,8 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
         <div className={`px-[30px] @[1155px]/header:pl-0 w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] ${!open ? "max-w-[1200px] max-h-[110px] opacity-100 transition-[opacity] duration-300  " : "max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
-          {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
-          {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
+          {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} useDisclaimer />}
+          {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} useDisclaimer />}
           {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
           {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
@@ -585,8 +586,8 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
                 <MetricTab title="Links" largerGap={true}>
                   <div className="flex flex-row flex-wrap @[1145px]:flex-row gap-[5px]">
 
-                        {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} />}
-                        {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />}
+                        {master.chains[chainKey].links.website && <LinkButton icon={master.chains[chainKey].links.website ? `gtp:${master.chains[chainKey].url_key}-logo-monochrome` as GTPIconName : "gtp-bridge"} color={AllChainsByKeys[chainKey].colors[theme ?? "dark"][0]} label="Website" href={master.chains[chainKey].links.website} useDisclaimer />}
+                        {Object.keys(master.chains[chainKey].links.socials).length > 0 && <LinkDropdown icon="gtp-socials" label="Socials" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} useDisclaimer />}
                         {master.chains[chainKey].links.github && <LinkButton icon="ri:github-fill" label="Github" href={master.chains[chainKey].links.github} />}
 
                         {master.chains[chainKey].links.docs && <LinkButton icon={master.chains[chainKey].links.docs ? `gtp-read` as GTPIconName : "gtp-bridge"} label="Docs" href={master.chains[chainKey].links.docs} />}
@@ -663,25 +664,36 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
 
 
 
-export const LinkButton = ({ icon, label, href, color }: { icon: string | null, label: string, href: string, color?: string }) => {
+export const LinkButton = ({ icon, label, href, color, useDisclaimer = false }: { icon: string | null, label: string, href: string, color?: string, useDisclaimer?: boolean }) => {
 
-
-  return (
-    <Link href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer"
-
-    >
+  const content = (
+    <>
       {icon && <GTPIcon icon={icon as GTPIconName} className={`!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px] ${color ? `text-[${color}]` : "text-color-text-primary"}`} containerClassName="!w-[16px] !h-[16px] flex justify-center items-center" 
       style={{
         color: color ? color : "rgb(var(--text-primary))",
       }}
       />}
       <div className=" text-xs xs:text-sm">{label}</div>
+    </>
+  );
+
+  if (useDisclaimer) {
+    return (
+      <ExternalLink href={href} className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer">
+        {content}
+      </ExternalLink>
+    );
+  }
+
+  return (
+    <Link href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-x-[8px] hover:bg-color-ui-hover bg-color-bg-medium px-[15px] rounded-[20px] h-[26px] cursor-pointer">
+      {content}
     </Link>
-  )
+  );
 }
 
 
-export const LinkDropdown = ({ icon, label, links }: { icon?: string, label: string, links: { icon?: string, label: string, href: string }[] }) => {
+export const LinkDropdown = ({ icon, label, links, useDisclaimer = false }: { icon?: string, label: string, links: { icon?: string, label: string, href: string }[], useDisclaimer?: boolean }) => {
   const [linkHeight, setLinkHeight] = useState(26);
   const [panelWidth, setPanelWidth] = useState<number | null>(null);
   const [chipBaseWidth, setChipBaseWidth] = useState<number | null>(null);
@@ -718,12 +730,21 @@ export const LinkDropdown = ({ icon, label, links }: { icon?: string, label: str
         <div ref={measureRef} className="rounded-b-[22px] p-[10px] w-fit">
           <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
             {links.map((link) => (
-              <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
-                <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
-                  <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
-                  <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
-                </div>
-              </Link>
+              useDisclaimer ? (
+                <ExternalLink href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+                  <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
+                    <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                    <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
+                  </div>
+                </ExternalLink>
+              ) : (
+                <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+                  <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
+                    <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                    <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
+                  </div>
+                </Link>
+              )
             ))}
           </div>
         </div>
@@ -738,12 +759,21 @@ export const LinkDropdown = ({ icon, label, links }: { icon?: string, label: str
       >
         <div className="flex flex-col gap-y-[10px] w-full pt-[28px]">
           {links.map((link) => (
-            <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
-              <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
-                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
-                <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
-              </div>
-            </Link>
+            useDisclaimer ? (
+              <ExternalLink href={link.href} key={link.label} className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+                <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
+                  <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                  <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
+                </div>
+              </ExternalLink>
+            ) : (
+              <Link href={link.href} key={link.label} target="_blank" rel="noopener noreferrer" className="block w-full group/row cursor-pointer hover:bg-color-ui-hover pl-[22px] -my-[2px]">
+                <div className="flex items-center gap-x-[5px] w-full grow-row relative h-[26px]">
+                  <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} size="sm" />
+                  <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">{link.label}</div>
+                </div>
+              </Link>
+            )
           ))}
         </div>
       </div>

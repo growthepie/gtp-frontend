@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
-import { LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
@@ -91,12 +90,11 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                 />
               )}
               {projectMetadata.twitter && (
-                <LinkDropdown
-                  icon="gtp-socials"
-                  label="Socials"
-                  links={[
-                    { icon: "ri:twitter-x-fill", label: "Twitter", href: `https://x.com/${projectMetadata.twitter}` },
-                  ]}
+                <GTPButton
+                  size="sm"
+                  leftIcon={"gtp:x" as GTPIconName}
+                  label="Twitter"
+                  clickHandler={() => openExternalLinkWithDisclaimer(`https://x.com/${projectMetadata.twitter}`)}
                 />
               )}
               {projectMetadata.main_github && (
@@ -104,7 +102,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                   size="sm"
                   leftIcon={"github" as GTPIconName}
                   label="Github"
-                  clickHandler={() => window.open(projectMetadata.main_github ?? "", "_blank", "noopener,noreferrer")}
+                  clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.main_github ?? "")}
                 />
               )}
               {projectMetadata.website && (
@@ -180,12 +178,11 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                   />
                 )}
                 {projectMetadata.twitter && (
-                  <LinkDropdown
-                    icon="gtp-socials"
-                    label="Socials"
-                    links={[
-                      { icon: "ri:twitter-x-fill", label: "Twitter", href: `https://x.com/${projectMetadata.twitter}` },
-                    ]}
+                  <GTPButton
+                    size="sm"
+                    leftIcon={"gtp:x" as GTPIconName}
+                    label="Twitter"
+                    clickHandler={() => openExternalLinkWithDisclaimer(`https://x.com/${projectMetadata.twitter}`)}
                   />
                 )}
                 {projectMetadata.main_github && (
@@ -193,7 +190,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                     size="sm"
                     leftIcon={"github" as GTPIconName}
                     label="Github"
-                    clickHandler={() => window.open(projectMetadata.main_github ?? "", "_blank", "noopener,noreferrer")}
+                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.main_github ?? "")}
                   />
                 )}
                 {projectMetadata.website && (

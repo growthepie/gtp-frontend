@@ -446,25 +446,15 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
         {validLinks.map(({ key, icon, prefix }) => {
           const href = `${prefix}${projectData[key]}`;
           const className = "flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center";
-
-          if (key === "website") {
-            return (
-              <ExternalLink key={key} href={href} className={className} onClick={(e) => e.stopPropagation()}>
-                <Icon icon={icon} className="size-[15px] select-none" />
-              </ExternalLink>
-            );
-          }
-
           return (
-            <Link
+            <ExternalLink
               key={key}
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
               className={className}
+              onClick={(e) => e.stopPropagation()}
             >
               <Icon icon={icon} className="size-[15px] select-none" />
-            </Link>
+            </ExternalLink>
           );
         })}
       </div>
@@ -488,24 +478,15 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
           <Icon icon={icon} className="size-[24px] select-none" />
         );
 
-        if (key === "website") {
-          return (
-            <ExternalLink key={key} href={href} className={className} onClick={(e) => e.stopPropagation()}>
-              {content}
-            </ExternalLink>
-          );
-        }
-
         return (
-          <Link
+          <ExternalLink
             key={key}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
             className={className}
+            onClick={(e) => e.stopPropagation()}
           >
             {content}
-          </Link>
+          </ExternalLink>
         );
       })}
     </div>
@@ -865,27 +846,15 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
             return (
               <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
                 {ownerProjectToProjectData[owner_project][key] && (
-                  key === "website" ? (
-                    <ExternalLink
-                      href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Icon
-                        icon={icons[index]}
-                        className="w-[15px] h-[15px] select-none"
-                      />
-                    </ExternalLink>
-                  ) : (
-                    <Link
-                      href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                      target="_blank"
-                    >
-                      <Icon
-                        icon={icons[index]}
-                        className="w-[15px] h-[15px] select-none"
-                      />
-                    </Link>
-                  )
+                  <ExternalLink
+                    href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Icon
+                      icon={icons[index]}
+                      className="w-[15px] h-[15px] select-none"
+                    />
+                  </ExternalLink>
                 )}
               </div>
             )
@@ -903,16 +872,15 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
       {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
           {ownerProjectToProjectData[owner_project][key] && (
-            <Link
+            <ExternalLink
               href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-              target="_blank"
-              onClick={(e)=> {e.stopPropagation(); e.preventDefault()}}
+              onClick={(e)=> {e.stopPropagation();}}
             >
               <Icon
                 icon={icons[index]}
                 className="w-[15px] h-[15px] select-none"
               />
-            </Link>
+            </ExternalLink>
           )}
         </div>
       ))}

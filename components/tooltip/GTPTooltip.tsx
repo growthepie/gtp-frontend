@@ -497,29 +497,16 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
         return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
           {ownerProjectToProjectData[owner_project][key] && (
-            key === "website" ? (
-              <ExternalLink
-                href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <GTPIcon
-                  icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-                  size="sm"
-                  className="select-none"
-                />
-              </ExternalLink>
-            ) : (
-              <Link
-                href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                target="_blank"
-              >
-                <GTPIcon
-                  icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-                  size="sm"
-                  className="select-none"
-                />
-              </Link>
-            )
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
           )}
         </div>
         )
@@ -540,29 +527,16 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
       {ownerProjectToProjectData[owner_project] && APPLICATION_LINK_KEYS.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
           {ownerProjectToProjectData[owner_project][key] && (
-            key === "website" ? (
-              <ExternalLink
-                href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <GTPIcon
-                  icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-                  size="sm"
-                  className="select-none"
-                />
-              </ExternalLink>
-            ) : (
-              <Link
-                href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                target="_blank"
-              >
-                <GTPIcon
-                  icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-                  size="sm"
-                  className="select-none"
-                />
-              </Link>
-            )
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
           )}
         </div>
       ))}
