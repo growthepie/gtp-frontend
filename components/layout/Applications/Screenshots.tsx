@@ -1,10 +1,9 @@
 "use client"
-import { memo, useState, useCallback, useEffect } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import Image from "next/image";
-import { createPortal } from "react-dom";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { GrayOverlay } from "@/components/layout/Backgrounds";
 
 type ApplicationEnrichmentScreenshot = {
     alt_text: string | null;
@@ -23,7 +22,11 @@ function getAppScrapeAssetUrl(
     return `https://api.growthepie.com/v1/apps/scrape/${ownerProject}/${pageId}/${filename}`;
 }
 
-const ScreenshotsSection = memo(({
+// Hides scrollbars while keeping content natively scrollable
+const noScrollbar = "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]";
+
+const ScreenshotsSection = memo(
+  ({
     owner_project,
     screenshots,
   }: {
@@ -31,318 +34,244 @@ const ScreenshotsSection = memo(({
     screenshots: ApplicationEnrichmentScreenshot[];
   }) => {
     const [open, setOpen] = useState(true);
-    const [selectedScreenshotIndex, setSelectedScreenshotIndex] = useState<number | null>(null);
-  
-    if (!screenshots.length) {
-      return null;
-    }
-  
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const [lastActiveIndex, setLastActiveIndex] = useState<number>(0);
+    const stripRef = useRef<HTMLDivElement>(null);
+
+    const isExpanded = selectedIndex !== null;
+
+    const handleThumbClick = useCallback((index: number) => {
+      setSelectedIndex(index);
+      setLastActiveIndex(index);
+    }, []);
+
+    const handleClose = useCallback(() => {
+      setSelectedIndex(null);
+    }, []);
+
+    const handleNavigate = useCallback((direction: 1 | -1) => {
+      setSelectedIndex((prev) => {
+        if (prev === null) return null;
+        const next = (prev + direction + screenshots.length) % screenshots.length;
+        setLastActiveIndex(next);
+        return next;
+      });
+    }, [screenshots.length]);
+
+    // Keyboard navigation
+    useEffect(() => {
+      if (!isExpanded) return;
+      const handleKey = (e: KeyboardEvent) => {
+        if (e.key === "Escape") handleClose();
+        if (e.key === "ArrowLeft") handleNavigate(-1);
+        if (e.key === "ArrowRight") handleNavigate(1);
+      };
+      document.addEventListener("keydown", handleKey);
+      return () => document.removeEventListener("keydown", handleKey);
+    }, [isExpanded, handleClose, handleNavigate]);
+
+    // Ensure the last viewed thumbnail stays in view when closing
+    useEffect(() => {
+      if (!isExpanded && stripRef.current) {
+        const thumbs = stripRef.current.children;
+        if (thumbs[lastActiveIndex]) {
+          thumbs[lastActiveIndex].scrollIntoView({
+            behavior: "smooth",
+            inline: "center",
+            block: "nearest",
+          });
+        }
+      }
+    }, [isExpanded, lastActiveIndex]);
+
+    // Touch swipe for expanded view
+    const touchStartX = useRef<number | null>(null);
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+    }, []);
+    const handleTouchEnd = useCallback(
+      (e: React.TouchEvent) => {
+        if (touchStartX.current === null || !isExpanded) return;
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        if (Math.abs(dx) > 50) {
+          handleNavigate(dx > 0 ? -1 : 1);
+        }
+        touchStartX.current = null;
+      },
+      [isExpanded, handleNavigate],
+    );
+
+    if (!screenshots.length) return null;
+
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
-        {/* Header: toggle + "Screenshots" */}
+
+        {/* Header */}
         <div
-          className="flex items-center gap-x-[10px] cursor-pointer w-fit"
+          className="flex items-center gap-x-[10px] cursor-pointer w-fit mb-3"
           onClick={() => setOpen((v) => !v)}
         >
           <GTPIcon
             icon="in-button-right-monochrome"
             size="sm"
             className="!size-[14px]"
-            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
+            containerClassName={`!size-[26px] !flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-transform duration-300 ${
               open ? "rotate-90" : "rotate-0"
             }`}
           />
-          <div className="heading-large-md text-color-text-secondary">Screenshots</div>
-        </div>
-  
-        {/* Collapsible body */}
-        <div
-          style={{
-            maxHeight: open ? 380 : 0,
-            paddingTop: open ? "12px" : 0,
-            overflow: "hidden",
-            opacity: open ? 1 : 0,
-            transition: "max-height 0.35s ease-in-out, opacity 0.3s ease-in-out, padding-top 0.3s ease-in-out",
-          }}
-        >
-          <div className="flex h-[220px] gap-x-[10px] overflow-x-auto pb-[4px]">
-            {screenshots.map((shot, i) => {
-              const imageUrl = getAppScrapeAssetUrl(
-                owner_project,
-                shot.page_id,
-                "thumb.webp",
-              );
-              const title = shot.title?.trim() || `Screenshot ${i + 1}`;
-              const caption = shot.caption?.trim();
-  
-              return (
-                <button
-                  key={shot.page_id}
-                  type="button"
-                  onClick={() => setSelectedScreenshotIndex(i)}
-                  className="group relative flex min-w-[220px] items-end overflow-hidden rounded-[16px] bg-color-bg-medium text-left transition-all duration-300 hover:-translate-y-[2px] focus:outline-none focus:ring-2 focus:ring-[#d4f500]/60"
-                  style={{
-                    flex: i === 0 ? 2 : 1,
-                  }}
-                  title={title}
-                >
-                  <Image
-                    src={imageUrl}
-                    alt={shot.alt_text?.trim() || title}
-                    fill
-                    sizes="(max-width: 768px) 80vw, 25vw"
-                    className="object-cover [object-position:center_top] scale-[1.01] transform-gpu transition-transform duration-500 group-hover:scale-[1.05]"
-                  />
-                  <div className="absolute -inset-[1px] bg-[linear-gradient(180deg,rgba(5,12,11,0.08)_0%,rgba(5,12,11,0.16)_38%,rgba(5,12,11,0.88)_100%)]" />
-                  <div className="relative z-[1] w-full px-[12px] py-[12px]">
-                    <div className="truncate text-[13px] font-semibold text-white">
-                      {title}
-                    </div>
-                    {caption && (
-                      <div className="mt-[2px] line-clamp-2 text-[11px] leading-[1.35] text-white/75">
-                        {caption}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="heading-large-md text-color-text-secondary">
+            Screenshots
           </div>
         </div>
-        <ScreenshotsLightbox
-          owner_project={owner_project}
-          screenshots={screenshots}
-          selectedIndex={selectedScreenshotIndex}
-          onClose={() => setSelectedScreenshotIndex(null)}
-          onSelect={setSelectedScreenshotIndex}
-        />
-      </div>
-    );
-  });
-  ScreenshotsSection.displayName = "ScreenshotsSection";
 
-
-  const ScreenshotsLightbox = memo(({
-    owner_project,
-    screenshots,
-    selectedIndex,
-    onClose,
-    onSelect,
-  }: {
-    owner_project: string;
-    screenshots: ApplicationEnrichmentScreenshot[];
-    selectedIndex: number | null;
-    onClose: () => void;
-    onSelect: (index: number) => void;
-  }) => {
-    const selectedScreenshot =
-      selectedIndex !== null ? screenshots[selectedIndex] : null;
-  
-    const selectPrevious = useCallback(() => {
-      if (selectedIndex === null) return;
-      onSelect((selectedIndex - 1 + screenshots.length) % screenshots.length);
-    }, [onSelect, screenshots.length, selectedIndex]);
-  
-    const selectNext = useCallback(() => {
-      if (selectedIndex === null) return;
-      onSelect((selectedIndex + 1) % screenshots.length);
-    }, [onSelect, screenshots.length, selectedIndex]);
-  
-    useEffect(() => {
-      if (selectedIndex === null) {
-        return;
-      }
-  
-      const previousOverflow = document.body.style.overflow;
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
-          onClose();
-        }
-        if (event.key === "ArrowLeft") {
-          selectPrevious();
-        }
-        if (event.key === "ArrowRight") {
-          selectNext();
-        }
-      };
-  
-      document.body.style.overflow = "hidden";
-      document.addEventListener("keydown", handleKeyDown);
-  
-      return () => {
-        document.body.style.overflow = previousOverflow;
-        document.removeEventListener("keydown", handleKeyDown);
-      };
-    }, [onClose, selectNext, selectPrevious, selectedIndex]);
-  
-    if (!selectedScreenshot || selectedIndex === null) {
-      return null;
-    }
-  
-    const imageUrl = getAppScrapeAssetUrl(
-      owner_project,
-      selectedScreenshot.page_id,
-      "screenshot.webp",
-    );
-    const title =
-      selectedScreenshot.title?.trim() || `Screenshot ${selectedIndex + 1}`;
-    const caption = selectedScreenshot.caption?.trim();
-    const sourceUrl = selectedScreenshot.url?.trim();
-  
-    return createPortal(
-      <>
-        <GrayOverlay onClick={onClose} zIndex={1200} />
+        {/* Collapsible Gallery Body */}
         <div
-          className="fixed inset-0 z-[1201] flex items-center justify-center p-[10px] md:p-[24px]"
-          onClick={onClose}
-          role="dialog"
-          aria-modal="true"
-          aria-label={title}
+          className="transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] origin-top relative w-full overflow-hidden rounded-[16px]"
+          style={{
+            height: open ? (isExpanded ? "75vh" : "187px") : "0px",
+            maxHeight: open ? (isExpanded ? "900px" : "187px") : "0px",
+            opacity: open ? 1 : 0,
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
+          {/* Main Strip (Flex container morphs layout based on selectedIndex) */}
           <div
-            className="relative flex h-full max-h-[calc(100vh-20px)] w-full max-w-[1440px] flex-col overflow-hidden rounded-[24px] bg-color-bg-medium p-[5px] shadow-[0px_0px_50px_0px_#000000]"
-            onClick={(event) => event.stopPropagation()}
+            ref={stripRef}
+            className={`flex w-full h-full items-center ${noScrollbar} ${
+              isExpanded ? "overflow-hidden" : "overflow-x-auto snap-x snap-mandatory"
+            }`}
           >
-            <div className="flex min-h-0 flex-1 flex-col gap-[5px]">
-              <div className="flex items-center justify-between gap-[10px] rounded-[20px] bg-color-bg-default px-[15px] py-[10px] md:px-[20px]">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-bold text-color-text-primary">
-                    {title}
+            {screenshots.map((shot, i) => {
+              const imageUrl = getAppScrapeAssetUrl(owner_project, shot.page_id, "screenshot.webp");
+              const title = shot.title?.trim() || `Screenshot ${i + 1}`;
+              const isActive = selectedIndex === i;
+
+              return (
+                <div
+                  key={shot.page_id}
+                  onClick={() => !isActive && handleThumbClick(i)}
+                  className={`group relative shrink-0 h-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] overflow-hidden ${
+                    isExpanded
+                      ? isActive
+                        ? "w-full mr-0 opacity-100 rounded-[16px] bg-[#0A0A0A] shadow-inner"
+                        : "w-0 mr-0 opacity-0 scale-95 pointer-events-none"
+                      : "min-w-[360px] md:w-[360px] mr-[14px] opacity-100 rounded-[14px] snap-center cursor-pointer hover:-translate-y-1 bg-color-bg-medium ring-1 ring-black/5"
+                  }`}
+                >
+                  {/* Layer 1: Thumbnail View (Crossfades out when active) */}
+                  <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`}>
+                    <img
+                      src={imageUrl}
+                      alt={title}
+                      sizes="(max-width: 768px) 80vw, 25vw"
+                      className="object-cover object-top transition-all duration-[6000ms] ease-in-out group-hover:object-bottom scale-[1.01]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-80" />
+                    <div className="absolute bottom-0 inset-x-0 p-[14px] translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                      <div className="truncate text-[13px] font-semibold text-white drop-shadow-md">
+                        {title}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[11px] uppercase tracking-[0.18em] text-color-text-secondary">
-                    {selectedIndex + 1} / {screenshots.length}
-                  </div>
-                </div>
-                <div className="flex items-center gap-[5px]">
-                  {sourceUrl && (
-                    <a
-                      href={sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hidden items-center rounded-full bg-color-bg-medium px-[12px] py-[8px] text-[11px] font-medium text-color-text-primary transition-colors hover:bg-color-ui-hover md:inline-flex"
-                    >
-                      Visit page
-                    </a>
-                  )}
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="inline-flex size-[36px] items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary transition-colors hover:bg-color-ui-hover"
-                    aria-label="Close screenshots viewer"
-                  >
-                    <Icon icon="feather:x" className="size-[18px]" />
-                  </button>
-                </div>
-              </div>
-              <div className="grid min-h-0 flex-1 grid-cols-1 gap-[5px] md:grid-cols-[minmax(0,1fr)_280px]">
-                <div className="relative min-h-[320px] overflow-hidden rounded-[20px] bg-color-bg-default">
-                  <div className="h-full overflow-auto px-[12px] py-[12px] md:px-[18px] md:py-[18px]">
-                    <div className="mx-auto flex min-h-full w-full max-w-[980px] items-start justify-center">
-                      <Image
+
+                  {/* Layer 2: Expanded Scrollable View (Crossfades in when active) */}
+                  <div className={`absolute inset-0 overflow-y-auto w-full h-full ${noScrollbar} transition-opacity duration-500 delay-100 ${isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"}`}>
+                    <div className="mx-auto w-full max-w-[1200px] min-h-full flex flex-col pb-[100px]">
+                      <img
                         src={imageUrl}
-                        alt={selectedScreenshot.alt_text?.trim() || title}
+                        alt={title}
                         width={1600}
-                        height={2400}
+                        height={3200}
                         sizes="100vw"
-                        priority
-                        className="h-auto w-full rounded-[16px] bg-color-bg-medium"
+                        className="w-full h-auto object-contain"
                       />
                     </div>
                   </div>
-  
-                  {screenshots.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={selectPrevious}
-                        className="absolute left-[12px] top-1/2 inline-flex size-[42px] -translate-y-1/2 items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary shadow-standard transition-colors hover:bg-color-ui-hover"
-                        aria-label="Previous screenshot"
-                      >
-                        <Icon icon="feather:chevron-left" className="size-[20px]" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={selectNext}
-                        className="absolute right-[12px] top-1/2 inline-flex size-[42px] -translate-y-1/2 items-center justify-center rounded-full bg-color-bg-medium text-color-text-primary shadow-standard transition-colors hover:bg-color-ui-hover"
-                        aria-label="Next screenshot"
-                      >
-                        <Icon icon="feather:chevron-right" className="size-[20px]" />
-                      </button>
-                    </>
-                  )}
                 </div>
-  
-                <div className="flex min-h-0 flex-col gap-[5px]">
-                  <div className="rounded-[20px] bg-color-bg-default px-[14px] py-[14px] md:px-[16px]">
-                    <div className="text-[11px] uppercase tracking-[0.18em] text-color-text-secondary">
-                      Screenshot details
-                    </div>
-                    {caption ? (
-                      <div className="mt-[8px] text-[13px] leading-[1.55] text-color-text-primary">
-                        {caption}
-                      </div>
-                    ) : (
-                      <div className="mt-[8px] text-[13px] leading-[1.55] text-color-text-secondary">
-                        No caption provided for this capture.
-                      </div>
-                    )}
+              );
+            })}
+          </div>
+
+          {/* Overlay Controls (Fades in over the active image) */}
+          <div
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+              isExpanded ? "opacity-100 z-20" : "opacity-0 z-0"
+            }`}
+          >
+            {/* Bottom Bar */}
+            <div className="absolute bottom-0 inset-x-0 flex items-start justify-between p-[15px] pt-[45px] bg-gradient-to-t from-black to-transparent">
+              <div className="pointer-events-none flex flex-col gap-1 max-w-[70%]">
+                <Link className={`flex gap-x-[5px] items-center ${isExpanded ? "pointer-events-auto" : "pointer-events-none"}`} href={screenshots[selectedIndex ?? 0]?.url || "#"} target="_blank" rel="noopener noreferrer">
+                  <div className="heading-sm text-white drop-shadow-lg truncate">
+                    {screenshots[selectedIndex ?? 0]?.title?.trim() || `Screenshot ${(selectedIndex ?? 0) + 1}`}
                   </div>
-  
-                  <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden rounded-[20px] bg-color-bg-default md:overflow-y-auto md:overflow-x-hidden">
-                    <div className="flex gap-[10px] p-[12px] md:flex-col md:p-[14px]">
-                      {screenshots.map((shot, index) => {
-                        const thumbUrl = getAppScrapeAssetUrl(
-                          owner_project,
-                          shot.page_id,
-                          "thumb.webp",
-                        );
-                        const thumbTitle =
-                          shot.title?.trim() || `Screenshot ${index + 1}`;
-                        const isActive = selectedIndex === index;
-  
-                        return (
-                          <button
-                            key={shot.page_id}
-                            type="button"
-                            onClick={() => onSelect(index)}
-                            className={`group flex min-w-[144px] gap-[10px] rounded-[16px] p-[8px] text-left transition-all ${
-                              isActive
-                                ? "bg-color-bg-medium shadow-standard"
-                                : "bg-color-bg-default hover:bg-color-bg-medium"
-                            }`}
-                          >
-                            <div className="relative h-[74px] w-[88px] shrink-0 overflow-hidden rounded-[10px] bg-color-bg-medium">
-                              <Image
-                                src={thumbUrl}
-                                alt={shot.alt_text?.trim() || thumbTitle}
-                                fill
-                                sizes="160px"
-                                className="object-cover [object-position:center_top]"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-[12px] font-semibold text-color-text-primary">
-                                {thumbTitle}
-                              </div>
-                              <div className="mt-[4px] text-[10px] uppercase tracking-[0.16em] text-color-text-secondary">
-                                {index + 1} / {screenshots.length}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                    <GTPIcon icon={"feather:external-link" as GTPIconName} size="sm"  />
+                </Link>
+                <div className="text-sm text-white/80 line-clamp-2 drop-shadow-md min-h-[50px]">
+                  {screenshots[selectedIndex ?? 0]?.caption}
                 </div>
               </div>
+
+              <div className="pointer-events-auto flex items-center gap-2">
+              </div>
             </div>
+            <button
+              onClick={handleClose}
+              className="pointer-events-auto absolute top-[15px] right-[15px] inline-flex size-[36px] items-center justify-center rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/10 text-white transition-all shadow-lg"
+            >
+              <GTPIcon icon={"gtp-close-monochrome"} size="sm" />
+            </button>
+
+            {/* Side Navigation Arrows */}
+            {screenshots.length > 1 && (
+              <>
+                <button
+                  onClick={() => handleNavigate(-1)}
+                  className="pointer-events-auto absolute left-4 top-1/2 -translate-y-1/2 inline-flex size-[44px] items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/10 text-white transition-all hover:scale-105 shadow-xl"
+                >
+                  <Icon icon="feather:chevron-left" className="size-[22px]" />
+                </button>
+                <button
+                  onClick={() => handleNavigate(1)}
+                  className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 inline-flex size-[44px] items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/10 text-white transition-all hover:scale-105 shadow-xl"
+                >
+                  <Icon icon="feather:chevron-right" className="size-[22px]" />
+                </button>
+              </>
+            )}
+
+            {/* Floating Mini-Nav (Bottom) */}
+            {screenshots.length > 1 && (
+              <div className="absolute bottom-6 inset-x-0 flex justify-center pointer-events-none">
+                <div className="pointer-events-auto flex gap-[8px] p-[8px] rounded-[16px] bg-black/50 backdrop-blur-lg border border-white/10 shadow-2xl overflow-x-auto max-w-[90%] md:max-w-[70%] noScrollbar">
+                  {screenshots.map((shot, i) => (
+                    <button
+                      key={shot.page_id + "-mini"}
+                      onClick={() => handleThumbClick(i)}
+                      className={`relative shrink-0 w-[45px] h-[30px] rounded-[8px] overflow-hidden transition-all duration-300 ${
+                        selectedIndex === i
+                          ? "ring-2 ring-white scale-105 opacity-100"
+                          : "opacity-50 hover:opacity-100 hover:scale-105"
+                      }`}
+                    >
+                      <img
+                        src={getAppScrapeAssetUrl(owner_project, shot.page_id, "thumb.webp")}
+                        alt=""
+                        className="object-cover object-top"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
-      </>,
-      document.body,
+      </div>
     );
-  });
-  ScreenshotsLightbox.displayName = "ScreenshotsLightbox";
+  },
+);
+ScreenshotsSection.displayName = "ScreenshotsSection";
 
-
-  export default ScreenshotsSection;
+export default ScreenshotsSection;

@@ -64,7 +64,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       if (stringMetrics.has(sort.metric)) {
         return dir * ((bVal as string ?? "").localeCompare(aVal as string ?? ""));
       }
-      return sort.metric === "feesPaid" ? dir * ((bVal as number ?? 0) - (aVal as number ?? 0)) : dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
+      return dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
     });
   }, [data.contracts_table, sort, showUsd]);
 
@@ -76,7 +76,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
 
   return (
-    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] pl-[15px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px]">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
@@ -130,8 +130,6 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
                   fees_paid: showUsd ? contract[types.indexOf("fees_paid_usd")] : contract[types.indexOf("fees_paid_eth")],
                   verified: contract[types.indexOf("verified")],
                 };
-                console.log(contract);
-                console.log(types);
 
                 const prefix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.prefix ?? "";
                 const suffix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.suffix ?? "";

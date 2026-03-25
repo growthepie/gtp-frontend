@@ -1,3 +1,4 @@
+import React from "react";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
@@ -15,6 +16,7 @@ import GTPChart from "@/components/GTPButton/GTPChart";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
+import { A } from "million/dist/shared/million.485bbee4";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -27,18 +29,15 @@ const INTERVALS = {
         label: "Daily",
         value: "daily",
     },
-    weekly: {
-        label: "Weekly",
-        value: "weekly",
-    },
 } as const;
 
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
-    const [selectedTotal, setSelectedTotal] = useState(false);
+    const [selectedTotal, setSelectedTotal] = useState(true);
     const [timeInterval, setTimeInterval] = useState("daily");
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
+    const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     
 
 
@@ -50,16 +49,28 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <div className="flex items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm  ">Chains Selected</div>
                     <div className="flex items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {Object.keys(projectMetadata.active_on ?? {}).map((chain) => {
+                    {Object.keys(projectMetadata.active_on ?? {}).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
-                                key={chain}
+                                key={chain + i}
                                 label={AllChainsByKeys[chain]?.name_short}
                                 leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
                                 leftIconStyle={{ color: chainColor }}
-                                visualState="active"
+                                visualState={deselectedChains.includes(chain) ? "default" : "active"}
+                                labelDisplay={i < 5 ? "always" : "hover"}
                                 size="md"
+                                clickHandler={() => {
+                                    setDeselectedChains((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(chain)) {
+                                            next.delete(chain);
+                                        } else {
+                                            next.add(chain);
+                                        }
+                                        return Array.from(next);
+                                    });
+                                }}
                             />
                         )
                     })}
@@ -110,7 +121,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             </div>
             <div className="grid grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {}).map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} />
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
             </div>
         </div>
@@ -118,18 +129,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal}: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
-    const [inactiveSeriesNames, setInactiveSeriesNames] = useState<Set<string>>(new Set());
+    const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
-    const { AllChainsByKeys } = useMaster();
+    const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
-
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
-        const chains = Object.keys(data.metrics[metric].over_time);
+        const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
         const perChain = chains.map((chain) => ({
             name: chain,
             data: data.metrics[metric].over_time[chain].daily.data.map(
@@ -156,7 +167,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             name: "Total",
             data: Array.from(totals.entries()).sort((a, b) => a[0] - b[0]) as [number, number | null][],
         }];
-    }, [data, metric, selectedTotal]);
+    }, [data, metric, selectedTotal, deselectedChains]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -167,7 +178,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         return { xMin, xMax };
     }, [timespans, selectedTimespan]);
 
-    const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "absolute");
+    const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
+    const metricData = master?.app_metrics?.[metric];
+    const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
 
 
     return (
@@ -204,38 +217,31 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                                                    <GTPButton
-                            label={!collapseTable ? undefined : "Open Table"}
-                            leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
-                            size={"sm"}
-                            variant={!collapseTable ? "no-background" : "highlight"}
-                            visualState="default"
-                            clickHandler={() => setCollapseTable(!collapseTable)}
-                        />
                      
-                        <GTPButtonDropdown
-                            openDirection="top"
-                            matchTriggerWidthToDropdown
-                            buttonProps={{
-                                label: "Share",
-                                labelDisplay: "active",
-                                leftIcon: "gtp-share-monochrome",
-                                size: "sm",
-                                variant: "no-background",
-                            }}
-                            isOpen={isSharePopoverOpen}
-                            onOpenChange={setIsSharePopoverOpen}
-                            dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
-                        />
-                      
-                        <GTPButton
-                            leftIcon="gtp-download-monochrome"
-                            size={"sm"}
-                            variant="no-background"
-                            visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
-                            disabled={isDownloadingChartSnapshot}
-                            clickHandler={() => setIsDownloadingChartSnapshot(true)}
-                        />
+                            <GTPButtonDropdown
+                                openDirection="top"
+                                matchTriggerWidthToDropdown
+                                buttonProps={{
+                                    label: "Share",
+                                    labelDisplay: "active",
+                                    leftIcon: "gtp-share-monochrome",
+                                    size: "sm",
+                                    variant: "no-background",
+                                }}
+                                className="!size-[28px]"
+                                isOpen={isSharePopoverOpen}
+                                onOpenChange={setIsSharePopoverOpen}
+                                dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                            />
+                        
+                            <GTPButton
+                                leftIcon="gtp-download-monochrome"
+                                size={"sm"}
+                                variant="no-background"
+                                visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                                disabled={isDownloadingChartSnapshot}
+                                clickHandler={() => setIsDownloadingChartSnapshot(true)}
+                            />
                         </GTPButtonRow>
                         <GTPButtonRow wrap={false}
                             className="flex-nowrap"
@@ -251,47 +257,60 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
                 >
                     <GTPChart
-                        height="446px"
+                        height={280}
+                        stack={selectedScale === "stacked"}
+                        percentageMode={selectedScale === "percentage"}
                         series={seriesData.map((s) => ({
                             ...s,
-                            color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
-                            seriesType: "line" as const,
+                            //color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
+                            seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
                             name: AllChainsByKeys[s.name]?.name_short ?? s.name,
+                            color: s.name === "Total" ? [AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1]] 
+                                                    : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
                         }))}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
+                        compactXAxis
+                        ySplitNumber={2}
+                        showTotal={selectedScale === "stacked"}
+                        decimalPercentage={["success_rate"].includes(metric)}
                         className="mb-[30px]"
+                        suffix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.suffix ?? undefined}
+                        prefix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.prefix ?? undefined}
+                        decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
                     />
                     
-                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[30px] h-[20px]" 
+                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 
                     >
-                        {!selectedTotal && seriesData.map((s) => (
+                        {seriesData.map((s) => (
                             <div className="" key={s.name + "app-metric-chart-legend"}
                                 onMouseEnter={() => setHoverSeriesName(s.name)}
                                 onMouseLeave={() => setHoverSeriesName(null)}
                             >
                                 <GTPButton
-                                    label={AllChainsByKeys[s.name]?.name_short ?? s.name}
+                                    label={selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name}
                                     variant="primary"
                                     size="xs"
                                     clickHandler={() => {
-                                        setInactiveSeriesNames((prev) => {
+                                        if(selectedTotal) return;
+                                        setDeselectedChains((prev) => {
                                             const next = new Set(prev);
                                             if (next.has(s.name)) {
                                                 next.delete(s.name);
                                             } else {
                                                 next.add(s.name);
                                             }
-                                            return next;
+                                            return Array.from(next);
                                         });
                                     }}
                                     rightIcon={
-                                        hoverSeriesName === s.name
+                                        hoverSeriesName === s.name && !selectedTotal
                                           ? inactiveSeriesNames.has(s.name)
                                             ? "in-button-plus"
                                             : "in-button-close"
                                           : undefined
                                     }
+                                    animateRightIcon
                                     rightIconClassname="!w-[12px] !h-[12px]"
                                     textClassName={inactiveSeriesNames.has(s.name) ? "text-color-text-secondary" : undefined}
                                     className={inactiveSeriesNames.has(s.name) ? "border border-color-bg-medium" : undefined}
