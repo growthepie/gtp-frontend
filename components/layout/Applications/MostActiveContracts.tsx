@@ -64,7 +64,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       if (stringMetrics.has(sort.metric)) {
         return dir * ((bVal as string ?? "").localeCompare(aVal as string ?? ""));
       }
-      return sort.metric === "feesPaid" ? dir * ((bVal as number ?? 0) - (aVal as number ?? 0)) : dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
+      return dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
     });
   }, [data.contracts_table, sort, showUsd]);
 
