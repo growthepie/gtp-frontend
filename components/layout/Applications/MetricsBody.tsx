@@ -16,6 +16,7 @@ import GTPChart from "@/components/GTPButton/GTPChart";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
+import { A } from "million/dist/shared/million.485bbee4";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -32,7 +33,7 @@ const INTERVALS = {
 
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
-    const [selectedTotal, setSelectedTotal] = useState(false);
+    const [selectedTotal, setSelectedTotal] = useState(true);
     const [timeInterval, setTimeInterval] = useState("daily");
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
@@ -134,9 +135,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
-    const { AllChainsByKeys } = useMaster();
+    const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
-
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
         const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
@@ -177,7 +178,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         return { xMin, xMax };
     }, [timespans, selectedTimespan]);
 
-    const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "absolute");
+    const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
+    const metricData = master?.app_metrics?.[metric];
+    const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
 
 
     return (
@@ -255,18 +258,26 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 >
                     <GTPChart
                         height={280}
+                        stack={selectedScale === "stacked"}
+                        percentageMode={selectedScale === "percentage"}
                         series={seriesData.map((s) => ({
                             ...s,
-                            color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
-                            seriesType: "line" as const,
+                            //color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
+                            seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
                             name: AllChainsByKeys[s.name]?.name_short ?? s.name,
+                            color: s.name === "Total" ? [AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1]] 
+                                                    : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
                         }))}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
                         compactXAxis
                         ySplitNumber={2}
+                        showTotal={selectedScale === "stacked"}
                         decimalPercentage={["success_rate"].includes(metric)}
                         className="mb-[30px]"
+                        suffix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.suffix ?? undefined}
+                        prefix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.prefix ?? undefined}
+                        decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
                     />
                     
                     <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 

@@ -706,7 +706,7 @@ export default function NewAppPage({
             <SectionBarItem
               isSelected={selectedTab === tab.key}
               isLocked={false}
-              comingSoon={false}
+              comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
               header={tab.getHeader(FAKE_APP)}
               index={index + 1}
