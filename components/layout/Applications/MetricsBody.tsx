@@ -191,9 +191,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 <GTPIcon icon={`gtp-${metric_data.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
                 <div className="heading-large-xxs xs:heading-large-xs">{metric_data.name}</div>
             </div>
-            <div className="pt-[15px] text-sm">
+            {/* <div className="pt-[15px] text-sm">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </div>
+            </div> */}
             <div className="pt-[15px]">
                 <GTPCardLayout
                  className=""
