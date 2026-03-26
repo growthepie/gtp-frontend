@@ -11,6 +11,7 @@ import { ToastProvider } from "@/components/toast/GTPToast";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useEffect } from "react";
 import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
+import { WalletProvider } from "@/contexts/WalletContext";
 
 // load icons
 // addCollection(GTPIcons);
@@ -147,7 +148,9 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
                 <UIContextProvider>
                 <ToastProvider>
                   {/* <ConfettiProvider> */}
-                    {children}
+                    <WalletProvider>
+                      {children}
+                    </WalletProvider>
                   {/* </ConfettiProvider> */}
                 </ToastProvider>
               </UIContextProvider>
