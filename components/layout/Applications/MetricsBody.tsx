@@ -16,7 +16,7 @@ import GTPChart from "@/components/GTPButton/GTPChart";
 import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
-import { A } from "million/dist/shared/million.485bbee4";
+import { useAppColors } from "@/hooks/useAppColors";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -130,13 +130,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
 
 const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
+    const { theme } = useTheme();
+    const { getAppColors } = useAppColors();
+    const appColor = getAppColors(owner_project, theme);
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
     const { AllChainsByKeys, data: master } = useMaster();
-    const { theme } = useTheme();
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
@@ -262,11 +264,11 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         percentageMode={selectedScale === "percentage"}
                         series={seriesData.map((s) => ({
                             ...s,
-                            //color: s.name === "Total" ? AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0],
                             seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
                             name: AllChainsByKeys[s.name]?.name_short ?? s.name,
-                            color: s.name === "Total" ? [AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys["all_l2s"]?.colors?.[theme ?? "dark"]?.[1]] 
-                                                    : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
+                            color: s.name === "Total"
+                                ? [appColor[0], appColor[1]]
+                                : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
                         }))}
                         xAxisMin={xMin}
                         xAxisMax={xMax}

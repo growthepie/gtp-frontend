@@ -23,6 +23,7 @@ import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
 import MetricsBody from "@/components/layout/Applications/MetricsBody";
+import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -479,8 +480,9 @@ SimilarAppsSection.displayName = "SimilarAppsSection";
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
-    <div className="flex min-h-[50px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <div className="text-center text-base text-color-text-primary">
+    <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
+      <GTPIcon icon="gtp-defi" size="md" />
+      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
     </div>
@@ -503,6 +505,9 @@ const OverviewContent = memo(({
   enrichmentData: ApplicationEnrichmentData | null | undefined;
 }) => {
   const { data: masterData } = useMaster();
+  const { resolvedTheme } = useTheme();
+  const { getAppColors } = useAppColors();
+  const appColor = getAppColors(owner_project, resolvedTheme);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -554,7 +559,7 @@ const OverviewContent = memo(({
               value={data.kpi_cards[metric].current_values.data[0]} 
               wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
-              color={"#627EEA"} 
+              color={appColor[0]}
               icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
