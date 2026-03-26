@@ -39,6 +39,17 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { theme } = useTheme();
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
+
+    const hasHourlyData = useMemo(() => {
+        return Object.fromEntries(
+            Object.keys(data.metrics ?? {}).map((metric) => [
+                metric,
+                Object.keys(data.metrics[metric].over_time).some((chain) =>
+                    Object.keys(data.metrics[metric].over_time[chain]).some((ti) => ti === "hourly")
+                ),
+            ])
+        ) as Record<string, boolean>;
+    }, [data]);
     
 
     function filterTimespans(timespan: string, timeInterval: string) {
@@ -48,10 +59,9 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             return !( timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
         }
     }
-    
 
 
-    console.log(cachedTimespans);
+
 
     
     return (
@@ -141,7 +151,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             
             </div>
             <div className="grid grid-cols-2 gap-x-[30px]">
-                {Object.keys(data.metrics ?? {}).map((metric) => (
+                {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
             </div>
