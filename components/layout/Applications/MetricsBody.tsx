@@ -38,9 +38,20 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
+    const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
+    
+
+    function filterTimespans(timespan: string, timeInterval: string) {
+        if (timeInterval === "daily") {
+            return !(timespan === "1d" || timespan === "3d" || timespan === "7d" || timespan === "30d");
+        } else {
+            return !( timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
+        }
+    }
     
 
 
+    console.log(cachedTimespans);
 
     
     return (
@@ -96,7 +107,17 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{ width: "auto" }}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} clickHandler={() => setTimeInterval(interval)} />
+                                <GTPButton key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} 
+                                clickHandler={() => {
+                                    if(cachedTimespans !== null) {
+                                        setSelectedTimespan(cachedTimespans);
+                                    }else{
+                                        interval === "hourly" ? setSelectedTimespan("7d") : setSelectedTimespan("90d");
+                                    }
+                                    setCachedTimespans(selectedTimespan);
+                                    setTimeInterval(interval);
+
+                                }} />
                             ))}
                         </GTPButtonRow>
                     <div className="flex gap-x-[5px]" >
@@ -104,7 +125,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            {Object.keys(timespans).filter((timespan) => !(timespan === "1d" || timespan === "7d" || timespan === "30d")).map((timespan) => (
+                            {Object.keys(timespans).filter((timespan) => filterTimespans(timespan, timeInterval)).map((timespan) => (
                                 <GTPButton key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
                             ))}
                         </GTPButtonRow>
@@ -139,6 +160,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
     const { AllChainsByKeys, data: master } = useMaster();
+    const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
@@ -175,14 +197,23 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
     const { xMin, xMax } = useMemo(() => {
         const days = timespans[selectedTimespan]?.value ?? 0;
-        const xMax = new Date().getTime();
+        let latestTs = 0;
+        for (const series of seriesData) {
+            if (series.data.length > 0) {
+                const ts = series.data[series.data.length - 1][0];
+                if (ts > latestTs) latestTs = ts;
+            }
+        }
+        const xMax = latestTs > 0 ? latestTs : new Date().getTime();
         const xMin = days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
         return { xMin, xMax };
-    }, [timespans, selectedTimespan]);
+    }, [timespans, selectedTimespan, seriesData]);
 
     const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
+    
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
+
 
 
     return (
@@ -291,7 +322,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             >
                                 <GTPButton
                                     label={selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name}
-                                    variant="primary"
+                                    variant="primary" 
                                     size="xs"
                                     clickHandler={() => {
                                         if(selectedTotal) return;
@@ -319,7 +350,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     leftIconOverride={(
                                         <div
                                             className="min-w-[6px] min-h-[6px] rounded-full"
-                                            style={{ backgroundColor: AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
+                                            style={{ backgroundColor: s.name === "Total" ? appColor[0] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
                                         />
                                     )}
                                 />

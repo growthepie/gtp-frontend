@@ -115,6 +115,7 @@ export default async function Layout(props: {
       ))}
       <TimespanProvider timespans={{
         "1d":   { shortLabel: "1d",  label: "1 day",   value: 1 },
+        "3d":   { shortLabel: "3d",  label: "3 days",  value: 3 },
         "7d":   { shortLabel: "7d",  label: "7 days",  value: 7 },
         "30d":  { shortLabel: "30d", label: "30 days", value: 30 },
         "90d":  { shortLabel: "90d", label: "90 days", value: 90 },

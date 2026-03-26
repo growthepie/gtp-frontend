@@ -612,7 +612,7 @@ const TABS = [
   {
     key: "overview",
     icon: "gtp:gtp-project",
-    getHeader: (app: typeof FAKE_APP) => app.name,
+    
   },
   {
     key: "metrics",
@@ -713,7 +713,7 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
-              header={tab.getHeader(FAKE_APP)}
+              header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
               index={index + 1}
               isHovered={hoveredTab === tab.key}
             />
