@@ -15,6 +15,7 @@ import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
+import { GTPButton } from "@/components/GTPButton/GTPButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
@@ -1799,6 +1800,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     !memoizedQuery &&
     isSearchInputFocused &&
     recentResults.length > 0;
+  const showBothRecentSections = showRecentSearches && showRecentResults;
 
   useEffect(() => {
     // reset lastBucketIndeces
@@ -2291,7 +2293,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden">
             <div className="flex gap-x-[10px] items-center shrink-0 md:h-[24px]">
-              <div className="flex items-center justify-center size-[15px]">
+              <div className="flex items-center justify-center w-[24px] h-[24px]">
                 <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
               </div>
               <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
@@ -2306,13 +2308,12 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                   Last {MAX_RECENT_SEARCHES} searches
                 </div>
                 <div onMouseDown={handleClearRecentSearchesMouseDown}>
-                  <HeaderButton
-                    size="sm"
-                    className="!px-[10px] !h-[24px]"
-                    ariaLabel="Clear recent searches"
-                  >
-                    <span className="text-xxs text-color-text-primary">Clear</span>
-                  </HeaderButton>
+                  <GTPButton
+                    label="Clear"
+                    size="xs"
+                    className="!h-[24px]"
+                    clickHandler={handleClearRecentSearches}
+                  />
                 </div>
               </div>
               <div className="flex flex-wrap gap-[5px]">
@@ -2332,47 +2333,50 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         </div>
       )}
       {showRecentResults && (
-        <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
-          <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden">
-            <div className="flex gap-x-[10px] items-center shrink-0 md:h-[24px]">
-              <div className="flex items-center justify-center size-[15px]">
-                <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
+        <div className={showBothRecentSections ? "w-full max-w-full box-border bg-color-ui-active px-[1px] pb-[1px] rounded-b-[27px] overflow-hidden" : ""}>
+          <div className={showBothRecentSections ? "bg-color-bg-default rounded-b-[27px]" : ""}>
+            <div className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+            <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden">
+              <div className="flex gap-x-[10px] items-center shrink-0 md:h-[24px]">
+                <div className="flex items-center justify-center w-[24px] h-[24px]">
+                  <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
+                </div>
+                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                  <span className="text-color-text-primary">Recent Results</span>
+                </div>
+                <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
               </div>
-              <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
-                <span className="text-color-text-primary">Recent Results</span>
-              </div>
-              <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
-            </div>
 
-            <div className="flex flex-col gap-[8px] w-full">
-              <div className="flex items-center justify-between gap-x-[10px] md:h-[24px]">
-                <div className="text-xxs text-color-text-secondary">
-                  Last {MAX_RECENT_RESULTS} visited results
-                </div>
-                <div onMouseDown={handleClearRecentResultsMouseDown}>
-                  <HeaderButton
-                    size="sm"
-                    className="!px-[10px] !h-[24px]"
-                    ariaLabel="Clear recent results"
-                  >
-                    <span className="text-xxs text-color-text-primary">Clear</span>
-                  </HeaderButton>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-[5px]">
-                {recentResults.map((recentResult) => (
-                  <Link key={`${recentResult.url}::${recentResult.label}`} href={recentResult.url}>
-                    <SearchBadge
-                      className="!cursor-pointer"
-                      label={recentResult.label}
-                      leftIcon={recentResult.icon || "feather:clock"}
-                      leftIconColor={recentResult.color || "rgb(var(--text-primary))"}
-                      rightIcon=""
+              <div className="flex flex-col gap-[8px] w-full">
+                <div className="flex items-center justify-between gap-x-[10px] md:h-[24px]">
+                  <div className="text-xxs text-color-text-secondary">
+                    Last {MAX_RECENT_RESULTS} visited results
+                  </div>
+                  <div onMouseDown={handleClearRecentResultsMouseDown}>
+                    <GTPButton
+                      label="Clear"
+                      size="xs"
+                      className="!h-[24px]"
+                      clickHandler={handleClearRecentResults}
                     />
-                  </Link>
-                ))}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-[5px]">
+                  {recentResults.map((recentResult) => (
+                    <Link key={`${recentResult.url}::${recentResult.label}`} href={recentResult.url}>
+                      <SearchBadge
+                        className="!cursor-pointer"
+                        label={recentResult.label}
+                        leftIcon={recentResult.icon || "feather:clock"}
+                        leftIconColor={recentResult.color || "rgb(var(--text-primary))"}
+                        rightIcon=""
+                      />
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       )}
