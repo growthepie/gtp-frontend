@@ -192,26 +192,39 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             ),
         }));
 
+        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
+
         if (!selectedTotal) return perChain;
 
-        // Build a map of timestamp → sum across all chains
-        const totals = new Map<number, number | null>();
+        // Build a map of timestamp → sum and count across all chains
+        const sums = new Map<number, number | null>();
+        const counts = new Map<number, number>();
         for (const { data: points } of perChain) {
             for (const [ts, val] of points) {
-                if (!totals.has(ts)) {
-                    totals.set(ts, val);
+                if (!sums.has(ts)) {
+                    sums.set(ts, val);
+                    counts.set(ts, val !== null ? 1 : 0);
                 } else {
-                    const existing = totals.get(ts)!;
-                    totals.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    const existing = sums.get(ts)!;
+                    sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
                 }
             }
         }
 
+        const totals: [number, number | null][] = Array.from(sums.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([ts, sum]) => {
+                if (!showAvg || sum === null) return [ts, sum];
+                const count = counts.get(ts) ?? 0;
+                return [ts, count > 0 ? sum / count : null];
+            });
+
         return [{
             name: "Total",
-            data: Array.from(totals.entries()).sort((a, b) => a[0] - b[0]) as [number, number | null][],
+            data: totals,
         }];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval]);
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -233,6 +246,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
+    const isSuccessRateMetric = metric === "success_rate";
 
 
 
@@ -316,7 +330,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         series={seriesData.map((s) => ({
                             ...s,
                             seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
-                            name: AllChainsByKeys[s.name]?.name_short ?? s.name,
+                            name: AllChainsByKeys[s.name]?.name_short ?? isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total",
                             color: s.name === "Total"
                                 ? [appColor[0], appColor[1]]
                                 : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
@@ -325,7 +339,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         xAxisMax={xMax}
                         compactXAxis
                         ySplitNumber={2}
-                        showTotal={selectedScale === "stacked"}
+                        showTotal={selectedScale === "stacked" && !isSuccessRateMetric}
                         decimalPercentage={["success_rate"].includes(metric)}
                         className="mb-[30px]"
                         suffix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.suffix ?? undefined}
