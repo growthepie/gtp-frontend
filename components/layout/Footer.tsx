@@ -63,7 +63,7 @@ export default function Footer() {
             <FooterLink
               leftIcon={<Image src={APIIcon} alt="API" width={24} height={24} />}
               label="API"
-              href="https://docs.growthepie.com/api"
+              href="https://docs.growthepie.com/api-reference/api"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="github-monochrome" size="md" className="text-color-text-primary" />}
