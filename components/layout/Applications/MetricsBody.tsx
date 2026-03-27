@@ -50,6 +50,14 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             ])
         ) as Record<string, boolean>;
     }, [data]);
+
+    const chainOrder = useMemo(() => {
+        const original = data.chains_by_size ?? [];
+        const deselectedSet = new Set(deselectedChains);
+        const selected = original.filter((chain) => !deselectedSet.has(chain));
+        const deselected = original.filter((chain) => deselectedSet.has(chain));
+        return [...selected, ...deselected];
+    }, [data, deselectedChains]);
     
 
     function filterTimespans(timespan: string, timeInterval: string) {
@@ -63,6 +71,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
 
 
+
+
     
     return (
         <div className="pt-[30px] w-full">
@@ -70,7 +80,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <div className="flex items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm  ">Chains Selected</div>
                     <div className="flex items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {Object.keys(projectMetadata.active_on ?? {}).map((chain, i) => {
+                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton

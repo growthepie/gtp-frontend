@@ -18,9 +18,11 @@ export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   kpi_cards:        KpiCards;
   first_seen:       FirstSeenByChain;
+  chains_by_size:   string[];
   contracts_table: {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
 }
+
 
 export interface FirstSeenByChain {
   [chain: string]: string;
