@@ -38,7 +38,38 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
+    const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
+
+    const hasHourlyData = useMemo(() => {
+        return Object.fromEntries(
+            Object.keys(data.metrics ?? {}).map((metric) => [
+                metric,
+                Object.keys(data.metrics[metric].over_time).some((chain) =>
+                    Object.keys(data.metrics[metric].over_time[chain]).some((ti) => ti === "hourly")
+                ),
+            ])
+        ) as Record<string, boolean>;
+    }, [data]);
+
+    const chainOrder = useMemo(() => {
+        const original = data.chains_by_size ?? [];
+        const deselectedSet = new Set(deselectedChains);
+        const selected = original.filter((chain) => !deselectedSet.has(chain));
+        const deselected = original.filter((chain) => deselectedSet.has(chain));
+        return [...selected, ...deselected];
+    }, [data, deselectedChains]);
     
+
+    function filterTimespans(timespan: string, timeInterval: string) {
+        if (timeInterval === "daily") {
+            return !(timespan === "1d" || timespan === "3d" || timespan === "7d" || timespan === "30d");
+        } else {
+            return !( timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
+        }
+    }
+
+
+
 
 
 
@@ -49,7 +80,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <div className="flex items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm  ">Chains Selected</div>
                     <div className="flex items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {Object.keys(projectMetadata.active_on ?? {}).map((chain, i) => {
+                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
@@ -96,7 +127,17 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{ width: "auto" }}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} clickHandler={() => setTimeInterval(interval)} />
+                                <GTPButton key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} 
+                                clickHandler={() => {
+                                    if(cachedTimespans !== null) {
+                                        setSelectedTimespan(cachedTimespans);
+                                    }else{
+                                        interval === "hourly" ? setSelectedTimespan("7d") : setSelectedTimespan("90d");
+                                    }
+                                    setCachedTimespans(selectedTimespan);
+                                    setTimeInterval(interval);
+
+                                }} />
                             ))}
                         </GTPButtonRow>
                     <div className="flex gap-x-[5px]" >
@@ -104,7 +145,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            {Object.keys(timespans).filter((timespan) => !(timespan === "1d" || timespan === "7d" || timespan === "30d")).map((timespan) => (
+                            {Object.keys(timespans).filter((timespan) => filterTimespans(timespan, timeInterval)).map((timespan) => (
                                 <GTPButton key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
                             ))}
                         </GTPButtonRow>
@@ -120,7 +161,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             
             </div>
             <div className="grid grid-cols-2 gap-x-[30px]">
-                {Object.keys(data.metrics ?? {}).map((metric) => (
+                {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
             </div>
@@ -139,6 +180,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const [collapseTable, setCollapseTable] = useState(false);
     const { AllChainsByKeys, data: master } = useMaster();
+    const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
@@ -150,39 +192,62 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             ),
         }));
 
+        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
+
         if (!selectedTotal) return perChain;
 
-        // Build a map of timestamp → sum across all chains
-        const totals = new Map<number, number | null>();
+        // Build a map of timestamp → sum and count across all chains
+        const sums = new Map<number, number | null>();
+        const counts = new Map<number, number>();
         for (const { data: points } of perChain) {
             for (const [ts, val] of points) {
-                if (!totals.has(ts)) {
-                    totals.set(ts, val);
+                if (!sums.has(ts)) {
+                    sums.set(ts, val);
+                    counts.set(ts, val !== null ? 1 : 0);
                 } else {
-                    const existing = totals.get(ts)!;
-                    totals.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    const existing = sums.get(ts)!;
+                    sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
                 }
             }
         }
 
+        const totals: [number, number | null][] = Array.from(sums.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([ts, sum]) => {
+                if (!showAvg || sum === null) return [ts, sum];
+                const count = counts.get(ts) ?? 0;
+                return [ts, count > 0 ? sum / count : null];
+            });
+
         return [{
             name: "Total",
-            data: Array.from(totals.entries()).sort((a, b) => a[0] - b[0]) as [number, number | null][],
+            data: totals,
         }];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval]);
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
     const { xMin, xMax } = useMemo(() => {
         const days = timespans[selectedTimespan]?.value ?? 0;
-        const xMax = new Date().getTime();
+        let latestTs = 0;
+        for (const series of seriesData) {
+            if (series.data.length > 0) {
+                const ts = series.data[series.data.length - 1][0];
+                if (ts > latestTs) latestTs = ts;
+            }
+        }
+        const xMax = latestTs > 0 ? latestTs : new Date().getTime();
         const xMin = days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
         return { xMin, xMax };
-    }, [timespans, selectedTimespan]);
+    }, [timespans, selectedTimespan, seriesData]);
 
     const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
+    
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
+    const isSuccessRateMetric = metric === "success_rate";
+
 
 
     return (
@@ -265,7 +330,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         series={seriesData.map((s) => ({
                             ...s,
                             seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
-                            name: AllChainsByKeys[s.name]?.name_short ?? s.name,
+                            name: AllChainsByKeys[s.name]?.name_short ?? isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total",
                             color: s.name === "Total"
                                 ? [appColor[0], appColor[1]]
                                 : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
@@ -274,7 +339,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         xAxisMax={xMax}
                         compactXAxis
                         ySplitNumber={2}
-                        showTotal={selectedScale === "stacked"}
+                        showTotal={selectedScale === "stacked" && !isSuccessRateMetric}
                         decimalPercentage={["success_rate"].includes(metric)}
                         className="mb-[30px]"
                         suffix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.suffix ?? undefined}
@@ -291,7 +356,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             >
                                 <GTPButton
                                     label={selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name}
-                                    variant="primary"
+                                    variant="primary" 
                                     size="xs"
                                     clickHandler={() => {
                                         if(selectedTotal) return;
@@ -319,7 +384,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     leftIconOverride={(
                                         <div
                                             className="min-w-[6px] min-h-[6px] rounded-full"
-                                            style={{ backgroundColor: AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
+                                            style={{ backgroundColor: s.name === "Total" ? appColor[0] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
                                         />
                                     )}
                                 />
