@@ -11,7 +11,7 @@ import GTPButtonContainer from "@/components/GTPComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/GTPButtonRow";
 import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
-import GTPCardLayout from "@/components/GTPComponents/GTPCardLayout";
+import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 import GTPButtonDropdown from "@/components/GTPComponents/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";

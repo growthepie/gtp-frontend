@@ -12,7 +12,7 @@ import {
   GridTableHeader,
 } from "@/components/layout/GridTable";
 import { GTPButton } from "../GTPComponents/GTPButton";
-import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPScrollPane";
+import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 import ChartWatermark, { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";

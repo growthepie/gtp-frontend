@@ -8,10 +8,10 @@ import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPComponents
 import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPComponents/GTPUniversalChart";
 import GTPButtonContainer from "@/components/GTPComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/GTPButtonRow";
-import GTPCardLayout from "@/components/GTPComponents/GTPCardLayout";
+import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPSplitPane from "@/components/GTPComponents/GTPSplitPane";
-import GTPResizeDivider from "@/components/GTPComponents/GTPResizeDivider";
-import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPComponents/GTPScrollPane";
+import GTPResizeDivider from "@/components/GTPComponents/GTPLayout/GTPResizeDivider";
+import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPComponents/GTPLayout/GTPScrollPane";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 

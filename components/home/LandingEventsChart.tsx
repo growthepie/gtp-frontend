@@ -6,7 +6,7 @@ import { GTPIcon, sizeClassMap } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import Image from "next/image";
-import GTPCardLayout from "../GTPComponents/GTPCardLayout";
+import GTPCardLayout from "../GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPComponents/GTPChart";
 import { GTPButton } from "../GTPComponents/GTPButton";
 import GTPButtonContainer from "../GTPComponents/GTPButtonContainer";
