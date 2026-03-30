@@ -38,7 +38,7 @@ import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFo
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
 import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
-import GTPButtonRow from "../GTPComponents/GTPButtonRow";
+import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
 import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 
 
