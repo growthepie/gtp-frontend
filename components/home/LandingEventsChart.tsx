@@ -1111,6 +1111,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                       return next;
                     });
                   }}
+                  animateRightIcon
                   onMouseEnter={() => setHoverSeriesName(item.name)}
                   onMouseLeave={() => setHoverSeriesName(null)}
                   rightIcon={
@@ -1120,6 +1121,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                         : "in-button-close"
                       : undefined
                   }
+                  
                   rightIconClassname="!w-[12px] !h-[12px]"
                   textClassName={effectiveInactiveSeriesNames.has(item.name) ? "text-color-text-secondary" : undefined}
                   className={effectiveInactiveSeriesNames.has(item.name) ? "border border-color-bg-medium" : undefined}
