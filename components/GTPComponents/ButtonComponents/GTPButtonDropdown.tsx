@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { GTPButton, GTPButtonProps, GTPButtonState } from "./ButtonComponents/GTPButton";
+import { GTPButton, GTPButtonProps, GTPButtonState } from "./GTPButton";
 
 export type GTPButtonDropdownDirection = "top" | "bottom";
 export type GTPButtonDropdownAlign = "start" | "end" | "center";

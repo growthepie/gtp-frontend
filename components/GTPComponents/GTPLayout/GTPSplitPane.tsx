@@ -1,7 +1,7 @@
 "use client";
 
 import { PointerEvent as ReactPointerEvent, ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { GTPCardLayoutMobileContext } from "./GTPLayout/GTPCardLayout";
+import { GTPCardLayoutMobileContext } from "./GTPCardLayout";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 

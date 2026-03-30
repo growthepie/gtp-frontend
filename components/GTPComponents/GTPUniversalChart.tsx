@@ -17,7 +17,7 @@ import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { GTPIcon } from "../layout/GTPIcon";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { GTPButton, GTPButtonSize } from "./ButtonComponents/GTPButton";
-import GTPButtonDropdown from "./GTPButtonDropdown";
+import GTPButtonDropdown from "./ButtonComponents/GTPButtonDropdown";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
 import { downloadElementAsImage } from "./chartSnapshotHelpers";
