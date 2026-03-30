@@ -141,6 +141,20 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
+            question="What are Quick Bites?"
+            answer={
+              <>
+                Quick Bites are short, data-driven articles on specific topics
+                or trends in the Ethereum ecosystem. You can browse all of them
+                on the{" "}
+                <Link href="/quick-bites" className="underline">
+                  Quick Bites
+                </Link>{" "}
+                page.
+              </>
+            }
+          />
+          <QuestionAnswer
             question='What exactly does "Active on Multiple Chains" stand for?'
             answer={
               <>
