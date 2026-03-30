@@ -1,15 +1,15 @@
 "use client";
 
 import { type ReactNode, useMemo, useRef, useState } from "react";
-import { GTPButton } from "@/components/GTPComponents/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPDropdown, { type GTPDropdownContentSize, type GTPDropdownOption } from "@/components/GTPComponents/GTPDropdown";
 import GTPTabBar from "@/components/GTPComponents/GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPComponents/GTPTabButtonSet";
 import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPComponents/GTPUniversalChart";
-import GTPButtonContainer from "@/components/GTPComponents/GTPButtonContainer";
-import GTPButtonRow from "@/components/GTPComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
-import GTPSplitPane from "@/components/GTPComponents/GTPSplitPane";
+import GTPSplitPane from "@/components/GTPComponents/GTPLayout/GTPSplitPane";
 import GTPResizeDivider from "@/components/GTPComponents/GTPLayout/GTPResizeDivider";
 import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPComponents/GTPLayout/GTPScrollPane";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";

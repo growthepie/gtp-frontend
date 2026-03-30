@@ -3,7 +3,7 @@
 import { type ReactNode, useMemo, useState } from "react";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
-import { GTPButton } from "@/components/GTPComponents/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // --- Mock data helpers ---
 

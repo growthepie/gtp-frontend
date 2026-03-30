@@ -16,7 +16,7 @@ import ChainMetricTableRow from "../layout/ChainMetricTableRow";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { GTPIcon } from "../layout/GTPIcon";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
-import { GTPButton, GTPButtonSize } from "./GTPButton";
+import { GTPButton, GTPButtonSize } from "./ButtonComponents/GTPButton";
 import GTPButtonDropdown from "./GTPButtonDropdown";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";

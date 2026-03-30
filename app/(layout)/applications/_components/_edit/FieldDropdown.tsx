@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import type { ProjectRecord } from "@openlabels/oli-sdk";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import Icon from "@/components/layout/Icon";
-import { GTPButton, type GTPButtonProps } from "@/components/GTPComponents/GTPButton";
+import { GTPButton, type GTPButtonProps } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { asString } from "./utils";
 import { toDisplayName } from "./projectDataUtils";
 import type { SearchDropdownOption } from "./types";

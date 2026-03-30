@@ -10,7 +10,7 @@ import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { formatCompactNumber } from "@/lib/echarts-utils";
-import { GTPButton } from "../GTPComponents/GTPButton";
+import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import colors from "tailwindcss/colors";
 import { useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";

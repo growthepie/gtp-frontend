@@ -15,7 +15,7 @@ import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
-import { GTPButton } from "@/components/GTPComponents/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";

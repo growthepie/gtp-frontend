@@ -2,7 +2,7 @@
 
 import { KeyboardEvent, MouseEvent, MouseEventHandler, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPIcon } from "../layout/GTPIcon";
+import { GTPIcon } from "../../layout/GTPIcon";
 
 export type GTPButtonVariant = "primary" | "highlight" | "no-background";
 export type GTPButtonState = "default" | "hover" | "active" | "disabled";

@@ -3,7 +3,7 @@
 import { KeyboardEvent, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "./GTPIcon";
-import { GTPButton } from "../GTPComponents/GTPButton";
+import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import Link from "next/link";
 
 type ChainMetricTableRowProps = {

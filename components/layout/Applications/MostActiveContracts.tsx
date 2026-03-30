@@ -4,7 +4,7 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "@/components/GTPComponents/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import {
   GridTableHeader,
   GridTableHeaderCellButton,

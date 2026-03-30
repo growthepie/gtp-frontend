@@ -2,7 +2,7 @@
 
 import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "../GTPButton";
+import { GTPButton } from "../ButtonComponents/GTPButton";
 import type { GTPScrollPaneScrollMetrics } from "./GTPScrollPane";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
