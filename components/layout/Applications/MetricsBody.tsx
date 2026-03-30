@@ -9,7 +9,7 @@ import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPButton/GTPCardLayout";
 import GTPChart from "@/components/GTPButton/GTPChart";
@@ -17,6 +17,7 @@ import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
 import { useAppColors } from "@/hooks/useAppColors";
+import { useMediaQuery } from "@react-hook/media-query";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -39,6 +40,53 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { theme } = useTheme();
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
+    const breakXL = useMediaQuery("(max-width: 1280px)");
+    const chainsSelectedRef = useRef<HTMLDivElement>(null);
+    const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
+    // useReducer so dispatch() doesn't match the `set`-prefixed setState lint rule
+    const [dynamicLabelCount, dispatchLabelCount] = useReducer((_: number, next: number) => next, chainCount);
+    // Incrementing this forces a re-render so useLayoutEffect can measure the new overflow state
+    const [, forceCheck] = useReducer((c: number) => c + 1, 0);
+
+    // After every render: if the chain selector is overflowing its allocated flex width,
+    // trim one labeled button. Runs synchronously before paint so intermediate states are invisible.
+    useLayoutEffect(() => {
+        const el = chainsSelectedRef.current;
+        if (!el) return;
+        if (el.scrollWidth > el.clientWidth) {
+            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
+        }
+    });
+
+    // Drive the trim/grow loop from the parent row's width.
+    // The parent row is w-full so it reliably changes on every window resize,
+    // unlike the chain selector itself which stops growing once it reaches its
+    // natural trimmed content width (flex-grow: 0 prevents further expansion).
+    //
+    // grow  → reset to all labels; the useLayoutEffect trim loop synchronously
+    //         converges to the exact count that fits before the browser paints
+    // shrink → force a re-render so the trim loop can measure the new overflow
+    useEffect(() => {
+        const el = chainsSelectedRef.current;
+        if (!el) return;
+        const parentRow = el.parentElement;
+        if (!parentRow) return;
+
+        let lastParentWidth = parentRow.getBoundingClientRect().width;
+
+        const observer = new ResizeObserver(() => {
+            const newParentWidth = parentRow.getBoundingClientRect().width;
+            if (newParentWidth > lastParentWidth) {
+                dispatchLabelCount(chainCount);
+            } else if (newParentWidth < lastParentWidth) {
+                forceCheck();
+            }
+            lastParentWidth = newParentWidth;
+        });
+
+        observer.observe(parentRow);
+        return () => observer.disconnect();
+    }, [chainCount]);
 
     const hasHourlyData = useMemo(() => {
         return Object.fromEntries(
@@ -70,6 +118,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
 
 
+    console.log(breakXL)
 
 
 
@@ -77,9 +126,9 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     return (
         <div className="pt-[30px] w-full">
             <div className="w-full flex justify-between items-center gap-x-[15px] ">
-                <div className="flex items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
-                    <div className="text-sm  ">Chains Selected</div>
-                    <div className="flex items-center gap-x-[2px] border-color-bg-default border rounded-full ">
+                <div ref={chainsSelectedRef} className="flex min-w-0 items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
+                    <div className="text-sm shrink-0">Chains Selected</div>
+                    <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
                     {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
@@ -89,7 +138,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                 leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
                                 leftIconStyle={{ color: chainColor }}
                                 visualState={deselectedChains.includes(chain) ? "default" : "active"}
-                                labelDisplay={i < 5 ? "always" : "hover"}
+                                labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
                                 size="md"
                                 clickHandler={() => {
                                     setDeselectedChains((prev) => {
@@ -247,7 +296,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
     const isSuccessRateMetric = metric === "success_rate";
-
 
 
     return (
