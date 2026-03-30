@@ -343,7 +343,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     size: "sm",
                                     variant: "no-background",
                                 }}
-                                className="!size-[28px]"
                                 isOpen={isSharePopoverOpen}
                                 onOpenChange={setIsSharePopoverOpen}
                                 dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
