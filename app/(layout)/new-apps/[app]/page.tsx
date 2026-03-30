@@ -564,17 +564,20 @@ const OverviewContent = memo(({
           </>
           )}
           <PartitionLine />
-          <div className="flex bg-color-bg-medium rounded-full pl-[15px] pr-[5px] py-[5px] items-center justify-between cursor-pointer"
-            onClick={() => setSelectedTab("metrics")}
-          >
-            <div className="flex items-center gap-x-[10px]">
-              <GTPIcon icon="gtp-fundamentals" containerClassName="!size-[16px] flex items-center justify-center" className="!size-[16px]" size="sm" />
-              <div className="text-sm ">
-                See all metrics
-              </div>
-            </div>
-            <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[11px] flex items-center justify-center" className="!size-[11px]" size="sm" />
-
+          <div className="w-full ">
+            <GTPButton
+              label="See all metrics"
+              size="sm"
+              variant="primary"
+              leftIcon="gtp-fundamentals"
+              rightIconOverride={
+                <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[11px] flex items-center justify-center" className="!size-[11px]" size="sm" />
+              }
+              rightIconPushToEdge
+              textClassName="w-full text-left"
+              className="w-full bg-"
+              clickHandler={() => setSelectedTab("metrics")}
+            />
           </div>
         </div>
 

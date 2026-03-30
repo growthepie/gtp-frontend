@@ -37,6 +37,7 @@ export interface GTPButtonProps {
   leftIconOverride?: React.ReactNode;
   rightIconOverride?: React.ReactNode;
   animateRightIcon?: boolean;
+  rightIconPushToEdge?: boolean;
   onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
@@ -174,6 +175,7 @@ export const GTPButton = ({
   innerStyle,
   leftIconOverride,
   rightIconOverride,
+  rightIconPushToEdge = false,
   rightIconContainerClassName,
   leftIconContainerClassName,
   leftIconStyle,
@@ -207,7 +209,7 @@ export const GTPButton = ({
   const iconVariant = resolveIconVariant({
     hasLabel: shouldShowLabel,
     hasLeftIcon: Boolean(leftIcon) || Boolean(leftIconOverride),
-    hasRightIcon: Boolean(rightIcon) || (animateRightIcon && Boolean(animatedRightIconValue)),
+    hasRightIcon: Boolean(rightIcon) || Boolean(rightIconOverride) || (animateRightIcon && Boolean(animatedRightIconValue)),
   });
 
   const isResponsive = size === null;
@@ -247,8 +249,8 @@ export const GTPButton = ({
     ? buttonSize!.paddingByIconVariant[iconVariant]
     : undefined;
 
-  const wrapperFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
-  const buttonFillClassName = fill === "full" ? "w-full justify-center" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
+  const wrapperFillClassName = fill === "full" || rightIconPushToEdge ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
+  const buttonFillClassName = fill === "full" || rightIconPushToEdge ? "w-full justify-between" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
 
   return (
     <div
@@ -307,6 +309,7 @@ export const GTPButton = ({
             animate={isAnimatedLabelMode}
           />
         )}
+        {rightIconPushToEdge && <span className="flex-1" />}
         {animateRightIcon ? (
           <GTPButtonAnimatedIcon
             icon={animatedRightIconValue}
@@ -317,6 +320,8 @@ export const GTPButton = ({
             classNameModifier={rightIconClassname}
             iconContainerClassName={rightIconContainerClassName}
           />
+        ) : rightIconOverride ? (
+          <>{rightIconOverride}</>
         ) : displayRightIcon && (
           <GTPButtonIcon
             icon={rightIcon}
