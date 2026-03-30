@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMemo, use } from "react";
-import GTPUniversalChart from "@/components/GTPButton/GTPUniversalChart";
+import GTPUniversalChart from "@/components/GTPComponents/GTPUniversalChart";
 
 const Fundamentals = ({ params }: { params: Promise<{ metric: string; chain: string }> }) => {
   const { metric, chain } = use(params);

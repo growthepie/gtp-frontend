@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMemo } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/GTPButton";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";

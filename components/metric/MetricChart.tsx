@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
-import GTPChart, { GTPChartSeries } from "@/components/GTPButton/GTPChart";
+import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
@@ -10,7 +10,7 @@ import { daMetricItems, metricItems } from "@/lib/metrics";
 import { useTheme } from "next-themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { formatCompactNumber } from "@/lib/echarts-utils";
-import { GTPButton } from "../GTPButton/GTPButton";
+import { GTPButton } from "../GTPComponents/GTPButton";
 import colors from "tailwindcss/colors";
 import { useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";

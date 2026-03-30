@@ -9,7 +9,7 @@ import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { GTPButton, GTPButtonSize } from "@/components/GTPButton/GTPButton";
+import { GTPButton, GTPButtonSize } from "@/components/GTPComponents/GTPButton";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
