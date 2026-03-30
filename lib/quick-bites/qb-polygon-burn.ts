@@ -5,8 +5,9 @@ const polygonBurn: QuickBiteData = {
   subtitle: "Tracking Polygon's EIP-1559 burn mechanism and the value of increased onchain activity",
   shortTitle: "Polygon POL Burn",
   content: [
+    "> Work in Progress: This quick bite is preliminary and still under construction. KPI values are static snapshots and do not update automatically yet.",
     "# Introduction",
-    "Polygon PoS adopted an EIP-1559-style fee mechanism that permanently burns a portion of every transaction fee. As onchain activity grows, gas throughput rises — and so does the rate at which POL is removed from the total supply forever.",
+    "Polygon PoS adopted an EIP-1559-style fee mechanism that permanently burns a portion of every transaction fee. As onchain activity grows, gas throughput rises, and so does the rate at which POL is removed from the total supply forever.",
     "- **January 2022:** Polygon activated its EIP-1559 base-fee burn, removing MATIC (now POL) from every transaction.",
     "> How it works: every transaction on Polygon PoS includes a base fee that is burned rather than paid to validators. Higher network activity → higher gas throughput → more POL burned per second.",
 
@@ -37,7 +38,7 @@ const polygonBurn: QuickBiteData = {
     "```",
 
     "# Daily & Cumulative POL Burned",
-    "Each bar represents the POL burned in a single day. The line tracks the running cumulative total — showing how sustained network usage steadily erodes the circulating supply over time.",
+    "Each bar represents the POL burned in a single day. The line tracks the running cumulative total, showing how sustained network usage steadily erodes the circulating supply over time.",
 
     "```chart",
     JSON.stringify({
@@ -120,7 +121,7 @@ const polygonBurn: QuickBiteData = {
         ],
       },
       height: 400,
-      caption: "Daily gas throughput on Polygon PoS (left axis) vs. cumulative POL burned (right axis) — showing how rising throughput drives the burn curve.",
+      caption: "Daily gas throughput on Polygon PoS (left axis) vs. cumulative POL burned (right axis), showing how rising throughput drives the burn curve.",
     }),
     "```",
 
