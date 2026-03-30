@@ -23,7 +23,6 @@ import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
 import MetricsBody from "@/components/layout/Applications/MetricsBody";
-import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -480,9 +479,8 @@ SimilarAppsSection.displayName = "SimilarAppsSection";
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
-    <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <GTPIcon icon="gtp-defi" size="md" />
-      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
+    <div className="flex min-h-[50px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
+      <div className="text-center text-base text-color-text-primary">
         {feature}
       </div>
     </div>
@@ -498,16 +496,15 @@ const OverviewContent = memo(({
   owner_project,
   projectMetadata,
   enrichmentData,
+  setSelectedTab,
 }: {
   data: ApplicationDetailsData;
   owner_project: string;
   projectMetadata: ProjectMetadata;
   enrichmentData: ApplicationEnrichmentData | null | undefined;
+  setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const { data: masterData } = useMaster();
-  const { resolvedTheme } = useTheme();
-  const { getAppColors } = useAppColors();
-  const appColor = getAppColors(owner_project, resolvedTheme);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -559,13 +556,26 @@ const OverviewContent = memo(({
               value={data.kpi_cards[metric].current_values.data[0]} 
               wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
-              color={appColor[0]}
+              color={"#627EEA"} 
               icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
           ))} 
           </>
           )}
+          <PartitionLine />
+          <div className="flex bg-color-bg-medium rounded-full pl-[15px] pr-[5px] py-[5px] items-center justify-between cursor-pointer"
+            onClick={() => setSelectedTab("metrics")}
+          >
+            <div className="flex items-center gap-x-[10px]">
+              <GTPIcon icon="gtp-fundamentals" containerClassName="!size-[16px] flex items-center justify-center" className="!size-[16px]" size="sm" />
+              <div className="text-sm ">
+                See all metrics
+              </div>
+            </div>
+            <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[11px] flex items-center justify-center" className="!size-[11px]" size="sm" />
+
+          </div>
         </div>
 
         {/* Right column: main content */}
@@ -612,7 +622,7 @@ const TABS = [
   {
     key: "overview",
     icon: "gtp:gtp-project",
-    
+    getHeader: (app: typeof FAKE_APP) => app.name,
   },
   {
     key: "metrics",
@@ -684,6 +694,7 @@ export default function NewAppPage({
             owner_project={owner_project}
             projectMetadata={projectMetadata}
             enrichmentData={enrichmentData}
+            setSelectedTab={setSelectedTab}
           />
         );
       case "metrics":
@@ -693,7 +704,7 @@ export default function NewAppPage({
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
+  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData, setSelectedTab]);
 
   return (
     <>
@@ -713,7 +724,7 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
-              header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
+              header={tab.getHeader(FAKE_APP)}
               index={index + 1}
               isHovered={hoveredTab === tab.key}
             />
