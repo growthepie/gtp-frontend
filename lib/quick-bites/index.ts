@@ -16,6 +16,7 @@ import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
 import StablecoinProject from './qb-stablecoin-project';
 import celoAnniversaryReport from './qb-celo-anniversary-report';
+import polygonBurn from './qb-polygon-burn';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -34,6 +35,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "eip-8004": Agents,
   "octant-v2-migration": OctantV2Migration,
   "celo-anniversary-report": celoAnniversaryReport,
+  "polygon-burn": polygonBurn,
 };
 
 export default QUICK_BITES_DATA;
