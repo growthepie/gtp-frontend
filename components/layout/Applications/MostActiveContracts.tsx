@@ -76,7 +76,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
 
   return (
-    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px] ">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
@@ -97,7 +97,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
         <div>
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
-            className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0 !pr-[65px]"
+            className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
           >
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
             <GridTableHeaderCellButton label="Contract"          metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />

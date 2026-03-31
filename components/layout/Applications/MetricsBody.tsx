@@ -18,6 +18,8 @@ import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownC
 import { useLocalStorage } from "usehooks-ts";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useMediaQuery } from "@react-hook/media-query";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { getFundamentalsByKey } from "@/lib/navigation";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -148,7 +150,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     return (
         <div className="pt-[30px] w-full">
             <div className="w-full flex justify-between items-center gap-x-[15px] ">
-                <div ref={chainsSelectedRef} className="flex min-w-0 items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
+                <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm shrink-0">Chains Selected</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
                     {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).map((chain, i) => {
@@ -298,6 +300,17 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
     const seriesData = useMemo(() => {
+        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
+        const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
+
+        if (!hasChainData) {
+            const overTime = data.metrics[metric].over_time.all[timeInterval]?.data ?? [];
+            return [{
+                name: "Total",
+                data: overTime.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            }];
+        }
+
         const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
         const perChain = chains.map((chain) => ({
             name: chain,
@@ -305,8 +318,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 (d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
             ),
         }));
-
-        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
 
         if (!selectedTotal) return perChain;
 
@@ -357,17 +368,39 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     }, [timespans, selectedTimespan, seriesData]);
 
     const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
-    
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
     const isSuccessRateMetric = metric === "success_rate";
-
-
+    const altNames = useMemo(() => {
+        switch (metric) {
+        case "gas_fees":
+            return "fees_paid";
+        case "data_posted":
+            return "Data Posted";
+        case "success_rate":
+            return "Success Rate";
+        case "throughput":
+            return "Throughput";
+    
+        default:
+            return metric;
+        }
+    }, [metric]);
+    
     return (
         <div className="pt-[30px] w-full">
             <div className="flex items-center gap-x-[8px]">
                 <GTPIcon icon={`gtp-${metric_data.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
                 <div className="heading-large-xxs xs:heading-large-xs">{metric_data.name}</div>
+                <GTPTooltipNew
+                    placement="right"
+                    trigger={
+                        <GTPIcon icon="gtp-info-monochrome" containerClassName="!size-[12px] relative top-[1px] text-color-text-secondary" className="!size-[12px]"  />
+                    }
+
+                >
+                    <div className="text-xxs pl-[15px]">{getFundamentalsByKey[altNames]?.page?.description}</div>
+                </GTPTooltipNew>
             </div>
             {/* <div className="pt-[15px] text-sm">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -392,12 +425,10 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                     <GTPButtonContainer
                         className="w-full flex flex-nowrap"
                     >
-
                         <GTPButtonRow wrap={false}
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                     
                             <GTPButtonDropdown
                                 openDirection="top"
                                 matchTriggerWidthToDropdown
@@ -442,7 +473,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         series={seriesData.map((s) => ({
                             ...s,
                             seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
-                            name: AllChainsByKeys[s.name]?.name_short ?? isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total",
+                            name: AllChainsByKeys[s.name]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total"),
                             color: s.name === "Total"
                                 ? [appColor[0], appColor[1]]
                                 : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],

@@ -75,7 +75,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                 open ? "rotate-90" : "rotate-0"
                 } ${forceClose ? "hidden" : "flex"}`}
             />
-            <div className="heading-large-md text-color-text-secondary">{projectMetadata.display_name}</div>
+            <div className="heading-large-md text-color-text-secondary">App Overview</div>
           </div>
   
           {/* Links inline with header — shown only when closed */}

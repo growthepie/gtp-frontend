@@ -732,6 +732,10 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
+              appIconOverride={tab.key === "overview" 
+                ? <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" /> 
+                : undefined
+              }
               header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
               index={index + 1}
               isHovered={hoveredTab === tab.key}

@@ -90,6 +90,7 @@ export interface OverTime {
 
 export interface OverTimeData {
   daily: Daily;
+
 }
 
 export interface Daily {
@@ -226,8 +227,8 @@ export const ApplicationDetailsDataProvider = ({
       Object.keys(filteredData.metrics).forEach(metricKey => {
         const metric = filteredData.metrics[metricKey];
 
-        // Filter over_time
-        if (metric.over_time) {
+        // Filter over_time — skip for non-chain-specific metrics (their keys are interval names, not chains)
+        if (metric.over_time && master?.app_metrics?.[metricKey]?.chain_specific) {
           Object.keys(metric.over_time).forEach(chain => {
             if (!supportedChainKeys.includes(chain)) {
               delete metric.over_time[chain];
