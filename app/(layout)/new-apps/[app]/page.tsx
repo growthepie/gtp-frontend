@@ -14,15 +14,15 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
-import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPButtonDropdown";
-import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
-import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
 import useSWR from "swr";
 import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
 import MetricsBody from "@/components/layout/Applications/MetricsBody";
+import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -479,8 +479,9 @@ SimilarAppsSection.displayName = "SimilarAppsSection";
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
-    <div className="flex min-h-[50px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <div className="text-center text-base text-color-text-primary">
+    <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
+      <GTPIcon icon="gtp-defi" size="md" />
+      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
     </div>
@@ -502,9 +503,12 @@ const OverviewContent = memo(({
   owner_project: string;
   projectMetadata: ProjectMetadata;
   enrichmentData: ApplicationEnrichmentData | null | undefined;
-  setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedTab: (tab: string) => void;
 }) => {
   const { data: masterData } = useMaster();
+  const { resolvedTheme } = useTheme();
+  const { getAppColors } = useAppColors();
+  const appColor = getAppColors(owner_project, resolvedTheme);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -556,14 +560,14 @@ const OverviewContent = memo(({
               value={data.kpi_cards[metric].current_values.data[0]} 
               wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
-              color={"#627EEA"} 
+              color={appColor[0]}
               icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
           ))} 
           </>
           )}
-          <PartitionLine />
+                  <PartitionLine />
           <div className="w-full ">
             <GTPButton
               label="See all metrics"
@@ -580,6 +584,7 @@ const OverviewContent = memo(({
             />
           </div>
         </div>
+
 
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
@@ -625,7 +630,7 @@ const TABS = [
   {
     key: "overview",
     icon: "gtp:gtp-project",
-    getHeader: (app: typeof FAKE_APP) => app.name,
+    
   },
   {
     key: "metrics",
@@ -707,7 +712,7 @@ export default function NewAppPage({
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData, setSelectedTab]);
+  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
 
   return (
     <>
@@ -727,7 +732,7 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
-              header={tab.getHeader(FAKE_APP)}
+              header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
               index={index + 1}
               isHovered={hoveredTab === tab.key}
             />
@@ -744,4 +749,3 @@ export default function NewAppPage({
     </>
   );
 }
-
