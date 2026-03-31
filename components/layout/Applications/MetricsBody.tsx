@@ -60,6 +60,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         }
     });
 
+    // Post-paint safety net: useLayoutEffect measures before the browser has finished resolving
+    // flex layout during fast resize. By the time useEffect runs (after paint), dimensions are
+    // fully settled — the same state as when any other item's state update triggers a re-render
+    // and incidentally fixes the overflow.
+    useEffect(() => {
+        const el = chainsSelectedRef.current;
+        if (!el) return;
+        if (el.scrollWidth > el.clientWidth) {
+            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
+        }
+    });
+
     // Drive the trim/grow loop from the parent row's width.
     // The parent row is w-full so it reliably changes on every window resize,
     // unlike the chain selector itself which stops growing once it reaches its
@@ -76,6 +88,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
         let lastParentWidth = parentRow.getBoundingClientRect().width;
 
+        let settleTimer: ReturnType<typeof setTimeout> | null = null;
+
         const observer = new ResizeObserver(() => {
             const newParentWidth = parentRow.getBoundingClientRect().width;
             if (newParentWidth > lastParentWidth) {
@@ -84,10 +98,21 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 forceCheck();
             }
             lastParentWidth = newParentWidth;
+
+            // After resize stops, do one final reset so the trim loop converges
+            // from scratch and catches any edge-case overflow from fast resizing.
+            if (settleTimer !== null) clearTimeout(settleTimer);
+            settleTimer = setTimeout(() => {
+                dispatchLabelCount(chainCount);
+                forceCheck();
+            }, 500);
         });
 
         observer.observe(parentRow);
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+            if (settleTimer !== null) clearTimeout(settleTimer);
+        };
     }, [chainCount]);
 
     const hasHourlyData = useMemo(() => {
