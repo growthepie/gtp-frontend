@@ -133,6 +133,22 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     };
   }, [setActiveTooltipId]);
 
+  useEffect(() => {
+    const clearTooltip = () => {
+      setActiveTooltipId(null);
+    };
+
+    window.addEventListener("blur", clearTooltip);
+    window.addEventListener("focus", clearTooltip);
+    document.addEventListener("visibilitychange", clearTooltip);
+
+    return () => {
+      window.removeEventListener("blur", clearTooltip);
+      window.removeEventListener("focus", clearTooltip);
+      document.removeEventListener("visibilitychange", clearTooltip);
+    };
+  }, [setActiveTooltipId]);
+
 
   // Debug: collect all items with isNew=true
   const debugNewItems = useMemo(() => {
