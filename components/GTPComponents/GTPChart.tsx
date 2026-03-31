@@ -276,6 +276,7 @@ export interface GTPChartProps {
   limitTooltipRows?: number;
   showWatermark?: boolean;
   watermarkMetricName?: string | null;
+  underChartText?: string | null;
   emptyStateMessage?: string;
   minHeight?: number | null;
   maxHeight?: number | null;
@@ -338,6 +339,7 @@ export default function GTPChart({
   maxHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
+  underChartText = null,
   emptyStateMessage = "",
   animation = false,
   smooth = false,
@@ -1918,8 +1920,11 @@ export default function GTPChart({
             <ChartWatermarkWithMetricName metricName={watermarkMetricName} className={WATERMARK_CLASS} />
           </div>
         ) : (
-          <div className={watermarkOverlayClassName}>
+          <div className={`${watermarkOverlayClassName} ${"flex flex-col gap-y-[2px]"}`}>
             <ChartWatermark className={WATERMARK_CLASS} />
+            <div className="text-xxs text-color-text-secondary">
+              {underChartText}
+            </div>
           </div>
         )
       ) : null}

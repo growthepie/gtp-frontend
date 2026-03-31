@@ -36,6 +36,7 @@ const INTERVALS = {
 
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
+
     const [selectedTotal, setSelectedTotal] = useState(true);
     const [timeInterval, setTimeInterval] = useState("daily");
     const { AllChainsByKeys, data: master } = useMaster();
@@ -153,7 +154,11 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm shrink-0">Chains Selected</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).map((chain, i) => {
+                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
+                        const aDeselected = deselectedChains.includes(a) ? 1 : 0;
+                        const bDeselected = deselectedChains.includes(b) ? 1 : 0;
+                        return aDeselected - bDeselected;
+                    }).map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
@@ -162,6 +167,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                 leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
                                 leftIconStyle={{ color: chainColor }}
                                 visualState={deselectedChains.includes(chain) ? "default" : "active"}
+                                className="z-40"
                                 labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
                                 size="md"
                                 clickHandler={() => {
@@ -298,10 +304,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const { AllChainsByKeys, data: master } = useMaster();
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+    const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
+    
 
     const seriesData = useMemo(() => {
         const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
-        const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
+        
 
         if (!hasChainData) {
             const overTime = data.metrics[metric].over_time.all[timeInterval]?.data ?? [];
@@ -349,7 +357,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             name: "Total",
             data: totals,
         }];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master]);
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master, hasChainData]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -367,10 +375,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         return { xMin, xMax };
     }, [timespans, selectedTimespan, seriesData]);
 
-    const [selectedScale, setSelectedScale] = useLocalStorage("selectedScale", "stacked");
+
+    const [selectedScale, setSelectedScale] = useState(master?.app_metrics?.[metric]?.toggles?.[0] ?? "stacked");
     const metricData = master?.app_metrics?.[metric];
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
     const isSuccessRateMetric = metric === "success_rate";
+
     const altNames = useMemo(() => {
         switch (metric) {
         case "gas_fees":
@@ -457,9 +467,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            <GTPButton label="Absolute" size="sm" variant="primary" isSelected={selectedScale === "absolute"} clickHandler={() => setSelectedScale("absolute")} />
-                            <GTPButton label="Stacked" size="sm" variant="primary" isSelected={selectedScale === "stacked"} clickHandler={() => setSelectedScale("stacked")} />
-                            <GTPButton label="Percentage" size="sm" variant="primary" isSelected={selectedScale === "percentage"} clickHandler={() => setSelectedScale("percentage")} />
+                            {metricData?.toggles?.map((toggle) => (
+                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size="sm" variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
+                            ))}
                         </GTPButtonRow>
                             
                     </GTPButtonContainer>
@@ -470,7 +480,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         height={280}
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
-                        series={seriesData.map((s) => ({
+                        series={seriesData.filter((s) => !hasChainData && !selectedTotal ? s.name !== "Total" : true).map((s) => ({
                             ...s,
                             seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
                             name: AllChainsByKeys[s.name]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total"),
@@ -488,11 +498,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         suffix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.suffix ?? undefined}
                         prefix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.prefix ?? undefined}
                         decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
+                        underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                     />
                     
                     <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 
                     >
-                        {seriesData.map((s) => (
+                        {seriesData.filter((s) => !hasChainData && !selectedTotal ? s.name !== "Total" : true).sort((a, b) => data.chains_by_size.indexOf(a.name) - data.chains_by_size.indexOf(b.name)).map((s) => (
                             <div className="" key={s.name + "app-metric-chart-legend"}
                                 onMouseEnter={() => setHoverSeriesName(s.name)}
                                 onMouseLeave={() => setHoverSeriesName(null)}
