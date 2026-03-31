@@ -2,7 +2,7 @@
 
 import { KeyboardEvent, MouseEvent, MouseEventHandler, useState } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPIcon } from "../layout/GTPIcon";
+import { GTPIcon } from "../../layout/GTPIcon";
 
 export type GTPButtonVariant = "primary" | "highlight" | "no-background";
 export type GTPButtonState = "default" | "hover" | "active" | "disabled";
@@ -465,22 +465,25 @@ const GTPButtonAnimatedLabel = ({
     );
   }
 
-  // Grid trick: animating grid-template-columns from 0fr→1fr handles any
-  // dynamic label width without needing a fixed max-width cap.
-  // The outer span drives the width animation; the middle span clips overflow
-  // so text doesn't bleed during the transition; the inner span preserves
-  // the natural text width so 1fr can expand to the correct size.
+  // Grid trick: animating grid-template-columns 0fr→1fr handles dynamic width;
+  // grid-template-rows 0fr→1fr does the same for height so the collapsed span
+  // contributes zero height to the button's flex layout (preventing the button
+  // from being taller than a sibling icon-only button when the label is hidden).
+  // overflow:hidden on the outer span and minWidth/minHeight:0 on the inner span
+  // are required for the 0fr collapse to reach a true zero dimension.
   return (
     <span
       style={{
         display: "grid",
         gridTemplateColumns: show ? "1fr" : "0fr",
+        gridTemplateRows: show ? "1fr" : "0fr",
+        overflow: "hidden",
         opacity: show ? 1 : 0,
-        transition: "grid-template-columns 200ms ease-out, opacity 200ms ease-out",
+        transition: "grid-template-columns 200ms ease-out, grid-template-rows 200ms ease-out, opacity 200ms ease-out",
       }}
       aria-hidden={!show}
     >
-      <span style={{ overflow: "hidden", minWidth: 0 }}>
+      <span style={{ overflow: "hidden", minWidth: 0, minHeight: 0 }}>
         <span className={`${textClassName} ${buttonTextClassName ?? ""} whitespace-nowrap`}>
           {label}
         </span>

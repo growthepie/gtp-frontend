@@ -1,9 +1,9 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import GTPChart from "@/components/GTPButton/GTPChart";
+import GTPChart from "@/components/GTPComponents/GTPChart";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // --- Mock data helpers ---
 

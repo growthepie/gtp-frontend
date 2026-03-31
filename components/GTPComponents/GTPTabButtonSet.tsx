@@ -2,7 +2,7 @@
 
 import { forwardRef, ReactNode } from "react";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton, GTPButtonSize } from "./GTPButton";
+import { GTPButton, GTPButtonSize } from "./ButtonComponents/GTPButton";
 
 export interface GTPTabButtonSetItem {
   id: string;

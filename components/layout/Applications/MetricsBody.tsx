@@ -1,5 +1,5 @@
 import React from "react";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
@@ -7,13 +7,13 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
-import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
-import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
-import GTPCardLayout from "@/components/GTPButton/GTPCardLayout";
-import GTPChart from "@/components/GTPButton/GTPChart";
-import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
+import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
+import GTPChart from "@/components/GTPComponents/GTPChart";
+import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
 import { useAppColors } from "@/hooks/useAppColors";
@@ -39,8 +39,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
+    const [isCompareDropdownOpen, setIsCompareDropdownOpen] = useState(false);
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
-    const breakXL = useMediaQuery("(max-width: 1280px)");
+    const [searchQuery, setSearchQuery] = useState("");
+    const isMobile = useMediaQuery("(max-width: 1024px)");
     const chainsSelectedRef = useRef<HTMLDivElement>(null);
     const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
     // useReducer so dispatch() doesn't match the `set`-prefixed setState lint rule
@@ -51,6 +53,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     // After every render: if the chain selector is overflowing its allocated flex width,
     // trim one labeled button. Runs synchronously before paint so intermediate states are invisible.
     useLayoutEffect(() => {
+        const el = chainsSelectedRef.current;
+        if (!el) return;
+        if (el.scrollWidth > el.clientWidth) {
+            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
+        }
+    });
+
+    // Post-paint safety net: useLayoutEffect measures before the browser has finished resolving
+    // flex layout during fast resize. By the time useEffect runs (after paint), dimensions are
+    // fully settled — the same state as when any other item's state update triggers a re-render
+    // and incidentally fixes the overflow.
+    useEffect(() => {
         const el = chainsSelectedRef.current;
         if (!el) return;
         if (el.scrollWidth > el.clientWidth) {
@@ -74,6 +88,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
         let lastParentWidth = parentRow.getBoundingClientRect().width;
 
+        let settleTimer: ReturnType<typeof setTimeout> | null = null;
+
         const observer = new ResizeObserver(() => {
             const newParentWidth = parentRow.getBoundingClientRect().width;
             if (newParentWidth > lastParentWidth) {
@@ -82,10 +98,21 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 forceCheck();
             }
             lastParentWidth = newParentWidth;
+
+            // After resize stops, do one final reset so the trim loop converges
+            // from scratch and catches any edge-case overflow from fast resizing.
+            if (settleTimer !== null) clearTimeout(settleTimer);
+            settleTimer = setTimeout(() => {
+                dispatchLabelCount(chainCount);
+                forceCheck();
+            }, 500);
         });
 
         observer.observe(parentRow);
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+            if (settleTimer !== null) clearTimeout(settleTimer);
+        };
     }, [chainCount]);
 
     const hasHourlyData = useMemo(() => {
@@ -115,11 +142,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             return !( timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
         }
     }
-
-
-
-    console.log(breakXL)
-
 
 
     
@@ -156,27 +178,68 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     })}
                     </div>
                 </div>
-                <div className=" min-w-[230px] max-w-[261px] w-full p-[5px] bg-color-bg-medium rounded-full flex items-center justify-between">
-                    <GTPIcon icon="gtp-chevronleft-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
-                    <div className="flex flex-col items-center">
-                        <div className="text-xxs">Compare</div>
-                        <div className="flex items-center gap-x-[5px]">
-                            <GTPIcon icon="gtp-compare" size="sm" />
-                            <div className="heading-small-xs">App Name</div>
+                <div className="relative min-w-[230px] max-w-[261px] w-full">
+                    {/* Compare pill button — relative + z-20 so it sits above the dropdown */}
+                    <div
+                        className="relative z-20 w-full p-[5px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
+                        onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
+                    >
+                        <GTPIcon icon="gtp-chevronleft-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
+                        <div className="flex flex-col items-center">
+                            <div className="text-xxs">Compare</div>
+                            <div className="flex items-center gap-x-[5px]">
+                                <GTPIcon icon="gtp-compare" size="sm" />
+                                <div className="heading-small-xs">App Name</div>
+                            </div>
                         </div>
-
+                        <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
                     </div>
-                    <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
+
+                    {/* Dropdown — absolute, below the button, slides out from under it */}
+                    <div
+                        className="absolute left-0 right-0 overflow-hidden z-10 rounded-b-[15px]"
+                        style={{
+                            top: "calc(100% - 20px)",
+                            maxHeight: isCompareDropdownOpen ? "115px" : "0px",
+                            transition: "max-height 350ms cubic-bezier(0.4, 0, 0.2, 1)",
+                            boxShadow: "0px 0px 27px 0px var(--color-ui-shadow, #151A19)",
+                        }}
+                    >
+                        <div
+                            className="bg-color-bg-default rounded-b-[15px] justify-center px-[10px]"
+                            style={{ paddingTop: "30px", height: "115px" }}
+                        >
+                            <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[5px] py-[5px] justify-between w-full">
+                                <div className="flex items-center gap-x-[10px]">
+                                    <GTPIcon icon="gtp-search" className="!size-[12px]" containerClassName="!size-[12px]" />
+                                    <input 
+                                    type="text" 
+                                    className="text-xxs bg-transparent outline-none" 
+                                    placeholder="Search" 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <GTPIcon 
+                                    icon="in-button-close" 
+                                    className="!size-[12px] cursor-pointer" 
+                                    containerClassName="!size-[15px] flex items-center justify-center" 
+                                    onClick={() => setSearchQuery("")}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="pt-[10px] w-full">
-                <GTPButtonContainer className="w-full flex flex-nowrap">         
-                        <GTPButtonRow wrap={false} 
+                <GTPButtonContainer className="w-full flex">         
+                        <GTPButtonRow wrap={isMobile ? true : false} 
+                        
                             className="flex-nowrap"
-                            style={{ width: "auto" }}
+                            style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} 
+                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} 
                                 clickHandler={() => {
                                     if(cachedTimespans !== null) {
                                         setSelectedTimespan(cachedTimespans);
@@ -189,27 +252,29 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                 }} />
                             ))}
                         </GTPButtonRow>
-                    <div className="flex gap-x-[5px]" >
-                        <GTPButtonRow wrap={false}
+                    <div className="flex gap-x-[5px] "
+                        style={{width: isMobile ? "100%" : "auto"}}
+                    >
+                        <GTPButtonRow wrap={isMobile ? true : false}
                             className="flex-nowrap"
-                            style={{ width: "auto" }}
+                            style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(timespans).filter((timespan) => filterTimespans(timespan, timeInterval)).map((timespan) => (
-                                <GTPButton key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
+                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
                             ))}
                         </GTPButtonRow>
-                        <GTPButtonRow wrap={false}
+                        <GTPButtonRow wrap={isMobile ? true : false}
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            <GTPButton label="Total" size="sm" variant="primary" isSelected={selectedTotal} clickHandler={() => setSelectedTotal(true)} />
-                            <GTPButton label="By Chain" size="sm" variant="primary" isSelected={!selectedTotal} clickHandler={() => setSelectedTotal(false)} />
+                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size="sm" variant="primary" isSelected={selectedTotal} clickHandler={() => setSelectedTotal(true)} />
+                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="By Chain" size="sm" variant="primary" isSelected={!selectedTotal} clickHandler={() => setSelectedTotal(false)} />
                         </GTPButtonRow>
                     </div>
                 </GTPButtonContainer>
                             
             </div>
-            <div className="grid grid-cols-2 gap-x-[30px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
@@ -343,7 +408,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     size: "sm",
                                     variant: "no-background",
                                 }}
-                                className="!size-[28px]"
                                 isOpen={isSharePopoverOpen}
                                 onOpenChange={setIsSharePopoverOpen}
                                 dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}

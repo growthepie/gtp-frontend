@@ -1,4 +1,4 @@
-import { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPButton/GTPChart";
+import { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPComponents/GTPChart";
 
 export type EventSeriesMeta = {
   name: string;

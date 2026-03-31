@@ -1,19 +1,19 @@
 "use client";
 
 import { type ReactNode, useMemo, useRef, useState } from "react";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
-import GTPDropdown, { type GTPDropdownContentSize, type GTPDropdownOption } from "@/components/GTPDropdown/GTPDropdown";
-import GTPTabBar from "@/components/GTPButton/GTPTabBar";
-import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPButton/GTPTabButtonSet";
-import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPButton/GTPUniversalChart";
-import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
-import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
-import GTPCardLayout from "@/components/GTPButton/GTPCardLayout";
-import GTPSplitPane from "@/components/GTPButton/GTPSplitPane";
-import GTPResizeDivider from "@/components/GTPButton/GTPResizeDivider";
-import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPButton/GTPScrollPane";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPDropdown, { type GTPDropdownContentSize, type GTPDropdownOption } from "@/components/GTPComponents/GTPDropdown";
+import GTPTabBar from "@/components/GTPComponents/GTPTabBar";
+import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPComponents/GTPTabButtonSet";
+import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPComponents/GTPUniversalChart";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
+import GTPSplitPane from "@/components/GTPComponents/GTPLayout/GTPSplitPane";
+import GTPResizeDivider from "@/components/GTPComponents/GTPLayout/GTPResizeDivider";
+import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPComponents/GTPLayout/GTPScrollPane";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
-import GTPChart from "@/components/GTPButton/GTPChart";
+import GTPChart from "@/components/GTPComponents/GTPChart";
 
 type ButtonVariant = "primary" | "highlight" | "no-background";
 type ButtonVisualState = "default" | "hover" | "active" | "disabled";

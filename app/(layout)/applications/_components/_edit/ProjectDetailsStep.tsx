@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import { buildProjectEditHref } from "@/lib/project-edit-intent";
 import type { ProjectRecord } from "@openlabels/oli-sdk";
