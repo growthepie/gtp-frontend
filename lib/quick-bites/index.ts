@@ -17,6 +17,7 @@ import StablecoinChain from './qb-stablecoin-chain';
 import StablecoinProject from './qb-stablecoin-project';
 import celoAnniversaryReport from './qb-celo-anniversary-report';
 import polygonBurn from './qb-polygon-burn';
+import EigenDAMegaETH from './qb-eigenda-megaeth';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -36,6 +37,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "octant-v2-migration": OctantV2Migration,
   "celo-anniversary-report": celoAnniversaryReport,
   "polygon-burn": polygonBurn,
+  "eigenda-megaeth": EigenDAMegaETH,
 };
 
 export default QUICK_BITES_DATA;
