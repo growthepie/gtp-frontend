@@ -199,21 +199,25 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   let valueKey = "value";
   let valueIndex = 1;
   let decimals = 0;
-  const overTimeValues = Object.values(data.metrics[metric].over_time);
-  const hasOverTimeData = overTimeValues.some((v) => v.daily.data.length > 0);
-  const firstWithData = overTimeValues.find((v) => v.daily.data.length > 0);
+  const dailyOverTimeSeries = Object.values(data.metrics[metric].over_time)
+    .map((v) => v?.daily)
+    .filter(
+      (daily): daily is NonNullable<typeof daily> => Array.isArray(daily?.data) && daily.data.length > 0,
+    );
+  const hasOverTimeData = dailyOverTimeSeries.length > 0;
+  const firstWithData = dailyOverTimeSeries[0];
 
   if (metricDefinition.units.eth) {
     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
     suffix = showUsd ? metricDefinition.units.usd.suffix || "" : metricDefinition.units.eth.suffix || "";
     valueKey = showUsd ? "usd" : "eth";
-    valueIndex = firstWithData ? firstWithData.daily.types.indexOf(valueKey) : 1;
+    valueIndex = firstWithData ? firstWithData.types.indexOf(valueKey) : 1;
     decimals = metricDefinition.units[valueKey].decimals || 0;
   } else {
     prefix = Object.values(metricDefinition.units)[0].prefix || "";
     suffix = Object.values(metricDefinition.units)[0].suffix || "";
     valueKey = Object.keys(metricDefinition.units)[0];
-    valueIndex = firstWithData ? firstWithData.daily.types.indexOf(valueKey) : 1;
+    valueIndex = firstWithData ? firstWithData.types.indexOf(valueKey) : 1;
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
 
@@ -256,13 +260,20 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
                 prefix={prefix}
                 suffix={suffix}
                 decimals={decimals}
-                seriesTypes={firstWithData!.daily.types}
+                seriesTypes={firstWithData?.types ?? []}
                 seriesData={
-                  sortedChainKeys.map((chain) => ({
-                    name: chain,
-                    data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
+                  sortedChainKeys.flatMap((chain) => {
+                    const dailyData = data.metrics[metric].over_time[chain]?.daily?.data;
+                    if (!Array.isArray(dailyData) || dailyData.length === 0) {
+                      return [];
+                    }
+
+                    return [{
+                      name: chain,
+                      data: dailyData.map((d: number[]) => [d[0], d[valueIndex]]),
+                    }];
                   })
-                )}
+                }
               />
             </div>
           </>

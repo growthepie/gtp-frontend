@@ -23,6 +23,23 @@ import { getFundamentalsByKey } from "@/lib/navigation";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
+const getTimeseriesRows = (value: unknown): number[][] => {
+    if (Array.isArray(value)) {
+        return value as number[][];
+    }
+
+    if (
+        value &&
+        typeof value === "object" &&
+        "data" in value &&
+        Array.isArray((value as { data?: unknown }).data)
+    ) {
+        return (value as { data: number[][] }).data;
+    }
+
+    return [];
+};
+
 const INTERVALS = {
     hourly: {
         label: "Hourly",
@@ -118,16 +135,34 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         };
     }, [chainCount]);
 
-    const hasHourlyData = useMemo(() => {
+    const hasMetricDataForInterval = useMemo(() => {
         return Object.fromEntries(
-            Object.keys(data.metrics ?? {}).map((metric) => [
-                metric,
-                Object.keys(data.metrics[metric].over_time).some((chain) =>
-                    Object.keys(data.metrics[metric].over_time[chain]).some((ti) => ti === "hourly")
-                ),
-            ])
+            Object.keys(data.metrics ?? {}).map((metric) => {
+                const overTime = data.metrics[metric]?.over_time;
+                const isChainSpecific = master?.app_metrics?.[metric]?.chain_specific;
+
+                if (!overTime) {
+                    return [metric, false];
+                }
+
+                if (!isChainSpecific) {
+                    const intervalData = getTimeseriesRows(
+                        overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+                    );
+                    return [metric, Array.isArray(intervalData) && intervalData.length > 0];
+                }
+
+                const hasSeriesForInterval = Object.values(overTime).some(
+                    (series) => {
+                        const intervalData = series?.[timeInterval]?.data;
+                        return Array.isArray(intervalData) && intervalData.length > 0;
+                    },
+                );
+
+                return [metric, hasSeriesForInterval];
+            }),
         ) as Record<string, boolean>;
-    }, [data]);
+    }, [data, master, timeInterval]);
 
     const chainOrder = useMemo(() => {
         const original = data.chains_by_size ?? [];
@@ -283,7 +318,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
-                {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
+                {Object.keys(data.metrics ?? {})
+                    .filter((metric) => master?.app_metrics?.[metric])
+                    .filter((metric) => hasMetricDataForInterval[metric])
+                    .map((metric) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
                 ))}
             </div>
@@ -292,7 +330,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -304,28 +342,43 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const { AllChainsByKeys, data: master } = useMaster();
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-    const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
+    const resolvedMetricData = metric_data ?? master?.app_metrics?.[metric];
+    const hasChainData = resolvedMetricData?.chain_specific;
     
 
     const seriesData = useMemo(() => {
-        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
+        const showAvg = resolvedMetricData?.all_l2s_aggregate === "avg";
+        const overTime = data.metrics[metric]?.over_time;
+
+        if (!overTime) {
+            return [];
+        }
         
 
         if (!hasChainData) {
-            const overTime = data.metrics[metric].over_time.all[timeInterval]?.data ?? [];
+            const intervalData = getTimeseriesRows(
+                overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+            );
             return [{
                 name: "Total",
-                data: overTime.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
             }];
         }
 
-        const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
-        const perChain = chains.map((chain) => ({
-            name: chain,
-            data: data.metrics[metric].over_time[chain][timeInterval].data.map(
-                (d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
-            ),
-        }));
+        const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
+        const perChain = chains.flatMap((chain) => {
+            const intervalData = overTime?.[chain]?.[timeInterval]?.data;
+            if (!Array.isArray(intervalData) || intervalData.length === 0) {
+                return [];
+            }
+
+            return [{
+                name: chain,
+                data: intervalData.map(
+                    (d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
+                ),
+            }];
+        });
 
         if (!selectedTotal) return perChain;
 
@@ -357,7 +410,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             name: "Total",
             data: totals,
         }];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master, hasChainData]);
+    }, [data, deselectedChains, hasChainData, metric, resolvedMetricData?.all_l2s_aggregate, selectedTotal, timeInterval]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -376,8 +429,8 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     }, [timespans, selectedTimespan, seriesData]);
 
 
-    const [selectedScale, setSelectedScale] = useState(master?.app_metrics?.[metric]?.toggles?.[0] ?? "stacked");
-    const metricData = master?.app_metrics?.[metric];
+    const [selectedScale, setSelectedScale] = useState(resolvedMetricData?.toggles?.[0] ?? "stacked");
+    const metricData = resolvedMetricData;
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
     const isSuccessRateMetric = metric === "success_rate";
 
@@ -396,12 +449,16 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             return metric;
         }
     }, [metric]);
+
+    if (!metricData) {
+        return null;
+    }
     
     return (
         <div className="pt-[30px] w-full">
             <div className="flex items-center gap-x-[8px]">
-                <GTPIcon icon={`gtp-${metric_data.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
-                <div className="heading-large-xxs xs:heading-large-xs">{metric_data.name}</div>
+                <GTPIcon icon={`gtp-${metricData.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
+                <div className="heading-large-xxs xs:heading-large-xs">{metricData.name}</div>
                 <GTPTooltipNew
                     placement="right"
                     trigger={
@@ -409,7 +466,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                     }
 
                 >
-                    <div className="text-xxs pl-[15px]">{getFundamentalsByKey[altNames]?.page?.description}</div>
+                    <div className="text-xs pl-[15px]">{metricData.description} <br/> Source: {metricData.source.join(", ")}</div>
                 </GTPTooltipNew>
             </div>
             {/* <div className="pt-[15px] text-sm">
@@ -422,8 +479,8 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                  header={
                      <div className="flex items-center justify-between pt-[3px] px-[4px]">
                         <div className="flex items-center gap-x-[8px]">
-                            <GTPIcon icon={`gtp-${metric_data.icon}-monochrome` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[12px]" size="sm" />
-                            <div className="text-xxxs">{metric_data.name} for {projectMetadata.display_name}</div>
+                            <GTPIcon icon={`gtp-${metricData.icon}-monochrome` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[12px]" size="sm" />
+                            <div className="text-xxxs">{metricData.name} for {projectMetadata.display_name}</div>
                         </div>
                         <div className="flex items-center gap-x-[8px]">
                             <GTPIcon icon={`gtp-realtime` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />

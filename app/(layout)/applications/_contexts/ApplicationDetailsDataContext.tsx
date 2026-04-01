@@ -85,12 +85,14 @@ export interface AggData {
 }
 
 export interface OverTime {
-  [chain: string]: OverTimeData;
+  [chain: string]: OverTimeData | undefined;
+  all?: OverTimeData;
 }
 
 export interface OverTimeData {
-  daily: Daily;
-
+  daily?: Daily;
+  hourly?: Daily;
+  [interval: string]: Daily | undefined;
 }
 
 export interface Daily {
