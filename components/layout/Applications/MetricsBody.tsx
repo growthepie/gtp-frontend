@@ -614,6 +614,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 <div className="heading-large-xxs xs:heading-large-xs">{metricData.name}</div>
                 <GTPTooltipNew
                     placement="right"
+                    hoverOpenDelay={100}
                     trigger={
                         <GTPIcon icon="gtp-info-monochrome" containerClassName="!size-[12px] relative top-[1px] text-color-text-secondary" className="!size-[12px]"  />
                     }
