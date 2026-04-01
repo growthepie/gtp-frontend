@@ -61,6 +61,7 @@ export default function LandingAppHighlight() {
                     size="md"
                     placement="bottom-start"
                     allowInteract={true}
+                    hoverOpenDelay={200}
                     trigger={
                         <Link className="flex justify-center relative aspect-square h-full rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover border-color-bg-medium border-[1px]"
                         href={`/applications/${randomProjects?.length > 0 ? randomProjects[0][filteredProjectsData?.types?.indexOf("owner_project") ?? 0] : ""}`}
@@ -113,6 +114,7 @@ export default function LandingAppHighlight() {
                         size="md"
                         placement="bottom-start"
                         allowInteract={true}
+                        hoverOpenDelay={200}
                         trigger={
                             <Link className="relative  rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover border-color-bg-medium border-[1px]"
                                 href={`/applications/${project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0]}`}

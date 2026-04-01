@@ -37,6 +37,7 @@ interface GTPTooltipNewProps {
   // New animation props
   animationDuration?: number;
   onOpenChange?: (open: boolean) => void;
+  hoverOpenDelay?: number;
 }
 
 export const GTPTooltipNew = ({
@@ -54,9 +55,11 @@ export const GTPTooltipNew = ({
   allowInteract = true,
   unstyled = false,
   onOpenChange,
+  hoverOpenDelay = 0,
 }: GTPTooltipNewProps) => {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(defaultOpen);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen;
+  const [hoverOpenTimeoutId, setHoverOpenTimeoutId] = useState<number | null>(null);
 
   // Ref for the tooltip node itself, required by CSSTransition
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
@@ -99,11 +102,19 @@ export const GTPTooltipNew = ({
     update();
   }, [triggerElement, refs, update]);
 
+  useEffect(() => {
+    return () => {
+      if (hoverOpenTimeoutId !== null) {
+        window.clearTimeout(hoverOpenTimeoutId);
+      }
+    };
+  }, [hoverOpenTimeoutId]);
+
   const hover = useHover(context, {
     enabled: enableHover,
     move: false,
     handleClose: allowInteract ? safePolygon() : undefined,
-    delay: { open: 0, close: allowInteract ? 50 : 0 },
+    delay: { open: hoverOpenDelay, close: allowInteract ? 50 : 0 },
   });
 
   const dismiss = useDismiss(context, {
@@ -193,12 +204,26 @@ export const GTPTooltipNew = ({
         onMouseEnter: (e: React.MouseEvent) => {
           // Handle hover manually since getReferenceProps handler isn't working
           if (enableHover && !isOpen) {
-            handleOpenChange(true);
+            if (hoverOpenTimeoutId !== null) {
+              window.clearTimeout(hoverOpenTimeoutId);
+            }
+
+            const timeoutId = window.setTimeout(() => {
+              handleOpenChange(true);
+              setHoverOpenTimeoutId(null);
+            }, hoverOpenDelay);
+
+            setHoverOpenTimeoutId(timeoutId);
           }
           // Call original handler if it exists
           (trigger as React.ReactElement<any>).props.onMouseEnter?.(e);
         },
         onMouseLeave: (e: React.MouseEvent) => {
+          if (hoverOpenTimeoutId !== null) {
+            window.clearTimeout(hoverOpenTimeoutId);
+            setHoverOpenTimeoutId(null);
+          }
+
           if (enableHover && !allowInteract) {
             handleOpenChange(false);
           }
@@ -206,6 +231,11 @@ export const GTPTooltipNew = ({
           (trigger as React.ReactElement<any>).props.onMouseLeave?.(e);
         },
         onClick: (e: React.MouseEvent) => {
+          if (hoverOpenTimeoutId !== null) {
+            window.clearTimeout(hoverOpenTimeoutId);
+            setHoverOpenTimeoutId(null);
+          }
+
           if (controlledIsOpen === undefined) {
             setUncontrolledIsOpen(prev => !prev);
           }

@@ -589,6 +589,7 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
             size="md"
             placement="bottom-start"
             allowInteract={true}
+            hoverOpenDelay={300}
             trigger={
               <div className="heading-large-md overflow-visible flex-1 truncate hover:underline cursor-pointer">
                 <ApplicationDisplayName owner_project={application.owner_project} />
