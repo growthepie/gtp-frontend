@@ -328,13 +328,8 @@ export default function ProjectEditPageClient() {
     hasContinuedWithoutEdits ||
     (shouldAutoCompleteMetadata && !hasFormChanges);
 
-  // collapsed logo for tab display
-  const collapsedLogoPathFromData = ownerProjectToProjectData[form.owner_project.trim()]?.logo_path;
-  const tabLogoSrc =
-    logoUpload?.previewUrl ||
-    (collapsedLogoPathFromData
-      ? `https://api.growthepie.com/v1/apps/logos/${collapsedLogoPathFromData}`
-      : "");
+  // Use the hook's collapsedLogoSrc which includes selectedProjectLogoPath fallback
+  const tabLogoSrc = collapsedLogoSrc;
 
   const scrollStepIntoView = useCallback((step: 0 | 1 | 2 | 3 | 4) => {
     const target =

@@ -2264,8 +2264,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   const editMatches = useMemo(() => {
     if (!projectEditMode || !memoizedQuery || memoizedQuery.length < 2) return [];
-    const q = memoizedQuery.toLowerCase();
-    // Raw query preserves hyphens so "omni-network" matches owner keys that contain "-"
+    // Raw query preserves hyphens/colons so "omni-network" and "https://" are not mangled by normalizeString
     const qRaw = (query || "").trim().toLowerCase();
 
     // Normalize a URL to "host/path" for domain-aware matching (strips protocol, www., trailing slash)
@@ -2363,7 +2362,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     );
 
     return [...appsResults, ...ossResults].slice(0, 20);
-  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData, ossProjects]);
+  }, [projectEditMode, memoizedQuery, query, ownerProjectToProjectData, ossProjects]);
 
   const singleEditMatchOwnerProject = useMemo(() => {
     if (!projectEditMode || editMatches.length !== 1) return null;

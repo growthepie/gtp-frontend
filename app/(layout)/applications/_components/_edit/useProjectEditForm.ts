@@ -128,6 +128,7 @@ export function useProjectEditForm({
 
   const [form, setForm] = useState<ProjectFormState>(EMPTY_FORM);
   const [logoUpload, setLogoUpload] = useState<LogoUploadState>(null);
+  const [selectedProjectLogoPath, setSelectedProjectLogoPath] = useState<string | null>(null);
   const [localMode, setLocalMode] = useState<ProjectMode>(intent.mode);
   const isAddMode = localMode === "add";
 
@@ -260,7 +261,9 @@ export function useProjectEditForm({
   }, [existingOwnerProject, localMode]);
 
   const collapsedOwnerProject = form.owner_project.trim();
-  const collapsedLogoPath = (ownerProjectToProjectData[collapsedOwnerProject] as { logo_path?: string } | undefined)?.logo_path;
+  const collapsedLogoPath =
+    (ownerProjectToProjectData[collapsedOwnerProject] as { logo_path?: string } | undefined)?.logo_path
+    ?? selectedProjectLogoPath;
   const collapsedLogoSrc =
     logoUpload?.previewUrl ||
     (collapsedLogoPath ? `https://api.growthepie.com/v1/apps/logos/${collapsedLogoPath}` : "");
@@ -449,7 +452,7 @@ export function useProjectEditForm({
   const updateField = useCallback(<K extends keyof ProjectFormState>(key: K, value: ProjectFormState[K]) => {
     setContributionResult(null);
     setSubmitError(null);
-    if (key === "owner_project") setLogoUpload(null);
+    if (key === "owner_project") { setLogoUpload(null); setSelectedProjectLogoPath(null); }
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -495,6 +498,8 @@ export function useProjectEditForm({
       twitter,
       telegram,
     };
+    const logoPath = (project as unknown as { logo_path?: string | null }).logo_path;
+    setSelectedProjectLogoPath(typeof logoPath === "string" ? logoPath : null);
     setLogoUpload(null);
     setForm(newForm);
     loadedFormRef.current = newForm;
