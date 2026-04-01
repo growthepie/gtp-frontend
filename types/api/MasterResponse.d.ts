@@ -139,6 +139,7 @@ export interface MetricInfo {
   supported_chains: string[];
   chain_specific?: boolean;
   toggles?: string[];
+  description: string;
 }
 
 export interface DataAvailabilityLayers {

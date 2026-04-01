@@ -168,6 +168,7 @@ export default function Page() {
                     allowInteract={false}
                     unstyled
                     containerClass="z-[99]"
+                    hoverOpenDelay={100}
                     trigger={
                       <div className="size-[15px]">
                         <Icon icon="feather:info" className="size-[15px]" />
@@ -413,6 +414,7 @@ const ApplicationsTable = memo(() => {
                       allowInteract={false}
                       unstyled
                       containerClass="z-[99]"
+                      hoverOpenDelay={100}
                       trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
                     >
                       <MetricTooltip metric={metric} />
@@ -677,6 +679,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             placement="bottom-start"
             allowInteract={true}
             size="md"
+            hoverOpenDelay={300}
             trigger={
               <div className="min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
                 <div className="truncate w-full">
@@ -698,6 +701,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             placement="bottom-start"
             allowInteract={true}
             size="md"
+            hoverOpenDelay={300}
             trigger={
               <div className="flex-1 min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
                 <div className="truncate w-full">

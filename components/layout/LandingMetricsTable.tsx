@@ -12,11 +12,6 @@ import { format as d3Format } from "d3"
 import dayjs from "@/lib/dayjs";
 import { Icon } from "@iconify/react";
 import { useTransition, animated, useSpring } from "@react-spring/web";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/layout/Tooltip";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
@@ -262,22 +257,18 @@ export default memo(function LandingMetricsTable({
           sort={sort}
           setSort={setSort}
           extraRight={
-            <Tooltip placement="right" allowInteract={true}>
-              <TooltipTrigger className="absolute right-[10px]">
-                <Icon icon="feather:info" className="size-[15px]" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="flex flex-col gap-y-[5px] items-center relative ">
-                  <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                    <span>Network maturity as introduced by ethereum.org. We review the network’s progress towards Ethereum alignment (rollup stages 0-2), 
-                    total value secured (TVS), time live in production, and risk considerations. 
-                    These levels help track network development and provide a standardized way for the community to evaluate progress.
-                    </span>
-                    <span> Find out more <a className="underline font-semibold" href="https://ethereum.org/en/layer-2/networks/" target="blankspace" rel="_noopener">here.</a> </span>
-                  </div>
-                </div>
-              </TooltipContent>
-          </Tooltip>
+            <GTPTooltipNew
+              placement="right"
+              allowInteract={true}
+              hoverOpenDelay={100}
+              trigger={<Icon icon="feather:info" className="absolute right-[10px] size-[15px]" />}
+              positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            >
+              <div className="pl-[15px] text-xs">
+                <span>Network maturity as introduced by ethereum.org. We review the network’s progress towards Ethereum alignment (rollup stages 0-2), total value secured (TVS), time live in production, and risk considerations. These levels help track network development and provide a standardized way for the community to evaluate progress.</span>
+                <span>Find out more <a className="underline font-semibold" href="https://ethereum.org/en/layer-2/networks/" target="blankspace" rel="_noopener">here.</a></span>
+              </div>
+            </GTPTooltipNew>
           }
         >
           Maturity
@@ -305,18 +296,17 @@ export default memo(function LandingMetricsTable({
           sort={sort}
           setSort={setSort}
           extraRight={
-            <Tooltip placement="left" allowInteract={false}>
-              <TooltipTrigger className="pl-[2px]">
-                <Icon icon="feather:info" className="size-[15px]" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="flex flex-col gap-y-[5px] items-center relative">
-                  <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                    <div>Number of distinct active addresses in the last 7 days and share of total Ethereum ecosystem addresses.</div>
-                  </div>
-                </div>
-              </TooltipContent>
-            </Tooltip>
+            <GTPTooltipNew
+              placement="left"
+              allowInteract={false}
+              hoverOpenDelay={100}
+              trigger={<Icon icon="feather:info" className="size-[15px]" />}
+              positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            >
+              <div className="pl-[15px] text-xs">
+                Number of distinct active addresses in the last 7 days and share of total Ethereum ecosystem addresses.
+              </div>
+            </GTPTooltipNew>
           }
         >
             <div className="flex flex-col items-end">
@@ -330,18 +320,17 @@ export default memo(function LandingMetricsTable({
           sort={sort}
           setSort={setSort}
           extraRight={
-            <Tooltip placement="left" allowInteract={false}>
-              <TooltipTrigger className="pl-[2px]">
-                <Icon icon="feather:info" className="size-[15px]" />
-              </TooltipTrigger>
-              <TooltipContent>
-              <div className="flex flex-col gap-y-[5px] items-center relative">
-                <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                  <div>Percentage of active addresses that also interacted with other chains in the last 7 days.</div>
-                </div>
+            <GTPTooltipNew
+              placement="left"
+              allowInteract={false}
+              hoverOpenDelay={100}
+              trigger={<Icon icon="feather:info" className="size-[15px]" />}
+              positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            >
+              <div className="pl-[15px] text-xs">
+                Percentage of active addresses that also interacted with other chains in the last 7 days.
               </div>
-              </TooltipContent>
-            </Tooltip>
+            </GTPTooltipNew>
           }
         >
             <div className="flex flex-col items-end">
@@ -539,19 +528,17 @@ const ChainRankHeader = memo(function ChainRankHeader({
           );
         })}
         <div className="absolute -right-[20px] h-[36px] flex items-center justify-center">
-        <Tooltip placement="right" allowInteract={false}>
-              <TooltipTrigger className="">
-                <Icon icon="feather:info" className="size-[15px]" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="flex flex-col gap-y-[5px] items-center relative ">
-                  <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                    Chain ranking based on values of the last complete day of data. 
-                    The number in the medals represents the ranking (i.e. 1 means that this chain is currently the leader for the selected metric).
-                  </div>
-                </div>
-              </TooltipContent>
-          </Tooltip>
+          <GTPTooltipNew
+            placement="right"
+            allowInteract={false}
+            hoverOpenDelay={100}
+            trigger={<Icon icon="feather:info" className="size-[15px]" />}
+            positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+          >
+            <div className="pl-[15px] text-xs">
+              Chain ranking based on values of the last complete day of data. The number in the medals represents the ranking (i.e. 1 means that this chain is currently the leader for the selected metric).
+            </div>
+          </GTPTooltipNew>
         </div>
       </div>
     )

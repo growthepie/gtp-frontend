@@ -19,7 +19,6 @@ import { useLocalStorage } from "usehooks-ts";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
-import { getFundamentalsByKey } from "@/lib/navigation";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 
@@ -29,6 +28,22 @@ type CompareAppEntry = {
     owner_project: string;
     data: ApplicationDetailsData;
     displayName: string;
+};
+
+// Handles both raw array format and { data: number[][] } object format
+const getTimeseriesRows = (value: unknown): number[][] => {
+    if (Array.isArray(value)) {
+        return value as number[][];
+    }
+    if (
+        value &&
+        typeof value === "object" &&
+        "data" in value &&
+        Array.isArray((value as { data?: unknown }).data)
+    ) {
+        return (value as { data: number[][] }).data;
+    }
+    return [];
 };
 
 const INTERVALS = {
@@ -189,16 +204,36 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         };
     }, [chainCount]);
 
-    const hasHourlyData = useMemo(() => {
+    // Checks whether a metric actually has data for the current time interval,
+    // so we skip rendering empty charts instead of just checking for hourly keys.
+    const hasMetricDataForInterval = useMemo(() => {
         return Object.fromEntries(
-            Object.keys(data.metrics ?? {}).map((metric) => [
-                metric,
-                Object.keys(data.metrics[metric].over_time).some((chain) =>
-                    Object.keys(data.metrics[metric].over_time[chain]).some((ti) => ti === "hourly")
-                ),
-            ])
+            Object.keys(data.metrics ?? {}).map((metric) => {
+                const overTime = data.metrics[metric]?.over_time;
+                const isChainSpecific = master?.app_metrics?.[metric]?.chain_specific;
+
+                if (!overTime) {
+                    return [metric, false];
+                }
+
+                if (!isChainSpecific) {
+                    const intervalData = getTimeseriesRows(
+                        overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+                    );
+                    return [metric, Array.isArray(intervalData) && intervalData.length > 0];
+                }
+
+                const hasSeriesForInterval = Object.values(overTime).some(
+                    (series) => {
+                        const intervalData = (series as any)?.[timeInterval]?.data;
+                        return Array.isArray(intervalData) && intervalData.length > 0;
+                    },
+                );
+
+                return [metric, hasSeriesForInterval];
+            }),
         ) as Record<string, boolean>;
-    }, [data]);
+    }, [data, master, timeInterval]);
 
     function filterTimespans(timespan: string, interval: string) {
         if (interval === "daily") {
@@ -392,7 +427,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 {/* ──────────────────────────────────────────────────────────── */}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
-                {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
+                {Object.keys(data.metrics ?? {})
+                    .filter((metric) => master?.app_metrics?.[metric])
+                    .filter((metric) => hasMetricDataForInterval[metric])
+                    .map((metric) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} />
                 ))}
             </div>
@@ -401,7 +439,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[] }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[] }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -411,24 +449,28 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const { AllChainsByKeys, data: master } = useMaster();
     const [showUsd] = useLocalStorage("showUsd", true);
-    const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
+    // metric_data may be passed directly or resolved from master for resilience
+    const resolvedMetricData = metric_data ?? master?.app_metrics?.[metric];
+    const hasChainData = resolvedMetricData?.chain_specific;
     const isComparing = compareApps.length > 0;
 
     const seriesData = useMemo(() => {
-        const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
+        const showAvg = resolvedMetricData?.all_l2s_aggregate === "avg";
+        const overTime = data.metrics[metric]?.over_time;
 
-        // Sums all chain over_time data into a single total series.
-        // Uses `any` cast for the chain data because OverTimeData only types `daily`,
-        // but at runtime both `daily` and `hourly` keys exist.
+        if (!overTime) return [];
+
+        // Sums all chains in an over_time map into one aggregate total series.
+        // Uses `any` cast because OverTimeData only types `daily`, but `hourly` also exists at runtime.
         function sumChainSeries(
-            overTime: Record<string, unknown>,
+            ot: Record<string, unknown>,
             excludeChains: string[] = [],
         ): [number, number | null][] {
             const sums = new Map<number, number | null>();
             const counts = new Map<number, number>();
-            for (const chain of Object.keys(overTime)) {
+            for (const chain of Object.keys(ot)) {
                 if (excludeChains.includes(chain)) continue;
-                const points = ((overTime[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
+                const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
                 for (const d of points) {
                     const ts = Number(d[0]);
                     const val: number | null = d[1] == null ? null : Number(d[1]);
@@ -451,58 +493,68 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 });
         }
 
-        // ── Non-chain-specific metrics (e.g. success_rate) ────────────────
+        // ── Non-chain-specific metrics (e.g. success_rate, throughput) ────────
         if (!hasChainData) {
-            const rawPoints = ((data.metrics[metric].over_time as any).all as any)?.[timeInterval]?.data ?? [];
+            const intervalData = getTimeseriesRows(
+                overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+            );
             const mainSeries = {
                 name: "Total",
-                data: (rawPoints as number[][]).map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
             };
 
             if (!isComparing) return [mainSeries];
 
             const compareSeries = compareApps
-                .filter(app => app.data?.metrics?.[metric])
+                .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
                 .map(app => {
-                    const appRaw = ((app.data.metrics[metric].over_time as any).all as any)?.[timeInterval]?.data ?? [];
+                    const appIntervalData = getTimeseriesRows(
+                        app.data.metrics[metric].over_time?.all?.[timeInterval] ??
+                        (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
+                    );
                     return {
                         name: `compare_${app.owner_project}`,
-                        data: (appRaw as number[][]).map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                        data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
                     };
                 });
 
             return [mainSeries, ...compareSeries];
         }
 
-        // ── Chain-specific metrics ─────────────────────────────────────────
-        const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
-        const perChain = chains.map((chain) => ({
-            name: chain,
-            data: ((data.metrics[metric].over_time[chain] as any)?.[timeInterval]?.data ?? [] as number[][]).map(
-                (d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
-            ),
-        }));
+        // ── Chain-specific metrics ─────────────────────────────────────────────
+        // flatMap skips chains that have no data for the current interval
+        const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
+        const perChain = chains.flatMap((chain) => {
+            const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
+            if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
+            return [{
+                name: chain,
+                data: intervalData.map(
+                    (d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
+                ),
+            }];
+        });
 
-        // By Chain view (only available when not comparing)
+        // By Chain view — only available when not comparing
         if (!selectedTotal && !isComparing) return perChain;
 
         const mainTotalSeries = {
             name: "Total",
-            data: sumChainSeries(data.metrics[metric].over_time as Record<string, unknown>, deselectedChains),
+            data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
         };
 
         if (!isComparing) return [mainTotalSeries];
 
-        // Compare mode: one total series per compare app
+        // Compare mode: one total series per compare app (all chains, no deselection)
         const compareSeries = compareApps
-            .filter(app => app.data?.metrics?.[metric])
+            .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
             .map(app => ({
                 name: `compare_${app.owner_project}`,
                 data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
             }));
 
         return [mainTotalSeries, ...compareSeries];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master, hasChainData, compareApps, isComparing]);
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -520,29 +572,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         return { xMin, xMax };
     }, [timespans, selectedTimespan, seriesData]);
 
-
-    const [selectedScale, setSelectedScale] = useState(master?.app_metrics?.[metric]?.toggles?.[0] ?? "stacked");
-    const metricData = master?.app_metrics?.[metric];
+    const metricData = resolvedMetricData;
+    const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");
     const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
     const isSuccessRateMetric = metric === "success_rate";
 
-    const altNames = useMemo(() => {
-        switch (metric) {
-        case "gas_fees":
-            return "fees_paid";
-        case "data_posted":
-            return "Data Posted";
-        case "success_rate":
-            return "Success Rate";
-        case "throughput":
-            return "Throughput";
-
-        default:
-            return metric;
-        }
-    }, [metric]);
-
-    // Resolves display info for a series entry, handling both chain and compare-app series
+    // Resolves display name and gradient colors for both chain series and compare-app series
     function resolveSeriesInfo(seriesName: string) {
         const isCompareApp = seriesName.startsWith("compare_");
         const compareOwnerProject = isCompareApp ? seriesName.replace("compare_", "") : null;
@@ -565,17 +600,18 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     }
 
     // When !hasChainData && !selectedTotal && !isComparing the "Total" series is intentionally
-    // hidden so the "cannot be broken down by chain" message can show instead.
+    // hidden so the "cannot be broken down by chain" message shows instead.
     const visibleSeries = seriesData.filter(s =>
         !hasChainData && !selectedTotal && !isComparing ? s.name !== "Total" : true
     );
 
+    if (!metricData) return null;
 
     return (
         <div className="pt-[30px] w-full">
             <div className="flex items-center gap-x-[8px]">
-                <GTPIcon icon={`gtp-${metric_data.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
-                <div className="heading-large-xxs xs:heading-large-xs">{metric_data.name}</div>
+                <GTPIcon icon={`gtp-${metricData.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
+                <div className="heading-large-xxs xs:heading-large-xs">{metricData.name}</div>
                 <GTPTooltipNew
                     placement="right"
                     trigger={
@@ -583,7 +619,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                     }
 
                 >
-                    <div className="text-xxs pl-[15px]">{getFundamentalsByKey[altNames]?.page?.description}</div>
+                    <div className="text-xs pl-[15px]">{metricData.description} <br/> Source: {metricData.source.join(", ")}</div>
                 </GTPTooltipNew>
             </div>
             {/* <div className="pt-[15px] text-sm">
@@ -596,8 +632,8 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                  header={
                      <div className="flex items-center justify-between pt-[3px] px-[4px]">
                         <div className="flex items-center gap-x-[8px]">
-                            <GTPIcon icon={`gtp-${metric_data.icon}-monochrome` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[12px]" size="sm" />
-                            <div className="text-xxxs">{metric_data.name} for {projectMetadata.display_name}</div>
+                            <GTPIcon icon={`gtp-${metricData.icon}-monochrome` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[12px]" size="sm" />
+                            <div className="text-xxxs">{metricData.name} for {projectMetadata.display_name}</div>
                         </div>
                         <div className="flex items-center gap-x-[8px]">
                             <GTPIcon icon={`gtp-realtime` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
@@ -641,7 +677,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            {metricData?.toggles?.map((toggle) => (
+                            {metricData?.toggles?.map((toggle: string) => (
                                 <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size="sm" variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
                             ))}
                         </GTPButtonRow>
@@ -654,7 +690,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         height={280}
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
-                        series={visibleSeries.map((s) => {
+                        series={visibleSeries.map((s: { name: string; data: [number, number | null][] }) => {
                             const { displayName, color } = resolveSeriesInfo(s.name);
                             return {
                                 ...s,
@@ -678,14 +714,14 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
                     <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]"
                     >
-                        {visibleSeries.sort((a, b) => {
+                        {visibleSeries.sort((a: { name: string }, b: { name: string }) => {
                             // Main "Total" first, then chain series, then compare-app series
                             if (a.name === "Total") return -1;
                             if (b.name === "Total") return 1;
                             if (a.name.startsWith("compare_")) return 1;
                             if (b.name.startsWith("compare_")) return -1;
                             return data.chains_by_size.indexOf(a.name) - data.chains_by_size.indexOf(b.name);
-                        }).map((s) => {
+                        }).map((s: { name: string; data: [number, number | null][] }) => {
                             const { isCompareApp, displayName, color } = resolveSeriesInfo(s.name);
                             const legendLabel = isCompareApp
                                 ? displayName
