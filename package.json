@@ -10,6 +10,8 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint .",
+    "apps:count-active-chain-types": "tsx ./scripts/count-active-apps-by-chain-type.ts",
+    "apps:count-active-on-megaeth-chain-types": "tsx ./scripts/count-active-apps-on-target-chain-by-chain-type.ts megaeth",
     "test:project-edit-intent": "tsx ./tests/project-edit-intent.test.ts",
     "icons:update": "dotenv -e .env.local -- tsx ./lib/figma.ts && node ./lib/icons.mjs",
     "figma-icons": "npm run icons:update"
