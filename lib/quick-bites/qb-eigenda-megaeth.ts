@@ -21,7 +21,7 @@ const EigenDAMegaETH: QuickBiteData = {
       },
       {
         title: "Peak TPS",
-        value: "35,000",
+        value: "44,143",
         description: "",
         icon: "gtp-realtime",
         info: "Peak transactions per second achieved during the MegaETH stress test.",
