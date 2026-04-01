@@ -2,14 +2,14 @@ import React from "react";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
-import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ProjectMetadata, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
-import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer, useCallback } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
@@ -20,8 +20,16 @@ import { useAppColors } from "@/hooks/useAppColors";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { getFundamentalsByKey } from "@/lib/navigation";
+import useSWR from "swr";
+import { ApplicationsURLs } from "@/lib/urls";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
+
+type CompareAppEntry = {
+    owner_project: string;
+    data: ApplicationDetailsData;
+    displayName: string;
+};
 
 const INTERVALS = {
     hourly: {
@@ -33,6 +41,20 @@ const INTERVALS = {
         value: "daily",
     },
 } as const;
+
+// Fetches compare app data and reports back — renders nothing visible
+const CompareLoader = ({ owner_project, onDataLoaded }: {
+    owner_project: string;
+    onDataLoaded: (key: string, appData: ApplicationDetailsData) => void;
+}) => {
+    const { data } = useSWR<ApplicationDetailsData>(
+        ApplicationsURLs.details.replace("{owner_project}", owner_project),
+    );
+    useEffect(() => {
+        if (data) onDataLoaded(owner_project, data);
+    }, [data, owner_project, onDataLoaded]);
+    return null;
+};
 
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
@@ -52,6 +74,55 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const [dynamicLabelCount, dispatchLabelCount] = useReducer((_: number, next: number) => next, chainCount);
     // Incrementing this forces a re-render so useLayoutEffect can measure the new overflow state
     const [, forceCheck] = useReducer((c: number) => c + 1, 0);
+
+    // ─── Compare state ────────────────────────────────────────────────────────
+    const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
+    const [compareInput, setCompareInput] = useState("");
+    const [compareAppsData, setCompareAppsData] = useState<Map<string, ApplicationDetailsData>>(new Map());
+    const isComparing = compareAppKeys.length > 0;
+    const { ownerProjectToProjectData } = useProjectsMetadata();
+
+    const handleCompareDataLoaded = useCallback((key: string, appData: ApplicationDetailsData) => {
+        setCompareAppsData(prev => {
+            const next = new Map(prev);
+            next.set(key, appData);
+            return next;
+        });
+    }, []);
+
+    // Only include compare apps whose data has finished loading
+    const compareAppsForChart = useMemo<CompareAppEntry[]>(() =>
+        compareAppKeys
+            .filter(key => compareAppsData.has(key))
+            .map(key => ({
+                owner_project: key,
+                data: compareAppsData.get(key) as ApplicationDetailsData,
+                displayName: ownerProjectToProjectData[key]?.display_name ?? key,
+            })),
+        [compareAppKeys, compareAppsData, ownerProjectToProjectData],
+    );
+
+    // When comparing, always treat as "Total" — By Chain is not supported in compare mode.
+    // Derived rather than synced via useEffect to avoid a cascading-render lint warning.
+    const effectiveSelectedTotal = isComparing ? true : selectedTotal;
+
+    function handleAddCompareApp() {
+        const key = compareInput.trim().toLowerCase();
+        if (key && !compareAppKeys.includes(key)) {
+            setCompareAppKeys(prev => [...prev, key]);
+        }
+        setCompareInput("");
+    }
+
+    function handleRemoveCompareApp(key: string) {
+        setCompareAppKeys(prev => prev.filter(k => k !== key));
+        setCompareAppsData(prev => {
+            const next = new Map(prev);
+            next.delete(key);
+            return next;
+        });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // After every render: if the chain selector is overflowing its allocated flex width,
     // trim one labeled button. Runs synchronously before paint so intermediate states are invisible.
@@ -129,27 +200,22 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         ) as Record<string, boolean>;
     }, [data]);
 
-    const chainOrder = useMemo(() => {
-        const original = data.chains_by_size ?? [];
-        const deselectedSet = new Set(deselectedChains);
-        const selected = original.filter((chain) => !deselectedSet.has(chain));
-        const deselected = original.filter((chain) => deselectedSet.has(chain));
-        return [...selected, ...deselected];
-    }, [data, deselectedChains]);
-    
-
-    function filterTimespans(timespan: string, timeInterval: string) {
-        if (timeInterval === "daily") {
+    function filterTimespans(timespan: string, interval: string) {
+        if (interval === "daily") {
             return !(timespan === "1d" || timespan === "3d" || timespan === "7d" || timespan === "30d");
         } else {
-            return !( timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
+            return !(timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
         }
     }
 
 
-    
     return (
         <div className="pt-[30px] w-full">
+            {/* Invisible data loaders for each compare app */}
+            {compareAppKeys.map(key => (
+                <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
+            ))}
+
             <div className="w-full flex justify-between items-center gap-x-[15px] ">
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm shrink-0">Chains Selected</div>
@@ -220,18 +286,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[5px] py-[5px] justify-between w-full">
                                 <div className="flex items-center gap-x-[10px]">
                                     <GTPIcon icon="gtp-search" className="!size-[12px]" containerClassName="!size-[12px]" />
-                                    <input 
-                                    type="text" 
-                                    className="text-xxs bg-transparent outline-none" 
-                                    placeholder="Search" 
+                                    <input
+                                    type="text"
+                                    className="text-xxs bg-transparent outline-none"
+                                    placeholder="Search"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <GTPIcon 
-                                    icon="in-button-close" 
-                                    className="!size-[12px] cursor-pointer" 
-                                    containerClassName="!size-[15px] flex items-center justify-center" 
+                                <GTPIcon
+                                    icon="in-button-close"
+                                    className="!size-[12px] cursor-pointer"
+                                    containerClassName="!size-[15px] flex items-center justify-center"
                                     onClick={() => setSearchQuery("")}
                                 />
                             </div>
@@ -240,14 +306,14 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 </div>
             </div>
             <div className="pt-[10px] w-full">
-                <GTPButtonContainer className="w-full flex">         
-                        <GTPButtonRow wrap={isMobile ? true : false} 
-                        
+                <GTPButtonContainer className="w-full flex">
+                        <GTPButtonRow wrap={isMobile ? true : false}
+
                             className="flex-nowrap"
                             style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval} 
+                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval}
                                 clickHandler={() => {
                                     if(cachedTimespans !== null) {
                                         setSelectedTimespan(cachedTimespans);
@@ -275,16 +341,59 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size="sm" variant="primary" isSelected={selectedTotal} clickHandler={() => setSelectedTotal(true)} />
-                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="By Chain" size="sm" variant="primary" isSelected={!selectedTotal} clickHandler={() => setSelectedTotal(false)} />
+                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size="sm" variant="primary" isSelected={effectiveSelectedTotal} clickHandler={() => setSelectedTotal(true)} />
+                            <GTPButton
+                                className="w-full justify-center"
+                                innerStyle={{ width: "100%" }}
+                                label="By Chain"
+                                size="sm"
+                                variant="primary"
+                                isSelected={!effectiveSelectedTotal}
+                                disabled={isComparing}
+                                visualState={isComparing ? "disabled" : undefined}
+                                clickHandler={() => { if (!isComparing) setSelectedTotal(false); }}
+                            />
                         </GTPButtonRow>
                     </div>
                 </GTPButtonContainer>
-                            
+
+                {/* ── Compare input ─────────────────────────────────────────── */}
+                <div className="pt-[10px] flex items-center gap-x-[5px] flex-wrap gap-y-[5px]">
+                    <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[2px] py-[2px] gap-x-[8px]">
+                        <GTPIcon icon="gtp-compare" className="!size-[12px]" containerClassName="!size-[12px] flex items-center justify-center" />
+                        <input
+                            type="text"
+                            className="text-xxs bg-transparent outline-none w-[160px]"
+                            placeholder="Compare app (e.g. uniswap)"
+                            value={compareInput}
+                            onChange={(e) => setCompareInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleAddCompareApp(); }}
+                        />
+                        <GTPButton
+                            label="Add"
+                            size="xs"
+                            variant="primary"
+                            isSelected={!!compareInput.trim()}
+                            clickHandler={handleAddCompareApp}
+                        />
+                    </div>
+                    {compareAppKeys.map(key => (
+                        <GTPButton
+                            key={key}
+                            label={compareAppsData.has(key) ? (ownerProjectToProjectData[key]?.display_name ?? key) : key}
+                            size="sm"
+                            variant="primary"
+                            isSelected
+                            rightIcon="in-button-close"
+                            clickHandler={() => handleRemoveCompareApp(key)}
+                        />
+                    ))}
+                </div>
+                {/* ──────────────────────────────────────────────────────────── */}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {}).filter((metric) => hasHourlyData[metric] || timeInterval !== "hourly").map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={selectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} />
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} />
                 ))}
             </div>
         </div>
@@ -292,7 +401,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>> }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[] }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -300,64 +409,100 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
-    const [collapseTable, setCollapseTable] = useState(false);
     const { AllChainsByKeys, data: master } = useMaster();
-    const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
-    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+    const [showUsd] = useLocalStorage("showUsd", true);
     const hasChainData = master?.app_metrics?.[metric]?.chain_specific;
-    
+    const isComparing = compareApps.length > 0;
 
     const seriesData = useMemo(() => {
         const showAvg = master?.app_metrics?.[metric]?.all_l2s_aggregate === "avg";
-        
 
-        if (!hasChainData) {
-            const overTime = data.metrics[metric].over_time.all[timeInterval]?.data ?? [];
-            return [{
-                name: "Total",
-                data: overTime.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
-            }];
+        // Sums all chain over_time data into a single total series.
+        // Uses `any` cast for the chain data because OverTimeData only types `daily`,
+        // but at runtime both `daily` and `hourly` keys exist.
+        function sumChainSeries(
+            overTime: Record<string, unknown>,
+            excludeChains: string[] = [],
+        ): [number, number | null][] {
+            const sums = new Map<number, number | null>();
+            const counts = new Map<number, number>();
+            for (const chain of Object.keys(overTime)) {
+                if (excludeChains.includes(chain)) continue;
+                const points = ((overTime[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
+                for (const d of points) {
+                    const ts = Number(d[0]);
+                    const val: number | null = d[1] == null ? null : Number(d[1]);
+                    if (!sums.has(ts)) {
+                        sums.set(ts, val);
+                        counts.set(ts, val !== null ? 1 : 0);
+                    } else {
+                        const existing = sums.get(ts)!;
+                        sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                        if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
+                    }
+                }
+            }
+            return Array.from(sums.entries())
+                .sort((a, b) => a[0] - b[0])
+                .map(([ts, sum]): [number, number | null] => {
+                    if (!showAvg || sum === null) return [ts, sum];
+                    const count = counts.get(ts) ?? 0;
+                    return [ts, count > 0 ? sum / count : null];
+                });
         }
 
+        // ── Non-chain-specific metrics (e.g. success_rate) ────────────────
+        if (!hasChainData) {
+            const rawPoints = ((data.metrics[metric].over_time as any).all as any)?.[timeInterval]?.data ?? [];
+            const mainSeries = {
+                name: "Total",
+                data: (rawPoints as number[][]).map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            };
+
+            if (!isComparing) return [mainSeries];
+
+            const compareSeries = compareApps
+                .filter(app => app.data?.metrics?.[metric])
+                .map(app => {
+                    const appRaw = ((app.data.metrics[metric].over_time as any).all as any)?.[timeInterval]?.data ?? [];
+                    return {
+                        name: `compare_${app.owner_project}`,
+                        data: (appRaw as number[][]).map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                    };
+                });
+
+            return [mainSeries, ...compareSeries];
+        }
+
+        // ── Chain-specific metrics ─────────────────────────────────────────
         const chains = Object.keys(data.metrics[metric].over_time).filter((chain) => !deselectedChains.includes(chain));
         const perChain = chains.map((chain) => ({
             name: chain,
-            data: data.metrics[metric].over_time[chain][timeInterval].data.map(
-                (d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
+            data: ((data.metrics[metric].over_time[chain] as any)?.[timeInterval]?.data ?? [] as number[][]).map(
+                (d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
             ),
         }));
 
-        if (!selectedTotal) return perChain;
+        // By Chain view (only available when not comparing)
+        if (!selectedTotal && !isComparing) return perChain;
 
-        // Build a map of timestamp → sum and count across all chains
-        const sums = new Map<number, number | null>();
-        const counts = new Map<number, number>();
-        for (const { data: points } of perChain) {
-            for (const [ts, val] of points) {
-                if (!sums.has(ts)) {
-                    sums.set(ts, val);
-                    counts.set(ts, val !== null ? 1 : 0);
-                } else {
-                    const existing = sums.get(ts)!;
-                    sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
-                    if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
-                }
-            }
-        }
-
-        const totals: [number, number | null][] = Array.from(sums.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map(([ts, sum]) => {
-                if (!showAvg || sum === null) return [ts, sum];
-                const count = counts.get(ts) ?? 0;
-                return [ts, count > 0 ? sum / count : null];
-            });
-
-        return [{
+        const mainTotalSeries = {
             name: "Total",
-            data: totals,
-        }];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master, hasChainData]);
+            data: sumChainSeries(data.metrics[metric].over_time as Record<string, unknown>, deselectedChains),
+        };
+
+        if (!isComparing) return [mainTotalSeries];
+
+        // Compare mode: one total series per compare app
+        const compareSeries = compareApps
+            .filter(app => app.data?.metrics?.[metric])
+            .map(app => ({
+                name: `compare_${app.owner_project}`,
+                data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
+            }));
+
+        return [mainTotalSeries, ...compareSeries];
+    }, [data, metric, selectedTotal, deselectedChains, timeInterval, master, hasChainData, compareApps, isComparing]);
 
     const { timespans, selectedTimespan } = useTimespan();
 
@@ -391,12 +536,41 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             return "Success Rate";
         case "throughput":
             return "Throughput";
-    
+
         default:
             return metric;
         }
     }, [metric]);
-    
+
+    // Resolves display info for a series entry, handling both chain and compare-app series
+    function resolveSeriesInfo(seriesName: string) {
+        const isCompareApp = seriesName.startsWith("compare_");
+        const compareOwnerProject = isCompareApp ? seriesName.replace("compare_", "") : null;
+        const compareApp = compareOwnerProject
+            ? compareApps.find(a => a.owner_project === compareOwnerProject)
+            : null;
+        const compareAppColor = compareApp ? getAppColors(compareApp.owner_project, theme) : null;
+
+        const displayName = isCompareApp
+            ? (compareApp?.displayName ?? compareOwnerProject ?? seriesName)
+            : (AllChainsByKeys[seriesName]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total"));
+
+        const color: [string | undefined, string | undefined] = isCompareApp
+            ? [compareAppColor?.[0], compareAppColor?.[1]]
+            : seriesName === "Total"
+                ? [appColor[0], appColor[1]]
+                : [AllChainsByKeys[seriesName]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[seriesName]?.colors?.[theme ?? "dark"]?.[1]];
+
+        return { isCompareApp, compareOwnerProject, displayName, color };
+    }
+
+    // When !hasChainData && !selectedTotal && !isComparing the "Total" series is intentionally
+    // hidden so the "cannot be broken down by chain" message can show instead.
+    const visibleSeries = seriesData.filter(s =>
+        !hasChainData && !selectedTotal && !isComparing ? s.name !== "Total" : true
+    );
+
+
     return (
         <div className="pt-[30px] w-full">
             <div className="flex items-center gap-x-[8px]">
@@ -453,7 +627,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                 onOpenChange={setIsSharePopoverOpen}
                                 dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                             />
-                        
+
                             <GTPButton
                                 leftIcon="gtp-download-monochrome"
                                 size={"sm"}
@@ -471,7 +645,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                 <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size="sm" variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
                             ))}
                         </GTPButtonRow>
-                            
+
                     </GTPButtonContainer>
                  }
 
@@ -480,14 +654,15 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         height={280}
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
-                        series={seriesData.filter((s) => !hasChainData && !selectedTotal ? s.name !== "Total" : true).map((s) => ({
-                            ...s,
-                            seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
-                            name: AllChainsByKeys[s.name]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total"),
-                            color: s.name === "Total"
-                                ? [appColor[0], appColor[1]]
-                                : [AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[1]],
-                        }))}
+                        series={visibleSeries.map((s) => {
+                            const { displayName, color } = resolveSeriesInfo(s.name);
+                            return {
+                                ...s,
+                                seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
+                                name: displayName,
+                                color: color as [string, string],
+                            };
+                        })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
                         compactXAxis
@@ -500,54 +675,70 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                     />
-                    
-                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]" 
+
+                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]"
                     >
-                        {seriesData.filter((s) => !hasChainData && !selectedTotal ? s.name !== "Total" : true).sort((a, b) => data.chains_by_size.indexOf(a.name) - data.chains_by_size.indexOf(b.name)).map((s) => (
-                            <div className="" key={s.name + "app-metric-chart-legend"}
-                                onMouseEnter={() => setHoverSeriesName(s.name)}
-                                onMouseLeave={() => setHoverSeriesName(null)}
-                            >
-                                <GTPButton
-                                    label={selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name}
-                                    variant="primary" 
-                                    size="xs"
-                                    clickHandler={() => {
-                                        if(selectedTotal) return;
-                                        setDeselectedChains((prev) => {
-                                            const next = new Set(prev);
-                                            if (next.has(s.name)) {
-                                                next.delete(s.name);
-                                            } else {
-                                                next.add(s.name);
-                                            }
-                                            return Array.from(next);
-                                        });
-                                    }}
-                                    rightIcon={
-                                        hoverSeriesName === s.name && !selectedTotal
-                                          ? inactiveSeriesNames.has(s.name)
-                                            ? "in-button-plus"
-                                            : "in-button-close"
-                                          : undefined
-                                    }
-                                    animateRightIcon
-                                    rightIconClassname="!w-[12px] !h-[12px]"
-                                    textClassName={inactiveSeriesNames.has(s.name) ? "text-color-text-secondary" : undefined}
-                                    className={inactiveSeriesNames.has(s.name) ? "border border-color-bg-medium" : undefined}
-                                    leftIconOverride={(
-                                        <div
-                                            className="min-w-[6px] min-h-[6px] rounded-full"
-                                            style={{ backgroundColor: s.name === "Total" ? appColor[0] : AllChainsByKeys[s.name]?.colors?.[theme ?? "dark"]?.[0], opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
-                                        />
-                                    )}
-                                />
-                            </div>
-                        ))}
+                        {visibleSeries.sort((a, b) => {
+                            // Main "Total" first, then chain series, then compare-app series
+                            if (a.name === "Total") return -1;
+                            if (b.name === "Total") return 1;
+                            if (a.name.startsWith("compare_")) return 1;
+                            if (b.name.startsWith("compare_")) return -1;
+                            return data.chains_by_size.indexOf(a.name) - data.chains_by_size.indexOf(b.name);
+                        }).map((s) => {
+                            const { isCompareApp, displayName, color } = resolveSeriesInfo(s.name);
+                            const legendLabel = isCompareApp
+                                ? displayName
+                                : (selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name);
+                            const dotColor = color[0];
+
+                            return (
+                                <div className="" key={s.name + "app-metric-chart-legend"}
+                                    onMouseEnter={() => setHoverSeriesName(s.name)}
+                                    onMouseLeave={() => setHoverSeriesName(null)}
+                                >
+                                    <GTPButton
+                                        label={legendLabel}
+                                        variant="primary"
+                                        size="xs"
+                                        clickHandler={() => {
+                                            // Chain toggling only applies in by-chain view
+                                            if (selectedTotal || isCompareApp) return;
+                                            setDeselectedChains((prev) => {
+                                                const next = new Set(prev);
+                                                if (next.has(s.name)) {
+                                                    next.delete(s.name);
+                                                } else {
+                                                    next.add(s.name);
+                                                }
+                                                return Array.from(next);
+                                            });
+                                        }}
+                                        rightIcon={
+                                            hoverSeriesName === s.name && !selectedTotal && !isCompareApp
+                                              ? inactiveSeriesNames.has(s.name)
+                                                ? "in-button-plus"
+                                                : "in-button-close"
+                                              : undefined
+                                        }
+                                        animateRightIcon
+                                        rightIconClassname="!w-[12px] !h-[12px]"
+                                        textClassName={inactiveSeriesNames.has(s.name) ? "text-color-text-secondary" : undefined}
+                                        className={inactiveSeriesNames.has(s.name) ? "border border-color-bg-medium" : undefined}
+                                        leftIconOverride={(
+                                            <div
+                                                className="min-w-[6px] min-h-[6px] rounded-full"
+                                                style={{ backgroundColor: dotColor, opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                            );
+                        })}
 
                     </div>
                 </GTPCardLayout>
             </div>
-        </div>  
+        </div>
     );
 }
