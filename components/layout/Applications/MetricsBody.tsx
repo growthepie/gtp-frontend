@@ -431,7 +431,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
                     .map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} />
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" />
                 ))}
             </div>
         </div>
@@ -439,7 +439,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[] }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -588,7 +588,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
         const displayName = isCompareApp
             ? (compareApp?.displayName ?? compareOwnerProject ?? seriesName)
-            : (AllChainsByKeys[seriesName]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + " L2 Total"));
+            : (AllChainsByKeys[seriesName]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + ""));
 
         const color: [string | undefined, string | undefined] = isCompareApp
             ? [compareAppColor?.[0], compareAppColor?.[1]]
@@ -711,6 +711,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         prefix={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.prefix ?? undefined}
                         decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
+                        syncId={syncId}
                     />
 
                     <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]"
