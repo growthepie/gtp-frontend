@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
@@ -92,10 +93,22 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
-    const [compareInput, setCompareInput] = useState("");
     const [compareAppsData, setCompareAppsData] = useState<Map<string, ApplicationDetailsData>>(new Map());
     const isComparing = compareAppKeys.length > 0;
     const { ownerProjectToProjectData } = useProjectsMetadata();
+
+    const compareSearchResults = useMemo(() => {
+        if (!searchQuery.trim()) return [];
+        const term = searchQuery.toLowerCase();
+        return Object.values(ownerProjectToProjectData)
+            .filter(app =>
+                app.on_apps_page &&
+                app.owner_project !== owner_project &&
+                !compareAppKeys.includes(app.owner_project) &&
+                app.display_name.toLowerCase().includes(term),
+            )
+            .slice(0, 6);
+    }, [searchQuery, ownerProjectToProjectData, owner_project, compareAppKeys]);
 
     const handleCompareDataLoaded = useCallback((key: string, appData: ApplicationDetailsData) => {
         setCompareAppsData(prev => {
@@ -121,14 +134,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     // Derived rather than synced via useEffect to avoid a cascading-render lint warning.
     const effectiveSelectedTotal = isComparing ? true : selectedTotal;
 
-    function handleAddCompareApp() {
-        const key = compareInput.trim().toLowerCase();
-        if (key && !compareAppKeys.includes(key)) {
-            setCompareAppKeys(prev => [...prev, key]);
-        }
-        setCompareInput("");
-    }
-
     function handleRemoveCompareApp(key: string) {
         setCompareAppKeys(prev => prev.filter(k => k !== key));
         setCompareAppsData(prev => {
@@ -136,6 +141,11 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             next.delete(key);
             return next;
         });
+    }
+
+    function handleSelectCompareApp(appKey: string) {
+        setCompareAppKeys(prev => prev.includes(appKey) ? prev : [...prev, appKey]);
+        setSearchQuery("");
     }
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -309,24 +319,24 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                         className="absolute left-0 right-0 overflow-hidden z-10 rounded-b-[15px]"
                         style={{
                             top: "calc(100% - 20px)",
-                            maxHeight: isCompareDropdownOpen ? "115px" : "0px",
+                            maxHeight: isCompareDropdownOpen ? "450px" : "0px",
                             transition: "max-height 350ms cubic-bezier(0.4, 0, 0.2, 1)",
                             boxShadow: "0px 0px 27px 0px var(--color-ui-shadow, #151A19)",
                         }}
                     >
                         <div
-                            className="bg-color-bg-default rounded-b-[15px] justify-center px-[10px]"
-                            style={{ paddingTop: "30px", height: "115px" }}
+                            className="bg-color-bg-default rounded-b-[15px] justify-center px-[10px] z-50"
+                            style={{ paddingTop: "30px", paddingBottom: "10px" }}
                         >
                             <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[5px] py-[5px] justify-between w-full">
                                 <div className="flex items-center gap-x-[10px]">
                                     <GTPIcon icon="gtp-search" className="!size-[12px]" containerClassName="!size-[12px]" />
                                     <input
-                                    type="text"
-                                    className="text-xxs bg-transparent outline-none"
-                                    placeholder="Search"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                        type="text"
+                                        className="text-xxs bg-transparent outline-none"
+                                        placeholder="Search apps"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
                                 <GTPIcon
@@ -336,6 +346,54 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                     onClick={() => setSearchQuery("")}
                                 />
                             </div>
+                            {(compareAppKeys.length > 0 || compareSearchResults.length > 0) && (
+                                <div className="mt-[8px] flex flex-col max-h-[300px] overflow-y-auto">
+                                    {compareAppKeys.map(key => {
+                                        const meta = ownerProjectToProjectData[key];
+                                        return (
+                                            <div
+                                                key={key}
+                                                className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors"
+                                                onClick={() => handleRemoveCompareApp(key)}
+                                            >
+                                                <GTPIcon icon="gtp-checkmark-checked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                {meta?.logo_path && (
+                                                    <Image
+                                                        src={`https://api.growthepie.com/v1/apps/logos/${meta.logo_path}`}
+                                                        alt={meta.display_name}
+                                                        width={18}
+                                                        height={18}
+                                                        className="rounded-full shrink-0"
+                                                    />
+                                                )}
+                                                <span className="truncate flex-1 min-w-0">{meta?.display_name ?? key}</span>
+                                            </div>
+                                        );
+                                    })}
+                                    {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
+                                        <div className="my-[6px] border-t border-color-bg-medium" />
+                                    )}
+                                    {compareSearchResults.map(app => (
+                                        <div
+                                            key={app.owner_project}
+                                            className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors"
+                                            onClick={() => handleSelectCompareApp(app.owner_project)}
+                                        >
+                                            <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                            {app.logo_path && (
+                                                <Image
+                                                    src={`https://api.growthepie.com/v1/apps/logos/${app.logo_path}`}
+                                                    alt={app.display_name}
+                                                    width={18}
+                                                    height={18}
+                                                    className="rounded-full shrink-0"
+                                                />
+                                            )}
+                                            <span className="truncate flex-1 min-w-0">{app.display_name ?? app.owner_project}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -392,39 +450,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     </div>
                 </GTPButtonContainer>
 
-                {/* ── Compare input ─────────────────────────────────────────── */}
-                <div className="pt-[10px] flex items-center gap-x-[5px] flex-wrap gap-y-[5px]">
-                    <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[2px] py-[2px] gap-x-[8px]">
-                        <GTPIcon icon="gtp-compare" className="!size-[12px]" containerClassName="!size-[12px] flex items-center justify-center" />
-                        <input
-                            type="text"
-                            className="text-xxs bg-transparent outline-none w-[160px]"
-                            placeholder="Compare app (e.g. uniswap)"
-                            value={compareInput}
-                            onChange={(e) => setCompareInput(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === "Enter") handleAddCompareApp(); }}
-                        />
-                        <GTPButton
-                            label="Add"
-                            size="xs"
-                            variant="primary"
-                            isSelected={!!compareInput.trim()}
-                            clickHandler={handleAddCompareApp}
-                        />
-                    </div>
-                    {compareAppKeys.map(key => (
-                        <GTPButton
-                            key={key}
-                            label={compareAppsData.has(key) ? (ownerProjectToProjectData[key]?.display_name ?? key) : key}
-                            size="sm"
-                            variant="primary"
-                            isSelected
-                            rightIcon="in-button-close"
-                            clickHandler={() => handleRemoveCompareApp(key)}
-                        />
-                    ))}
-                </div>
-                {/* ──────────────────────────────────────────────────────────── */}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {})

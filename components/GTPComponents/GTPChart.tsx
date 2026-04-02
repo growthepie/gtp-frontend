@@ -38,7 +38,7 @@ const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
 );
 
 const WATERMARK_CLASS =
-  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] ";
 
 // Singleton canvas context for precise text width measurement (avoids char-width heuristics)
 let _measureCtx: CanvasRenderingContext2D | null | undefined;
@@ -2056,7 +2056,7 @@ export default function GTPChart({
             <ChartWatermarkWithMetricName metricName={watermarkMetricName} className={WATERMARK_CLASS} />
           </div>
         ) : (
-          <div className={`${watermarkOverlayClassName} ${"flex flex-col gap-y-[2px]"}`}>
+          <div className={`${watermarkOverlayClassName} ${"flex flex-col gap-y-[2px] z-30"}`}>
             <ChartWatermark className={WATERMARK_CLASS} />
             <div className="text-xxs text-color-text-secondary">
               {underChartText}
