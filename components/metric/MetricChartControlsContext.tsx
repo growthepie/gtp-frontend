@@ -199,6 +199,18 @@ export const MetricChartControlsProvider = ({
     "absolute",
   );
 
+  const resolvedSelectedScale = useMemo(() => {
+    if (metric_id === "txcosts") {
+      return "absolute";
+    }
+
+    if (selectedScale === "netSupply" && metric_id !== "stables_mcap") {
+      return providedDefaultScale ?? "absolute";
+    }
+
+    return selectedScale;
+  }, [metric_id, providedDefaultScale, selectedScale]);
+
   useEffect(() => {
     if (providedSelectedTimespan) {
       setSelectedTimespan(providedSelectedTimespan);
@@ -211,6 +223,12 @@ export const MetricChartControlsProvider = ({
       setSelectedScale(providedDefaultScale);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedScale !== resolvedSelectedScale) {
+      setSelectedScale(resolvedSelectedScale);
+    }
+  }, [resolvedSelectedScale, selectedScale, setSelectedScale]);
 
   // If the stored interval isn't supported by this metric (e.g. "hourly" carried
   // over from a different page), fall back to daily so the chart isn't empty.
@@ -360,7 +378,7 @@ export const MetricChartControlsProvider = ({
         selectedTimespansByTimeInterval,
         //@ts-ignore
         setSelectedTimespansByTimeInterval,
-        selectedScale: metric_id === "txcosts" ? "absolute" : selectedScale,
+        selectedScale: resolvedSelectedScale,
         setSelectedScale,
         selectedYAxisScale: selectedYAxisScale,
         setSelectedYAxisScale: setSelectedYAxisScale,

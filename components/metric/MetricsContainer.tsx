@@ -96,6 +96,8 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
         return metricInfo.all_l2s_aggregate !== 'sum';
     }, [master, metric_id]);
+
+    const showNetSupplyToggle = metric_id === "stables_mcap";
     
 
     const SourcesDisplay = useMemo(() => {
@@ -475,6 +477,17 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                                     className="w-full justify-center"
                                 />
                             </>
+                        )}
+                        {showNetSupplyToggle && (
+                            <GTPButton
+                                label="Net Supply Change"
+                                variant="primary"
+                                size={"sm"}
+                                isSelected={selectedScale === "netSupply"}
+                                clickHandler={() => setSelectedScale("netSupply")}
+                                innerStyle={{ width: "100%" }}
+                                className="w-full justify-center"
+                            />
                         )}
                     </GTPButtonRow>
 
