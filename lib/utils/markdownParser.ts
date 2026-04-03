@@ -650,6 +650,26 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       yAxisLine: chartConfig.yAxisLine || [],
       showInMenu: parseShowInMenu(chartConfig),
       filterOnStateKey: chartConfig.filterOnStateKey || undefined,
+      top10ByMetric: typeof chartConfig.top10ByMetric === 'string' ? chartConfig.top10ByMetric : undefined,
+      scatterTrendline:
+        chartConfig.scatterTrendline === true
+          ? { enabled: true }
+          : chartConfig.scatterTrendline && typeof chartConfig.scatterTrendline === 'object'
+            ? {
+                enabled:
+                  typeof chartConfig.scatterTrendline.enabled === 'boolean'
+                    ? chartConfig.scatterTrendline.enabled
+                    : true,
+                label:
+                  typeof chartConfig.scatterTrendline.label === 'string'
+                    ? chartConfig.scatterTrendline.label
+                    : undefined,
+                color:
+                  typeof chartConfig.scatterTrendline.color === 'string'
+                    ? chartConfig.scatterTrendline.color
+                    : undefined,
+              }
+            : undefined,
       hideOnChainTabs: chartConfig.hideOnChainTabs === true,
       showOnChainTabs: showOnChainTabs?.length ? showOnChainTabs : undefined,
     };

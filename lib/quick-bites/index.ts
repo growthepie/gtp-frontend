@@ -15,6 +15,7 @@ import Agents from './qb-eip8004';
 import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
 import StablecoinProject from './qb-stablecoin-project';
+import averageActiveAddress from './qb-average-active-address';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -31,7 +32,8 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "stablecoins-for-chain": StablecoinChain,
   "stablecoins-for-project": StablecoinProject,
   "eip-8004": Agents,
-  "octant-v2-migration": OctantV2Migration
+  "octant-v2-migration": OctantV2Migration,
+  "average-active-address": averageActiveAddress
 };
 
 export default QUICK_BITES_DATA;

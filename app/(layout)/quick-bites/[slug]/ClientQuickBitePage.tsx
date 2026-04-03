@@ -10,7 +10,7 @@ import Block from '@/components/quick-bites/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickBites from '@/components/RelatedQuickBites';
-import { Author, QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
+import { Author, QuickBiteData, QuickBiteWithSlug, Topic } from '@/lib/types/quickBites';
 import Link from 'next/link';
 import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
 import Icon from "@/components/layout/Icon";
@@ -31,6 +31,216 @@ type Props = {
   params: { slug: string };
 };
 
+const normalizeChainAlias = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
+
+const parseChainUrlKey = (value: string): string | null => {
+  const match = value.match(/\/chains\/([^/?#]+)/i);
+  return match?.[1] || null;
+};
+
+const extractPathCandidates = (value: unknown): string[] => {
+  if (typeof value !== "string") return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+
+  const candidates = new Set<string>([trimmed]);
+  const dotParts = trimmed.split(".");
+  dotParts.forEach((part) => {
+    const token = part.trim();
+    if (!token) return;
+    candidates.add(token);
+    candidates.add(token.replace(/[_-]+/g, " "));
+  });
+
+  return Array.from(candidates);
+};
+
+const extractSeriesChainCandidates = (series: unknown): string[] => {
+  if (!series || typeof series !== "object") return [];
+
+  const entry = series as Record<string, unknown>;
+  const candidates: string[] = [];
+  const pushCandidate = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    candidates.push(trimmed);
+
+    const withoutChainWord = trimmed.replace(/\bchain\b/gi, "").trim();
+    if (withoutChainWord && withoutChainWord !== trimmed) {
+      candidates.push(withoutChainWord);
+    }
+
+    const urlKey = parseChainUrlKey(trimmed);
+    if (urlKey) {
+      candidates.push(urlKey);
+    }
+  };
+
+  pushCandidate(entry.key);
+  pushCandidate(entry.urlKey);
+  pushCandidate(entry.name);
+  pushCandidate(entry.url);
+
+  return candidates;
+};
+
+const extractDataAsJsonChainCandidates = (dataAsJson: unknown): string[] => {
+  if (!dataAsJson || typeof dataAsJson !== "object") return [];
+
+  const jsonConfig = dataAsJson as Record<string, unknown>;
+  const candidates: string[] = [];
+  const pushCandidate = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    candidates.push(trimmed);
+    candidates.push(...extractPathCandidates(trimmed));
+  };
+
+  const metaEntries = Array.isArray(jsonConfig.meta) ? jsonConfig.meta : [];
+  metaEntries.forEach((entry) => {
+    if (!entry || typeof entry !== "object") return;
+    const metaEntry = entry as Record<string, unknown>;
+    pushCandidate(metaEntry.name);
+    pushCandidate(metaEntry.nameFromPath);
+    pushCandidate(metaEntry.pathToData);
+    pushCandidate(metaEntry.url);
+  });
+
+  const dynamicSeries = jsonConfig.dynamicSeries;
+  if (dynamicSeries && typeof dynamicSeries === "object") {
+    const dynamicConfig = dynamicSeries as Record<string, unknown>;
+    const names = dynamicConfig.names;
+    if (typeof names === "string") {
+      pushCandidate(names);
+    } else if (Array.isArray(names)) {
+      names.forEach(pushCandidate);
+    }
+    pushCandidate(dynamicConfig.pathToData);
+    pushCandidate(dynamicConfig.url);
+  }
+
+  const pieData = jsonConfig.pieData;
+  if (Array.isArray(pieData)) {
+    pieData.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      pushCandidate((entry as Record<string, unknown>).name);
+    });
+  } else if (pieData && typeof pieData === "object") {
+    const pieConfig = pieData as Record<string, unknown>;
+    pushCandidate(pieConfig.pathToData);
+    pushCandidate(pieConfig.url);
+  }
+
+  return candidates;
+};
+
+const getChartSeriesCandidates = (data: unknown): string[] => {
+  if (!Array.isArray(data)) return [];
+
+  const candidates: string[] = [];
+  data.forEach((series) => {
+    candidates.push(...extractSeriesChainCandidates(series));
+  });
+
+  return candidates;
+};
+
+const collectChainCandidatesFromBlocks = (blocks: ContentBlock[]): string[] => {
+  const candidates: string[] = [];
+
+  const walk = (block: ContentBlock) => {
+    if (block.type === "chart") {
+      candidates.push(...getChartSeriesCandidates(block.data));
+      candidates.push(...extractDataAsJsonChainCandidates(block.dataAsJson));
+      return;
+    }
+
+    if (block.type === "chart-toggle") {
+      block.charts.forEach((chart) => {
+        candidates.push(...getChartSeriesCandidates(chart.data));
+        candidates.push(...extractDataAsJsonChainCandidates(chart.dataAsJson));
+      });
+      return;
+    }
+
+    if (block.type === "container") {
+      block.blocks.forEach((group) => group.forEach(walk));
+    }
+  };
+
+  blocks.forEach(walk);
+  return candidates;
+};
+
+const appendChartChainTopics = (
+  topics: Topic[],
+  blocks: ContentBlock[],
+  allChainsByKeys: ReturnType<typeof useMaster>["AllChainsByKeys"],
+): Topic[] => {
+  const chainAliasToMeta = new Map<
+    string,
+    {
+      key: string;
+      name: string;
+      urlKey: string;
+    }
+  >();
+
+  Object.values(allChainsByKeys || {}).forEach((chain) => {
+    const aliases = [chain.key, chain.urlKey, chain.label, chain.name_short]
+      .filter(Boolean)
+      .map((alias) => normalizeChainAlias(String(alias)));
+
+    aliases.forEach((alias) => {
+      if (!chainAliasToMeta.has(alias)) {
+        chainAliasToMeta.set(alias, {
+          key: chain.key,
+          name: chain.label,
+          urlKey: chain.urlKey,
+        });
+      }
+    });
+  });
+
+  if (chainAliasToMeta.size === 0) {
+    return topics;
+  }
+
+  const existingTopicUrls = new Set(
+    topics.map((topic) => topic.url).filter((url): url is string => typeof url === "string" && url.length > 0),
+  );
+
+  const seenChainKeys = new Set<string>();
+  const topicsToAppend: Topic[] = [];
+  const candidateAliases = collectChainCandidatesFromBlocks(blocks);
+
+  candidateAliases.forEach((candidate) => {
+    const normalized = normalizeChainAlias(candidate);
+    if (!normalized) return;
+
+    const matchedChain = chainAliasToMeta.get(normalized);
+    if (!matchedChain) return;
+    if (seenChainKeys.has(matchedChain.key)) return;
+
+    const chainUrl = `/chains/${matchedChain.urlKey}`;
+    if (existingTopicUrls.has(chainUrl)) {
+      seenChainKeys.add(matchedChain.key);
+      return;
+    }
+
+    seenChainKeys.add(matchedChain.key);
+    existingTopicUrls.add(chainUrl);
+    topicsToAppend.push({
+      name: matchedChain.name,
+      url: chainUrl,
+    });
+  });
+
+  return topicsToAppend.length > 0 ? [...topics, ...topicsToAppend] : topics;
+};
+
 export default function ClientQuickBitePage({ params }: Props) {
   const TOPIC_GAP_PX = 5;
   const { AllChainsByKeys } = useMaster();
@@ -46,10 +256,27 @@ export default function ClientQuickBitePage({ params }: Props) {
   const topicViewportRef = useRef<HTMLDivElement | null>(null);
   const topicMeasureRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const morePillMeasureRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const quickBiteWithChartTopics = useMemo(() => {
+    if (!QuickBite) return null;
+    if (QuickBite.autoAddChartChainsToTopics !== true) return QuickBite;
+    if (!contentBlocks.length) return QuickBite;
+
+    const baseTopics = QuickBite.topics || [];
+    const updatedTopics = appendChartChainTopics(baseTopics, contentBlocks, AllChainsByKeys);
+
+    if (updatedTopics === baseTopics) {
+      return QuickBite;
+    }
+
+    return {
+      ...QuickBite,
+      topics: updatedTopics,
+    };
+  }, [QuickBite, contentBlocks, AllChainsByKeys]);
 
   const resolvedTopics = useMemo(
     () =>
-      (QuickBite?.topics || []).map((topic, index) => {
+      (quickBiteWithChartTopics?.topics || []).map((topic, index) => {
         let resolvedIcon: GTPIconName | undefined = topic.icon;
         let resolvedColor = topic.color;
 
@@ -68,7 +295,7 @@ export default function ClientQuickBitePage({ params }: Props) {
           key: topic.url ? `${topic.url}-${index}` : `${topic.name}-${index}`,
         };
       }),
-    [QuickBite?.topics, AllChainsByKeys, theme],
+    [quickBiteWithChartTopics?.topics, AllChainsByKeys, theme],
   );
 
   const visibleTopics = useMemo(
@@ -214,7 +441,7 @@ export default function ClientQuickBitePage({ params }: Props) {
                 <GTPIcon icon="gtp-quick-bites" size="lg" />
               </div>
               <h1 className={`leading-snug heading-large-md md:heading-large-lg xl:heading-large-xl flex items-center `}>
-                {QuickBite && QuickBite.title}
+                {quickBiteWithChartTopics && quickBiteWithChartTopics.title}
               </h1>
             </div>
 
@@ -224,10 +451,10 @@ export default function ClientQuickBitePage({ params }: Props) {
                 <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
               </Link>  
               <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
-                {QuickBite && QuickBite.author && (
+                {quickBiteWithChartTopics && quickBiteWithChartTopics.author && (
                   <>
                     <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'>
-                      {QuickBite.author.map((author) => (
+                      {quickBiteWithChartTopics.author.map((author) => (
                         <Fragment key={author.xUsername}>
                           <ClientAuthorLink name={author.name} xUsername={author.xUsername} />
                           <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
@@ -238,7 +465,7 @@ export default function ClientQuickBitePage({ params }: Props) {
                     </div>
                   </>
                 )}
-                <span className='text-xxs lg:text-sm'>{QuickBite && formatDate(QuickBite.date)}</span>
+                <span className='text-xxs lg:text-sm'>{quickBiteWithChartTopics && formatDate(quickBiteWithChartTopics.date)}</span>
               </div>
             </div>
           </div>

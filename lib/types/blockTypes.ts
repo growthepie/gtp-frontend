@@ -152,7 +152,7 @@ export interface TableBlock extends BaseBlock {
 
 export interface ChartBlock extends BaseBlock {
   type: 'chart';
-  chartType: 'line' | 'area' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie' | 'scatter';
   data: any; // This would be the chart data structure
   margins?: "none" | "normal";
   options?: any; // Chart configuration options
@@ -239,6 +239,12 @@ export interface ChartBlock extends BaseBlock {
   };
   toggleLabel?: string;
   defaultFilteredSeriesNames?: string[];
+  top10ByMetric?: string;
+  scatterTrendline?: {
+    enabled?: boolean;
+    label?: string;
+    color?: string;
+  };
   hideOnChainTabs?: boolean;
   showOnChainTabs?: string[];
   suppressWrapperSpacing?: boolean;

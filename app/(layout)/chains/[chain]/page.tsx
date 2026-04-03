@@ -29,7 +29,7 @@ import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
 import UserInsights from "@/components/layout/SingleChains/UserInsights";
-import { getRelatedQuickBitesByTopic } from "@/lib/quick-bites/quickBites";
+import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import { processDynamicContent } from "@/lib/utils/dynamicContent";
 import { processMarkdownContent } from "@/lib/utils/markdownParser";
 import { ContentBlock } from "@/lib/types/blockTypes";
@@ -37,12 +37,28 @@ import Block from "@/components/quick-bites/Block";
 import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const STANDARDIZED_CHAIN_QUICK_BITE_CHART_HEIGHT = 506;
 const STANDARDIZED_CHAIN_QUICK_BITE_CHART_WIDTH = "100%";
 const CHAIN_QUICK_BITES_TAB_BLOCK_CLASS = "chain-quick-bites-tab-block";
+const CHAIN_QUICK_BITES_TAB_RENDERED_CARD_HEIGHT = 587;
+const CHAIN_QUICK_BITES_TAB_STACKED_GAP_Y = 30;
+const CHAIN_QUICK_BITES_TAB_CONTENT_VERTICAL_PADDING = 45; // pt-[30px] + pb-[15px]
+const CHAIN_QUICK_BITES_TAB_HEIGHT_SAFETY_BUFFER = 30;
+
+const getQuickBiteTabChildrenHeight = (chartCount: number) => {
+  const normalizedCount = Math.max(chartCount, 1);
+  const stackedGapsHeight = Math.max(normalizedCount - 1, 0) * CHAIN_QUICK_BITES_TAB_STACKED_GAP_Y;
+  return (
+    normalizedCount * CHAIN_QUICK_BITES_TAB_RENDERED_CARD_HEIGHT +
+    stackedGapsHeight +
+    CHAIN_QUICK_BITES_TAB_CONTENT_VERTICAL_PADDING +
+    CHAIN_QUICK_BITES_TAB_HEIGHT_SAFETY_BUFFER
+  );
+};
 
 const getQuickBiteDefaultSeriesNames = (chainName: string, chainShortName: string) => {
   return [chainName, chainShortName].map((value) => value?.trim()).filter((value): value is string => Boolean(value));
@@ -57,6 +73,188 @@ interface QuickBiteDropdownOption {
 }
 
 const normalizeChainMatchValue = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
+const parseChainUrlKey = (value: string): string | null => {
+  const match = value.match(/\/chains\/([^/?#]+)/i);
+  return match?.[1] || null;
+};
+
+const extractPathCandidates = (value: unknown): string[] => {
+  if (typeof value !== "string") return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+
+  const candidates = new Set<string>([trimmed]);
+  const dotParts = trimmed.split(".");
+  dotParts.forEach((part) => {
+    const token = part.trim();
+    if (!token) return;
+    candidates.add(token);
+    candidates.add(token.replace(/[_-]+/g, " "));
+  });
+
+  return Array.from(candidates);
+};
+
+const extractSeriesChainCandidates = (series: unknown): string[] => {
+  if (!series || typeof series !== "object") return [];
+
+  const entry = series as Record<string, unknown>;
+  const candidates: string[] = [];
+  const pushCandidate = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    candidates.push(trimmed);
+
+    const withoutChainWord = trimmed.replace(/\bchain\b/gi, "").trim();
+    if (withoutChainWord && withoutChainWord !== trimmed) {
+      candidates.push(withoutChainWord);
+    }
+
+    const urlKey = parseChainUrlKey(trimmed);
+    if (urlKey) {
+      candidates.push(urlKey);
+    }
+  };
+
+  pushCandidate(entry.key);
+  pushCandidate(entry.urlKey);
+  pushCandidate(entry.name);
+  pushCandidate(entry.url);
+
+  return candidates;
+};
+
+const getChartSeriesCandidates = (data: unknown): string[] => {
+  if (!Array.isArray(data)) return [];
+  const candidates: string[] = [];
+  data.forEach((series) => {
+    candidates.push(...extractSeriesChainCandidates(series));
+  });
+  return candidates;
+};
+
+const extractDataAsJsonChainCandidates = (dataAsJson: unknown): string[] => {
+  if (!dataAsJson || typeof dataAsJson !== "object") return [];
+
+  const jsonConfig = dataAsJson as Record<string, unknown>;
+  const candidates: string[] = [];
+  const pushCandidate = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    candidates.push(trimmed);
+    candidates.push(...extractPathCandidates(trimmed));
+  };
+
+  const metaEntries = Array.isArray(jsonConfig.meta) ? jsonConfig.meta : [];
+  metaEntries.forEach((entry) => {
+    if (!entry || typeof entry !== "object") return;
+    const metaEntry = entry as Record<string, unknown>;
+    pushCandidate(metaEntry.name);
+    pushCandidate(metaEntry.nameFromPath);
+    pushCandidate(metaEntry.pathToData);
+    pushCandidate(metaEntry.url);
+  });
+
+  const dynamicSeries = jsonConfig.dynamicSeries;
+  if (dynamicSeries && typeof dynamicSeries === "object") {
+    const dynamicConfig = dynamicSeries as Record<string, unknown>;
+    const names = dynamicConfig.names;
+    if (typeof names === "string") {
+      pushCandidate(names);
+    } else if (Array.isArray(names)) {
+      names.forEach(pushCandidate);
+    }
+    pushCandidate(dynamicConfig.pathToData);
+    pushCandidate(dynamicConfig.url);
+  }
+
+  const pieData = jsonConfig.pieData;
+  if (Array.isArray(pieData)) {
+    pieData.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      pushCandidate((entry as Record<string, unknown>).name);
+    });
+  } else if (pieData && typeof pieData === "object") {
+    const pieConfig = pieData as Record<string, unknown>;
+    pushCandidate(pieConfig.pathToData);
+    pushCandidate(pieConfig.url);
+  }
+
+  return candidates;
+};
+
+const collectChainCandidatesFromBlocks = (blocks: ContentBlock[]): string[] => {
+  const candidates: string[] = [];
+
+  const walk = (block: ContentBlock) => {
+    if (block.type === "chart") {
+      candidates.push(...getChartSeriesCandidates(block.data));
+      candidates.push(...extractDataAsJsonChainCandidates(block.dataAsJson));
+      return;
+    }
+
+    if (block.type === "chart-toggle") {
+      block.charts.forEach((chart) => {
+        candidates.push(...getChartSeriesCandidates(chart.data));
+        candidates.push(...extractDataAsJsonChainCandidates(chart.dataAsJson));
+      });
+      return;
+    }
+
+    if (block.type === "container") {
+      block.blocks.forEach((group) => group.forEach(walk));
+    }
+  };
+
+  blocks.forEach(walk);
+  return candidates;
+};
+
+const hasChainTopicMatch = (
+  topics: Array<{ name: string; url: string }> | undefined,
+  normalizedChainCandidates: Set<string>,
+) => {
+  if (!topics?.length) return false;
+
+  return topics.some((topic) => {
+    const name = typeof topic?.name === "string" ? topic.name : "";
+    const url = typeof topic?.url === "string" ? topic.url : "";
+    const urlKey = parseChainUrlKey(url);
+    const normalizedValues = [name, url, urlKey || ""]
+      .filter((value) => value.length > 0)
+      .map((value) => normalizeChainMatchValue(value));
+
+    return normalizedValues.some((value) => normalizedChainCandidates.has(value));
+  });
+};
+
+const hasChainChartMatch = (blocks: ContentBlock[], normalizedChainCandidates: Set<string>) => {
+  const candidates = collectChainCandidatesFromBlocks(blocks);
+  return candidates.some((candidate) => normalizedChainCandidates.has(normalizeChainMatchValue(candidate)));
+};
+
+const chartContainsChainMatch = (
+  chart: QuickBiteChartBlock,
+  normalizedChainCandidates: Set<string>,
+) => {
+  const candidates = [
+    ...getChartSeriesCandidates(chart.data),
+    ...extractDataAsJsonChainCandidates(chart.dataAsJson),
+  ];
+
+  if (typeof chart.title === "string") {
+    candidates.push(chart.title);
+  }
+  if (typeof chart.subtitle === "string") {
+    candidates.push(chart.subtitle);
+  }
+
+  return candidates.some((candidate) =>
+    normalizedChainCandidates.has(normalizeChainMatchValue(candidate)),
+  );
+};
 
 const getNestedPathValue = (obj: any, path: string) =>
   path.split(".").reduce((current, key) => (current && typeof current === "object" ? current[key] : undefined), obj);
@@ -258,6 +456,7 @@ const shouldIncludeChainQuickBitesChart = (
   matchedDropdownStateByKey: Record<string, string>,
   dropdownStateKeys: Set<string>,
   normalizedChainCandidates: Set<string>,
+  enforceChainMatchInChartContent: boolean,
 ) => {
   if (chart.hideOnChainTabs) {
     return false;
@@ -283,6 +482,10 @@ const shouldIncludeChainQuickBitesChart = (
     return false;
   }
 
+  if (enforceChainMatchInChartContent && !chartContainsChainMatch(chart, normalizedChainCandidates)) {
+    return false;
+  }
+
   return true;
 };
 
@@ -291,12 +494,21 @@ const extractChartBlocks = (
   matchedDropdownStateByKey: Record<string, string>,
   dropdownStateKeys: Set<string>,
   normalizedChainCandidates: Set<string>,
+  enforceChainMatchInChartContent: boolean,
 ): ContentBlock[] => {
   const extracted: ContentBlock[] = [];
 
   for (const block of blocks) {
     if (block.type === "chart") {
-      if (shouldIncludeChainQuickBitesChart(block, matchedDropdownStateByKey, dropdownStateKeys, normalizedChainCandidates)) {
+      if (
+        shouldIncludeChainQuickBitesChart(
+          block,
+          matchedDropdownStateByKey,
+          dropdownStateKeys,
+          normalizedChainCandidates,
+          enforceChainMatchInChartContent,
+        )
+      ) {
         extracted.push(block);
       }
       continue;
@@ -304,7 +516,13 @@ const extractChartBlocks = (
 
     if (block.type === "chart-toggle") {
       const visibleCharts = block.charts.filter((chart) =>
-        shouldIncludeChainQuickBitesChart(chart, matchedDropdownStateByKey, dropdownStateKeys, normalizedChainCandidates),
+        shouldIncludeChainQuickBitesChart(
+          chart,
+          matchedDropdownStateByKey,
+          dropdownStateKeys,
+          normalizedChainCandidates,
+          enforceChainMatchInChartContent,
+        ),
       );
       if (!visibleCharts.length) {
         continue;
@@ -325,6 +543,7 @@ const extractChartBlocks = (
             matchedDropdownStateByKey,
             dropdownStateKeys,
             normalizedChainCandidates,
+            enforceChainMatchInChartContent,
           ),
         );
       }
@@ -458,16 +677,29 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
             .map((value) => normalizeChainMatchValue(value))
             .filter((value) => value.length > 0),
         );
-        const relatedQuickBites = getRelatedQuickBitesByTopic(chainName);
-        const sortedQuickBites = Object.entries(relatedQuickBites)
-          .map(([slug, related]) => ({ slug, data: related.data }))
-          .filter((item): item is { slug: string; data: NonNullable<typeof item.data> } => !!item.data)
-          .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+        const eligibleQuickBites = (
+          IS_PRODUCTION
+            ? getAllQuickBites().filter((quickBite) => quickBite.showInMenu !== false)
+            : getAllQuickBites()
+        );
+        const sortedQuickBites = eligibleQuickBites.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
 
         const grouped = await Promise.all(
-          sortedQuickBites.map(async ({ slug, data }) => {
+          sortedQuickBites.map(async (quickBite) => {
+            const { slug } = quickBite;
+            const data = quickBite;
             const processedContent = await processDynamicContent(data.content);
             const blocks = await processMarkdownContent(processedContent);
+            const topicMatch = hasChainTopicMatch(data.topics as Array<{ name: string; url: string }> | undefined, normalizedChainCandidates);
+            const chartMatch =
+              data.autoAddChartChainsToTopics === true &&
+              hasChainChartMatch(blocks, normalizedChainCandidates);
+            if (!topicMatch && !chartMatch) {
+              return null;
+            }
+
             const dropdownBlocks = collectDropdownBlocks(blocks);
             const dropdownStateKeys = collectDropdownStateKeys(dropdownBlocks);
             const initialSharedState = await resolveChainMatchedDropdownState(
@@ -477,11 +709,13 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
               chainShortName,
               dropdownDataCache,
             );
+            const enforceChainMatchInChartContent = data.autoAddChartChainsToTopics === true;
             const chartBlocks = extractChartBlocks(
               blocks,
               initialSharedState,
               dropdownStateKeys,
               normalizedChainCandidates,
+              enforceChainMatchInChartContent,
             );
 
             return {
@@ -495,7 +729,24 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
         );
 
         if (!isCancelled) {
-          setGroupedChartBlocks(grouped.filter((item) => item.chartBlocks.length > 0));
+          setGroupedChartBlocks(
+            grouped.filter(
+              (
+                item,
+              ): item is {
+                slug: string;
+                title: string;
+                date: string;
+                chartBlocks: ContentBlock[];
+                initialSharedState: Record<string, string>;
+              } => {
+                if (!item) {
+                  return false;
+                }
+                return item.chartBlocks.length > 0;
+              },
+            ),
+          );
         }
       } catch (error) {
         console.error("Failed to load related quick bite charts:", error);
@@ -634,8 +885,10 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
             icon="gtp:gtp-quick-bites"
             enableDropdown={true}
             defaultDropdown={true}
+            adjustRadiusForMultiline
+            multilineCornerRadiusPx={20}
             removeChildrenTopPadding
-            childrenHeight={Math.max(group.chartBlocks.length, 1) * 587 + 60}
+            childrenHeight={getQuickBiteTabChildrenHeight(group.chartBlocks.length)}
             rowEnd={
               <div onClick={(event) => event.stopPropagation()}>
                 <GTPButton
