@@ -225,16 +225,8 @@ export function ProjectDetailsStep({
                   onClick={() => fileInputRef.current?.click()}
                   className="group relative flex size-[84px] items-center justify-center overflow-hidden rounded-[8px] border border-color-ui-shadow bg-color-bg-medium"
                 >
-                  {logoUpload?.previewUrl ? (
-                    <Image src={logoUpload.previewUrl} alt="Project logo preview" fill sizes="84px" unoptimized className="object-cover" />
-                  ) : ownerProjectToProjectData[form.owner_project.trim()]?.logo_path ? (
-                    <Image
-                      src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[form.owner_project.trim()].logo_path}`}
-                      alt={form.owner_project}
-                      fill
-                      sizes="84px"
-                      className="object-cover"
-                    />
+                  {collapsedLogoSrc ? (
+                    <Image src={collapsedLogoSrc} alt={form.owner_project || "Project logo"} fill sizes="84px" unoptimized className="object-cover" />
                   ) : (
                     <GTPIcon icon="gtp-project-monochrome" size="lg" className="text-color-ui-hover" />
                   )}

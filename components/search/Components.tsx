@@ -2264,8 +2264,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   const editMatches = useMemo(() => {
     if (!projectEditMode || !memoizedQuery || memoizedQuery.length < 2) return [];
-    const q = memoizedQuery.toLowerCase();
-    // Raw query preserves hyphens so "omni-network" matches owner keys that contain "-"
+    // Raw query preserves hyphens/colons so "omni-network" and "https://" are not mangled by normalizeString
     const qRaw = (query || "").trim().toLowerCase();
 
     // Normalize a URL to "host/path" for domain-aware matching (strips protocol, www., trailing slash)
@@ -2288,8 +2287,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       return parts.length >= 2 ? parts[parts.length - 2] : host;
     };
 
-    const qNorm = normalizeForMatch(q);
-    const isUrlQuery = /^https?:\/\/|\./.test(memoizedQuery.trim());
+    // Use raw query for URL parsing — memoizedQuery strips colons (https:// → https//)
+    const qNorm = normalizeForMatch(qRaw);
+    const isUrlQuery = /^https?:\/\/|\./.test(qRaw);
     const qSLD = isUrlQuery && qNorm ? extractSLD(qNorm) : "";
 
     // Extract the first path segment and host from a URL-shaped query
@@ -2347,10 +2347,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         .replace(/^@/, "")
         .replace(/\/.*$/, "");
       return (
-        (p.website || "").toLowerCase().includes(q) ||
-        (p.main_github || "").toLowerCase().includes(q) ||
-        twHandle.includes(q) ||
-        twRaw.includes(q)
+        (p.website || "").toLowerCase().includes(qRaw) ||
+        (p.main_github || "").toLowerCase().includes(qRaw) ||
+        twHandle.includes(qRaw) ||
+        twRaw.includes(qRaw)
       );
     };
 
@@ -2362,7 +2362,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     );
 
     return [...appsResults, ...ossResults].slice(0, 20);
-  }, [projectEditMode, memoizedQuery, ownerProjectToProjectData, ossProjects]);
+  }, [projectEditMode, memoizedQuery, query, ownerProjectToProjectData, ossProjects]);
 
   const singleEditMatchOwnerProject = useMemo(() => {
     if (!projectEditMode || editMatches.length !== 1) return null;
