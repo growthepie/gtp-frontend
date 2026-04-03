@@ -22,6 +22,7 @@ import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -72,6 +73,10 @@ const CompareLoader = ({ owner_project, onDataLoaded }: {
     return null;
 };
 
+const COMPARE_ITEM_HEIGHT = 28; // px per app row (py-[5px] * 2 + ~18px icon/text)
+const COMPARE_DIVIDER_HEIGHT = 13; // px for the separator between selected and results
+const COMPARE_LIST_MAX_HEIGHT = 220;
+
 export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
 
@@ -98,17 +103,23 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const { ownerProjectToProjectData } = useProjectsMetadata();
 
     const compareSearchResults = useMemo(() => {
-        if (!searchQuery.trim()) return [];
-        const term = searchQuery.toLowerCase();
+        const term = searchQuery.toLowerCase().trim();
         return Object.values(ownerProjectToProjectData)
             .filter(app =>
                 app.on_apps_page &&
                 app.owner_project !== owner_project &&
                 !compareAppKeys.includes(app.owner_project) &&
-                app.display_name.toLowerCase().includes(term),
-            )
-            .slice(0, 6);
+                (term === "" || app.display_name.toLowerCase().includes(term)),
+            );
     }, [searchQuery, ownerProjectToProjectData, owner_project, compareAppKeys]);
+
+    const compareListHeight = useMemo(() => {
+        const hasDivider = compareAppKeys.length > 0 && compareSearchResults.length > 0;
+        const natural =
+            (compareAppKeys.length + compareSearchResults.length) * COMPARE_ITEM_HEIGHT +
+            (hasDivider ? COMPARE_DIVIDER_HEIGHT : 0);
+        return Math.min(Math.max(natural + 20, COMPARE_ITEM_HEIGHT), COMPARE_LIST_MAX_HEIGHT);
+    }, [compareAppKeys.length, compareSearchResults.length]);
 
     const handleCompareDataLoaded = useCallback((key: string, appData: ApplicationDetailsData) => {
         setCompareAppsData(prev => {
@@ -303,15 +314,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                         className="relative z-20 w-full p-[5px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
                         onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
                     >
-                        <GTPIcon icon="gtp-chevronleft-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
+                        <GTPIcon icon="gtp-project" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[29px]" size="sm" />
                         <div className="flex flex-col items-center">
-                            <div className="text-xxs">Compare</div>
+                            <div className="text-xxs">Compare to</div>
                             <div className="flex items-center gap-x-[5px]">
-                                <GTPIcon icon="gtp-compare" size="sm" />
-                                <div className="heading-small-xs">App Name</div>
+                                
+                                <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} other app{compareAppsForChart.length !== 1 ? "s" : ""}</div>
                             </div>
                         </div>
-                        <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[16px]" size="sm" />
+                        <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
                     </div>
 
                     {/* Dropdown — absolute, below the button, slides out from under it */}
@@ -325,7 +336,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                         }}
                     >
                         <div
-                            className="bg-color-bg-default rounded-b-[15px] justify-center px-[10px] z-50"
+                            className="bg-color-bg-default rounded-b-[15px] justify-center px-[10px] z-50 overflow-x-hidden"
                             style={{ paddingTop: "30px", paddingBottom: "10px" }}
                         >
                             <div className="flex items-center bg-color-bg-medium rounded-full pl-[10px] pr-[5px] py-[5px] justify-between w-full">
@@ -347,51 +358,59 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                 />
                             </div>
                             {(compareAppKeys.length > 0 || compareSearchResults.length > 0) && (
-                                <div className="mt-[8px] flex flex-col max-h-[300px] overflow-y-auto">
-                                    {compareAppKeys.map(key => {
-                                        const meta = ownerProjectToProjectData[key];
-                                        return (
-                                            <div
-                                                key={key}
-                                                className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors"
-                                                onClick={() => handleRemoveCompareApp(key)}
-                                            >
-                                                <GTPIcon icon="gtp-checkmark-checked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
-                                                {meta?.logo_path && (
-                                                    <Image
-                                                        src={`https://api.growthepie.com/v1/apps/logos/${meta.logo_path}`}
-                                                        alt={meta.display_name}
-                                                        width={18}
-                                                        height={18}
-                                                        className="rounded-full shrink-0"
-                                                    />
-                                                )}
-                                                <span className="truncate flex-1 min-w-0">{meta?.display_name ?? key}</span>
-                                            </div>
-                                        );
-                                    })}
-                                    {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
-                                        <div className="my-[6px] border-t border-color-bg-medium" />
-                                    )}
-                                    {compareSearchResults.map(app => (
-                                        <div
-                                            key={app.owner_project}
-                                            className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors"
-                                            onClick={() => handleSelectCompareApp(app.owner_project)}
-                                        >
-                                            <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
-                                            {app.logo_path && (
-                                                <Image
-                                                    src={`https://api.growthepie.com/v1/apps/logos/${app.logo_path}`}
-                                                    alt={app.display_name}
-                                                    width={18}
-                                                    height={18}
-                                                    className="rounded-full shrink-0"
-                                                />
+                                <div className="mt-[8px]">
+                                    <VerticalScrollContainer
+                                        height={compareListHeight}
+                                        scrollbarPosition="right"
+                                        scrollbarWidth="4px"
+                                    >
+                                        <div className="flex flex-col w-full min-w-0 mr-[5px]">
+                                            {compareAppKeys.map(key => {
+                                                const meta = ownerProjectToProjectData[key];
+                                                return (
+                                                    <div
+                                                        key={key}
+                                                        className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors w-full min-w-0"
+                                                        onClick={() => handleRemoveCompareApp(key)}
+                                                    >
+                                                        <GTPIcon icon="gtp-checkmark-checked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                        {meta?.logo_path && (
+                                                            <Image
+                                                                src={`https://api.growthepie.com/v1/apps/logos/${meta.logo_path}`}
+                                                                alt={meta.display_name}
+                                                                width={18}
+                                                                height={18}
+                                                                className="rounded-full shrink-0"
+                                                            />
+                                                        )}
+                                                        <span className="truncate flex-1 min-w-0">{meta?.display_name ?? key}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                            {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
+                                                <div className="my-[6px] border-t border-color-bg-medium" />
                                             )}
-                                            <span className="truncate flex-1 min-w-0">{app.display_name ?? app.owner_project}</span>
+                                            {compareSearchResults.map(app => (
+                                                <div
+                                                    key={app.owner_project}
+                                                    className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors w-full min-w-0"
+                                                    onClick={() => handleSelectCompareApp(app.owner_project)}
+                                                >
+                                                    <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0" containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                    {app.logo_path && (
+                                                        <Image
+                                                            src={`https://api.growthepie.com/v1/apps/logos/${app.logo_path}`}
+                                                            alt={app.display_name}
+                                                            width={18}
+                                                            height={18}
+                                                            className="rounded-full shrink-0"
+                                                        />
+                                                    )}
+                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? app.display_name.slice(0, 16) + "..." : app.owner_project}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </VerticalScrollContainer>
                                 </div>
                             )}
                         </div>
@@ -727,6 +746,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
+                        showTooltipTimestamp={timeInterval === "hourly"}
                         compactXAxis
                         ySplitNumber={2}
                         showTotal={selectedScale === "stacked" && !isSuccessRateMetric}
