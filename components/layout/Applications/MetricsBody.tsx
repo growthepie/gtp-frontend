@@ -757,69 +757,10 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         decimals={metricData?.units?.[isValueMetric ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip ?? undefined}
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                         syncId={syncId}
+                        showLegend={true}
                     />
 
-                    <div className="flex items-center justify-center w-full gap-x-[5px] relative  bottom-[35px] h-[20px]"
-                    >
-                        {visibleSeries.sort((a: { name: string }, b: { name: string }) => {
-                            // Main "Total" first, then chain series, then compare-app series
-                            if (a.name === "Total") return -1;
-                            if (b.name === "Total") return 1;
-                            if (a.name.startsWith("compare_")) return 1;
-                            if (b.name.startsWith("compare_")) return -1;
-                            return data.chains_by_size.indexOf(a.name) - data.chains_by_size.indexOf(b.name);
-                        }).map((s: { name: string; data: [number, number | null][] }) => {
-                            const { isCompareApp, displayName, color } = resolveSeriesInfo(s.name);
-                            const legendLabel = isCompareApp
-                                ? displayName
-                                : (selectedTotal ? projectMetadata.display_name : AllChainsByKeys[s.name]?.name_short ?? s.name);
-                            const dotColor = color[0];
 
-                            return (
-                                <div className="" key={s.name + "app-metric-chart-legend"}
-                                    onMouseEnter={() => setHoverSeriesName(s.name)}
-                                    onMouseLeave={() => setHoverSeriesName(null)}
-                                >
-                                    <GTPButton
-                                        label={legendLabel}
-                                        variant="primary"
-                                        size="xs"
-                                        clickHandler={() => {
-                                            // Chain toggling only applies in by-chain view
-                                            if (selectedTotal || isCompareApp) return;
-                                            setDeselectedChains((prev) => {
-                                                const next = new Set(prev);
-                                                if (next.has(s.name)) {
-                                                    next.delete(s.name);
-                                                } else {
-                                                    next.add(s.name);
-                                                }
-                                                return Array.from(next);
-                                            });
-                                        }}
-                                        rightIcon={
-                                            hoverSeriesName === s.name && !selectedTotal && !isCompareApp
-                                              ? inactiveSeriesNames.has(s.name)
-                                                ? "in-button-plus"
-                                                : "in-button-close"
-                                              : undefined
-                                        }
-                                        animateRightIcon
-                                        rightIconClassname="!w-[12px] !h-[12px]"
-                                        textClassName={inactiveSeriesNames.has(s.name) ? "text-color-text-secondary" : undefined}
-                                        className={inactiveSeriesNames.has(s.name) ? "border border-color-bg-medium" : undefined}
-                                        leftIconOverride={(
-                                            <div
-                                                className="min-w-[6px] min-h-[6px] rounded-full"
-                                                style={{ backgroundColor: dotColor, opacity: inactiveSeriesNames.has(s.name) ? 0.35 : 1 }}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            );
-                        })}
-
-                    </div>
                 </GTPCardLayout>
             </div>
         </div>

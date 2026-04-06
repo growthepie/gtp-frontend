@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import {
   clamp,
   withOpacity,
@@ -31,6 +32,10 @@ import {
 } from "@/lib/echarts-x-axis-layout";
 
 const TOOLTIP_AUTO_HIDE_MS = 3000;
+
+// Extra bottom padding (px) added to the chart grid when showLegend is true so the legend
+// items sit in their own dedicated space beneath the x-axis labels.
+const LEGEND_BOTTOM_OFFSET = 22;
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -313,6 +318,14 @@ export interface GTPChartProps {
   /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
    *  Only the chart being directly hovered shows the tooltip; all others show the crosshair line only. */
   syncId?: string;
+  /** When true, renders an interactive series legend overlaid at the bottom of the chart. */
+  showLegend?: boolean;
+  /** Optional display name overrides for legend items (key = series.name). Falls back to series.name. */
+  legendLabels?: Record<string, string>;
+  /** Called when the user toggles a series in the legend. Receives the series name and whether it is now active (true) or inactive (false). */
+  onLegendToggle?: (seriesName: string, isActive: boolean) => void;
+  /** Controlled list of inactive (hidden) series names. When provided, toggle state is managed externally and internal state is ignored. */
+  legendInactiveSeries?: string[];
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -390,6 +403,10 @@ export default function GTPChart({
   ySplitNumber,
   decimalPercentage = false,
   syncId,
+  showLegend = false,
+  legendLabels,
+  onLegendToggle,
+  legendInactiveSeries: legendInactiveSeriesProp,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -413,6 +430,37 @@ export default function GTPChart({
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const { theme } = useTheme();
+
+  // Legend state
+  const [internalInactiveSeries, setInternalInactiveSeries] = useState<Set<string>>(new Set());
+  const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
+
+  // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
+  const inactiveLegendSeries = useMemo(
+    () => (legendInactiveSeriesProp ? new Set(legendInactiveSeriesProp) : internalInactiveSeries),
+    [legendInactiveSeriesProp, internalInactiveSeries],
+  );
+
+  const handleLegendToggle = useCallback((seriesName: string) => {
+    if (legendInactiveSeriesProp !== undefined) {
+      // Controlled mode: signal the parent; it is responsible for updating legendInactiveSeries
+      const willBeActive = new Set(legendInactiveSeriesProp).has(seriesName);
+      onLegendToggle?.(seriesName, willBeActive);
+      return;
+    }
+    // Uncontrolled mode: flip internal state and optionally notify parent
+    const willBeActive = internalInactiveSeries.has(seriesName);
+    onLegendToggle?.(seriesName, willBeActive);
+    setInternalInactiveSeries((prev) => {
+      const next = new Set(prev);
+      if (next.has(seriesName)) {
+        next.delete(seriesName);
+      } else {
+        next.add(seriesName);
+      }
+      return next;
+    });
+  }, [legendInactiveSeriesProp, internalInactiveSeries, onLegendToggle]);
 
   const textPrimary = theme === "light" ? "rgb(31, 39, 38)" : "rgb(205, 216, 211)";
 
@@ -463,8 +511,16 @@ export default function GTPChart({
     });
   }, [series, xAxisType]);
 
+  // Filter out legend-inactive series so the chart only renders active ones
+  const chartNormalizedSeries = useMemo(
+    () => showLegend && inactiveLegendSeries.size > 0
+      ? normalizedSeries.filter((s) => !inactiveLegendSeries.has(s.name))
+      : normalizedSeries,
+    [showLegend, normalizedSeries, inactiveLegendSeries],
+  );
+
   // Check if any series is a bar (affects x-axis boundaryGap)
-  const hasBarSeries = normalizedSeries.some((s) => s.seriesType === "bar");
+  const hasBarSeries = chartNormalizedSeries.some((s) => s.seriesType === "bar");
 
   // Track container height for dynamic split count
   useLayoutEffect(() => {
@@ -999,14 +1055,14 @@ export default function GTPChart({
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
-    return normalizedSeries.map((s) => {
+    return chartNormalizedSeries.map((s) => {
       let paired: [number, number | null][] = s.data;
 
       // Percentage mode transformation
       if (percentageMode) {
         paired = paired.map<[number, number | null]>(([x, value], i) => {
           if (value === null || !Number.isFinite(value)) return [x, null];
-          const total = normalizedSeries.reduce((sum, other) => {
+          const total = chartNormalizedSeries.reduce((sum, other) => {
             const otherY = other.data[i]?.[1] ?? null;
             return typeof otherY === "number" && Number.isFinite(otherY) ? sum + otherY : sum;
           }, 0);
@@ -1016,7 +1072,7 @@ export default function GTPChart({
 
       return { ...s, pairedData: paired };
     });
-  }, [normalizedSeries, percentageMode]);
+  }, [chartNormalizedSeries, percentageMode]);
 
   const formatDefaultYAxisTick = useCallback(
     (value: number) => {
@@ -1134,18 +1190,20 @@ export default function GTPChart({
   }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
 
   const effectiveGrid = useMemo(() => {
+    const legendOffset = showLegend ? LEGEND_BOTTOM_OFFSET : 0;
     const defaultBottom = compactXAxis ? 24 : DEFAULT_GRID.bottom;
+    const resolvedBottom = (gridOverride?.bottom ?? defaultBottom) + legendOffset;
     const base = {
       left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
-      bottom: gridOverride?.bottom ?? defaultBottom,
+      bottom: resolvedBottom,
     };
     if (!timeAxisLayout?.grid) return base;
     return compactXAxis
-      ? { ...timeAxisLayout.grid, bottom: gridOverride?.bottom ?? defaultBottom }
-      : timeAxisLayout.grid;
-  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis]);
+      ? { ...timeAxisLayout.grid, bottom: resolvedBottom }
+      : { ...timeAxisLayout.grid, bottom: timeAxisLayout.grid.bottom + legendOffset };
+  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis, showLegend]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
@@ -2064,6 +2122,46 @@ export default function GTPChart({
           </div>
         )
       ) : null}
+      {showLegend && series.length > 0 && (
+        <div className="absolute bottom-[2px] left-0 right-0 h-[20px] flex items-center justify-center gap-x-[5px] z-[50]">
+          {series.map((s, index) => {
+            const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+            const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
+            const isInactive = inactiveLegendSeries.has(s.name);
+            const label = legendLabels?.[s.name] ?? s.name;
+
+            return (
+              <div
+                key={s.name + "-gtp-chart-legend"}
+                onMouseEnter={() => setHoverLegendSeries(s.name)}
+                onMouseLeave={() => setHoverLegendSeries(null)}
+              >
+                <GTPButton
+                  label={label}
+                  variant="primary"
+                  size="xs"
+                  clickHandler={() => handleLegendToggle(s.name)}
+                  rightIcon={
+                    hoverLegendSeries === s.name
+                      ? isInactive ? "in-button-plus" : "in-button-close"
+                      : undefined
+                  }
+                  animateRightIcon
+                  rightIconClassname="!w-[12px] !h-[12px]"
+                  textClassName={isInactive ? "text-color-text-secondary" : undefined}
+                  className={isInactive ? "border border-color-bg-medium" : undefined}
+                  leftIconOverride={
+                    <div
+                      className="min-w-[6px] min-h-[6px] rounded-full"
+                      style={{ backgroundColor: dotColor, opacity: isInactive ? 0.35 : 1 }}
+                    />
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
