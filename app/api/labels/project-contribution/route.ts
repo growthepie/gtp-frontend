@@ -223,6 +223,35 @@ export async function POST(request: Request) {
 
     const targetOwner = process.env.OLI_GITHUB_TARGET_OWNER || undefined;
     const autoCreateFork = parseBooleanEnv(process.env.OLI_GITHUB_AUTO_CREATE_FORK, true);
+
+    // Sync the fork's base branch with upstream before creating a contribution
+    // branch, so PRs are always based on the latest upstream state.
+    if (targetOwner) {
+      const forkSyncResults = await Promise.allSettled(
+        [repositories.projects, repositories.logos].map(async (repo) => {
+          await fetch(
+            `https://api.github.com/repos/${targetOwner}/${repo.repo}/merge-upstream`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${githubToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/vnd.github+json",
+              },
+              body: JSON.stringify({ branch: repo.baseBranch }),
+            },
+          );
+        }),
+      );
+      // Log failures but don't abort — the SDK will still create the branch
+      // from whatever state the fork is currently in.
+      forkSyncResults.forEach((r) => {
+        if (r.status === "rejected") {
+          console.warn("[project-contribution] fork sync failed:", r.reason);
+        }
+      });
+    }
+
     // Deterministic branch name — SDK handles -2, -3, etc. on collisions
     const branchName = `oli-contrib-${sanitizeBranchSegment(ownerProject)}`;
     const actorLabel = "gtp-frontend";
