@@ -11,6 +11,7 @@ export interface DropdownOption {
   value: string;
   label: string;
   logo?: string; // Optional image URL rendered as icon
+  icon?: string; // Optional GTP icon name rendered as icon
 }
 
 interface DropdownProps {
@@ -264,6 +265,13 @@ const Dropdown: React.FC<DropdownProps> = ({
                         )}
                         {option.logo ? (
                           <img src={option.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                        ) : option.icon ? (
+                          <GTPIcon
+                            icon={option.icon as GTPIconName}
+                            className="!size-[13px] shrink-0"
+                            containerClassName="!size-[13px]"
+                            size="sm"
+                          />
                         ) : chainDisplay && (
                           <GTPIcon
                             icon={chainDisplay.icon as GTPIconName}
@@ -313,6 +321,13 @@ const Dropdown: React.FC<DropdownProps> = ({
                   <div className="flex items-center gap-[10px] min-w-0">
                     {selectedOption.logo ? (
                       <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                    ) : selectedOption.icon ? (
+                      <GTPIcon
+                        icon={selectedOption.icon as GTPIconName}
+                        className="!size-[13px] shrink-0"
+                        containerClassName="!size-[13px]"
+                        size="sm"
+                      />
                     ) : selectedChainDisplay && (
                       <GTPIcon
                         icon={selectedChainDisplay.icon as GTPIconName}
@@ -330,6 +345,13 @@ const Dropdown: React.FC<DropdownProps> = ({
                 <div className="flex items-center gap-[10px] min-w-0">
                   {selectedOption?.logo ? (
                     <img src={selectedOption.logo} alt="" className="size-[16px] rounded-full shrink-0 object-contain" />
+                  ) : selectedOption?.icon ? (
+                    <GTPIcon
+                      icon={selectedOption.icon as GTPIconName}
+                      className="!size-[13px] shrink-0"
+                      containerClassName="!size-[13px]"
+                      size="sm"
+                    />
                   ) : selectedChainDisplay && (
                     <GTPIcon
                       icon={selectedChainDisplay.icon as GTPIconName}

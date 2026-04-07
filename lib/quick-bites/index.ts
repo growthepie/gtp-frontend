@@ -15,6 +15,7 @@ import Agents from './qb-eip8004';
 import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
 import StablecoinProject from './qb-stablecoin-project';
+import StablecoinFiat from './qb-stablecoin-fiat';
 import celoAnniversaryReport from './qb-celo-anniversary-report';
 import polygonBurn from './qb-polygon-burn';
 import EigenDAMegaETH from './qb-eigenda-megaeth';
@@ -38,6 +39,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "celo-anniversary-report": celoAnniversaryReport,
   "polygon-burn": polygonBurn,
   "eigenda-megaeth": EigenDAMegaETH,
+  "stablecoins-for-fiat": StablecoinFiat,
 };
 
 export default QUICK_BITES_DATA;

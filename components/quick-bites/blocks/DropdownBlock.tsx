@@ -5,6 +5,7 @@ import { DropdownBlock as DropdownBlockType } from '@/lib/types/blockTypes';
 import Dropdown, { DropdownOption } from '@/components/quick-bites/Dropdown';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
+import fiatData from '@/public/dicts/fiat.json';
 
 interface DropdownBlockProps {
   block: DropdownBlockType;
@@ -44,23 +45,47 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
         return data.map((item, index) => {
           // Handle different data structures
           if (typeof item === 'string') {
+            const fiatInfo = fiatData[item.toUpperCase() as keyof typeof fiatData];
+            const fiatCountry = fiatInfo?.country?.toLowerCase();
             // Simple string array
             return {
               value: item,
-              label: item
+              label: fiatInfo?.name || item,
+              ...(fiatCountry ? { icon: `flag:${fiatCountry}-4x3` } : {}),
             };
           } else if (typeof item === 'object' && item !== null) {
             // Object with value/label or custom mapping
             const valueField = block.jsonData?.valueField || 'value';
-            const labelField = block.jsonData?.labelField || 'label';
+            const configuredLabelField = block.jsonData?.labelField;
+            const labelField = configuredLabelField || 'label';
+            const resolvedValue = item[valueField] || item.id || item.key || `option-${index}`;
             
             const logoField = block.jsonData?.logoField;
             const logoPrefix = block.jsonData?.logoPrefix ?? '';
             const rawLogo = logoField ? item[logoField] : undefined;
+            const fiatCodeFromItem = typeof item.fiat === "string" ? item.fiat : undefined;
+            const fiatCodeFromValue = typeof resolvedValue === "string" ? resolvedValue : undefined;
+            const resolvedFiatCode = fiatCodeFromItem ?? fiatCodeFromValue;
+            const fiatInfo = resolvedFiatCode
+              ? fiatData[resolvedFiatCode.toUpperCase() as keyof typeof fiatData]
+              : undefined;
+            const fiatName = fiatInfo?.name;
+            const fiatCountry =
+              !rawLogo && resolvedFiatCode
+                ? fiatInfo?.country?.toLowerCase()
+                : undefined;
+            const isFiatOption = valueField === "fiat" || Boolean(fiatCodeFromItem);
             return {
-              value: item[valueField] || item.id || item.key || `option-${index}`,
-              label: item[labelField] || item.name || item.title || item[valueField] || `Option ${index + 1}`,
+              value: resolvedValue,
+              label:
+                (isFiatOption ? fiatName : undefined) ||
+                item[labelField] ||
+                item.name ||
+                item.title ||
+                item[valueField] ||
+                `Option ${index + 1}`,
               ...(rawLogo ? { logo: `${logoPrefix}${rawLogo}` } : {}),
+              ...(fiatCountry ? { icon: `flag:${fiatCountry}-4x3` } : {}),
             };
           }
           
