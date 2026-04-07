@@ -19,31 +19,6 @@ const fiatDropdown = {
 const mainContent = [
   "This page shows the total circulating supply of stablecoins pegged to each fiat currency. Use the dropdown below to explore which tokens back a specific currency, how supply has changed over time, and which chains hold them.",
 
-  "```chart",
-  JSON.stringify({
-    type: "area",
-    title: "Stablecoin Supply by Fiat Currency",
-    subtitle: "Total circulating supply of stablecoins pegged to each fiat currency, in USD.",
-    showXAsDate: true,
-    showZeroTooltip: false,
-    showTotalTooltip: false,
-    dataAsJson: {
-      dynamicSeries: {
-        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json",
-        pathToData: "data.timeseries.values",
-        ystartIndex: 1,
-        names: "data.timeseries.types",
-        colors: "data.colors",
-        prefix: '$',
-        xIndex: 0,
-        tooltipDecimals: 2
-      },
-    },
-    height: 500,
-    caption: "Line chart showing the total circulating supply (in USD) of stablecoins pegged to each fiat currency. Data is updated daily.",
-  }),
-  "```",
-
   "```dropdown",
   JSON.stringify(fiatDropdown),
   "```",
@@ -99,14 +74,14 @@ const mainContent = [
         sortByValue: true,
         chip: true,
       },
-      token_id: {
-        label: "Symbol",
+      owner_project_display_name: {
+        label: "Company",
         type: "string",
-        expand: true,
-        minWidth: 100,
+        minWidth: 200,
         isNumeric: false,
         sortByValue: true,
-        chip: true,
+        add_url: "/applications/${cellValue}",
+        linkSourceKey: "owner_project",
       },
       origin_key: {
         label: "Chain",
@@ -171,7 +146,7 @@ const mainContent = [
         },
       },
     },
-    columnOrder: ["logo", "symbol", "origin_key", "owner_project_display_name", "30d_supply_change", "365d_supply_change", "value", "value_usd"],
+    columnOrder: ["logo", "symbol", "owner_project_display_name", "origin_key", "30d_supply_change", "365d_supply_change", "value", "value_usd"],
     columnSortBy: "value_usd",
     rowBar: {
       valueColumn: "value_usd",
@@ -187,6 +162,32 @@ const mainContent = [
       ],
       autoRowHeight: true,
     },
+  }),
+  "```",
+
+  "```chart",
+  JSON.stringify({
+    type: "area",
+    title: "Stacked Stablecoin Supply by Fiat Currency",
+    subtitle: "Total circulating supply of stablecoins pegged to each fiat currency, in USD.",
+    showXAsDate: true,
+    showZeroTooltip: false,
+    showTotalTooltip: true,
+    dataAsJson: {
+      dynamicSeries: {
+        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json",
+        pathToData: "data.timeseries.values",
+        ystartIndex: 1,
+        names: "data.timeseries.types",
+        namesTransform: "uppercase",
+        colors: "data.colors",
+        prefix: '$',
+        xIndex: 0,
+        tooltipDecimals: 2
+      },
+    },
+    height: 500,
+    caption: "Line chart showing the total circulating supply (in USD) of stablecoins pegged to each fiat currency. Data is updated daily.",
   }),
   "```",
 

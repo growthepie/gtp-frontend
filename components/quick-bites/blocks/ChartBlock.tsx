@@ -172,7 +172,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
     const palette = colorsRaw;
     const ystartIndex = dynamicSeriesConfig.ystartIndex ?? 1;
-    const names = Array.isArray(namesRaw) ? namesRaw : [];
+    const namesTransform = dynamicSeriesConfig.namesTransform;
+    const names = Array.isArray(namesRaw)
+      ? namesRaw.map((n: string) => namesTransform === "uppercase" ? String(n).toUpperCase() : n)
+      : [];
 
     const maxColumns = Array.isArray(values[0]) ? values[0].length : 0;
     const availableSeriesCount = Math.max(0, maxColumns - ystartIndex);
