@@ -15,6 +15,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { theme } from "highcharts";
 import { useTheme } from "next-themes";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -94,7 +95,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
       {/* Scrollable table */}
       <div className="overflow-x-auto w-full">
-        <div>
+        <HorizontalScrollContainer enableDragScroll={isMobile ? true : false} includeMargin={false} forcedMinWidth={992}>
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
@@ -108,8 +109,9 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs" className="-mr-[12px]" />
           </GridTableHeader>
 
+
           <VerticalScrollContainer
-            height={320}
+            height={350}
             enableDragScroll={isMobile ? true : false}
             className="pr-[30px]"
             scrollbarPosition="right"
@@ -234,7 +236,8 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
               })}
             </div>
           </VerticalScrollContainer>
-        </div>
+          
+        </HorizontalScrollContainer>
       </div>
 
       {/* Footer CTA */}
