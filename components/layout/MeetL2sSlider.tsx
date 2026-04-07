@@ -115,6 +115,7 @@ export const MeetL2sCard = React.memo(({ chainKey, l2Data, projectData, showUsd,
                 size="md"
                 placement="top-start"
                 allowInteract={false}
+                hoverOpenDelay={200}
                 trigger={
                   <Link href={`/applications/${project.owner_project}`} className="w-fit h-fit">
                     <ApplicationIcon owner_project={project.owner_project} size="sm" />

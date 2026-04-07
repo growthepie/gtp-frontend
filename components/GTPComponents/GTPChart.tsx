@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import {
   clamp,
   withOpacity,
@@ -32,13 +33,17 @@ import {
 
 const TOOLTIP_AUTO_HIDE_MS = 3000;
 
+// Extra bottom padding (px) added to the chart grid when showLegend is true so the legend
+// items sit in their own dedicated space beneath the x-axis labels.
+const LEGEND_BOTTOM_OFFSET = 22;
+
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
   "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[15px] pr-[15px] bg-color-bg-default",
 );
 
 const WATERMARK_CLASS =
-  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] dark:mix-blend-lighten";
+  "h-auto w-[145px] text-forest-300 opacity-40 mix-blend-darken dark:text-[#EAECEB] ";
 
 // Singleton canvas context for precise text width measurement (avoids char-width heuristics)
 let _measureCtx: CanvasRenderingContext2D | null | undefined;
@@ -276,6 +281,7 @@ export interface GTPChartProps {
   limitTooltipRows?: number;
   showWatermark?: boolean;
   watermarkMetricName?: string | null;
+  underChartText?: string | null;
   emptyStateMessage?: string;
   minHeight?: number | null;
   maxHeight?: number | null;
@@ -309,9 +315,45 @@ export interface GTPChartProps {
   ySplitNumber?: number;
   /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
   decimalPercentage?: boolean;
+  /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
+   *  Only the chart being directly hovered shows the tooltip; all others show the crosshair line only. */
+  syncId?: string;
+  /** When true, renders an interactive series legend overlaid at the bottom of the chart. */
+  showLegend?: boolean;
+  /** Optional display name overrides for legend items (key = series.name). Falls back to series.name. */
+  legendLabels?: Record<string, string>;
+  /** Called when the user toggles a series in the legend. Receives the series name and whether it is now active (true) or inactive (false). */
+  onLegendToggle?: (seriesName: string, isActive: boolean) => void;
+  /** Controlled list of inactive (hidden) series names. When provided, toggle state is managed externally and internal state is ignored. */
+  legendInactiveSeries?: string[];
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
+
+// Moved to module level so it can be referenced both inside the component and in the sync registry.
+type AxisPointerPayload = {
+  axesInfo?: Array<{ axisDim?: string; value?: number }>;
+  dataByCoordSys?: Array<{
+    dataByAxis?: Array<{
+      axisDim?: string;
+      value?: number;
+      seriesDataIndices?: Array<{
+        seriesIndex?: number;
+        dataIndex?: number;
+        dataIndexInside?: number;
+      }>;
+    }>;
+  }>;
+};
+
+// Registry for cross-chart axis pointer sync (one entry per mounted GTPChart with a syncId).
+// The active chart propagates its snapped x-timestamp to all peers; each peer renders a plain
+// CSS overlay line — no echarts.connect, no tooltip pipeline involvement, no CSS-transition jumps.
+type SyncEntry = {
+  setExternalCrosshairX: (x: number | null) => void;
+  getTimestampPixelX: (ts: number) => number | null;
+};
+const syncRegistry = new Map<string, Set<SyncEntry>>();
 
 // --- Component ---
 
@@ -338,6 +380,7 @@ export default function GTPChart({
   maxHeight = null,
   showWatermark = true,
   watermarkMetricName = null,
+  underChartText = null,
   emptyStateMessage = "",
   animation = false,
   smooth = false,
@@ -359,11 +402,26 @@ export default function GTPChart({
   compactXAxis = false,
   ySplitNumber,
   decimalPercentage = false,
+  syncId,
+  showLegend = false,
+  legendLabels,
+  onLegendToggle,
+  legendInactiveSeries: legendInactiveSeriesProp,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tooltipHostRef = useRef<HTMLDivElement | null>(null);
   const echartsRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
+  // Stable ref to syncId so event-handler closures always read the latest value without deps.
+  const syncIdRef = useRef(syncId);
+  useEffect(() => { syncIdRef.current = syncId; }, [syncId]);
+  // Current pixel-space axis map — kept as a ref so the sync effect can read the latest value
+  // without being re-subscribed every time the chart resizes or its time range changes.
+  const axisPixelMapRef = useRef<{ timestampToPixel: (ts: number) => number } | null>(null);
+  // Current snapped-x extractor — ref avoids adding it to the sync effect's dep array.
+  const extractSnappedXRef = useRef<((payload: AxisPointerPayload) => number | null) | null>(null);
+  // DOM node for the external crosshair overlay — updated imperatively to avoid React re-renders.
+  const externalCrosshairRef = useRef<HTMLDivElement | null>(null);
   const dragStartPixelRef = useRef<number | null>(null);
   const dragStartAxisXRef = useRef<number | null>(null);
   const latestAxisXRef = useRef<number | null>(null);
@@ -372,6 +430,37 @@ export default function GTPChart({
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const { theme } = useTheme();
+
+  // Legend state
+  const [internalInactiveSeries, setInternalInactiveSeries] = useState<Set<string>>(new Set());
+  const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
+
+  // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
+  const inactiveLegendSeries = useMemo(
+    () => (legendInactiveSeriesProp ? new Set(legendInactiveSeriesProp) : internalInactiveSeries),
+    [legendInactiveSeriesProp, internalInactiveSeries],
+  );
+
+  const handleLegendToggle = useCallback((seriesName: string) => {
+    if (legendInactiveSeriesProp !== undefined) {
+      // Controlled mode: signal the parent; it is responsible for updating legendInactiveSeries
+      const willBeActive = new Set(legendInactiveSeriesProp).has(seriesName);
+      onLegendToggle?.(seriesName, willBeActive);
+      return;
+    }
+    // Uncontrolled mode: flip internal state and optionally notify parent
+    const willBeActive = internalInactiveSeries.has(seriesName);
+    onLegendToggle?.(seriesName, willBeActive);
+    setInternalInactiveSeries((prev) => {
+      const next = new Set(prev);
+      if (next.has(seriesName)) {
+        next.delete(seriesName);
+      } else {
+        next.add(seriesName);
+      }
+      return next;
+    });
+  }, [legendInactiveSeriesProp, internalInactiveSeries, onLegendToggle]);
 
   const textPrimary = theme === "light" ? "rgb(31, 39, 38)" : "rgb(205, 216, 211)";
 
@@ -422,8 +511,16 @@ export default function GTPChart({
     });
   }, [series, xAxisType]);
 
+  // Filter out legend-inactive series so the chart only renders active ones
+  const chartNormalizedSeries = useMemo(
+    () => showLegend && inactiveLegendSeries.size > 0
+      ? normalizedSeries.filter((s) => !inactiveLegendSeries.has(s.name))
+      : normalizedSeries,
+    [showLegend, normalizedSeries, inactiveLegendSeries],
+  );
+
   // Check if any series is a bar (affects x-axis boundaryGap)
-  const hasBarSeries = normalizedSeries.some((s) => s.seriesType === "bar");
+  const hasBarSeries = chartNormalizedSeries.some((s) => s.seriesType === "bar");
 
   // Track container height for dynamic split count
   useLayoutEffect(() => {
@@ -528,21 +625,6 @@ export default function GTPChart({
   const minDragSelectPointsRef = useRef(minDragSelectPoints);
   useEffect(() => { minDragSelectPointsRef.current = minDragSelectPoints; }, [minDragSelectPoints]);
 
-  type AxisPointerPayload = {
-    axesInfo?: Array<{ axisDim?: string; value?: number }>;
-    dataByCoordSys?: Array<{
-      dataByAxis?: Array<{
-        axisDim?: string;
-        value?: number;
-        seriesDataIndices?: Array<{
-          seriesIndex?: number;
-          dataIndex?: number;
-          dataIndexInside?: number;
-        }>;
-      }>;
-    }>;
-  };
-
   const getSeriesPointXFromOption = useCallback((seriesIndex: number, dataIndex: number): number | null => {
     const option = (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.getOption?.();
     const optionSeries = Array.isArray(option?.series) ? option.series[seriesIndex] : undefined;
@@ -624,6 +706,7 @@ export default function GTPChart({
 
     return null;
   }, [getSeriesPointXFromOption, snapToNearestDataX]);
+  useEffect(() => { extractSnappedXRef.current = extractSnappedXFromAxisPointer; }, [extractSnappedXFromAxisPointer]);
 
   const querySnappedXAtPixel = useCallback((instance: EChartsInstance, pixelX: number): number | null => {
     const chartWidth = instance.getWidth();
@@ -877,16 +960,109 @@ export default function GTPChart({
     };
   }, []);
 
+  // Cross-chart axis pointer sync — no echarts.connect, no tooltip pipeline involvement.
+  //
+  // Strategy:
+  //  • Each chart registers a SyncEntry in the module-level syncRegistry.
+  //  • When the user hovers a chart, that chart's ECharts `updateAxisPointer` event fires with
+  //    the already-snapped x timestamp.  We forward it to all peer charts via their
+  //    `getTimestampPixelX` → `setExternalCrosshairX` pair, which imperatively updates a plain
+  //    <div> overlay — zero React re-renders, zero CSS-transition artifacts.
+  //  • On `globalout` we clear all peer overlays.
+  //  • This chart's own ECharts native axis pointer is untouched.
+  useEffect(() => {
+    if (!syncId) return;
+
+    // Build and register the sync entry for this chart.
+    const syncEntry: SyncEntry = {
+      setExternalCrosshairX: (x) => {
+        const el = externalCrosshairRef.current;
+        if (!el) return;
+        if (x === null) {
+          el.style.display = "none";
+        } else {
+          el.style.display = "block";
+          el.style.left = `${x}px`;
+        }
+      },
+      getTimestampPixelX: (ts) => {
+        const map = axisPixelMapRef.current;
+        if (!map) return null;
+        const px = map.timestampToPixel(ts);
+        return Number.isFinite(px) ? px : null;
+      },
+    };
+
+    if (!syncRegistry.has(syncId)) syncRegistry.set(syncId, new Set());
+    syncRegistry.get(syncId)!.add(syncEntry);
+
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
+    let subscribedInstance: EChartsInstance | null = null;
+    let onMouseMoveHandler: (() => void) | null = null;
+    let onGlobalOutHandler: (() => void) | null = null;
+    let updateAxisPointerHandler: ((params: AxisPointerPayload) => void) | null = null;
+
+    const frame = requestAnimationFrame(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined;
+      if (!instance) return;
+
+      subscribedInstance = instance;
+      zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
+
+      // ZRender mousemove only fires on the chart under the pointer (not on peers).
+      // Hide our own external crosshair while the user is directly hovering this chart
+      // (the native ECharts axis pointer already handles it).
+      onMouseMoveHandler = () => {
+        syncEntry.setExternalCrosshairX(null);
+      };
+
+      // updateAxisPointer fires with the snapped x value whenever the axis pointer moves.
+      // Forward that timestamp to all peer charts as a pixel-x overlay position.
+      updateAxisPointerHandler = (params: AxisPointerPayload) => {
+        const snapped = extractSnappedXRef.current?.(params);
+        if (!Number.isFinite(snapped)) return;
+        syncRegistry.get(syncId)?.forEach((entry) => {
+          if (entry === syncEntry) return;
+          entry.setExternalCrosshairX(entry.getTimestampPixelX(snapped!));
+        });
+      };
+
+      onGlobalOutHandler = () => {
+        // Clear all peer crosshair overlays when the mouse leaves this chart.
+        syncRegistry.get(syncId)?.forEach((entry) => {
+          if (entry !== syncEntry) entry.setExternalCrosshairX(null);
+        });
+      };
+
+      zr.on("mousemove", onMouseMoveHandler);
+      instance.on("updateAxisPointer", updateAxisPointerHandler);
+      instance.on("globalout", onGlobalOutHandler);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      syncRegistry.get(syncId)?.delete(syncEntry);
+      if (syncRegistry.get(syncId)?.size === 0) syncRegistry.delete(syncId);
+      if (zr && onMouseMoveHandler) zr.off("mousemove", onMouseMoveHandler);
+      if (subscribedInstance) {
+        if (updateAxisPointerHandler) subscribedInstance.off("updateAxisPointer", updateAxisPointerHandler);
+        if (onGlobalOutHandler) subscribedInstance.off("globalout", onGlobalOutHandler);
+      }
+      // Clear any residual crosshair on peers when this chart unmounts.
+      syncRegistry.get(syncId)?.forEach((entry) => entry.setExternalCrosshairX(null));
+    };
+  }, [syncId]);
+
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
-    return normalizedSeries.map((s) => {
+    return chartNormalizedSeries.map((s) => {
       let paired: [number, number | null][] = s.data;
 
       // Percentage mode transformation
       if (percentageMode) {
         paired = paired.map<[number, number | null]>(([x, value], i) => {
           if (value === null || !Number.isFinite(value)) return [x, null];
-          const total = normalizedSeries.reduce((sum, other) => {
+          const total = chartNormalizedSeries.reduce((sum, other) => {
             const otherY = other.data[i]?.[1] ?? null;
             return typeof otherY === "number" && Number.isFinite(otherY) ? sum + otherY : sum;
           }, 0);
@@ -896,7 +1072,7 @@ export default function GTPChart({
 
       return { ...s, pairedData: paired };
     });
-  }, [normalizedSeries, percentageMode]);
+  }, [chartNormalizedSeries, percentageMode]);
 
   const formatDefaultYAxisTick = useCallback(
     (value: number) => {
@@ -1014,18 +1190,20 @@ export default function GTPChart({
   }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
 
   const effectiveGrid = useMemo(() => {
+    const legendOffset = showLegend ? LEGEND_BOTTOM_OFFSET : 0;
     const defaultBottom = compactXAxis ? 24 : DEFAULT_GRID.bottom;
+    const resolvedBottom = (gridOverride?.bottom ?? defaultBottom) + legendOffset;
     const base = {
       left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
       top: gridOverride?.top ?? DEFAULT_GRID.top,
-      bottom: gridOverride?.bottom ?? defaultBottom,
+      bottom: resolvedBottom,
     };
     if (!timeAxisLayout?.grid) return base;
     return compactXAxis
-      ? { ...timeAxisLayout.grid, bottom: gridOverride?.bottom ?? defaultBottom }
-      : timeAxisLayout.grid;
-  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis]);
+      ? { ...timeAxisLayout.grid, bottom: resolvedBottom }
+      : { ...timeAxisLayout.grid, bottom: timeAxisLayout.grid.bottom + legendOffset };
+  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis, showLegend]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
@@ -1045,6 +1223,7 @@ export default function GTPChart({
 
     return { aMin, aMax, plotLeft, plotWidth, timestampToPixel };
   }, [effectiveXMin, effectiveXMax, effectiveGrid, containerWidth]);
+  useEffect(() => { axisPixelMapRef.current = axisPixelMap ?? null; }, [axisPixelMap]);
 
   // --- Custom x-axis label overlay ---
   const overlayLabels = useMemo<VisibleLabel[]>(() => {
@@ -1844,6 +2023,23 @@ export default function GTPChart({
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
+      {/* External crosshair overlay — shown by peer charts in the same syncId group.
+          Updated imperatively (no React state) to avoid re-renders on every mouse move.
+          Uses repeating-linear-gradient with the exact zrender dash formula:
+          dashed + lineWidth 1 → [4*1, 2*1] = 4px on / 2px gap (CSS pixels, dpr-independent). */}
+      {syncId && (
+        <div
+          ref={externalCrosshairRef}
+          className="pointer-events-none absolute z-[5]"
+          style={{
+            display: "none",
+            top: effectiveGrid.top,
+            bottom: effectiveGrid.bottom,
+            width: 1,
+            backgroundImage: `repeating-linear-gradient(to bottom, ${withOpacity(textPrimary, 0.45)} 0px, ${withOpacity(textPrimary, 0.45)} 4px, transparent 4px, transparent 6px)`,
+          }}
+        />
+      )}
       {xAxisType === "time" && overlayLabels.length > 0 && (
         <div
           className="pointer-events-none absolute left-0 right-0 bottom-0"
@@ -1918,11 +2114,54 @@ export default function GTPChart({
             <ChartWatermarkWithMetricName metricName={watermarkMetricName} className={WATERMARK_CLASS} />
           </div>
         ) : (
-          <div className={watermarkOverlayClassName}>
+          <div className={`${watermarkOverlayClassName} ${"flex flex-col gap-y-[2px] z-30"}`}>
             <ChartWatermark className={WATERMARK_CLASS} />
+            <div className="text-xxs text-color-text-secondary">
+              {underChartText}
+            </div>
           </div>
         )
       ) : null}
+      {showLegend && series.length > 0 && (
+        <div className="absolute bottom-[2px] left-0 right-0 h-[20px] flex items-center justify-center gap-x-[5px] z-[50]">
+          {series.map((s, index) => {
+            const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+            const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
+            const isInactive = inactiveLegendSeries.has(s.name);
+            const label = legendLabels?.[s.name] ?? s.name;
+
+            return (
+              <div
+                key={s.name + "-gtp-chart-legend"}
+                onMouseEnter={() => setHoverLegendSeries(s.name)}
+                onMouseLeave={() => setHoverLegendSeries(null)}
+              >
+                <GTPButton
+                  label={label}
+                  variant="primary"
+                  size="xs"
+                  clickHandler={() => handleLegendToggle(s.name)}
+                  rightIcon={
+                    hoverLegendSeries === s.name
+                      ? isInactive ? "in-button-plus" : "in-button-close"
+                      : undefined
+                  }
+                  animateRightIcon
+                  rightIconClassname="!w-[12px] !h-[12px]"
+                  textClassName={isInactive ? "text-color-text-secondary" : undefined}
+                  className={isInactive ? "border border-color-bg-medium" : undefined}
+                  leftIconOverride={
+                    <div
+                      className="min-w-[6px] min-h-[6px] rounded-full"
+                      style={{ backgroundColor: dotColor, opacity: isInactive ? 0.35 : 1 }}
+                    />
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import {
   GridTableHeader,
   GridTableHeaderCellButton,
@@ -15,6 +15,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { theme } from "highcharts";
 import { useTheme } from "next-themes";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -76,7 +77,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
 
   return (
-    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px]">
+    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px] ">
       {/* Header */}
       <div className="flex items-center gap-x-[5px]">
         <GTPIcon
@@ -94,10 +95,10 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
       {/* Scrollable table */}
       <div className="overflow-x-auto w-full">
-        <div>
+        <HorizontalScrollContainer enableDragScroll={isMobile ? true : false} includeMargin={false} forcedMinWidth={992}>
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
-            className="!pt-[5px] !pb-[5px] !gap-x-[10px] !pl-0 !pr-[65px]"
+            className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
           >
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
             <GridTableHeaderCellButton label="Contract"          metric="name"            sort={sort} setSort={setSort} justify="start" size="xs" className="pl-[36px]" />
@@ -108,8 +109,9 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs" className="-mr-[12px]" />
           </GridTableHeader>
 
+
           <VerticalScrollContainer
-            height={320}
+            height={350}
             enableDragScroll={isMobile ? true : false}
             className="pr-[30px]"
             scrollbarPosition="right"
@@ -234,7 +236,8 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
               })}
             </div>
           </VerticalScrollContainer>
-        </div>
+          
+        </HorizontalScrollContainer>
       </div>
 
       {/* Footer CTA */}

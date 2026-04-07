@@ -8,6 +8,7 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
     optimizeCss: true,
+    prefetchInlining: true,
   },
   async rewrites() {
     return {

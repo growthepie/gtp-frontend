@@ -6,11 +6,11 @@ import { GTPIcon, sizeClassMap } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import Image from "next/image";
-import GTPCardLayout from "../GTPButton/GTPCardLayout";
-import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPButton/GTPChart";
-import { GTPButton } from "../GTPButton/GTPButton";
-import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
-import GTPButtonRow from "../GTPButton/GTPButtonRow";
+import GTPCardLayout from "../GTPComponents/GTPLayout/GTPCardLayout";
+import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "../GTPComponents/GTPChart";
+import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import type { EmblaCarouselType } from "embla-carousel";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1111,6 +1111,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                       return next;
                     });
                   }}
+                  animateRightIcon
                   onMouseEnter={() => setHoverSeriesName(item.name)}
                   onMouseLeave={() => setHoverSeriesName(null)}
                   rightIcon={
@@ -1120,6 +1121,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                         : "in-button-close"
                       : undefined
                   }
+                  
                   rightIconClassname="!w-[12px] !h-[12px]"
                   textClassName={effectiveInactiveSeriesNames.has(item.name) ? "text-color-text-secondary" : undefined}
                   className={effectiveInactiveSeriesNames.has(item.name) ? "border border-color-bg-medium" : undefined}

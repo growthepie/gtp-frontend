@@ -8,7 +8,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
 import { useParams } from "next/navigation";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
-import GTPUniversalChart from "@/components/GTPButton/GTPUniversalChart";
+import GTPUniversalChart from "@/components/GTPComponents/GTPUniversalChart";
 
 const DataAvailability = (props: { params: Promise<{ metric: string }> }) => {
   const { metric } = use(props.params);
