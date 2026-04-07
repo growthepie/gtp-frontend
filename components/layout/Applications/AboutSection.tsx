@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMemo } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
@@ -75,7 +75,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
                 open ? "rotate-90" : "rotate-0"
                 } ${forceClose ? "hidden" : "flex"}`}
             />
-            <div className="heading-large-md text-color-text-secondary">{projectMetadata.display_name}</div>
+            <div className="heading-large-md text-color-text-secondary">App Overview</div>
           </div>
   
           {/* Links inline with header — shown only when closed */}

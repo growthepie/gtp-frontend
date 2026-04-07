@@ -11,8 +11,8 @@ import ChainMetricTableRow from "@/components/layout/ChainMetricTableRow";
 import {
   GridTableHeader,
 } from "@/components/layout/GridTable";
-import { GTPButton } from "../GTPButton/GTPButton";
-import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPButton/GTPScrollPane";
+import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
+import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 import ChartWatermark, { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";

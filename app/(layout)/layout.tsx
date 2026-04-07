@@ -170,7 +170,10 @@ export default function RootLayout({
       }}
     >
       <Head />
-      <body className="!overflow-x-hidden overflow-y-scroll font-raleway bg-color-bg-main text-color-text-primary">
+      <body
+        suppressHydrationWarning
+        className="!overflow-x-hidden overflow-y-scroll font-raleway bg-color-bg-main text-color-text-primary"
+      >
         {/* GTM noscript fallback */}
         <noscript>
           <iframe 

@@ -13,16 +13,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
-import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
-import GTPButtonRow from "@/components/GTPButton/GTPButtonRow";
-import GTPButtonContainer from "@/components/GTPButton/GTPButtonContainer";
 import useSWR from "swr";
 import ScreenshotsSection from "@/components/layout/Applications/Screenshots";
 import AboutApp from "@/components/layout/Applications/AboutSection";
 import MostActiveContracts from "@/components/layout/Applications/MostActiveContracts";
 import MetricsBody from "@/components/layout/Applications/MetricsBody";
+import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -479,8 +479,9 @@ SimilarAppsSection.displayName = "SimilarAppsSection";
 const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
-    <div className="flex min-h-[50px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <div className="text-center text-base text-color-text-primary">
+    <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
+      <GTPIcon icon="gtp-defi" size="md" />
+      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
     </div>
@@ -496,13 +497,18 @@ const OverviewContent = memo(({
   owner_project,
   projectMetadata,
   enrichmentData,
+  setSelectedTab,
 }: {
   data: ApplicationDetailsData;
   owner_project: string;
   projectMetadata: ProjectMetadata;
   enrichmentData: ApplicationEnrichmentData | null | undefined;
+  setSelectedTab: (tab: string) => void;
 }) => {
   const { data: masterData } = useMaster();
+  const { resolvedTheme } = useTheme();
+  const { getAppColors } = useAppColors();
+  const appColor = getAppColors(owner_project, resolvedTheme);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -554,14 +560,31 @@ const OverviewContent = memo(({
               value={data.kpi_cards[metric].current_values.data[0]} 
               wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
               sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
-              color={"#627EEA"} 
+              color={appColor[0]}
               icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
             />
 
           ))} 
           </>
           )}
+                  <PartitionLine />
+          <div className="w-full ">
+            <GTPButton
+              label="See all metrics"
+              size="sm"
+              variant="primary"
+              leftIcon="gtp-fundamentals"
+              rightIconOverride={
+                <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[11px] flex items-center justify-center" className="!size-[11px]" size="sm" />
+              }
+              rightIconPushToEdge
+              textClassName="w-full text-left"
+              className="w-full bg-"
+              clickHandler={() => setSelectedTab("metrics")}
+            />
+          </div>
         </div>
+
 
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
@@ -607,7 +630,7 @@ const TABS = [
   {
     key: "overview",
     icon: "gtp:gtp-project",
-    getHeader: (app: typeof FAKE_APP) => app.name,
+    
   },
   {
     key: "metrics",
@@ -679,6 +702,7 @@ export default function NewAppPage({
             owner_project={owner_project}
             projectMetadata={projectMetadata}
             enrichmentData={enrichmentData}
+            setSelectedTab={setSelectedTab}
           />
         );
       case "metrics":
@@ -708,7 +732,11 @@ export default function NewAppPage({
               isLocked={false}
               comingSoon={ tab.key === "user_insights" ? true : false}
               icon={tab.icon as GTPIconName}
-              header={tab.getHeader(FAKE_APP)}
+              appIconOverride={tab.key === "overview" 
+                ? <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" /> 
+                : undefined
+              }
+              header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
               index={index + 1}
               isHovered={hoveredTab === tab.key}
             />
@@ -725,4 +753,3 @@ export default function NewAppPage({
     </>
   );
 }
-

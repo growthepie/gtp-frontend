@@ -11,6 +11,8 @@ import { ToastProvider } from "@/components/toast/GTPToast";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useEffect } from "react";
 import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
+import { WalletProvider } from "@/contexts/WalletContext";
+import { StaleTabGuard } from "@/components/StaleTabGuard";
 
 // load icons
 // addCollection(GTPIcons);
@@ -114,46 +116,51 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
   }, []);
 
   return (
-    <NavigationProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        disableTransitionOnChange
-      >
-        <SWRConfig
-          value={{
-            fetcher: singleOrMultiFetcher,
-            use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-            dedupingInterval: 10000, // 10 seconds
-            onError: (error, key) => {
-              // Silence expected errors from chain metrics endpoints that return 403/404
-              if (typeof key === 'string' && key.includes('/metrics/chains/')) {
-                // Check for JSON parse errors (403/404 responses return HTML)
-                if (error instanceof SyntaxError && error.message.includes('JSON')) {
-                  return; // Silently ignore
-                }
-                // Check for fetch failures (CORS blocks)
-                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                  return; // Silently ignore
-                }
-              }
-
-              // Log other errors
-              console.error('[SWR Error] Key:', key, 'Error:', error);
-            },
-          }}
+    <>
+      <NavigationProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          disableTransitionOnChange
         >
-            <MasterProvider>
-                <UIContextProvider>
-                <ToastProvider>
-                  {/* <ConfettiProvider> */}
-                    {children}
-                  {/* </ConfettiProvider> */}
-                </ToastProvider>
-              </UIContextProvider>
-            </MasterProvider>
-        </SWRConfig>
-      </ThemeProvider>
-    </NavigationProvider>
+          <SWRConfig
+            value={{
+              fetcher: singleOrMultiFetcher,
+              use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+              dedupingInterval: 10000, // 10 seconds
+              onError: (error, key) => {
+                // Silence expected errors from chain metrics endpoints that return 403/404
+                if (typeof key === 'string' && key.includes('/metrics/chains/')) {
+                  // Check for JSON parse errors (403/404 responses return HTML)
+                  if (error instanceof SyntaxError && error.message.includes('JSON')) {
+                    return; // Silently ignore
+                  }
+                  // Check for fetch failures (CORS blocks)
+                  if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                    return; // Silently ignore
+                  }
+                }
+
+                // Log other errors
+                console.error('[SWR Error] Key:', key, 'Error:', error);
+              },
+            }}
+          >
+              <MasterProvider>
+                  <UIContextProvider>
+                  <ToastProvider>
+                    {/* <ConfettiProvider> */}
+                      <WalletProvider>
+                        {children}
+                      </WalletProvider>
+                    {/* </ConfettiProvider> */}
+                  </ToastProvider>
+                </UIContextProvider>
+              </MasterProvider>
+          </SWRConfig>
+        </ThemeProvider>
+      </NavigationProvider>
+      <StaleTabGuard />
+    </>
   );
 }

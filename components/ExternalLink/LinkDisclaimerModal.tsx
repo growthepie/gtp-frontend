@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GrayOverlay } from '@/components/layout/Backgrounds';
-import { GTPButton } from '@/components/GTPButton/GTPButton';
+import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import { Icon } from '@iconify/react';
 
 interface LinkDisclaimerModalProps {

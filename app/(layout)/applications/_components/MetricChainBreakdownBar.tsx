@@ -438,20 +438,22 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   const percentages = values.map((v) => (v / total) * 100);
 
   // Example of allTooltipContent for the header area (could be extracted further if desired)
-  const overTimeWithData = Object.values(metricData.over_time).filter(
-    (chainData) => chainData.daily.data.length > 0
-  );
+  const overTimeWithData = Object.values(metricData.over_time)
+    .map((chainData) => chainData?.daily)
+    .filter(
+      (daily): daily is NonNullable<typeof daily> => Array.isArray(daily?.data) && daily.data.length > 0,
+    );
   const maxUnix = overTimeWithData.length > 0
     ? Math.max(
         ...overTimeWithData.map(
-          (chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]
+          (daily) => daily.data[daily.data.length - 1][0]
         )
       )
     : 0;
   const minUnix = overTimeWithData.length > 0
     ? Math.min(
         ...overTimeWithData.map(
-          (chainData) => chainData.daily.data[0][0]
+          (daily) => daily.data[0][0]
         )
       )
     : 0;
@@ -676,20 +678,22 @@ const ChainBar = memo(({
 
   // Compute tooltip data – e.g., first seen, min/max dates
   const firstSeen = dayjs(chainFirstSeen);
-  const chainBarOverTimeWithData = Object.values(metricData.over_time).filter(
-    (chainData) => chainData.daily.data.length > 0
-  );
+  const chainBarOverTimeWithData = Object.values(metricData.over_time)
+    .map((chainData) => chainData?.daily)
+    .filter(
+      (daily): daily is NonNullable<typeof daily> => Array.isArray(daily?.data) && daily.data.length > 0,
+    );
   const maxUnix = chainBarOverTimeWithData.length > 0
     ? Math.max(
-        ...chainBarOverTimeWithData.map((chainData) =>
-          chainData.daily.data[chainData.daily.data.length - 1][0]
+        ...chainBarOverTimeWithData.map((daily) =>
+          daily.data[daily.data.length - 1][0]
         )
       )
     : 0;
   const minUnix = chainBarOverTimeWithData.length > 0
     ? Math.min(
-        ...chainBarOverTimeWithData.map((chainData) =>
-          chainData.daily.data[0][0]
+        ...chainBarOverTimeWithData.map((daily) =>
+          daily.data[0][0]
         )
       )
     : 0;
