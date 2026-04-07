@@ -195,6 +195,7 @@ export interface ChartBlock extends BaseBlock {
       pathToTypes?: string;
       ystartIndex?: number;
       names?: string | string[];
+      namesTransform?: "uppercase";
       colors: string | string[];
       type?: string;
       stacking?: "normal" | "percent" | null;
