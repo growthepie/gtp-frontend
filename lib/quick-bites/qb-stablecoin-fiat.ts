@@ -23,29 +23,61 @@ const mainContent = [
   JSON.stringify(fiatDropdown),
   "```",
 
-  "```chart",
+  "```chart-toggle",
   JSON.stringify({
-    type: "area",
-    title: "{{selectedFiatName}} Stablecoin Supply",
-    subtitle: "Stacked circulating supply of stablecoins pegged to {{selectedFiatName}}, broken down by token.",
-    showXAsDate: true,
-    showZeroTooltip: false,
-    showTotalTooltip: true,
-    dataAsJson: {
-      dynamicSeries: {
-        url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/{{selectedFiat}}.json",
-        pathToData: "data.timeseries.values",
-        ystartIndex: 1,
-        names: "data.symbols",
-        colors: "data.colors",
-        stacking: "normal",
-        prefix: '$',
-        xIndex: 0,
-        tooltipDecimals: 2
+    title: null,
+    description: "Select between native token units and equivalent USD value.",
+    layout: "segmented",
+    defaultIndex: 0,
+    charts: [
+      {
+        toggleLabel: "Native Value",
+        type: "area",
+        title: "{{selectedFiatName}} Stablecoin Supply (Native)",
+        subtitle: "Stacked circulating supply of stablecoins pegged to {{selectedFiatName}} in native token units, broken down by token.",
+        showXAsDate: true,
+        showZeroTooltip: false,
+        showTotalTooltip: true,
+        dataAsJson: {
+          dynamicSeries: {
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/{{selectedFiat}}_native.json",
+            pathToData: "data.timeseries.values",
+            ystartIndex: 1,
+            names: "data.symbols",
+            colors: "data.colors",
+            stacking: "normal",
+            xIndex: 0,
+            tooltipDecimals: 2
+          },
+        },
+        height: 500,
+        caption: "Stacked area chart showing the native token circulating supply of stablecoins pegged to the selected fiat currency, broken down by token. Data is updated daily.",
       },
-    },
-    height: 500,
-    caption: "Stacked area chart showing the circulating supply of stablecoins pegged to the selected fiat currency, broken down by token. Data is updated daily.",
+      {
+        toggleLabel: "USD Value",
+        type: "area",
+        title: "{{selectedFiatName}} Stablecoin Supply (USD)",
+        subtitle: "Stacked circulating supply of stablecoins pegged to {{selectedFiatName}}, broken down by token.",
+        showXAsDate: true,
+        showZeroTooltip: false,
+        showTotalTooltip: true,
+        dataAsJson: {
+          dynamicSeries: {
+            url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/{{selectedFiat}}.json",
+            pathToData: "data.timeseries.values",
+            ystartIndex: 1,
+            names: "data.symbols",
+            colors: "data.colors",
+            stacking: "normal",
+            prefix: '$',
+            xIndex: 0,
+            tooltipDecimals: 2
+          },
+        },
+        height: 500,
+        caption: "Stacked area chart showing the USD circulating supply of stablecoins pegged to the selected fiat currency, broken down by token. Data is updated daily.",
+      },
+    ],
   }),
   "```",
 
