@@ -90,6 +90,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     const [searchQuery, setSearchQuery] = useState("");
     const isMobile = useMediaQuery("(max-width: 1024px)");
     const chainsSelectedRef = useRef<HTMLDivElement>(null);
+    const compareDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isCompareDropdownOpen) return;
+        const handleClickOutside = (e: MouseEvent) => {
+            if (compareDropdownRef.current && !compareDropdownRef.current.contains(e.target as Node)) {
+                setIsCompareDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isCompareDropdownOpen]);
     const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
     // useReducer so dispatch() doesn't match the `set`-prefixed setState lint rule
     const [dynamicLabelCount, dispatchLabelCount] = useReducer((_: number, next: number) => next, chainCount);
@@ -265,6 +277,46 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     }
 
 
+    const comparePill = useMemo(() => {
+
+        if(compareAppsForChart.length !== 1) {
+            return (
+            <div
+                className="relative z-20 w-full p-[5px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
+                onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
+            >
+                <GTPIcon icon={"gtp-project"} containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[29px]" size="sm" />
+                <div className="flex flex-col items-center">
+                    <div className="text-xxs">Compare to</div>
+                    <div className="flex items-center gap-x-[5px]">
+                        
+                        <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} other app{compareAppsForChart.length !== 1 ? "s" : ""}</div>
+                    </div>
+                </div>
+                <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
+            </div>
+            )
+        }else{
+            return (
+                <div
+                    className="relative z-20 w-full p-[5px] pl-[10px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
+                    onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
+                >
+                    <Image src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path}`} alt={compareAppsForChart[0].displayName} width={24} height={24} className="rounded-full shrink-0 " />
+                    <div className="flex flex-col items-center">
+                        <div className="text-xxs">Compare to</div>
+                        <div className="flex items-center gap-x-[5px]">
+                            
+                            <div className="heading-small-xs"> {compareAppsForChart[0].displayName}</div>
+                        </div>
+                    </div>
+                    <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
+                </div>
+            );
+        }
+    }, [compareAppsForChart, ownerProjectToProjectData]);
+
+
     return (
         <div className="pt-[30px] w-full">
             {/* Invisible data loaders for each compare app */}
@@ -272,7 +324,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
             ))}
 
-            <div className="w-full flex justify-between items-center gap-x-[15px] ">
+            <div className="w-full flex justify-between  lg:items-center gap-x-[15px] lg:flex-row flex-col gap-y-[10px] ">
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div className="text-sm shrink-0">Chains Selected</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
@@ -298,6 +350,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                         if (next.has(chain)) {
                                             next.delete(chain);
                                         } else {
+                                            const totalChains = (data.chains_by_size ?? []).filter((c) => AllChainsByKeys[c]).length;
+                                            if (totalChains - next.size <= 1) return prev;
                                             next.add(chain);
                                         }
                                         return Array.from(next);
@@ -308,23 +362,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     })}
                     </div>
                 </div>
-                <div className="relative min-w-[230px] max-w-[261px] w-full">
+                <div ref={compareDropdownRef} className="relative min-w-[230px] max-w-[261px] w-full">
                     {/* Compare pill button — relative + z-20 so it sits above the dropdown */}
-                    <div
-                        className="relative z-20 w-full p-[5px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
-                        onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
-                    >
-                        <GTPIcon icon="gtp-project" containerClassName="!size-[34px] flex p-[5px] items-center justify-center" className="!size-[29px]" size="sm" />
-                        <div className="flex flex-col items-center">
-                            <div className="text-xxs">Compare to</div>
-                            <div className="flex items-center gap-x-[5px]">
-                                
-                                <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} other app{compareAppsForChart.length !== 1 ? "s" : ""}</div>
-                            </div>
-                        </div>
-                        <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
-                    </div>
 
+                    {comparePill}
                     {/* Dropdown — absolute, below the button, slides out from under it */}
                     <div
                         className="absolute left-0 right-0 overflow-hidden z-10 rounded-b-[15px]"
@@ -350,19 +391,24 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
+                                {searchQuery.length > 0 && (
                                 <GTPIcon
-                                    icon="in-button-close"
-                                    className="!size-[12px] cursor-pointer"
+                                    icon="in-button-close-monochrome"
+                                    className={`!size-[12px] cursor-pointer text-color-accent-red hover:text-chains-custom-warm-1`}
                                     containerClassName="!size-[15px] flex items-center justify-center"
                                     onClick={() => setSearchQuery("")}
+                                    
                                 />
+                                )}
                             </div>
                             {(compareAppKeys.length > 0 || compareSearchResults.length > 0) && (
-                                <div className="mt-[8px]">
+                                <div className="mt-[8px] z-[50] w-full">
                                     <VerticalScrollContainer
                                         height={compareListHeight}
                                         scrollbarPosition="right"
                                         scrollbarWidth="4px"
+                                        paddingRight={15}
+                                        reserveScrollbarSpace
                                     >
                                         <div className="flex flex-col w-full min-w-0 mr-[5px]">
                                             {compareAppKeys.map(key => {
@@ -406,7 +452,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                                             className="rounded-full shrink-0"
                                                         />
                                                     )}
-                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? app.display_name.slice(0, 16) + "..." : app.owner_project}</span>
+                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? app.display_name.slice(0, 16) + (app.display_name.length > 16 ? "..." : "") : app.owner_project}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -474,8 +520,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                 {Object.keys(data.metrics ?? {})
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
-                    .map((metric) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" />
+                    .map((metric, index) => (
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics"  index={index}/>
                 ))}
             </div>
         </div>
@@ -483,7 +529,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -675,7 +721,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                  className=""
                  mobileBreakpoint={0}
                  header={
-                     <div className="flex items-center justify-between pt-[3px] px-[4px]">
+                     <div className="flex items-center justify-between pt-[10px] pb-[2px] px-[4px]">
                         <div className="flex items-center gap-x-[8px]">
                             <GTPIcon icon={`gtp-${metricData.icon}-monochrome` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[12px]" size="sm" />
                             <div className="text-xxxs">{metricData.name} for {projectMetadata.display_name}</div>
@@ -758,6 +804,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                         syncId={syncId}
                         showLegend={true}
+                        watermarkOverlap={index === 1}
                     />
 
 

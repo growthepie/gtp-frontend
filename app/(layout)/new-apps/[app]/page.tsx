@@ -481,7 +481,7 @@ const FeaturedCard = memo(({ feature }: { feature: string }) => {
   return (
     <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
       <GTPIcon icon="gtp-defi" size="md" />
-      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
+      <div className="text-center text-md text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
     </div>
@@ -532,7 +532,6 @@ const OverviewContent = memo(({
 
   return (
     <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
-      <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
       <FeaturedSection features={features} />
       <div className="flex flex-col gap-y-[15px] py-[15px]">
@@ -603,7 +602,6 @@ OverviewContent.displayName = "OverviewContent";
 
 const MetricsContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => (
   <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
-    <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} forceClose={true} />
     <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
   </div>
 ));
@@ -744,8 +742,19 @@ export default function NewAppPage({
         ))}
       </SectionBar>
 
+      {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
+      {(selectedTab === "overview" || selectedTab === "metrics") && data && projectMetadata && (
+        <AboutApp
+          key={selectedTab}
+          data={data}
+          owner_project={owner_project}
+          projectMetadata={projectMetadata}
+          defaultOpen={selectedTab === "overview"}
+        />
+      )}
+
       {/* Tab content */}
-      <div className={selectedTab !== "overview" ? "" : ""}>
+      <div>
         {TabContent}
       </div>
     </Container>
