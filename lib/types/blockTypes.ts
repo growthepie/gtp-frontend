@@ -109,6 +109,7 @@ export interface TableBlock extends BaseBlock {
     color?: string;        // Explicit color fallback
   };
   scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
+  maxHeight?: number; // Max height in px for the scrollable table (default 500). Height auto-adjusts to content below this cap.
   cardView?: {
     titleColumn: string; // Column key for card title (header row, displayed prominently)
     imageColumn?: string; // Column key for avatar/icon (header row)
