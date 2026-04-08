@@ -189,6 +189,7 @@ export interface ChartBlock extends BaseBlock {
       dashStyle?: Highcharts.DashStyleValue;
       makeNegative?: boolean;
       aggregation?: "daily" | "weekly" | "monthly";
+      deselected?: boolean;
     }[];
     dynamicSeries?: {
       url: string;
