@@ -282,7 +282,7 @@ const StablecoinFiat: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
 };
 
 export default StablecoinFiat;
