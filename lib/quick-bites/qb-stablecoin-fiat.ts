@@ -6,7 +6,7 @@ const fiatDropdown = {
   searchable: true,
   stateKey: "selectedFiat",
   labelStateKey: "selectedFiatName",
-  defaultValue: "usd",
+  defaultValue: "eur",
   allowEmpty: false,
   readFromJSON: true,
   jsonData: {
@@ -165,14 +165,42 @@ const mainContent = [
   }),
   "```",
 
+  "## USD-denominated Stablecoins Dominate the Market",
+
+  "```kpi-cards",
+  JSON.stringify([
+    {
+      title: "Fiat Currencies Tracked",
+      value: "{{stablecoin_fiat_count}}",
+      description: "fiat currencies with stablecoin supply",
+      icon: "gtp-metrics-stablecoinmarketcap",
+      info: "Number of distinct fiat currencies for which we track stablecoin supply.",
+    },
+    {
+      title: "USD Dominance",
+      value: "{{stablecoin_fiat_usd_dominance}}",
+      description: "share of total stablecoin supply",
+      icon: "gtp-metrics-stablecoinmarketcap",
+      info: "USD-pegged stablecoins as a percentage of total tracked stablecoin supply.",
+    },
+    {
+      title: "Non-USD Supply",
+      value: "{{stablecoin_fiat_non_usd_mcap}}",
+      description: "stablecoins pegged to non-USD currencies",
+      icon: "gtp-metrics-stablecoinmarketcap",
+      info: "Total circulating supply (in USD) of stablecoins pegged to currencies other than USD.",
+    },
+  ]),
+  "```",
+
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stacked Stablecoin Supply by Fiat Currency",
-    subtitle: "Total circulating supply of stablecoins pegged to each fiat currency, in USD.",
+    title: "Stablecoin Supply by Fiat Currency",
+    subtitle: "Share of total stablecoin supply pegged to each fiat currency, as a percentage.",
     showXAsDate: true,
     showZeroTooltip: false,
-    showTotalTooltip: true,
+    showTotalTooltip: false,
     dataAsJson: {
       dynamicSeries: {
         url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json",
@@ -181,13 +209,13 @@ const mainContent = [
         names: "data.timeseries.types",
         namesTransform: "uppercase",
         colors: "data.colors",
-        prefix: '$',
+        stacking: "percent",
         xIndex: 0,
-        tooltipDecimals: 2
+        tooltipDecimals: 1
       },
     },
     height: 500,
-    caption: "Line chart showing the total circulating supply (in USD) of stablecoins pegged to each fiat currency. Data is updated daily.",
+    caption: "Stacked area chart showing the percentage share of stablecoin supply pegged to each fiat currency. Data is updated daily.",
   }),
   "```",
 
