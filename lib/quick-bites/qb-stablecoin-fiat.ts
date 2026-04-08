@@ -172,7 +172,7 @@ const mainContent = [
     {
       title: "Fiat Currencies Tracked",
       value: "{{stablecoin_fiat_count}}",
-      description: "fiat currencies with stablecoin supply",
+      description: "",
       icon: "gtp-metrics-stablecoinmarketcap",
       info: "Number of distinct fiat currencies for which we track stablecoin supply.",
     },
@@ -210,6 +210,7 @@ const mainContent = [
         namesTransform: "uppercase",
         colors: "data.colors",
         stacking: "percent",
+        prefix: '$',
         xIndex: 0,
         tooltipDecimals: 1
       },
