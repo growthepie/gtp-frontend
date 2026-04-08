@@ -203,6 +203,7 @@ export interface ChartBlock extends BaseBlock {
       xIndex?: number;
       tooltipDecimals?: number;
       prefix?: string;
+      prefixFiatSymbolFromPath?: string; // path in loaded JSON to a fiat code (e.g. "data.fiat"); symbol is looked up from fiat.json
     };
     pieData?:
       | { name: string; y: number; color: string; tooltipDecimals?: number }[]

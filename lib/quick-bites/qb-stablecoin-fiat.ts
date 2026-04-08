@@ -46,6 +46,7 @@ const mainContent = [
             names: "data.symbols",
             colors: "data.colors",
             stacking: "normal",
+            prefixFiatSymbolFromPath: "data.fiat",
             xIndex: 0,
             tooltipDecimals: 2
           },
@@ -228,7 +229,7 @@ const mainContent = [
   "```chart",
   JSON.stringify({
     type: "area",
-    title: "Stablecoin Supply by Fiat Currency",
+    title: "Stablecoin Supply by Fiat Currency (USD Value)",
     subtitle: "Share of total stablecoin supply pegged to each fiat currency, as a percentage.",
     showXAsDate: true,
     showZeroTooltip: false,
@@ -267,7 +268,7 @@ const StablecoinFiat: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/stablecoins.png",
   og_image: "",
-  date: "2026-04-07",
+  date: "2026-04-09",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
