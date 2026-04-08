@@ -326,6 +326,8 @@ export interface GTPChartProps {
   onLegendToggle?: (seriesName: string, isActive: boolean) => void;
   /** Controlled list of inactive (hidden) series names. When provided, toggle state is managed externally and internal state is ignored. */
   legendInactiveSeries?: string[];
+  /** When true, the watermark will overlap with the legend. */
+  watermarkOverlap?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -407,6 +409,7 @@ export default function GTPChart({
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
+  watermarkOverlap = false,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -2004,7 +2007,7 @@ export default function GTPChart({
   };
 
   const watermarkOverlayClassName =
-    "pointer-events-none absolute inset-y-0 left-[52px] bottom-[5%] right-0 z-[40] flex items-center justify-center";
+    `pointer-events-none absolute inset-y-0 left-[52px] bottom-[5%] right-0 flex items-center justify-center ${watermarkOverlap ? "z-[0]" : "z-[40]"}`;
 
   return (
     <div

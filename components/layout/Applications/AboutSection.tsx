@@ -17,7 +17,7 @@ const BAR_NOTIONAL = 10_000;
 const BAR_OVERLAP = 8;
 const BAR_MIN_SEG = 500;
 
-const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = false }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, forceClose?: boolean }) => {
+const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = true }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, defaultOpen?: boolean }) => {
 
     const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
@@ -54,26 +54,24 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, forceClose = fals
     }
 
       
-    const [open, setOpen] = useState(forceClose ? false : true);
+    const [open, setOpen] = useState(defaultOpen);
     const activeSinceLabel = getActiveSinceLabel(data.first_seen);
 
-
-  
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
         {/* Header row: toggle + title + links (when closed) */}
         <div className="flex items-center justify-between gap-x-[10px]">
           <div
-            className={`flex items-center gap-x-[10px]  ${forceClose ? "cursor-default" : "cursor-pointer"}`}
-            onClick={() => forceClose ? null : setOpen((v) => !v)}
+            className="flex items-center gap-x-[10px] cursor-pointer"
+            onClick={() => setOpen((v) => !v)}
           >
             <GTPIcon
               icon="in-button-right-monochrome"
               size="sm"
               className="!size-[14px]"
-              containerClassName={`!size-[26px]  !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
+              containerClassName={`!size-[26px] flex !justify-center !items-center bg-color-bg-medium hover:bg-color-ui-hover rounded-[20px] transition-all duration-300 ${
                 open ? "rotate-90" : "rotate-0"
-                } ${forceClose ? "hidden" : "flex"}`}
+                }`}
             />
             <div className="heading-large-md text-color-text-secondary">App Overview</div>
           </div>
