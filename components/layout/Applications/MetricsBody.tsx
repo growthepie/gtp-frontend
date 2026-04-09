@@ -10,7 +10,7 @@ import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
-import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
@@ -103,10 +103,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isCompareDropdownOpen]);
     const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
-    // useReducer so dispatch() doesn't match the `set`-prefixed setState lint rule
-    const [dynamicLabelCount, dispatchLabelCount] = useReducer((_: number, next: number) => next, chainCount);
-    // Incrementing this forces a re-render so useLayoutEffect can measure the new overflow state
-    const [, forceCheck] = useReducer((c: number) => c + 1, 0);
+    const [dynamicLabelCount, setDynamicLabelCount] = useState(chainCount);
+    // Refs for single-pass label-count measurement (avoids O(N) cascading re-renders)
+    const labelMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    const chainsTextRef = useRef<HTMLDivElement>(null);
 
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
@@ -172,70 +172,81 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    // After every render: if the chain selector is overflowing its allocated flex width,
-    // trim one labeled button. Runs synchronously before paint so intermediate states are invisible.
-    useLayoutEffect(() => {
-        const el = chainsSelectedRef.current;
-        if (!el) return;
-        if (el.scrollWidth > el.clientWidth) {
-            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
-        }
-    });
+    // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
+    const filteredSortedChains = useMemo(() =>
+        (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
+            const aDeselected = deselectedChains.includes(a) ? 1 : 0;
+            const bDeselected = deselectedChains.includes(b) ? 1 : 0;
+            return aDeselected - bDeselected;
+        }),
+        [data.chains_by_size, AllChainsByKeys, deselectedChains],
+    );
 
-    // Post-paint safety net: useLayoutEffect measures before the browser has finished resolving
-    // flex layout during fast resize. By the time useEffect runs (after paint), dimensions are
-    // fully settled — the same state as when any other item's state update triggers a re-render
-    // and incidentally fixes the overflow.
-    useEffect(() => {
-        const el = chainsSelectedRef.current;
-        if (!el) return;
-        if (el.scrollWidth > el.clientWidth) {
-            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
-        }
-    });
-
-    // Drive the trim/grow loop from the parent row's width.
-    // The parent row is w-full so it reliably changes on every window resize,
-    // unlike the chain selector itself which stops growing once it reaches its
-    // natural trimmed content width (flex-grow: 0 prevents further expansion).
+    // Single-pass calculation: measure available space minus fixed costs, then greedily assign
+    // labels from left to right. Runs in O(n) DOM reads, emits at most one setState per resize.
     //
-    // grow  → reset to all labels; the useLayoutEffect trim loop synchronously
-    //         converges to the exact count that fits before the browser paints
-    // shrink → force a re-render so the trim loop can measure the new overflow
+    // Button geometry for size="md":
+    //   icon-only  (alone variant): wrapper(2px) + padding(5+5px) + icon(24px) = 36px
+    //   with label (left variant):  wrapper(2px) + padding(15+15px) + icon(24px) + gap(8px) + textW
+    //   delta per label = (15+15 - 5-5)[padding diff] + 8[gap] + textW = 28 + textW
+    const calculateLabelCount = useCallback(() => {
+        const container = chainsSelectedRef.current;
+        if (!container) return;
+
+        const n = filteredSortedChains.length;
+        if (n === 0) {
+            setDynamicLabelCount(0);
+            return;
+        }
+
+        const containerWidth = container.clientWidth;
+
+        // Outer pill fixed costs: pl-[15px] + "Chains Selected" text + gap-x-[5px] + inner-border(2px) + pr-[2px]
+        const fixedCost =
+            15 +
+            (chainsTextRef.current?.offsetWidth ?? 80) +
+            5 +
+            2 +
+            2;
+
+        // All buttons collapsed to icon-only + gaps between them
+        const ICON_ONLY_W = 36;
+        const BUTTON_GAP = 2; // gap-x-[2px] between buttons
+        const iconOnlyCost = n * ICON_ONLY_W + Math.max(0, n - 1) * BUTTON_GAP;
+
+        // Space available for labels beyond icon-only layout
+        let remaining = containerWidth - fixedCost - iconOnlyCost;
+
+        let count = 0;
+        for (let i = 0; i < n; i++) {
+            const labelEl = labelMeasureRefs.current[i];
+            const labelW = labelEl ? labelEl.offsetWidth : 60;
+            // 28px base delta + label text width; 2px safety margin
+            if (remaining >= 28 + labelW + 2) {
+                remaining -= 28 + labelW;
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        setDynamicLabelCount(count);
+    }, [filteredSortedChains]);
+
+    // Run once on mount and whenever the container resizes (which includes window resize and
+    // parent flex reflows). Re-attaches whenever filteredSortedChains changes so the
+    // measurement refs are in sync with the rendered buttons.
+    // useEffect (post-paint) avoids the React warning about synchronous setState inside a
+    // layout-phase effect. ResizeObserver fires once on initial observation, so no explicit
+    // call to calculateLabelCount() is needed here — the observer handles it.
     useEffect(() => {
         const el = chainsSelectedRef.current;
         if (!el) return;
-        const parentRow = el.parentElement;
-        if (!parentRow) return;
 
-        let lastParentWidth = parentRow.getBoundingClientRect().width;
-
-        let settleTimer: ReturnType<typeof setTimeout> | null = null;
-
-        const observer = new ResizeObserver(() => {
-            const newParentWidth = parentRow.getBoundingClientRect().width;
-            if (newParentWidth > lastParentWidth) {
-                dispatchLabelCount(chainCount);
-            } else if (newParentWidth < lastParentWidth) {
-                forceCheck();
-            }
-            lastParentWidth = newParentWidth;
-
-            // After resize stops, do one final reset so the trim loop converges
-            // from scratch and catches any edge-case overflow from fast resizing.
-            if (settleTimer !== null) clearTimeout(settleTimer);
-            settleTimer = setTimeout(() => {
-                dispatchLabelCount(chainCount);
-                forceCheck();
-            }, 500);
-        });
-
-        observer.observe(parentRow);
-        return () => {
-            observer.disconnect();
-            if (settleTimer !== null) clearTimeout(settleTimer);
-        };
-    }, [chainCount]);
+        const observer = new ResizeObserver(calculateLabelCount);
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [calculateLabelCount]);
 
     // Checks whether a metric actually has data for the current time interval,
     // so we skip rendering empty charts instead of just checking for hourly keys.
@@ -318,21 +329,34 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 
 
     return (
-        <div className="pt-[30px] w-full">
+        <div className="pt-[30px] w-full relative">
             {/* Invisible data loaders for each compare app */}
             {compareAppKeys.map(key => (
                 <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
             ))}
 
+            {/* Hidden label measurement spans — used by calculateLabelCount to get exact text widths
+                without triggering a render loop. Must match the font/size of the actual button labels. */}
+            <div
+                aria-hidden="true"
+                style={{ position: "absolute", top: 0, left: 0, visibility: "hidden", pointerEvents: "none", display: "flex" }}
+            >
+                {filteredSortedChains.map((chain, i) => (
+                    <span
+                        key={chain}
+                        ref={(el) => { labelMeasureRefs.current[i] = el; }}
+                        className="text-md font-raleway font-medium whitespace-nowrap"
+                    >
+                        {AllChainsByKeys[chain]?.name_short}
+                    </span>
+                ))}
+            </div>
+
             <div className="w-full flex justify-between  lg:items-center gap-x-[15px] lg:flex-row flex-col gap-y-[10px] ">
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
-                    <div className="text-sm shrink-0">Chains Selected</div>
+                    <div ref={chainsTextRef} className="text-sm shrink-0">Chains Selected</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
-                        const aDeselected = deselectedChains.includes(a) ? 1 : 0;
-                        const bDeselected = deselectedChains.includes(b) ? 1 : 0;
-                        return aDeselected - bDeselected;
-                    }).map((chain, i) => {
+                    {filteredSortedChains.map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
