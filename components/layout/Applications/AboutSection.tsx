@@ -196,15 +196,15 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                     size="sm"
                     leftIcon="gtp-read"
                     label="Docs"
-                    clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
                   />
                 )}
-                {projectMetadata.website && (
+                {projectMetadata.governance && (
                   <GTPButton
                     size="sm"
                     leftIcon={"gtp-file-text" as GTPIconName}
                     label="Governance"
-                    clickHandler={() => window.open(projectMetadata.website ?? "", "_blank", "noopener,noreferrer")}
+                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.governance ?? "")}
                   />
                 )}
               </div>

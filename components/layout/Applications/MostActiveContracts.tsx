@@ -94,8 +94,7 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
       </div>
 
       {/* Scrollable table */}
-      <div className="overflow-x-auto w-full">
-        <HorizontalScrollContainer enableDragScroll={isMobile ? true : false} includeMargin={false} forcedMinWidth={992}>
+        <HorizontalScrollContainer enableDragScroll={true} includeMargin={false} forcedMinWidth={992} hideScrollbar={true}>
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
@@ -113,9 +112,10 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
           <VerticalScrollContainer
             height={350}
             enableDragScroll={isMobile ? true : false}
-            className="pr-[30px]"
             scrollbarPosition="right"
             scrollbarAbsolute={true}
+            paddingRight={30}
+            
           >
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
               {sortedContracts.map((contract, index) => {
@@ -238,7 +238,6 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
-      </div>
 
       {/* Footer CTA */}
       <div className="relative w-full flex items-center justify-end pr-[30px]">
