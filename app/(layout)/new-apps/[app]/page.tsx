@@ -386,6 +386,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
       const iconIndex = filteredProjectsData.types.indexOf("logo_path");
       const ownerIndex = filteredProjectsData.types.indexOf("owner_project");
       const txcountIndex = filteredProjectsData.types.indexOf("txcount");
+      const subCategoryIndex = filteredProjectsData.types.indexOf("sub_category");
       if (iconIndex === -1 || txcountIndex === -1) return;
       const dataLen = filteredProjectsData.data.length;
       const indices: number[] = [];
@@ -397,11 +398,13 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
           const project = filteredProjectsData.data[idx];
           const owner = ownerIndex !== -1 ? project?.[ownerIndex] : null;
           const txcount = Number(project?.[txcountIndex]);
+          const subCategory = subCategoryIndex !== -1 ? project?.[subCategoryIndex] : null;
           if (
               typeof project?.[iconIndex] === "string" &&
               txcount >= 10000 &&
               !indices.includes(idx) &&
-              (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
+              (ownerIndex === -1 || (typeof owner === "string" && owner !== owner_project && !seenOwners.has(owner))) &&
+              (subCategoryIndex === -1 || !projectMetadata.sub_category || subCategory === projectMetadata.sub_category)
           ) {
               indices.push(idx);
               if (typeof owner === "string") seenOwners.add(owner);
@@ -409,7 +412,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
       }
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRandomIndices(indices);
-  }, [filteredProjectsData, randomIndices]);
+  }, [filteredProjectsData, randomIndices]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const randomProjects = useMemo(() => {
       if (!filteredProjectsData || !randomIndices) return [];
@@ -427,7 +430,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
-        {randomProjects.filter((project) => project.sub_category === projectMetadata.sub_category && project.sub_category !== null && project.owner_project !== projectMetadata.owner_project).map((project) => {
+        {randomProjects.map((project) => {
           return (
 
           <GTPTooltipNew
@@ -436,7 +439,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <Link key={project.name} className="p-[8px] bg-color-bg-medium rounded-full"
+              <Link key={project.name} className="p-[8px] bg-color-bg-medium rounded-full hover:bg-color-ui-hover"
               href={`/new-apps/${project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0]}`}
               >
                 <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
@@ -743,7 +746,7 @@ export default function NewAppPage({
       </SectionBar>
 
       {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
-      {(selectedTab === "overview" || selectedTab === "metrics") && data && projectMetadata && (
+      {data && projectMetadata && (
         <AboutApp
           key={selectedTab}
           data={data}

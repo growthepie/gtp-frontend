@@ -290,7 +290,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     <div className="text-xxs">Compare to</div>
                     <div className="flex items-center gap-x-[5px]">
                         
-                        <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} other app{compareAppsForChart.length !== 1 ? "s" : ""}</div>
+                        <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} Other App{compareAppsForChart.length !== 1 ? "s" : ""}</div>
                     </div>
                 </div>
                 <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
