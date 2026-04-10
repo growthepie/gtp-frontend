@@ -425,7 +425,7 @@ const EigenDAMegaETH: QuickBiteData = {
     {
       icon: "megaeth-logo-monochrome",
       name: "MegaETH",
-      url: "/megaeth"
+      url: "/chains/megaeth"
     },
   ],
   icon: "",
