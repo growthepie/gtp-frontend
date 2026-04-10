@@ -199,7 +199,8 @@ export const GTPIcon = memo(GTPIconBase, (prevProps, nextProps) => {
     prevProps.containerClassName === nextProps.containerClassName &&
     prevProps.showContextMenu === nextProps.showContextMenu &&
     prevProps.showLoadingPlaceholder === nextProps.showLoadingPlaceholder &&
-    prevProps.style?.color === nextProps.style?.color
+    prevProps.style?.color === nextProps.style?.color &&
+    prevProps.color === nextProps.color
   );
 });
 
@@ -332,9 +333,9 @@ type RankIconProps = {
 }
 
 export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true }: RankIconProps) => {
-  const { theme } = useTheme();
-  const color = colorScale == -1 ? `#CDD8D3${theme === "dark" ? "22" : "88"}` : GetRankingColor(colorScale * 100, false, theme as "dark" | "light" ?? "dark");
-  const borderColor = colorScale == -1 ? `#CDD8D3${theme === "dark" ? "22" : "88"}` : color + "AA";
+  const { resolvedTheme } = useTheme();
+  const color = colorScale == -1 ? `#CDD8D3${resolvedTheme === "dark" ? "22" : "88"}` : GetRankingColor(colorScale * 100, false, (resolvedTheme as "dark" | "light") ?? "dark");
+  const borderColor = colorScale == -1 ? `#CDD8D3${resolvedTheme === "dark" ? "22" : "88"}` : color + "AA";
 
   const borderSizeClassMap = {
     sm: "size-[18px]",

@@ -29,7 +29,7 @@ export default function MetricCards({
   const chainData = AllChainsByKeys[chainKey];
   const [showUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   const handleCardClick = useCallback(() => {
     const metricItem = getFundamentalsByKey[metricKey];
@@ -56,7 +56,7 @@ export default function MetricCards({
   const rankingColor = GetRankingColor(
     overviewData.data.ranking[metricKey].color_scale * 100,
     false,
-    (theme as "dark" | "light") ?? "dark",
+    (resolvedTheme as "dark" | "light") ?? "dark",
   );
 
   const sparklineRaw = overviewData.data.kpi_cards[metricKey].sparkline.data;
@@ -81,7 +81,7 @@ export default function MetricCards({
       suffix={suffix}
       sparkline={sparklineValues}
       timestamps={sparklineTimestamps}
-      color={chainData.colors[theme ?? "dark"][0]}
+      color={chainData.colors[resolvedTheme ?? "dark"][0]}
       onClick={handleCardClick}
     />
   );
