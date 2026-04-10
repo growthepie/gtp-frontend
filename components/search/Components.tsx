@@ -1055,7 +1055,8 @@ export const useSearchBuckets = () => {
     // Get all quick bites for the Quick Bites bucket
     const allQuickBites = getAllQuickBites()
       .filter(quickBite => quickBite.slug !== "test-bite") // Filter out test quick bite
-      .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false); // Hide non-live bites in production
+      .filter(quickBite => !IS_PRODUCTION || quickBite.showInMenu !== false) // Hide non-live bites in production
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Newest first
     
     // Get public goods trackers from Quick Bites navigation
     const quickBitesNavItem = navigationItems.find(navItem => navItem.name === "Quick Bites");
@@ -1104,7 +1105,7 @@ export const useSearchBuckets = () => {
             options: [
               ...filterOptions(
                 allQuickBites.map(quickBite => ({
-                  label: quickBite.title,
+                  label: quickBite.shortTitle,
                   url: `/quick-bites/${quickBite.slug}`,
                   icon: "gtp-quick-bites",
                   color: undefined,

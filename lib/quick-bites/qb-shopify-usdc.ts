@@ -269,7 +269,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = createQuickBite({
   },
   {
     icon: "gtp-metrics-stablecoinmarketcap",
-    name: "Stablecoins",
+    name: "Stablecoin Supply",
     url: "/fundamentals/stablecoin-market-cap"
   }
 ],
