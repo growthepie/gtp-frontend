@@ -109,6 +109,7 @@ export interface TableBlock extends BaseBlock {
     color?: string;        // Explicit color fallback
   };
   scrollable?: boolean; // Wrap rows in VerticalScrollContainer (default true)
+  maxHeight?: number; // Max height in px for the scrollable table (default 500). Height auto-adjusts to content below this cap.
   cardView?: {
     titleColumn: string; // Column key for card title (header row, displayed prominently)
     imageColumn?: string; // Column key for avatar/icon (header row)
@@ -188,6 +189,7 @@ export interface ChartBlock extends BaseBlock {
       dashStyle?: Highcharts.DashStyleValue;
       makeNegative?: boolean;
       aggregation?: "daily" | "weekly" | "monthly";
+      deselected?: boolean;
     }[];
     dynamicSeries?: {
       url: string;
@@ -202,6 +204,7 @@ export interface ChartBlock extends BaseBlock {
       xIndex?: number;
       tooltipDecimals?: number;
       prefix?: string;
+      prefixFiatSymbolFromPath?: string; // path in loaded JSON to a fiat code (e.g. "data.fiat"); symbol is looked up from fiat.json
     };
     pieData?:
       | { name: string; y: number; color: string; tooltipDecimals?: number }[]

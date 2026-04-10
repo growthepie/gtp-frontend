@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import Mustache from 'mustache';
+import fiatData from '@/public/dicts/fiat.json';
 
 /* 
 Mustache.js example for dynamic values
@@ -209,7 +210,23 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         xIndex: dynamicSeriesConfig.xIndex ?? 0,
         yIndex,
         tooltipDecimals: dynamicSeriesConfig.tooltipDecimals ?? 0,
-        ...(dynamicSeriesConfig.prefix !== undefined && { prefix: dynamicSeriesConfig.prefix }),
+        ...((() => {
+          if (dynamicSeriesConfig.prefixFiatSymbolFromPath) {
+            const fiatCode = getNestedValue(sourceData, dynamicSeriesConfig.prefixFiatSymbolFromPath);
+            const symbol = typeof fiatCode === 'string'
+              ? fiatData[fiatCode.toUpperCase() as keyof typeof fiatData]?.symbol
+              : undefined;
+            if (symbol) return { prefix: symbol };
+          }
+          if (dynamicSeriesConfig.prefix !== undefined) {
+            return {
+              prefix: dynamicSeriesConfig.prefix.includes('{{')
+                ? Mustache.render(dynamicSeriesConfig.prefix, sharedState)
+                : dynamicSeriesConfig.prefix,
+            };
+          }
+          return {};
+        })()),
         url: dynamicSeriesUrl || dynamicSeriesConfig.url,
         pathToData: dynamicSeriesConfig.pathToData,
       }));
