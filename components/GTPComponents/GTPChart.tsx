@@ -435,16 +435,6 @@ export default function GTPChart({
   const [internalInactiveSeries, setInternalInactiveSeries] = useState<Set<string>>(new Set());
   const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
-  const [legendHeight, setLegendHeight] = useState(showLegend ? 22 : 0);
-
-  useLayoutEffect(() => {
-    if (!showLegend || !legendRef.current) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setLegendHeight(entry.contentRect.height);
-    });
-    observer.observe(legendRef.current);
-    return () => observer.disconnect();
-  }, [showLegend]);
 
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
   const inactiveLegendSeries = useMemo(
@@ -2008,19 +1998,14 @@ export default function GTPChart({
     decimalPercentage
   ]);
 
-  const containerStyle: React.CSSProperties = {
-    height: typeof height === "number" ? `${height - legendHeight}px` : height,
-  };
-
   const watermarkOverlayClassName =
     `pointer-events-none absolute inset-y-0 left-[52px] bottom-[5%] right-0 flex items-center justify-center ${watermarkOverlap ? "z-[0]" : "z-[40]"}`;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full" style={{ height: typeof height === "number" ? `${height}px` : height }}>
     <div
       ref={containerRef}
-      className={`relative w-full overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
-      style={containerStyle}
+      className={`relative w-full flex-1 min-h-0 overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
         <ReactEChartsCore
