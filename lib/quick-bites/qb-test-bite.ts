@@ -977,6 +977,7 @@ const testBite: QuickBiteData = createQuickBite({
     url: "/chains/base"
   }],
   showInMenu: false,
+  showInChainTab: false,
   ethUsdSwitchEnabled: true
 });
 

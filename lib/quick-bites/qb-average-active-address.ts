@@ -6,14 +6,14 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
   subtitle: "Tracking average active address activity across the ecosystem",
   shortTitle: "Avg Active Address",
   content: [
-    "# The Average Active Address",
-    "This Quick Bite has been created and is ready for data and chart content.",
-    "",
-    "## Scatter Example: Active Addresses vs Activity",
+    "## Active Addresses",
+    "Rightfully so, active addresses is a metric that often gets a lot of push back as it can be easily gamed by bots and sybil attackers - an active address != a unique user. The best way to get a more accurate understanding of a chain is to combine metrics and this quick bite does just that. We have taken the top 10 chains in multiple metrics and plotted them against weekly active addresses.",
+    "- Chart data and top 10 chains update daily",
+    "- Remove outliers in the legend and the trendline will update automatically",
     "```chart-toggle",
     `{
-      "title": "Weekly Active Addresses vs Activity",
-      "description": "Switch between transaction volume and complexity views.",
+      "title": "How do active addresses impact fundamental metrics like activity and value secured?",
+      "description": "Fundamental Metrics vs Active Addresses",
       "layout": "segmented",
       "defaultIndex": 0,
       "charts": [
@@ -79,7 +79,7 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
           "toggleLabel": "Stablecoins",
           "type": "scatter",
           "title": "Weekly Active Addresses vs Stablecoin Market Cap",
-          "subtitle": "One marker per chain (Top 10 stablecoin chains)",
+          "subtitle": "One marker per chain (Top 10 chains by stablecoin market cap)",
           "showXAsDate": false,
           "top10ByMetric": "stablecoin market cap",
           "scatterTrendline": {
@@ -102,13 +102,13 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
             ]
           },
           "height": 450,
-          "caption": "Weekly distinct active addresses vs stablecoin market cap (USD) - top 10 stablecoin chains."
+          "caption": "Weekly distinct active addresses vs stablecoin market cap (USD) - top 10 chains by stablecoin market cap."
         },
         {
           "toggleLabel": "TVS",
           "type": "scatter",
           "title": "Weekly Active Addresses vs Total Value Secured",
-          "subtitle": "One marker per chain (Top 10 TVS chains)",
+          "subtitle": "One marker per chain (Top 10 chains by total value secured)",
           "showXAsDate": false,
           "top10ByMetric": "total value secured",
           "scatterTrendline": {
@@ -131,17 +131,16 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
             ]
           },
           "height": 450,
-          "caption": "Weekly distinct active addresses vs total value secured (USD) - top 10 TVS chains."
+          "caption": "Weekly distinct active addresses vs total value secured (USD) - top 10 chains by total value secured."
         }
       ]
     }`,
     "```",
-    "",
-    "## Scatter Example: Active Addresses vs Value Capture",
+   "> At the time of writting this quick bite we do not currently track Ethereum Mainnet TVS",
     "```chart-toggle",
     `{
-      "title": "Weekly Active Addresses vs Value Capture",
-      "description": "Switch between chain revenue, onchain profit, and rent paid to L1.",
+      "title": "How do active addresses impact value capture metrics like onchain profit, and rent paid to L1?",
+      "description": "Value capture metrics vs active addresses",
       "layout": "segmented",
       "defaultIndex": 0,
       "charts": [
@@ -236,7 +235,6 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
     }`,
     "```",
     "",
-    "> More analysis and visuals can be added here next.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   date: "2026-04-01",

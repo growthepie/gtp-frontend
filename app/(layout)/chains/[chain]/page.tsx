@@ -681,7 +681,7 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
           IS_PRODUCTION
             ? getAllQuickBites().filter((quickBite) => quickBite.showInMenu !== false)
             : getAllQuickBites()
-        );
+        ).filter((quickBite) => quickBite.showInChainTab !== false);
         const sortedQuickBites = eligibleQuickBites.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );

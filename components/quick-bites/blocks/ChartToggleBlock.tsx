@@ -88,7 +88,8 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
   const selectedChartWidth = selectedChart?.width ?? "100%";
   const selectedChartMargins = selectedChart?.margins ?? "normal";
   const controlsWrapperClass = selectedChartMargins === "none" ? "px-0" : "md:px-[35px]";
-  const showControls = !isChainQuickBitesTabBlock || charts.length > 1;
+  const isChainQuickBitesTabSideBySide = isChainQuickBitesTabBlock && (isChainQuickBitesTabRightFlush || isChainQuickBitesTabLeftFlush);
+  const showControls = !isChainQuickBitesTabBlock || charts.length > 1 || isChainQuickBitesTabSideBySide;
   const showExternalControls = showControls && !isChainQuickBitesTabBlock;
   const segmentedLayoutClass = block.layout === 'segmented'
     ? hasMultipleOptionRows && isChainQuickBitesTabBlock
