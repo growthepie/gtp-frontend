@@ -16,6 +16,7 @@ import type {
 } from "./types";
 import { ensureAbsoluteUrl, isValidHttpUrl, normalizeOwnerProjectInput } from "./utils";
 import { FieldDropdown } from "./FieldDropdown";
+import { useState } from "react";
 import type { ChangeEvent, RefObject } from "react";
 
 type ProjectDetailsStepProps = {
@@ -123,6 +124,10 @@ export function ProjectDetailsStep({
   submitProjectContribution,
   continueWithoutEdits,
 }: ProjectDetailsStepProps) {
+  const [showPrConfirm, setShowPrConfirm] = useState(false);
+  const [missingExpanded, setMissingExpanded] = useState(false);
+  const [expandedCheckIndices, setExpandedCheckIndices] = useState<Set<number>>(new Set());
+
   const showContinueWithoutEdits =
     !isAddMode &&
     !hasFormChanges &&
@@ -143,6 +148,7 @@ export function ProjectDetailsStep({
     : "Your project detail changes and logo addition were received. Maintainers will review them.";
 
   return (
+    <>
     <div ref={cardRef} className="rounded-[16px] border border-color-ui-shadow/40 overflow-hidden bg-color-bg-default">
       {/* Clickable header */}
       <button
@@ -181,8 +187,8 @@ export function ProjectDetailsStep({
         ) && (
           <div className="flex items-center gap-[5px] flex-wrap justify-end shrink-0">
             {(["website", "main_github", "twitter", "telegram"] as const).map((field) => {
-              const icons = { website: "feather:globe", main_github: "ri:github-fill", twitter: "feather:twitter", telegram: "feather:send" };
-              const labels = { website: "Website", main_github: "GitHub", twitter: "Twitter", telegram: "Telegram" };
+              const icons = { website: "feather:globe", main_github: "ri:github-fill", twitter: "ri:twitter-x-fill", telegram: "feather:send" };
+              const labels = { website: "Website", main_github: "GitHub", twitter: "X", telegram: "Telegram" };
               const filled = form[field].trim();
               return (
                 <div key={field} className={`flex items-center gap-x-[8px] px-[15px] rounded-[20px] h-[26px] border ${filled ? "bg-color-positive/10 border-color-positive/30 text-color-positive" : "bg-color-negative/10 border-color-negative/30 text-color-negative"}`}>
@@ -593,7 +599,13 @@ export function ProjectDetailsStep({
                   ? "Add project"
                   : "Save edits"}
                 disabled={!canSubmitContribution || (Boolean(contributionResult) && !hasFormChangedSinceSubmission)}
-                clickHandler={submitProjectContribution}
+                clickHandler={() => {
+                  if (isAddMode) {
+                    setShowPrConfirm(true);
+                  } else {
+                    submitProjectContribution();
+                  }
+                }}
                 className={`rounded-full px-[14px] py-[9px] text-sm transition-all disabled:opacity-60 ${(canSubmitContribution && !(Boolean(contributionResult) && !hasFormChangedSinceSubmission)) ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}`}
               />
               {showContinueWithoutEdits && (
@@ -620,5 +632,201 @@ export function ProjectDetailsStep({
         </div>
       )}
     </div>
+
+    {/* PR confirmation modal */}
+
+    {showPrConfirm && (() => {
+      const hasGithub = Boolean(form.main_github.trim());
+      const hasSocials = Boolean(form.twitter.trim() || form.telegram.trim());
+      const hasDescription = Boolean(form.description.trim());
+
+      const circlePills = [
+        { field: "logo",          icon: "feather:image",     filled: Boolean(logoUpload) },
+        { field: "owner_project", icon: "feather:key",       filled: Boolean(form.owner_project.trim()) },
+        { field: "website",       icon: "feather:globe",     filled: Boolean(form.website.trim()) },
+        { field: "main_github",   icon: "ri:github-fill",    filled: Boolean(form.main_github.trim()) },
+        { field: "twitter",       icon: "ri:twitter-x-fill",   filled: Boolean(form.twitter.trim()) },
+        { field: "telegram",      icon: "feather:send",      filled: Boolean(form.telegram.trim()) },
+        { field: "description",   icon: "feather:file-text", filled: Boolean(form.description.trim()) },
+      ] as const;
+
+      const checks = [
+        {
+          show: true,
+          icon: "feather:key",
+          question: <>Is <span className="font-mono">{form.owner_project || "owner_project"}</span> easy to search and recognise?</>,
+          detail: "Use a simple, lowercase, hyphenated slug — no TLDs, no version numbers.",
+        },
+        {
+          show: hasGithub,
+          icon: "ri:github-fill",
+          question: "Is the GitHub linking to your organisation, not a personal account or individual repo?",
+          detail: form.main_github,
+        },
+        {
+          show: hasSocials,
+          icon: "feather:at-sign",
+          question: "Are the social links pointing to your project's accounts, not a personal profile?",
+          detail: [form.twitter, form.telegram].filter(Boolean).join("  ·  "),
+        },
+        {
+          show: hasDescription,
+          icon: "feather:file-text",
+          question: "Is the description neutral and non-marketing?",
+          detail: "2–3 short factual sentences. No superlatives, claims, or first-person phrasing.",
+        },
+      ].filter((c) => c.show);
+
+      const missingRequired = [
+        ...(!logoUpload           ? [{ icon: "feather:image",    hint: "No logo uploaded — your project won't have an image in listings." }] : []),
+        ...(!form.owner_project.trim() ? [{ icon: "feather:key",      hint: "A slug is required — lowercase, hyphenated, no TLDs." }] : []),
+        ...(!hasDescription       ? [{ icon: "feather:file-text", hint: "No description added — include 2–3 short, factual sentences." }] : []),
+      ];
+
+      const missingOptional = [
+        ...(!form.main_github.trim() ? [{ icon: "ri:github-fill",  hint: "No GitHub linked — add your org URL, not a personal account or individual repo." }] : []),
+        ...(!form.twitter.trim()     ? [{ icon: "ri:twitter-x-fill",  hint: "No X (Twitter) linked — add your project's account, not a personal profile." }] : []),
+        ...(!form.telegram.trim()    ? [{ icon: "feather:send",     hint: "No Telegram linked — add your project's channel or group." }] : []),
+      ];
+
+      const totalMissing = missingRequired.length + missingOptional.length;
+
+      return (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => { setShowPrConfirm(false); setMissingExpanded(false); setExpandedCheckIndices(new Set()); }}
+        >
+          <div
+            className="mx-[16px] w-full max-w-[440px] rounded-[20px] border border-color-ui-shadow/40 bg-color-bg-default p-[24px] shadow-[0px_8px_40px_rgba(0,0,0,0.5)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center gap-x-[8px] mb-[4px]">
+              <Icon icon="feather:git-pull-request" className="size-[16px] text-color-text-primary shrink-0" />
+              <div className="text-sm font-semibold">Ready to create a pull request?</div>
+            </div>
+
+            <p className="text-sm text-color-text-secondary mb-[12px]">
+              This will open a GitHub PR for maintainer review. Before submitting, confirm the following:
+            </p>
+
+            {/* Field status circles — centered */}
+            <div className="flex items-center justify-center gap-x-[4px] mb-[16px]">
+              {circlePills.map(({ field, icon, filled }) => (
+                <div
+                  key={field}
+                  className={`size-[24px] rounded-full border flex items-center justify-center ${
+                    filled
+                      ? "bg-color-positive/10 border-color-positive/30 text-color-positive"
+                      : "bg-color-negative/10 border-color-negative/30 text-color-negative"
+                  }`}
+                >
+                  <Icon icon={icon} className="!w-[11px] !h-[11px]" />
+                </div>
+              ))}
+            </div>
+
+            {/* Question checklist */}
+            {checks.length > 0 && (
+              <div className="flex flex-col gap-y-[6px] mb-[12px]">
+                {checks.map((c, i) => {
+                  const detailOpen = expandedCheckIndices.has(i);
+                  const toggleDetail = () => setExpandedCheckIndices((prev) => {
+                    const next = new Set(prev);
+                    next.has(i) ? next.delete(i) : next.add(i);
+                    return next;
+                  });
+                  return (
+                    <div key={i} className="rounded-[10px] border border-color-ui-shadow/30 bg-color-bg-medium overflow-hidden">
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-x-[10px] px-[12px] py-[10px] text-left"
+                        onClick={c.detail ? toggleDetail : undefined}
+                      >
+                        <Icon icon={c.icon} className="mt-[1px] size-[13px] shrink-0 text-color-text-primary" />
+                        <span className="text-xs text-color-text-primary flex-1">{c.question}</span>
+                        {c.detail && (
+                          <Icon icon={detailOpen ? "feather:chevron-up" : "feather:chevron-down"} className="size-[11px] shrink-0 text-color-text-secondary" />
+                        )}
+                      </button>
+                      {detailOpen && c.detail && (
+                        <div className="px-[12px] pb-[10px]">
+                          <span className="text-[11px] text-color-text-primary/60">{c.detail}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Expandable still-missing card */}
+            {totalMissing > 0 && (
+              <div className="rounded-[10px] border border-color-negative/30 bg-color-negative/10 mb-[16px] overflow-hidden">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between gap-x-[6px] px-[12px] py-[8px]"
+                  onClick={() => setMissingExpanded((v) => !v)}
+                >
+                  <div className="flex items-center gap-x-[6px]">
+                    <Icon icon="feather:alert-circle" className="size-[12px] text-color-negative shrink-0" />
+                    <span className="text-xs font-medium text-color-negative">
+                      Still missing <span className="font-normal opacity-70">({totalMissing} item{totalMissing !== 1 ? "s" : ""})</span>
+                    </span>
+                  </div>
+                  <Icon icon={missingExpanded ? "feather:chevron-up" : "feather:chevron-down"} className="size-[12px] text-color-negative/70 shrink-0" />
+                </button>
+                {missingExpanded && (
+                  <div className="flex flex-col gap-y-[4px] px-[12px] pb-[10px]">
+                    {missingRequired.map((m, i) => (
+                      <div key={i} className="flex items-start gap-x-[6px]">
+                        <Icon icon={m.icon} className="mt-[2px] size-[11px] shrink-0 text-color-negative/70" />
+                        <span className="text-[11px] text-color-negative/80">{m.hint}</span>
+                      </div>
+                    ))}
+                    {missingOptional.length > 0 && (
+                      <>
+                        {missingRequired.length > 0 && <div className="border-t border-color-negative/20 my-[4px]" />}
+                        <div className="flex items-center gap-x-[6px] mb-[2px]">
+                          <Icon icon="feather:info" className="size-[11px] text-color-negative/60 shrink-0" />
+                          <span className="text-[11px] font-medium text-color-negative/70">Optional but recommended</span>
+                        </div>
+                        {missingOptional.map((m, i) => (
+                          <div key={i} className="flex items-start gap-x-[6px]">
+                            <Icon icon={m.icon} className="mt-[2px] size-[11px] shrink-0 text-color-negative/50" />
+                            <span className="text-[11px] text-color-negative/60">{m.hint}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-x-[8px]">
+              <button
+                type="button"
+                className="rounded-full border border-color-ui-shadow bg-color-bg-default px-[14px] py-[8px] text-sm text-color-text-primary hover:bg-color-ui-hover transition-colors"
+                onClick={() => { setShowPrConfirm(false); setMissingExpanded(false); setExpandedCheckIndices(new Set()); }}
+              >
+                Go back
+              </button>
+              <GTPButton
+                variant="highlight"
+                size="sm"
+                label="Yes, create PR"
+                clickHandler={() => {
+                  setShowPrConfirm(false);
+                  setMissingExpanded(false);
+                  submitProjectContribution();
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+    </>
   );
 }
