@@ -340,7 +340,7 @@ export function useProjectEditForm({
     if (!logoUpload && !hasExistingLogo) {
       hints.push({ icon: "feather:image", text: "No logo set — upload one to improve project visibility." });
     }
-    if (!form.twitter.trim()) hints.push({ icon: "feather:twitter", text: "Twitter / X handle missing — add it if the project has one." });
+    if (!form.twitter.trim()) hints.push({ icon: "ri:twitter-x-fill", text: "X (Twitter) handle missing — add it if the project has one." });
     if (!form.telegram.trim()) hints.push({ icon: "feather:send", text: "Telegram handle missing — add it if the project has one." });
     return hints;
   }, [form, logoUpload, ownerProjectToProjectData]);
