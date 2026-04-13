@@ -5,7 +5,6 @@ import { useMaster } from "@/contexts/MasterContext";
 import { ProjectMetadata, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import Container from "@/components/layout/Container";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -513,7 +512,23 @@ const OverviewContent = memo(({
   const { resolvedTheme } = useTheme();
   const { getAppColors } = useAppColors();
   const appColor = getAppColors(owner_project, resolvedTheme);
-  const [leftColRef, { height: leftColHeight }] = useElementSizeObserver<HTMLDivElement>();
+  // Callback ref pattern: ResizeObserver is set up the moment React attaches the
+  // element, so leftColHeight is correct even on the first mount (avoids the
+  // useElementSizeObserver issue where ref.current is null on the first render).
+  const [leftColHeight, setLeftColHeight] = useState(0);
+  const leftColObserverRef = useRef<ResizeObserver | null>(null);
+  const leftColRef = useCallback((node: HTMLDivElement | null) => {
+    leftColObserverRef.current?.disconnect();
+    leftColObserverRef.current = null;
+    if (node) {
+      const observer = new ResizeObserver(([entry]) => {
+        const h = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+        setLeftColHeight(h);
+      });
+      observer.observe(node, { box: "border-box" });
+      leftColObserverRef.current = observer;
+    }
+  }, []);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
