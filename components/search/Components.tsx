@@ -1487,7 +1487,16 @@ export const useSearchBuckets = () => {
   }
 }
 
-const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
+const OpacityUnmatchedText = ({
+  text,
+  query,
+  inheritParentColor = false,
+}: {
+  text: string;
+  query: string;
+  /** When true (e.g. stack subheads under ui-hover), before/after use 35% opacity on inherited color instead of text-secondary / text-primary. */
+  inheritParentColor?: boolean;
+}) => {
   const spanRef = useRef<HTMLSpanElement>(null);      // Parent span (visible)
   const matchRef = useRef<HTMLSpanElement>(null);     // Match span
   const [isTruncated, setIsTruncated] = useState(false);
@@ -1552,20 +1561,33 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
     return (
       <span
         ref={spanRef}
-        className="truncate inline-block max-w-full align-bottom text-color-text-secondary"
-        style={{ position: "relative" }}
+        className={`truncate inline-block max-w-full align-bottom ${
+          inheritParentColor ? "" : "text-color-text-secondary"
+        }`}
+        style={{ position: "relative", ...(inheritParentColor ? { color: "inherit" } : {}) }}
       >
-        {contextSnippet.start && <span>{contextSnippet.start}</span>}
-        {contextSnippet.showMiddleEllipsis && <span>...</span>}
-        <span className="text-color-text-primary">{contextSnippet.match}</span>
-        {contextSnippet.showEndEllipsis && <span>...</span>}
+        {contextSnippet.start && (
+          <span className={inheritParentColor ? "opacity-50" : undefined}>
+            {contextSnippet.start}
+          </span>
+        )}
+        {contextSnippet.showMiddleEllipsis && (
+          <span className={inheritParentColor ? "opacity-50" : undefined}>...</span>
+        )}
+        <span className={inheritParentColor ? undefined : "text-color-text-primary"}>
+          {contextSnippet.match}
+        </span>
+        {contextSnippet.showEndEllipsis && (
+          <span className={inheritParentColor ? "opacity-50" : undefined}>...</span>
+        )}
       </span>
     );
   }
 
   // If the match is hidden, use solid color for parent (and thus ellipsis)
-  const parentColorClass =
-    isTruncated && matchIsHidden
+  const parentColorClass = inheritParentColor
+    ? ""
+    : isTruncated && matchIsHidden
       ? "text-color-text-secondary"
       : "text-color-text-secondary";
 
@@ -1588,13 +1610,34 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
       <span
         ref={spanRef}
         className={`truncate inline-block max-w-full align-bottom ${parentColorClass}`}
-        style={{ position: "relative" }}
+        style={{ position: "relative", ...(inheritParentColor ? { color: "inherit" } : {}) }}
       >
         {before && (
-          <span className="text-color-text-secondary">{before}</span>
+          <span
+            className={
+              inheritParentColor ? "opacity-35" : "text-color-text-primary opacity-35"
+            }
+          >
+            {before}
+          </span>
         )}
-        <span ref={matchRef} className="text-color-text-primary">{match}</span>
-        {after && <span>{after}</span>}
+        <span
+          ref={matchRef}
+          className={inheritParentColor ? undefined : "text-color-text-primary"}
+        >
+          {match}
+        </span>
+        {after && (
+          <span
+            className={
+              inheritParentColor
+                ? "opacity-35"
+                : "text-color-text-primary opacity-35"
+            }
+          >
+            {after}
+          </span>
+        )}
       </span>
     </>
   );
@@ -2627,25 +2670,41 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                             {isQuickBitesTopic ? (
                               <>
                                 <span>Quick Bites about &quot;</span>
-                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <OpacityUnmatchedText
+                                  text={group.label}
+                                  query={memoizedQuery || ""}
+                                  inheritParentColor
+                                />
                                 <span>&quot;:</span>
                               </>
                             ) : isApplicationsCategory ? (
                               <>
                                 <span>Applications in {isApplicationsSubcategory ? "Subcategory" : "Category"}: &quot;</span>
-                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <OpacityUnmatchedText
+                                  text={group.label}
+                                  query={memoizedQuery || ""}
+                                  inheritParentColor
+                                />
                                 <span>&quot;:</span>
                               </>
                             ) : isBlockspaceCategory ? (
                               <>
                                 <span>Explore Blockspace{isBlockspaceSubcategory ? " Subcategory" : ""}: &quot;</span>
-                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <OpacityUnmatchedText
+                                  text={group.label}
+                                  query={memoizedQuery || ""}
+                                  inheritParentColor
+                                />
                                 <span>&quot;:</span>
                               </>
                             ) : (
                               <>
                                 <span>Chains that are part of the &quot;</span>
-                                <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                                <OpacityUnmatchedText
+                                  text={group.label}
+                                  query={memoizedQuery || ""}
+                                  inheritParentColor
+                                />
                                 <span>&quot;:</span>
                               </>
                             )}
@@ -2834,6 +2893,11 @@ export const BucketItem = ({
   // For stack results, check if the item matches the query
   const shouldGreyOut = isStackResult && query && !normalizeString(item.label).includes(normalizeString(query));
 
+  // Blockspace structured pills (search data) — inherit SearchBadge primary + opacity for before/after
+  const labelStr = typeof item.label === "string" ? item.label : "";
+  const isBlockspaceOverviewComparisonPill =
+    labelStr.startsWith("Category Comparison:") || labelStr.startsWith("Chain Overview:");
+
   // Local ref to store the element
   const localRef = useRef<HTMLAnchorElement | null>(null);
   // Store childRefs in a ref to avoid prop modification warnings
@@ -3015,7 +3079,13 @@ export const BucketItem = ({
             ? <span className="opacity-50">{item.label}</span> // Grey out entire text for unmatched stack results
             : (normalizeString(item.label).startsWith(normalizeString(query)) && normalizeString(item.label) !== normalizeString(query)) ||
               (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
-              ? <OpacityUnmatchedText text={item.label} query={query} />
+              ? (
+                  <OpacityUnmatchedText
+                    text={item.label}
+                    query={query}
+                    inheritParentColor={isBlockspaceOverviewComparisonPill}
+                  />
+                )
               : item.label
         }
         leftIcon={`${item.icon}` as GTPIconName}
