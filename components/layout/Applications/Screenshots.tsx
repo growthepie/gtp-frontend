@@ -134,7 +134,7 @@ const ScreenshotsSection = memo(
       >
         {/* Header */}
         <div
-          className="flex items-center gap-x-[10px] cursor-pointer w-fit mb-3"
+          className="flex items-center gap-x-[10px] cursor-pointer w-fit "
           onClick={() => isExpanded ? handleClose() : setOpen((v) => !v)}
         >
           <GTPIcon
@@ -152,11 +152,12 @@ const ScreenshotsSection = memo(
 
         {/* Gallery body — thumbnails when collapsed, scrollable image when expanded */}
         <div
-          className="origin-top relative w-full overflow-hidden rounded-[16px]"
+          className="origin-top relative w-full overflow-hidden rounded-[16px] "
           style={{
             height: !open ? "0px" : isExpanded ? "calc(100vh - 200px)" : "187px",
             opacity: open ? 1 : 0,
             transition: "height 0.5s cubic-bezier(0.25,1,0.5,1), opacity 0.3s ease",
+            marginTop: open ? "10px" : "0px",
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}

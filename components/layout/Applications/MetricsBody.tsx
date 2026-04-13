@@ -386,7 +386,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     })}
                     </div>
                 </div>
-                <div ref={compareDropdownRef} className="relative min-w-[230px] max-w-[261px] w-full">
+                <div ref={compareDropdownRef} className="relative lg:min-w-[230px] lg:max-w-[261px] w-full">
                     {/* Compare pill button — relative + z-20 so it sits above the dropdown */}
 
                     {comparePill}

@@ -5,6 +5,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { ProjectMetadata, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import Container from "@/components/layout/Container";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -512,6 +513,7 @@ const OverviewContent = memo(({
   const { resolvedTheme } = useTheme();
   const { getAppColors } = useAppColors();
   const appColor = getAppColors(owner_project, resolvedTheme);
+  const [leftColRef, { height: leftColHeight }] = useElementSizeObserver<HTMLDivElement>();
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -551,7 +553,7 @@ const OverviewContent = memo(({
       {/* Two-column grid: side cards left, main cards right */}
       <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,auto)_minmax(490px,auto)] gap-[10px] items-start">
         {/* Left column: KPI side cards */}
-        <div className="flex flex-col gap-y-[10px]">
+        <div ref={leftColRef} className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
           {data.kpi_cards && (
             <>
@@ -591,7 +593,7 @@ const OverviewContent = memo(({
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
           {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
-          <MostActiveContracts data={data} />
+          <MostActiveContracts data={data} containerHeight={leftColHeight} />
         
         </div>
       </div>

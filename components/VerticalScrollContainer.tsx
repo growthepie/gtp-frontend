@@ -87,10 +87,15 @@ export default forwardRef(function VerticalScrollContainer(
     if (contentArea) {
       const scrollableHeight =
         contentArea.scrollHeight - contentArea.clientHeight;
-      const scrollPercentage =
-        scrollableHeight <= 0
-          ? 0
-          : (contentArea.scrollTop / scrollableHeight) * 100;
+      if (scrollableHeight <= 0) {
+        setCurrentScrollPercentage(0);
+        return;
+      }
+      // Clamp to 100 when within 1px of the bottom to handle browser sub-pixel rounding
+      const atBottom = contentArea.scrollTop >= scrollableHeight - 1;
+      const scrollPercentage = atBottom
+        ? 100
+        : (contentArea.scrollTop / scrollableHeight) * 100;
       setCurrentScrollPercentage(scrollPercentage);
     }
   }, [contentScrollAreaRef]);
