@@ -76,7 +76,7 @@ export const MeetL2sCard = React.memo(({ chainKey, l2Data, projectData, showUsd,
     <div
       onClick={(e) => {
         if (!(e.target as HTMLElement).closest("a")) {
-          window.location.href = `/chains/${chainKey}`;
+          window.location.href = `/chains/${chainInfo?.urlKey ?? chainKey}`;
         }
       }}
       className="group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent hover:bg-color-ui-hover border-[1px] border-color-bg-medium h-full"
@@ -134,6 +134,7 @@ export const MeetL2sCard = React.memo(({ chainKey, l2Data, projectData, showUsd,
     </div>
   );
 });
+MeetL2sCard.displayName = "MeetL2sCard";
 
 const MeetL2sSlider = React.memo(({ meetL2sData, projectData }: MeetL2sSliderProps) => {
   const [showUsd] = useLocalStorage("showUsd", true);
