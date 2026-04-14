@@ -62,6 +62,8 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
 
     const activeSinceLabel = getActiveSinceLabel(data.first_seen);
 
+    console.log(projectMetadata);
+
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
         {/* Header row: toggle + title + links (when closed) */}
@@ -105,7 +107,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                   size="sm"
                   leftIcon={"github" as GTPIconName}
                   label="Github"
-                  clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.main_github ?? "")}
+                  clickHandler={() => openExternalLinkWithDisclaimer(`https://github.com/${projectMetadata.main_github}`)}
                 />
               )}
               {projectMetadata.website && (
@@ -193,8 +195,8 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                     size="sm"
                     leftIcon={"github" as GTPIconName}
                     label="Github"
-                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.main_github ?? "")}
-                  />
+                    clickHandler={() => openExternalLinkWithDisclaimer(`https://github.com/${projectMetadata.main_github}`)}
+                    />
                 )}
                 {projectMetadata.website && (
                   <GTPButton
