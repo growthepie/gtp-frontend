@@ -420,7 +420,9 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
   }, [filteredProjectsData, randomIndices]);
 
 
-  
+
+  if (!randomProjects.length) return <></>;
+
   return (
     <div className="flex justify-between items-center gap-y-[10px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
       <div className="flex items-center gap-x-[8px]">
@@ -553,7 +555,7 @@ const OverviewContent = memo(({
   return (
     <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
-      <FeaturedSection features={features} />
+      {/*<FeaturedSection features={features} />*/}
       <div className="flex flex-col gap-y-[15px] py-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>

@@ -95,15 +95,32 @@ const MostActiveContracts = ({ data, containerHeight }: { data: ApplicationDetai
     >
       {/* Header + Description (measured together as fixed top block) */}
       <div ref={topPartsRef} className="flex flex-col gap-y-[10px]">
-        <div className="flex items-center gap-x-[5px]">
-          <GTPIcon
-            icon="gtp-labeled"
-            className="!size-[16px]"
-            containerClassName="!size-[16px] flex items-center justify-center"
-          />
-          <div className="heading-large-md text-nowrap text-color-text-primary">
-            Most Active Contracts
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-[5px]">
+            <GTPIcon
+              icon="gtp-labeled"
+              className="!size-[16px]"
+              containerClassName="!size-[16px] flex items-center justify-center"
+            />
+            <div className="heading-large-md text-nowrap text-color-text-primary">
+              Most Active Contracts
+            </div>
           </div>
+          <div ref={footerRef} className="relative w-full flex items-center justify-end">
+            <GTPButton
+              label="Don't see your app? Label here."
+              leftIcon={"oli-open-labels-initiative" as GTPIconName}
+              size="xs"
+              rightIcon={"in-button-right-monochrome" as GTPIconName}
+              className="z-30"
+            />
+            <div
+              className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+              style={{
+                background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+              }}
+            />
+        </div>
         </div>
         <div className="text-xs text-color-text-primary">
           See the most active contracts for this application in the last 7 days.
@@ -258,21 +275,7 @@ const MostActiveContracts = ({ data, containerHeight }: { data: ApplicationDetai
         </HorizontalScrollContainer>
 
       {/* Footer CTA */}
-      <div ref={footerRef} className="relative w-full flex items-center justify-end pr-[30px]">
-        <GTPButton
-          label="Don't see your app? Label here."
-          leftIcon={"oli-open-labels-initiative" as GTPIconName}
-          size="xs"
-          rightIcon={"in-button-right-monochrome" as GTPIconName}
-          className="z-30"
-        />
-        <div
-          className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
-          style={{
-            background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-          }}
-        />
-      </div>
+
     </div>
   );
 };
