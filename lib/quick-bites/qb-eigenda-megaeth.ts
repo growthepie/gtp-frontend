@@ -408,9 +408,9 @@ const EigenDAMegaETH: QuickBiteData = {
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
-  image: "",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/eigenda-megaeth.png",
   og_image: "",
-  date: "2026-04-08",
+  date: "2026-04-14",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
@@ -429,7 +429,7 @@ const EigenDAMegaETH: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default EigenDAMegaETH;
