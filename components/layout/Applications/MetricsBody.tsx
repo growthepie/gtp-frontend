@@ -139,12 +139,21 @@ function computeMetricSeriesData(params: {
 
     if (!isComparing) return [mainTotalSeries];
 
+    const mainAppChains = new Set(Object.keys(overTime));
     const compareSeries = compareApps
         .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
-        .map(app => ({
-            name: `compare_${app.owner_project}`,
-            data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
-        }) as SeriesEntry);
+        .map(app => {
+            const compareOverTime = app.data.metrics[metric].over_time as Record<string, unknown>;
+            // Exclude chains that are deselected on the main app, or that don't exist on the main app at all.
+            // This ensures chain parity: only chains shared by both apps and actively selected contribute.
+            const compareExclude = Object.keys(compareOverTime).filter(
+                chain => deselectedChains.includes(chain) || !mainAppChains.has(chain),
+            );
+            return {
+                name: `compare_${app.owner_project}`,
+                data: sumChainSeries(compareOverTime, compareExclude),
+            } as SeriesEntry;
+        });
 
     return [mainTotalSeries, ...compareSeries];
 }
@@ -188,7 +197,7 @@ const COMPARE_ITEM_HEIGHT = 28; // px per app row (py-[5px] * 2 + ~18px icon/tex
 const COMPARE_DIVIDER_HEIGHT = 13; // px for the separator between selected and results
 const COMPARE_LIST_MAX_HEIGHT = 220;
 
-export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
+export default function MetricsBody({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
 
     const [selectedTotal, setSelectedTotal] = useState(true);
@@ -471,11 +480,23 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         }
     }, [compareAppsForChart, ownerProjectToProjectData]);
 
-    console.log(globalXMin);
-
-
     return (
         <div className="pt-[30px] w-full relative">
+            {/* Full-screen backdrop — same pattern as Screenshots lightbox.
+                Always in DOM so opacity can transition out; pointerEvents none when invisible. */}
+            <div
+                className="fixed inset-0"
+                style={{
+                    zIndex: 120,
+                    backgroundColor: "rgba(0,0,0,0.7)",
+                    backdropFilter: highlightMetric ? "blur(2px)" : "none",
+                    WebkitBackdropFilter: highlightMetric ? "blur(2px)" : "none",
+                    opacity: highlightMetric ? 1 : 0,
+                    pointerEvents: highlightMetric ? "auto" : "none",
+                    transition: "opacity 0.4s ease",
+                }}
+                onClick={() => onHighlightConsumed?.()}
+            />
             {/* Invisible data loaders for each compare app */}
             {compareAppKeys.map(key => (
                 <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
@@ -622,7 +643,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                                             className="rounded-full shrink-0"
                                                         />
                                                     )}
-                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? app.display_name.slice(0, 16) + (app.display_name.length > 16 ? "..." : "") : app.owner_project}</span>
+                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? isMobile ? app.display_name : (app.display_name.slice(0, 16) + (app.display_name.length > 16 ? "..." : "")) : app.owner_project}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -700,7 +721,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
                     .map((metric, index) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined}/>
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed}/>
                 ))}
             </div>
         </div>
@@ -708,14 +729,65 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index, xMin: xMinProp }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number, xMin?: number }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index, xMin: xMinProp, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number, xMin?: number, highlightMetric?: string | null, onHighlightConsumed?: () => void }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
+    const mediumBreakpoint = useMediaQuery("(max-width: 1024px)");
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    // 'off' → 'on' (ring appears) → 'fading' (ring transitions out) → 'off'
+    const [highlightPhase, setHighlightPhase] = useState<'off' | 'on' | 'fading'>('off');
+
+    useEffect(() => {
+        if (!highlightMetric || metric !== highlightMetric) return;
+
+        // Raise #content-panel above FloatingPortal badges (z-100) — same pattern as Screenshots.tsx
+        const panel = document.getElementById("content-panel");
+        if (panel) panel.style.zIndex = "150";
+
+        // Give the tab content 200ms to finish layout before scrolling
+        const scrollTimer = setTimeout(() => {
+            const el = wrapperRef.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const targetY = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
+            const startY = window.scrollY;
+            const diff = targetY - startY;
+            const duration = 800;
+            let start: number | null = null;
+            function step(ts: number) {
+                if (start === null) start = ts;
+                const elapsed = ts - start;
+                const t = Math.min(elapsed / duration, 1);
+                // ease-in-out cubic
+                const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                window.scrollTo(0, startY + diff * eased);
+                if (elapsed < duration) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }, 200);
+
+        // Ring appears immediately, holds for 2s, then transitions out over 800ms
+        setHighlightPhase('on');
+        const fadeTimer = setTimeout(() => setHighlightPhase('fading'), 2000);
+        const clearTimer = setTimeout(() => {
+            setHighlightPhase('off');
+            onHighlightConsumed?.();
+            if (panel) panel.style.zIndex = "";
+        }, 2800);
+
+        return () => {
+            clearTimeout(scrollTimer);
+            clearTimeout(fadeTimer);
+            clearTimeout(clearTimer);
+            if (panel) panel.style.zIndex = "";
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [highlightMetric]);
     const { AllChainsByKeys, data: master } = useMaster();
     const [showUsd] = useLocalStorage("showUsd", true);
     // metric_data may be passed directly or resolved from master for resilience
@@ -751,7 +823,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
         const displayName = isCompareApp
             ? (compareApp?.displayName ?? compareOwnerProject ?? seriesName)
-            : (AllChainsByKeys[seriesName]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + ""));
+            : (AllChainsByKeys[seriesName]?.name_short ?? projectMetadata.display_name);
 
         const color: [string | undefined, string | undefined] = isCompareApp
             ? [compareAppColor?.[0], compareAppColor?.[1]]
@@ -790,7 +862,15 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     if (!metricData) return null;
 
     return (
-        <div className="pt-[30px] w-full">
+        <div
+            ref={wrapperRef}
+            id={`metric-chart-${metric}`}
+            className="pt-[30px] w-full"
+            style={{
+                position: "relative",
+                zIndex: highlightPhase !== 'off' ? 130 : "auto",
+            }}
+        >
             <div className="flex items-center gap-x-[8px]">
                 <GTPIcon icon={`gtp-${metricData.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
                 <div className="heading-large-xxs xs:heading-large-xs">{metricData.name}</div>
@@ -809,6 +889,13 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </div> */}
             <div className="pt-[15px]">
+                <div
+                    style={{
+                        borderRadius: '18px',
+                        boxShadow: highlightPhase !== 'off' ? `0 0 24px 10px rgb(var(--bg-default))` : 'none',
+                        transition: highlightPhase === 'fading' ? 'box-shadow 0.8s ease-out' : 'none',
+                    }}
+                >
                 <GTPCardLayout
                  className=""
                  mobileBreakpoint={0}
@@ -897,11 +984,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                         syncId={syncId}
                         showLegend={true}
-                        watermarkOverlap={index === 1}
+                        watermarkOverlap={mediumBreakpoint ? index === 0 : index === 1}
                     />
 
 
                 </GTPCardLayout>
+                </div>
             </div>
         </div>
     );

@@ -503,12 +503,14 @@ const OverviewContent = memo(({
   projectMetadata,
   enrichmentData,
   setSelectedTab,
+  navigateToMetric,
 }: {
   data: ApplicationDetailsData;
   owner_project: string;
   projectMetadata: ProjectMetadata;
   enrichmentData: ApplicationEnrichmentData | null | undefined;
   setSelectedTab: (tab: string) => void;
+  navigateToMetric: (metric: string) => void;
 }) => {
   const { data: masterData } = useMaster();
   const { resolvedTheme } = useTheme();
@@ -553,8 +555,13 @@ const OverviewContent = memo(({
   
 
   return (
-    <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
+    <div className="flex flex-col w-full gap-[15px]">
+      {/* ScreenshotsSection must live OUTSIDE the @container div below.
+          container-type: inline-size (set by @container) acts as a containing block
+          for position:fixed descendants, which traps the backdrop overlay and breaks
+          its z-index against siblings like the SectionBar. */}
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
+    <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
       {/*<FeaturedSection features={features} />*/}
       <div className="flex flex-col gap-y-[15px] py-[15px]">
         <div className="flex items-center gap-x-[8px] ">
@@ -575,14 +582,15 @@ const OverviewContent = memo(({
           {data.kpi_cards && (
             <>
           {Object.keys(data.kpi_cards).map((metric) => (
-            <GTPMetricCard 
-              key={metric} 
-              label={masterData?.app_metrics[metric].name ?? metric} 
-              value={data.kpi_cards[metric].current_values.data[0]} 
-              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
-              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
+            <GTPMetricCard
+              key={metric}
+              label={masterData?.app_metrics[metric].name ?? metric}
+              value={data.kpi_cards[metric].current_values.data[0]}
+              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100}
+              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])}
               color={appColor[0]}
-              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
+              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"}
+              onClick={() => navigateToMetric(metric)}
             />
 
           ))} 
@@ -616,15 +624,16 @@ const OverviewContent = memo(({
       </div>
       <SimilarAppsSection owner_project={owner_project} projectMetadata={projectMetadata} />
     </div>
+    </div>
   );
 });
 OverviewContent.displayName = "OverviewContent";
 
 // ─── Metrics Tab ──────────────────────────────────────────────────────────────
 
-const MetricsContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => (
-  <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
-    <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
+const MetricsContent = memo(({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) => (
+  <div id="content-container" className="flex flex-col w-full gap-[15px]">
+    <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed} />
   </div>
 ));
 MetricsContent.displayName = "MetricsContent";
@@ -694,6 +703,13 @@ export default function NewAppPage({
     return searchParams.get("tab") || "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const [pendingHighlightMetric, setPendingHighlightMetric] = useState<string | null>(null);
+
+  // Switches to the metrics tab and queues a scroll-to + highlight for the given metric key.
+  const navigateToMetric = useCallback((metric: string) => {
+    setSelectedTab("metrics");
+    setPendingHighlightMetric(metric);
+  }, []);
 
   // Sync tab selection to URL
   useEffect(() => {
@@ -723,16 +739,25 @@ export default function NewAppPage({
             projectMetadata={projectMetadata}
             enrichmentData={enrichmentData}
             setSelectedTab={setSelectedTab}
+            navigateToMetric={navigateToMetric}
           />
         );
       case "metrics":
-        return <MetricsContent data={data} owner_project={owner_project} projectMetadata={projectMetadata} />;
+        return (
+          <MetricsContent
+            data={data}
+            owner_project={owner_project}
+            projectMetadata={projectMetadata}
+            highlightMetric={pendingHighlightMetric}
+            onHighlightConsumed={() => setPendingHighlightMetric(null)}
+          />
+        );
       case "user_insights":
         return <UserInsightsContent />;
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
+  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData, navigateToMetric, pendingHighlightMetric]);
 
   return (
     <>

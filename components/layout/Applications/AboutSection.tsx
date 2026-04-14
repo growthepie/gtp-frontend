@@ -10,6 +10,7 @@ import { ProjectMetadata } from "@/app/(layout)/applications/_contexts/ProjectsM
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
 import { formatNumber } from "@/app/(layout)/applications/_components/Components";
 import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
+import { useMediaQuery } from "usehooks-ts";
 
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -19,6 +20,7 @@ const BAR_MIN_SEG = 500;
 
 const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = true }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, defaultOpen?: boolean }) => {
 
+    const isMobile = useMediaQuery("(max-width: 1024px)");
     const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
         month: "short",
         year: "numeric",
@@ -67,7 +69,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
         {/* Header row: toggle + title + links (when closed) */}
-        <div className="flex items-center justify-between gap-x-[10px]">
+        <div className="flex flex-wrap gap-y-[10px] items-center justify-between gap-x-[10px]">
           <div
             className="flex items-center gap-x-[10px] cursor-pointer"
             onClick={() => setOpen((v) => !v)}
@@ -85,7 +87,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
   
           {/* Links inline with header — shown only when closed */}
           {!open && (
-            <div className="flex flex-wrap items-center gap-[5px]">
+            <div className="flex flex-wrap items-center gap-[5px] ">
               {projectMetadata.website && (
                 <GTPButton
                   size="sm"
@@ -145,7 +147,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
           <p className="text-sm pb-[15px]">{projectMetadata.description}</p>
   
           {/* Metadata row */}
-          <div className="flex flex-wrap items-start gap-x-[30px] gap-y-[12px]">
+          <div className="flex flex-wrap items-start gap-x-[30px] gap-y-[12px] ">
   
             {/* First Contract Seen */}
             <AppOverviewMetaCol label="Active Since">
@@ -166,12 +168,14 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
             )}
   
             {/* Token */}
+     
             <AppOverviewMetaCol label="Token">
               {projectMetadata.token_symbol ?? "—"}
             </AppOverviewMetaCol>
+
   
             {/* Links */}
-            <div className="flex flex-col gap-y-[4px]">
+            <div className="flex flex-col gap-y-[4px] ml-auto">
               <div className="heading-xxs text-color-text-secondary whitespace-nowrap">Links</div>
               <div className="flex flex-wrap items-center gap-[5px]">
                 {projectMetadata.website && (
@@ -204,6 +208,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                     leftIcon="gtp-read"
                     label="Docs"
                     clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
+
                   />
                 )}
                 {projectMetadata.governance && (
