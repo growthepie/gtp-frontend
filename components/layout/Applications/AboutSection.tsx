@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useState } from "react";
 import { useMemo } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -55,6 +55,11 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
 
       
     const [open, setOpen] = useState(defaultOpen);
+
+    useEffect(() => {
+        setOpen(defaultOpen);
+    }, [defaultOpen]);
+
     const activeSinceLabel = getActiveSinceLabel(data.first_seen);
 
     return (

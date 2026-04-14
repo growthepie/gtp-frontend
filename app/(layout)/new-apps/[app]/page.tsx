@@ -430,12 +430,12 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
-        {randomProjects.map((project) => {
+        {randomProjects.map((project, index) => {
           return (
 
           <GTPTooltipNew
             size="md"
-            key={project.name}
+            key={project.name ?? index + "_RandomAppsSection"}
             placement="bottom-start"
             allowInteract={true}
             trigger={
@@ -765,7 +765,6 @@ export default function NewAppPage({
       {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
       {data && projectMetadata && (
         <AboutApp
-          key={selectedTab}
           data={data}
           owner_project={owner_project}
           projectMetadata={projectMetadata}
