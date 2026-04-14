@@ -641,7 +641,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval}
+                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size={isMobile ? "xs" : "sm"} variant="primary" isSelected={timeInterval === interval}
                                 clickHandler={() => {
                                     if(cachedTimespans !== null) {
                                         setSelectedTimespan(cachedTimespans);
@@ -662,19 +662,28 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(timespans).filter((timespan) => filterTimespans(timespan, timeInterval)).map((timespan) => (
-                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
+                                <GTPButton 
+                                    className="w-full justify-center" 
+                                    innerStyle={{ width: "100%" }} 
+                                    key={timespan} 
+                                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label} 
+                                    size={isMobile ? "xs" : "sm"} 
+                                    variant="primary" 
+                                    isSelected={selectedTimespan === timespan} 
+                                    clickHandler={() => setSelectedTimespan(timespan)} 
+                                />
                             ))}
                         </GTPButtonRow>
                         <GTPButtonRow wrap={isMobile ? true : false}
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size="sm" variant="primary" isSelected={effectiveSelectedTotal} clickHandler={() => setSelectedTotal(true)} />
+                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size={isMobile ? "xs" : "sm"} variant="primary" isSelected={effectiveSelectedTotal} clickHandler={() => setSelectedTotal(true)} />
                             <GTPButton
                                 className="w-full justify-center"
                                 innerStyle={{ width: "100%" }}
                                 label="By Chain"
-                                size="sm"
+                                size={isMobile ? "xs" : "sm"}
                                 variant="primary"
                                 isSelected={!effectiveSelectedTotal}
                                 disabled={isComparing}
@@ -852,7 +861,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             style={{ width: "auto" }}
                         >
                             {metricData?.toggles?.map((toggle: string) => (
-                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size="sm" variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
+                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size={"sm"} variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
                             ))}
                         </GTPButtonRow>
 
