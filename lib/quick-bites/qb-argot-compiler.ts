@@ -261,6 +261,7 @@ const SolcVersionCountChart = [
     title: "Solidity Version Share – Contract Count",
     subtitle: "Percentage of Solidity contracts in the top 1,000 by compiler version.",
     showXAsDate: true,
+    showTotalTooltip: true,
     dataAsJson: {
       dynamicSeries: {
         url: "https://api.growthepie.com/v1/quick-bites/argot/solc_ct_timeseries.json",
@@ -288,6 +289,7 @@ const SolcVersionTvsChart = [
     title: "Solidity Version Share – TVS",
     subtitle: "Percentage of Solidity TVS in the top 1,000 by compiler version.",
     showXAsDate: true,
+    showTotalTooltip: true,
     dataAsJson: {
       dynamicSeries: {
         url: "https://api.growthepie.com/v1/quick-bites/argot/solc_tvs_timeseries.json",
@@ -316,6 +318,7 @@ const VyperVersionCountChart = [
     title: "Vyper Version Share – Contract Count",
     subtitle: "Percentage of Vyper contracts in the top 1,000 by compiler version.",
     showXAsDate: true,
+    showTotalTooltip: true,
     dataAsJson: {
       dynamicSeries: {
         url: "https://api.growthepie.com/v1/quick-bites/argot/vyper_ct_timeseries.json",
@@ -343,6 +346,7 @@ const VyperVersionTvsChart = [
     title: "Vyper Version Share – TVS",
     subtitle: "Percentage of Vyper TVS in the top 1,000 by compiler version.",
     showXAsDate: true,
+    showTotalTooltip: true,
     dataAsJson: {
       dynamicSeries: {
         url: "https://api.growthepie.com/v1/quick-bites/argot/vyper_tvs_timeseries.json",
