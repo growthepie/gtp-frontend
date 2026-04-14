@@ -610,7 +610,7 @@ const OverviewContent = memo(({
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
           {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
-          <MostActiveContracts data={data} containerHeight={leftColHeight} />
+          <MostActiveContracts data={data} containerHeight={leftColHeight} owner_project={owner_project} />
         
         </div>
       </div>

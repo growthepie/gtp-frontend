@@ -48,6 +48,117 @@ const getTimeseriesRows = (value: unknown): number[][] => {
     return [];
 };
 
+type SeriesEntry = { name: string; data: [number, number | null][] };
+
+function computeMetricSeriesData(params: {
+    data: ApplicationDetailsData;
+    metric: string;
+    timeInterval: string;
+    selectedTotal: boolean;
+    deselectedChains: string[];
+    hasChainData: boolean | undefined;
+    isComparing: boolean;
+    compareApps: CompareAppEntry[];
+    showAvg: boolean;
+}): SeriesEntry[] {
+    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg } = params;
+    const overTime = data.metrics[metric]?.over_time;
+    if (!overTime) return [];
+
+    function sumChainSeries(
+        ot: Record<string, unknown>,
+        excludeChains: string[] = [],
+    ): [number, number | null][] {
+        const sums = new Map<number, number | null>();
+        const counts = new Map<number, number>();
+        for (const chain of Object.keys(ot)) {
+            if (excludeChains.includes(chain)) continue;
+            const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
+            for (const d of points) {
+                const ts = Number(d[0]);
+                const val: number | null = d[1] == null ? null : Number(d[1]);
+                if (!sums.has(ts)) {
+                    sums.set(ts, val);
+                    counts.set(ts, val !== null ? 1 : 0);
+                } else {
+                    const existing = sums.get(ts)!;
+                    sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
+                }
+            }
+        }
+        return Array.from(sums.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([ts, sum]): [number, number | null] => {
+                if (!showAvg || sum === null) return [ts, sum];
+                const count = counts.get(ts) ?? 0;
+                return [ts, count > 0 ? sum / count : null];
+            });
+    }
+
+    if (!hasChainData) {
+        const intervalData = getTimeseriesRows(
+            (overTime as any)?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+        );
+        const mainSeries: SeriesEntry = {
+            name: "Total",
+            data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+        };
+        if (!isComparing) return [mainSeries];
+        const compareSeries = compareApps
+            .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
+            .map(app => {
+                const appIntervalData = getTimeseriesRows(
+                    (app.data.metrics[metric].over_time as any)?.all?.[timeInterval] ??
+                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
+                );
+                return {
+                    name: `compare_${app.owner_project}`,
+                    data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                } as SeriesEntry;
+            });
+        return [mainSeries, ...compareSeries];
+    }
+
+    const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
+    const perChain: SeriesEntry[] = chains.flatMap((chain) => {
+        const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
+        if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
+        return [{
+            name: chain,
+            data: intervalData.map((d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+        }];
+    });
+
+    if (!selectedTotal && !isComparing) return perChain;
+
+    const mainTotalSeries: SeriesEntry = {
+        name: "Total",
+        data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
+    };
+
+    if (!isComparing) return [mainTotalSeries];
+
+    const compareSeries = compareApps
+        .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
+        .map(app => ({
+            name: `compare_${app.owner_project}`,
+            data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
+        }) as SeriesEntry);
+
+    return [mainTotalSeries, ...compareSeries];
+}
+
+// Returns the timestamp of the first data point with a real (non-null, non-zero) value.
+// The API pads series from a global start date with null or 0 before the app was active —
+// both must be skipped to find where the app's data actually begins.
+function firstNonNullTs(data: [number, number | null][]): number | null {
+    for (const [ts, val] of data) {
+        if (val !== null && val !== 0) return ts;
+    }
+    return null;
+}
+
 const INTERVALS = {
     hourly: {
         label: "Hourly",
@@ -287,6 +398,39 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         }
     }
 
+    // Compute the global xMin across all visible metric series so every chart shares the same x-axis start.
+    const globalXMin = useMemo(() => {
+        const isComparing = compareAppsForChart.length > 0;
+        const visibleMetrics = Object.keys(data.metrics ?? {})
+            .filter((m) => master?.app_metrics?.[m])
+            .filter((m) => hasMetricDataForInterval[m]);
+
+        let earliestTs = Infinity;
+        for (const m of visibleMetrics) {
+            const hasChainData = !!master?.app_metrics?.[m]?.chain_specific;
+            const series = computeMetricSeriesData({
+                data,
+                metric: m,
+                timeInterval,
+                selectedTotal: effectiveSelectedTotal,
+                deselectedChains,
+                hasChainData,
+                isComparing,
+                compareApps: compareAppsForChart,
+                showAvg: master?.app_metrics?.[m]?.all_l2s_aggregate === "avg",
+            });
+            // Apply the same visibleSeries filter used in AppMetricChart
+            const visible = series.filter(s =>
+                !hasChainData && !effectiveSelectedTotal && !isComparing ? s.name !== "Total" : true,
+            );
+            for (const s of visible) {
+                const ts = firstNonNullTs(s.data);
+                if (ts !== null) earliestTs = Math.min(earliestTs, ts);
+            }
+        }
+
+        return earliestTs !== Infinity ? earliestTs : undefined;
+    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart]);
 
     const comparePill = useMemo(() => {
 
@@ -326,6 +470,8 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
             );
         }
     }, [compareAppsForChart, ownerProjectToProjectData]);
+
+    console.log(globalXMin);
 
 
     return (
@@ -545,7 +691,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
                     .map((metric, index) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics"  index={index}/>
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined}/>
                 ))}
             </div>
         </div>
@@ -553,7 +699,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index, xMin: xMinProp }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number, xMin?: number }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
@@ -568,123 +714,17 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const hasChainData = resolvedMetricData?.chain_specific;
     const isComparing = compareApps.length > 0;
 
-    const seriesData = useMemo(() => {
-        const showAvg = resolvedMetricData?.all_l2s_aggregate === "avg";
-        const overTime = data.metrics[metric]?.over_time;
-
-        if (!overTime) return [];
-
-        // Sums all chains in an over_time map into one aggregate total series.
-        // Uses `any` cast because OverTimeData only types `daily`, but `hourly` also exists at runtime.
-        function sumChainSeries(
-            ot: Record<string, unknown>,
-            excludeChains: string[] = [],
-        ): [number, number | null][] {
-            const sums = new Map<number, number | null>();
-            const counts = new Map<number, number>();
-            for (const chain of Object.keys(ot)) {
-                if (excludeChains.includes(chain)) continue;
-                const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
-                for (const d of points) {
-                    const ts = Number(d[0]);
-                    const val: number | null = d[1] == null ? null : Number(d[1]);
-                    if (!sums.has(ts)) {
-                        sums.set(ts, val);
-                        counts.set(ts, val !== null ? 1 : 0);
-                    } else {
-                        const existing = sums.get(ts)!;
-                        sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
-                        if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
-                    }
-                }
-            }
-            return Array.from(sums.entries())
-                .sort((a, b) => a[0] - b[0])
-                .map(([ts, sum]): [number, number | null] => {
-                    if (!showAvg || sum === null) return [ts, sum];
-                    const count = counts.get(ts) ?? 0;
-                    return [ts, count > 0 ? sum / count : null];
-                });
-        }
-
-        // ── Non-chain-specific metrics (e.g. success_rate, throughput) ────────
-        if (!hasChainData) {
-            const intervalData = getTimeseriesRows(
-                overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
-            );
-            const mainSeries = {
-                name: "Total",
-                data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
-            };
-
-            if (!isComparing) return [mainSeries];
-
-            const compareSeries = compareApps
-                .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
-                .map(app => {
-                    const appIntervalData = getTimeseriesRows(
-                        app.data.metrics[metric].over_time?.all?.[timeInterval] ??
-                        (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
-                    );
-                    return {
-                        name: `compare_${app.owner_project}`,
-                        data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
-                    };
-                });
-
-            return [mainSeries, ...compareSeries];
-        }
-
-        // ── Chain-specific metrics ─────────────────────────────────────────────
-        // flatMap skips chains that have no data for the current interval
-        const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
-        const perChain = chains.flatMap((chain) => {
-            const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
-            if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
-            return [{
-                name: chain,
-                data: intervalData.map(
-                    (d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
-                ),
-            }];
-        });
-
-        // By Chain view — only available when not comparing
-        if (!selectedTotal && !isComparing) return perChain;
-
-        const mainTotalSeries = {
-            name: "Total",
-            data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
-        };
-
-        if (!isComparing) return [mainTotalSeries];
-
-        // Compare mode: one total series per compare app (all chains, no deselection)
-        const compareSeries = compareApps
-            .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
-            .map(app => ({
-                name: `compare_${app.owner_project}`,
-                data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
-            }));
-
-        return [mainTotalSeries, ...compareSeries];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
-
-    const { timespans, selectedTimespan } = useTimespan();
-
-    const { xMin, xMax } = useMemo(() => {
-        const days = timespans[selectedTimespan]?.value ?? 0;
-        let latestTs = 0;
-        for (const series of seriesData) {
-            if (series.data.length > 0) {
-                const ts = series.data[series.data.length - 1][0];
-                if (ts > latestTs) latestTs = ts;
-            }
-        }
-        const xMax = latestTs > 0 ? latestTs : new Date().getTime();
-        const xMin = days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
-        return { xMin, xMax };
-    }, [timespans, selectedTimespan, seriesData]);
+    const seriesData = useMemo(() => computeMetricSeriesData({
+        data,
+        metric,
+        timeInterval,
+        selectedTotal,
+        deselectedChains,
+        hasChainData: !!hasChainData,
+        isComparing,
+        compareApps,
+        showAvg: resolvedMetricData?.all_l2s_aggregate === "avg",
+    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
 
     const metricData = resolvedMetricData;
     const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");
@@ -718,6 +758,25 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const visibleSeries = seriesData.filter(s =>
         !hasChainData && !selectedTotal && !isComparing ? s.name !== "Total" : true
     );
+
+    const { timespans, selectedTimespan } = useTimespan();
+
+    const xMax = useMemo(() => {
+        let latestTs = 0;
+        for (const series of visibleSeries) {
+            if (series.data.length > 0) {
+                const lastTs = series.data[series.data.length - 1][0];
+                if (lastTs > latestTs) latestTs = lastTs;
+            }
+        }
+        return latestTs > 0 ? latestTs : new Date().getTime();
+    }, [visibleSeries]);
+
+    const xMin = useMemo(() => {
+        if (xMinProp !== undefined) return xMinProp;
+        const days = timespans[selectedTimespan]?.value ?? 0;
+        return days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
+    }, [xMinProp, timespans, selectedTimespan, xMax]);
 
     if (!metricData) return null;
 
@@ -816,6 +875,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
+                        snapToCleanBoundary={xMinProp === undefined}
                         showTooltipTimestamp={timeInterval === "hourly"}
                         compactXAxis
                         ySplitNumber={2}

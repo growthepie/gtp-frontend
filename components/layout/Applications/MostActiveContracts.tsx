@@ -17,12 +17,13 @@ import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts
 import { theme } from "highcharts";
 import { useTheme } from "next-themes";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 const CONTRACT_GRID_COLS = "grid-cols-[minmax(200px,220px),130px,minmax(140px,1fr),105px,105px,100px]";
 
-const MostActiveContracts = ({ data, containerHeight }: { data: ApplicationDetailsData; containerHeight?: number }) => {
+const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: ApplicationDetailsData; containerHeight?: number; owner_project: string }) => {
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
     metric: "txcount",
     sortOrder: "desc",
@@ -113,6 +114,9 @@ const MostActiveContracts = ({ data, containerHeight }: { data: ApplicationDetai
               size="xs"
               rightIcon={"in-button-right-monochrome" as GTPIconName}
               className="z-30"
+              clickHandler={() => {
+                openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+              }}
             />
             <div
               className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
