@@ -23,6 +23,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -738,7 +739,21 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isDownloadingChartSnapshot) return;
+        const el = cardRef.current;
+        if (!el) {
+            setIsDownloadingChartSnapshot(false);
+            return;
+        }
+        downloadElementAsImage(el, metricData?.name ?? metric).finally(() => {
+            setIsDownloadingChartSnapshot(false);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDownloadingChartSnapshot]);
     // 'off' → 'on' (ring appears) → 'fading' (ring transitions out) → 'off'
     const [highlightPhase, setHighlightPhase] = useState<'off' | 'on' | 'fading'>('off');
 
@@ -890,6 +905,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             </div> */}
             <div className="pt-[15px]">
                 <div
+                    ref={cardRef}
                     style={{
                         borderRadius: '18px',
                         boxShadow: highlightPhase !== 'off' ? `0 0 24px 10px rgb(var(--bg-default))` : 'none',
