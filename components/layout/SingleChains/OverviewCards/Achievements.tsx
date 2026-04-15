@@ -453,7 +453,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
     const buildLifetimeTooltipText = (metricKey: string, chainName: string, metricName: string, formattedValue: string) => {
         const metricTextMap: Record<string, string> = {
             txcount: `${formattedValue} transactions were processed on this chain`,
-            daa: `${formattedValue} addresses were active on this chain XX`,
+            daa: `${formattedValue} addresses were active on this chain`,
             fees: `${formattedValue} was collected in revenue on this chain (gas fees paid by users and potentially other sources)`,
             rent_paid: `${formattedValue} was paid towards Ethereum Mainnet for settlement and/or data availability`,
             profit: `${formattedValue} was earned by the chain in onchain profit (revenue minus costs)`,
