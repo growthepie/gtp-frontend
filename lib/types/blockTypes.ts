@@ -67,6 +67,11 @@ export interface TableBlock extends BaseBlock {
       hidden?: boolean;
       add_url?: string; // URL template with ${cellValue} placeholder
       linkSourceKey?: string; // Use a different column's value for add_url substitution instead of cellValue
+      urlConditional?: { // Conditional URL based on another column's value
+        sourceKey: string; // Column key whose value determines which URL to use
+        map: Record<string, string>; // Maps column value to a URL template (supports ${cellValue})
+        fallback?: string; // URL template to use when no map entry matches (supports ${cellValue})
+      };
       sourceKey?: string; // Map display column key to a source key from JSON columns
       sourceIndex?: number; // Map display column key to a fixed source index
       infoTooltip?: { sourceKey?: string; text?: string }; // Optional info icon tooltip content
