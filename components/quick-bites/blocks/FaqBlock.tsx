@@ -32,6 +32,8 @@ const parseMarkdownLinksToHtml = (text: string): string => {
     '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline">$1</a>'
   );
 
+  result = result.replace(/\n/g, '<br>');
+
   return result;
 };
 

@@ -142,8 +142,17 @@ const TopContractsTable = [
         hidden: true,
         minWidth: 200,
       },
+      display_name: {
+        label: "Company",
+        type: "string",
+        minWidth: 150,
+        isNumeric: false,
+        sortByValue: true,
+        add_url: "/applications/${cellValue}",
+        linkSourceKey: "owner_project",
+      },
     },
-    columnOrder: ["compiler", "version", "name", "address", "total_balance_usd"],
+    columnOrder: ["compiler", "version", "name", "display_name", "address", "total_balance_usd"],
     columnSortBy: "value",
     rowBar: {
       valueColumn: "total_balance_usd",
@@ -376,7 +385,7 @@ export const faqItems: FaqItem[] = [
   },
   {
     q: "Which tokens are tracked to get the TVS?",
-    a: "TVS is calculated by tracking token balances across the top 1,000 contracts. We use [L2beat's open source token mapping](https://github.com/l2beat/l2beat/blob/5a6b284dc52206affabfa1365f4d6a461d5d31b7/packages/config/src/tokens/tokens.jsonc) as our base, excluding a few tokens, for a total of 478 tracked assets. The full list: 10SET, 1INCH, A8, AAVE, ACH, ACX, ADI, AEVO, AGIX, AIUS, ALEPH, ALEX, ALI, ALT, AMINO, AMO, AMP, ANC, ANIME, ANKR, ANT, ANY, APE, APEX, API3, APW, ARB, ARC, ARPA, ATA, AUDIO, AURORA, AXGT, AXL, AXS, AZERO, AZTEC, BADGER, BAG, BAL, BAND, BAT, BEAM, BEL, BETS, BFC, BGB, BICO, BIT, BITCOIN, BLUR, BNRY, BNT, BOBA, BONE, BORG, BRKL, BTRST, BTT, BUSD, BabyDoge, C98, CAPS, CAPX, CEL, CELO, CELR, CET, CHR, CHSB, CHZ, CLEAR, CNFI, COMP, COPI, COTI, COW, CREDI, CRTS, CRV, CTSI, CTX, CVC, CVX, CYBER, DAI, DAO, DENT, DEXTF, DFX, DG, DHT, DIA, DIP, DIVI, DODO, DOG, DOLA, DPI, DPX, DYDX, EIGEN, EKUBO, ELON, ENA, ENJ, ENS, EPIK, EQB, ERN, ESP, ETH, ETH+, ETHFI, ETHx, EUL, EURA, EURC, EURT, EXD, FARM, FBTC, FEG, FEI, FET, FFM, FIS, FLT, FNXAI, FOOM, FORE, FORT, FOX, FPI, FPIS, FRAX, FRAX.legacy, FRTN, FTM, FTX Token, FUEL, FUL, FX, G, GAINS, GALA, GAME, GEAR, GENE, GENOME, GHO, GHST, GLM, GNO, GOB, GOG, GOVI, GPT, GRT, GT, GTC, GUSD, HAIR, HAN, HAUST, HEART, HEGIC, HEU, HEZ, HMKR, HOP, HOT, HSK, HT, HUSD, ILV, IMX, INJ, JASMY, KCS, KEEP, KIBSHI, KNC, KNINE, KOI, KP3R, LAMB, LBTC, LDO, LDY, LEASH, LEO, LGHO, LINK, LIT, LL, LOGX, LOKA, LON, LOOKS, LORDS, LPT, LQTY, LRC, LSK, LUMIA, LUSD, LYRA, LYXe, LsETH, MAGIC, MANA, MASK, MATIC, MAV, MAVIA, MC, MCB, MELD, MIM, MIR, MKR, MLN, MNT, MOON, MORPHO, MTL, MUTE, MVI, MXC, MYRIA, MYT, Metis, NEAR, NEXO, NEXT, NFT, NFTD, NSTR, NU, NUM, NXM, OBI, OCEAN, OGN, OHM, OIK, OKB, OLAS, OLE, OM, OMG, OMI, ONDO, OPAI, OPN, ORBS, ORION, OUSD, OUSG, OVR, PARAM, PAXG, PBX, PC, PEAS, PENDLE, PEOPLE, PEPE, PEPU, PERP, PHA, PLA, PLUME, PMON, PNK, PNT, POL, POLY, POND, PORK, PORTX, POWER, POWR, PREMIA, PROM, PSP, PT, PUFFER, PUNDIX, PYR, Puff, QNT, QUEST, RACA, RAD, RAI, RAZOR, RBX, RDO, REEF, REN, REQ, RGT, RLY, RNDR, RPL, RSC, RSR, RSS3, RUNE, SAND, SDL, SDT, SHIB, SIPHER, SIS, SKL, SKY, SLP, SNT, SNX, SOL, SOPH, SOUL, SPEC, SPX, SQD, SRM, SSV, STARL, STG, STONE, STORJ, STRK, SUI, SUPER, SUSHI, SWELL, SX, SXP, SYN, SYND, Silo, SolvBTC, SolvBTC.BBN, T, TAIKO, TBANK, TEL, THALES, TLOS, TOKE, TONCOIN, TOPIA, TRAC, TRADE, TRALA, TRB, TRESTLE, TRIBE, TRN, TRUF, TUSD, UFO, UMA, UNI, UNP, UOS, USD0++, USDC, USDD, USDM, USDN, USDP, USDT, USDe, USTB, USUAL, VENT, VERI, VIRTUAL, VITA, VLX, VR, VRTX, WAGMI, WAMPL, WAVAX, WAVES, WBNB, WBTC, WECO, WETH, WLD, WOO, WXM, WXT, XAUt, XCAD, XCHNG, XCN, XDB, XSWAP, XYO, YBR, YFI, YFX, YGG, ZEND, ZKL, ZKS, ZRC, ZRX, alUSD, ankrETH, ankrPOL, cDAI, cETH, cSTONE, cUSDC, cWBTC, cbBTC, cbETH, crvUSD, cvxFXS, deUSD, eBTC, eDLLR, eETH, eSOV, eUSD, eXRD, frxETH, gOHM, iUSD, imgnAI, mBTC, mETH, mRe7BTC, mRe7YIELD, mUSD, mswETH, pUSD, pufETH, pxETH, rDPX, rETH, renBTC, rsETH, rswETH, sDAI, sFRAX.legacy, sUSDS, sUSDe, sUSDz, scrvUSD, sdeUSD, sfrxETH, spETH, stAVAIL, stAethir, stETH, stTAO, stZENT, tBTC, uniETH, vPHA, wUSDM, weETH, weETHs, wstETH, xSUSHI, zkCRO, zunETH, zunUSD.",
+    a: "TVS is calculated by tracking token balances across the top 1,000 contracts. We use [L2beat's open source token mapping](https://github.com/l2beat/l2beat/blob/5a6b284dc52206affabfa1365f4d6a461d5d31b7/packages/config/src/tokens/tokens.jsonc) as our base, excluding a few tokens, for a total of {{argot_token_count}} tracked assets.\n\nThe full list:\n\n{{argot_token_symbols}}",
   },
   {
     q: "What about other chains?",
