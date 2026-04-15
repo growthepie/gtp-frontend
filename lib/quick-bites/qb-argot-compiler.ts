@@ -20,54 +20,86 @@ const VYPER_VERSION_COLORS = ["#DDB4FE", "#B45CF4", "#9333EA", "#6B21A8", "#4C1D
 // solc_tvs/ct_timeseries.json   → ["date"(0), "0.4"(1), "0.5"(2), "0.6"(3), "0.7"(4), "0.8"(5)]
 // vyper_tvs/ct_timeseries.json  → ["date"(0), "0.2"(1), "0.3"(2)]
 
-// Chart 1: TVS by compiler (line)
+// Chart 1: TVS by compiler — toggle between Absolute / Stacked / Percentage
+const TVS_URL = "https://api.growthepie.com/v1/quick-bites/argot/compiler_tvs_timeseries.json";
+const TVS_CAPTION = "Source: growthepie.com via Argot. Top 1,000 Ethereum contracts by TVS, monthly snapshots.";
+const TVS_META_BASE = [
+  {
+    name: "Solidity",
+    color: COLOR_SOLC,
+    xIndex: 0,
+    yIndex: 1,
+    tooltipDecimals: 0,
+    prefix: "$",
+    url: TVS_URL,
+    pathToData: "data.values",
+  },
+  {
+    name: "Unverified",
+    color: COLOR_UNVERIFIED,
+    deselected: true,
+    xIndex: 0,
+    yIndex: 2,
+    tooltipDecimals: 0,
+    prefix: "$",
+    url: TVS_URL,
+    pathToData: "data.values",
+  },
+  {
+    name: "Vyper",
+    color: COLOR_VYPER,
+    xIndex: 0,
+    yIndex: 3,
+    tooltipDecimals: 0,
+    prefix: "$",
+    url: TVS_URL,
+    pathToData: "data.values",
+  },
+];
+
 const TvsCompilerLineChart = [
-  "```chart",
+  "```chart-toggle",
   JSON.stringify({
-    type: "line",
-    title: "Value Secured by Smart Contract Language",
-    subtitle: "Monthly snapshot of TVS across the top 1,000 Ethereum contracts, split by compiler.",
-    showXAsDate: true,
-    dataAsJson: {
-      meta: [
-        {
-          name: "Solidity",
-          color: COLOR_SOLC,
-          type: "line",
-          xIndex: 0,
-          yIndex: 1,
-          tooltipDecimals: 0,
-          prefix: "$",
-          url: "https://api.growthepie.com/v1/quick-bites/argot/compiler_tvs_timeseries.json",
-          pathToData: "data.values",
+    layout: "segmented",
+    defaultIndex: 0,
+    charts: [
+      {
+        toggleLabel: "Absolute",
+        type: "line",
+        title: "Value Secured by Smart Contract Language",
+        subtitle: "Monthly snapshot of TVS across the top 1,000 Ethereum contracts, split by compiler.",
+        showXAsDate: true,
+        dataAsJson: {
+          meta: TVS_META_BASE.map(s => ({ ...s, type: "line" })),
         },
-        {
-          name: "Unverified",
-          color: COLOR_UNVERIFIED,
-          type: "line",
-          deselected: true,
-          xIndex: 0,
-          yIndex: 2,
-          tooltipDecimals: 0,
-          prefix: "$",
-          url: "https://api.growthepie.com/v1/quick-bites/argot/compiler_tvs_timeseries.json",
-          pathToData: "data.values",
+        height: 420,
+        caption: TVS_CAPTION,
+      },
+      {
+        toggleLabel: "Stacked",
+        type: "bar",
+        title: "Value Secured by Smart Contract Language",
+        subtitle: "Monthly snapshot of TVS across the top 1,000 Ethereum contracts, split by compiler.",
+        showXAsDate: true,
+        dataAsJson: {
+          meta: TVS_META_BASE.map(s => ({ ...s, type: "bar", stacking: "normal" })),
         },
-        {
-          name: "Vyper",
-          color: COLOR_VYPER,
-          type: "line",
-          xIndex: 0,
-          yIndex: 3,
-          tooltipDecimals: 0,
-          prefix: "$",
-          url: "https://api.growthepie.com/v1/quick-bites/argot/compiler_tvs_timeseries.json",
-          pathToData: "data.values",
+        height: 420,
+        caption: TVS_CAPTION,
+      },
+      {
+        toggleLabel: "Percentage",
+        type: "area",
+        title: "Value Secured by Smart Contract Language",
+        subtitle: "Monthly snapshot of TVS across the top 1,000 Ethereum contracts, split by compiler.",
+        showXAsDate: true,
+        dataAsJson: {
+          meta: TVS_META_BASE.map(s => ({ ...s, type: "area", stacking: "percent", tooltipDecimals: 1 })),
         },
-      ],
-    },
-    height: 420,
-    caption: "Source: growthepie.com via Argot. Top 1,000 Ethereum contracts by TVS, monthly snapshots.",
+        height: 420,
+        caption: TVS_CAPTION,
+      },
+    ],
   }),
   "```",
 ];
