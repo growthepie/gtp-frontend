@@ -22,7 +22,7 @@ const TvsCompilerLineChart = [
   "```chart",
   JSON.stringify({
     type: "line",
-    title: "Total Value Secured by Smart Contract Language",
+    title: "Value Secured by Smart Contract Language",
     subtitle: "Monthly snapshot of TVS across the top 1,000 Ethereum contracts, split by compiler.",
     showXAsDate: true,
     dataAsJson: {
@@ -198,7 +198,7 @@ const CompilerShareTvsChart = [
       ],
     },
     height: 380,
-    caption: "100% area chart. TVS-weighted compiler share across the top 1,000 Ethereum contracts.",
+    caption: "TVS-weighted compiler share across the top 1,000 Ethereum contracts.",
   }),
   "```",
 ];
@@ -247,7 +247,7 @@ const CompilerShareCountChart = [
       ],
     },
     height: 380,
-    caption: "100% area chart. Count-weighted compiler share across the top 1,000 Ethereum contracts.",
+    caption: "Count-weighted compiler share across the top 1,000 Ethereum contracts.",
   }),
   "```",
 ];
@@ -368,36 +368,33 @@ const VyperVersionTvsChart = [
 
 // Quick Bite
 const ArgotCompiler: QuickBiteData = {
-  title: "Who Secures Ethereum's Value? A Compiler Breakdown",
-  shortTitle: "Argot: Compilers",
+  title: "Programming Languages Securing Ethereum's Value",
+  shortTitle: "Ethereum Smart Contract Languages",
   subtitle: "Analyzing the top 1,000 Ethereum contracts by Total Value Secured across smart contract languages and compiler versions.",
   content: [
-    "# Solidity and Vyper: The Languages Securing Ethereum",
-    "Almost all value on Ethereum sits in smart contracts. But not all smart contracts are created equal. Two languages dominate: **Solidity**, the general-purpose workhorse used in the vast majority of DeFi protocols, and **Vyper**, the security-focused alternative favored by Curve and other high-stakes applications. A third category, **unverified** contracts, secures significant value despite having no publicly readable source code.",
-    "This analysis covers the **top 1,000 Ethereum contracts by Total Value Secured (TVS)**, tracking how the balance between these three categories has shifted over time.",
+    "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
+    "Most value on Ethereum is held by smart contracts, making it critical that the programming languages used to build them are safe and secure. Two languages dominate: Solidity, a statically typed language with syntax influenced by JavaScript and C++, and Vyper, a Pythonic language designed for simplicity and auditability. ",
+    "In this analysis, we use Sourcify-verified contracts to identify the programming language of each contract. Since not all contracts are verified, an additional “unverified” category is included. The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
 
     ...TvsCompilerLineChart,
 
     "## Top 1,000 Ethereum Contracts by TVS",
-    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through [Sourcify](https://sourcify.dev) show their compiler and version. Unverified contracts have no readable source code on-chain.",
+    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through [Sourcify](https://sourcify.dev) show their compiler and version. Unverified contracts have no readable source code onchain.",
 
     ...TopContractsTable,
 
     "# How Sourcify Is Reducing the Unknown",
-    "A contract being \"unverified\" does not mean it is malicious. Many high-value contracts were deployed before verification tooling was widely adopted, or simply never had their source code submitted. **Sourcify** is a decentralized contract verification service that allows anyone to submit the source code of an already-deployed contract, making it possible to retroactively verify contracts.",
-    "The charts below show two different views of the same trend: how the share of unverified contracts among the top 1,000 has changed over time. The left chart weights by TVS (each contract counts proportionally to the value it holds), the right chart weights by contract count (each contract counts equally). The gap between the two is revealing.",
+    "Prior to the emergence of Sourcify, interpreting raw production bytecode was largely infeasible, limiting transparency into how smart contracts were implemented. Through systematic source code verification, Sourcify now enables visibility into more than 75% of the TVS in contracts. This significantly enhances transparency and introduces an additional layer of confidence and verifiability for users whose funds are held within these contracts.",
 
     "```container",
     JSON.stringify({
-      blocks: [CompilerShareTvsChart, CompilerShareCountChart],
+      blocks: [CompilerShareCountChart, CompilerShareTvsChart],
       className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
     }),
     "```",
 
-    "> The difference between TVS-weighted and count-weighted share matters. A handful of very large unverified contracts can dominate the TVS chart even if most contracts in the top 1,000 are already verified.",
-
-    "# Solidity: Which Version Holds the Most Value?",
-    "Solidity has evolved significantly across major versions. Version **0.6** introduced breaking changes around inheritance and error handling. Version **0.8** added built-in overflow protection, removing the need for `SafeMath` libraries. The version breakdown shows how much value is held in contracts compiled with older versus newer Solidity releases, and how slowly the high-value contract landscape has migrated forward.",
+    "# Solidity: Which Version Secures the Most Value?",
+    "Solidity has evolved significantly across major versions. Version 0.6 introduced breaking changes related to inheritance and error handling, while version 0.8 added built-in overflow protection, removing the need for `SafeMath` libraries. The version breakdown shows how much value is held in contracts compiled with older versus newer Solidity releases, and how gradually the high-value contract landscape has migrated forward.",
 
     "```container",
     JSON.stringify({
@@ -406,11 +403,10 @@ const ArgotCompiler: QuickBiteData = {
     }),
     "```",
 
-    "Solidity 0.6 carries a disproportionately large share of TVS relative to its count share. This is because major protocols like Uniswap V2, the Ethereum 2.0 deposit contract, and early Aave and Compound contracts were written in that version and have never been replaced. The contrast with 0.8, which dominates by count but not by TVS, reflects how much of the newer contract surface area is smaller or newer protocols.",
+    "Solidity 0.6 carries a disproportionately large share of TVS relative to its share by contract count. This is because major protocols such as Uniswap V2, the Ethereum 2.0 deposit contract and early versions of Aave and Compound were written in this version and have not been replaced. In contrast, Solidity 0.8 dominates by contract count, reflecting that much of the newer contract surface area consists of smaller or more recently deployed protocols.",
 
     "# Vyper: A Leaner but Concentrated Footprint",
-    "Vyper is a Python-inspired smart contract language designed with a strong focus on **auditability and security**. It intentionally restricts language features (no inheritance, no function overloading, no infinite loops) to make contracts easier to reason about. Curve Finance, which secures billions in stablecoin liquidity, is Vyper's most prominent adopter.",
-    "Vyper's version history is simpler than Solidity's. Version 0.3 brought significant improvements to ABI encoding and gas efficiency. Version 0.4, released in 2024, introduced further security hardening including transient storage support.",
+    "Vyper's version history is simpler than Solidity's. Version 0.3 brought significant improvements to ABI encoding and gas efficiency. Version 0.4, released in 2024, introduced further security hardening including transient storage support. Curve Finance, which secures billions in stablecoin liquidity, is Vyper's most prominent adopter.",
 
     "```container",
     JSON.stringify({
@@ -419,7 +415,7 @@ const ArgotCompiler: QuickBiteData = {
     }),
     "```",
 
-    "Vyper's TVS is highly concentrated in a small number of contracts. A few Curve pools and related infrastructure account for the lion's share of the TVS attributed to Vyper. This makes Vyper's TVS chart particularly sensitive to the status of those specific contracts.",
+    "Vyper's TVS is highly concentrated in a small number of contracts. A few Curve pools and related infrastructure account for the majority of the TVS attributed to Vyper. This makes Vyper's TVS chart particularly sensitive to the status of those specific contracts.",
 
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
   ],
@@ -435,9 +431,25 @@ const ArgotCompiler: QuickBiteData = {
   ],
   topics: [
     {
-      icon: "gtp-metrics",
-      name: "Smart Contracts",
-      url: "/",
+      icon: "ethereum-logo-monochrome",
+      color: "#94ABD3",
+      name: "Ethereum Mainnet",
+      url: "/chains/ethereum"
+    },
+    {
+      icon: "gtp-nft",
+      name: "Argot",
+      url: "https://www.argot.org/",
+    },
+    {
+      icon: "book-open",
+      name: "Sourcify",
+      url: "https://sourcify.dev/",
+    },
+    {
+      icon: "oli-open-labels-initiative",
+      name: "Open Labels Initiative",
+      url: "https://www.openlabelsinitiative.org/",
     },
   ],
   icon: "",
