@@ -68,7 +68,7 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({ block }) => {
             key={`${item.question}-${index}`}
             question={item.question}
             answer={
-              <div>{item.answer}</div>
+              <div dangerouslySetInnerHTML={toMarkup(item.answer)} />
             }
             className="bg-color-bg-default"
             questionClassName=""
