@@ -8,8 +8,8 @@ import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import Mustache from 'mustache';
 import { GTPIcon } from '@/components/layout/GTPIcon';
-import GTPButtonRow from '@/components/GTPButton/GTPButtonRow';
-import { GTPButton } from '@/components/GTPButton/GTPButton';
+import GTPButtonRow from '@/components/GTPComponents/ButtonComponents/GTPButtonRow';
+import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import fiatData from '@/public/dicts/fiat.json';
 
 /* 

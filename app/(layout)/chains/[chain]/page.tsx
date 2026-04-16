@@ -36,7 +36,7 @@ import { ContentBlock } from "@/lib/types/blockTypes";
 import Block from "@/components/quick-bites/Block";
 import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
-import { GTPButton } from "@/components/GTPButton/GTPButton";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 // Fetcher function for API calls

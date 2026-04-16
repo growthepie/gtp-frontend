@@ -3,8 +3,8 @@
 import React from 'react';
 import { ChartBlock as ChartBlockType, ChartToggleBlock as ChartToggleBlockType } from '@/lib/types/blockTypes';
 import { ChartBlock } from './ChartBlock';
-import GTPButtonRow from '@/components/GTPButton/GTPButtonRow';
-import { GTPButton } from '@/components/GTPButton/GTPButton';
+import GTPButtonRow from '@/components/GTPComponents/ButtonComponents/GTPButtonRow';
+import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 
 interface ChartToggleBlockProps {
   block: ChartToggleBlockType;
