@@ -351,6 +351,18 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
             }
         }
 
+        // Reserve space for the hover expansion of the first icon-only button.
+        // Without this, hovering an icon-only button expands it into space that
+        // doesn't exist, causing adjacent buttons to shift back and forth.
+        if (count < n) {
+            const hoverLabelEl = labelMeasureRefs.current[count];
+            const hoverLabelW = hoverLabelEl ? hoverLabelEl.offsetWidth : 60;
+            if (remaining < 28 + hoverLabelW) {
+                // Not enough room for the hover; give back the last shown label to free space
+                count = Math.max(0, count - 1);
+            }
+        }
+
         setDynamicLabelCount(count);
     }, [filteredSortedChains]);
 
