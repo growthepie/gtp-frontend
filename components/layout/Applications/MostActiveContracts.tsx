@@ -33,6 +33,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
   const { data: master, AllChainsByKeys } = useMaster();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const oliHide = useMediaQuery("(max-width: 530px)");
 
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
@@ -108,23 +109,28 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
             </div>
           </div>
           <div ref={footerRef} className="relative w-full flex items-center justify-end">
-            <GTPButton
-              label="Don't see your app? Label here."
-              leftIcon={"oli-open-labels-initiative" as GTPIconName}
-              size="xs"
-              rightIcon={"in-button-right-monochrome" as GTPIconName}
-              className="z-30"
-              clickHandler={() => {
-                openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
-              }}
-            />
-            <div
-              className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
-              style={{
-                background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-              }}
-            />
+            {!oliHide && (
+              <>
+                <GTPButton
+                  label="Don't see your app? Label here."
+                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
+                  size="xs"
+                  rightIcon={"in-button-right-monochrome" as GTPIconName}
+                  className="z-30"
+                  clickHandler={() => {
+                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                  }}
+                />
+                <div
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  style={{
+                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+                  }}
+                />
+              </>
+            )}
         </div>
+
         </div>
         <div className="text-xs text-color-text-primary">
           See the most active contracts for this application in the last 7 days.
@@ -277,6 +283,26 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
+        {oliHide && (
+          <div className="relative flex items-center justify-start mt-[5px]">
+                <GTPButton
+                  label="Don't see your app? Label here."
+                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
+                  size="xs"
+                  rightIcon={"in-button-right-monochrome" as GTPIconName}
+                  className="z-30"
+                  clickHandler={() => {
+                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                  }}
+                />
+                <div
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  style={{
+                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+                  }}
+                />
+          </div>
+        )}
 
       {/* Footer CTA */}
 

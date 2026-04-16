@@ -25,6 +25,7 @@ import MetricsBody from "@/components/layout/Applications/MetricsBody";
 import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
+import { useMediaQuery } from "usehooks-ts";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 
@@ -380,6 +381,8 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
 
   const { filteredProjectsData } = useProjectsMetadata();
   const [randomIndices, setRandomIndices] = useState<number[] | null>(null);
+  const isMobile = useMediaQuery("(max-width: 728px)");
+  const isXS = useMediaQuery("(max-width: 530px)");
 
   useEffect(() => {
       if (!filteredProjectsData || randomIndices !== null) return;
@@ -424,11 +427,14 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
   if (!randomProjects.length) return <></>;
 
   return (
-    <div className="flex justify-between items-center gap-y-[10px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+    <div className={`flex justify-between gap-y-[10px] bg-color-bg-default rounded-[15px] ${isXS ? "flex-col items-start" : "flex-row items-center"} px-[30px] py-[15px]`}>
       <div className="flex items-center gap-x-[8px]">
-        <GTPIcon icon={"gtp:gtp-project" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] relative bottom-[2px] flex items-center justify-center"/>
-        <div className="heading-large-md text-color-text-primary">
+        <GTPIcon icon={"gtp:gtp-project" as GTPIconName} className="!size-[20px] sm:!size-[24px]" containerClassName="!size-[20px] sm:!size-[24px] relative bottom-[2px] flex items-center justify-center"/>
+        <div className=" sm:block hidden heading-large-md text-color-text-primary">
           Similar Applications
+        </div>
+        <div className="block sm:hidden heading-small-sm text-color-text-primary">
+          Similar Apps
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
@@ -441,10 +447,16 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <Link key={project.name} className="p-[8px] bg-color-bg-medium rounded-full hover:bg-color-ui-hover"
+              <Link key={project.name} className="p-[5px] sm:p-[8px] bg-color-bg-medium rounded-full hover:bg-color-ui-hover"
               href={`/new-apps/${project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0]}`}
               >
-                <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
+                <Image 
+                  className="rounded-full" 
+                  src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} 
+                  alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} 
+                  width={isMobile ? 20 : 28} 
+                  height={isMobile ? 20 : 28} 
+                />
                 <div className="text-sm text-color-text-primary">{project.display_name}</div>
               </Link>
 
