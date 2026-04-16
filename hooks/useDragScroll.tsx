@@ -42,15 +42,36 @@ export const useDragScroll = (
       setVelocity({ x: 0, y: 0 });
       velocityHistory.current = [];
       rafId.current && cancelAnimationFrame(rafId.current);
-  
+
       if (containerRef.current) {
         setScrollPos({
           left: containerRef.current.scrollLeft,
           top: containerRef.current.scrollTop,
         });
       }
-  
+
       event.preventDefault(); // Prevent text selection
+    }
+  }, []);
+
+  const handleTouchStart = useCallback((event: TouchEvent) => {
+    if (containerRef.current && containerRef.current.contains(event.target as Node)) {
+      const touch = event.touches[0];
+      isMouseDownInside.current = true;
+      isDragThresholdExceeded.current = false;
+      setIsDragging(true);
+      setIsDragged(false);
+      setStartPos({ x: touch.clientX, y: touch.clientY });
+      setVelocity({ x: 0, y: 0 });
+      velocityHistory.current = [];
+      rafId.current && cancelAnimationFrame(rafId.current);
+
+      if (containerRef.current) {
+        setScrollPos({
+          left: containerRef.current.scrollLeft,
+          top: containerRef.current.scrollTop,
+        });
+      }
     }
   }, []);
 
@@ -63,12 +84,12 @@ export const useDragScroll = (
     const dx = event.clientX - startPos.x;
     const dy = event.clientY - startPos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     // Only consider it a drag if it exceeds the threshold
     if (distance > MIN_DRAG_THRESHOLD) {
       isDragThresholdExceeded.current = true;
       setIsDragged(true);
-    
+
       if (containerRef.current) {
         if (direction === 'horizontal') {
           containerRef.current.scrollLeft = scrollPos.left - dx;
@@ -81,6 +102,75 @@ export const useDragScroll = (
       setLastMoveTime(currentTime);
     }
   }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
+
+  const handleTouchMove = useCallback((event: TouchEvent) => {
+    if (!isDragging) return;
+
+    const touch = event.touches[0];
+    const currentTime = Date.now();
+    const timeDelta = currentTime - lastMoveTime;
+    const dx = touch.clientX - startPos.x;
+    const dy = touch.clientY - startPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > MIN_DRAG_THRESHOLD) {
+      isDragThresholdExceeded.current = true;
+      setIsDragged(true);
+
+      if (containerRef.current) {
+        if (direction === 'horizontal') {
+          containerRef.current.scrollLeft = scrollPos.left - dx;
+          velocityHistory.current.push({ x: -dx / timeDelta, y: 0, time: currentTime });
+          // Prevent page scroll when dragging horizontally
+          event.preventDefault();
+        } else {
+          containerRef.current.scrollTop = scrollPos.top - dy;
+          velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
+        }
+      }
+      setLastMoveTime(currentTime);
+    }
+  }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isMouseDownInside.current) return;
+
+    isMouseDownInside.current = false;
+    setIsDragging(false);
+
+    const avgVelocity = calculateAverageVelocity();
+    setVelocity(avgVelocity);
+
+    const velocityMagnitude = Math.hypot(avgVelocity.x, avgVelocity.y);
+
+    if (snap && velocityMagnitude < snapThreshold) {
+      snapToClosest();
+    } else if (avgVelocity.x !== 0 || avgVelocity.y !== 0) {
+      const startTime = Date.now();
+
+      const animate = () => {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const factor = Math.pow(decay, elapsed / 16);
+
+        if (containerRef.current) {
+          if (direction === 'horizontal') {
+            containerRef.current.scrollLeft += avgVelocity.x * factor;
+          } else {
+            containerRef.current.scrollTop += avgVelocity.y * factor;
+          }
+
+          if (!snap && Math.abs(avgVelocity.x * factor) > 0.5 || Math.abs(avgVelocity.y * factor) > 0.5) {
+            rafId.current = requestAnimationFrame(animate);
+          } else if (snap) {
+            snapToClosest();
+          }
+        }
+      };
+
+      animate();
+    }
+  }, [decay, direction, snap, snapThreshold]);
 
   const calculateAverageVelocity = () => {
     const now = Date.now();
@@ -254,6 +344,9 @@ export const useDragScroll = (
     container.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleGlobalMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('resize', updateGradients);
     if(snap)
       window.addEventListener('resize', snapToClosest);
@@ -266,6 +359,9 @@ export const useDragScroll = (
       container.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', updateGradients);
       if(snap)
         window.removeEventListener('resize', snapToClosest);
@@ -274,7 +370,7 @@ export const useDragScroll = (
       container.removeEventListener('scroll', updateGradients);
       container.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, updateGradients, isDragging, handleWheel, snap, snapToClosest]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, handleTouchStart, handleTouchMove, handleTouchEnd, updateGradients, isDragging, handleWheel, snap, snapToClosest]);
 
   useEffect(() => {
     const container = containerRef.current;

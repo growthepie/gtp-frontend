@@ -25,7 +25,7 @@ export function SectionBar({ children }: { children: React.ReactNode }) {
     )
 }
 
-export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor, index, isHovered }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string, index: number, isHovered: boolean }) {
+export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor, index, isHovered, appIconOverride }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string, index: number, isHovered: boolean, appIconOverride?: React.ReactNode }) {
     const isMobile = useMediaQuery("(max-width: 1440px)");
     const mobileWidth = 10 * header.length + 30;
 
@@ -51,12 +51,14 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                             }}
                         >
                             <div className={`flex items-center justify-center h-full ${isLocked || comingSoon ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
+                                {appIconOverride ? appIconOverride : 
                                 <GTPIcon 
                                     icon={`${icon}${isLocked || comingSoon ? "-monochrome" : ""}` as GTPIconName} 
                                     style={{ color: iconColor }} 
                                     className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "" : ""}`}
                                     containerClassName={`flex items-center justify-center w-fit h-fit   `}
                                 />
+                                }
                                 <div 
                                     className={`transition-all duration-300 overflow-hidden whitespace-nowrap`}
                                     style={{
@@ -67,6 +69,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                                 </div>
                                 
                             </div>
+                            <div className="flex items-center gap-x-[8px]">
                             {comingSoon && (
                                 <div className="flex items-center py-[2px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full overflow-hidden" style={{ width: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `50px` : "50px" }}>
                                     <div className="heading-small-xxxs transition-all text-nowrap text-background w-full text-center">
@@ -75,12 +78,13 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                                 </div>
                             )}
                             {isLocked && (
-                                <div className="flex items-center py-[2px] bg-color-bg-default rounded-full overflow-hidden" style={{ maxWidth: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `30px` : "auto" }}>
+                                <div className="flex items-center p-[2px] bg-color-bg-default rounded-full overflow-hidden" style={{ maxWidth: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `30px` : "auto" }}>
                                     <div className="heading-small-xxxs transition-all text-nowrap text-inherit ">
                                         <GTPIcon icon={"feather:lock" as GTPIconName} size="sm" className="!size-[15px]" containerClassName="!size-[15px]" />
                                     </div>
                                 </div>
                             )}
+                            </div>
                         </div>
                     }
                     containerClass="flex flex-col gap-y-[10px]"
@@ -105,12 +109,13 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                 }}
             >
                 <div className={`flex items-center justify-center h-full ${isLocked || comingSoon ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
-                    <GTPIcon 
+                    
+                    {appIconOverride ? appIconOverride : <GTPIcon 
                         icon={`${icon}${isLocked || comingSoon ? "-monochrome" : ""}` as GTPIconName} 
                         style={{ color: iconColor }} 
                         className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "" : ""}`}
                         containerClassName={`flex items-center justify-center w-fit h-fit   `}
-                    />
+                    />}
                     <div 
                         className={`transition-all duration-300 overflow-hidden whitespace-nowrap`}
                         style={{

@@ -10,6 +10,7 @@ import Mustache from 'mustache';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import GTPButtonRow from '@/components/GTPButton/GTPButtonRow';
 import { GTPButton } from '@/components/GTPButton/GTPButton';
+import fiatData from '@/public/dicts/fiat.json';
 
 /* 
 Mustache.js example for dynamic values
@@ -186,7 +187,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
 
     const palette = colorsRaw;
     const ystartIndex = dynamicSeriesConfig.ystartIndex ?? 1;
-    const names = Array.isArray(namesRaw) ? namesRaw : [];
+    const namesTransform = dynamicSeriesConfig.namesTransform;
+    const names = Array.isArray(namesRaw)
+      ? namesRaw.map((n: string) => namesTransform === "uppercase" ? String(n).toUpperCase() : n)
+      : [];
 
     const maxColumns = Array.isArray(values[0]) ? values[0].length : 0;
     const availableSeriesCount = Math.max(0, maxColumns - ystartIndex);
@@ -220,7 +224,23 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
         xIndex: dynamicSeriesConfig.xIndex ?? 0,
         yIndex,
         tooltipDecimals: dynamicSeriesConfig.tooltipDecimals ?? 0,
-        ...(dynamicSeriesConfig.prefix !== undefined && { prefix: dynamicSeriesConfig.prefix }),
+        ...((() => {
+          if (dynamicSeriesConfig.prefixFiatSymbolFromPath) {
+            const fiatCode = getNestedValue(sourceData, dynamicSeriesConfig.prefixFiatSymbolFromPath);
+            const symbol = typeof fiatCode === 'string'
+              ? fiatData[fiatCode.toUpperCase() as keyof typeof fiatData]?.symbol
+              : undefined;
+            if (symbol) return { prefix: symbol };
+          }
+          if (dynamicSeriesConfig.prefix !== undefined) {
+            return {
+              prefix: dynamicSeriesConfig.prefix.includes('{{')
+                ? Mustache.render(dynamicSeriesConfig.prefix, sharedState)
+                : dynamicSeriesConfig.prefix,
+            };
+          }
+          return {};
+        })()),
         url: dynamicSeriesUrl || dynamicSeriesConfig.url,
         pathToData: dynamicSeriesConfig.pathToData,
       }));

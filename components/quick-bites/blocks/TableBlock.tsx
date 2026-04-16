@@ -727,13 +727,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       </div>
     );
 
+    const maxHeight = block.maxHeight ?? 500;
+    const cardRowHeight = 120; // approximate card height
+    const cardGap = 10;
+    const dynamicCardHeight = Math.min(maxHeight, sortedRows.length * cardRowHeight + (sortedRows.length - 1) * cardGap);
+
     return (
       <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
         {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
         <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
           {isScrollable ? (
             <VerticalScrollContainer
-              height={340}
+              height={dynamicCardHeight}
               scrollbarAbsolute={true}
               scrollbarPosition="right"
               paddingRight={30}
@@ -1146,9 +1151,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
             ))}
             </div>
           );
+            const maxHeight = block.maxHeight ?? 500;
+            const rowHeight = 34;
+            const rowGap = 5;
+            const headerHeight = 34;
+            const headerMargin = 5;
+            const dynamicHeight = Math.min(
+              maxHeight,
+              headerHeight + headerMargin + sortedRows.length * rowHeight + Math.max(0, sortedRows.length - 1) * rowGap,
+            );
             return isScrollable ? (
               <VerticalScrollContainer
-                height={340}
+                height={dynamicHeight}
                 scrollbarAbsolute={true}
                 scrollbarPosition="right"
                 paddingRight={30}

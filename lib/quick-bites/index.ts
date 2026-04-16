@@ -16,6 +16,10 @@ import OctantV2Migration from './qb-octant-v2-migration';
 import StablecoinChain from './qb-stablecoin-chain';
 import StablecoinProject from './qb-stablecoin-project';
 import averageActiveAddress from './qb-average-active-address';
+import StablecoinFiat from './qb-stablecoin-fiat';
+import celoAnniversaryReport from './qb-celo-anniversary-report';
+import polygonBurn from './qb-polygon-burn';
+import EigenDAMegaETH from './qb-eigenda-megaeth';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -33,7 +37,11 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "stablecoins-for-project": StablecoinProject,
   "eip-8004": Agents,
   "octant-v2-migration": OctantV2Migration,
-  "average-active-address": averageActiveAddress
+  "average-active-address": averageActiveAddress,
+  "celo-anniversary-report": celoAnniversaryReport,
+  "polygon-burn": polygonBurn,
+  "eigenda-megaeth": EigenDAMegaETH,
+  "stablecoins-for-fiat": StablecoinFiat,
 };
 
 export default QUICK_BITES_DATA;

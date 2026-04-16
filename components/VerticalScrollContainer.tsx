@@ -22,6 +22,7 @@ type VerticalScrollContainerProps = {
   header?: React.ReactNode;
   enableTopShadow?: boolean;
   enableDragScroll?: boolean;
+  reserveScrollbarSpace?: boolean;
 };
 
 export default forwardRef(function VerticalScrollContainer(
@@ -41,6 +42,7 @@ export default forwardRef(function VerticalScrollContainer(
     header,
     enableTopShadow = false,
     enableDragScroll = false,
+    reserveScrollbarSpace = false,
   }: VerticalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
 ) {
@@ -85,10 +87,15 @@ export default forwardRef(function VerticalScrollContainer(
     if (contentArea) {
       const scrollableHeight =
         contentArea.scrollHeight - contentArea.clientHeight;
-      const scrollPercentage =
-        scrollableHeight <= 0
-          ? 0
-          : (contentArea.scrollTop / scrollableHeight) * 100;
+      if (scrollableHeight <= 0) {
+        setCurrentScrollPercentage(0);
+        return;
+      }
+      // Clamp to 100 when within 1px of the bottom to handle browser sub-pixel rounding
+      const atBottom = contentArea.scrollTop >= scrollableHeight - 1;
+      const scrollPercentage = atBottom
+        ? 100
+        : (contentArea.scrollTop / scrollableHeight) * 100;
       setCurrentScrollPercentage(scrollPercentage);
     }
   }, [contentScrollAreaRef]);
@@ -492,7 +499,7 @@ export default forwardRef(function VerticalScrollContainer(
         </div>
       )}
       <div
-        className={`relative flex w-full px-0 overflow-y-hidden overflow-x-visible ${className}`}
+        className={`relative flex w-full px-0 overflow-y-hidden overflow-x-hidden ${className}`}
         style={{ flexDirection: 'row' }}
       >
         {/* Content */}
@@ -523,7 +530,7 @@ export default forwardRef(function VerticalScrollContainer(
             }}
           >
             <div>
-              <div className="min-w-fit w-full max-w-full" ref={contentRef}>
+              <div className="w-full max-w-full" ref={contentRef}>
                 {children}
               </div>
             </div>
@@ -574,25 +581,27 @@ export default forwardRef(function VerticalScrollContainer(
         )}
 
         {/* Right Scrollbar */}
-        {scrollbarPosition === 'right' && showScroller && (
+        {scrollbarPosition === 'right' && (showScroller || reserveScrollbarSpace) && (
           <div
-            className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pr-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
+            className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pr-[10px]"} flex-shrink-0 h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
             style={{ height: height }}
           >
+            {/* Track + thumb — always rendered so scrollerRef stays mounted and column width is stable */}
             <div
               className="h-full p-0.5 rounded-full relative"
-              style={{ 
-                background: scrollTrackColor
+              style={{
+                background: showScroller ? scrollTrackColor : 'transparent',
+                pointerEvents: showScroller ? undefined : 'none',
               }}
-              onMouseDown={handleTrackMouseDown}
-              onTouchStart={handleTrackMouseDown}
-              onWheel={(e) => {
+              onMouseDown={showScroller ? handleTrackMouseDown : undefined}
+              onTouchStart={showScroller ? handleTrackMouseDown : undefined}
+              onWheel={showScroller ? (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (contentScrollAreaRef.current) {
                   contentScrollAreaRef.current.scrollTop += e.deltaY;
                 }
-              }}
+              } : undefined}
             >
               <div className="h-full relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
                 <div
@@ -605,7 +614,7 @@ export default forwardRef(function VerticalScrollContainer(
                     cursor: 'grab',
                     width: scrollbarWidth,
                     height: `${thumbHeight}px`,
-                    display: thumbHeight > 0 ? 'block' : 'none',
+                    display: showScroller && thumbHeight > 0 ? 'block' : 'none',
                     transition: 'none',
                   }}
                   onMouseDown={handleMouseDown}

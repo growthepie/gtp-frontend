@@ -741,5 +741,5 @@ export const apiDocsItem: NavigationItem = {
   label: "API Documentation",
   icon: "file-text",
   options: [],
-  href: "https://docs.growthepie.xyz/api",
+  href: "https://docs.growthepie.com/api-reference/api",
 };

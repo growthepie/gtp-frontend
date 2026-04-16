@@ -2,7 +2,7 @@ import { EventExample, EventOption, EventSeriesMeta } from "./types";
 
 const APPS_TOTAL_SERIES_META: EventSeriesMeta[] = [
   {
-    name: "Total Apps",
+    name: "Weekly Active Apps",
     color: "#CDD8D2",
     yIndex: 1,
     seriesType: "area",

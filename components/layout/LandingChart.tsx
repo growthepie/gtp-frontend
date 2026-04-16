@@ -37,9 +37,9 @@ import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
-import GTPButtonContainer from "../GTPButton/GTPButtonContainer";
-import GTPButtonRow from "../GTPButton/GTPButtonRow";
-import { GTPButton } from "../GTPButton/GTPButton";
+import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
+import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 
 
 const COLORS = {

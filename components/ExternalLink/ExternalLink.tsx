@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 import { LinkDisclaimerModal } from './LinkDisclaimerModal';
 
 const isLikelyEmail = (value: string): boolean =>
@@ -32,6 +33,69 @@ function getDisplayDestination(href: string, type: "email" | "url"): string {
   }
 }
 
+function openNormalizedDestination(type: "url" | "email", normalizedHref: string) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  if (type === 'email') {
+    window.location.href = normalizedHref;
+    return;
+  }
+
+  const anchor = document.createElement('a');
+  anchor.href = normalizedHref;
+  anchor.target = '_blank';
+  anchor.rel = 'noopener noreferrer';
+  anchor.click();
+}
+
+function openDisclaimerModal(params: {
+  href: string;
+  type: "url" | "email";
+  displayDestination: string;
+  onContinue: () => void;
+}) {
+  if (typeof document === "undefined") return;
+
+  const mountNode = document.createElement("div");
+  document.body.appendChild(mountNode);
+  const root = createRoot(mountNode);
+
+  const cleanup = () => {
+    root.unmount();
+    if (mountNode.parentNode) {
+      mountNode.parentNode.removeChild(mountNode);
+    }
+  };
+
+  root.render(
+    <LinkDisclaimerModal
+      href={params.href}
+      type={params.type}
+      displayDestination={params.displayDestination}
+      onClose={cleanup}
+      onContinue={() => {
+        params.onContinue();
+        cleanup();
+      }}
+    />,
+  );
+}
+
+export function openExternalLinkWithDisclaimer(rawHref: string) {
+  if (!rawHref) return;
+
+  const type = getLinkType(rawHref);
+  const normalizedHref = getNormalizedHref(rawHref, type);
+  const displayDestination = getDisplayDestination(rawHref, type);
+
+  openDisclaimerModal({
+    href: normalizedHref,
+    type,
+    displayDestination,
+    onContinue: () => openNormalizedDestination(type, normalizedHref),
+  });
+}
+
 export interface ExternalLinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   href: string;
   children: React.ReactNode;
@@ -49,37 +113,18 @@ export const ExternalLink = ({
   target,
   ...rest
 }: ExternalLinkProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => { setIsMounted(true); }, []);
-
   const type = getLinkType(href);
   const normalizedHref = getNormalizedHref(href, type);
-  const displayDestination = getDisplayDestination(href, type);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     onClick?.(e);
 
-    if (showDisclaimer) {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsOpen(true);
-    }
-  }, [showDisclaimer, onClick]);
+    if (!showDisclaimer) return;
 
-  const handleContinue = useCallback(() => {
-    if (type === 'email') {
-      window.location.href = normalizedHref;
-    } else {
-      window.open(normalizedHref, '_blank', 'noopener,noreferrer');
-    }
-    setIsOpen(false);
-  }, [type, normalizedHref]);
-
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+    e.preventDefault();
+    e.stopPropagation();
+    openExternalLinkWithDisclaimer(href);
+  }, [href, onClick, showDisclaimer]);
 
   const anchorProps: React.AnchorHTMLAttributes<HTMLAnchorElement> = {
     href: normalizedHref,
@@ -88,11 +133,11 @@ export const ExternalLink = ({
     ...rest,
   };
 
-  // When disclaimer is off, behave as a standard external link
   if (!showDisclaimer) {
     if (type === 'email') {
       return <a {...anchorProps}>{children}</a>;
     }
+
     return (
       <a
         {...anchorProps}
@@ -105,24 +150,13 @@ export const ExternalLink = ({
   }
 
   return (
-    <>
-      <a
-        {...anchorProps}
-        target={target ?? '_blank'}
-        rel={rel ?? 'noopener noreferrer'}
-        onClick={handleClick}
-      >
-        {children}
-      </a>
-      {isMounted && isOpen && (
-        <LinkDisclaimerModal
-          href={normalizedHref}
-          type={type}
-          displayDestination={displayDestination}
-          onClose={handleClose}
-          onContinue={handleContinue}
-        />
-      )}
-    </>
+    <a
+      {...anchorProps}
+      target={target ?? '_blank'}
+      rel={rel ?? 'noopener noreferrer'}
+      onClick={handleClick}
+    >
+      {children}
+    </a>
   );
 };

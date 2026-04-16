@@ -9,7 +9,7 @@ import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { GTPButton, GTPButtonSize } from "@/components/GTPButton/GTPButton";
+import { GTPButton, GTPButtonSize } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -338,7 +338,7 @@ export const GridTableHeaderCellButton = ({
 }: GridTableHeaderCellButtonProps) => {
   const isActive = metric ? sort?.metric === metric : false;
   const arrowIcon = (
-    isActive && sort?.sortOrder === "asc" ? "feather:arrow-up" : "feather:arrow-down"
+    isActive && sort?.sortOrder === "asc" ? "gtp-chevronup-monochrome" : "gtp-chevrondown-monochrome"
   ) as GTPIconName;
 
   const handleSort = () => {
@@ -367,12 +367,13 @@ export const GridTableHeaderCellButton = ({
     "";
 
   return (
-    <div className={`flex items-center ${alignClass} ${className ?? ""}`}>
+    <div className={`flex items-center  ${alignClass} ${className ?? ""}`}>
       <GTPButton
         label={label}
         size={size}
         rightIcon={arrowIcon}
-        rightIconClassname={isActive ? "opacity-100" : "opacity-30"}
+        rightIconClassname={isActive ? "opacity-100 !w-[8px] !h-[8px]" : "opacity-30 !w-[8px] !h-[8px]"}
+        rightIconContainerClassName="min-w-[12px] min-h-[12px] flex items-center justify-center"
         isSelected={isActive}
         clickHandler={handleSort}
         className={compensationClass}

@@ -15,6 +15,7 @@ import SidebarSubItem from './SidebarSubItem';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import NewBadge from './NewBadge';
 import { AnimatePresence } from 'framer-motion';
+import { useIsStaleSession } from '@/hooks/useIsStaleSession';
 
 type Props = {
   item: SidebarMenuGroupType | SidebarLink;
@@ -24,6 +25,7 @@ type Props = {
 
 const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
   const pathname = usePathname();
+  const isStale = useIsStaleSession();
   const isMobile = useUIStore((state) => state.isMobile);
   const isGroup = item.type === 'group';
   const href = !isGroup ? (item as SidebarLink).href : undefined;
@@ -216,6 +218,7 @@ const SidebarItem = memo(({ item, isOpen, onClose }: Props) => {
         ref={setRefs}
         {...getReferenceProps()}
         href={href!}
+        prefetch={isStale ? false : undefined}
         onClick={onClose}
         className="md:pl-[5px] flex"
       >

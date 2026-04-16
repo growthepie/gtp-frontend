@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import NewBadge from './NewBadge';
 import { AnimatePresence } from 'framer-motion';
+import { useIsStaleSession } from '@/hooks/useIsStaleSession';
 
 type Props = {
   item: SidebarLink | SidebarChainLink; // level 1 only
@@ -24,6 +25,7 @@ type Props = {
 };
 
 const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
+  const isStale = useIsStaleSession();
   const { href, icon, label } = item;
   // console.log('item', item);
   const isChain = item.type === 'chain-link';
@@ -129,6 +131,7 @@ const SidebarSubItem = ({ item, isOpen, isParentExpanded, onClose }: Props) => {
         ref={setRefs}
         {...getReferenceProps()}
         href={href}
+        prefetch={isStale ? false : undefined}
         className={``}
         onClick={onClose}
         onMouseEnter={() => setIsHovered(true)}

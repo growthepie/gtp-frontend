@@ -82,7 +82,8 @@ interface ChartWrapperProps {
       dashStyle?: Highcharts.DashStyleValue,
       makeNegative?: boolean,
       yMultiplication?: number,
-      aggregation?: "daily" | "weekly" | "monthly"
+      aggregation?: "daily" | "weekly" | "monthly",
+      deselected?: boolean,
     }[]
   }
   seeMetricURL?: string | null;
@@ -230,7 +231,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [isChartReady, setIsChartReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filteredNames, setFilteredNames] = useState<string[]>([]);
+  const [filteredNames, setFilteredNames] = useState<string[]>(() => {
+    const deselectedSeries = jsonMeta?.meta?.filter((s) => s.deselected) ?? [];
+    if (deselectedSeries.length === 0) return [];
+    return (jsonMeta?.meta ?? []).filter((s) => !s.deselected).map((s) => s.name);
+  });
   const [isScatterTrendlineVisible, setIsScatterTrendlineVisible] = useState(true);
   const [hoverLegendSeriesName, setHoverLegendSeriesName] = useState<string | null>(null);
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);

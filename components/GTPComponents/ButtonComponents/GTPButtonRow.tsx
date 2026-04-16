@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import GTPTabButtonSet from "./GTPTabButtonSet";
+import GTPTabButtonSet from "../GTPTabButtonSet";
 
 export default function GTPButtonRow({
   children,

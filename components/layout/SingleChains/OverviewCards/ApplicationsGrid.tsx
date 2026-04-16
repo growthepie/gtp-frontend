@@ -1425,6 +1425,7 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
         size="md"
         allowInteract={false}
         placement="bottom-start"
+        hoverOpenDelay={300}
         trigger={
           <Link
             href={`/applications/${app.ownerProject}`}

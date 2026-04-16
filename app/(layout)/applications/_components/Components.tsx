@@ -30,10 +30,12 @@ import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 import { SmartBackButton } from "@/components/SmartBackButton";
+import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
 
 type ApplicationIconProps = {
   owner_project: string;
   size: "sm" | "md" | "lg";
+  className?: string;
 };
 
 export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
@@ -49,7 +51,7 @@ export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
   return null;
 }
 
-export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
+export const ApplicationIcon = ({ owner_project, size, className }: ApplicationIconProps) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const sizeClassMap = {
     sm: "size-[26px]",
@@ -70,7 +72,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
   };
 
   return (
-    <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full ${sizeClassMap[size]}`}>
+    <div className={className ?? `flex items-center justify-center select-none bg-color-ui-active rounded-full ${sizeClassMap[size]}`}>
       {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
         <Image
           src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
@@ -133,8 +135,7 @@ export const PageTitleAndDescriptionAndControls = () => {
                 iconSize="md"
                 iconBackground="bg-transparent"
                 rightIcon={"feather:arrow-right" as GTPIconName}
-                href="https://www.openlabelsinitiative.org/?gtp.applications"
-                newTab
+                href="/applications/add"
                 gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                 className="w-fit hidden md:block"
               />
@@ -149,9 +150,7 @@ export const PageTitleAndDescriptionAndControls = () => {
         </div>
         <div className="flex md:hidden">
           <Link
-            href="https://www.openlabelsinitiative.org/?gtp.applications"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/applications/add"
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
             <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">
@@ -442,44 +441,52 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
   if (mobile) {
     return (
       <div className="flex flex-col items-center justify-start gap-y-[10px]">
-        {validLinks.map(({ key, icon, prefix }) => (
-          <Link
-            key={key}
-            href={`${prefix}${projectData[key]}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center"
-          >
-            <Icon icon={icon} className="size-[15px] select-none" />
-          </Link>
-        ))}
+        {validLinks.map(({ key, icon, prefix }) => {
+          const href = `${prefix}${projectData[key]}`;
+          const className = "flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center";
+          return (
+            <ExternalLink
+              key={key}
+              href={href}
+              className={className}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Icon icon={icon} className="size-[15px] select-none" />
+            </ExternalLink>
+          );
+        })}
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-x-[10px]">
-      {validLinks.map(({ key, icon, prefix }) => (
-        <Link
-          key={key}
-          href={`${prefix}${projectData[key]}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`}
-        >
-          {key === "website" ? (
-            <>
-              <ApplicationIcon owner_project={owner_project} size="md" />
-              <div className="text-xxxs">Website</div>
-              <div className="size-[24px] rounded-full bg-color-bg-medium flex justify-center items-center">
-                <Icon icon="feather:arrow-right" className="size-[17px] text-color-text-primary" />
-              </div>
-            </>
-          ) : (
-            <Icon icon={icon} className="size-[24px] select-none" />
-          )}
-        </Link>
-      ))}
+      {validLinks.map(({ key, icon, prefix }) => {
+        const href = `${prefix}${projectData[key]}`;
+        const className = `${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`;
+        const content = key === "website" ? (
+          <>
+            <ApplicationIcon owner_project={owner_project} size="md" />
+            <div className="text-xxxs">Website</div>
+            <div className="size-[24px] rounded-full bg-color-bg-medium flex justify-center items-center">
+              <Icon icon="feather:arrow-right" className="size-[17px] text-color-text-primary" />
+            </div>
+          </>
+        ) : (
+          <Icon icon={icon} className="size-[24px] select-none" />
+        );
+
+        return (
+          <ExternalLink
+            key={key}
+            href={href}
+            className={className}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {content}
+          </ExternalLink>
+        );
+      })}
     </div>
   );
 });
@@ -582,6 +589,7 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
             size="md"
             placement="bottom-start"
             allowInteract={true}
+            hoverOpenDelay={300}
             trigger={
               <div className="heading-large-md overflow-visible flex-1 truncate hover:underline cursor-pointer">
                 <ApplicationDisplayName owner_project={application.owner_project} />
@@ -836,15 +844,17 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
 
             return (
               <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
-                {ownerProjectToProjectData[owner_project][key] && <Link
-                  href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-                  target="_blank"
-                >
-                  <Icon
-                    icon={icons[index]}
-                    className="w-[15px] h-[15px] select-none"
-                  />
-                </Link>}
+                {ownerProjectToProjectData[owner_project][key] && (
+                  <ExternalLink
+                    href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Icon
+                      icon={icons[index]}
+                      className="w-[15px] h-[15px] select-none"
+                    />
+                  </ExternalLink>
+                )}
               </div>
             )
           })}
@@ -861,16 +871,15 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
       {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
           {ownerProjectToProjectData[owner_project][key] && (
-            <Link
+            <ExternalLink
               href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-              target="_blank"
-              onClick={(e)=> {e.stopPropagation(); e.preventDefault()}}
+              onClick={(e)=> {e.stopPropagation();}}
             >
               <Icon
                 icon={icons[index]}
                 className="w-[15px] h-[15px] select-none"
               />
-            </Link>
+            </ExternalLink>
           )}
         </div>
       ))}

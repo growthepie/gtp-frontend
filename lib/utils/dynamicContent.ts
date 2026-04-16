@@ -859,6 +859,38 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           .replace('{{celo_7d_txcount_sum}}', Number.isFinite(celoTxCount7d as number) ? String(Math.round(celoTxCount7d as number)) : '0');
       }
 
+      // Handle stablecoin fiat data placeholders
+      if (processedItem.includes('{{stablecoin_fiat_')) {
+        const stablecoinFiatData = await fetchData('stablecoin_fiat_timeseries', "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json");
+
+        if (stablecoinFiatData?.data?.timeseries) {
+          const types: string[] = stablecoinFiatData.data.timeseries.types ?? [];
+          const values: any[][] = stablecoinFiatData.data.timeseries.values ?? [];
+          const latestRow: any[] = values.length > 0 ? values[values.length - 1] : [];
+
+          const fiatCount = types.length;
+
+          // Sum all currency values in the latest row (index 0 is timestamp)
+          const total = latestRow.slice(1).reduce((sum: number, v: any) => sum + (Number(v) || 0), 0);
+
+          const usdRawIdx = types.findIndex((t: string) => t.toLowerCase() === "usd");
+          const usdValue = usdRawIdx >= 0 ? (Number(latestRow[usdRawIdx + 1]) || 0) : 0;
+          const usdDominance = total > 0 ? ((usdValue / total) * 100).toFixed(1) : 'N/A';
+          const nonUsdMcap = total - usdValue;
+
+          const formatBillions = (value: number) => {
+            if (value >= 1e9) return (value / 1e9).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'B';
+            if (value >= 1e6) return (value / 1e6).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
+            return value.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          };
+
+          processedItem = processedItem
+            .replace('{{stablecoin_fiat_count}}', String(fiatCount))
+            .replace('{{stablecoin_fiat_usd_dominance}}', usdDominance + '%')
+            .replace('{{stablecoin_fiat_non_usd_mcap}}', '$' + formatBillions(nonUsdMcap));
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

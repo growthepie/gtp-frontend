@@ -7,6 +7,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useSearchParams } from "next/navigation";
 import { getGTPTooltipContainerClass, GTP_TOOLTIP_SIZE_CLASS_MAP, GTPTooltipSize } from "./tooltipShared";
+import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
 
 import { computePosition, flip, shift, offset, arrow, Placement, autoUpdate } from '@floating-ui/dom';
 import { FloatingPortal, safePolygon, useDismiss, useFloating, useHover, useInteractions, useMergeRefs, useRole } from "@floating-ui/react";
@@ -36,6 +37,7 @@ interface GTPTooltipNewProps {
   // New animation props
   animationDuration?: number;
   onOpenChange?: (open: boolean) => void;
+  hoverOpenDelay?: number;
 }
 
 export const GTPTooltipNew = ({
@@ -53,9 +55,11 @@ export const GTPTooltipNew = ({
   allowInteract = true,
   unstyled = false,
   onOpenChange,
+  hoverOpenDelay = 0,
 }: GTPTooltipNewProps) => {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(defaultOpen);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen;
+  const [hoverOpenTimeoutId, setHoverOpenTimeoutId] = useState<number | null>(null);
 
   // Ref for the tooltip node itself, required by CSSTransition
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
@@ -98,11 +102,19 @@ export const GTPTooltipNew = ({
     update();
   }, [triggerElement, refs, update]);
 
+  useEffect(() => {
+    return () => {
+      if (hoverOpenTimeoutId !== null) {
+        window.clearTimeout(hoverOpenTimeoutId);
+      }
+    };
+  }, [hoverOpenTimeoutId]);
+
   const hover = useHover(context, {
     enabled: enableHover,
     move: false,
     handleClose: allowInteract ? safePolygon() : undefined,
-    delay: { open: 0, close: allowInteract ? 50 : 0 },
+    delay: { open: hoverOpenDelay, close: allowInteract ? 50 : 0 },
   });
 
   const dismiss = useDismiss(context, {
@@ -192,12 +204,26 @@ export const GTPTooltipNew = ({
         onMouseEnter: (e: React.MouseEvent) => {
           // Handle hover manually since getReferenceProps handler isn't working
           if (enableHover && !isOpen) {
-            handleOpenChange(true);
+            if (hoverOpenTimeoutId !== null) {
+              window.clearTimeout(hoverOpenTimeoutId);
+            }
+
+            const timeoutId = window.setTimeout(() => {
+              handleOpenChange(true);
+              setHoverOpenTimeoutId(null);
+            }, hoverOpenDelay);
+
+            setHoverOpenTimeoutId(timeoutId);
           }
           // Call original handler if it exists
           (trigger as React.ReactElement<any>).props.onMouseEnter?.(e);
         },
         onMouseLeave: (e: React.MouseEvent) => {
+          if (hoverOpenTimeoutId !== null) {
+            window.clearTimeout(hoverOpenTimeoutId);
+            setHoverOpenTimeoutId(null);
+          }
+
           if (enableHover && !allowInteract) {
             handleOpenChange(false);
           }
@@ -205,6 +231,11 @@ export const GTPTooltipNew = ({
           (trigger as React.ReactElement<any>).props.onMouseLeave?.(e);
         },
         onClick: (e: React.MouseEvent) => {
+          if (hoverOpenTimeoutId !== null) {
+            window.clearTimeout(hoverOpenTimeoutId);
+            setHoverOpenTimeoutId(null);
+          }
+
           if (controlledIsOpen === undefined) {
             setUncontrolledIsOpen(prev => !prev);
           }
@@ -495,16 +526,18 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
 
         return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <GTPIcon
-              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-              size="sm"
-              className="select-none"
-            />
-          </Link>}
+          {ownerProjectToProjectData[owner_project][key] && (
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
+          )}
         </div>
         )
       })}
@@ -523,16 +556,18 @@ export const GTPApplicationLinks = memo(({ owner_project, showUrl}: { owner_proj
     <div className="flex items-center gap-x-[5px]">
       {ownerProjectToProjectData[owner_project] && APPLICATION_LINK_KEYS.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <GTPIcon
-              icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
-              size="sm"
-              className="select-none"
-            />
-          </Link>}
+          {ownerProjectToProjectData[owner_project][key] && (
+            <ExternalLink
+              href={`${APPLICATION_LINK_PREFIXES[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GTPIcon
+                icon={APPLICATION_LINK_ICONS[index] as GTPIconName}
+                size="sm"
+                className="select-none"
+              />
+            </ExternalLink>
+          )}
         </div>
       ))}
     </div>

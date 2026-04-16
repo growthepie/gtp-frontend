@@ -155,7 +155,7 @@ const Error = ({
               className={`flex self-center items-center p-[15px] w-[299px] bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
-              href={`https://docs.growthepie.xyz/`}
+              href={`https://docs.growthepie.com/`}
             >
               <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
               <div className="text-[16px] leading-[150%]">Knowledge</div>

@@ -411,6 +411,7 @@ export default function ContractRow({
             <GTPTooltipNew
               placement="bottom-start"
               allowInteract={true}
+              hoverOpenDelay={300}
               trigger={
                 projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
                   <Link
@@ -439,6 +440,7 @@ export default function ContractRow({
             <GTPTooltipNew
               placement="bottom-start"
               allowInteract={true}
+              hoverOpenDelay={300}
               trigger={
                 <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
                   <span className="block w-full truncate">

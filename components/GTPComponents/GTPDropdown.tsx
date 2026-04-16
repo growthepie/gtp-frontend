@@ -1,8 +1,8 @@
 "use client";
 
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import GTPButtonDropdown from "@/components/GTPButton/GTPButtonDropdown";
-import type { GTPButtonProps } from "@/components/GTPButton/GTPButton";
+import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPButtonDropdown";
+import type { GTPButtonProps } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import type { GTPIconName } from "@/icons/gtp-icon-names";

@@ -17,9 +17,15 @@ import { Get_SupportedChainKeys } from "@/lib/chains";
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   kpi_cards:        KpiCards;
-  first_seen:      Date;
+  first_seen:       FirstSeenByChain;
+  chains_by_size:   string[];
   contracts_table: {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
+}
+
+
+export interface FirstSeenByChain {
+  [chain: string]: string;
 }
 
 export interface KpiCards {
@@ -79,11 +85,14 @@ export interface AggData {
 }
 
 export interface OverTime {
-  [chain: string]: OverTimeData;
+  [chain: string]: OverTimeData | undefined;
+  all?: OverTimeData;
 }
 
 export interface OverTimeData {
-  daily: Daily;
+  daily?: Daily;
+  hourly?: Daily;
+  [interval: string]: Daily | undefined;
 }
 
 export interface Daily {
@@ -220,8 +229,8 @@ export const ApplicationDetailsDataProvider = ({
       Object.keys(filteredData.metrics).forEach(metricKey => {
         const metric = filteredData.metrics[metricKey];
 
-        // Filter over_time
-        if (metric.over_time) {
+        // Filter over_time — skip for non-chain-specific metrics (their keys are interval names, not chains)
+        if (metric.over_time && master?.app_metrics?.[metricKey]?.chain_specific) {
           Object.keys(metric.over_time).forEach(chain => {
             if (!supportedChainKeys.includes(chain)) {
               delete metric.over_time[chain];
@@ -257,6 +266,14 @@ export const ApplicationDetailsDataProvider = ({
         }
       });
     }
+
+    if (filteredData.first_seen) {
+      filteredData.first_seen = Object.fromEntries(
+        Object.entries(filteredData.first_seen).filter(([chain]) => {
+          return chain === "all" || supportedChainKeys.includes(chain);
+        }),
+      );
+    }
   
     if (focusEnabled) {
       // Filter out Ethereum from metrics
@@ -276,6 +293,11 @@ export const ApplicationDetailsDataProvider = ({
             metric.aggregated.data = otherChains;
           }
         });
+      }
+
+      if (filteredData.first_seen?.ethereum) {
+        const { ethereum, ...otherChains } = filteredData.first_seen;
+        filteredData.first_seen = otherChains;
       }
       
       // Filter out Ethereum from contracts_table for all timespans

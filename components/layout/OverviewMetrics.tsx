@@ -500,8 +500,7 @@ export default function OverviewMetrics({
                   iconSize="md"
                   iconBackground="bg-transparent"
                   rightIcon={"feather:arrow-right" as GTPIconName}
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
+                  href="/applications/add"
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
                   />
@@ -512,8 +511,7 @@ export default function OverviewMetrics({
                     icon="oli-open-labels-initiative"
                     iconSize="md"
                     iconBackground="bg-transparent"
-                    href="https://www.openlabelsinitiative.org/?gtp.applications"
-                    newTab
+                    href="/applications/add"
                     gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                     className="w-fit"
                     containerClassName=""

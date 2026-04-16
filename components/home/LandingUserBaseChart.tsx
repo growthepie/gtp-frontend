@@ -69,17 +69,18 @@ const MeetL2sMapCards = ({
   const { resolvedTheme } = useTheme();
 
   const projectData = useMemo(() => {
-    if (!ownerProjectToProjectData || !meetL2sData) return null;
+    if (!ownerProjectToProjectData) return null;
     const mapped: Record<string, any> = {};
-    Object.keys(meetL2sData).forEach((key) => {
-      if (meetL2sData[key]?.top_apps) {
-        mapped[key] = meetL2sData[key].top_apps
+    Object.keys(tableVisual).forEach((key) => {
+      const topApps = (tableVisual[key] as any)?.top_apps as string[] | undefined;
+      if (topApps?.length) {
+        mapped[key] = topApps
           .map((app) => ownerProjectToProjectData[app])
           .filter(Boolean);
       }
     });
     return mapped;
-  }, [meetL2sData, ownerProjectToProjectData]);
+  }, [tableVisual, ownerProjectToProjectData]);
 
   return (
     <div className="grid gap-[15px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -252,7 +253,7 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
             <LandingEventsChart />
          
           </Container>
-          <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+          <Container className="flex flex-col flex-1 w-full mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
                 <GTPIcon
