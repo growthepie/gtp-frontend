@@ -942,7 +942,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   </svg>
                 </div>
               </div>
-              <div className={`flex items-center justify-center size-[18px] rounded-[5px] bg-color-bg-medium pointer-events-none transition-opacity duration-200 ${isFocused || localQuery.length > 0 ? "opacity-0" : "opacity-100"}`}>
+              <div className={`hidden md:flex items-center justify-center size-[18px] rounded-[5px] bg-color-bg-medium pointer-events-none transition-opacity duration-200 ${isFocused || localQuery.length > 0 ? "opacity-0" : "opacity-100"}`}>
                 <div className="heading-small-sm text-color-text-primary">/</div>
               </div>
             </div>
