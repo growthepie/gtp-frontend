@@ -534,7 +534,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
 
             <div className="w-full flex justify-between  lg:items-center gap-x-[15px] lg:flex-row flex-col gap-y-[10px] ">
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
-                    <div ref={chainsTextRef} className="text-sm shrink-0">Chains Selected</div>
+                    <div ref={chainsTextRef} className="text-xs md:text-sm shrink-0">{isMobile ? "Chains" : "Chains Selected"}</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
                     {filteredSortedChains.map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
@@ -547,7 +547,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                                 visualState={deselectedChains.includes(chain) ? "default" : "active"}
                                 className="z-40"
                                 labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
-                                size="md"
+                                size={isMobile ? "sm" : "md"}
                                 clickHandler={() => {
                                     setDeselectedChains((prev) => {
                                         const next = new Set(prev);
@@ -747,6 +747,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
     const mediumBreakpoint = useMediaQuery("(max-width: 1024px)");
+    const isMobile = useMediaQuery("(max-width: 728px)");
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
@@ -954,7 +955,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     label: "Share",
                                     labelDisplay: "active",
                                     leftIcon: "gtp-share-monochrome",
-                                    size: "sm",
+                                    size: isMobile ? "xs" : "sm",
                                     variant: "no-background",
                                 }}
                                 isOpen={isSharePopoverOpen}
@@ -964,7 +965,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
                             <GTPButton
                                 leftIcon="gtp-download-monochrome"
-                                size={"sm"}
+                                size={isMobile ? "xs" : "sm"}
                                 variant="no-background"
                                 visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                                 disabled={isDownloadingChartSnapshot}
@@ -976,7 +977,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             style={{ width: "auto" }}
                         >
                             {metricData?.toggles?.map((toggle: string) => (
-                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size={"sm"} variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
+                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size={isMobile ? "xs" : "sm"} variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
                             ))}
                         </GTPButtonRow>
 

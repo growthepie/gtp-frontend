@@ -64,8 +64,6 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
 
     const activeSinceLabel = getActiveSinceLabel(data.first_seen);
 
-    console.log(projectMetadata);
-
     return (
       <div className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none">
         {/* Header row: toggle + title + links (when closed) */}
