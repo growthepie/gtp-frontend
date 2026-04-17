@@ -209,6 +209,7 @@ export interface ChartBlock extends BaseBlock {
       xIndex?: number;
       tooltipDecimals?: number;
       prefix?: string;
+      suffix?: string;
       prefixFiatSymbolFromPath?: string; // path in loaded JSON to a fiat code (e.g. "data.fiat"); symbol is looked up from fiat.json
     };
     pieData?:
@@ -252,7 +253,7 @@ export interface ChartToggleBlock extends BaseBlock {
   className?: string;
   layout?: 'tabs' | 'segmented';
   defaultIndex?: number;
-  charts: ChartBlock[];
+  charts: (ChartBlock & { sideChart?: ChartBlock })[];
 }
 
 export interface CalloutBlock extends BaseBlock {
