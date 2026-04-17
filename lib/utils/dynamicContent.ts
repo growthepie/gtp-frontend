@@ -363,6 +363,171 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       }));
   };
 
+  const buildTxCostTop10Series = async (
+    metricKey: "activeaddresses" | "txcount" | "throughput" | "fees" | "profit" | "tvl",
+  ) => {
+    const landingRaw = await fetchData('landing_page', "https://api.growthepie.com/v1/landing_page.json");
+    const masterRaw = await fetchData('master', "https://api.growthepie.com/v1/master.json");
+    const tableVisual = landingRaw?.data?.metrics?.table_visual ?? {};
+    const prodChainKeySet = new Set(
+      Object.entries(masterRaw?.chains ?? {})
+        .flatMap(([key, chain]: [string, any]) => {
+          if (chain?.deployment !== "PROD") return [];
+          const keyCandidates = [key, chain?.url_key]
+            .filter((candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0)
+            .map((candidate) => candidate.trim().toLowerCase());
+          return keyCandidates.flatMap((candidate) => [
+            candidate,
+            candidate.replace(/_/g, "-"),
+            candidate.replace(/-/g, "_"),
+          ]);
+        }),
+    );
+
+    const chainRows = await Promise.all(
+      Object.entries(tableVisual).map(async ([tableKey, tableEntry]: [string, any]) => {
+        const rawChainKeyCandidate =
+          typeof tableEntry?.origin_key === "string" && tableEntry.origin_key.trim().length > 0
+            ? tableEntry.origin_key.trim().toLowerCase()
+            : tableKey.trim().toLowerCase();
+
+        const chainKeyCandidates = Array.from(
+          new Set([
+            rawChainKeyCandidate,
+            rawChainKeyCandidate.replace(/_/g, "-"),
+            rawChainKeyCandidate.replace(/-/g, "_"),
+          ]),
+        ).filter((candidate) => /^[a-z0-9_-]+$/.test(candidate));
+
+        if (!chainKeyCandidates.length) return null;
+        if (prodChainKeySet.size > 0 && !chainKeyCandidates.some((candidate) => prodChainKeySet.has(candidate))) {
+          return null;
+        }
+
+        let resolvedChainKey: string | null = null;
+        let txCostX: number | null = null;
+        let metricY: number | null = null;
+
+        // X-axis: 7-day average transaction fee (USD) from txcosts endpoint
+        for (const chainKeyCandidate of chainKeyCandidates) {
+          const txcostsRaw = await fetchData(
+            `txcosts_${chainKeyCandidate}`,
+            `https://api.growthepie.com/v1/metrics/chains/${chainKeyCandidate}/txcosts.json`,
+          );
+          const dailyTypes = txcostsRaw?.details?.timeseries?.daily?.types;
+          const valueIndex = getPreferredMetricIndex(dailyTypes, ["usd", "eth"]);
+          const dailyData = txcostsRaw?.details?.timeseries?.daily?.data;
+          const mappedData = Array.isArray(dailyData)
+            ? dailyData.map((row: any) => (Array.isArray(row) ? [row[0], row[valueIndex]] : null)).filter(Boolean)
+            : null;
+          const txcostAvg = averageLastNDays(mappedData, 7);
+          if (Number.isFinite(txcostAvg as number)) {
+            resolvedChainKey = chainKeyCandidate;
+            txCostX = txcostAvg as number;
+            break;
+          }
+        }
+
+        if (!resolvedChainKey || !Number.isFinite(txCostX as number)) return null;
+
+        // Y-axis: the comparison metric
+        if (metricKey === "activeaddresses") {
+          const weeklyActive = Number(tableEntry?.users);
+          if (Number.isFinite(weeklyActive)) metricY = Math.round(weeklyActive);
+        } else {
+          for (const chainKeyCandidate of chainKeyCandidates) {
+            const metricRaw = await fetchData(
+              `${metricKey}_${chainKeyCandidate}`,
+              `https://api.growthepie.com/v1/metrics/chains/${chainKeyCandidate}/${metricKey}.json`,
+            );
+
+            if (metricKey === "throughput") {
+              const summaryAvg = getSummaryValue(metricRaw?.details?.summary?.last_7d);
+              const fallbackAvg = averageLastNDays(metricRaw?.details?.timeseries?.daily?.data, 7);
+              const throughput = Number.isFinite(summaryAvg as number) ? summaryAvg : fallbackAvg;
+              if (Number.isFinite(throughput as number)) {
+                metricY = (throughput as number) * 1_000_000;
+                break;
+              }
+              continue;
+            }
+
+            if (metricKey === "tvl") {
+              const dailyTypes = Array.isArray(metricRaw?.details?.timeseries?.daily?.types)
+                ? metricRaw.details.timeseries.daily.types.map((e: any) => String(e).toLowerCase())
+                : [];
+              const preferredIndex = dailyTypes.indexOf("usd") >= 0 ? dailyTypes.indexOf("usd") : 1;
+              const dailyPoints = Array.isArray(metricRaw?.details?.timeseries?.daily?.data)
+                ? metricRaw.details.timeseries.daily.data
+                : [];
+              const lastPoint = dailyPoints[dailyPoints.length - 1];
+              const tvlCandidate =
+                Array.isArray(lastPoint) && lastPoint.length > preferredIndex
+                  ? Number(lastPoint[preferredIndex])
+                  : Number.NaN;
+              if (Number.isFinite(tvlCandidate)) {
+                metricY = tvlCandidate;
+                break;
+              }
+              continue;
+            }
+
+            if (metricKey === "fees" || metricKey === "profit") {
+              const dailyTypes = metricRaw?.details?.timeseries?.daily?.types;
+              const valueIndex = getPreferredMetricIndex(dailyTypes, ["usd", "eth"]);
+              const weeklySum = sumLastNDaysByIndex(metricRaw?.details?.timeseries?.daily?.data, valueIndex, 7);
+              if (Number.isFinite(weeklySum)) {
+                metricY = weeklySum as number;
+                break;
+              }
+              continue;
+            }
+
+            // txcount: weekly sum
+            const weeklySum = sumLastNDays(metricRaw?.details?.timeseries?.daily?.data, 7);
+            if (Number.isFinite(weeklySum as number)) {
+              metricY = weeklySum;
+              break;
+            }
+          }
+        }
+
+        if (!Number.isFinite(metricY as number)) return null;
+
+        const displayNameCandidate = tableEntry?.name || tableEntry?.label || tableEntry?.chain_name || rawChainKeyCandidate;
+        const displayName =
+          typeof displayNameCandidate === "string" && displayNameCandidate.trim().length > 0
+            ? displayNameCandidate
+            : formatChainLabel(resolvedChainKey!);
+
+        return {
+          chainKey: resolvedChainKey,
+          displayName,
+          txCostX: txCostX!,
+          metricY: metricY as number,
+        };
+      }),
+    );
+
+    return chainRows
+      .filter((row): row is NonNullable<typeof row> => Boolean(row))
+      .sort((a, b) => b.metricY - a.metricY)
+      .slice(0, 10)
+      .map((row) => ({
+        name: row.displayName,
+        key: row.chainKey,
+        type: "scatter",
+        data: [[row.txCostX, Math.round(row.metricY)]],
+        prefix: "$",
+        tooltipDecimals: 4,
+        ...(metricKey === "throughput"
+          ? { suffix: " gas/s", tooltipDecimals: 4 }
+          : metricKey === "tvl" || metricKey === "fees" || metricKey === "profit"
+            ? { tooltipDecimals: 4 }
+            : {}),
+      }));
+  };
+
   const processItem = async (item: any): Promise<any> => {
     if (typeof item === 'string') {
       let processedItem = item;
@@ -828,6 +993,36 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           '{{avg_active_address_top10_rent_paid_series}}',
           JSON.stringify(top10RentPaidSeries),
         );
+      }
+
+      if (processedItem.includes('{{txcost_top10_activeaddress_series}}')) {
+        const series = await buildTxCostTop10Series("activeaddresses");
+        processedItem = processedItem.replace('{{txcost_top10_activeaddress_series}}', JSON.stringify(series));
+      }
+
+      if (processedItem.includes('{{txcost_top10_txcount_series}}')) {
+        const series = await buildTxCostTop10Series("txcount");
+        processedItem = processedItem.replace('{{txcost_top10_txcount_series}}', JSON.stringify(series));
+      }
+
+      if (processedItem.includes('{{txcost_top10_throughput_series}}')) {
+        const series = await buildTxCostTop10Series("throughput");
+        processedItem = processedItem.replace('{{txcost_top10_throughput_series}}', JSON.stringify(series));
+      }
+
+      if (processedItem.includes('{{txcost_top10_revenue_series}}')) {
+        const series = await buildTxCostTop10Series("fees");
+        processedItem = processedItem.replace('{{txcost_top10_revenue_series}}', JSON.stringify(series));
+      }
+
+      if (processedItem.includes('{{txcost_top10_profit_series}}')) {
+        const series = await buildTxCostTop10Series("profit");
+        processedItem = processedItem.replace('{{txcost_top10_profit_series}}', JSON.stringify(series));
+      }
+
+      if (processedItem.includes('{{txcost_top10_tvs_series}}')) {
+        const series = await buildTxCostTop10Series("tvl");
+        processedItem = processedItem.replace('{{txcost_top10_tvs_series}}', JSON.stringify(series));
       }
 
       if (

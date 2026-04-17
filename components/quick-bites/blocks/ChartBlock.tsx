@@ -249,7 +249,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
       meta: generatedMeta,
       nestedData: generatedMeta.map(() => values),
     };
-  }, [block.chartType, dynamicSeriesConfig, dynamicSeriesUrl, unProcessedData]);
+  }, [block.chartType, dynamicSeriesConfig, dynamicSeriesUrl, sharedState, unProcessedData]);
   
   // Get nested data for all meta entries
   const metaList = block.dataAsJson?.meta;
@@ -604,6 +604,8 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
             defaultFilteredSeriesNames={block.defaultFilteredSeriesNames}
             top10ByMetric={block.top10ByMetric}
             scatterTrendline={block.scatterTrendline}
+            scatterRatioBase={block.scatterRatioBase}
+            showScatterRatio={block.showScatterRatio}
             chainQuickBitesTopBar={effectiveChainQuickBitesTopBar}
             quickBiteTabRightEdgeFlush={isChainQuickBitesTabRightFlush}
             quickBiteTabLeftEdgeFlush={isChainQuickBitesTabLeftFlush}

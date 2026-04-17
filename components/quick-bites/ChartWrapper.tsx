@@ -103,6 +103,8 @@ interface ChartWrapperProps {
     label?: string;
     color?: string;
   };
+  scatterRatioBase?: number;
+  showScatterRatio?: boolean;
   chainQuickBitesTopBar?: React.ReactNode;
   quickBiteTabRightEdgeFlush?: boolean;
   quickBiteTabLeftEdgeFlush?: boolean;
@@ -114,6 +116,7 @@ const TOP_CHAIN_SERIES_LIMIT = 10;
 const DEFAULT_SCATTER_TRENDLINE_LABEL = "Trendline";
 const SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO = 0.12;
 const SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO_CHAIN_TAB = 0.24;
+const SCATTER_ACTIVITY_METRIC_KEYS = new Set(["activeaddresses", "transactioncount", "throughput"]);
 const CHAIN_QUICKBITES_HEADER_ICON = "gtp-quick-bites-monochrome" as const;
 const DEFAULT_SCATTER_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -220,6 +223,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   defaultFilteredSeriesNames = [],
   top10ByMetric,
   scatterTrendline,
+  scatterRatioBase,
+  showScatterRatio = true,
   chainQuickBitesTopBar,
   quickBiteTabRightEdgeFlush = false,
   quickBiteTabLeftEdgeFlush = false,
@@ -345,6 +350,34 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
     return `${prefix}${formattedRatio}${suffix}`;
   }, []);
+  const normalizedScatterRatioBase = useMemo(() => {
+    if (
+      typeof scatterRatioBase === "number"
+      && Number.isFinite(scatterRatioBase)
+      && scatterRatioBase > 0
+    ) {
+      return scatterRatioBase;
+    }
+    return null;
+  }, [scatterRatioBase]);
+  const scaleScatterRatio = useCallback(
+    (ratio: number | null) => {
+      if (ratio === null || !Number.isFinite(ratio)) return null;
+      if (normalizedScatterRatioBase === null) return ratio;
+      return ratio * normalizedScatterRatioBase;
+    },
+    [normalizedScatterRatioBase],
+  );
+  const scatterRatioLabel = useMemo(() => {
+    if (normalizedScatterRatioBase === null) return "Ratio";
+
+    const baseLabel = normalizedScatterRatioBase.toLocaleString("en-GB", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 8,
+      useGrouping: false,
+    });
+    return `Ratio (per ${baseLabel})`;
+  }, [normalizedScatterRatioBase]);
 
   const processedSeriesData = useMemo(() => {
     if (!jsonMeta?.meta || !jsonData) return [];
@@ -473,6 +506,18 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const normalizedTop10MetricKey = useMemo(
     () => normalizeSeriesLabel(top10ByMetric?.trim() || ""),
     [top10ByMetric],
+  );
+  const isScatterActivityMetric = useMemo(
+    () => SCATTER_ACTIVITY_METRIC_KEYS.has(normalizedTop10MetricKey),
+    [normalizedTop10MetricKey],
+  );
+  const getScatterYPrefix = useCallback(
+    (prefix?: string) => {
+      const resolvedPrefix = typeof prefix === "string" ? prefix : "";
+      if (!isScatterActivityMetric) return resolvedPrefix;
+      return /^\s*\$\s*$/.test(resolvedPrefix) ? "" : resolvedPrefix;
+    },
+    [isScatterActivityMetric],
   );
   const chainDeploymentByAlias = useMemo(() => {
     const map = new Map<string, boolean>();
@@ -1009,7 +1054,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         const xValue = Number(point?.x ?? x);
         const yValue = Number(point?.y);
         const yMeta = jsonMeta?.meta?.find((meta) => meta.name === seriesName) ?? jsonMeta?.meta?.[0];
-        const yPrefix = yMeta?.prefix || "";
+        const yPrefix = getScatterYPrefix(yMeta?.prefix);
         const ySuffix = yMeta?.suffix || "";
         const yDecimals = yMeta?.tooltipDecimals ?? 2;
 
@@ -1033,10 +1078,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           });
         };
 
-        const formattedX = formatValue(xValue, 2);
+        const normalizedXAxisTitle = normalizeSeriesLabel(String(xLabel || ""));
+        const isTransactionCostXAxis =
+          normalizedXAxisTitle.includes("transactionfee") || normalizedXAxisTitle.includes("transactioncost");
+        const formattedXBase = formatValue(xValue, isTransactionCostXAxis ? 4 : 2);
+        const formattedX =
+          isTransactionCostXAxis && formattedXBase !== "N/A" ? `$${formattedXBase}` : formattedXBase;
         const formattedY = `${yPrefix}${formatValue(yValue, yDecimals)}${ySuffix}`;
         const ratioValue = Number.isFinite(xValue) && xValue !== 0 && Number.isFinite(yValue) ? yValue / xValue : null;
-        const formattedRatio = formatScatterRatio(ratioValue, {
+        const formattedRatio = formatScatterRatio(scaleScatterRatio(ratioValue), {
           prefix: yPrefix,
           suffix: ySuffix,
         });
@@ -1045,14 +1095,16 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             ? series.color
             : series?.color?.stops?.[0]?.[1] ?? "#999999";
 
+        const scatterRows = [
+          { label: yLabel, value: formattedY },
+          { label: xLabel, value: formattedX },
+          ...(showScatterRatio ? [{ label: scatterRatioLabel, value: formattedRatio }] : []),
+        ];
+
         return renderScatterTooltip({
           header: seriesName,
           markerColor,
-          rows: [
-            { label: yLabel, value: formattedY },
-            { label: xLabel, value: formattedX },
-            { label: "Ratio", value: formattedRatio },
-          ],
+          rows: scatterRows,
         });
       }
 
@@ -1158,7 +1210,20 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + totalLine + tooltipEnd;
     },
-    [chartType, jsonMeta, options, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip, formatScatterRatio],
+    [
+      chartType,
+      jsonMeta,
+      options,
+      shouldShowTimeInTooltip,
+      disableTooltipSort,
+      showZeroTooltip,
+      showTotalTooltip,
+      formatScatterRatio,
+      getScatterYPrefix,
+      scaleScatterRatio,
+      scatterRatioLabel,
+      showScatterRatio,
+    ],
   );
 
   const resolvedPieData = useMemo(() => {
@@ -1265,6 +1330,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const scatterSecondaryYAxisTitleText = typeof scatterSecondaryYAxisTitle?.text === "string"
     ? scatterSecondaryYAxisTitle.text
     : scatterPrimaryYAxisTitleText;
+  const isScatterXUsdTransactionCost = useMemo(() => {
+    if (chartType !== "scatter" || showXAsDate) return false;
+    const normalizedXAxisTitle = normalizeSeriesLabel(scatterXAxisTitleText);
+    return (
+      (normalizedXAxisTitle.includes("transactionfee") || normalizedXAxisTitle.includes("transactioncost")) &&
+      normalizedXAxisTitle.includes("usd")
+    );
+  }, [chartType, scatterXAxisTitleText, showXAsDate]);
   const scatterSeriesForECharts = useMemo(() => {
     return seriesEntriesForRendering
       .map(({ series, processedData }) => {
@@ -1366,13 +1439,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
     const metaEntry = scatterMetaBySeriesName.get(firstVisibleSeries.name);
     return {
-      prefix: metaEntry?.prefix ?? firstVisibleSeries.prefix ?? "",
+      prefix: getScatterYPrefix(metaEntry?.prefix ?? firstVisibleSeries.prefix ?? ""),
       suffix: metaEntry?.suffix ?? firstVisibleSeries.suffix ?? "",
     };
-  }, [scatterMetaBySeriesName, scatterSeriesForECharts]);
+  }, [getScatterYPrefix, scatterMetaBySeriesName, scatterSeriesForECharts]);
   const scatterTrendlineRatioLabel = useMemo(
-    () => formatScatterRatio(scatterTrendlineResult?.ratio ?? null, scatterTrendlineRatioUnits),
-    [formatScatterRatio, scatterTrendlineResult?.ratio, scatterTrendlineRatioUnits],
+    () => formatScatterRatio(scaleScatterRatio(scatterTrendlineResult?.ratio ?? null), scatterTrendlineRatioUnits),
+    [formatScatterRatio, scaleScatterRatio, scatterTrendlineResult?.ratio, scatterTrendlineRatioUnits],
   );
   const scatterEChartOption = useMemo<EChartsOption>(() => {
     const axisTextColor = theme === "dark" ? "#CDD8D3" : "#293332";
@@ -1381,13 +1454,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     const xAxisType = showXAsDate ? "time" : mapToEChartsAxisType(options?.xAxis?.type);
     const hasActiveScatterTrendline =
       isScatterTrendlineEnabled && isScatterTrendlineVisible && Boolean(scatterTrendlineResult);
-    const scatterGridRight = hasActiveScatterTrendline
+    const shouldReserveTrendlineLabelSpace = hasActiveScatterTrendline && showScatterRatio;
+    const scatterGridRight = shouldReserveTrendlineLabelSpace
       ? (hasOppositeYAxis ? 92 : 56)
       : (hasOppositeYAxis ? 72 : 20);
     const scatterXAxisMax = (() => {
       const configuredMax = options?.xAxis?.max;
 
-      if (!hasActiveScatterTrendline || xAxisType === "time" || xAxisType === "log") {
+      if (!shouldReserveTrendlineLabelSpace || xAxisType === "time" || xAxisType === "log") {
         return configuredMax;
       }
 
@@ -1402,7 +1476,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       const dataMax = Math.max(...xValues);
       const dataMin = Math.min(...xValues);
       const spread = Math.abs(dataMax - dataMin);
-      const baseline = Math.max(spread, Math.abs(dataMax), 1);
+      const baseline = Math.max(spread, Math.abs(dataMax));
       const bufferRatio = isChainQuickBitesTabChart
         ? SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO_CHAIN_TAB
         : SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO;
@@ -1496,7 +1570,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const metaEntry = scatterMetaBySeriesName.get(seriesName);
           const seriesIndex = typeof point.seriesIndex === "number" ? point.seriesIndex : -1;
           const seriesConfig = seriesIndex >= 0 ? scatterSeriesForECharts[seriesIndex] : undefined;
-          const yPrefix = metaEntry?.prefix ?? seriesConfig?.prefix ?? "";
+          const yPrefix = getScatterYPrefix(metaEntry?.prefix ?? seriesConfig?.prefix ?? "");
           const ySuffix = metaEntry?.suffix ?? seriesConfig?.suffix ?? "";
           const yDecimals = metaEntry?.tooltipDecimals ?? seriesConfig?.tooltipDecimals ?? 2;
           const axisIndex = seriesIndex >= 0 ? (scatterSeriesForECharts[seriesIndex]?.yAxisIndex ?? 0) : 0;
@@ -1518,7 +1592,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const formattedX = showXAsDate && Number.isFinite(xRaw)
             ? dayjs.utc(xRaw).format(shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY")
             : Number.isFinite(xRaw)
-              ? xRaw.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+              ? isScatterXUsdTransactionCost
+                ? `$${xRaw.toLocaleString("en-GB", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`
+                : xRaw.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
               : "N/A";
           const formattedY = Number.isFinite(yRaw)
             ? `${yPrefix}${yRaw.toLocaleString("en-GB", {
@@ -1526,7 +1602,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               maximumFractionDigits: yDecimals,
             })}${ySuffix}`
             : "N/A";
-          const formattedRatio = formatScatterRatio(ratio, {
+          const formattedScaledRatio = formatScatterRatio(scaleScatterRatio(ratio), {
             prefix: yPrefix,
             suffix: ySuffix,
           });
@@ -1534,7 +1610,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const rowMarkup = [
             { label: yLabel, value: formattedY },
             { label: scatterXAxisTitleText, value: formattedX },
-            { label: "Ratio", value: formattedRatio },
+            ...(showScatterRatio ? [{ label: scatterRatioLabel, value: formattedScaledRatio }] : []),
           ]
             .map((row, index) => {
               const dividerMarkup = `<div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
@@ -1576,18 +1652,24 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         axisTick: { show: true, lineStyle: { color: axisLineColor } },
         splitLine: {
           show: true,
-          showMaxLine: !hasActiveScatterTrendline,
+          showMaxLine: !shouldReserveTrendlineLabelSpace,
           lineStyle: { color: axisGridColor },
         },
         axisLabel: {
           color: axisTextColor,
           fontFamily: "Fira Sans",
           fontSize: 10,
-          showMaxLabel: !hasActiveScatterTrendline,
+          showMaxLabel: !shouldReserveTrendlineLabelSpace,
           formatter: (value: any) => {
             const numericValue = Number(value);
             if (showXAsDate && Number.isFinite(numericValue)) {
               return dayjs.utc(numericValue).format("DD MMM");
+            }
+            if (isScatterXUsdTransactionCost && Number.isFinite(numericValue)) {
+              return `$${numericValue.toLocaleString("en-GB", {
+                minimumFractionDigits: 4,
+                maximumFractionDigits: 4,
+              })}`;
             }
             return Number.isFinite(numericValue) ? formatNumber(numericValue, true, "normal") : "";
           },
@@ -1623,7 +1705,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   color: scatterTrendlineColor,
                 },
                 endLabel: {
-                  show: true,
+                  show: showScatterRatio,
                   distance: 10,
                   color: scatterTrendlineTextColor,
                   fontFamily: "Raleway",
@@ -1663,6 +1745,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     scatterTrendlineTextColor,
     formatNumber,
     formatScatterRatio,
+    getScatterYPrefix,
+    scaleScatterRatio,
+    scatterRatioLabel,
+    showScatterRatio,
+    isScatterXUsdTransactionCost,
     isChainQuickBitesTabChart,
     isQuickBitePageScatter,
   ]);

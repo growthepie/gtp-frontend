@@ -670,6 +670,14 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
                     : undefined,
               }
             : undefined,
+      scatterRatioBase:
+        typeof chartConfig.scatterRatioBase === 'number' && Number.isFinite(chartConfig.scatterRatioBase)
+          ? chartConfig.scatterRatioBase
+          : undefined,
+      showScatterRatio:
+        typeof chartConfig.showScatterRatio === 'boolean'
+          ? chartConfig.showScatterRatio
+          : undefined,
       hideOnChainTabs: chartConfig.hideOnChainTabs === true,
       showOnChainTabs: showOnChainTabs?.length ? showOnChainTabs : undefined,
     };

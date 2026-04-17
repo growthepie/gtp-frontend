@@ -249,6 +249,8 @@ export interface ChartBlock extends BaseBlock {
     label?: string;
     color?: string;
   };
+  scatterRatioBase?: number;
+  showScatterRatio?: boolean;
   hideOnChainTabs?: boolean;
   showOnChainTabs?: string[];
   suppressWrapperSpacing?: boolean;
