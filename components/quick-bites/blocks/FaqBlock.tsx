@@ -32,6 +32,8 @@ const parseMarkdownLinksToHtml = (text: string): string => {
     '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline">$1</a>'
   );
 
+  result = result.replace(/\n/g, '<br>');
+
   return result;
 };
 
@@ -68,7 +70,7 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({ block }) => {
             key={`${item.question}-${index}`}
             question={item.question}
             answer={
-              <div>{item.answer}</div>
+              <div dangerouslySetInnerHTML={toMarkup(item.answer)} />
             }
             className="bg-color-bg-default"
             questionClassName=""

@@ -17,18 +17,47 @@ import dynamic from "next/dynamic";
 const LandingSwiperItems = dynamic(() => import("@/components/layout/LandingSwiperItems"), { ssr: true });
 
 export async function generateMetadata(): Promise<Metadata> {
-  
   const metadata = await getPageMetadata(
     "/",
     {}
   );
   const robots = metadata.noIndex ? { index: false, follow: false } : undefined;
+  const currentDate = new Date().toISOString().split("T")[0];
+  const ogTitle = "growthepie — Ethereum Ecosystem Analytics";
+  const ogDescription =
+    "The open analytics platform for the Ethereum ecosystem. Tracking Ethereum Mainnet, Layer 2s, and onchain applications: active addresses, throughput, transaction costs, TVL, stablecoin supply, and more.";
+
   return {
     title: metadata.title,
     description: metadata.description,
     alternates: metadata.canonical
       ? { canonical: metadata.canonical }
       : undefined,
+    openGraph: {
+      title: ogTitle,
+      description: ogDescription,
+      url: metadata.canonical ?? "https://www.growthepie.com",
+      images: [
+        {
+          url: `https://api.growthepie.com/v1/og_images/landing.jpg?date=${currentDate}`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.com",
+        },
+      ],
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: ogTitle,
+      description: ogDescription,
+      site: "@growthepie_eth",
+      siteId: "1636391104689094656",
+      creator: "@growthepie_eth",
+      creatorId: "1636391104689094656",
+      images: [`https://api.growthepie.com/v1/og_images/landing.jpg?date=${currentDate}`],
+    },
     robots,
   };
 }

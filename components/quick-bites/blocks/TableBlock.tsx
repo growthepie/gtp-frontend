@@ -334,6 +334,18 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           cellObject.link = columnDef.add_url.replace('${cellValue}', linkValue);
         }
       }
+
+      // Conditional URL based on another column's value
+      if (columnDef?.urlConditional) {
+        const { sourceKey, map, fallback } = columnDef.urlConditional;
+        const condValue = columnIndexMap[sourceKey] !== undefined
+          ? String(row[columnIndexMap[sourceKey]] ?? '')
+          : '';
+        const urlTemplate = map[condValue] ?? fallback;
+        if (urlTemplate && typeof cellValue === 'string') {
+          cellObject.link = urlTemplate.replace('${cellValue}', cellValue);
+        }
+      }
       if (infoTooltipText) {
         cellObject.infoTooltipText = infoTooltipText;
       }

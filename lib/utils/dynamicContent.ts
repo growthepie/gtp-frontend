@@ -455,6 +455,20 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle Argot token metadata placeholders
+      if (processedItem.includes('{{argot_')) {
+        const argotTokenMetadata = await fetchData('argot_token_metadata', "https://api.growthepie.com/v1/quick-bites/argot/tvs_token_metadata.json");
+
+        if (argotTokenMetadata) {
+          const tokenCount: number = argotTokenMetadata.token_count ?? 0;
+          const symbols: string[] = argotTokenMetadata.symbols ?? [];
+
+          processedItem = processedItem
+            .replace('{{argot_token_count}}', String(tokenCount))
+            .replace('{{argot_token_symbols}}', symbols.join(', '));
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {
