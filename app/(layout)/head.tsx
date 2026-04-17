@@ -6,6 +6,7 @@ const IS_DEV = process.env.IS_DEV === "True";
 export default function Head() {
   return (
     <>
+      <link rel="preconnect" href="https://api.growthepie.com" />
       {/* Preload master JSON file with high priority */}
       <link
         rel="preload"

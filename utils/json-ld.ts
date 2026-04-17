@@ -24,6 +24,7 @@ export const generateJsonLd = ({
     "@type": "Organization",
     "@id": "https://www.growthepie.com/#organization",
     name: "growthepie",
+    legalName: "orbal GmbH",
     url: "https://www.growthepie.com",
     logo: {
       "@type": "ImageObject",
