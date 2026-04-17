@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMemo, use } from "react";
-import GTPUniversalChart from "@/components/GTPComponents/GTPUniversalChart";
+import MetricsContainer from "@/components/metric/MetricsContainer";
 
 const Fundamentals = ({ params }: { params: Promise<{ metric: string; chain: string }> }) => {
   const { metric, chain } = use(params);
@@ -61,7 +61,7 @@ const FundamentalsContent = ({ metric }: FundamentalsContentProps) => {
     <>
       <MetricContextWrapper metric={metric} metric_type="fundamentals" defaultTimespan="max" defaultTimeInterval="daily" defaultScale="stacked" showRollingAverage={false}>
         <PageContainer className="" paddingY="none">
-          <GTPUniversalChart fullBleed={false} />
+          <MetricsContainer metric={metric} />
         </PageContainer>
       </MetricContextWrapper>
     </>

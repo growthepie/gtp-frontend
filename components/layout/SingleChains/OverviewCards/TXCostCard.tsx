@@ -38,7 +38,7 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
     const [txCostSelectedIndex, setTxCostSelectedIndex] = useState<number | null>(null);
     const [txCostHoverIndex, setTxCostHoverIndex] = useState<number | null>(null);
     const recentCostHistory = useMemo(() => costHistory.slice(-24), [costHistory]);
-    const { theme } = useTheme();
+    const { theme, resolvedTheme } = useTheme();
     useEffect(() => {
         if (recentCostHistory.length === 0) {
             setTxCostSelectedIndex(null);
@@ -66,8 +66,8 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
 
     // Get ranking color for transaction costs if overview data is available
     const rankingColor = overviewData?.data?.ranking?.txcosts
-        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100, false, theme as "dark" | "light" ?? "dark")
-        : master.chains[chainKey].colors[theme ?? "dark"][0];
+        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100, false, (resolvedTheme as "dark" | "light") ?? "dark")
+        : master.chains[chainKey].colors[resolvedTheme ?? "dark"][0];
 
     const activeIndex = txCostHoverIndex ?? txCostSelectedIndex ?? (recentCostHistory.length ? recentCostHistory.length - 1 : null);
     const lastCostData = activeIndex !== null ? recentCostHistory[activeIndex] : undefined;

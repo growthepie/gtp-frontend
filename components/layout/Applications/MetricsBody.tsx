@@ -10,7 +10,7 @@ import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
-import { useState, useMemo, useRef, useEffect, useLayoutEffect, useReducer, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
@@ -23,6 +23,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -47,6 +48,126 @@ const getTimeseriesRows = (value: unknown): number[][] => {
     }
     return [];
 };
+
+type SeriesEntry = { name: string; data: [number, number | null][] };
+
+function computeMetricSeriesData(params: {
+    data: ApplicationDetailsData;
+    metric: string;
+    timeInterval: string;
+    selectedTotal: boolean;
+    deselectedChains: string[];
+    hasChainData: boolean | undefined;
+    isComparing: boolean;
+    compareApps: CompareAppEntry[];
+    showAvg: boolean;
+}): SeriesEntry[] {
+    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg } = params;
+    const overTime = data.metrics[metric]?.over_time;
+    if (!overTime) return [];
+
+    function sumChainSeries(
+        ot: Record<string, unknown>,
+        excludeChains: string[] = [],
+    ): [number, number | null][] {
+        const sums = new Map<number, number | null>();
+        const counts = new Map<number, number>();
+        for (const chain of Object.keys(ot)) {
+            if (excludeChains.includes(chain)) continue;
+            const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
+            for (const d of points) {
+                const ts = Number(d[0]);
+                const val: number | null = d[1] == null ? null : Number(d[1]);
+                if (!sums.has(ts)) {
+                    sums.set(ts, val);
+                    counts.set(ts, val !== null ? 1 : 0);
+                } else {
+                    const existing = sums.get(ts)!;
+                    sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
+                    if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
+                }
+            }
+        }
+        return Array.from(sums.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([ts, sum]): [number, number | null] => {
+                if (!showAvg || sum === null) return [ts, sum];
+                const count = counts.get(ts) ?? 0;
+                return [ts, count > 0 ? sum / count : null];
+            });
+    }
+
+    if (!hasChainData) {
+        const intervalData = getTimeseriesRows(
+            (overTime as any)?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
+        );
+        const mainSeries: SeriesEntry = {
+            name: "Total",
+            data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+        };
+        if (!isComparing) return [mainSeries];
+        const compareSeries = compareApps
+            .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
+            .map(app => {
+                const appIntervalData = getTimeseriesRows(
+                    (app.data.metrics[metric].over_time as any)?.all?.[timeInterval] ??
+                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
+                );
+                return {
+                    name: `compare_${app.owner_project}`,
+                    data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                } as SeriesEntry;
+            });
+        return [mainSeries, ...compareSeries];
+    }
+
+    const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
+    const perChain: SeriesEntry[] = chains.flatMap((chain) => {
+        const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
+        if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
+        return [{
+            name: chain,
+            data: intervalData.map((d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+        }];
+    });
+
+    if (!selectedTotal && !isComparing) return perChain;
+
+    const mainTotalSeries: SeriesEntry = {
+        name: "Total",
+        data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
+    };
+
+    if (!isComparing) return [mainTotalSeries];
+
+    const mainAppChains = new Set(Object.keys(overTime));
+    const compareSeries = compareApps
+        .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
+        .map(app => {
+            const compareOverTime = app.data.metrics[metric].over_time as Record<string, unknown>;
+            // Exclude chains that are deselected on the main app, or that don't exist on the main app at all.
+            // This ensures chain parity: only chains shared by both apps and actively selected contribute.
+            const compareExclude = Object.keys(compareOverTime).filter(
+                chain => deselectedChains.includes(chain) || !mainAppChains.has(chain),
+            );
+            return {
+                name: `compare_${app.owner_project}`,
+                data: sumChainSeries(compareOverTime, compareExclude),
+            } as SeriesEntry;
+        });
+
+    return [mainTotalSeries, ...compareSeries];
+}
+
+// Returns the timestamp of the first data point with a real (non-null, non-zero) value.
+// The API pads series from a global start date with null or 0 before the app was active —
+// both must be skipped to find where the app's data actually begins.
+function firstNonNullTs(data: [number, number | null][]): number | null {
+    for (const [ts, val] of data) {
+        if (val !== null && val !== 0) return ts;
+    }
+    return null;
+}
 
 const INTERVALS = {
     hourly: {
@@ -77,7 +198,7 @@ const COMPARE_ITEM_HEIGHT = 28; // px per app row (py-[5px] * 2 + ~18px icon/tex
 const COMPARE_DIVIDER_HEIGHT = 13; // px for the separator between selected and results
 const COMPARE_LIST_MAX_HEIGHT = 220;
 
-export default function MetricsBody({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) {
+export default function MetricsBody({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
 
     const [selectedTotal, setSelectedTotal] = useState(true);
@@ -103,10 +224,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isCompareDropdownOpen]);
     const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
-    // useReducer so dispatch() doesn't match the `set`-prefixed setState lint rule
-    const [dynamicLabelCount, dispatchLabelCount] = useReducer((_: number, next: number) => next, chainCount);
-    // Incrementing this forces a re-render so useLayoutEffect can measure the new overflow state
-    const [, forceCheck] = useReducer((c: number) => c + 1, 0);
+    const [dynamicLabelCount, setDynamicLabelCount] = useState(chainCount);
+    // Refs for single-pass label-count measurement (avoids O(N) cascading re-renders)
+    const labelMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    const chainsTextRef = useRef<HTMLDivElement>(null);
 
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
@@ -172,70 +293,93 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    // After every render: if the chain selector is overflowing its allocated flex width,
-    // trim one labeled button. Runs synchronously before paint so intermediate states are invisible.
-    useLayoutEffect(() => {
-        const el = chainsSelectedRef.current;
-        if (!el) return;
-        if (el.scrollWidth > el.clientWidth) {
-            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
-        }
-    });
+    // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
+    const filteredSortedChains = useMemo(() =>
+        (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
+            const aDeselected = deselectedChains.includes(a) ? 1 : 0;
+            const bDeselected = deselectedChains.includes(b) ? 1 : 0;
+            return aDeselected - bDeselected;
+        }),
+        [data.chains_by_size, AllChainsByKeys, deselectedChains],
+    );
 
-    // Post-paint safety net: useLayoutEffect measures before the browser has finished resolving
-    // flex layout during fast resize. By the time useEffect runs (after paint), dimensions are
-    // fully settled — the same state as when any other item's state update triggers a re-render
-    // and incidentally fixes the overflow.
-    useEffect(() => {
-        const el = chainsSelectedRef.current;
-        if (!el) return;
-        if (el.scrollWidth > el.clientWidth) {
-            dispatchLabelCount(Math.max(0, dynamicLabelCount - 1));
-        }
-    });
-
-    // Drive the trim/grow loop from the parent row's width.
-    // The parent row is w-full so it reliably changes on every window resize,
-    // unlike the chain selector itself which stops growing once it reaches its
-    // natural trimmed content width (flex-grow: 0 prevents further expansion).
+    // Single-pass calculation: measure available space minus fixed costs, then greedily assign
+    // labels from left to right. Runs in O(n) DOM reads, emits at most one setState per resize.
     //
-    // grow  → reset to all labels; the useLayoutEffect trim loop synchronously
-    //         converges to the exact count that fits before the browser paints
-    // shrink → force a re-render so the trim loop can measure the new overflow
+    // Button geometry for size="md":
+    //   icon-only  (alone variant): wrapper(2px) + padding(5+5px) + icon(24px) = 36px
+    //   with label (left variant):  wrapper(2px) + padding(15+15px) + icon(24px) + gap(8px) + textW
+    //   delta per label = (15+15 - 5-5)[padding diff] + 8[gap] + textW = 28 + textW
+    const calculateLabelCount = useCallback(() => {
+        const container = chainsSelectedRef.current;
+        if (!container) return;
+
+        const n = filteredSortedChains.length;
+        if (n === 0) {
+            setDynamicLabelCount(0);
+            return;
+        }
+
+        const containerWidth = container.clientWidth;
+
+        // Outer pill fixed costs: pl-[15px] + "Chains Selected" text + gap-x-[5px] + inner-border(2px) + pr-[2px]
+        const fixedCost =
+            15 +
+            (chainsTextRef.current?.offsetWidth ?? 80) +
+            5 +
+            2 +
+            2;
+
+        // All buttons collapsed to icon-only + gaps between them
+        const ICON_ONLY_W = 36;
+        const BUTTON_GAP = 2; // gap-x-[2px] between buttons
+        const iconOnlyCost = n * ICON_ONLY_W + Math.max(0, n - 1) * BUTTON_GAP;
+
+        // Space available for labels beyond icon-only layout
+        let remaining = containerWidth - fixedCost - iconOnlyCost;
+
+        let count = 0;
+        for (let i = 0; i < n; i++) {
+            const labelEl = labelMeasureRefs.current[i];
+            const labelW = labelEl ? labelEl.offsetWidth : 60;
+            // 28px base delta + label text width; 2px safety margin
+            if (remaining >= 28 + labelW + 2) {
+                remaining -= 28 + labelW;
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        // Reserve space for the hover expansion of the first icon-only button.
+        // Without this, hovering an icon-only button expands it into space that
+        // doesn't exist, causing adjacent buttons to shift back and forth.
+        if (count < n) {
+            const hoverLabelEl = labelMeasureRefs.current[count];
+            const hoverLabelW = hoverLabelEl ? hoverLabelEl.offsetWidth : 60;
+            if (remaining < 28 + hoverLabelW) {
+                // Not enough room for the hover; give back the last shown label to free space
+                count = Math.max(0, count - 1);
+            }
+        }
+
+        setDynamicLabelCount(count);
+    }, [filteredSortedChains]);
+
+    // Run once on mount and whenever the container resizes (which includes window resize and
+    // parent flex reflows). Re-attaches whenever filteredSortedChains changes so the
+    // measurement refs are in sync with the rendered buttons.
+    // useEffect (post-paint) avoids the React warning about synchronous setState inside a
+    // layout-phase effect. ResizeObserver fires once on initial observation, so no explicit
+    // call to calculateLabelCount() is needed here — the observer handles it.
     useEffect(() => {
         const el = chainsSelectedRef.current;
         if (!el) return;
-        const parentRow = el.parentElement;
-        if (!parentRow) return;
 
-        let lastParentWidth = parentRow.getBoundingClientRect().width;
-
-        let settleTimer: ReturnType<typeof setTimeout> | null = null;
-
-        const observer = new ResizeObserver(() => {
-            const newParentWidth = parentRow.getBoundingClientRect().width;
-            if (newParentWidth > lastParentWidth) {
-                dispatchLabelCount(chainCount);
-            } else if (newParentWidth < lastParentWidth) {
-                forceCheck();
-            }
-            lastParentWidth = newParentWidth;
-
-            // After resize stops, do one final reset so the trim loop converges
-            // from scratch and catches any edge-case overflow from fast resizing.
-            if (settleTimer !== null) clearTimeout(settleTimer);
-            settleTimer = setTimeout(() => {
-                dispatchLabelCount(chainCount);
-                forceCheck();
-            }, 500);
-        });
-
-        observer.observe(parentRow);
-        return () => {
-            observer.disconnect();
-            if (settleTimer !== null) clearTimeout(settleTimer);
-        };
-    }, [chainCount]);
+        const observer = new ResizeObserver(calculateLabelCount);
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [calculateLabelCount]);
 
     // Checks whether a metric actually has data for the current time interval,
     // so we skip rendering empty charts instead of just checking for hourly keys.
@@ -276,6 +420,39 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         }
     }
 
+    // Compute the global xMin across all visible metric series so every chart shares the same x-axis start.
+    const globalXMin = useMemo(() => {
+        const isComparing = compareAppsForChart.length > 0;
+        const visibleMetrics = Object.keys(data.metrics ?? {})
+            .filter((m) => master?.app_metrics?.[m])
+            .filter((m) => hasMetricDataForInterval[m]);
+
+        let earliestTs = Infinity;
+        for (const m of visibleMetrics) {
+            const hasChainData = !!master?.app_metrics?.[m]?.chain_specific;
+            const series = computeMetricSeriesData({
+                data,
+                metric: m,
+                timeInterval,
+                selectedTotal: effectiveSelectedTotal,
+                deselectedChains,
+                hasChainData,
+                isComparing,
+                compareApps: compareAppsForChart,
+                showAvg: master?.app_metrics?.[m]?.all_l2s_aggregate === "avg",
+            });
+            // Apply the same visibleSeries filter used in AppMetricChart
+            const visible = series.filter(s =>
+                !hasChainData && !effectiveSelectedTotal && !isComparing ? s.name !== "Total" : true,
+            );
+            for (const s of visible) {
+                const ts = firstNonNullTs(s.data);
+                if (ts !== null) earliestTs = Math.min(earliestTs, ts);
+            }
+        }
+
+        return earliestTs !== Infinity ? earliestTs : undefined;
+    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart]);
 
     const comparePill = useMemo(() => {
 
@@ -290,7 +467,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     <div className="text-xxs">Compare to</div>
                     <div className="flex items-center gap-x-[5px]">
                         
-                        <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} other app{compareAppsForChart.length !== 1 ? "s" : ""}</div>
+                        <div className="heading-small-xs"> {compareAppsForChart.length === 0 ? "" : compareAppsForChart.length} Other App{compareAppsForChart.length !== 1 ? "s" : ""}</div>
                     </div>
                 </div>
                 <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
@@ -316,23 +493,50 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
         }
     }, [compareAppsForChart, ownerProjectToProjectData]);
 
-
     return (
-        <div className="pt-[30px] w-full">
+        <div className="pt-[30px] w-full relative">
+            {/* Full-screen backdrop — same pattern as Screenshots lightbox.
+                Always in DOM so opacity can transition out; pointerEvents none when invisible. */}
+            <div
+                className="fixed inset-0"
+                style={{
+                    zIndex: 120,
+                    backgroundColor: "rgba(0,0,0,0.7)",
+                    backdropFilter: highlightMetric ? "blur(2px)" : "none",
+                    WebkitBackdropFilter: highlightMetric ? "blur(2px)" : "none",
+                    opacity: highlightMetric ? 1 : 0,
+                    pointerEvents: highlightMetric ? "auto" : "none",
+                    transition: "opacity 0.4s ease",
+                }}
+                onClick={() => onHighlightConsumed?.()}
+            />
             {/* Invisible data loaders for each compare app */}
             {compareAppKeys.map(key => (
                 <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
             ))}
 
+            {/* Hidden label measurement spans — used by calculateLabelCount to get exact text widths
+                without triggering a render loop. Must match the font/size of the actual button labels. */}
+            <div
+                aria-hidden="true"
+                style={{ position: "absolute", top: 0, left: 0, visibility: "hidden", pointerEvents: "none", display: "flex" }}
+            >
+                {filteredSortedChains.map((chain, i) => (
+                    <span
+                        key={chain}
+                        ref={(el) => { labelMeasureRefs.current[i] = el; }}
+                        className="text-md font-raleway font-medium whitespace-nowrap"
+                    >
+                        {AllChainsByKeys[chain]?.name_short}
+                    </span>
+                ))}
+            </div>
+
             <div className="w-full flex justify-between  lg:items-center gap-x-[15px] lg:flex-row flex-col gap-y-[10px] ">
                 <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
-                    <div className="text-sm shrink-0">Chains Selected</div>
+                    <div ref={chainsTextRef} className="text-xs md:text-sm shrink-0">{isMobile ? "Chains" : "Chains Selected"}</div>
                     <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {(data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
-                        const aDeselected = deselectedChains.includes(a) ? 1 : 0;
-                        const bDeselected = deselectedChains.includes(b) ? 1 : 0;
-                        return aDeselected - bDeselected;
-                    }).map((chain, i) => {
+                    {filteredSortedChains.map((chain, i) => {
                         const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
                         return (
                             <GTPButton
@@ -343,7 +547,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                 visualState={deselectedChains.includes(chain) ? "default" : "active"}
                                 className="z-40"
                                 labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
-                                size="md"
+                                size={isMobile ? "sm" : "md"}
                                 clickHandler={() => {
                                     setDeselectedChains((prev) => {
                                         const next = new Set(prev);
@@ -362,7 +566,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     })}
                     </div>
                 </div>
-                <div ref={compareDropdownRef} className="relative min-w-[230px] max-w-[261px] w-full">
+                <div ref={compareDropdownRef} className="relative lg:min-w-[230px] lg:max-w-[261px] w-full">
                     {/* Compare pill button — relative + z-20 so it sits above the dropdown */}
 
                     {comparePill}
@@ -452,7 +656,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                                                             className="rounded-full shrink-0"
                                                         />
                                                     )}
-                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? app.display_name.slice(0, 16) + (app.display_name.length > 16 ? "..." : "") : app.owner_project}</span>
+                                                    <span className="truncate flex-1 min-w-0">{app.display_name ? isMobile ? app.display_name : (app.display_name.slice(0, 16) + (app.display_name.length > 16 ? "..." : "")) : app.owner_project}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -471,7 +675,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(INTERVALS).map((interval) => (
-                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size="sm" variant="primary" isSelected={timeInterval === interval}
+                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={interval} label={INTERVALS[interval as keyof typeof INTERVALS].label} size={isMobile ? "xs" : "sm"} variant="primary" isSelected={timeInterval === interval}
                                 clickHandler={() => {
                                     if(cachedTimespans !== null) {
                                         setSelectedTimespan(cachedTimespans);
@@ -492,19 +696,28 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                             style={{width: isMobile ? "100%" : "auto"}}
                         >
                             {Object.keys(timespans).filter((timespan) => filterTimespans(timespan, timeInterval)).map((timespan) => (
-                                <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} key={timespan} label={timespans[timespan].label} size="sm" variant="primary" isSelected={selectedTimespan === timespan} clickHandler={() => setSelectedTimespan(timespan)} />
+                                <GTPButton 
+                                    className="w-full justify-center" 
+                                    innerStyle={{ width: "100%" }} 
+                                    key={timespan} 
+                                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label} 
+                                    size={isMobile ? "xs" : "sm"} 
+                                    variant="primary" 
+                                    isSelected={selectedTimespan === timespan} 
+                                    clickHandler={() => setSelectedTimespan(timespan)} 
+                                />
                             ))}
                         </GTPButtonRow>
                         <GTPButtonRow wrap={isMobile ? true : false}
                             className="flex-nowrap"
                             style={{ width: "auto" }}
                         >
-                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size="sm" variant="primary" isSelected={effectiveSelectedTotal} clickHandler={() => setSelectedTotal(true)} />
+                            <GTPButton className="w-full justify-center" innerStyle={{ width: "100%" }} label="Total" size={isMobile ? "xs" : "sm"} variant="primary" isSelected={effectiveSelectedTotal} clickHandler={() => setSelectedTotal(true)} />
                             <GTPButton
                                 className="w-full justify-center"
                                 innerStyle={{ width: "100%" }}
                                 label="By Chain"
-                                size="sm"
+                                size={isMobile ? "xs" : "sm"}
                                 variant="primary"
                                 isSelected={!effectiveSelectedTotal}
                                 disabled={isComparing}
@@ -521,7 +734,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
                     .map((metric, index) => (
-                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics"  index={index}/>
+                    <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed}/>
                 ))}
             </div>
         </div>
@@ -529,14 +742,80 @@ export default function MetricsBody({ data, owner_project, projectMetadata }: { 
 }
 
 
-const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number }) => {
+const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_data, timeInterval, selectedTotal, deselectedChains, setDeselectedChains, compareApps, syncId, index, xMin: xMinProp, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, metric: string, metric_data?: MetricInfo, timeInterval: string, selectedTotal: boolean, deselectedChains: string[], setDeselectedChains: React.Dispatch<React.SetStateAction<string[]>>, compareApps: CompareAppEntry[], syncId?: string, index: number, xMin?: number, highlightMetric?: string | null, onHighlightConsumed?: () => void }) => {
     const { theme } = useTheme();
     const { getAppColors } = useAppColors();
     const appColor = getAppColors(owner_project, theme);
+    const mediumBreakpoint = useMediaQuery("(max-width: 1024px)");
+    const isMobile = useMediaQuery("(max-width: 728px)");
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isDownloadingChartSnapshot) return;
+        const el = cardRef.current;
+        if (!el) {
+            setIsDownloadingChartSnapshot(false);
+            return;
+        }
+        downloadElementAsImage(el, metricData?.name ?? metric).finally(() => {
+            setIsDownloadingChartSnapshot(false);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDownloadingChartSnapshot]);
+    // 'off' → 'on' (ring appears) → 'fading' (ring transitions out) → 'off'
+    const [highlightPhase, setHighlightPhase] = useState<'off' | 'on' | 'fading'>('off');
+
+    useEffect(() => {
+        if (!highlightMetric || metric !== highlightMetric) return;
+
+        // Raise #content-panel above FloatingPortal badges (z-100) — same pattern as Screenshots.tsx
+        const panel = document.getElementById("content-panel");
+        if (panel) panel.style.zIndex = "150";
+
+        // Give the tab content 200ms to finish layout before scrolling
+        const scrollTimer = setTimeout(() => {
+            const el = wrapperRef.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const targetY = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
+            const startY = window.scrollY;
+            const diff = targetY - startY;
+            const duration = 800;
+            let start: number | null = null;
+            function step(ts: number) {
+                if (start === null) start = ts;
+                const elapsed = ts - start;
+                const t = Math.min(elapsed / duration, 1);
+                // ease-in-out cubic
+                const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                window.scrollTo(0, startY + diff * eased);
+                if (elapsed < duration) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }, 200);
+
+        // Ring appears immediately, holds for 2s, then transitions out over 800ms
+        setHighlightPhase('on');
+        const fadeTimer = setTimeout(() => setHighlightPhase('fading'), 2000);
+        const clearTimer = setTimeout(() => {
+            setHighlightPhase('off');
+            onHighlightConsumed?.();
+            if (panel) panel.style.zIndex = "";
+        }, 2800);
+
+        return () => {
+            clearTimeout(scrollTimer);
+            clearTimeout(fadeTimer);
+            clearTimeout(clearTimer);
+            if (panel) panel.style.zIndex = "";
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [highlightMetric]);
     const { AllChainsByKeys, data: master } = useMaster();
     const [showUsd] = useLocalStorage("showUsd", true);
     // metric_data may be passed directly or resolved from master for resilience
@@ -544,123 +823,17 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const hasChainData = resolvedMetricData?.chain_specific;
     const isComparing = compareApps.length > 0;
 
-    const seriesData = useMemo(() => {
-        const showAvg = resolvedMetricData?.all_l2s_aggregate === "avg";
-        const overTime = data.metrics[metric]?.over_time;
-
-        if (!overTime) return [];
-
-        // Sums all chains in an over_time map into one aggregate total series.
-        // Uses `any` cast because OverTimeData only types `daily`, but `hourly` also exists at runtime.
-        function sumChainSeries(
-            ot: Record<string, unknown>,
-            excludeChains: string[] = [],
-        ): [number, number | null][] {
-            const sums = new Map<number, number | null>();
-            const counts = new Map<number, number>();
-            for (const chain of Object.keys(ot)) {
-                if (excludeChains.includes(chain)) continue;
-                const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
-                for (const d of points) {
-                    const ts = Number(d[0]);
-                    const val: number | null = d[1] == null ? null : Number(d[1]);
-                    if (!sums.has(ts)) {
-                        sums.set(ts, val);
-                        counts.set(ts, val !== null ? 1 : 0);
-                    } else {
-                        const existing = sums.get(ts)!;
-                        sums.set(ts, existing === null ? val : val === null ? existing : existing + val);
-                        if (val !== null) counts.set(ts, (counts.get(ts) ?? 0) + 1);
-                    }
-                }
-            }
-            return Array.from(sums.entries())
-                .sort((a, b) => a[0] - b[0])
-                .map(([ts, sum]): [number, number | null] => {
-                    if (!showAvg || sum === null) return [ts, sum];
-                    const count = counts.get(ts) ?? 0;
-                    return [ts, count > 0 ? sum / count : null];
-                });
-        }
-
-        // ── Non-chain-specific metrics (e.g. success_rate, throughput) ────────
-        if (!hasChainData) {
-            const intervalData = getTimeseriesRows(
-                overTime?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
-            );
-            const mainSeries = {
-                name: "Total",
-                data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
-            };
-
-            if (!isComparing) return [mainSeries];
-
-            const compareSeries = compareApps
-                .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
-                .map(app => {
-                    const appIntervalData = getTimeseriesRows(
-                        app.data.metrics[metric].over_time?.all?.[timeInterval] ??
-                        (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
-                    );
-                    return {
-                        name: `compare_${app.owner_project}`,
-                        data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
-                    };
-                });
-
-            return [mainSeries, ...compareSeries];
-        }
-
-        // ── Chain-specific metrics ─────────────────────────────────────────────
-        // flatMap skips chains that have no data for the current interval
-        const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
-        const perChain = chains.flatMap((chain) => {
-            const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
-            if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
-            return [{
-                name: chain,
-                data: intervalData.map(
-                    (d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])],
-                ),
-            }];
-        });
-
-        // By Chain view — only available when not comparing
-        if (!selectedTotal && !isComparing) return perChain;
-
-        const mainTotalSeries = {
-            name: "Total",
-            data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
-        };
-
-        if (!isComparing) return [mainTotalSeries];
-
-        // Compare mode: one total series per compare app (all chains, no deselection)
-        const compareSeries = compareApps
-            .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
-            .map(app => ({
-                name: `compare_${app.owner_project}`,
-                data: sumChainSeries(app.data.metrics[metric].over_time as Record<string, unknown>),
-            }));
-
-        return [mainTotalSeries, ...compareSeries];
-    }, [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
-
-    const { timespans, selectedTimespan } = useTimespan();
-
-    const { xMin, xMax } = useMemo(() => {
-        const days = timespans[selectedTimespan]?.value ?? 0;
-        let latestTs = 0;
-        for (const series of seriesData) {
-            if (series.data.length > 0) {
-                const ts = series.data[series.data.length - 1][0];
-                if (ts > latestTs) latestTs = ts;
-            }
-        }
-        const xMax = latestTs > 0 ? latestTs : new Date().getTime();
-        const xMin = days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
-        return { xMin, xMax };
-    }, [timespans, selectedTimespan, seriesData]);
+    const seriesData = useMemo(() => computeMetricSeriesData({
+        data,
+        metric,
+        timeInterval,
+        selectedTotal,
+        deselectedChains,
+        hasChainData: !!hasChainData,
+        isComparing,
+        compareApps,
+        showAvg: resolvedMetricData?.all_l2s_aggregate === "avg",
+    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
 
     const metricData = resolvedMetricData;
     const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");
@@ -678,7 +851,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
         const displayName = isCompareApp
             ? (compareApp?.displayName ?? compareOwnerProject ?? seriesName)
-            : (AllChainsByKeys[seriesName]?.name_short ?? (isSuccessRateMetric ? "Total L2 Average" : projectMetadata.display_name + ""));
+            : (AllChainsByKeys[seriesName]?.name_short ?? projectMetadata.display_name);
 
         const color: [string | undefined, string | undefined] = isCompareApp
             ? [compareAppColor?.[0], compareAppColor?.[1]]
@@ -695,10 +868,37 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         !hasChainData && !selectedTotal && !isComparing ? s.name !== "Total" : true
     );
 
+    const { timespans, selectedTimespan } = useTimespan();
+
+    const xMax = useMemo(() => {
+        let latestTs = 0;
+        for (const series of visibleSeries) {
+            if (series.data.length > 0) {
+                const lastTs = series.data[series.data.length - 1][0];
+                if (lastTs > latestTs) latestTs = lastTs;
+            }
+        }
+        return latestTs > 0 ? latestTs : new Date().getTime();
+    }, [visibleSeries]);
+
+    const xMin = useMemo(() => {
+        if (xMinProp !== undefined) return xMinProp;
+        const days = timespans[selectedTimespan]?.value ?? 0;
+        return days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
+    }, [xMinProp, timespans, selectedTimespan, xMax]);
+
     if (!metricData) return null;
 
     return (
-        <div className="pt-[30px] w-full">
+        <div
+            ref={wrapperRef}
+            id={`metric-chart-${metric}`}
+            className="pt-[30px] w-full"
+            style={{
+                position: "relative",
+                zIndex: highlightPhase !== 'off' ? 130 : "auto",
+            }}
+        >
             <div className="flex items-center gap-x-[8px]">
                 <GTPIcon icon={`gtp-${metricData.icon}` as GTPIconName} containerClassName="flex items-center justify-center" className="!size-[16px]" size="sm" />
                 <div className="heading-large-xxs xs:heading-large-xs">{metricData.name}</div>
@@ -717,6 +917,14 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </div> */}
             <div className="pt-[15px]">
+                <div
+                    ref={cardRef}
+                    style={{
+                        borderRadius: '18px',
+                        boxShadow: highlightPhase !== 'off' ? `0 0 24px 10px rgb(var(--bg-default))` : 'none',
+                        transition: highlightPhase === 'fading' ? 'box-shadow 0.8s ease-out' : 'none',
+                    }}
+                >
                 <GTPCardLayout
                  className=""
                  mobileBreakpoint={0}
@@ -747,7 +955,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                     label: "Share",
                                     labelDisplay: "active",
                                     leftIcon: "gtp-share-monochrome",
-                                    size: "sm",
+                                    size: isMobile ? "xs" : "sm",
                                     variant: "no-background",
                                 }}
                                 isOpen={isSharePopoverOpen}
@@ -757,7 +965,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
                             <GTPButton
                                 leftIcon="gtp-download-monochrome"
-                                size={"sm"}
+                                size={isMobile ? "xs" : "sm"}
                                 variant="no-background"
                                 visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                                 disabled={isDownloadingChartSnapshot}
@@ -769,7 +977,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             style={{ width: "auto" }}
                         >
                             {metricData?.toggles?.map((toggle: string) => (
-                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size="sm" variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
+                                <GTPButton key={toggle} label={toggle.charAt(0).toUpperCase() + toggle.slice(1)} size={isMobile ? "xs" : "sm"} variant="primary" isSelected={selectedScale === toggle} clickHandler={() => setSelectedScale(toggle)} />
                             ))}
                         </GTPButtonRow>
 
@@ -792,6 +1000,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
+                        snapToCleanBoundary={xMinProp === undefined}
                         showTooltipTimestamp={timeInterval === "hourly"}
                         compactXAxis
                         ySplitNumber={2}
@@ -804,11 +1013,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         underChartText={!hasChainData && !selectedTotal ? "This metric cannot be broken down by chain" : undefined}
                         syncId={syncId}
                         showLegend={true}
-                        watermarkOverlap={index === 1}
+                        watermarkOverlap={mediumBreakpoint ? index === 0 : index === 1}
                     />
 
 
                 </GTPCardLayout>
+                </div>
             </div>
         </div>
     );

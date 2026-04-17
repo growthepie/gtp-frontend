@@ -1,5 +1,59 @@
 // import million from "million/compiler";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const createContentSecurityPolicy = ({ allowEmbedding = false } = {}) =>
+  [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    `frame-ancestors ${allowEmbedding ? "*" : "'self'"}`,
+    "object-src 'none'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https: ws: wss:",
+    "frame-src 'self' https:",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+  ].join("; ");
+
+const createSecurityHeaders = ({ allowEmbedding = false } = {}) => [
+  {
+    key: "Content-Security-Policy",
+    value: createContentSecurityPolicy({ allowEmbedding }),
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  ...(allowEmbedding
+    ? []
+    : [
+        {
+          key: "X-Frame-Options",
+          value: "SAMEORIGIN",
+        },
+      ]),
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+  ...(isProduction
+    ? [
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=63072000; includeSubDomains; preload",
+        },
+      ]
+    : []),
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
@@ -226,6 +280,15 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        // Public embed routes must remain frameable on third-party sites.
+        source: "/embed/:path*",
+        headers: createSecurityHeaders({ allowEmbedding: true }),
+      },
+      {
+        source: "/((?!embed(?:/|$)).*)",
+        headers: createSecurityHeaders(),
+      },
       {
         // All build assets (JS, CSS, fonts, images in /_next/static)
         source: "/_next/static/:path*",

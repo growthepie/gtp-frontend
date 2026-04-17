@@ -30,6 +30,7 @@ export type ProjectMetadata = {
   active_on: { [chainKey: string]: number } | null;
   txcount: number | null;
   on_apps_page: boolean;
+  governance?: string | null;
 };
 
 export type ProjectsMetadataContextType = {

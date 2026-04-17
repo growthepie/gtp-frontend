@@ -33,9 +33,6 @@ import {
 
 const TOOLTIP_AUTO_HIDE_MS = 3000;
 
-// Extra bottom padding (px) added to the chart grid when showLegend is true so the legend
-// items sit in their own dedicated space beneath the x-axis labels.
-const LEGEND_BOTTOM_OFFSET = 22;
 
 const DEFAULT_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
@@ -437,6 +434,7 @@ export default function GTPChart({
   // Legend state
   const [internalInactiveSeries, setInternalInactiveSeries] = useState<Set<string>>(new Set());
   const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
+  const legendRef = useRef<HTMLDivElement>(null);
 
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
   const inactiveLegendSeries = useMemo(
@@ -1193,9 +1191,8 @@ export default function GTPChart({
   }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
 
   const effectiveGrid = useMemo(() => {
-    const legendOffset = showLegend ? LEGEND_BOTTOM_OFFSET : 0;
     const defaultBottom = compactXAxis ? 24 : DEFAULT_GRID.bottom;
-    const resolvedBottom = (gridOverride?.bottom ?? defaultBottom) + legendOffset;
+    const resolvedBottom = gridOverride?.bottom ?? defaultBottom;
     const base = {
       left: dynamicGridLeft,
       right: gridOverride?.right ?? DEFAULT_GRID.right,
@@ -1205,8 +1202,8 @@ export default function GTPChart({
     if (!timeAxisLayout?.grid) return base;
     return compactXAxis
       ? { ...timeAxisLayout.grid, bottom: resolvedBottom }
-      : { ...timeAxisLayout.grid, bottom: timeAxisLayout.grid.bottom + legendOffset };
-  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis, showLegend]);
+      : timeAxisLayout.grid;
+  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
@@ -1998,22 +1995,17 @@ export default function GTPChart({
     yAxisLabelFormatter,
     formatDefaultYAxisTick,
     yAxisLayout,
-    ySplitNumber,
     decimalPercentage
   ]);
-
-  const containerStyle: React.CSSProperties = {
-    height: typeof height === "number" ? `${height}px` : height,
-  };
 
   const watermarkOverlayClassName =
     `pointer-events-none absolute inset-y-0 left-[52px] bottom-[5%] right-0 flex items-center justify-center ${watermarkOverlap ? "z-[0]" : "z-[40]"}`;
 
   return (
+    <div className="flex flex-col w-full" style={{ height: typeof height === "number" ? `${height}px` : height }}>
     <div
       ref={containerRef}
-      className={`relative w-full overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
-      style={containerStyle}
+      className={`relative w-full flex-1 min-h-0 overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">
         <ReactEChartsCore
@@ -2125,46 +2117,47 @@ export default function GTPChart({
           </div>
         )
       ) : null}
-      {showLegend && series.length > 0 && (
-        <div className="absolute bottom-[2px] left-0 right-0 h-[20px] flex items-center justify-center gap-x-[5px] z-[50]">
-          {series.map((s, index) => {
-            const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
-            const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
-            const isInactive = inactiveLegendSeries.has(s.name);
-            const label = legendLabels?.[s.name] ?? s.name;
+    </div>
+    {showLegend && series.length > 0 && (
+      <div ref={legendRef} className="relative flex flex-wrap justify-center  bottom-[30px] gap-x-[5px] gap-y-[1px]">
+        {series.map((s, index) => {
+          const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+          const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
+          const isInactive = inactiveLegendSeries.has(s.name);
+          const label = legendLabels?.[s.name] ?? s.name;
 
-            return (
-              <div
-                key={s.name + "-gtp-chart-legend"}
-                onMouseEnter={() => setHoverLegendSeries(s.name)}
-                onMouseLeave={() => setHoverLegendSeries(null)}
-              >
-                <GTPButton
-                  label={label}
-                  variant="primary"
-                  size="xs"
-                  clickHandler={() => handleLegendToggle(s.name)}
-                  rightIcon={
-                    hoverLegendSeries === s.name
-                      ? isInactive ? "in-button-plus" : "in-button-close"
-                      : undefined
-                  }
-                  animateRightIcon
-                  rightIconClassname="!w-[12px] !h-[12px]"
-                  textClassName={isInactive ? "text-color-text-secondary" : undefined}
-                  className={isInactive ? "border border-color-bg-medium" : undefined}
-                  leftIconOverride={
-                    <div
-                      className="min-w-[6px] min-h-[6px] rounded-full"
-                      style={{ backgroundColor: dotColor, opacity: isInactive ? 0.35 : 1 }}
-                    />
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+          return (
+            <div
+              key={s.name + "-gtp-chart-legend"}
+              onMouseEnter={() => setHoverLegendSeries(s.name)}
+              onMouseLeave={() => setHoverLegendSeries(null)}
+            >
+              <GTPButton
+                label={label}
+                variant="primary"
+                size="xs"
+                clickHandler={() => handleLegendToggle(s.name)}
+                rightIcon={
+                  hoverLegendSeries === s.name
+                    ? isInactive ? "in-button-plus" : "in-button-close"
+                    : undefined
+                }
+                animateRightIcon
+                rightIconClassname="!w-[12px] !h-[12px]"
+                textClassName={isInactive ? "text-color-text-secondary" : undefined}
+                className={isInactive ? "border border-color-bg-medium" : undefined}
+                leftIconOverride={
+                  <div
+                    className="min-w-[6px] min-h-[6px] rounded-full"
+                    style={{ backgroundColor: dotColor, opacity: isInactive ? 0.35 : 1 }}
+                  />
+                }
+              />
+            </div>
+          );
+        })}
+      </div>
+    )}
     </div>
   );
 }
