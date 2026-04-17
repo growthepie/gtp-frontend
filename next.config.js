@@ -9,17 +9,12 @@ const createContentSecurityPolicy = ({ allowEmbedding = false } = {}) =>
     "form-action 'self'",
     `frame-ancestors ${allowEmbedding ? "*" : "'self'"}`,
     "object-src 'none'",
-    `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    // All analytics (GTM, GA4, Clarity, Vercel) are proxied through /api/insights/
-    // and /api/va/, so the browser only ever calls 'self' for analytics.
-    // ws:/wss: are required for Next.js HMR in development; not needed in production.
-    `connect-src 'self' https://api.growthepie.com https://api.growthepie.xyz${isProduction ? "" : " ws: wss:"}`,
-    // Known iframe sources: own API (fee.html), own embed subdomain (quick-bites charts),
-    // and YouTube (quick-bites video embeds).
-    "frame-src 'self' https://api.growthepie.com https://api.growthepie.xyz https://www.growthepie.com https://www.youtube.com",
+    "connect-src 'self' https: ws: wss:",
+    "frame-src 'self' https:",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
   ].join("; ");
@@ -313,9 +308,6 @@ const nextConfig = {
   },
   images: {
     dangerouslyAllowSVG: true,
-    // Sandboxes SVG content served via next/image: disables network fetches and
-    // script execution inside SVG files (important for user-generated sources like ipfs.io).
-    contentSecurityPolicy: "default-src 'none'; style-src 'unsafe-inline'; img-src data:;",
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
       {
