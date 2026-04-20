@@ -384,6 +384,19 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fire-and-forget Discord alert — don't block the response on it
+    const discordWebhookUrl = process.env.DISCORD_CONTRACTS;
+    if (discordWebhookUrl) {
+      const action = mode === "edit" ? "edited" : "added";
+      fetch(discordWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `Someone ${action} a project (**${displayName || ownerProject}**) via gtp-frontend. [View PR](${yamlPullRequestUrl})`,
+        }),
+      }).catch((err) => console.warn("[project-contribution] Discord alert failed:", err));
+    }
+
     return NextResponse.json({
       yamlPullRequestUrl,
       logoPullRequestUrl,
