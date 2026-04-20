@@ -175,7 +175,7 @@ const TopContractsTable = [
         minWidth: 200,
       },
       display_name: {
-        label: "Company",
+        label: "Application",
         type: "string",
         minWidth: 150,
         isNumeric: false,
