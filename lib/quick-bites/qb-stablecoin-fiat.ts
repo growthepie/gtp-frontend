@@ -108,7 +108,7 @@ const mainContent = [
         chip: true,
       },
       owner_project_display_name: {
-        label: "Company",
+        label: "Application",
         type: "string",
         minWidth: 200,
         isNumeric: false,
