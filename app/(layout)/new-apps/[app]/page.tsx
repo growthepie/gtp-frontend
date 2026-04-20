@@ -25,6 +25,7 @@ import MetricsBody from "@/components/layout/Applications/MetricsBody";
 import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
+import { useMediaQuery } from "usehooks-ts";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 
@@ -380,12 +381,15 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
 
   const { filteredProjectsData } = useProjectsMetadata();
   const [randomIndices, setRandomIndices] = useState<number[] | null>(null);
+  const isMobile = useMediaQuery("(max-width: 728px)");
+  const isXS = useMediaQuery("(max-width: 530px)");
 
   useEffect(() => {
       if (!filteredProjectsData || randomIndices !== null) return;
       const iconIndex = filteredProjectsData.types.indexOf("logo_path");
       const ownerIndex = filteredProjectsData.types.indexOf("owner_project");
       const txcountIndex = filteredProjectsData.types.indexOf("txcount");
+      const subCategoryIndex = filteredProjectsData.types.indexOf("sub_category");
       if (iconIndex === -1 || txcountIndex === -1) return;
       const dataLen = filteredProjectsData.data.length;
       const indices: number[] = [];
@@ -397,11 +401,13 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
           const project = filteredProjectsData.data[idx];
           const owner = ownerIndex !== -1 ? project?.[ownerIndex] : null;
           const txcount = Number(project?.[txcountIndex]);
+          const subCategory = subCategoryIndex !== -1 ? project?.[subCategoryIndex] : null;
           if (
               typeof project?.[iconIndex] === "string" &&
               txcount >= 10000 &&
               !indices.includes(idx) &&
-              (ownerIndex === -1 || (typeof owner === "string" && !seenOwners.has(owner)))
+              (ownerIndex === -1 || (typeof owner === "string" && owner !== owner_project && !seenOwners.has(owner))) &&
+              (subCategoryIndex === -1 || !projectMetadata.sub_category || subCategory === projectMetadata.sub_category)
           ) {
               indices.push(idx);
               if (typeof owner === "string") seenOwners.add(owner);
@@ -409,7 +415,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
       }
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRandomIndices(indices);
-  }, [filteredProjectsData, randomIndices]);
+  }, [filteredProjectsData, randomIndices]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const randomProjects = useMemo(() => {
       if (!filteredProjectsData || !randomIndices) return [];
@@ -417,29 +423,40 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
   }, [filteredProjectsData, randomIndices]);
 
 
-  
+
+  if (!randomProjects.length) return <></>;
+
   return (
-    <div className="flex justify-between items-center gap-y-[10px] bg-color-bg-default rounded-[15px] px-[30px] py-[15px]">
+    <div className={`flex justify-between gap-y-[10px] bg-color-bg-default rounded-[15px] ${isXS ? "flex-col items-start" : "flex-row items-center"} px-[30px] py-[15px]`}>
       <div className="flex items-center gap-x-[8px]">
-        <GTPIcon icon={"gtp:gtp-project" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] relative bottom-[2px] flex items-center justify-center"/>
-        <div className="heading-large-md text-color-text-primary">
+        <GTPIcon icon={"gtp:gtp-project" as GTPIconName} className="!size-[20px] sm:!size-[24px]" containerClassName="!size-[20px] sm:!size-[24px] relative bottom-[2px] flex items-center justify-center"/>
+        <div className=" sm:block hidden heading-large-md text-color-text-primary">
           Similar Applications
+        </div>
+        <div className="block sm:hidden heading-small-sm text-color-text-primary">
+          Similar Apps
         </div>
       </div>
       <div className="flex items-center gap-x-[8px]">
-        {randomProjects.filter((project) => project.sub_category === projectMetadata.sub_category && project.sub_category !== null && project.owner_project !== projectMetadata.owner_project).map((project) => {
+        {randomProjects.map((project, index) => {
           return (
 
           <GTPTooltipNew
             size="md"
-            key={project.name}
+            key={project.name ?? index + "_RandomAppsSection"}
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <Link key={project.name} className="p-[8px] bg-color-bg-medium rounded-full"
+              <Link key={project.name} className="p-[5px] sm:p-[8px] bg-color-bg-medium rounded-full hover:bg-color-ui-hover"
               href={`/new-apps/${project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0]}`}
               >
-                <Image className="rounded-full" src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} width={28} height={28} />
+                <Image 
+                  className="rounded-full" 
+                  src={`https://api.growthepie.com/v1/apps/logos/${project[filteredProjectsData?.types?.indexOf("logo_path") ?? 0]}`} 
+                  alt={project[filteredProjectsData?.types?.indexOf("display_name") ?? 0] as string} 
+                  width={isMobile ? 20 : 28} 
+                  height={isMobile ? 20 : 28} 
+                />
                 <div className="text-sm text-color-text-primary">{project.display_name}</div>
               </Link>
 
@@ -498,17 +515,36 @@ const OverviewContent = memo(({
   projectMetadata,
   enrichmentData,
   setSelectedTab,
+  navigateToMetric,
 }: {
   data: ApplicationDetailsData;
   owner_project: string;
   projectMetadata: ProjectMetadata;
   enrichmentData: ApplicationEnrichmentData | null | undefined;
   setSelectedTab: (tab: string) => void;
+  navigateToMetric: (metric: string) => void;
 }) => {
   const { data: masterData } = useMaster();
   const { resolvedTheme } = useTheme();
   const { getAppColors } = useAppColors();
   const appColor = getAppColors(owner_project, resolvedTheme);
+  // Callback ref pattern: ResizeObserver is set up the moment React attaches the
+  // element, so leftColHeight is correct even on the first mount (avoids the
+  // useElementSizeObserver issue where ref.current is null on the first render).
+  const [leftColHeight, setLeftColHeight] = useState(0);
+  const leftColObserverRef = useRef<ResizeObserver | null>(null);
+  const leftColRef = useCallback((node: HTMLDivElement | null) => {
+    leftColObserverRef.current?.disconnect();
+    leftColObserverRef.current = null;
+    if (node) {
+      const observer = new ResizeObserver(([entry]) => {
+        const h = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+        setLeftColHeight(h);
+      });
+      observer.observe(node, { box: "border-box" });
+      leftColObserverRef.current = observer;
+    }
+  }, []);
   const screenshots = useMemo(
     () =>
       [...(enrichmentData?.screenshots ?? [])]
@@ -531,9 +567,14 @@ const OverviewContent = memo(({
   
 
   return (
-    <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
+    <div className="flex flex-col w-full gap-[15px]">
+      {/* ScreenshotsSection must live OUTSIDE the @container div below.
+          container-type: inline-size (set by @container) acts as a containing block
+          for position:fixed descendants, which traps the backdrop overlay and breaks
+          its z-index against siblings like the SectionBar. */}
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
-      <FeaturedSection features={features} />
+    <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
+      {/*<FeaturedSection features={features} />*/}
       <div className="flex flex-col gap-y-[15px] py-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
@@ -548,19 +589,20 @@ const OverviewContent = memo(({
       {/* Two-column grid: side cards left, main cards right */}
       <div className="grid grid-flow-row grid-cols-1 @[995px]:grid-cols-[minmax(480px,auto)_minmax(490px,auto)] gap-[10px] items-start">
         {/* Left column: KPI side cards */}
-        <div className="flex flex-col gap-y-[10px]">
+        <div ref={leftColRef} className="flex flex-col gap-y-[10px]">
           <PartitionLine title="Yesterday" />
           {data.kpi_cards && (
             <>
           {Object.keys(data.kpi_cards).map((metric) => (
-            <GTPMetricCard 
-              key={metric} 
-              label={masterData?.app_metrics[metric].name ?? metric} 
-              value={data.kpi_cards[metric].current_values.data[0]} 
-              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100} 
-              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])} 
+            <GTPMetricCard
+              key={metric}
+              label={masterData?.app_metrics[metric].name ?? metric}
+              value={data.kpi_cards[metric].current_values.data[0]}
+              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100}
+              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])}
               color={appColor[0]}
-              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"} 
+              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"}
+              onClick={() => navigateToMetric(metric)}
             />
 
           ))} 
@@ -588,11 +630,12 @@ const OverviewContent = memo(({
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
           {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
-          <MostActiveContracts data={data} />
+          <MostActiveContracts data={data} containerHeight={leftColHeight} owner_project={owner_project} />
         
         </div>
       </div>
       <SimilarAppsSection owner_project={owner_project} projectMetadata={projectMetadata} />
+    </div>
     </div>
   );
 });
@@ -600,9 +643,9 @@ OverviewContent.displayName = "OverviewContent";
 
 // ─── Metrics Tab ──────────────────────────────────────────────────────────────
 
-const MetricsContent = memo(({ data, owner_project, projectMetadata }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata }) => (
-  <div id="content-container" className="@container flex flex-col w-full gap-[15px]">
-    <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
+const MetricsContent = memo(({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) => (
+  <div id="content-container" className="flex flex-col w-full gap-[15px]">
+    <MetricsBody data={data} owner_project={owner_project} projectMetadata={projectMetadata} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed} />
   </div>
 ));
 MetricsContent.displayName = "MetricsContent";
@@ -672,6 +715,13 @@ export default function NewAppPage({
     return searchParams.get("tab") || "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const [pendingHighlightMetric, setPendingHighlightMetric] = useState<string | null>(null);
+
+  // Switches to the metrics tab and queues a scroll-to + highlight for the given metric key.
+  const navigateToMetric = useCallback((metric: string) => {
+    setSelectedTab("metrics");
+    setPendingHighlightMetric(metric);
+  }, []);
 
   // Sync tab selection to URL
   useEffect(() => {
@@ -701,16 +751,25 @@ export default function NewAppPage({
             projectMetadata={projectMetadata}
             enrichmentData={enrichmentData}
             setSelectedTab={setSelectedTab}
+            navigateToMetric={navigateToMetric}
           />
         );
       case "metrics":
-        return <MetricsContent data={data} owner_project={owner_project} projectMetadata={projectMetadata} />;
+        return (
+          <MetricsContent
+            data={data}
+            owner_project={owner_project}
+            projectMetadata={projectMetadata}
+            highlightMetric={pendingHighlightMetric}
+            onHighlightConsumed={() => setPendingHighlightMetric(null)}
+          />
+        );
       case "user_insights":
         return <UserInsightsContent />;
       default:
         return <div className="p-8 text-center">Tab not found</div>;
     }
-  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData]);
+  }, [data, selectedTab, owner_project, projectMetadata, enrichmentData, navigateToMetric, pendingHighlightMetric]);
 
   return (
     <>
@@ -743,9 +802,8 @@ export default function NewAppPage({
       </SectionBar>
 
       {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
-      {(selectedTab === "overview" || selectedTab === "metrics") && data && projectMetadata && (
+      {data && projectMetadata && (
         <AboutApp
-          key={selectedTab}
           data={data}
           owner_project={owner_project}
           projectMetadata={projectMetadata}

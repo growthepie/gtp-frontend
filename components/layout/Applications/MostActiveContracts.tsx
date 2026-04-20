@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -16,12 +17,13 @@ import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts
 import { theme } from "highcharts";
 import { useTheme } from "next-themes";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 const CONTRACT_GRID_COLS = "grid-cols-[minmax(200px,220px),130px,minmax(140px,1fr),105px,105px,100px]";
 
-const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
+const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: ApplicationDetailsData; containerHeight?: number; owner_project: string }) => {
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
     metric: "txcount",
     sortOrder: "desc",
@@ -31,6 +33,18 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
   const { data: master, AllChainsByKeys } = useMaster();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const oliHide = useMediaQuery("(max-width: 530px)");
+
+  const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [footerRef, { height: footerHeight }] = useElementSizeObserver<HTMLDivElement>();
+
+  // Outer card has py-[15px] (30px) and gap-y-[10px] with 3 flex children → 2 gaps (20px)
+  const VERTICAL_OVERHEAD = 50;
+  const scrollAreaHeight = containerHeight && containerHeight > 0
+    ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - footerHeight - VERTICAL_OVERHEAD)
+    : 350;
+
   const iconNames = {
     "finance": "gtp-defi",
     "collectibles": "gtp-nft",
@@ -77,25 +91,55 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
 
 
   return (
-    <div className="flex flex-col w-full h-full rounded-[15px] bg-color-bg-default min-w-[920px] px-[30px] py-[15px] gap-y-[10px] ">
-      {/* Header */}
-      <div className="flex items-center gap-x-[5px]">
-        <GTPIcon
-          icon="gtp-labeled"
-          className="!size-[16px]"
-          containerClassName="!size-[16px] flex items-center justify-center"
-        />
-        <div className="heading-large-md text-nowrap text-color-text-primary">
-          Most Active Contracts
+    <div
+      className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] gap-y-[10px]"
+      style={containerHeight && containerHeight > 0 ? { height: `${containerHeight}px` } : undefined}
+    >
+      {/* Header + Description (measured together as fixed top block) */}
+      <div ref={topPartsRef} className="flex flex-col gap-y-[10px]">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-[5px]">
+            <GTPIcon
+              icon="gtp-labeled"
+              className="!size-[16px]"
+              containerClassName="!size-[16px] flex items-center justify-center"
+            />
+            <div className="heading-large-md text-nowrap text-color-text-primary">
+              Most Active Contracts
+            </div>
+          </div>
+          <div ref={footerRef} className="relative w-full flex items-center justify-end">
+            {!oliHide && (
+              <>
+                <GTPButton
+                  label="Don't see your app? Label here."
+                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
+                  size="xs"
+                  rightIcon={"in-button-right-monochrome" as GTPIconName}
+                  className="z-30"
+                  clickHandler={() => {
+                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                  }}
+                />
+                <div
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  style={{
+                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+                  }}
+                />
+              </>
+            )}
         </div>
-      </div>
-      <div className="text-xs text-color-text-primary">
-        See the most active contracts for this application in the last 7 days.
+
+        </div>
+        <div className="text-xs text-color-text-primary">
+          See the most active contracts for this application in the last 7 days.
+        </div>
       </div>
 
       {/* Scrollable table */}
-      <div className="overflow-x-auto w-full">
-        <HorizontalScrollContainer enableDragScroll={isMobile ? true : false} includeMargin={false} forcedMinWidth={992}>
+        <HorizontalScrollContainer enableDragScroll={true} includeMargin={false} forcedMinWidth={992} hideScrollbar={true}>
+          <div ref={tableHeaderRef}>
           <GridTableHeader
             gridDefinitionColumns={CONTRACT_GRID_COLS}
             className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
@@ -108,14 +152,15 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
             <GridTableHeaderCellButton label="Active Addresses"  metric="activeAddresses" sort={sort} setSort={setSort} justify="end"   size="xs" />
             <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs" className="-mr-[12px]" />
           </GridTableHeader>
-
+          </div>
 
           <VerticalScrollContainer
-            height={350}
-            enableDragScroll={isMobile ? true : false}
-            className="pr-[30px]"
+            height={scrollAreaHeight}
+            enableDragScroll={true}
             scrollbarPosition="right"
             scrollbarAbsolute={true}
+            paddingRight={30}
+            
           >
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
               {sortedContracts.map((contract, index) => {
@@ -238,24 +283,29 @@ const MostActiveContracts = ({ data }: { data: ApplicationDetailsData }) => {
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
-      </div>
+        {oliHide && (
+          <div className="relative flex items-center justify-start mt-[5px]">
+                <GTPButton
+                  label="Don't see your app? Label here."
+                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
+                  size="xs"
+                  rightIcon={"in-button-right-monochrome" as GTPIconName}
+                  className="z-30"
+                  clickHandler={() => {
+                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                  }}
+                />
+                <div
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  style={{
+                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+                  }}
+                />
+          </div>
+        )}
 
       {/* Footer CTA */}
-      <div className="relative w-full flex items-center justify-end pr-[30px]">
-        <GTPButton
-          label="Don't see your app? Label here."
-          leftIcon={"oli-open-labels-initiative" as GTPIconName}
-          size="xs"
-          rightIcon={"in-button-right-monochrome" as GTPIconName}
-          className="z-30"
-        />
-        <div
-          className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
-          style={{
-            background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-          }}
-        />
-      </div>
+
     </div>
   );
 };

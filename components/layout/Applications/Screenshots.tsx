@@ -82,6 +82,24 @@ const ScreenshotsSection = memo(
       return () => { document.body.style.overflow = ""; };
     }, []);
 
+    // Raise #content-panel above FloatingPortal badges (z-100) while expanded.
+    // The sidebar NewBadge renders via FloatingPortal at the body level at z-100.
+    // content-panel sits at z-10 in the root stacking context, so its entire
+    // subtree (including our backdrop) always paints below those portals.
+    // Temporarily bumping content-panel to z-150 makes it win at the root level.
+    useEffect(() => {
+      const panel = document.getElementById("content-panel");
+      if (!panel) return;
+      if (isExpanded) {
+        panel.style.zIndex = "150";
+      } else {
+        panel.style.zIndex = "";
+      }
+      return () => {
+        panel.style.zIndex = "";
+      };
+    }, [isExpanded]);
+
     // Keyboard navigation
     useEffect(() => {
       if (!isExpanded) return;
@@ -119,7 +137,7 @@ const ScreenshotsSection = memo(
       {isExpanded && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-[2px]"
-          style={{ zIndex: 40 }}
+          style={{ zIndex: 120 }}
           onClick={handleClose}
         />
       )}
@@ -128,13 +146,13 @@ const ScreenshotsSection = memo(
         className="flex flex-col w-full rounded-[15px] bg-color-bg-default xs:px-[30px] px-[15px] py-[15px] select-none"
         style={{
           position: "relative",
-          zIndex: isExpanded ? 50 : "auto",
+          zIndex: isExpanded ? 130 : "auto",
           transition: "z-index 0s",
         }}
       >
         {/* Header */}
         <div
-          className="flex items-center gap-x-[10px] cursor-pointer w-fit mb-3"
+          className="flex items-center gap-x-[10px] cursor-pointer w-fit "
           onClick={() => isExpanded ? handleClose() : setOpen((v) => !v)}
         >
           <GTPIcon
@@ -152,11 +170,12 @@ const ScreenshotsSection = memo(
 
         {/* Gallery body — thumbnails when collapsed, scrollable image when expanded */}
         <div
-          className="origin-top relative w-full overflow-hidden rounded-[16px]"
+          className="origin-top relative w-full overflow-hidden rounded-[16px] "
           style={{
             height: !open ? "0px" : isExpanded ? "calc(100vh - 200px)" : "187px",
             opacity: open ? 1 : 0,
             transition: "height 0.5s cubic-bezier(0.25,1,0.5,1), opacity 0.3s ease",
+            marginTop: open ? "10px" : "0px",
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
