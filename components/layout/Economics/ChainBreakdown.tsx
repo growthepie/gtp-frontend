@@ -167,18 +167,19 @@ export default function ChainBreakdown({
     }
   };
 
+  const resolution = isMonthly ? "monthly" : "daily";
+
   const dataTimestampExtremes = useMemo(() => {
     let xMin = Infinity;
     let xMax = -Infinity;
 
     Object.keys(data).forEach((chain) => {
       regularMetrics.forEach((metric) => {
-        if (!data[chain].daily[metric]) return;
-        const min = data[chain].daily[metric].data[0][0];
-        const max =
-          data[chain].daily[metric].data[
-          data[chain].daily[metric].data.length - 1
-          ][0];
+        if (!data[chain][resolution]?.[metric]) return;
+        const series = data[chain][resolution][metric].data;
+        if (!series || series.length === 0) return;
+        const min = series[0][0];
+        const max = series[series.length - 1][0];
 
         xMin = Math.min(min, xMin);
         xMax = Math.max(max, xMax);
@@ -186,7 +187,7 @@ export default function ChainBreakdown({
     });
 
     return { xMin, xMax };
-  }, [data]);
+  }, [data, resolution]);
 
   //Handles opening of each chain section
   const timespans = useMemo(() => {
