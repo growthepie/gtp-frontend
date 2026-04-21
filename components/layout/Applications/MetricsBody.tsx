@@ -658,6 +658,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                                                     </div>
                                                 );
                                             })}
+                                            {compareAppKeys.length > 2 && (
+                                                <div
+                                                    className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors w-full min-w-0"
+                                                    onClick={() => setCompareAppKeys([])}
+                                                >
+                                                    <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0 " containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                    <span className="truncate flex-1 min-w-0">Deselect All</span>
+                                                </div>
+                                            )}
                                             {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
                                                 <div className="my-[6px] border-t border-color-bg-medium" />
                                             )}
