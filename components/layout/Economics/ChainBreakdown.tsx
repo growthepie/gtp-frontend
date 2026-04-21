@@ -169,14 +169,42 @@ export default function ChainBreakdown({
 
   const resolution = isMonthly ? "monthly" : "daily";
 
+  // Backend returns chain_breakdown.<chain>.monthly timestamps in microseconds
+  // while daily and every other endpoint are in milliseconds. Normalize to ms
+  // so the Highcharts axis bounds (computed in ms) line up with the series.
+  const normalizedData = useMemo(() => {
+    const out: ChainBreakdownResponse = {} as any;
+    Object.keys(data).forEach((chain) => {
+      const chainEntry = data[chain];
+      if (!chainEntry?.monthly) {
+        out[chain] = chainEntry;
+        return;
+      }
+      const normalizedMonthly: any = {};
+      Object.keys(chainEntry.monthly).forEach((metric) => {
+        const m = chainEntry.monthly[metric];
+        if (m?.data && Array.isArray(m.data) && m.data.length > 0 && String(Math.trunc(m.data[0][0])).length >= 16) {
+          normalizedMonthly[metric] = {
+            ...m,
+            data: m.data.map((row: any[]) => [row[0] / 1000, ...row.slice(1)]),
+          };
+        } else {
+          normalizedMonthly[metric] = m;
+        }
+      });
+      out[chain] = { ...chainEntry, monthly: normalizedMonthly };
+    });
+    return out;
+  }, [data]);
+
   const dataTimestampExtremes = useMemo(() => {
     let xMin = Infinity;
     let xMax = -Infinity;
 
-    Object.keys(data).forEach((chain) => {
+    Object.keys(normalizedData).forEach((chain) => {
       regularMetrics.forEach((metric) => {
-        if (!data[chain][resolution]?.[metric]) return;
-        const series = data[chain][resolution][metric].data;
+        if (!normalizedData[chain][resolution]?.[metric]) return;
+        const series = normalizedData[chain][resolution][metric].data;
         if (!series || series.length === 0) return;
         const min = series[0][0];
         const max = series[series.length - 1][0];
@@ -187,7 +215,7 @@ export default function ChainBreakdown({
     });
 
     return { xMin, xMax };
-  }, [data, resolution]);
+  }, [normalizedData, resolution]);
 
   //Handles opening of each chain section
   const timespans = useMemo(() => {
@@ -1377,7 +1405,7 @@ export default function ChainBreakdown({
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
                           dailyData={
-                            data[item.key][isMonthly ? "monthly" : "daily"]
+                            normalizedData[item.key][isMonthly ? "monthly" : "daily"]
                           }
                           chain={item.key}
                           timespans={timespans}
