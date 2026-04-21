@@ -72,6 +72,7 @@ interface ChartWrapperProps {
       yMultiplication?: number,
       aggregation?: "daily" | "weekly" | "monthly",
       deselected?: boolean,
+      tooltipLabelIndex?: number,
     }[]
   }
   seeMetricURL?: string | null;
@@ -225,8 +226,27 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     }));
   }, [jsonMeta, jsonData]);
 
+  const tooltipLabelMaps = useMemo(() => {
+    if (!jsonMeta?.meta || !jsonData) return new Map<string, Map<number, string>>();
+    const result = new Map<string, Map<number, string>>();
+    jsonMeta.meta.forEach((series: any, index: number) => {
+      if (series.tooltipLabelIndex === undefined) return;
+      const rawData = jsonData[index];
+      if (!Array.isArray(rawData)) return;
+      const map = new Map<number, string>();
+      rawData.forEach((item: any) => {
+        const label = item[series.tooltipLabelIndex];
+        if (label !== null && label !== undefined) {
+          map.set(item[series.xIndex], String(label).toUpperCase());
+        }
+      });
+      result.set(series.name, map);
+    });
+    return result;
+  }, [jsonMeta, jsonData]);
+
   const filteredSeries = useMemo(() => {
-    return processedSeriesData.filter(series => 
+    return processedSeriesData.filter(series =>
       filteredNames.length === 0 || filteredNames.includes(series.name)
     );
   }, [processedSeriesData, filteredNames]);
@@ -410,9 +430,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         })
         .join("");
 
-      return tooltip + tooltipPoints + totalLine + tooltipEnd;
+      const labelLine = (() => {
+        for (const [, map] of tooltipLabelMaps) {
+          const label = map.get(x);
+          if (label) {
+            return `<div class="flex space-x-2 items-center font-medium mt-1.5 mb-0.5 ml-6 text-xs opacity-70">
+              <span>New:</span><span>${label}</span>
+            </div>`;
+          }
+        }
+        return "";
+      })();
+
+      return tooltip + tooltipPoints + totalLine + labelLine + tooltipEnd;
     },
-    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip],
+    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip, tooltipLabelMaps],
   );
 
   const resolvedPieData = useMemo(() => {
