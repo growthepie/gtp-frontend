@@ -37,11 +37,14 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
 
   const selectedChart = charts[clampIndex(activeIndex, charts.length)];
 
+  const { sideChart: rawSideChart, ...mainChartProps } = (selectedChart ?? {}) as ChartBlockType & { sideChart?: ChartBlockType };
+
   const chartForRender: ChartBlockType | undefined = selectedChart
-    ? {
-        ...selectedChart,
-        suppressWrapperSpacing: true,
-      }
+    ? { ...mainChartProps, suppressWrapperSpacing: true }
+    : undefined;
+
+  const sideChartForRender: ChartBlockType | undefined = rawSideChart
+    ? { ...rawSideChart, suppressWrapperSpacing: true }
     : undefined;
 
   const renderDescription = () => {
@@ -89,7 +92,10 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block }) => 
         })}
       </div>
       {chartForRender && (
-        <div className="mt-4">
+        <div className={`mt-4 ${sideChartForRender ? 'grid grid-cols-1 lg:grid-cols-[1fr_2fr] items-start gap-[15px]' : ''}`}>
+          {sideChartForRender && (
+            <ChartBlock key={sideChartForRender.id} block={sideChartForRender} />
+          )}
           <ChartBlock key={chartForRender.id} block={chartForRender} />
         </div>
       )}

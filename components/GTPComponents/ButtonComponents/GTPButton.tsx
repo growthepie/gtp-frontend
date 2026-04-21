@@ -476,10 +476,9 @@ const GTPButtonAnimatedLabel = ({
       style={{
         display: "grid",
         gridTemplateColumns: show ? "1fr" : "0fr",
-        gridTemplateRows: show ? "1fr" : "0fr",
         overflow: "hidden",
         opacity: show ? 1 : 0,
-        transition: "grid-template-columns 200ms ease-out, grid-template-rows 200ms ease-out, opacity 200ms ease-out",
+        transition: "grid-template-columns 200ms ease-out, opacity 200ms ease-out",
       }}
       aria-hidden={!show}
     >

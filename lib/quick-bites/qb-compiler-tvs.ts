@@ -428,9 +428,9 @@ export const faqItems: FaqItem[] = [
 export const jsonLdFaq = generateJsonLdFaq(faqItems);
 
 // Quick Bite
-const ArgotCompiler: QuickBiteData = {
+const CompilerTvs: QuickBiteData = {
   title: "Programming Languages Securing Ethereum's Value",
-  shortTitle: "Ethereum Smart Contract Languages",
+  shortTitle: "Smart Contract Language by TVS",
   subtitle: "Analyzing the top 1,000 Ethereum contracts by Total Value Secured across smart contract languages and compiler versions.",
   content: [
     "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
@@ -522,4 +522,4 @@ const ArgotCompiler: QuickBiteData = {
   jsonLdFaq: jsonLdFaq,
 };
 
-export default ArgotCompiler;
+export default CompilerTvs;

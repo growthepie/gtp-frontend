@@ -669,11 +669,16 @@ function parseChartToggleBlock(jsonString: string): ChartToggleBlock | null {
               ? toggleLabelSource.trim()
               : `Chart ${index + 1}`;
 
-          const chart: ChartBlock = {
+          const parsedSideChart = chartConfig.sideChart
+            ? parseChartBlock(JSON.stringify(chartConfig.sideChart))
+            : null;
+
+          const chart: ChartBlock & { sideChart?: ChartBlock } = {
             ...(parsedChart as ChartBlock),
             toggleLabel,
             suppressWrapperSpacing: true,
             showInMenu: false,
+            ...(parsedSideChart ? { sideChart: parsedSideChart as ChartBlock } : {}),
           };
 
           return chart;
