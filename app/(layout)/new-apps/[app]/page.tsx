@@ -45,6 +45,7 @@ type ApplicationEnrichmentScreenshot = {
 type ApplicationEnrichmentData = {
   screenshots?: ApplicationEnrichmentScreenshot[] | null;
   features?: {
+    primary_function?: string[] | null;
     product_features?: ApplicationEnrichmentFeature[] | null;
   } | null;
 };
@@ -355,11 +356,191 @@ const PlaceholderCard = ({ title }: { title: string }) => (
 );
 
 
-
+export const categoryIconMap: Record<string, string> = {
+  // ---- Categories ----
+  "Infrastructure": "gtp-layers",
+  "DEX / Swap": "gtp-tokentransfers",
+  "Developer Tools": "github",
+  "Gaming": "gtp-project", // no gaming-specific icon
+  "Yield Aggregator": "gtp-metrics-economics",
+  "Bridge": "gtp-bridge",
+  "Wallet": "gtp-wallet",
+  "Payments": "gtp-tokentransfers",
+  "Perpetuals / Derivatives": "gtp-metrics-economics",
+  "Analytics": "gtp-metrics",
+  "Social": "gtp-socials",
+  "NFT Marketplace": "gtp-nft",
+  "Lending / Borrowing": "gtp-defi",
+  "Stablecoin": "gtp-metrics-stablecoinmarketcap",
+  "Identity / ENS": "gtp-labeled",
+  "DAO Tooling": "gtp-dac",
+  "Liquid Staking": "gtp-metrics-valuelocked",
+  "AI": "gtp-technology", // no AI-specific icon
+  "Restaking": "gtp-metrics-valuelocked",
+  "Prediction Markets": "gtp-metrics-activity",
+  "Oracles": "gtp-data",
+  "Identity": "gtp-verified",
+  "Staking": "gtp-metrics-valuelocked",
+ 
+  // ---- "Other:" categories ----
+  "Other: Memecoin": "gtp-project",
+  "Other: Centralized Exchange": "gtp-cefi",
+  "Other: Centralized Exchange (CEX)": "gtp-cefi",
+  "Other: Launchpad": "gtp-megaphone",
+  "Other: Token Launchpad": "gtp-megaphone",
+  "Other: Token Launcher": "gtp-plus",
+  "Other: Token Minting": "gtp-plus",
+  "Other: Minting Protocol": "gtp-plus",
+  "Other: Generative Minting": "gtp-plus",
+  "Other: RWA Tokenization": "gtp-metrics-economics",
+  "Other: RWA Brokerage": "gtp-metrics-economics",
+  "Other: Education": "book-open",
+  "Other: NFT Collection": "gtp-nft",
+  "Other: NFT Art Collection": "gtp-nft",
+  "Other: NFT Ecosystem": "gtp-nft",
+  "Other: NFT Integration": "gtp-nft",
+  "Other: NFT Marketplace": "gtp-nft",
+  "Other: Omnichain NFT": "gtp-nft",
+  "Other: On-chain Art": "gtp-nft",
+  "Other: Digital Art Portfolio": "gtp-nft",
+  "Other: Digital Collectibles & Entertainment": "gtp-nft",
+  "Other: AI": "gtp-technology",
+  "Other: AI Blockchain": "gtp-technology",
+  "Other: AI Consumer Layer": "gtp-technology",
+  "Other: AI Trading Terminal": "gtp-technology",
+  "Other: Integrated AI Tools": "gtp-technology",
+  "Other: Browser": "compass",
+  "Other: Crypto Casino Directory": "gtp-project",
+  "Other: Decentralized Oracle": "gtp-data",
+  "Other: Reverse Oracle": "gtp-data",
+  "Other: Document Transfer": "file-text",
+  "Other: E-commerce": "gtp-tokentransfers",
+  "Other: Event Ticketing": "gtp-calendar",
+  "Other: Gambling/Lottery": "gtp-project",
+  "Other: Gamified Token Distribution": "gtp-share",
+  "Other: Meme Coin": "gtp-project",
+  "Other: Meme Token Launchpad": "gtp-megaphone",
+  "Other: Meme-Fungible Token": "gtp-project",
+  "Other: Microtask Marketplace": "gtp-users",
+  "Other: Outdoor Advertising": "gtp-megaphone",
+  "Other: Plastic Credit Marketplace": "gtp-metrics-economics",
+  "Other: Prize-Linked Savings": "gtp-metrics-valuelocked",
+  "Other: Real Estate Transactions": "gtp-tokentransfers",
+  "Other: Rewards": "gtp-application-revenue",
+  "Other: Rewards Ecosystem": "gtp-application-revenue",
+  "Other: Space Simulation": "gtp-project",
+  "Other: Trading Bot": "gtp-technology",
+  "Other: Arbitrage Bot": "gtp-technology",
+  "Other: Grid Trading Bot": "gtp-technology",
+ 
+  // ---- Features ----
+  "Rewards Program": "gtp-application-revenue",
+  "Cross-chain": "gtp-crosschain",
+  "API Access": "gtp-technology",
+  "Governance": "gtp-dac",
+  "Liquidity Provision / LP Rewards": "gtp-metrics-valuelocked",
+  "Live Events / Real-time": "gtp-realtime",
+  "Live Events": "gtp-realtime",
+  "Mobile App": "gtp-monitor", // no mobile/phone icon
+  "Portfolio Tracking": "tracker",
+  "Social Features": "gtp-socials",
+  "Leaderboard": "gtp-rank",
+  "Multi-language Support": "gtp-message",
+  "Referral Program": "gtp-share",
+  "Fiat On-ramp": "gtp-cefi",
+  "Account Abstraction": "gtp-wallet",
+  "Limit Orders": "gtp-filter",
+  "Gasless Transactions": "gtp-metrics-feespaidbyusers",
+  "Browser Extension": "compass",
+  "DCA (Dollar Cost Averaging)": "gtp-calendar",
+  "DCA": "gtp-calendar",
+  "Copy Trading": "gtp-copy",
+  "Institutional": "gtp-cefi",
+  "AI Access": "gtp-technology",
+  "Leverage": "gtp-metrics-economics",
+  "NFTs": "gtp-nft",
+  "Privacy": "gtp-lock",
+  "RWA": "gtp-metrics-economics",
+  "Swap": "gtp-tokentransfers",
+  "Yield": "gtp-metrics-economics",
+  "1-of-1 Minting": "gtp-nft",
+  "Affiliate Program": "gtp-share",
+  "Batch Transfers": "gtp-tokentransfers",
+  "Burn-and-Redeem": "gtp-tokentransfers",
+  "Compliance": "shield",
+  "Domain Registration": "gtp-labeled",
+  "Gas Swap": "gtp-metrics-feespaidbyusers",
+  "Guaranteed Fills": "gtp-checkmark-checked",
+  "Indexing": "gtp-search",
+  "Multi-token Swaps": "gtp-tokentransfers",
+  "NFT Wrapping": "gtp-nft",
+  "No-code/Low-code Builder": "gtp-technology",
+  "Open Source": "github",
+  "Paper Trading": "gtp-metrics-activity",
+  "Perpetual Contracts": "gtp-metrics-economics",
+  "Roadmap": "gtp-map",
+  "RWA Support": "gtp-metrics-economics",
+  "Security": "shield",
+  "Social Logins": "gtp-users",
+  "Sybil Resistance": "shield",
+  "USSD Access": "gtp-message",
+  "Yield Generation": "gtp-metrics-economics",
+  "Yield Vaults": "gtp-lock",
+  "ZK-RaaS": "gtp-zeroknowledgerollup",
+ 
+  // ---- "Other:" features ----
+  "Other: Approval Management": "gtp-checkmark-checked",
+  "Other: Audit Logs": "file-text",
+  "Other: Batch Payments": "gtp-tokentransfers",
+  "Other: Bonding Curve": "gtp-metrics-economics",
+  "Other: CEX-to-Chain Transfers": "gtp-crosschain",
+  "Other: Copy Trading": "gtp-copy",
+  "Other: DCA": "gtp-calendar",
+  "Other: DePIN": "gtp-network",
+  "Other: ENS/CNS Support": "gtp-labeled",
+  "Other: ERP Integration": "gtp-utilities",
+  "Other: GPU Rental": "gtp-technology",
+  "Other: Historical Smart Contract": "file-text",
+  "Other: Identity Verification": "gtp-verified",
+  "Other: Intent-based Execution": "gtp-arrowup",
+  "Other: Intents": "gtp-arrowup",
+  "Other: Liquidation Protection": "shield",
+  "Other: MEV Block Building": "gtp-block-explorer",
+  "Other: Modular Vault Infrastructure": "gtp-lock",
+  "Other: Multi-signature": "shield",
+  "Other: On-chain Customization": "gtp-settings",
+  "Other: On-chain Pet Evolution": "gtp-project",
+  "Other: Onchain Benchmark": "gtp-metrics",
+  "Other: Open Source": "github",
+  "Other: Peer-to-peer Energy Trading": "gtp-tokentransfers",
+  "Other: Plugin Engine": "gtp-utilities",
+  "Other: Proof of Humanity": "gtp-verified",
+  "Other: Proof of Reserves": "gtp-verified",
+  "Other: Qualified Custody": "gtp-lock",
+  "Other: Reserve Attestations": "gtp-verified",
+  "Other: Rollup-as-a-Service": "gtp-layers",
+  "Other: S3 Compatibility": "gtp-data",
+  "Other: SDK": "gtp-technology",
+  "Other: Smart Accounts": "gtp-wallet",
+  "Other: Smart Routing": "gtp-utilities",
+  "Other: Stealth Addresses": "gtp-lock",
+  "Other: Tax Reporting": "file-text",
+  "Other: Testnet Faucet": "gtp-download", // was "dummy-icon" (not in iconNames) — swap for whatever fits
+  "Other: Token Dispersal": "gtp-tokentransfers",
+  "Other: Token Sniping": "gtp-rank",
+  "Other: Token-gating": "gtp-lock",
+  "Other: Token-NFT Transformation": "gtp-nft",
+  "Other: Transaction Recipes": "file-text",
+  "Other: Utility Bill Payments": "gtp-tokentransfers",
+  "Other: Visual Debugger": "gtp-search",
+  "Other: Zero Fees": "gtp-metrics-feespaidbyusers",
+};
 
 const FeaturedSection = memo(({
+  primary_functions,
   features,
 }: {
+  primary_functions: string[];
   features: string[];
 }) => {
   if (!features.length) {
@@ -368,9 +549,12 @@ const FeaturedSection = memo(({
 
   return (
     <div className="flex w-full flex-wrap gap-[10px] rounded-[15px] select-none">
-      {features.map((feature: string, i: number) => (
-        <FeaturedCard key={i} feature={feature} />
+      {primary_functions.map((primary_function: string, i: number) => (
+        <FeaturedCard key={i} feature={primary_function} />
       ))}
+      {/* {features.map((feature: string, i: number) => (
+        <FeaturedCard key={i} feature={feature} />
+      ))} */}
     </div>
   );
 });
@@ -480,7 +664,7 @@ const FeaturedCard = memo(({ feature }: { feature: string }) => {
  
   return (
     <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <GTPIcon icon="gtp-defi" size="md" />
+      <GTPIcon icon={`gtp:${categoryIconMap[feature]}` as GTPIconName} size="md" />
       <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
@@ -516,6 +700,17 @@ const OverviewContent = memo(({
         .sort((a, b) => (a.priority ?? Number.MAX_SAFE_INTEGER) - (b.priority ?? Number.MAX_SAFE_INTEGER)),
     [enrichmentData],
   );
+  const primary_functions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (enrichmentData?.features?.primary_function ?? [])
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+        ),
+      ),
+    [enrichmentData],
+  );
   const features = useMemo(
     () =>
       Array.from(
@@ -534,7 +729,7 @@ const OverviewContent = memo(({
     <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
       <AboutApp data={data} owner_project={owner_project} projectMetadata={projectMetadata} />
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
-      <FeaturedSection features={features} />
+      <FeaturedSection features={features} primary_functions={primary_functions} />
       <div className="flex flex-col gap-y-[15px] py-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
