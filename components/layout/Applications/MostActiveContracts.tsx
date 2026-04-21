@@ -118,7 +118,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
                   className="z-30"
                   clickHandler={() => {
-                    window.open(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`, "_blank");
+                    window.location.href = `https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`;
                   }}
                 />
                 <div
@@ -292,7 +292,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
                   className="z-30"
                   clickHandler={() => {
-                    window.open(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`, "_blank");
+                    window.location.href = `https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`;
                   }}
                 />
                 <div
