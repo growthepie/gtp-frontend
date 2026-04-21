@@ -112,17 +112,17 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
             {!oliHide && (
               <>
                 <GTPButton
-                  label="Don't see your app? Label here."
+                  label="Don't see your contract? Label here."
                   leftIcon={"oli-open-labels-initiative" as GTPIconName}
                   size="xs"
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
                   className="z-30"
                   clickHandler={() => {
-                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                    window.open(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`, "_blank");
                   }}
                 />
                 <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[212px]"
                   style={{
                     background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
                   }}
@@ -286,17 +286,17 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
         {oliHide && (
           <div className="relative flex items-center justify-start mt-[5px]">
                 <GTPButton
-                  label="Don't see your app? Label here."
+                  label="Don't see your contract? Label here."
                   leftIcon={"oli-open-labels-initiative" as GTPIconName}
                   size="xs"
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
                   className="z-30"
                   clickHandler={() => {
-                    openExternalLinkWithDisclaimer(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`);
+                    window.open(`https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`, "_blank");
                   }}
                 />
                 <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[192px]"
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[212px]"
                   style={{
                     background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
                   }}
