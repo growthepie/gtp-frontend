@@ -378,7 +378,7 @@ const testBite: QuickBiteData = createQuickBite({
       readFromJSON: true,
       exclusive: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/dropdown.json",
         pathToOptions: "dropdown_values",
         valueField: "ticker",     // Use 'ticker' field as the option value
         labelField: "name_extended"        // Use 'name' field as the option label
@@ -473,7 +473,7 @@ const testBite: QuickBiteData = createQuickBite({
         }
       },
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
       }

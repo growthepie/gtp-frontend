@@ -21,7 +21,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle timeboost data placeholders
       if (processedItem.includes('{{timeboost')) {
-        const timeboostData = await fetchData('timeboost', "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json");
+        const timeboostData = await fetchData('timeboost', "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json");
         const timeboostDataETHRounded = timeboostData.data.fees_paid_priority_eth.total.toFixed(2);
         const timeboostDataUSDRounded = parseFloat(timeboostData.data.fees_paid_priority_usd.total).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
@@ -38,7 +38,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle hyperliquid data placeholders
       if (processedItem.includes('{{hyperliquid')) {
-        const hyperliquidData = await fetchData('hyperliquid', "https://api.growthepie.xyz/v1/quick-bites/hyperliquid/kpis.json");
+        const hyperliquidData = await fetchData('hyperliquid', "https://api.growthepie.com/v1/quick-bites/hyperliquid/kpis.json");
         const total_revenue_for_circle = (hyperliquidData.data.total_revenue_for_circle / 1000000).toFixed(2);
         const hyperliquid_usdc_last = (hyperliquidData.data.hyperliquid_usdc_last / 1000000000).toFixed(3);
         const percentage_hyperliquid_of_circle = hyperliquidData.data.percentage_hyperliquid_of_circle.toFixed(2);
@@ -60,7 +60,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle shopify data placeholders
       if (processedItem.includes('{{shopify')) {
-        const shopifyData = await fetchData('shopify', "https://api.growthepie.xyz/v1/quick-bites/shopify-usdc.json");
+        const shopifyData = await fetchData('shopify', "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json");
         //const shopifyDataETH = shopifyData.data.gross_volume_usdc.total.toFixed(2);
         const shopifyVolumeUSD = parseFloat(shopifyData.data.gross_volume_usdc.total).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
@@ -168,7 +168,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle ethereum scaling data placeholders
       if (processedItem.includes('{{ethereum')) {
-        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.xyz/v1/quick-bites/ethereum-scaling/data.json");
+        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json");
 
         const ethereumCurrentTPS = parseFloat(ethereumScalingData.data.historical_tps.total).toLocaleString("en-GB", {
           minimumFractionDigits: 1,
@@ -194,7 +194,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle Ethereum ETH supply placeholders
       if (processedItem.includes('{{eth_')) {
-        const ethSupplyData = await fetchData('eth_supply', "https://api.growthepie.xyz/v1/eim/eth_supply.json");
+        const ethSupplyData = await fetchData('eth_supply', "https://api.growthepie.com/v1/eim/eth_supply.json");
 
         if (ethSupplyData?.data?.chart) {
           // Get the latest values from supply data
@@ -472,7 +472,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {
-      //   const ethereumData = await fetchData('ethereum', "https://api.growthepie.xyz/v1/ethereum-data.json");
+      //   const ethereumData = await fetchData('ethereum', "https://api.growthepie.com/v1/ethereum-data.json");
       //   if (ethereumData) {
       //     processedItem = processedItem.replace('{{ethereumPrice}}', ethereumData.price);
       //   }
