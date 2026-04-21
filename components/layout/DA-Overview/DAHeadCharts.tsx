@@ -67,14 +67,45 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
     return "Ξ";
   }, [showUsd]);
 
+  // Backend emits monthly timestamps in microseconds (16 digits) while daily
+  // uses milliseconds (13 digits). Normalize monthly to ms so axis bounds and
+  // series data speak the same unit to Highcharts.
+  const normalizedData = useMemo(() => {
+    const out: AllDAOverview = { ...data, metrics: {} as any };
+    Object.keys(data.metrics).forEach((metricKey) => {
+      const metricGroup = data.metrics[metricKey];
+      const outGroup: any = {};
+      Object.keys(metricGroup).forEach((daKey) => {
+        const entry = metricGroup[daKey];
+        if (!entry || !entry.monthly?.data || entry.monthly.data.length === 0) {
+          outGroup[daKey] = entry;
+          return;
+        }
+        if (String(Math.trunc(entry.monthly.data[0][0])).length < 16) {
+          outGroup[daKey] = entry;
+          return;
+        }
+        outGroup[daKey] = {
+          ...entry,
+          monthly: {
+            ...entry.monthly,
+            data: entry.monthly.data.map((row: any[]) => [row[0] / 1000, ...row.slice(1)]),
+          },
+        };
+      });
+      (out.metrics as any)[metricKey] = outGroup;
+    });
+    return out;
+  }, [data]);
+
 
   const timespans = useMemo(() => {
 
     let xMax = 0;
     let xMin = Infinity;
 
-    Object.keys(data.metrics["fees_paid"]).forEach((key) => {
-      const dataset = data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data;
+    Object.keys(normalizedData.metrics["fees_paid"]).forEach((key) => {
+      const dataset = normalizedData.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data;
 
       // Find xMax (latest x-value)
       const latestX = dataset[dataset.length - 1][0];
@@ -168,7 +199,7 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
         },
       };
     }
-  }, [isMonthly, data]);
+  }, [isMonthly, normalizedData]);
 
 
 
@@ -723,7 +754,7 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
                     >
                       {Object.keys(data.metrics[metricKey])
                         .map((key, i) => {
-                          let types = data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].types;
+                          let types = normalizedData.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].types;
                           let typeIndex = 1;
 
 
@@ -738,7 +769,7 @@ export default function DAHeadCharts({ selectedTimespan, isMonthly, data }: { se
                           return (
                             <AreaSeries
                               key={key}
-                              data={data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].data.map((d) => [d[0], d[typeIndex]])}
+                              data={normalizedData.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].data.map((d) => [d[0], d[typeIndex]])}
                               color={area_colors[key]}
                               name={data.metrics[metricKey][key].metric_name}
                               shadow={{
