@@ -16,6 +16,7 @@ type HorizontalScrollContainerProps = {
   children?: React.ReactNode;
   includeMargin?: boolean;
   hideScrollbar?: boolean; // when true, suppress the custom scrollbar UI
+  hideGradientOverlays?: boolean; // when true, suppress the GradientMask overlays (CSS mask-image still applies)
   paddingRight?: number;
   paddingLeft?: number;
   paddingTop?: number;
@@ -33,6 +34,7 @@ export default function HorizontalScrollContainer({
   className,
   includeMargin = true,
   hideScrollbar = false,
+  hideGradientOverlays = false,
   paddingRight = 0,
   paddingLeft = 0,
   paddingTop = 0,
@@ -562,9 +564,9 @@ export default function HorizontalScrollContainer({
 
   return (
     <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
-      {/* Gradient Masks */}
-      <GradientMask direction="left" isVisible={showScroller && showLeftGradient} />
-      <GradientMask direction="right" isVisible={showScroller && showRightGradient} />
+      {/* Gradient Masks — suppressed when hideGradientOverlays is true (CSS mask-image still fades edges) */}
+      {!hideGradientOverlays && <GradientMask direction="left" isVisible={showScroller && showLeftGradient} />}
+      {!hideGradientOverlays && <GradientMask direction="right" isVisible={showScroller && showRightGradient} />}
 
       <div className="overflow-x-visible">
         <div
