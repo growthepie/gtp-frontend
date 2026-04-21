@@ -228,31 +228,6 @@ const mainContent = [
 
   "```chart",
   JSON.stringify({
-    type: "line",
-    title: "Fiat Currencies Tokenized in the Ethereum Ecosystem",
-    subtitle: "Daily count of unique fiat currencies for which stablecoin supply is tracked.",
-    showXAsDate: true,
-    dataAsJson: {
-      meta: [
-        {
-          name: "Unique Fiat Count",
-          color: "#FE5468",
-          xIndex: 0,
-          yIndex: 1,
-          tooltipDecimals: 0,
-          tooltipLabelIndex: 2,
-          url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/unique-fiat-count.json",
-          pathToData: "data.timeseries.values",
-        },
-      ],
-    },
-    height: 400,
-    caption: "Bar chart showing the daily count of unique fiat currencies tracked. Hover a bar to see which currencies were first added on that day.",
-  }),
-  "```",
-
-  "```chart",
-  JSON.stringify({
     type: "area",
     title: "Stablecoin Supply by Fiat Currency (USD Value)",
     subtitle: "Share of total stablecoin supply pegged to each fiat currency, as a percentage.",
@@ -275,6 +250,31 @@ const mainContent = [
     },
     height: 500,
     caption: "Stacked area chart showing the percentage share of stablecoin supply pegged to each fiat currency. Data is updated daily.",
+  }),
+  "```",
+
+  "```chart",
+  JSON.stringify({
+    type: "line",
+    title: "Fiat Currencies Tokenized in the Ethereum Ecosystem",
+    subtitle: "Daily count of unique fiat currencies for which stablecoin supply is tracked.",
+    showXAsDate: true,
+    dataAsJson: {
+      meta: [
+        {
+          name: "Unique Fiat Count",
+          color: "#FE5468",
+          xIndex: 0,
+          yIndex: 1,
+          tooltipDecimals: 0,
+          tooltipLabelIndex: 2,
+          url: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/unique-fiat-count.json",
+          pathToData: "data.timeseries.values",
+        },
+      ],
+    },
+    height: 400,
+    caption: "Daily count of unique fiat currencies tracked. Hover to see which currencies were added in that week.",
   }),
   "```",
 
