@@ -72,7 +72,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "fees.growthepie.xyz",
+              value: "fees.growthepie.com",
             },
           ],
           destination: "/fees",
@@ -92,7 +92,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.fees.growthepie.xyz",
+              value: "dev.fees.growthepie.com",
             },
           ],
           destination: "/fees",
@@ -112,7 +112,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "labels.growthepie.xyz",
+              value: "labels.growthepie.com",
             },
           ],
           destination: "/labels",
@@ -132,7 +132,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.labels.growthepie.xyz",
+              value: "dev.labels.growthepie.com",
             },
           ],
           destination: "/labels",
@@ -152,7 +152,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "icons.growthepie.xyz",
+              value: "icons.growthepie.com",
             },
           ],
           destination: "/icons",
@@ -172,7 +172,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.icons.growthepie.xyz",
+              value: "dev.icons.growthepie.com",
             },
           ],
           destination: "/icons",
@@ -328,7 +328,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api.growthepie.xyz",
+        hostname: "api.growthepie.com",
       },
       {
         protocol: "https",

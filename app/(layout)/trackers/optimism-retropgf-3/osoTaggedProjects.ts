@@ -13836,7 +13836,7 @@ export const OsoTaggedProjects: OsoTaggedProject[] = [
     "Project ID": "0x849e164d1b8cc2b51bd3313d007ac58acb816660492336d2498615551ec75f02",
     "Project Name": "growthepie",
     "Applicant Type": "PROJECT",
-    "Website": "https://growthepie.xyz",
+    "Website": "https://growthepie.com",
     "Bio": "Layer 2 Analytics & Knowledge Platform. Metrics, Blockspace, Labeling and APIs.",
     "Payout Address": "0x700E73d289DE10b6143465E02E6931E6e6a0CA15",
     "OSO Slug": "growthepie",

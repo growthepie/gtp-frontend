@@ -79,7 +79,7 @@ export const useSearchBucketsLocal = (query: string = "") => {
           .map(([owner, project]) => ({
             label: project.display_name,
             url: `/applications/${project.owner_project}`,
-            icon: `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`,
+            icon: `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`,
             color: undefined
           })) : [])
       ]
