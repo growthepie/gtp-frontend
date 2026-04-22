@@ -196,6 +196,11 @@ const nextConfig = {
     
     return [
       {
+        source: "/new-apps/:slug",
+        destination: "/applications/:slug",
+        permanent: true,
+      },
+      {
         source: "/quick-bites/eip8004",
         destination: "/quick-bites/eip-8004",
         permanent: true,

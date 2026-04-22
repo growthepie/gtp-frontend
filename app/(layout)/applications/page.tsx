@@ -32,7 +32,6 @@ import { Switch } from "@/components/Switch";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 import ViewToggle from "@/components/ViewToggle";
 import { Carousel } from "@/components/Carousel";
-import { IS_PRODUCTION } from "@/lib/helpers";
 
 
 // Preload data for the overview page
@@ -653,7 +652,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   );
 
   return (
-    <Link href={{ pathname: !IS_PRODUCTION ? `/new-apps/${application.owner_project}` : `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
       <GridTableRow
         // gridDefinitionColumns={gridColumns}
         className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
