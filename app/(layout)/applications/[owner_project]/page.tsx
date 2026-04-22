@@ -976,31 +976,35 @@ export default function Page({
     {owner_project && projectMetadata && (
     <Container className="flex flex-col gap-y-[10px] pt-[45px] md:pt-[30px] select-none">
       {/* Tab bar */}
-      <SectionBar>
-        {TABS.map((tab, index) => (
-          <div
-            key={tab.key}
-            onClick={() => setSelectedTab(tab.key)}
-            onMouseEnter={() => setHoveredTab(tab.key)}
-            onMouseLeave={() => setHoveredTab(null)}
-          >
-            <SectionBarItem
-              isSelected={selectedTab === tab.key}
-              isLocked={false}
-              comingSoon={ tab.key === "user_insights" ? true : false}
-              icon={tab.icon as GTPIconName}
-              appIconOverride={tab.key === "overview"
-                ? <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" />
-                : undefined
-              }
-              header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
-              index={index + 1}
-              isHovered={hoveredTab === tab.key}
-            />
-          </div>
-        ))}
-      </SectionBar>
-
+      <div className="flex items-center gap-x-[10px]">
+        <GTPIcon icon="gtp-chevronleft-monochrome" size="sm" className="!size-[18px]" containerClassName="w-[44px] h-[44px] flex items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover cursor-pointer rounded-full"
+        onClick={() => router.push("/applications")} />
+        <SectionBar>
+          
+          {TABS.map((tab, index) => (
+            <div
+              key={tab.key}
+              onClick={() => setSelectedTab(tab.key)}
+              onMouseEnter={() => setHoveredTab(tab.key)}
+              onMouseLeave={() => setHoveredTab(null)}
+            >
+              <SectionBarItem
+                isSelected={selectedTab === tab.key}
+                isLocked={false}
+                comingSoon={ tab.key === "user_insights" ? true : false}
+                icon={tab.icon as GTPIconName}
+                appIconOverride={tab.key === "overview"
+                  ? <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" />
+                  : undefined
+                }
+                header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
+                index={index + 1}
+                isHovered={hoveredTab === tab.key}
+              />
+            </div>
+          ))}
+        </SectionBar>
+      </div>
       {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
       {data && projectMetadata && (
         <AboutApp
