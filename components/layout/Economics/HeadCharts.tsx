@@ -103,6 +103,7 @@ export default function EconHeadCharts({
 
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
+  const resolution = isMonthly ? "monthly" : "daily";
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
@@ -152,7 +153,6 @@ export default function EconHeadCharts({
         day: "numeric",
         year: "numeric",
       });
-      const chartTitle = this.series.chart.title.textStr;
 
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
@@ -345,11 +345,11 @@ export default function EconHeadCharts({
     Object.keys(data).map((key, i) => {
       if (
         i === 0 ||
-        data[key].daily.data[data[key].daily.data.length - 1][unixIndex] <
+        data[key][resolution].data[data[key][resolution].data.length - 1][unixIndex] <
         smallestUnixTimestamp
       ) {
         smallestUnixTimestamp =
-          data[key].daily.data[data[key].daily.data.length - 1][unixIndex];
+          data[key][resolution].data[data[key][resolution].data.length - 1][unixIndex];
         lastIndexKey = key;
       }
     });
@@ -364,9 +364,9 @@ export default function EconHeadCharts({
     Object.keys(data).map((key, i) => {
       if (
         i === 0 ||
-        data[key].daily.data[0][unixIndex] < largestUnixTimestamp
+        data[key][resolution].data[0][unixIndex] < largestUnixTimestamp
       ) {
-        largestUnixTimestamp = data[key].daily.data[0][unixIndex];
+        largestUnixTimestamp = data[key][resolution].data[0][unixIndex];
         firstIndexKey = key;
       }
     });
@@ -378,8 +378,8 @@ export default function EconHeadCharts({
     let sum = 0;
     Object.keys(data).map((key) => {
       sum +=
-        data[key].daily.data[data[key].daily.data.length - 1][
-        data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
+        data[key][resolution].data[data[key][resolution].data.length - 1][
+        data[key][resolution].types.indexOf(showUsd ? "usd" : "eth")
         ];
     });
 
@@ -394,11 +394,11 @@ export default function EconHeadCharts({
       // chart_data.metrics[key]
       if (key === "costs") {
         Object.keys(chart_data.metrics[key]).map((cost_key) => {
-          chart_data.metrics[key][cost_key].daily.data.map((data) => {
-            const min = chart_data.metrics[key][cost_key].daily.data[0][0];
+          chart_data.metrics[key][cost_key][resolution].data.map((data) => {
+            const min = chart_data.metrics[key][cost_key][resolution].data[0][0];
             const max =
-              chart_data.metrics[key][cost_key].daily.data[
-              chart_data.metrics[key][cost_key].daily.data.length - 1
+              chart_data.metrics[key][cost_key][resolution].data[
+              chart_data.metrics[key][cost_key][resolution].data.length - 1
               ][0];
 
             xMin = Math.min(min, xMin);
@@ -406,10 +406,10 @@ export default function EconHeadCharts({
           });
         });
       } else {
-        const min = chart_data.metrics[key].daily.data[0][0];
+        const min = chart_data.metrics[key][resolution].data[0][0];
         const max =
-          chart_data.metrics[key].daily.data[
-          chart_data.metrics[key].daily.data.length - 1
+          chart_data.metrics[key][resolution].data[
+          chart_data.metrics[key][resolution].data.length - 1
           ][0];
 
         xMin = Math.min(min, xMin);
@@ -418,7 +418,7 @@ export default function EconHeadCharts({
     });
 
     return { xMin, xMax };
-  }, [chart_data]);
+  }, [chart_data, resolution]);
 
   const timespans = useMemo(() => {
     let xMin = dataTimestampExtremes.xMin;
@@ -595,13 +595,13 @@ export default function EconHeadCharts({
               const link = key !== "costs" ? urls[key] : undefined;
 
               const lastIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.data.length - 1
+                ? chart_data.metrics[key][resolution].data.length - 1
                 : 0;
               const unixIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.types.indexOf("unix")
+                ? chart_data.metrics[key][resolution].types.indexOf("unix")
                 : 0;
               const dataIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.types.indexOf(
+                ? chart_data.metrics[key][resolution].types.indexOf(
                   showUsd ? "usd" : "eth",
                 )
                 : 0;
@@ -652,7 +652,7 @@ export default function EconHeadCharts({
                         maximumFractionDigits: 2,
                         minimumFractionDigits: 2,
                       }).format(
-                        chart_data.metrics[key].daily.data[lastIndex][
+                        chart_data.metrics[key][resolution].data[lastIndex][
                         dataIndex
                         ],
                       )
@@ -697,7 +697,7 @@ export default function EconHeadCharts({
                     <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                       {!isMultipleSeries
                         ? new Date(
-                          chart_data.metrics[key].daily.data[lastIndex][
+                          chart_data.metrics[key][resolution].data[lastIndex][
                           unixIndex
                           ],
                         ).toLocaleDateString("en-GB", {
@@ -709,8 +709,8 @@ export default function EconHeadCharts({
                         : new Date(
                           chart_data.metrics[key][
                             lastMultiIndex
-                          ].daily.data[
-                          chart_data.metrics[key][lastMultiIndex].daily
+                          ][resolution].data[
+                          chart_data.metrics[key][lastMultiIndex][resolution]
                             .data.length - 1
                           ][unixIndex],
                         ).toLocaleDateString("en-GB", {
@@ -1063,13 +1063,13 @@ export default function EconHeadCharts({
                               name={chart_data.metrics[key].metric_name}
                               showInLegend={false}
                               lineWidth={1.5}
-                              data={chart_data.metrics[key].daily.data.map(
+                              data={chart_data.metrics[key][resolution].data.map(
                                 (d: any) => [
                                   d[0],
                                   d[
                                   chart_data.metrics[
                                     key
-                                  ].daily.types.indexOf(
+                                  ][resolution].types.indexOf(
                                     showUsd ? "usd" : "eth",
                                   )
                                   ],
@@ -1110,12 +1110,12 @@ export default function EconHeadCharts({
                                       showInLegend={false}
                                       data={chart_data.metrics[key][
                                         costKey
-                                      ].daily.data.map((d: any) => [
+                                      ][resolution].data.map((d: any) => [
                                         d[0],
                                         d[
                                         chart_data.metrics[key][
                                           costKey
-                                        ].daily.types.indexOf(
+                                        ][resolution].types.indexOf(
                                           showUsd ? "usd" : "eth",
                                         )
                                         ],

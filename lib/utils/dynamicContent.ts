@@ -37,25 +37,28 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       }
 
       // Handle hyperliquid data placeholders
-      if (processedItem.includes('{{hyperliquid')) {
+      if (processedItem.includes('{{hyperliquid') || processedItem.includes('{{percentageHyperliquidOfCircle}}') || processedItem.includes('{{estimatesYearlyRevenueHyperliquidCircle}}')) {
         const hyperliquidData = await fetchData('hyperliquid', "https://api.growthepie.com/v1/quick-bites/hyperliquid/kpis.json");
-        const total_revenue_for_circle = (hyperliquidData.data.total_revenue_for_circle / 1000000).toFixed(2);
-        const hyperliquid_usdc_last = (hyperliquidData.data.hyperliquid_usdc_last / 1000000000).toFixed(3);
-        const percentage_hyperliquid_of_circle = hyperliquidData.data.percentage_hyperliquid_of_circle.toFixed(2);
-        const estimates_yearly_revenue_hyperliquid_circle = (hyperliquidData.data.estimates_yearly_revenue_hyperliquid_circle / 1000000).toFixed(2);
+        const d = hyperliquidData?.data ?? {};
 
-        if (total_revenue_for_circle) {
-          processedItem = processedItem.replace('{{hyperliquidTotalRevenueForCircle}}', total_revenue_for_circle);
-        }
-        if (hyperliquid_usdc_last) {
-          processedItem = processedItem.replace('{{hyperliquidUSDCLast}}', hyperliquid_usdc_last);
-        }
-        if (percentage_hyperliquid_of_circle) {
-          processedItem = processedItem.replace('{{percentageHyperliquidOfCircle}}', percentage_hyperliquid_of_circle);
-        }
-        if (estimates_yearly_revenue_hyperliquid_circle) {
-          processedItem = processedItem.replace('{{estimatesYearlyRevenueHyperliquidCircle}}', estimates_yearly_revenue_hyperliquid_circle);
-        }
+        const total_revenue_for_circle = typeof d.total_revenue_for_circle === 'number'
+          ? (d.total_revenue_for_circle / 1000000).toFixed(2)
+          : 'N/A';
+        const hyperliquid_usdc_last = typeof d.hyperliquid_usdc_last === 'number'
+          ? (d.hyperliquid_usdc_last / 1000000000).toFixed(3)
+          : 'N/A';
+        const percentage_hyperliquid_of_circle = typeof d.percentage_hyperliquid_of_circle === 'number'
+          ? d.percentage_hyperliquid_of_circle.toFixed(2)
+          : 'N/A';
+        const estimates_yearly_revenue_hyperliquid_circle = typeof d.estimates_yearly_revenue_hyperliquid_circle === 'number'
+          ? (d.estimates_yearly_revenue_hyperliquid_circle / 1000000).toFixed(2)
+          : 'N/A';
+
+        processedItem = processedItem
+          .replace('{{hyperliquidTotalRevenueForCircle}}', total_revenue_for_circle)
+          .replace('{{hyperliquidUSDCLast}}', hyperliquid_usdc_last)
+          .replace('{{percentageHyperliquidOfCircle}}', percentage_hyperliquid_of_circle)
+          .replace('{{estimatesYearlyRevenueHyperliquidCircle}}', estimates_yearly_revenue_hyperliquid_circle);
       }
 
       // Handle shopify data placeholders

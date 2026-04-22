@@ -292,14 +292,37 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     }
     // ─────────────────────────────────────────────────────────────────────────
 
+    // Merge chains from the main app and all loaded compare apps.
+    // Main app chains come first in their size order; each compare app's chains are appended
+    // in their size order, skipping any chain already present.
+    const mergedChainsBySize = useMemo(() => {
+        const seen = new Set<string>();
+        const result: string[] = [];
+        for (const chain of (data.chains_by_size ?? [])) {
+            if (!seen.has(chain)) {
+                seen.add(chain);
+                result.push(chain);
+            }
+        }
+        for (const compareApp of compareAppsForChart) {
+            for (const chain of (compareApp.data.chains_by_size ?? [])) {
+                if (!seen.has(chain)) {
+                    seen.add(chain);
+                    result.push(chain);
+                }
+            }
+        }
+        return result;
+    }, [data.chains_by_size, compareAppsForChart]);
+
     // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
     const filteredSortedChains = useMemo(() =>
-        (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
+        mergedChainsBySize.filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
             const aDeselected = deselectedChains.includes(a) ? 1 : 0;
             const bDeselected = deselectedChains.includes(b) ? 1 : 0;
             return aDeselected - bDeselected;
         }),
-        [data.chains_by_size, AllChainsByKeys, deselectedChains],
+        [mergedChainsBySize, AllChainsByKeys, deselectedChains],
     );
 
     // Button geometry (icon-only width and per-label expansion delta) varies by button size.
@@ -470,11 +493,11 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
                 >
                     <Image src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path}`} alt={compareAppsForChart[0].displayName} width={24} height={24} className="rounded-full shrink-0 " />
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center gap-x-[5px]">
                         <div className="text-xxs">Compare to</div>
-                        <div className="flex items-center gap-x-[5px]">
+                        <div className="flex items-center gap-x-[5px] text-center w-full max-w-[180px]">
                             
-                            <div className="heading-small-xs"> {compareAppsForChart[0].displayName}</div>
+                            <div className="heading-small-xs text-nowrap truncate overflow-hidden "> {compareAppsForChart[0].displayName}</div>
                         </div>
                     </div>
                     <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
@@ -550,8 +573,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                                                 if (next.has(chain)) {
                                                     next.delete(chain);
                                                 } else {
-                                                    const totalChains = (data.chains_by_size ?? []).filter((c) => AllChainsByKeys[c]).length;
-                                                    if (totalChains - next.size <= 1) return prev;
+                                                    if (filteredSortedChains.length - next.size <= 1) return prev;
                                                     next.add(chain);
                                                 }
                                                 return Array.from(next);
@@ -636,6 +658,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                                                     </div>
                                                 );
                                             })}
+                                            {compareAppKeys.length > 2 && (
+                                                <div
+                                                    className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors w-full min-w-0"
+                                                    onClick={() => setCompareAppKeys([])}
+                                                >
+                                                    <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0 " containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                    <span className="truncate flex-1 min-w-0">Deselect All</span>
+                                                </div>
+                                            )}
                                             {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
                                                 <div className="my-[6px] border-t border-color-bg-medium" />
                                             )}

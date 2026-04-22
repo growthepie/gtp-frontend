@@ -5,7 +5,9 @@ import Container from "@/components/layout/Container";
 import { PageTitleAndDescriptionAndControls } from "./Components";
 import type { ReactNode } from "react";
 
-const HIDDEN_HEADER_ROUTES = new Set(["/applications/add", "/applications/edit"]);
+// Hide the overview header on any sub-route under /applications/ (e.g. /applications/uniswap,
+// /applications/add, /applications/edit) — those pages render their own UI.
+const APPLICATION_SUBROUTE = /^\/applications\/[^/]+/;
 
 export default function ApplicationsRouteHeader({
   children,
@@ -13,7 +15,7 @@ export default function ApplicationsRouteHeader({
   children?: ReactNode;
 }) {
   const pathname = usePathname();
-  if (HIDDEN_HEADER_ROUTES.has(pathname)) {
+  if (APPLICATION_SUBROUTE.test(pathname)) {
     return null;
   }
 

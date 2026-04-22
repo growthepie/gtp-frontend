@@ -619,8 +619,8 @@ function BreakdownCharts({
               area: {
                 lineWidth: 1.5,
                 dataGrouping: {
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 },
 
                 // marker: {
@@ -828,8 +828,8 @@ function BreakdownCharts({
                   d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
                 dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 }}
                 lineWidth={1.5}
                 fillColor={{
@@ -859,8 +859,8 @@ function BreakdownCharts({
                   d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
                 dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 }}
                 lineWidth={1.5}
                 fillColor={{
