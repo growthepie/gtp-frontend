@@ -315,6 +315,12 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         return result;
     }, [data.chains_by_size, compareAppsForChart]);
 
+    const onlyStarknet = useMemo(() => {
+        return mergedChainsBySize.length === 1 && mergedChainsBySize[0] === "starknet";
+    }, [mergedChainsBySize]);
+
+
+    
     // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
     const filteredSortedChains = useMemo(() =>
         mergedChainsBySize.filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
@@ -763,6 +769,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 {Object.keys(data.metrics ?? {})
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
+                    .filter((metric) => !onlyStarknet || metric !== "success_rate")
                     .map((metric, index) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed}/>
                 ))}
