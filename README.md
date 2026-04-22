@@ -1,6 +1,6 @@
 # Welcome to the growthepie 📏🥧 Frontend!
 
-[growthepie](https://growthepie.xyz/) aims to enhance transparency and understanding of the Ethereum Layer 2 ecosystem by providing comprehensive, curated data, blockspace analysis and educational resources to users, developers and investors.
+[growthepie](https://growthepie.com/) aims to enhance transparency and understanding of the Ethereum Layer 2 ecosystem by providing comprehensive, curated data, blockspace analysis and educational resources to users, developers and investors.
 
 The growthepie frontend provides an engaging user interface, displaying curated data and analysis sourced from our robust [backend](https://github.com/growthepie/gtp).
 

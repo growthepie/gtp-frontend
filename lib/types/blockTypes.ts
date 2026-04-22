@@ -195,6 +195,7 @@ export interface ChartBlock extends BaseBlock {
       makeNegative?: boolean;
       aggregation?: "daily" | "weekly" | "monthly";
       deselected?: boolean;
+      tooltipLabelIndex?: number;
     }[];
     dynamicSeries?: {
       url: string;
