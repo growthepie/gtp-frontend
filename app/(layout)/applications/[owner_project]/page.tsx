@@ -497,7 +497,7 @@ const FeaturedCard = memo(({ feature }: { feature: string }) => {
 
   return (
     <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
-      <GTPIcon icon="gtp-defi" size="md" />
+      {/*<GTPIcon icon="gtp-defi" size="md" />*/}
       <div className="text-center text-md text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
@@ -574,7 +574,7 @@ const OverviewContent = memo(({
           its z-index against siblings like the SectionBar. */}
       <ScreenshotsSection owner_project={owner_project} screenshots={screenshots} />
     <div id="content-container" className="@container flex flex-col w-full gap-[15px] ">
-      {/*<FeaturedSection features={features} />*/}
+      <FeaturedSection features={features} />
       <div className="flex flex-col gap-y-[15px] py-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <GTPIcon icon={"gtp:gtp-fundamentals" as GTPIconName} className="!size-[24px]" containerClassName="!size-[24px] flex items-center justify-center"/>
@@ -685,6 +685,8 @@ const TABS = [
   },
 ] as const;
 
+const VALID_TAB_KEYS = new Set<string>(TABS.map((t) => t.key));
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Page({
@@ -712,7 +714,8 @@ export default function Page({
   const projectMetadata = ownerProjectToProjectData[owner_project];
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
-    return searchParams.get("tab") || "overview";
+    const tabParam = searchParams.get("tab");
+    return tabParam && VALID_TAB_KEYS.has(tabParam) ? tabParam : "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [pendingHighlightMetric, setPendingHighlightMetric] = useState<string | null>(null);
