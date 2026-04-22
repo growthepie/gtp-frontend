@@ -552,9 +552,9 @@ const FeaturedSection = memo(({
       {primary_functions.map((primary_function: string, i: number) => (
         <FeaturedCard key={i} feature={primary_function} />
       ))}
-      {/* {features.map((feature: string, i: number) => (
+      {features.map((feature: string, i: number) => (
         <FeaturedCard key={i} feature={feature} />
-      ))} */}
+      ))}
     </div>
   );
 });
