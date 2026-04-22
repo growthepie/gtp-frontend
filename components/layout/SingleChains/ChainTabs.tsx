@@ -84,7 +84,12 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab, fill
       // Look up the specific icon and header from TAB_INFO
       const tabData = TAB_INFO[tabId] || { header: "Unknown", icon: "gtp:gtp-project" };
       
-      const iconString = tabId === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : tabData.icon;
+      const isDisabled = isLocked || isSoon;
+      // Overview tab already uses the monochrome chain logo; other tabs swap
+      // to their `-monochrome` variant when locked/soon for a muted look.
+      const iconString = tabId === "overview"
+        ? `gtp:${chainInfo.url_key}-logo-monochrome`
+        : `${tabData.icon}${isDisabled ? "-monochrome" : ""}`;
       const iconColor = tabId === "overview" ? chainInfo.colors[theme ?? "dark"][0] : undefined;
       const header = tabId === "overview" ? chainInfo.name_short : tabData.header;
 
@@ -95,14 +100,31 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab, fill
       else if (isSoon) accessory = <GradientTag label="SOON" />;
       else if (NEW_TABS.has(tabId)) accessory = <GradientTag label="NEW" />;
 
+      // Explanatory tooltip on disabled tabs (matches legacy SectionBar copy).
+      let disabledTooltip: React.ReactNode = null;
+      if (isSoon) {
+        disabledTooltip = (
+          <div className="px-[15px] py-[5px]">
+            This section is still in the works and will be released soon. Stay tuned!
+          </div>
+        );
+      } else if (isLocked) {
+        disabledTooltip = (
+          <div className="px-[15px] py-[5px]">
+            This section isn&apos;t available yet for this chain. Please reach out to our team for more information on how to unlock it.
+          </div>
+        );
+      }
+
       return {
         id: tabId,
         label: header,
-        isDisabled: isLocked || isSoon,
+        isDisabled,
         fallbackW: 130, // Rough guess for SSR
         accessory: accessory,
         iconString: iconString,
         iconColor: iconColor,
+        disabledTooltip,
       };
     });
 
