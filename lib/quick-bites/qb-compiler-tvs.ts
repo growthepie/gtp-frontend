@@ -7,7 +7,7 @@ import {
 // Compiler colors
 const COLOR_SOLC = "#FE5468";
 const COLOR_VYPER = "#B45CF4";
-const COLOR_UNVERIFIED = "#636A72";
+const COLOR_UNKNOWN = "#636A72";
 
 // Solidity version palette (light → dark, oldest → newest; extra entries for future versions)
 const SOLC_VERSION_COLORS = ["#FFD580", "#FFB300", "#FF8C00", "#E05A00", "#FE5468", "#CC0030", "#990020"];
@@ -15,8 +15,8 @@ const SOLC_VERSION_COLORS = ["#FFD580", "#FFB300", "#FF8C00", "#E05A00", "#FE546
 // Vyper version palette (light → dark; extra entries for future versions)
 const VYPER_VERSION_COLORS = ["#DDB4FE", "#B45CF4", "#9333EA", "#6B21A8", "#4C1D95"];
 
-// compiler_tvs_timeseries.json  → ["date"(0), "solc"(1), "unverified"(2), "vyper"(3)]
-// compiler_ct_timeseries.json   → ["date"(0), "solc"(1), "unverified"(2), "vyper"(3)]
+// compiler_tvs_timeseries.json  → ["date"(0), "solc"(1), "unknown"(2), "vyper"(3)]
+// compiler_ct_timeseries.json   → ["date"(0), "solc"(1), "unknown"(2), "vyper"(3)]
 // solc_tvs/ct_timeseries.json   → ["date"(0), "0.4"(1), "0.5"(2), "0.6"(3), "0.7"(4), "0.8"(5)]
 // vyper_tvs/ct_timeseries.json  → ["date"(0), "0.2"(1), "0.3"(2)]
 
@@ -35,8 +35,8 @@ const TVS_META_BASE = [
     pathToData: "data.values",
   },
   {
-    name: "Unverified",
-    color: COLOR_UNVERIFIED,
+    name: "Unknown",
+    color: COLOR_UNKNOWN,
     deselected: true,
     xIndex: 0,
     yIndex: 2,
@@ -125,7 +125,7 @@ const TopContractsTable = [
         urlConditional: {
           sourceKey: "compiler",
           map: {
-            unverified: "https://etherscan.io/address/${cellValue}",
+            unknown: "https://etherscan.io/address/${cellValue}",
           },
           fallback: "https://sourcify.dev/#/lookup/${cellValue}",
         },
@@ -196,7 +196,7 @@ const TopContractsTable = [
 ];
 
 // Chart 2: compiler share by TVS (100% area)
-// ["date"(0), "solc"(1), "unverified"(2), "vyper"(3)]
+// ["date"(0), "solc"(1), "unknown"(2), "vyper"(3)]
 const CompilerShareTvsChart = [
   "```chart",
   JSON.stringify({
@@ -218,8 +218,8 @@ const CompilerShareTvsChart = [
           pathToData: "data.values",
         },
         {
-          name: "Unverified",
-          color: COLOR_UNVERIFIED,
+          name: "Unknown",
+          color: COLOR_UNKNOWN,
           stacking: "percent",
           xIndex: 0,
           yIndex: 2,
@@ -248,7 +248,7 @@ const CompilerShareTvsChart = [
 ];
 
 // Chart 3: compiler share by count (100% area)
-// ["date"(0), "solc"(1), "unverified"(2), "vyper"(3)]
+// ["date"(0), "solc"(1), "unknown"(2), "vyper"(3)]
 const CompilerShareCountChart = [
   "```chart",
   JSON.stringify({
@@ -269,8 +269,8 @@ const CompilerShareCountChart = [
           pathToData: "data.values",
         },
         {
-          name: "Unverified",
-          color: COLOR_UNVERIFIED,
+          name: "Unknown",
+          color: COLOR_UNKNOWN,
           stacking: "percent",
           xIndex: 0,
           yIndex: 2,
@@ -435,12 +435,12 @@ const CompilerTvs: QuickBiteData = {
   content: [
     "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
     "Most value on Ethereum is held by smart contracts, making it critical that the programming languages used to build them are safe and secure. Two languages dominate: Solidity, a statically typed language with syntax influenced by JavaScript and C++ and Vyper, a Pythonic language designed for simplicity and auditability. ",
-    "In this analysis, we use Sourcify-verified contracts to identify the programming language of each contract. Since not all contracts are verified, an additional “unverified” category is included. The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
+    "In this analysis, we use Sourcify-verified contracts to identify the programming language of each contract. Since not all contracts are verified, an additional “unknown” category is included. The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
 
     ...TvsCompilerLineChart,
 
     "## Top 1,000 Ethereum Contracts by TVS",
-    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through [Sourcify](https://sourcify.dev) show their compiler and version. Unverified contracts have no readable source code onchain.",
+    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through [Sourcify](https://sourcify.dev) show their compiler and version. Unknown contracts have no readable source code onchain.",
 
     ...TopContractsTable,
 
