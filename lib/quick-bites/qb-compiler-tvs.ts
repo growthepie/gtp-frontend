@@ -420,6 +420,10 @@ export const faqItems: FaqItem[] = [
     a: "TVS is calculated by tracking token balances across the top 1,000 contracts. We use [L2beat's open source token mapping](https://github.com/l2beat/l2beat/blob/5a6b284dc52206affabfa1365f4d6a461d5d31b7/packages/config/src/tokens/tokens.jsonc) as our base, excluding a few tokens, for a total of {{argot_token_count}} tracked assets.\n\nThe full list:\n\n{{argot_token_symbols}}",
   },
   {
+    q: "Where does the compiler and verification data come from?",
+    a: "Compiler attribution comes from two sources. The primary source is the [Open Labels Initiative](https://www.openlabelsinitiative.org/) label pool, a shared data lake where [Sourcify](https://sourcify.dev) has attested its verified smart contracts. We pull compiler and language labels directly from there.\n\nAs a fallback, we also analyze contract bytecode. Solidity and Vyper each produce identifiable patterns in the compiled output, so even when no source code has been submitted for verification, we can often still determine the language. This means a contract can appear without a source link but still be correctly attributed to Solidity or Vyper.",
+  },
+  {
     q: "What about other chains?",
     a: "Calculating these numbers is quite resource intensive. If you'd like to see this analysis extended to other chains, reach out to us on X or Discord, we're happy to have a conversation.",
   },
