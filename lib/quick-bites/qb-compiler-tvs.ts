@@ -487,9 +487,9 @@ const CompilerTvs: QuickBiteData = {
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice. Data may be delayed or inaccurate. Do your own research.",
 
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/argot-compiler.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/compiler-tvs.png",
   og_image: "",
-  date: "2026-04-14",
+  date: "2026-04-27",
   related: [],
   author: [
     {
