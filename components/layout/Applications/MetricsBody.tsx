@@ -141,19 +141,13 @@ function computeMetricSeriesData(params: {
 
     if (!isComparing) return [mainTotalSeries];
 
-    const mainAppChains = new Set(Object.keys(overTime));
     const compareSeries = compareApps
         .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
         .map(app => {
             const compareOverTime = app.data.metrics[metric].over_time as Record<string, unknown>;
-            // Exclude chains that are deselected on the main app, or that don't exist on the main app at all.
-            // This ensures chain parity: only chains shared by both apps and actively selected contribute.
-            const compareExclude = Object.keys(compareOverTime).filter(
-                chain => deselectedChains.includes(chain) || !mainAppChains.has(chain),
-            );
             return {
                 name: `compare_${app.owner_project}`,
-                data: sumChainSeries(compareOverTime, compareExclude),
+                data: sumChainSeries(compareOverTime, deselectedChains),
             } as SeriesEntry;
         });
 
