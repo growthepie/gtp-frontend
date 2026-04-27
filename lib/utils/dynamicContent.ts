@@ -65,6 +65,8 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       if (processedItem.includes('{{shopify')) {
         const shopifyData = await fetchData('shopify', "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json");
         //const shopifyDataETH = shopifyData.data.gross_volume_usdc.total.toFixed(2);
+        const shopifyVolumeRaw = Number(shopifyData?.data?.gross_volume_usdc?.total);
+        const shopifyCustomersRaw = Number(shopifyData?.data?.total_unique_payers?.total);
         const shopifyVolumeUSD = parseFloat(shopifyData.data.gross_volume_usdc.total).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
@@ -80,6 +82,15 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           maximumFractionDigits: 0
         });
 
+        const shopifyAvgSpendPerCustomer = Number.isFinite(shopifyVolumeRaw) &&
+          Number.isFinite(shopifyCustomersRaw) &&
+          shopifyCustomersRaw > 0
+          ? (shopifyVolumeRaw / shopifyCustomersRaw).toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          })
+          : 'N/A';
+
         if (shopifyVolumeUSD) {
           processedItem = processedItem.replace('{{shopifyVolumeUSD}}', shopifyVolumeUSD);
         }
@@ -89,6 +100,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         if (shopifyCustomers) {
           processedItem = processedItem.replace('{{shopifyCustomers}}', shopifyCustomers);
         }
+        processedItem = processedItem.replace('{{shopifyAvgSpendPerCustomer}}', shopifyAvgSpendPerCustomer);
       }
 
       // Handle Robinhood stock data placeholders
