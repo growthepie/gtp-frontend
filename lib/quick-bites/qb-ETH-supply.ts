@@ -80,7 +80,7 @@ const ethSupply: QuickBiteData = createQuickBite({
         {
           xValue: 1663200000000, // Sep 15, 2022 - The Merge
           annotationPositionY: 10,
-          annotationPositionX: -45,
+          annotationPositionX: 0,
           annotationText: "The Merge",
           lineStyle: "Dash",
           lineColor: "#19D9D6",
@@ -92,7 +92,7 @@ const ethSupply: QuickBiteData = createQuickBite({
         {
           xValue: 1628121600000, // Aug 5, 2021 - EIP-1559
           annotationPositionY: 10,
-          annotationPositionX: -45,
+          annotationPositionX: -60,
           annotationText: "The Burn",
           lineStyle: "Dash",
           lineColor: "#19D9D6",

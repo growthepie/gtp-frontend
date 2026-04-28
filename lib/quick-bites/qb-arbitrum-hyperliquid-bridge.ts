@@ -96,6 +96,7 @@ const CircleStacked = [
     JSON.stringify({
       type: "area",
       title: "USDC Supply Breakdown",
+      hideOnChainTabs: true,
       margins: "none",
       showXAsDate: true,
       dataAsJson: {
@@ -136,6 +137,7 @@ const CirclePercentage = [
     JSON.stringify({
       type: "area",
       title: "Hyperliquid USDC Market Share",
+      hideOnChainTabs: true,
       margins: "none",
       showXAsDate: true,
       dataAsJson: {

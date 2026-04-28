@@ -57,6 +57,7 @@ All properties are required unless marked as optional:
 | `related` | `string[]` | URLs to related content | `["/chains/arbitrum"]` |
 | `author` | `Author[]` | *Optional* Author information | `[{name: "John Doe", xUsername: "johndoe"}]` |
 | `topics` | `Topic[]` | *Optional* Related topics/tags | `[{icon: "base-logo", color: "#2151F5", name: "Base", url: "/chains/base"}]` |
+| `autoAddChartChainsToTopics` | `boolean` | *Optional* Auto-append long chain-name topics from chart series in this quick bite | `true` |
 
 > `shortTitle` is **required** and capped at 20 characters. The `createQuickBite` helper will throw during build if it’s missing or too long.
 

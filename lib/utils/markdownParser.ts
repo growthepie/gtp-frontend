@@ -610,6 +610,13 @@ function parseLiveMetricsRowBlock(jsonString: string): ContentBlock | null {
 function parseChartBlock(jsonString: string): ContentBlock | null {
   try {
     const chartConfig = JSON.parse(jsonString);
+    const showOnChainTabs =
+      Array.isArray(chartConfig.showOnChainTabs)
+        ? chartConfig.showOnChainTabs
+            .map((chain: unknown) => (typeof chain === 'string' ? chain.trim() : ''))
+            .filter((chain: string) => chain.length > 0)
+        : undefined;
+
     return {
       id: generateBlockId(),
       type: 'chart',
@@ -623,6 +630,17 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
       disableTooltipSort: chartConfig.disableTooltipSort || false,
+      useNewChart: typeof chartConfig.useNewChart === 'boolean' ? chartConfig.useNewChart : undefined,
+      snapToCleanBoundary: typeof chartConfig.snapToCleanBoundary === 'boolean' ? chartConfig.snapToCleanBoundary : undefined,
+      timeAxisTickIntervalDays: typeof chartConfig.timeAxisTickIntervalDays === 'number' ? chartConfig.timeAxisTickIntervalDays : undefined,
+      timeAxisTickAlignToCleanBoundary:
+        typeof chartConfig.timeAxisTickAlignToCleanBoundary === 'boolean'
+          ? chartConfig.timeAxisTickAlignToCleanBoundary
+          : undefined,
+      timeAxisBarEdgePaddingRatio:
+        typeof chartConfig.timeAxisBarEdgePaddingRatio === 'number'
+          ? chartConfig.timeAxisBarEdgePaddingRatio
+          : undefined,
       // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       showZeroTooltip: chartConfig.showZeroTooltip ?? true,
@@ -631,7 +649,37 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       seeMetricURL: chartConfig.seeMetricURL || null,
       yAxisLine: chartConfig.yAxisLine || [],
       showInMenu: parseShowInMenu(chartConfig),
-      filterOnStateKey: chartConfig.filterOnStateKey || undefined
+      filterOnStateKey: chartConfig.filterOnStateKey || undefined,
+      top10ByMetric: typeof chartConfig.top10ByMetric === 'string' ? chartConfig.top10ByMetric : undefined,
+      scatterTrendline:
+        chartConfig.scatterTrendline === true
+          ? { enabled: true }
+          : chartConfig.scatterTrendline && typeof chartConfig.scatterTrendline === 'object'
+            ? {
+                enabled:
+                  typeof chartConfig.scatterTrendline.enabled === 'boolean'
+                    ? chartConfig.scatterTrendline.enabled
+                    : true,
+                label:
+                  typeof chartConfig.scatterTrendline.label === 'string'
+                    ? chartConfig.scatterTrendline.label
+                    : undefined,
+                color:
+                  typeof chartConfig.scatterTrendline.color === 'string'
+                    ? chartConfig.scatterTrendline.color
+                    : undefined,
+              }
+            : undefined,
+      scatterRatioBase:
+        typeof chartConfig.scatterRatioBase === 'number' && Number.isFinite(chartConfig.scatterRatioBase)
+          ? chartConfig.scatterRatioBase
+          : undefined,
+      showScatterRatio:
+        typeof chartConfig.showScatterRatio === 'boolean'
+          ? chartConfig.showScatterRatio
+          : undefined,
+      hideOnChainTabs: chartConfig.hideOnChainTabs === true,
+      showOnChainTabs: showOnChainTabs?.length ? showOnChainTabs : undefined,
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);

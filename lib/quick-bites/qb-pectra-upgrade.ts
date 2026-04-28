@@ -24,6 +24,7 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
       type: "line",
       title: "Submitted Blobs per Block",
       subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
+      showOnChainTabs: ["ethereum"],
       showXAsDate: true,
       dataAsJson: {
         meta: [{
@@ -68,7 +69,7 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
       showXAsDate: true,
       dataAsJson: {
         meta: [{
-          name: "Ethereum",
+          name: "Ethereum L1",
           color: "#94ABD3",
           stacking: "normal",
           xIndex: 1,
@@ -148,6 +149,30 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
     color: "#94ABD3",
     name: "Ethereum Mainnet",
     url: "/chains/ethereum"
+  },
+  {
+    icon: "base-logo-monochrome",
+    color: "rgb(var(--chains-base))",
+    name: "Base Chain",
+    url: "/chains/base"
+  },
+  {
+    icon: "optimism-logo-monochrome",
+    color: "rgb(var(--chains-op-mainnet))",
+    name: "OP Mainnet",
+    url: "/chains/op-mainnet"
+  },
+  {
+    icon: "unichain-logo-monochrome",
+    color: "rgb(var(--chains-unichain))",
+    name: "Unichain",
+    url: "/chains/unichain"
+  },
+  {
+    icon: "arbitrum-logo-monochrome",
+    color: "rgb(var(--chains-arbitrum-one))",
+    name: "Arbitrum One",
+    url: "/chains/arbitrum"
   },
   {
     icon: "gtp-da-blobs-number",

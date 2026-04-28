@@ -158,7 +158,7 @@ export interface TableBlock extends BaseBlock {
 
 export interface ChartBlock extends BaseBlock {
   type: 'chart';
-  chartType: 'line' | 'area' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie' | 'scatter';
   data: any; // This would be the chart data structure
   margins?: "none" | "normal";
   options?: any; // Chart configuration options
@@ -174,6 +174,11 @@ export interface ChartBlock extends BaseBlock {
     color: string;
   }[];
   disableTooltipSort?: boolean;
+  useNewChart?: boolean;
+  snapToCleanBoundary?: boolean;
+  timeAxisTickIntervalDays?: number;
+  timeAxisTickAlignToCleanBoundary?: boolean;
+  timeAxisBarEdgePaddingRatio?: number;
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
@@ -244,6 +249,17 @@ export interface ChartBlock extends BaseBlock {
     columnKey: string;
   };
   toggleLabel?: string;
+  defaultFilteredSeriesNames?: string[];
+  top10ByMetric?: string;
+  scatterTrendline?: {
+    enabled?: boolean;
+    label?: string;
+    color?: string;
+  };
+  scatterRatioBase?: number;
+  showScatterRatio?: boolean;
+  hideOnChainTabs?: boolean;
+  showOnChainTabs?: string[];
   suppressWrapperSpacing?: boolean;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 import { Icon } from "@iconify/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";
 
 const ChainSectionHead = ({
@@ -15,6 +15,9 @@ const ChainSectionHead = ({
   defaultDropdown,
   rowEnd,
   disabled,
+  removeChildrenTopPadding = false,
+  adjustRadiusForMultiline = false,
+  multilineCornerRadiusPx = 20,
 }: {
   title: string;
   icon?: string;
@@ -27,13 +30,19 @@ const ChainSectionHead = ({
   defaultDropdown?: boolean;
   rowEnd?: React.ReactNode | null;
   disabled?: boolean;
+  removeChildrenTopPadding?: boolean;
+  adjustRadiusForMultiline?: boolean;
+  multilineCornerRadiusPx?: number;
 }) => {
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
   );
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
+  const titleRef = useRef<HTMLDivElement | null>(null);
   // can't interact with content section until dropdown is fully open
   const [isInteractable, setIsInteractable] = useState(false);
+  const [titleIsMultilineMeasured, setTitleIsMultilineMeasured] = useState(false);
+  const isTitleMultiline = adjustRadiusForMultiline && titleIsMultilineMeasured;
 
   const handleClick = () => {
     setClicked(!clicked);
@@ -53,6 +62,39 @@ const ChainSectionHead = ({
     };
   }, [clicked]);
 
+  useEffect(() => {
+    if (!adjustRadiusForMultiline) {
+      return;
+    }
+
+    const measureMultiline = () => {
+      const titleElement = titleRef.current;
+      if (!titleElement) {
+        setIsTitleMultiline(false);
+        return;
+      }
+
+      const computedStyle = window.getComputedStyle(titleElement);
+      const computedLineHeight = Number.parseFloat(computedStyle.lineHeight);
+      const fallbackLineHeight = Number.parseFloat(computedStyle.fontSize) * 1.2;
+      const lineHeight = Number.isFinite(computedLineHeight) ? computedLineHeight : fallbackLineHeight;
+      const multiline = titleElement.scrollHeight > lineHeight * 1.5;
+      setTitleIsMultilineMeasured(multiline);
+    };
+
+    measureMultiline();
+    const resizeObserver = new ResizeObserver(measureMultiline);
+    if (titleRef.current) {
+      resizeObserver.observe(titleRef.current);
+    }
+    window.addEventListener("resize", measureMultiline);
+
+    return () => {
+      window.removeEventListener("resize", measureMultiline);
+      resizeObserver.disconnect();
+    };
+  }, [adjustRadiusForMultiline, title]);
+
   return (
     <div
       className={`flex flex-col group ${className} ${disabled ? "opacity-50" : ""}`}
@@ -62,6 +104,7 @@ const ChainSectionHead = ({
       <div
         className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-color-bg-medium select-none ${enableDropdown && "cursor-pointer"
           }`}
+        style={isTitleMultiline ? { borderRadius: `${multilineCornerRadiusPx}px` } : undefined}
         onClick={() => {
           handleClick();
           // find .highcharts-tooltip-container and remove them all
@@ -116,7 +159,7 @@ const ChainSectionHead = ({
             }}
           />
         </div>
-        <div className="text-[20px] font-semibold overflow-hidden">{title}</div>
+        <div ref={titleRef} className="text-[20px] font-semibold overflow-hidden">{title}</div>
         <div className="flex-grow"></div>
         {rowEnd ? rowEnd : null}
       </div>
@@ -134,7 +177,7 @@ const ChainSectionHead = ({
           transition: "all 0.4s",
         }}
       >
-        <div className="pt-[5px]">{children ? children : ""}</div>
+        <div className={removeChildrenTopPadding ? "" : "pt-[5px]"}>{children ? children : ""}</div>
       </div>
     </div>
   );

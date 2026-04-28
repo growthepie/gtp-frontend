@@ -53,7 +53,9 @@ export interface JsonLdThing {
     topics?: Topic[];
     KpiCards?: KpiCard[];
     showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
+    showInChainTab?: boolean; // Optional property to control chain quick bites tab visibility, defaults to true
     ethUsdSwitchEnabled?: boolean; // Optional override for ETH/USD toggle on Quick Bites pages
+    autoAddChartChainsToTopics?: boolean; // Optional: append chart chain names (long names) to topics from chart series
     jsonLdFaq?: JsonLdThing;
     jsonLdDatasets?: JsonLdThing[];
     faq?: FaqItem[];

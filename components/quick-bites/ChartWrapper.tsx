@@ -2,6 +2,9 @@
 'use client';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Highcharts from 'highcharts/highstock';
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import { echarts } from "@/lib/echarts-setup";
+import type { EChartsOption } from "echarts";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -21,6 +24,15 @@ import highchartsPatternFill from 'highcharts/modules/pattern-fill';
 import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
 import ChartWatermark from '@/components/layout/ChartWatermark';
+import { useMaster } from '@/contexts/MasterContext';
+import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPComponents/GTPChart";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPButtonDropdown";
+import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
+import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
+import { getGTPTooltipContainerClass } from "@/components/tooltip/tooltipShared";
 import "@/app/highcharts.axis.css";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
@@ -30,7 +42,7 @@ import { format as d3Format } from "d3"
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
-  chartType: 'line' | 'area' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie' | 'scatter';
   data: any;
   margins?: "none" | "normal";
   options?: any;
@@ -79,7 +91,108 @@ interface ChartWrapperProps {
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
+  useNewChart?: boolean;
+  snapToCleanBoundary?: boolean;
+  timeAxisTickIntervalDays?: number;
+  timeAxisTickAlignToCleanBoundary?: boolean;
+  timeAxisBarEdgePaddingRatio?: number;
+  isChainQuickBitesTabChart?: boolean;
+  defaultFilteredSeriesNames?: string[];
+  top10ByMetric?: string;
+  scatterTrendline?: {
+    enabled?: boolean;
+    label?: string;
+    color?: string;
+  };
+  scatterRatioBase?: number;
+  showScatterRatio?: boolean;
+  chainQuickBitesTopBar?: React.ReactNode;
+  quickBiteTabRightEdgeFlush?: boolean;
+  quickBiteTabLeftEdgeFlush?: boolean;
 }
+
+const normalizeSeriesLabel = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TOP_CHAIN_SERIES_LIMIT = 10;
+const DEFAULT_SCATTER_TRENDLINE_LABEL = "Trendline";
+const SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO = 0.12;
+const SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO_CHAIN_TAB = 0.24;
+const SCATTER_ACTIVITY_METRIC_KEYS = new Set(["activeaddresses", "transactioncount", "throughput"]);
+const CHAIN_QUICKBITES_HEADER_ICON = "gtp-quick-bites-monochrome" as const;
+const DEFAULT_SCATTER_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
+  "fit",
+  "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[15px] pr-[15px] bg-color-bg-default",
+);
+const mapToGTPSeriesType = (value: string | undefined, fallback: ChartWrapperProps["chartType"]): GTPChartSeries["seriesType"] => {
+  const normalized = (value || fallback || "line").toLowerCase();
+  if (normalized === "column" || normalized === "bar") return "bar";
+  if (normalized === "area") return "area";
+  return "line";
+};
+const mapToEChartsAxisType = (value: string | undefined): "value" | "time" | "log" => {
+  if (!value) return "value";
+  const normalized = value.toLowerCase();
+  if (normalized === "datetime" || normalized === "time") return "time";
+  if (normalized === "log" || normalized === "logarithmic") return "log";
+  return "value";
+};
+const mapToEChartsYAxisType = (value: string | undefined): "value" | "log" => {
+  if (!value) return "value";
+  const normalized = value.toLowerCase();
+  if (normalized === "log" || normalized === "logarithmic") return "log";
+  return "value";
+};
+
+const isStackingMode = (stacking: unknown): stacking is "normal" | "percent" =>
+  stacking === "normal" || stacking === "percent";
+
+const getFirstSeriesTimestamp = (processedData: any): number => {
+  if (!Array.isArray(processedData)) return Number.POSITIVE_INFINITY;
+
+  const firstNonZeroPoint = processedData.find((point: any) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const [timestamp, value] = point;
+    return Number.isFinite(Number(timestamp)) && typeof value === "number" && Number.isFinite(value) && value !== 0;
+  });
+
+  if (firstNonZeroPoint) {
+    return Number(firstNonZeroPoint[0]);
+  }
+
+  const firstNumericPoint = processedData.find((point: any) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const [timestamp, value] = point;
+    return Number.isFinite(Number(timestamp)) && typeof value === "number" && Number.isFinite(value);
+  });
+
+  return firstNumericPoint ? Number(firstNumericPoint[0]) : Number.POSITIVE_INFINITY;
+};
+
+const trimLeadingZeroValues = (seriesData: Array<[number, number | null]>): Array<[number, number | null]> => {
+  if (!Array.isArray(seriesData) || seriesData.length === 0) {
+    return seriesData;
+  }
+
+  const firstNonZeroIndex = seriesData.findIndex((point) => {
+    if (!Array.isArray(point) || point.length < 2) return false;
+    const value = point[1];
+    return typeof value === "number" && Number.isFinite(value) && value !== 0;
+  });
+
+  return seriesData.map((point, index) => {
+    if (index >= firstNonZeroIndex && firstNonZeroIndex !== -1) {
+      return point;
+    }
+
+    const timestamp = Number(point?.[0]);
+    const value = point?.[1];
+    if (!Number.isFinite(timestamp) || typeof value !== "number" || !Number.isFinite(value)) {
+      return point;
+    }
+
+    return [timestamp, null];
+  });
+};
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
   chartType,
@@ -99,12 +212,28 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   disableTooltipSort = false,
   showZeroTooltip = true,
   showTotalTooltip = false,
+  useNewChart = true,
+  snapToCleanBoundary,
+  timeAxisTickIntervalDays,
+  timeAxisTickAlignToCleanBoundary,
+  timeAxisBarEdgePaddingRatio,
   centerName,
   pieData,
   showPiePercentage = false,
+  isChainQuickBitesTabChart = false,
+  defaultFilteredSeriesNames = [],
+  top10ByMetric,
+  scatterTrendline,
+  scatterRatioBase,
+  showScatterRatio = true,
+  chainQuickBitesTopBar,
+  quickBiteTabRightEdgeFlush = false,
+  quickBiteTabLeftEdgeFlush = false,
 }) => {
   const chartRef = useRef<any>(null);
+  const chartCardRef = useRef<HTMLDivElement | null>(null);
   const { theme } = useTheme();
+  const { AllChainsByKeys, chains } = useMaster();
   const [isChartReady, setIsChartReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,6 +242,67 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     if (deselectedSeries.length === 0) return [];
     return (jsonMeta?.meta ?? []).filter((s) => !s.deselected).map((s) => s.name);
   });
+  const [isScatterTrendlineVisible, setIsScatterTrendlineVisible] = useState(true);
+  const [hoverLegendSeriesName, setHoverLegendSeriesName] = useState<string | null>(null);
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+  const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+  const themeMode: "dark" | "light" = theme === "light" ? "light" : "dark";
+  const scatterTrendlineLabel =
+    typeof scatterTrendline?.label === "string" && scatterTrendline.label.trim().length > 0
+      ? scatterTrendline.label.trim()
+      : DEFAULT_SCATTER_TRENDLINE_LABEL;
+  const isScatterTrendlineEnabled = chartType === "scatter" && scatterTrendline?.enabled === true;
+  const scatterTrendlineColor =
+    typeof scatterTrendline?.color === "string" && scatterTrendline.color.trim().length > 0
+      ? scatterTrendline.color
+      : theme === "dark"
+        ? "rgba(215, 223, 222, 0.9)"
+        : "rgba(41, 51, 50, 0.9)";
+  const scatterTrendlineTextColor = theme === "dark" ? "#CDD8D3" : "#293332";
+  const scatterTrendlineLabelBackground =
+    theme === "dark" ? "rgba(42, 52, 51, 0.92)" : "rgba(234, 236, 235, 0.96)";
+
+  const chainColorByAlias = useMemo(() => {
+    const map = new Map<string, string>();
+    const chains = Object.values(AllChainsByKeys || {});
+
+    chains.forEach((chain) => {
+      const color = chain?.colors?.[themeMode]?.[0]
+        || chain?.colors?.dark?.[0]
+        || chain?.colors?.light?.[0];
+
+      if (!color) return;
+
+      const aliases = [chain.key, chain.urlKey, chain.label, chain.name_short]
+        .filter(Boolean)
+        .map((alias) => normalizeSeriesLabel(String(alias)));
+
+      aliases.forEach((alias) => {
+        if (!map.has(alias)) {
+          map.set(alias, color);
+        }
+      });
+    });
+
+    return map;
+  }, [AllChainsByKeys, themeMode]);
+
+  const resolveSeriesColor = useCallback((series: any) => {
+    if (typeof series?.color === "string" && series.color.trim().length > 0) {
+      return series.color;
+    }
+
+    const aliases = [series?.name, series?.key, series?.urlKey]
+      .filter(Boolean)
+      .map((alias) => normalizeSeriesLabel(String(alias)));
+
+    for (const alias of aliases) {
+      const resolved = chainColorByAlias.get(alias);
+      if (resolved) return resolved;
+    }
+
+    return "#999999";
+  }, [chainColorByAlias]);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false, selectedScale = "normal") => {
@@ -143,12 +333,59 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     },
     [],
   );
+  const formatScatterRatio = useCallback((
+    ratio: number | null,
+    units?: { prefix?: string; suffix?: string },
+  ) => {
+    if (ratio === null || !Number.isFinite(ratio)) return "N/A";
+
+    const absRatio = Math.abs(ratio);
+    const decimals = absRatio > 0 && absRatio < 0.01 ? 4 : 2;
+    const prefix = units?.prefix ?? "";
+    const suffix = units?.suffix ?? "";
+
+    const formattedRatio = ratio.toLocaleString("en-GB", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+
+    return `${prefix}${formattedRatio}${suffix}`;
+  }, []);
+  const normalizedScatterRatioBase = useMemo(() => {
+    if (
+      typeof scatterRatioBase === "number"
+      && Number.isFinite(scatterRatioBase)
+      && scatterRatioBase > 0
+    ) {
+      return scatterRatioBase;
+    }
+    return null;
+  }, [scatterRatioBase]);
+  const scaleScatterRatio = useCallback(
+    (ratio: number | null) => {
+      if (ratio === null || !Number.isFinite(ratio)) return null;
+      if (normalizedScatterRatioBase === null) return ratio;
+      return ratio * normalizedScatterRatioBase;
+    },
+    [normalizedScatterRatioBase],
+  );
+  const scatterRatioLabel = useMemo(() => {
+    if (normalizedScatterRatioBase === null) return "Ratio";
+
+    const baseLabel = normalizedScatterRatioBase.toLocaleString("en-GB", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 8,
+      useGrouping: false,
+    });
+    return `Ratio (per ${baseLabel})`;
+  }, [normalizedScatterRatioBase]);
 
   const processedSeriesData = useMemo(() => {
     if (!jsonMeta?.meta || !jsonData) return [];
     
     return jsonMeta.meta.map((series: any, index: number) => ({
       ...series,
+      color: resolveSeriesColor(series),
       processedData: (() => {
         let rawData = jsonData[index]?.map((item: any) => [
           item[series.xIndex],
@@ -221,10 +458,239 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           ]).sort((a, b) => a[0] - b[0]); // Sort by timestamp
         }
 
-        return rawData;
+        return trimLeadingZeroValues(rawData as Array<[number, number | null]>);
       })()
     }));
-  }, [jsonMeta, jsonData]);
+  }, [jsonMeta, jsonData, resolveSeriesColor]);
+
+  const shouldSortStackedSeriesByAge = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => isStackingMode(series?.stacking));
+  }, [jsonMeta?.meta]);
+
+  const orderedSeriesEntries = useMemo(() => {
+    if (!jsonMeta?.meta) return [];
+
+    const baseEntries = jsonMeta.meta.map((series, index) => {
+      const processedData = processedSeriesData[index]?.processedData ?? [];
+      return {
+        series,
+        originalIndex: index,
+        processedData,
+        firstTimestamp: getFirstSeriesTimestamp(processedData),
+      };
+    });
+
+    if (!shouldSortStackedSeriesByAge) {
+      return baseEntries;
+    }
+
+    const sortStackGroup = (groupEntries: typeof baseEntries) => {
+      const stackedEntries = groupEntries
+        .filter((entry) => isStackingMode(entry.series?.stacking))
+        .sort((a, b) => {
+          if (a.firstTimestamp !== b.firstTimestamp) {
+            return a.firstTimestamp - b.firstTimestamp;
+          }
+          return a.originalIndex - b.originalIndex;
+        });
+
+      const nonStackedEntries = groupEntries.filter((entry) => !isStackingMode(entry.series?.stacking));
+      return [...stackedEntries, ...nonStackedEntries];
+    };
+
+    const primaryEntries = baseEntries.filter((entry) => !entry.series?.oppositeYAxis);
+    const secondaryEntries = baseEntries.filter((entry) => entry.series?.oppositeYAxis === true);
+
+    return [...sortStackGroup(primaryEntries), ...sortStackGroup(secondaryEntries)];
+  }, [jsonMeta?.meta, processedSeriesData, shouldSortStackedSeriesByAge]);
+
+  const normalizedTop10MetricKey = useMemo(
+    () => normalizeSeriesLabel(top10ByMetric?.trim() || ""),
+    [top10ByMetric],
+  );
+  const isScatterActivityMetric = useMemo(
+    () => SCATTER_ACTIVITY_METRIC_KEYS.has(normalizedTop10MetricKey),
+    [normalizedTop10MetricKey],
+  );
+  const getScatterYPrefix = useCallback(
+    (prefix?: string) => {
+      const resolvedPrefix = typeof prefix === "string" ? prefix : "";
+      if (!isScatterActivityMetric) return resolvedPrefix;
+      return /^\s*\$\s*$/.test(resolvedPrefix) ? "" : resolvedPrefix;
+    },
+    [isScatterActivityMetric],
+  );
+  const chainDeploymentByAlias = useMemo(() => {
+    const map = new Map<string, boolean>();
+
+    Object.entries(chains || {}).forEach(([chainKey, chain]) => {
+      const isProd = chain?.deployment === "PROD";
+      const aliases = [chainKey, chain?.url_key, chain?.name, chain?.name_short]
+        .filter((alias): alias is string => typeof alias === "string" && alias.trim().length > 0)
+        .map((alias) => normalizeSeriesLabel(alias));
+
+      aliases.forEach((alias) => {
+        const existing = map.get(alias);
+        if (existing === true) return;
+        map.set(alias, isProd);
+      });
+    });
+
+    return map;
+  }, [chains]);
+
+  const baseSeriesEntriesForRendering = useMemo(() => {
+    if (orderedSeriesEntries.length > 0) {
+      return orderedSeriesEntries.map((entry) => ({
+        ...entry,
+        series: {
+          ...entry.series,
+          color: resolveSeriesColor(entry.series),
+        },
+      }));
+    }
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((series: any, index: number) => ({
+      series: {
+        ...series,
+        color: resolveSeriesColor(series),
+      },
+      originalIndex: index,
+      processedData: Array.isArray(series?.data) ? series.data : [],
+      firstTimestamp: getFirstSeriesTimestamp(Array.isArray(series?.data) ? series.data : []),
+    }));
+  }, [data, orderedSeriesEntries, resolveSeriesColor]);
+
+  const topRankedSeriesNameSet = useMemo(() => {
+    if (!normalizedTop10MetricKey) {
+      return null;
+    }
+
+    const optionsXAxisTitle = normalizeSeriesLabel(String(options?.xAxis?.title?.text || ""));
+    const optionsPrimaryYAxisTitle = normalizeSeriesLabel(
+      String((Array.isArray(options?.yAxis) ? options?.yAxis?.[0] : options?.yAxis)?.title?.text || ""),
+    );
+    const optionsSecondaryYAxisTitle = normalizeSeriesLabel(
+      String((Array.isArray(options?.yAxis) ? options?.yAxis?.[1] : undefined)?.title?.text || ""),
+    );
+
+    const scatterMetricAxis: "x" | "y" = (() => {
+      const xMetricMatches =
+        normalizedTop10MetricKey === "x" ||
+        normalizedTop10MetricKey === "xaxis" ||
+        normalizedTop10MetricKey === optionsXAxisTitle ||
+        normalizedTop10MetricKey.includes("activeaddress") ||
+        normalizedTop10MetricKey.includes("users");
+
+      const yMetricMatches =
+        normalizedTop10MetricKey === "y" ||
+        normalizedTop10MetricKey === "yaxis" ||
+        normalizedTop10MetricKey === optionsPrimaryYAxisTitle ||
+        normalizedTop10MetricKey === optionsSecondaryYAxisTitle ||
+        normalizedTop10MetricKey.includes("txcount") ||
+        normalizedTop10MetricKey.includes("transaction");
+
+      if (xMetricMatches && !yMetricMatches) return "x";
+      return "y";
+    })();
+
+    const scoredSeries = baseSeriesEntriesForRendering
+      .map(({ series, processedData }) => {
+        const seriesName = typeof series?.name === "string" ? series.name : "";
+        if (!seriesName) {
+          return null;
+        }
+        const seriesAliases = [series?.name, series?.key, series?.urlKey]
+          .filter((alias): alias is string => typeof alias === "string" && alias.trim().length > 0)
+          .map((alias) => normalizeSeriesLabel(alias));
+
+        const matchedDeploymentFlags = seriesAliases
+          .map((alias) => chainDeploymentByAlias.get(alias))
+          .filter((value): value is boolean => typeof value === "boolean");
+
+        const isKnownChain = matchedDeploymentFlags.length > 0;
+        const isProdChain = matchedDeploymentFlags.some((value) => value === true);
+        if (isKnownChain && !isProdChain) {
+          return null;
+        }
+
+        const rawSeriesMetricCandidates: unknown[] = [];
+
+        if (top10ByMetric && typeof series?.[top10ByMetric] !== "undefined") {
+          rawSeriesMetricCandidates.push(series[top10ByMetric]);
+        }
+
+        if (typeof series?.metrics === "object" && series.metrics !== null) {
+          const normalizedMetricEntry = Object.entries(series.metrics as Record<string, unknown>).find(
+            ([metricKey]) => normalizeSeriesLabel(metricKey) === normalizedTop10MetricKey,
+          );
+          if (normalizedMetricEntry) {
+            rawSeriesMetricCandidates.push(normalizedMetricEntry[1]);
+          }
+        }
+
+        const directSeriesMetric = rawSeriesMetricCandidates
+          .map((value) => Number(value))
+          .find((value) => Number.isFinite(value));
+
+        if (typeof directSeriesMetric === "number" && Number.isFinite(directSeriesMetric)) {
+          return { name: seriesName, value: directSeriesMetric };
+        }
+
+        const points = (Array.isArray(processedData) ? processedData : [])
+          .filter((point: any) => Array.isArray(point) && point.length >= 2)
+          .map((point: any) => [Number(point[0]), Number(point[1])])
+          .filter(([xValue, yValue]: [number, number]) => Number.isFinite(xValue) && Number.isFinite(yValue));
+
+        if (!points.length) {
+          return null;
+        }
+
+        if (chartType === "scatter") {
+          const lastPoint = points[points.length - 1];
+          const value = scatterMetricAxis === "x" ? lastPoint[0] : lastPoint[1];
+          return Number.isFinite(value) ? { name: seriesName, value } : null;
+        }
+
+        if (normalizedTop10MetricKey.includes("sum")) {
+          const sumValue = points.reduce((sum, [, yValue]) => sum + yValue, 0);
+          return Number.isFinite(sumValue) ? { name: seriesName, value: sumValue } : null;
+        }
+
+        const latestValue = points[points.length - 1][1];
+        return Number.isFinite(latestValue) ? { name: seriesName, value: latestValue } : null;
+      })
+      .filter((entry): entry is { name: string; value: number } => Boolean(entry))
+      .sort((a, b) => b.value - a.value);
+
+    if (!scoredSeries.length) {
+      return null;
+    }
+
+    return new Set(scoredSeries.slice(0, TOP_CHAIN_SERIES_LIMIT).map((entry) => entry.name));
+  }, [
+    baseSeriesEntriesForRendering,
+    chainDeploymentByAlias,
+    chartType,
+    normalizedTop10MetricKey,
+    options?.xAxis?.title?.text,
+    options?.yAxis,
+    top10ByMetric,
+  ]);
+
+  const seriesEntriesForRendering = useMemo(() => {
+    if (!topRankedSeriesNameSet) {
+      return baseSeriesEntriesForRendering;
+    }
+
+    return baseSeriesEntriesForRendering.filter(({ series }) =>
+      typeof series?.name === "string" && topRankedSeriesNameSet.has(series.name),
+    );
+  }, [baseSeriesEntriesForRendering, topRankedSeriesNameSet]);
 
   const tooltipLabelMaps = useMemo(() => {
     if (!jsonMeta?.meta || !jsonData) return new Map<string, Map<number, string>>();
@@ -246,13 +712,223 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   }, [jsonMeta, jsonData]);
 
   const filteredSeries = useMemo(() => {
-    return processedSeriesData.filter(series =>
-      filteredNames.length === 0 || filteredNames.includes(series.name)
+    return seriesEntriesForRendering
+      .filter(({ series }) => filteredNames.length === 0 || filteredNames.includes(series.name))
+      .map(({ series, processedData }) => ({
+        ...series,
+        processedData,
+      }));
+  }, [filteredNames, seriesEntriesForRendering]);
+
+  const renderWithGTPChart = useMemo(() => {
+    return useNewChart && chartType !== "pie" && chartType !== "scatter" && seriesEntriesForRendering.length > 0;
+  }, [chartType, seriesEntriesForRendering.length, useNewChart]);
+
+  const gtpSeries = useMemo<GTPChartSeries[]>(() => {
+    if (!renderWithGTPChart || seriesEntriesForRendering.length === 0) return [];
+
+    return seriesEntriesForRendering.flatMap(({ series, processedData }) => {
+      if (!Array.isArray(processedData)) return [];
+
+      const axisIndex: 0 | 1 = series.oppositeYAxis ? 1 : 0;
+
+      // `processedData` is derived from `jsonData` as `[x, y]` pairs where `y` can be null.
+      // Cast is safe because we normalize `null` values in `processedSeriesData` below.
+      const data = processedData as [number, number | null][];
+
+      return [
+        {
+          name: series.name,
+          data,
+          color: series.color,
+          yAxisIndex: axisIndex,
+          seriesType: mapToGTPSeriesType(series.type, chartType),
+        } satisfies GTPChartSeries,
+      ];
+    }).filter((series) => filteredNames.length === 0 || filteredNames.includes(series.name));
+  }, [chartType, filteredNames, renderWithGTPChart, seriesEntriesForRendering]);
+
+  const hasGTPSecondaryAxis = useMemo(
+    () => gtpSeries.some((series) => series.yAxisIndex === 1),
+    [gtpSeries],
+  );
+
+  const gtpPrimaryFormat = useMemo(() => {
+    const sourceMeta = jsonMeta?.meta ?? [];
+    const firstPrimarySeries = gtpSeries.find((series) => (series.yAxisIndex ?? 0) === 0);
+    const firstPrimaryMeta = sourceMeta.find((meta) => meta.name === firstPrimarySeries?.name) ?? sourceMeta.find((meta) => !meta.oppositeYAxis);
+
+    return {
+      prefix: firstPrimaryMeta?.prefix,
+      suffix: firstPrimaryMeta?.suffix,
+      decimals: firstPrimaryMeta?.tooltipDecimals,
+    };
+  }, [gtpSeries, jsonMeta?.meta]);
+
+  const gtpSecondaryFormat = useMemo(() => {
+    const sourceMeta = jsonMeta?.meta ?? [];
+    const firstSecondarySeries = gtpSeries.find((series) => (series.yAxisIndex ?? 0) === 1);
+    const firstSecondaryMeta = sourceMeta.find((meta) => meta.name === firstSecondarySeries?.name) ?? sourceMeta.find((meta) => meta.oppositeYAxis);
+
+    return {
+      prefix: firstSecondaryMeta?.prefix,
+      suffix: firstSecondaryMeta?.suffix,
+      decimals: firstSecondaryMeta?.tooltipDecimals,
+    };
+  }, [gtpSeries, jsonMeta?.meta]);
+
+  const gtpXAxisLines = useMemo<GTPChartXAxisLine[]>(() => {
+    if (!yAxisLine?.length) return [];
+
+    const mapLineStyle = (style: string | undefined): GTPChartXAxisLine["lineStyle"] => {
+      if (!style) return undefined;
+      const normalized = style.toLowerCase();
+      if (normalized.includes("dot")) return "dotted";
+      if (normalized.includes("dash")) return "dashed";
+      return "solid";
+    };
+
+    const normalizeColorValue = (value: string | undefined) => value?.trim().toLowerCase();
+    const isLikelyCssColorValue = (value: string) =>
+      /^(#|rgb\(|rgba\(|hsl\(|hsla\(|var\(|transparent$)/i.test(value.trim());
+
+    return yAxisLine
+      .filter((line) => Number.isFinite(line.xValue))
+      .map((line) => {
+        const normalizedTextColor = normalizeColorValue(line.textColor);
+        const normalizedBackgroundColor = normalizeColorValue(line.backgroundColor);
+        const hasEqualTextAndBackground =
+          Boolean(normalizedTextColor) &&
+          Boolean(normalizedBackgroundColor) &&
+          normalizedTextColor === normalizedBackgroundColor;
+
+        const fallbackBackgroundColor =
+          typeof line.backgroundColor === "string" && !isLikelyCssColorValue(line.backgroundColor)
+            ? "transparent"
+            : line.backgroundColor;
+        const fallbackTextColor =
+          typeof line.textColor === "string" && !isLikelyCssColorValue(line.textColor)
+            ? undefined
+            : line.textColor;
+
+        return {
+          xValue: line.xValue,
+          annotationText: line.annotationText,
+          annotationPositionX: line.annotationPositionX,
+          annotationPositionY: line.annotationPositionY,
+          lineStyle: mapLineStyle(line.lineStyle),
+          lineColor: line.lineColor,
+          lineWidth: line.lineWidth,
+          // When text and background match (would render an invisible pill),
+          // keep the requested text color and drop the background instead.
+          textColor: fallbackTextColor,
+          textFontSize: line.textFontSize ? Number.parseFloat(line.textFontSize) : undefined,
+          backgroundColor: hasEqualTextAndBackground ? "transparent" : fallbackBackgroundColor,
+        };
+      });
+  }, [yAxisLine]);
+
+  const gtpStack = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => series.stacking === "normal" || series.stacking === "percent");
+  }, [jsonMeta?.meta]);
+
+  const gtpPercentageMode = useMemo(() => {
+    return (jsonMeta?.meta ?? []).some((series) => series.stacking === "percent");
+  }, [jsonMeta?.meta]);
+
+  const gtpXAxisMin = useMemo(() => {
+    if (!renderWithGTPChart || gtpSeries.length === 0) return undefined;
+
+    let minTimestampNonZero: number | undefined;
+    let minTimestampAnyValue: number | undefined;
+
+    gtpSeries.forEach((series) => {
+      series.data.forEach(([timestamp, value]) => {
+        const numericTimestamp = Number(timestamp);
+        if (!Number.isFinite(numericTimestamp)) return;
+        if (typeof value !== "number" || !Number.isFinite(value)) return;
+
+        if (minTimestampAnyValue === undefined || numericTimestamp < minTimestampAnyValue) {
+          minTimestampAnyValue = numericTimestamp;
+        }
+
+        if (value !== 0 && (minTimestampNonZero === undefined || numericTimestamp < minTimestampNonZero)) {
+          minTimestampNonZero = numericTimestamp;
+        }
+      });
+    });
+
+    return minTimestampNonZero ?? minTimestampAnyValue;
+  }, [gtpSeries, renderWithGTPChart]);
+
+  const computedTimeAxisTickConfig = useMemo(() => {
+    const explicitIntervalMs =
+      typeof timeAxisTickIntervalDays === "number" &&
+      Number.isFinite(timeAxisTickIntervalDays) &&
+      timeAxisTickIntervalDays > 0
+        ? timeAxisTickIntervalDays * DAY_MS
+        : undefined;
+
+    if (explicitIntervalMs !== undefined) {
+      return {
+        intervalMs: explicitIntervalMs,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    if (!renderWithGTPChart || !showXAsDate || gtpSeries.length === 0) {
+      return {
+        intervalMs: undefined as number | undefined,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    const timestamps = gtpSeries.flatMap((series) =>
+      series.data
+        .map(([timestamp]) => Number(timestamp))
+        .filter((timestamp) => Number.isFinite(timestamp)),
     );
-  }, [processedSeriesData, filteredNames]);
+
+    if (timestamps.length === 0) {
+      return {
+        intervalMs: undefined as number | undefined,
+        alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      };
+    }
+
+    const minTimestamp = Math.min(...timestamps);
+    const maxTimestamp = Math.max(...timestamps);
+    const rangeMs = Math.max(0, maxTimestamp - minTimestamp);
+    const rangeDays = rangeMs / DAY_MS;
+
+    // Quickbite default: when monthly spacing would only produce 1-2 ticks,
+    // fall back to weekly ticks to preserve readable time context.
+    if (rangeDays > 30) {
+      const projectedMonthlyTicks = Math.floor(rangeMs / (30 * DAY_MS)) + 1;
+      if (projectedMonthlyTicks < 3) {
+        return {
+          intervalMs: 7 * DAY_MS,
+          alignToCleanBoundary: timeAxisTickAlignToCleanBoundary ?? true,
+        };
+      }
+    }
+
+    return {
+      intervalMs: undefined as number | undefined,
+      alignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+    };
+  }, [
+    gtpSeries,
+    renderWithGTPChart,
+    showXAsDate,
+    timeAxisTickAlignToCleanBoundary,
+    timeAxisTickIntervalDays,
+  ]);
 
   const minTimestampDelta = useMemo(() => {
-    const seriesToInspect = filteredSeries.length ? filteredSeries : processedSeriesData;
+    const seriesToInspect = renderWithGTPChart && gtpSeries.length > 0
+      ? gtpSeries.map((series) => ({ processedData: series.data }))
+      : (filteredSeries.length ? filteredSeries : processedSeriesData);
     let smallestDelta = Number.POSITIVE_INFINITY;
 
     seriesToInspect.forEach((series: any) => {
@@ -271,7 +947,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     });
 
     return smallestDelta === Number.POSITIVE_INFINITY ? null : smallestDelta;
-  }, [filteredSeries, processedSeriesData]);
+  }, [filteredSeries, gtpSeries, processedSeriesData, renderWithGTPChart]);
 
   const shouldShowTimeInTooltip = showXAsDate && !!minTimestampDelta && minTimestampDelta < 24 * 60 * 60 * 1000;
   
@@ -342,11 +1018,124 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      const { x, points } = this;
+      const isScatterTooltip = chartType === "scatter";
+      const x = this?.x;
+      const contextPoints = Array.isArray(this?.points) ? this.points : [];
+      const fallbackPoint =
+        this?.point ??
+        (this?.series
+          ? { series: this.series, y: this?.y, percentage: this?.percentage }
+          : null);
+      const points = isScatterTooltip
+        ? (contextPoints.length > 0 ? contextPoints : fallbackPoint ? [fallbackPoint] : [])
+        : contextPoints;
+      if (points.length === 0) {
+        return "";
+      }
+
+      const renderScatterTooltip = ({
+        header,
+        markerColor,
+        rows,
+      }: {
+        header: string;
+        markerColor: string;
+        rows: Array<{ label: string; value: string }>;
+      }) => {
+        const rowMarkup = rows
+          .map((row, index) => {
+            const dividerMarkup = `<div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
+                <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:100%; background-color:${index === 0 ? "transparent" : "transparent"}"></div>
+              </div>`;
+
+            return `
+              <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
+                <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${markerColor}"></div>
+                <div class="tooltip-point-name text-xs">${row.label}</div>
+                <div class="flex-1 text-right justify-end flex numbers-xs">${row.value}</div>
+              </div>
+              ${dividerMarkup}
+            `;
+          })
+          .join("");
+
+        return `<div class="${DEFAULT_SCATTER_TOOLTIP_CONTAINER_CLASS}">
+          <div class="flex-1 flex items-center justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
+            <div>${header}</div>
+          </div>
+          <div class="flex flex-col w-full">
+            ${rowMarkup}
+          </div>
+        </div>`;
+      };
+
+      if (isScatterTooltip) {
+        const point = points[0];
+        const series = point?.series || {};
+        const seriesName = typeof series?.name === "string" ? series.name : "";
+        const xValue = Number(point?.x ?? x);
+        const yValue = Number(point?.y);
+        const yMeta = jsonMeta?.meta?.find((meta) => meta.name === seriesName) ?? jsonMeta?.meta?.[0];
+        const yPrefix = getScatterYPrefix(yMeta?.prefix);
+        const ySuffix = yMeta?.suffix || "";
+        const yDecimals = yMeta?.tooltipDecimals ?? 2;
+
+        const primaryYAxis = Array.isArray(options?.yAxis) ? options?.yAxis?.[0] : options?.yAxis;
+        const xLabel = options?.xAxis?.title?.text || "X Value";
+        const yLabelBase = primaryYAxis?.title?.text || "Y Value";
+        const shouldStripGasPerSecondFromLabel =
+          typeof ySuffix === "string" && /gas\s*\/\s*s/i.test(ySuffix);
+        const yLabelWithUnitAdjusted = shouldStripGasPerSecondFromLabel
+          ? yLabelBase.replace(/\s*\(\s*gas\s*\/\s*s\s*\)\s*$/i, "")
+          : yLabelBase;
+        const yLabel = yLabelWithUnitAdjusted
+          .replace(/\s*\(\s*usd\s*\)\s*$/i, "")
+          .replace(/^\s*weekly\s+/i, "");
+
+        const formatValue = (value: number, decimals: number = 2) => {
+          if (!Number.isFinite(value)) return "N/A";
+          return value.toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: decimals,
+          });
+        };
+
+        const normalizedXAxisTitle = normalizeSeriesLabel(String(xLabel || ""));
+        const isTransactionCostXAxis =
+          normalizedXAxisTitle.includes("transactionfee") || normalizedXAxisTitle.includes("transactioncost");
+        const formattedXBase = formatValue(xValue, isTransactionCostXAxis ? 4 : 2);
+        const formattedX =
+          isTransactionCostXAxis && formattedXBase !== "N/A" ? `$${formattedXBase}` : formattedXBase;
+        const formattedY = `${yPrefix}${formatValue(yValue, yDecimals)}${ySuffix}`;
+        const ratioValue = Number.isFinite(xValue) && xValue !== 0 && Number.isFinite(yValue) ? yValue / xValue : null;
+        const formattedRatio = formatScatterRatio(scaleScatterRatio(ratioValue), {
+          prefix: yPrefix,
+          suffix: ySuffix,
+        });
+        const markerColor =
+          typeof series?.color === "string"
+            ? series.color
+            : series?.color?.stops?.[0]?.[1] ?? "#999999";
+
+        const scatterRows = [
+          { label: yLabel, value: formattedY },
+          { label: xLabel, value: formattedX },
+          ...(showScatterRatio ? [{ label: scatterRatioLabel, value: formattedRatio }] : []),
+        ];
+
+        return renderScatterTooltip({
+          header: seriesName,
+          markerColor,
+          rows: scatterRows,
+        });
+      }
+
       const dateFormat = shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY";
-      let dateString = dayjs.utc(x).format(dateFormat);
+      let dateString = isScatterTooltip
+        ? (Number.isFinite(Number(x)) ? dayjs.utc(Number(x)).format(dateFormat) : "")
+        : dayjs.utc(x).format(dateFormat);
       const total = points.reduce((acc: number, point: any) => {
-        acc += point.y;
+        acc += isScatterTooltip ? (Number(point?.y) || 0) : point.y;
         return acc;
       }, 0);
 
@@ -354,7 +1143,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      const filteredPoints = showZeroTooltip ? points : points.filter((point: any) => point.y !== 0);
+      const filteredPoints = showZeroTooltip
+        ? points
+        : points.filter((point: any) => (isScatterTooltip ? (Number(point?.y) || 0) : point.y) !== 0);
       const totalMeta = jsonMeta?.meta?.[0];
       const totalPrefix = totalMeta?.prefix || '';
       const totalSuffix = totalMeta?.suffix || '';
@@ -382,17 +1173,24 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         // order by value
         .sort((a: any, b: any) => {
           if(disableTooltipSort) return 0;
-          const aValue = parseFloat(a.y);
-          const bValue = parseFloat(b.y);
+          const aValue = isScatterTooltip ? (Number(a?.y) || 0) : parseFloat(a.y);
+          const bValue = isScatterTooltip ? (Number(b?.y) || 0) : parseFloat(b.y);
           return bValue - aValue;
         })
         .map((point: any, index: number) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
+          const series = isScatterTooltip ? (point?.series || {}) : point.series;
+          const y = isScatterTooltip ? (Number(point?.y) || 0) : point.y;
+          const name = isScatterTooltip
+            ? (typeof series?.name === "string" ? series.name : "")
+            : series.name;
           
           const nameString = name.slice(0, 20);
           
-          const color = series.color.stops ? series.color.stops[0][1] : series.color;
+          const color = isScatterTooltip
+            ? (typeof series?.color === "string"
+              ? series.color
+              : series?.color?.stops?.[0]?.[1] ?? "#999999")
+            : (series.color.stops ? series.color.stops[0][1] : series.color);
 
           
           // Match meta by series name instead of the sorted index so suffix/prefix follow the right series
@@ -403,7 +1201,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const stackingMode = metaEntry?.stacking;
 
 
-          let displayValue = parseFloat(y).toLocaleString("en-GB", {
+          let displayValue = y.toLocaleString("en-GB", {
             minimumFractionDigits: currentDecimals,
             maximumFractionDigits: currentDecimals
           });
@@ -411,7 +1209,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           let displayText;
           /* this might be wrong */
           if (stackingMode === "percent") {
-            const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
+            const percentageValue = isScatterTooltip
+              ? (total !== 0 ? ((y / total) * 100).toFixed(1) : "0.0")
+              : ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
             displayText = `${currentPrefix}${displayValue}${currentSuffix}`;
@@ -444,7 +1244,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + totalLine + labelLine + tooltipEnd;
     },
-    [jsonMeta, shouldShowTimeInTooltip, disableTooltipSort, showZeroTooltip, showTotalTooltip, tooltipLabelMaps],
+    [
+      chartType,
+      jsonMeta,
+      options,
+      shouldShowTimeInTooltip,
+      disableTooltipSort,
+      showZeroTooltip,
+      showTotalTooltip,
+      formatScatterRatio,
+      getScatterYPrefix,
+      scaleScatterRatio,
+      scatterRatioLabel,
+      showScatterRatio,
+      tooltipLabelMaps,
+    ],
   );
 
   const resolvedPieData = useMemo(() => {
@@ -495,6 +1309,658 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   );
 
   const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
+  const isQuickBitePageScatter = chartType === "scatter" && !isChainQuickBitesTabChart;
+  const primaryYAxisOptions = Array.isArray(options?.yAxis) ? options.yAxis[0] : options?.yAxis;
+  const secondaryYAxisOptions = Array.isArray(options?.yAxis) ? options.yAxis[1] : undefined;
+  const showNumericXAxisLabels = isQuickBitePageScatter || options?.xAxis?.labels?.enabled === true;
+  const scatterXAxisTitle = useMemo(() => {
+    if (!isQuickBitePageScatter) return options?.xAxis?.title;
+
+    return {
+      ...(options?.xAxis?.title || {}),
+      margin: options?.xAxis?.title?.margin ?? 14,
+      style: {
+        color: theme === "dark" ? "#CDD8D3" : "#293332",
+        fontSize: "10px",
+        fontFamily: "Raleway",
+        ...(options?.xAxis?.title?.style || {}),
+      },
+    };
+  }, [isQuickBitePageScatter, options?.xAxis?.title, theme]);
+
+  const scatterPrimaryYAxisTitle = useMemo(() => {
+    if (!isQuickBitePageScatter) return primaryYAxisOptions?.title;
+
+    return {
+      ...(primaryYAxisOptions?.title || {}),
+      margin: primaryYAxisOptions?.title?.margin ?? 14,
+      reserveSpace: true,
+      style: {
+        color: theme === "dark" ? "#CDD8D3" : "#293332",
+        fontSize: "10px",
+        fontFamily: "Raleway",
+        ...(primaryYAxisOptions?.title?.style || {}),
+      },
+    };
+  }, [isQuickBitePageScatter, primaryYAxisOptions?.title, theme]);
+
+  const scatterSecondaryYAxisTitle = useMemo(() => {
+    if (!isQuickBitePageScatter) return secondaryYAxisOptions?.title;
+
+    return {
+      ...(secondaryYAxisOptions?.title || {}),
+      margin: secondaryYAxisOptions?.title?.margin ?? 14,
+      reserveSpace: true,
+      style: {
+        color: theme === "dark" ? "#CDD8D3" : "#293332",
+        fontSize: "10px",
+        fontFamily: "Raleway",
+        ...(secondaryYAxisOptions?.title?.style || {}),
+      },
+    };
+  }, [isQuickBitePageScatter, secondaryYAxisOptions?.title, theme]);
+  const renderWithScatterEChart = chartType === "scatter";
+  const scatterXAxisTitleText = typeof scatterXAxisTitle?.text === "string" ? scatterXAxisTitle.text : "X Value";
+  const scatterPrimaryYAxisTitleText = typeof scatterPrimaryYAxisTitle?.text === "string" ? scatterPrimaryYAxisTitle.text : "Y Value";
+  const scatterSecondaryYAxisTitleText = typeof scatterSecondaryYAxisTitle?.text === "string"
+    ? scatterSecondaryYAxisTitle.text
+    : scatterPrimaryYAxisTitleText;
+  const isScatterXUsdTransactionCost = useMemo(() => {
+    if (chartType !== "scatter" || showXAsDate) return false;
+    const normalizedXAxisTitle = normalizeSeriesLabel(scatterXAxisTitleText);
+    return (
+      (normalizedXAxisTitle.includes("transactionfee") || normalizedXAxisTitle.includes("transactioncost")) &&
+      normalizedXAxisTitle.includes("usd")
+    );
+  }, [chartType, scatterXAxisTitleText, showXAsDate]);
+  const scatterSeriesForECharts = useMemo(() => {
+    return seriesEntriesForRendering
+      .map(({ series, processedData }) => {
+        if (filteredNames.length > 0 && !filteredNames.includes(series.name)) {
+          return null;
+        }
+
+        const points = (Array.isArray(processedData) ? processedData : [])
+          .filter((point: any) => Array.isArray(point) && point.length >= 2)
+          .map((point: any) => [Number(point[0]), Number(point[1])])
+          .filter(([xVal, yVal]: [number, number]) => Number.isFinite(xVal) && Number.isFinite(yVal));
+
+        if (!points.length) {
+          return null;
+        }
+
+        return {
+          name: series.name,
+          color: resolveSeriesColor(series),
+          yAxisIndex: series.oppositeYAxis === true ? 1 : 0,
+          points,
+          prefix: typeof series?.prefix === "string" ? series.prefix : "",
+          suffix: typeof series?.suffix === "string" ? series.suffix : "",
+          tooltipDecimals:
+            typeof series?.tooltipDecimals === "number" && Number.isFinite(series.tooltipDecimals)
+              ? series.tooltipDecimals
+              : undefined,
+        };
+      })
+      .filter(
+        (
+          series,
+        ): series is {
+          name: string;
+          color: string;
+          yAxisIndex: 0 | 1;
+          points: [number, number][];
+          prefix: string;
+          suffix: string;
+          tooltipDecimals: number | undefined;
+        } => Boolean(series),
+      );
+  }, [seriesEntriesForRendering, filteredNames, resolveSeriesColor]);
+  const scatterMetaBySeriesName = useMemo(() => {
+    return new Map((jsonMeta?.meta ?? []).map((meta: any) => [meta.name, meta]));
+  }, [jsonMeta?.meta]);
+  const scatterTrendlineResult = useMemo<{ points: [number, number][]; ratio: number | null } | null>(() => {
+    if (!isScatterTrendlineEnabled || !isScatterTrendlineVisible) {
+      return null;
+    }
+
+    const points = scatterSeriesForECharts.flatMap((series) =>
+      series.points.map(([xValue, yValue]) => ({ xValue, yValue })),
+    );
+
+    if (points.length < 1) {
+      return null;
+    }
+
+    const sumXY = points.reduce((sum, point) => sum + point.xValue * point.yValue, 0);
+    const sumXX = points.reduce((sum, point) => sum + point.xValue * point.xValue, 0);
+
+    if (!Number.isFinite(sumXX) || sumXX === 0) {
+      return null;
+    }
+
+    // Forced-origin fit: y = kx, where k = sum(x*y) / sum(x^2).
+    const slope = sumXY / sumXX;
+    if (!Number.isFinite(slope)) {
+      return null;
+    }
+
+    const xValues = points.map((point) => point.xValue).filter((value) => Number.isFinite(value));
+    if (!xValues.length) {
+      return null;
+    }
+
+    const xMax = Math.max(...xValues);
+
+    if (!Number.isFinite(xMax) || xMax <= 0) {
+      return null;
+    }
+
+    const yAtXMax = slope * xMax;
+
+    return {
+      points: [
+        [0, 0],
+        [xMax, yAtXMax],
+      ],
+      ratio: Number.isFinite(slope) ? slope : null,
+    };
+  }, [isScatterTrendlineEnabled, isScatterTrendlineVisible, scatterSeriesForECharts]);
+  const scatterTrendlineRatioUnits = useMemo(() => {
+    const firstVisibleSeries = scatterSeriesForECharts[0];
+    if (!firstVisibleSeries) {
+      return { prefix: "", suffix: "" };
+    }
+
+    const metaEntry = scatterMetaBySeriesName.get(firstVisibleSeries.name);
+    return {
+      prefix: getScatterYPrefix(metaEntry?.prefix ?? firstVisibleSeries.prefix ?? ""),
+      suffix: metaEntry?.suffix ?? firstVisibleSeries.suffix ?? "",
+    };
+  }, [getScatterYPrefix, scatterMetaBySeriesName, scatterSeriesForECharts]);
+  const scatterTrendlineRatioLabel = useMemo(
+    () => formatScatterRatio(scaleScatterRatio(scatterTrendlineResult?.ratio ?? null), scatterTrendlineRatioUnits),
+    [formatScatterRatio, scaleScatterRatio, scatterTrendlineResult?.ratio, scatterTrendlineRatioUnits],
+  );
+  const scatterEChartOption = useMemo<EChartsOption>(() => {
+    const axisTextColor = theme === "dark" ? "#CDD8D3" : "#293332";
+    const axisLineColor = theme === "dark" ? "rgba(215, 223, 222, 0.33)" : "rgba(41, 51, 50, 0.33)";
+    const axisGridColor = theme === "dark" ? "rgba(215, 223, 222, 0.11)" : "rgba(41, 51, 50, 0.11)";
+    const xAxisType = showXAsDate ? "time" : mapToEChartsAxisType(options?.xAxis?.type);
+    const hasActiveScatterTrendline =
+      isScatterTrendlineEnabled && isScatterTrendlineVisible && Boolean(scatterTrendlineResult);
+    const shouldReserveTrendlineLabelSpace = hasActiveScatterTrendline && showScatterRatio;
+    const scatterGridRight = shouldReserveTrendlineLabelSpace
+      ? (hasOppositeYAxis ? 92 : 56)
+      : (hasOppositeYAxis ? 72 : 20);
+    const scatterXAxisMax = (() => {
+      const configuredMax = options?.xAxis?.max;
+
+      if (!shouldReserveTrendlineLabelSpace || xAxisType === "time" || xAxisType === "log") {
+        return configuredMax;
+      }
+
+      const xValues = scatterSeriesForECharts
+        .flatMap((series) => series.points.map(([xValue]) => xValue))
+        .filter((xValue) => Number.isFinite(xValue));
+
+      if (!xValues.length) {
+        return configuredMax;
+      }
+
+      const dataMax = Math.max(...xValues);
+      const dataMin = Math.min(...xValues);
+      const spread = Math.abs(dataMax - dataMin);
+      const baseline = Math.max(spread, Math.abs(dataMax));
+      const bufferRatio = isChainQuickBitesTabChart
+        ? SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO_CHAIN_TAB
+        : SCATTER_TRENDLINE_X_AXIS_BUFFER_RATIO;
+      const minBuffer = baseline * bufferRatio;
+      const bufferedMax = dataMax + minBuffer;
+
+      if (typeof configuredMax === "number" && Number.isFinite(configuredMax)) {
+        return Math.max(configuredMax, bufferedMax);
+      }
+
+      if (typeof configuredMax === "string") {
+        const numericConfiguredMax = Number(configuredMax);
+        if (Number.isFinite(numericConfiguredMax)) {
+          return Math.max(numericConfiguredMax, bufferedMax);
+        }
+      }
+
+      return bufferedMax;
+    })();
+
+    const scatterYAxisOptions: any[] = [
+      {
+        type: mapToEChartsYAxisType(primaryYAxisOptions?.type),
+        name: scatterPrimaryYAxisTitleText,
+        nameLocation: "middle",
+        nameGap: 52,
+        nameTextStyle: {
+          color: axisTextColor,
+          fontSize: 10,
+          fontFamily: "Raleway",
+        },
+        axisLine: { lineStyle: { color: axisLineColor } },
+        axisTick: { show: true, lineStyle: { color: axisLineColor } },
+        splitLine: { show: true, lineStyle: { color: axisGridColor } },
+        axisLabel: {
+          color: axisTextColor,
+          fontSize: 8,
+          fontFamily: "Fira Sans",
+          formatter: (value: any) => formatNumber(Number(value), true, "normal"),
+        },
+      },
+    ];
+    if (hasOppositeYAxis) {
+      scatterYAxisOptions.push({
+        type: mapToEChartsYAxisType(secondaryYAxisOptions?.type || primaryYAxisOptions?.type),
+        name: scatterSecondaryYAxisTitleText,
+        nameLocation: "middle",
+        nameGap: 52,
+        nameTextStyle: {
+          color: axisTextColor,
+          fontSize: 10,
+          fontFamily: "Raleway",
+        },
+        position: "right",
+        axisLine: { lineStyle: { color: axisLineColor } },
+        axisTick: { show: true, lineStyle: { color: axisLineColor } },
+        splitLine: { show: false },
+        axisLabel: {
+          color: axisTextColor,
+          fontSize: 8,
+          fontFamily: "Fira Sans",
+          formatter: (value: any) => formatNumber(Number(value), true, "normal"),
+        },
+      });
+    }
+
+    return {
+      animation: false,
+      backgroundColor: "transparent",
+      grid: {
+        left: hasOppositeYAxis ? 72 : 66,
+        right: scatterGridRight,
+        top: 24,
+        bottom: isQuickBitePageScatter ? 58 : 78,
+      },
+      tooltip: {
+        trigger: "item",
+        backgroundColor: "transparent",
+        borderWidth: 0,
+        padding: 0,
+        appendToBody: true,
+        extraCssText: "box-shadow:none; border:none; z-index:2147483647;",
+        formatter: (params: any) => {
+          const point = Array.isArray(params) ? params[0] : params;
+          if (!point) return "";
+
+          const value = Array.isArray(point.value) ? point.value : [];
+          const xRaw = Number(value[0]);
+          const yRaw = Number(value[1]);
+          const seriesName = String(point.seriesName || "");
+          const metaEntry = scatterMetaBySeriesName.get(seriesName);
+          const seriesIndex = typeof point.seriesIndex === "number" ? point.seriesIndex : -1;
+          const seriesConfig = seriesIndex >= 0 ? scatterSeriesForECharts[seriesIndex] : undefined;
+          const yPrefix = getScatterYPrefix(metaEntry?.prefix ?? seriesConfig?.prefix ?? "");
+          const ySuffix = metaEntry?.suffix ?? seriesConfig?.suffix ?? "";
+          const yDecimals = metaEntry?.tooltipDecimals ?? seriesConfig?.tooltipDecimals ?? 2;
+          const axisIndex = seriesIndex >= 0 ? (scatterSeriesForECharts[seriesIndex]?.yAxisIndex ?? 0) : 0;
+          const yLabelBase = axisIndex === 1 ? scatterSecondaryYAxisTitleText : scatterPrimaryYAxisTitleText;
+          const shouldStripGasPerSecondFromLabel =
+            typeof ySuffix === "string" && /gas\s*\/\s*s/i.test(ySuffix);
+          const yLabelWithUnitAdjusted = shouldStripGasPerSecondFromLabel
+            ? yLabelBase.replace(/\s*\(\s*gas\s*\/\s*s\s*\)\s*$/i, "")
+            : yLabelBase;
+          const yLabel = yLabelWithUnitAdjusted
+            .replace(/\s*\(\s*usd\s*\)\s*$/i, "")
+            .replace(/^\s*weekly\s+/i, "");
+          const ratio = Number.isFinite(xRaw) && xRaw !== 0 && Number.isFinite(yRaw) ? yRaw / xRaw : null;
+          const markerColor =
+            typeof point.color === "string"
+              ? point.color
+              : point.color?.colorStops?.[0]?.color ?? "#999999";
+
+          const formattedX = showXAsDate && Number.isFinite(xRaw)
+            ? dayjs.utc(xRaw).format(shouldShowTimeInTooltip ? "DD MMM YYYY HH:mm" : "DD MMM YYYY")
+            : Number.isFinite(xRaw)
+              ? isScatterXUsdTransactionCost
+                ? `$${xRaw.toLocaleString("en-GB", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`
+                : xRaw.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+              : "N/A";
+          const formattedY = Number.isFinite(yRaw)
+            ? `${yPrefix}${yRaw.toLocaleString("en-GB", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: yDecimals,
+            })}${ySuffix}`
+            : "N/A";
+          const formattedScaledRatio = formatScatterRatio(scaleScatterRatio(ratio), {
+            prefix: yPrefix,
+            suffix: ySuffix,
+          });
+
+          const rowMarkup = [
+            { label: yLabel, value: formattedY },
+            { label: scatterXAxisTitleText, value: formattedX },
+            ...(showScatterRatio ? [{ label: scatterRatioLabel, value: formattedScaledRatio }] : []),
+          ]
+            .map((row, index) => {
+              const dividerMarkup = `<div class="ml-[18px] mr-[1px] h-[2px] relative mb-[2px] overflow-hidden">
+                  <div class="h-[2px] rounded-none absolute right-0 top-0" style="width:100%; background-color:${index === 0 ? "transparent" : "transparent"}"></div>
+                </div>`;
+              return `
+                <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
+                  <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${markerColor}"></div>
+                  <div class="tooltip-point-name text-xs">${row.label}</div>
+                  <div class="flex-1 text-right justify-end flex numbers-xs">${row.value}</div>
+                </div>
+                ${dividerMarkup}
+              `;
+            })
+            .join("");
+
+          return `<div class="${DEFAULT_SCATTER_TOOLTIP_CONTAINER_CLASS}">
+            <div class="flex-1 flex items-center justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
+              <div>${seriesName}</div>
+            </div>
+            <div class="flex flex-col w-full">
+              ${rowMarkup}
+            </div>
+          </div>`;
+        },
+      },
+      xAxis: {
+        type: xAxisType,
+        max: scatterXAxisMax,
+        name: scatterXAxisTitleText,
+        nameLocation: "middle",
+        nameGap: isQuickBitePageScatter ? 34 : 42,
+        nameTextStyle: {
+          color: axisTextColor,
+          fontSize: 10,
+          fontFamily: "Raleway",
+        },
+        axisLine: { lineStyle: { color: axisLineColor } },
+        axisTick: { show: true, lineStyle: { color: axisLineColor } },
+        splitLine: {
+          show: true,
+          showMaxLine: !shouldReserveTrendlineLabelSpace,
+          lineStyle: { color: axisGridColor },
+        },
+        axisLabel: {
+          color: axisTextColor,
+          fontFamily: "Fira Sans",
+          fontSize: 10,
+          showMaxLabel: !shouldReserveTrendlineLabelSpace,
+          formatter: (value: any) => {
+            const numericValue = Number(value);
+            if (showXAsDate && Number.isFinite(numericValue)) {
+              return dayjs.utc(numericValue).format("DD MMM");
+            }
+            if (isScatterXUsdTransactionCost && Number.isFinite(numericValue)) {
+              return `$${numericValue.toLocaleString("en-GB", {
+                minimumFractionDigits: 4,
+                maximumFractionDigits: 4,
+              })}`;
+            }
+            return Number.isFinite(numericValue) ? formatNumber(numericValue, true, "normal") : "";
+          },
+        },
+      },
+      yAxis: scatterYAxisOptions,
+      series: [
+        ...scatterSeriesForECharts.map((series) => ({
+          type: "scatter" as const,
+          name: series.name,
+          yAxisIndex: series.yAxisIndex,
+          data: series.points,
+          symbolSize: 9,
+          itemStyle: {
+            color: series.color,
+          },
+          emphasis: {
+            scale: 1.1,
+          },
+        })),
+        ...(scatterTrendlineResult
+          ? [
+              {
+                type: "line" as const,
+                name: scatterTrendlineLabel,
+                data: scatterTrendlineResult.points,
+                showSymbol: false,
+                silent: true,
+                tooltip: { show: false },
+                lineStyle: {
+                  type: "dashed" as const,
+                  width: 2,
+                  color: scatterTrendlineColor,
+                },
+                endLabel: {
+                  show: showScatterRatio,
+                  distance: 10,
+                  color: scatterTrendlineTextColor,
+                  fontFamily: "Raleway",
+                  fontSize: 9,
+                  fontWeight: 500,
+                  backgroundColor: scatterTrendlineLabelBackground,
+                  borderRadius: 15,
+                  padding: [4, 8],
+                  formatter: `Avg ratio: ${scatterTrendlineRatioLabel}`,
+                },
+              },
+            ]
+          : []),
+      ],
+    };
+  }, [
+    theme,
+    showXAsDate,
+    shouldShowTimeInTooltip,
+    options?.xAxis?.type,
+    options?.xAxis?.max,
+    hasOppositeYAxis,
+    primaryYAxisOptions?.type,
+    secondaryYAxisOptions?.type,
+    scatterXAxisTitleText,
+    scatterPrimaryYAxisTitleText,
+    scatterSecondaryYAxisTitleText,
+    scatterMetaBySeriesName,
+    scatterSeriesForECharts,
+    scatterTrendlineLabelBackground,
+    scatterTrendlineColor,
+    isScatterTrendlineEnabled,
+    isScatterTrendlineVisible,
+    scatterTrendlineResult,
+    scatterTrendlineRatioLabel,
+    scatterTrendlineLabel,
+    scatterTrendlineTextColor,
+    formatNumber,
+    formatScatterRatio,
+    getScatterYPrefix,
+    scaleScatterRatio,
+    scatterRatioLabel,
+    showScatterRatio,
+    isScatterXUsdTransactionCost,
+    isChainQuickBitesTabChart,
+    isQuickBitePageScatter,
+  ]);
+  const filterableSeriesNames = useMemo(() => {
+    const source = chartType === 'pie' && resolvedPieData
+      ? resolvedPieData
+      : seriesEntriesForRendering.map((entry) => entry.series);
+
+    if (!Array.isArray(source)) {
+      return [];
+    }
+
+    const names = source
+      .map((item: any) => (typeof item?.name === "string" ? item.name : ""))
+      .filter((name: string) => name.length > 0);
+
+    return Array.from(new Set(names));
+  }, [chartType, resolvedPieData, seriesEntriesForRendering]);
+
+  const legendCategories = useMemo(() => {
+    const source = chartType === 'pie' && resolvedPieData
+      ? resolvedPieData
+      : seriesEntriesForRendering.map((entry) => entry.series);
+    if (!Array.isArray(source)) {
+      return [];
+    }
+
+    const categories = source.map((series: any) => ({
+      ...series,
+      color: resolveSeriesColor(series),
+    }));
+
+    if (isScatterTrendlineEnabled) {
+      categories.push({
+        name: scatterTrendlineLabel,
+        color: scatterTrendlineColor,
+        isScatterTrendline: true,
+      });
+    }
+
+    return categories;
+  }, [
+    chartType,
+    isScatterTrendlineEnabled,
+    resolvedPieData,
+    scatterTrendlineColor,
+    scatterTrendlineLabel,
+    seriesEntriesForRendering,
+    resolveSeriesColor,
+  ]);
+
+  const selectableSeriesLegendCount = useMemo(
+    () => legendCategories.filter((category: any) => !category?.isScatterTrendline).length,
+    [legendCategories],
+  );
+  const selectableSeriesLegendNames = useMemo(
+    () =>
+      legendCategories
+        .filter((category: any) => !category?.isScatterTrendline)
+        .map((category: any) => category?.name)
+        .filter((name: unknown): name is string => typeof name === "string" && name.length > 0),
+    [legendCategories],
+  );
+
+  const primaryLegendCategories = useMemo(
+    () => legendCategories.filter((series: any) => !series.oppositeYAxis),
+    [legendCategories],
+  );
+
+  const secondaryLegendCategories = useMemo(
+    () => legendCategories.filter((series: any) => series.oppositeYAxis === true),
+    [legendCategories],
+  );
+
+  const isLegendCategoryActive = useCallback(
+    (category: any) => {
+      if (category?.isScatterTrendline) {
+        return isScatterTrendlineVisible;
+      }
+
+      return filteredNames.length === 0 || filteredNames.includes(category?.name);
+    },
+    [filteredNames, isScatterTrendlineVisible],
+  );
+
+  const toggleLegendCategory = useCallback(
+    (category: any) => {
+      if (!category || typeof category !== "object") return;
+
+      if (category.isScatterTrendline) {
+        if (!isScatterTrendlineEnabled) return;
+        setIsScatterTrendlineVisible((prev) => !prev);
+        return;
+      }
+
+      const name = typeof category.name === "string" ? category.name : "";
+      if (!name) return;
+
+      setFilteredNames((prev) => {
+        if (chartType === "scatter" && prev.length === 0) {
+          return selectableSeriesLegendNames.filter((seriesName) => seriesName !== name);
+        }
+
+        if (!prev.includes(name)) {
+          const next = [...prev, name];
+          if (next.length === selectableSeriesLegendCount) {
+            return [];
+          }
+          return next;
+        }
+        return prev.filter((seriesName) => seriesName !== name);
+      });
+    },
+    [chartType, isScatterTrendlineEnabled, selectableSeriesLegendCount, selectableSeriesLegendNames],
+  );
+
+  const shouldShowLegendReset = filteredNames.length > 0 || (isScatterTrendlineEnabled && !isScatterTrendlineVisible);
+
+  const resetLegendFilters = useCallback(() => {
+    setFilteredNames([]);
+    if (isScatterTrendlineEnabled) {
+      setIsScatterTrendlineVisible(true);
+    }
+  }, [isScatterTrendlineEnabled]);
+
+  const handleDownloadChartSnapshot = useCallback(async () => {
+    if (isDownloadingChartSnapshot) return;
+    if (typeof window === "undefined") return;
+    const cardElement = chartCardRef.current;
+    if (!cardElement) return;
+
+    setIsDownloadingChartSnapshot(true);
+    try {
+      await downloadElementAsImage(cardElement, title ?? "quickbite-chart");
+    } finally {
+      setIsDownloadingChartSnapshot(false);
+    }
+  }, [isDownloadingChartSnapshot, title]);
+
+  const normalizedPreferredSeriesNames = useMemo(
+    () =>
+      defaultFilteredSeriesNames
+        .map((name) => name?.trim())
+        .filter((name): name is string => Boolean(name))
+        .map(normalizeSeriesLabel),
+    [defaultFilteredSeriesNames],
+  );
+
+  useEffect(() => {
+    if (!isChainQuickBitesTabChart) {
+      return;
+    }
+
+    if (filterableSeriesNames.length <= 1 || normalizedPreferredSeriesNames.length === 0) {
+      return;
+    }
+
+    const matchedSeriesName = filterableSeriesNames.find((name) =>
+      normalizedPreferredSeriesNames.includes(normalizeSeriesLabel(name)),
+    );
+
+    if (!matchedSeriesName) {
+      return;
+    }
+
+    setFilteredNames((prev) => {
+      if (prev.length > 0) {
+        return prev;
+      }
+      return [matchedSeriesName];
+    });
+  }, [isChainQuickBitesTabChart, filterableSeriesNames, normalizedPreferredSeriesNames]);
+
+  useEffect(() => {
+    setIsScatterTrendlineVisible(isScatterTrendlineEnabled);
+  }, [isScatterTrendlineEnabled]);
 
   
   if (loading) {
@@ -528,17 +1994,109 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
  
   
+  const wrapperPaddingClass = isChainQuickBitesTabChart
+    ? "px-0"
+    : margins === "none"
+      ? "px-0"
+      : quickBiteTabRightEdgeFlush
+        ? "md:px-[35px] lg:pl-[35px] lg:pr-0"
+        : quickBiteTabLeftEdgeFlush
+          ? "md:px-[35px] lg:pl-0 lg:pr-[35px]"
+          : "md:px-[35px]";
+  const isSingleChainQuickBitesTabChart =
+    isChainQuickBitesTabChart && !quickBiteTabRightEdgeFlush && !quickBiteTabLeftEdgeFlush;
+  const quickBitesTabWrapperStyle = isChainQuickBitesTabChart
+    ? {
+        width: "100%",
+        maxWidth: isSingleChainQuickBitesTabChart ? undefined : "1250px",
+        marginLeft: quickBiteTabRightEdgeFlush ? "auto" : undefined,
+      }
+    : undefined;
+  const quickBitePageFooterClassName = isQuickBitePageScatter
+    ? "md:px-[50px] relative bottom-0 mt-0 flex flex-col justify-between gap-y-[3px] md:gap-y-0"
+    : "md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0";
+
   return (
-    <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
-      <div style={{ width, height }} className="relative bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
-        <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
-          <div className="flex items-center justify-center md:justify-between">
-            <div className="flex items-center gap-x-[5px]">
-              <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
-              <div className="heading-small-md">{title}</div>
+    <div className={`relative ${wrapperPaddingClass}`} style={quickBitesTabWrapperStyle}>
+      <div
+        ref={chartCardRef}
+        style={{ width, height }}
+        className={`${
+          isChainQuickBitesTabChart
+            ? `chain-quick-bites-tab-chart-anchor bg-color-bg-default rounded-[18px] px-[8px] pb-[42px] ${
+                chainQuickBitesTopBar ? "pt-[38px]" : "pt-[8px]"
+              }`
+            : "bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md md:p-[15px]"
+        } relative flex flex-col ${isQuickBitePageScatter ? "gap-y-[10px]" : "gap-y-[12px]"} h-full`}
+      >
+        {isChainQuickBitesTabChart ? (
+          <>
+            {chainQuickBitesTopBar ? (
+              <div className="absolute inset-x-0 top-0 z-[30]">
+                <div className="w-full bg-color-bg-medium rounded-full p-[2px]">
+                  <div className="mr-auto w-fit">{chainQuickBitesTopBar}</div>
+                </div>
+              </div>
+            ) : null}
+            {title ? (
+              <div className="flex items-center gap-x-[6px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
+                <GTPIcon
+                  icon={CHAIN_QUICKBITES_HEADER_ICON}
+                  className="!w-[12px] !h-[12px] text-color-text-primary"
+                  containerClassName="!w-[12px] !h-[12px]"
+                />
+                <span className="text-xxs text-color-text-primary/85">{title}</span>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
+            <div className="flex items-center justify-center md:justify-between">
+              <div className="flex items-center gap-x-[5px]">
+                <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
+                <div className="heading-small-md">{title}</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        {renderWithGTPChart ? (
+          <div className="relative h-full min-h-0 flex-1">
+            <GTPChart
+              series={gtpSeries}
+              stack={gtpStack}
+              percentageMode={gtpPercentageMode}
+              preserveStackOrder={shouldSortStackedSeriesByAge}
+              xAxisMin={gtpXAxisMin}
+              snapToCleanBoundary={snapToCleanBoundary ?? false}
+              timeAxisTickIntervalMs={computedTimeAxisTickConfig.intervalMs}
+              timeAxisTickAlignToCleanBoundary={computedTimeAxisTickConfig.alignToCleanBoundary}
+              timeAxisBarEdgePaddingRatio={timeAxisBarEdgePaddingRatio ?? 0}
+              hidePrimaryYAxisWhenEmpty
+              prefix={gtpPrimaryFormat.prefix}
+              suffix={gtpPrimaryFormat.suffix}
+              decimals={gtpPrimaryFormat.decimals}
+              secondaryPrefix={gtpSecondaryFormat.prefix}
+              secondarySuffix={gtpSecondaryFormat.suffix}
+              secondaryDecimals={gtpSecondaryFormat.decimals}
+              xAxisLines={gtpXAxisLines}
+              showTooltipTimestamp={shouldShowTimeInTooltip}
+              showTotal={showTotalTooltip && !hasGTPSecondaryAxis}
+              reverseTooltipOrder={false}
+              height="100%"
+              showWatermark={false}
+            />
+          </div>
+        ) : renderWithScatterEChart ? (
+          <div className="relative h-full min-h-0 flex-1">
+            <ReactEChartsCore
+              echarts={echarts}
+              option={scatterEChartOption}
+              notMerge={true}
+              lazyUpdate={true}
+              style={{ height: "100%", width: "100%" }}
+            />
+          </div>
+        ) : (
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart chart={chartRef.current} options={options || {}}
               plotOptions={{
@@ -561,6 +2119,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   borderColor: "transparent",
                   animation: true,
                   pointPlacement: "on",
+                },
+                scatter: {
+                  lineWidth: 0,
+                  marker: {
+                    enabled: true,
+                    radius: 4,
+                    symbol: "circle",
+                  },
                 },
                 series: {
                   zIndex: 10,
@@ -600,8 +2166,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               animation={{
                 duration: 50,
               }}
-              marginBottom={chartType === 'pie' ? 10 : (showXAsDate ? 32 : 20)}
-              marginLeft={chartType === 'pie' ? undefined : 50}
+              marginBottom={chartType === 'pie' ? 10 : (showXAsDate ? 32 : (isQuickBitePageScatter ? 36 : 20))}
+              marginLeft={chartType === 'pie' ? undefined : (isQuickBitePageScatter ? 68 : 50)}
               marginRight={chartType === 'pie' ? undefined : (hasOppositeYAxis ? 50 : 5)}
               marginTop={chartType === 'pie' ? 2 : 15}
             />
@@ -620,7 +2186,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
                 },
                 distance: 20,
-                enabled: showXAsDate,
+                enabled: showXAsDate || showNumericXAxisLabels,
                 useHTML: true,
                 formatter: showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
                   if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
@@ -656,6 +2222,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       year: "numeric",
                     });
                   }
+                } : isQuickBitePageScatter ? function (this: AxisLabelsFormatterContextObject) {
+                  return formatNumber(this.value, true, "normal");
                 } : undefined
               }}
               
@@ -665,6 +2233,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               type={showXAsDate ? "datetime" : undefined}
               tickAmount={5}
               tickLength={15}
+              tickWidth={isQuickBitePageScatter ? 1 : undefined}
+              lineWidth={isQuickBitePageScatter ? 1 : undefined}
+              title={scatterXAxisTitle}
               plotLines={yAxisLine?.map((line) => ({
                 value: line.xValue,
                 color: line.lineColor || (theme === 'dark' ? '#CDD8D3' : '#293332'),
@@ -688,7 +2259,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             />
             <YAxis
               id="0"
-              type={options?.yAxis?.[0]?.type}
+              type={primaryYAxisOptions?.type}
+              reversedStacks={shouldSortStackedSeriesByAge ? false : undefined}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -712,9 +2284,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 },
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
+              title={scatterPrimaryYAxisTitle}
             >
-              {chartType !== 'pie' && jsonMeta && jsonMeta.meta && jsonMeta.meta
-              .map((series: any, index: number) => {
+              {chartType !== 'pie' && seriesEntriesForRendering
+              .map(({ series, processedData }) => {
                 // filter out series that are not on the opposite y axis and not filtered out
                 const showSeries = !series.oppositeYAxis && (filteredNames.length === 0 || filteredNames.includes(series.name));
                 if(!showSeries) return null;
@@ -732,16 +2305,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={processedSeriesData[index].processedData}
+                    data={processedData}
                     color={series.color}
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     animation={true}
                     stacking={series.stacking ? series.stacking : undefined}
                     borderRadius={type === "column" ? "8%" : undefined}
-                    marker={{
-                      enabled: false,
-                    }}
+                    marker={{ enabled: false }}
                     states={{
                       hover: {
                         enabled: true,
@@ -772,8 +2343,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </YAxis>
             <YAxis
               id="1"
-              type={options?.yAxis?.[1]?.type || options?.yAxis?.[0]?.type}
+              type={secondaryYAxisOptions?.type || primaryYAxisOptions?.type}
               opposite={true}
+              reversedStacks={shouldSortStackedSeriesByAge ? false : undefined}
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
@@ -797,10 +2369,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 },
               }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
+              title={scatterSecondaryYAxisTitle}
               
             >
-              {jsonMeta && jsonMeta.meta && jsonMeta.meta
-              .map((series: any, index: number) => {
+              {seriesEntriesForRendering
+              .map(({ series, processedData }) => {
                 // filter out series that are not on the opposite y axis and not filtered out
                 const showSeries = series.oppositeYAxis === true && (filteredNames.length === 0 || filteredNames.includes(series.name));
                 if(!showSeries) return null;
@@ -817,16 +2390,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={processedSeriesData[index].processedData} 
+                    data={processedData} 
                     color={series.color} 
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     animation={true}
                     stacking={series.stacking ? series.stacking : undefined}
                     borderRadius={type === "column" ? "8%" : undefined}
-                    marker={{
-                      enabled: false,
-                    }}
+                    marker={{ enabled: false }}
                     states={{
                       hover: {
                         enabled: true,
@@ -1000,6 +2571,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           </HighchartsChart>
         </HighchartsProvider>
+        )}
         {chartType === 'pie' && centerName && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="text-xxxs font-bold leading-[120%] text-center max-w-[80px]">
@@ -1015,97 +2587,182 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
-          <div className="flex flex-col gap-y-[5px]">
-            {/*Categories*/}
-            <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
-              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
-                {(chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data)).filter((series: any) => !series.oppositeYAxis).map((category: any) => {
-                  const allCategories: any[] = chartType === 'pie' && resolvedPieData ? resolvedPieData : (jsonMeta?.meta || data);
-                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
-                  }
+        {isChainQuickBitesTabChart ? (
+          <>
+            {legendCategories.length > 0 && (
+              <div className="min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
+                {[...primaryLegendCategories, ...secondaryLegendCategories].map((category: any) => {
+                  const isActive = isLegendCategoryActive(category);
+                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
+                  const markerOpacity = isActive ? 1 : 0.35;
 
                   return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                      if(!filteredNames.includes(category.name)) {
-                        setFilteredNames((prev) => {
-                          const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
-                          if (newFilteredNames.length === allCategories.length) {
-                            return []; // Reset to empty if all would be selected
-                          }
-                          return newFilteredNames;
-                        });
-                      } else {
-                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                    <GTPButton
+                      key={category.name}
+                      label={category.name}
+                      variant={isActive ? "primary" : "no-background"}
+                      size="xs"
+                      clickHandler={() => toggleLegendCategory(category)}
+                      onMouseEnter={() => setHoverLegendSeriesName(category.name)}
+                      onMouseLeave={() => setHoverLegendSeriesName(null)}
+                      rightIcon={
+                        hoverLegendSeriesName === category.name
+                          ? isActive
+                            ? "in-button-close"
+                            : "in-button-plus"
+                          : undefined
                       }
-                    }}>
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
-                    </div>
-                  )
+                      rightIconClassname="!w-[12px] !h-[12px]"
+                      textClassName={isActive ? undefined : "text-color-text-secondary"}
+                      className={isActive ? undefined : "border border-color-bg-medium"}
+                      leftIconOverride={(
+                        category?.isScatterTrendline ? (
+                          <div
+                            className="min-w-[16px] h-0 border-t-2 border-dashed rounded-none"
+                            style={{ borderColor: seriesColor, opacity: markerOpacity }}
+                          />
+                        ) : (
+                          <div
+                            className="min-w-[6px] min-h-[6px] rounded-full"
+                            style={{ backgroundColor: seriesColor, opacity: markerOpacity }}
+                          />
+                        )
+                      )}
+                    />
+                  );
                 })}
-                
-              {/* </div> */}
-              {/* <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center"> */}
-                {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
-                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
-                  }
-                  
-                  return (
-                    <div key={category.name} className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                      if(!filteredNames.includes(category.name)) {
-                        setFilteredNames((prev) => {
-                          const newFilteredNames = [...prev, category.name];
-                          // Check if we would have all categories selected
-                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
-                            return []; // Reset to empty if all would be selected
-                          }
-                          return newFilteredNames;
-                        });
-                      } else {
-                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
-                      }
-                    }}>
-                      <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
-                    </div>
-                  )
-                })}
-                
-              {/* </div> */}
-            </div>
-            {filteredNames && filteredNames.length > 0 && (
-              <div className={`flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer `} onClick={() => setFilteredNames([])}>
-                <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center"><GTPIcon icon={"gtp-close-monochrome"} className={`!size-[7px] text-red-500`} containerClassName='!size-[7px]'  /></div>
-                <div className="text-xxxs whitespace-nowrap">Reset</div>
+                {shouldShowLegendReset && (
+                  <GTPButton
+                    label="Reset"
+                    variant="highlight"
+                    size="xs"
+                    leftIcon="gtp-close-monochrome"
+                    clickHandler={resetLegendFilters}
+                  />
+                )}
               </div>
             )}
-          </div>
-          <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
-            <div className="flex flex-row md:flex-col gap-y-[2px]">
-              
-              {/* <div className="text-[10px]"><span className="font-bold">Chart type:</span>{` ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
-              <div className="md:hidden md:mx-0 mx-1 flex items-center relative bottom-[6px] justify-center ">-</div>
-              <div className="text-[10px]"><span className="font-bold">Aggregation:</span>{` 7-Day Rolling Average`}</div> */}
+            <div className="absolute inset-x-0 bottom-0 z-[30]">
+              <GTPButtonContainer>
+                <div className="mr-auto">
+                  <GTPButtonRow className="shrink-0">
+                    <GTPButtonDropdown
+                      openDirection="top"
+                      matchTriggerWidthToDropdown
+                      buttonProps={{
+                        label: "Share",
+                        labelDisplay: "active",
+                        leftIcon: "gtp-share-monochrome",
+                        size: "xs",
+                        variant: "no-background",
+                      }}
+                      isOpen={isSharePopoverOpen}
+                      onOpenChange={setIsSharePopoverOpen}
+                      dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                    />
+                    <GTPButton
+                      leftIcon="gtp-download-monochrome"
+                      size="xs"
+                      variant="no-background"
+                      visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                      disabled={isDownloadingChartSnapshot}
+                      clickHandler={handleDownloadChartSnapshot}
+                    />
+                  </GTPButtonRow>
+                </div>
+              </GTPButtonContainer>
             </div>
-            {seeMetricURL && (
-              <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
-                border: `1px solid transparent`,
-              backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box'
-            }}>
-              <div className="heading-small-xs text-color-text-primary">See metric page</div>
-              <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
-            </a>
-            )}
+          </>
+        ) : (
+          <div className={quickBitePageFooterClassName}>
+            <div className="flex flex-col gap-y-[5px]">
+              <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
+                {primaryLegendCategories.map((category: any) => {
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
+                  if (!isLegendCategoryActive(category)) {
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+                  }
+                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
+                  const markerOpacity = isLegendCategoryActive(category) ? 1 : 0.35;
+
+                  return (
+                    <div
+                      key={category.name}
+                      className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`}
+                      onClick={() => toggleLegendCategory(category)}
+                    >
+                      {category?.isScatterTrendline ? (
+                        <div
+                          className="w-[16px] h-0 border-t-2 border-dashed rounded-none"
+                          style={{ borderColor: seriesColor, opacity: markerOpacity }}
+                        ></div>
+                      ) : (
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: seriesColor, opacity: markerOpacity }}></div>
+                      )}
+                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
+                    </div>
+                  )
+                })}
+
+                {secondaryLegendCategories.map((category: any) => {
+                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
+                  if (!isLegendCategoryActive(category)) {
+                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+                  }
+                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
+                  const markerOpacity = isLegendCategoryActive(category) ? 1 : 0.35;
+
+                  return (
+                    <div
+                      key={category.name}
+                      className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`}
+                      onClick={() => toggleLegendCategory(category)}
+                    >
+                      {category?.isScatterTrendline ? (
+                        <div
+                          className="w-[16px] h-0 border-t-2 border-dashed rounded-none"
+                          style={{ borderColor: seriesColor, opacity: markerOpacity }}
+                        ></div>
+                      ) : (
+                        <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: seriesColor, opacity: markerOpacity }}></div>
+                      )}
+                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
+                    </div>
+                  )
+                })}
+                {shouldShowLegendReset && (
+                  <div
+                    className="border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer"
+                    onClick={resetLegendFilters}
+                  >
+                    <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center">
+                      <GTPIcon
+                        icon={"gtp-close-monochrome"}
+                        className={"!size-[7px] text-red-500"}
+                        containerClassName="!size-[7px]"
+                      />
+                    </div>
+                    <div className="text-xxxs whitespace-nowrap">Reset</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
+              <div className="flex flex-row md:flex-col gap-y-[2px]"></div>
+              {seeMetricURL && (
+                <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+                  border: `1px solid transparent`,
+                backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
+                backgroundOrigin: 'border-box',
+                backgroundClip: 'padding-box, border-box'
+              }}>
+                <div className="heading-small-xs text-color-text-primary">See metric page</div>
+                <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
+              </a>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
