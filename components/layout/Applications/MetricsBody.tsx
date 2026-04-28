@@ -141,19 +141,13 @@ function computeMetricSeriesData(params: {
 
     if (!isComparing) return [mainTotalSeries];
 
-    const mainAppChains = new Set(Object.keys(overTime));
     const compareSeries = compareApps
         .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
         .map(app => {
             const compareOverTime = app.data.metrics[metric].over_time as Record<string, unknown>;
-            // Exclude chains that are deselected on the main app, or that don't exist on the main app at all.
-            // This ensures chain parity: only chains shared by both apps and actively selected contribute.
-            const compareExclude = Object.keys(compareOverTime).filter(
-                chain => deselectedChains.includes(chain) || !mainAppChains.has(chain),
-            );
             return {
                 name: `compare_${app.owner_project}`,
-                data: sumChainSeries(compareOverTime, compareExclude),
+                data: sumChainSeries(compareOverTime, deselectedChains),
             } as SeriesEntry;
         });
 
@@ -314,10 +308,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         }
         return result;
     }, [data.chains_by_size, compareAppsForChart]);
-
-    const onlyStarknet = useMemo(() => {
-        return mergedChainsBySize.length === 1 && mergedChainsBySize[0] === "starknet";
-    }, [mergedChainsBySize]);
 
 
     
@@ -769,7 +759,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 {Object.keys(data.metrics ?? {})
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
-                    .filter((metric) => !onlyStarknet || metric !== "success_rate")
                     .map((metric, index) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed}/>
                 ))}
