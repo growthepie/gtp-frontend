@@ -555,7 +555,8 @@ export default function EconHeadCharts({
           </GTPButtonRow>
         </GTPButtonContainer>
       </Container>
-      <div className={`transition-height duration-500 relative overflow-visible ${selectedTimespan === "1d" ? "h-[0px]" : "h-[calc(197px)]"}`}>
+      {selectedTimespan !== "1d" && (
+      <div className={`transition-height duration-500 relative overflow-visible h-[calc(197px)]`}>
         <Carousel
           ariaId="economics-traction-title"
           heightClass="h-[calc(197px)]" // height of the slides + height of the dots + distance from the slides to the dots
@@ -1185,6 +1186,7 @@ export default function EconHeadCharts({
             })}
         </Carousel>
       </div>
+      )}
     </>
   );
 }
