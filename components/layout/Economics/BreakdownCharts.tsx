@@ -757,8 +757,8 @@ function BreakdownCharts({
               //         (timespans[selectedTimespan].value - 1)
               //     : undefined
               // }
-              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-              max={timespans[selectedTimespan].xMax}
+              min={(timespans[selectedTimespan].xMin ?? timespans["max"].xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax ?? timespans["max"].xMax}
               panningEnabled={true}
             ></XAxis>
             <YAxis
@@ -1092,8 +1092,8 @@ function BreakdownCharts({
               //         (timespans[selectedTimespan].value - 1)
               //     : undefined
               // }
-              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-              max={timespans[selectedTimespan].xMax}
+              min={(timespans[selectedTimespan].xMin ?? timespans["max"].xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax ?? timespans["max"].xMax}
               panningEnabled={true}
             >
               <XAxis.Title></XAxis.Title>

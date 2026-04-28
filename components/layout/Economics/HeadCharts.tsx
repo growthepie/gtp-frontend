@@ -13,7 +13,7 @@ import {
 } from "react-jsx-highcharts";
 import { useTheme } from "next-themes";
 import { l2_data } from "@/types/api/EconomicsResponse";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
@@ -35,6 +35,9 @@ import {
 } from "@/components/layout/TopRow";
 import Container from "../Container";
 import { Carousel } from "@/components/Carousel";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 
 
 const COLORS = {
@@ -94,6 +97,7 @@ export default function EconHeadCharts({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
   const isMobile = useUIContext((state) => state.isMobile);
+  const rowBreakpoint = useMediaQuery("(max-width: 1024px)");
   const selectedScale: string = "absolute";
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -499,11 +503,11 @@ export default function EconHeadCharts({
   return (
     <>
       <Container className="">
-        <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full ">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
-            <TopRowChild
+        <GTPButtonContainer>
+          <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>            
+            <GTPButton
               isSelected={!isMonthly}
-              onClick={() => {
+              clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
                 if (!isTransferrableTimespan) {
@@ -511,20 +515,12 @@ export default function EconHeadCharts({
                 }
                 setIsMonthly(false);
               }}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
 
-              style={{
-                paddingTop: "10.5px",
-                paddingBottom: "10.5px",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-              }}
-            >
-              {"Daily"}
-            </TopRowChild>
-            <TopRowChild
+              label="Daily"
+            />
+            <GTPButton
               isSelected={isMonthly}
-              onClick={() => {
+              clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
                 if (!isTransferrableTimespan) {
@@ -532,49 +528,32 @@ export default function EconHeadCharts({
                 }
                 setIsMonthly(true);
               }}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-
-              style={{
-                paddingTop: "10.5px",
-                paddingBottom: "10.5px",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-              }}
-            >
-              {"Monthly"}
-            </TopRowChild>
-          </TopRowParent>
-          <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-          </div>
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px] ">
+              label="Monthly"
+            />
+          </GTPButtonRow>
+          <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>
+            
             {Object.keys(timespans).map((key) => {
+              console.log(key);
               {
                 return (
-                  <TopRowChild
-                    className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-
-                    onClick={() => {
+                  <GTPButton
+                    clickHandler={() => {
                       setSelectedTimespan(key);
                     }}
                     key={key}
-                    style={{
-                      paddingTop: "10.5px",
-                      paddingBottom: "10.5px",
-                      paddingLeft: "16px",
-                      paddingRight: "16px",
-                    }}
+                    
                     isSelected={selectedTimespan === key}
-                  >
-                    {selectedTimespan === key
+                  
+                    label={selectedTimespan === key
                       ? timespans[key].label
                       : timespans[key].shortLabel}
-                  </TopRowChild>
+                  />
                 );
               }
             })}
-          </TopRowParent>
-        </TopRowContainer>
+          </GTPButtonRow>
+        </GTPButtonContainer>
       </Container>
       <div className={`transition-height duration-500 relative overflow-visible ${selectedTimespan === "1d" ? "h-[0px]" : "h-[calc(197px)]"}`}>
         <Carousel
@@ -1024,8 +1003,8 @@ export default function EconHeadCharts({
                           ordinal={false}
                           minorTicks={false}
                           minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                          min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-                          max={timespans[selectedTimespan].xMax}
+                          min={(timespans[selectedTimespan].xMin ?? dataTimestampExtremes.xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+                          max={timespans[selectedTimespan].xMax ?? dataTimestampExtremes.xMax}
                         ></XAxis>
 
                         <YAxis
