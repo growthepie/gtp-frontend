@@ -309,10 +309,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         return result;
     }, [data.chains_by_size, compareAppsForChart]);
 
-    const onlyStarknet = useMemo(() => {
-        return mergedChainsBySize.length === 1 && mergedChainsBySize[0] === "starknet";
-    }, [mergedChainsBySize]);
-
 
     
     // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
