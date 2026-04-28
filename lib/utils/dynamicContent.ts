@@ -534,7 +534,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle timeboost data placeholders
       if (processedItem.includes('{{timeboost')) {
-        const timeboostData = await fetchData('timeboost', "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json");
+        const timeboostData = await fetchData('timeboost', "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json");
         const timeboostDataETHRounded = timeboostData.data.fees_paid_priority_eth.total.toFixed(2);
         const timeboostDataUSDRounded = parseFloat(timeboostData.data.fees_paid_priority_usd.total).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
@@ -550,31 +550,36 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       }
 
       // Handle hyperliquid data placeholders
-      if (processedItem.includes('{{hyperliquid')) {
-        const hyperliquidData = await fetchData('hyperliquid', "https://api.growthepie.xyz/v1/quick-bites/hyperliquid/kpis.json");
-        const total_revenue_for_circle = (hyperliquidData.data.total_revenue_for_circle / 1000000).toFixed(2);
-        const hyperliquid_usdc_last = (hyperliquidData.data.hyperliquid_usdc_last / 1000000000).toFixed(3);
-        const percentage_hyperliquid_of_circle = hyperliquidData.data.percentage_hyperliquid_of_circle.toFixed(2);
-        const estimates_yearly_revenue_hyperliquid_circle = (hyperliquidData.data.estimates_yearly_revenue_hyperliquid_circle / 1000000).toFixed(2);
+      if (processedItem.includes('{{hyperliquid') || processedItem.includes('{{percentageHyperliquidOfCircle}}') || processedItem.includes('{{estimatesYearlyRevenueHyperliquidCircle}}')) {
+        const hyperliquidData = await fetchData('hyperliquid', "https://api.growthepie.com/v1/quick-bites/hyperliquid/kpis.json");
+        const d = hyperliquidData?.data ?? {};
 
-        if (total_revenue_for_circle) {
-          processedItem = processedItem.replace('{{hyperliquidTotalRevenueForCircle}}', total_revenue_for_circle);
-        }
-        if (hyperliquid_usdc_last) {
-          processedItem = processedItem.replace('{{hyperliquidUSDCLast}}', hyperliquid_usdc_last);
-        }
-        if (percentage_hyperliquid_of_circle) {
-          processedItem = processedItem.replace('{{percentageHyperliquidOfCircle}}', percentage_hyperliquid_of_circle);
-        }
-        if (estimates_yearly_revenue_hyperliquid_circle) {
-          processedItem = processedItem.replace('{{estimatesYearlyRevenueHyperliquidCircle}}', estimates_yearly_revenue_hyperliquid_circle);
-        }
+        const total_revenue_for_circle = typeof d.total_revenue_for_circle === 'number'
+          ? (d.total_revenue_for_circle / 1000000).toFixed(2)
+          : 'N/A';
+        const hyperliquid_usdc_last = typeof d.hyperliquid_usdc_last === 'number'
+          ? (d.hyperliquid_usdc_last / 1000000000).toFixed(3)
+          : 'N/A';
+        const percentage_hyperliquid_of_circle = typeof d.percentage_hyperliquid_of_circle === 'number'
+          ? d.percentage_hyperliquid_of_circle.toFixed(2)
+          : 'N/A';
+        const estimates_yearly_revenue_hyperliquid_circle = typeof d.estimates_yearly_revenue_hyperliquid_circle === 'number'
+          ? (d.estimates_yearly_revenue_hyperliquid_circle / 1000000).toFixed(2)
+          : 'N/A';
+
+        processedItem = processedItem
+          .replace('{{hyperliquidTotalRevenueForCircle}}', total_revenue_for_circle)
+          .replace('{{hyperliquidUSDCLast}}', hyperliquid_usdc_last)
+          .replace('{{percentageHyperliquidOfCircle}}', percentage_hyperliquid_of_circle)
+          .replace('{{estimatesYearlyRevenueHyperliquidCircle}}', estimates_yearly_revenue_hyperliquid_circle);
       }
 
       // Handle shopify data placeholders
       if (processedItem.includes('{{shopify')) {
-        const shopifyData = await fetchData('shopify', "https://api.growthepie.xyz/v1/quick-bites/shopify-usdc.json");
+        const shopifyData = await fetchData('shopify', "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json");
         //const shopifyDataETH = shopifyData.data.gross_volume_usdc.total.toFixed(2);
+        const shopifyVolumeRaw = Number(shopifyData?.data?.gross_volume_usdc?.total);
+        const shopifyCustomersRaw = Number(shopifyData?.data?.total_unique_payers?.total);
         const shopifyVolumeUSD = parseFloat(shopifyData.data.gross_volume_usdc.total).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
@@ -590,6 +595,15 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           maximumFractionDigits: 0
         });
 
+        const shopifyAvgSpendPerCustomer = Number.isFinite(shopifyVolumeRaw) &&
+          Number.isFinite(shopifyCustomersRaw) &&
+          shopifyCustomersRaw > 0
+          ? (shopifyVolumeRaw / shopifyCustomersRaw).toLocaleString("en-GB", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          })
+          : 'N/A';
+
         if (shopifyVolumeUSD) {
           processedItem = processedItem.replace('{{shopifyVolumeUSD}}', shopifyVolumeUSD);
         }
@@ -599,6 +613,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         if (shopifyCustomers) {
           processedItem = processedItem.replace('{{shopifyCustomers}}', shopifyCustomers);
         }
+        processedItem = processedItem.replace('{{shopifyAvgSpendPerCustomer}}', shopifyAvgSpendPerCustomer);
       }
 
       // Handle Robinhood stock data placeholders
@@ -681,7 +696,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle ethereum scaling data placeholders
       if (processedItem.includes('{{ethereum')) {
-        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.xyz/v1/quick-bites/ethereum-scaling/data.json");
+        const ethereumScalingData = await fetchData('ethereum_scaling', "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json");
 
         const ethereumCurrentTPS = parseFloat(ethereumScalingData.data.historical_tps.total).toLocaleString("en-GB", {
           minimumFractionDigits: 1,
@@ -707,7 +722,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle Ethereum ETH supply placeholders
       if (processedItem.includes('{{eth_')) {
-        const ethSupplyData = await fetchData('eth_supply', "https://api.growthepie.xyz/v1/eim/eth_supply.json");
+        const ethSupplyData = await fetchData('eth_supply', "https://api.growthepie.com/v1/eim/eth_supply.json");
 
         if (ethSupplyData?.data?.chart) {
           // Get the latest values from supply data
@@ -1086,10 +1101,24 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle Argot token metadata placeholders
+      if (processedItem.includes('{{argot_')) {
+        const argotTokenMetadata = await fetchData('argot_token_metadata', "https://api.growthepie.com/v1/quick-bites/argot/tvs_token_metadata.json");
+
+        if (argotTokenMetadata) {
+          const tokenCount: number = argotTokenMetadata.token_count ?? 0;
+          const symbols: string[] = argotTokenMetadata.symbols ?? [];
+
+          processedItem = processedItem
+            .replace('{{argot_token_count}}', String(tokenCount))
+            .replace('{{argot_token_symbols}}', symbols.join(', '));
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {
-      //   const ethereumData = await fetchData('ethereum', "https://api.growthepie.xyz/v1/ethereum-data.json");
+      //   const ethereumData = await fetchData('ethereum', "https://api.growthepie.com/v1/ethereum-data.json");
       //   if (ethereumData) {
       //     processedItem = processedItem.replace('{{ethereumPrice}}', ethereumData.price);
       //   }

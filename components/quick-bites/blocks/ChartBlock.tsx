@@ -47,6 +47,8 @@ interface PieSlice {
   y: number;
   color: string;
   tooltipDecimals?: number;
+  prefix?: string;
+  suffix?: string;
 }
 
 interface PieDataConfig {
@@ -55,6 +57,8 @@ interface PieDataConfig {
   xIndex?: number;
   yIndex?: number;
   tooltipDecimals?: number;
+  prefix?: string;
+  suffix?: string;
   colors: string | string[];
   nameMap?: Record<string, string>;
   showPercentage?: boolean;
@@ -233,11 +237,17 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
             if (symbol) return { prefix: symbol };
           }
           if (dynamicSeriesConfig.prefix !== undefined) {
-            return {
+            const resolved = {
               prefix: dynamicSeriesConfig.prefix.includes('{{')
                 ? Mustache.render(dynamicSeriesConfig.prefix, sharedState)
                 : dynamicSeriesConfig.prefix,
             };
+            return dynamicSeriesConfig.suffix !== undefined
+              ? { ...resolved, suffix: dynamicSeriesConfig.suffix }
+              : resolved;
+          }
+          if (dynamicSeriesConfig.suffix !== undefined) {
+            return { suffix: dynamicSeriesConfig.suffix };
           }
           return {};
         })()),
@@ -353,8 +363,10 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
         const name = pieDataConfig.nameMap?.[rawNameStr] ?? rawNameStr;
         const color = palette[index % palette.length];
         const tooltipDecimals = pieDataConfig.tooltipDecimals;
+        const prefix = pieDataConfig.prefix;
+        const suffix = pieDataConfig.suffix;
 
-        return { name, y, color, tooltipDecimals };
+        return { name, y, color, tooltipDecimals, prefix, suffix };
       })
       .filter((point): point is PieSlice => point !== null);
   }, [pieDataConfig, rawPieData, unProcessedPieData]);

@@ -24,6 +24,7 @@ import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -210,8 +211,12 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const isMobile = useMediaQuery("(max-width: 1024px)");
-    const chainsSelectedRef = useRef<HTMLDivElement>(null);
     const compareDropdownRef = useRef<HTMLDivElement>(null);
+    const chainsSelectedRef = useRef<HTMLDivElement>(null);
+    const chainsTextRef = useRef<HTMLDivElement>(null);
+    const labelMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    const [dynamicLabelCount, setDynamicLabelCount] = useState(0);
+    const [adaptiveSpacerWidth, setAdaptiveSpacerWidth] = useState(120);
 
     useEffect(() => {
         if (!isCompareDropdownOpen) return;
@@ -223,12 +228,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isCompareDropdownOpen]);
-    const chainCount = (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).length;
-    const [dynamicLabelCount, setDynamicLabelCount] = useState(chainCount);
-    // Refs for single-pass label-count measurement (avoids O(N) cascading re-renders)
-    const labelMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
-    const chainsTextRef = useRef<HTMLDivElement>(null);
-
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
     const [compareAppsData, setCompareAppsData] = useState<Map<string, ApplicationDetailsData>>(new Map());
@@ -293,23 +292,48 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     }
     // ─────────────────────────────────────────────────────────────────────────
 
+    // Merge chains from the main app and all loaded compare apps.
+    // Main app chains come first in their size order; each compare app's chains are appended
+    // in their size order, skipping any chain already present.
+    const mergedChainsBySize = useMemo(() => {
+        const seen = new Set<string>();
+        const result: string[] = [];
+        for (const chain of (data.chains_by_size ?? [])) {
+            if (!seen.has(chain)) {
+                seen.add(chain);
+                result.push(chain);
+            }
+        }
+        for (const compareApp of compareAppsForChart) {
+            for (const chain of (compareApp.data.chains_by_size ?? [])) {
+                if (!seen.has(chain)) {
+                    seen.add(chain);
+                    result.push(chain);
+                }
+            }
+        }
+        return result;
+    }, [data.chains_by_size, compareAppsForChart]);
+
+    const onlyStarknet = useMemo(() => {
+        return mergedChainsBySize.length === 1 && mergedChainsBySize[0] === "starknet";
+    }, [mergedChainsBySize]);
+
+
+    
     // Memoize the filtered+sorted chains so both the render and the measurement share the same list.
     const filteredSortedChains = useMemo(() =>
-        (data.chains_by_size ?? []).filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
+        mergedChainsBySize.filter((chain) => AllChainsByKeys[chain]).sort((a, b) => {
             const aDeselected = deselectedChains.includes(a) ? 1 : 0;
             const bDeselected = deselectedChains.includes(b) ? 1 : 0;
             return aDeselected - bDeselected;
         }),
-        [data.chains_by_size, AllChainsByKeys, deselectedChains],
+        [mergedChainsBySize, AllChainsByKeys, deselectedChains],
     );
 
-    // Single-pass calculation: measure available space minus fixed costs, then greedily assign
-    // labels from left to right. Runs in O(n) DOM reads, emits at most one setState per resize.
-    //
-    // Button geometry for size="md":
-    //   icon-only  (alone variant): wrapper(2px) + padding(5+5px) + icon(24px) = 36px
-    //   with label (left variant):  wrapper(2px) + padding(15+15px) + icon(24px) + gap(8px) + textW
-    //   delta per label = (15+15 - 5-5)[padding diff] + 8[gap] + textW = 28 + textW
+    // Button geometry (icon-only width and per-label expansion delta) varies by button size.
+    // sm (mobile, icon 16px): alone=28px, delta=30+textW
+    // md (desktop, icon 24px): alone=36px, delta=28+textW
     const calculateLabelCount = useCallback(() => {
         const container = chainsSelectedRef.current;
         if (!container) return;
@@ -321,8 +345,11 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         }
 
         const containerWidth = container.clientWidth;
+        const ICON_ONLY_W = isMobile ? 28 : 36;
+        const BUTTON_GAP = 2;
+        const LABEL_DELTA = isMobile ? 30 : 28;
 
-        // Outer pill fixed costs: pl-[15px] + "Chains Selected" text + gap-x-[5px] + inner-border(2px) + pr-[2px]
+        // Fixed costs: left-pad(15) + "Chains" text + gap(5) + inner-border(2) + right-pad(2)
         const fixedCost =
             15 +
             (chainsTextRef.current?.offsetWidth ?? 80) +
@@ -330,52 +357,44 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
             2 +
             2;
 
-        // All buttons collapsed to icon-only + gaps between them
-        const ICON_ONLY_W = 36;
-        const BUTTON_GAP = 2; // gap-x-[2px] between buttons
         const iconOnlyCost = n * ICON_ONLY_W + Math.max(0, n - 1) * BUTTON_GAP;
-
-        // Space available for labels beyond icon-only layout
         let remaining = containerWidth - fixedCost - iconOnlyCost;
+
+        // Adaptive spacer: wide enough for the largest possible hover label expansion.
+        const maxLabelW = Math.max(
+            ...labelMeasureRefs.current.slice(0, n).map((el) => el?.offsetWidth ?? 60),
+        );
+        setAdaptiveSpacerWidth(LABEL_DELTA + maxLabelW);
 
         let count = 0;
         for (let i = 0; i < n; i++) {
             const labelEl = labelMeasureRefs.current[i];
             const labelW = labelEl ? labelEl.offsetWidth : 60;
-            // 28px base delta + label text width; 2px safety margin
-            if (remaining >= 28 + labelW + 2) {
-                remaining -= 28 + labelW;
+            if (remaining >= LABEL_DELTA + labelW + 2) {
+                remaining -= LABEL_DELTA + labelW;
                 count++;
             } else {
                 break;
             }
         }
 
-        // Reserve space for the hover expansion of the first icon-only button.
-        // Without this, hovering an icon-only button expands it into space that
-        // doesn't exist, causing adjacent buttons to shift back and forth.
+        // Reserve hover-expansion room for the first icon-only button so it doesn't
+        // shift neighbours when expanded, causing a jitter loop with the ResizeObserver.
         if (count < n) {
             const hoverLabelEl = labelMeasureRefs.current[count];
             const hoverLabelW = hoverLabelEl ? hoverLabelEl.offsetWidth : 60;
-            if (remaining < 28 + hoverLabelW) {
-                // Not enough room for the hover; give back the last shown label to free space
+            if (remaining < LABEL_DELTA + hoverLabelW) {
                 count = Math.max(0, count - 1);
             }
         }
 
         setDynamicLabelCount(count);
-    }, [filteredSortedChains]);
+    }, [filteredSortedChains, isMobile]);
 
-    // Run once on mount and whenever the container resizes (which includes window resize and
-    // parent flex reflows). Re-attaches whenever filteredSortedChains changes so the
-    // measurement refs are in sync with the rendered buttons.
-    // useEffect (post-paint) avoids the React warning about synchronous setState inside a
-    // layout-phase effect. ResizeObserver fires once on initial observation, so no explicit
-    // call to calculateLabelCount() is needed here — the observer handles it.
+    // Re-run label calculation whenever the pill resizes (window resize / parent reflow).
     useEffect(() => {
         const el = chainsSelectedRef.current;
         if (!el) return;
-
         const observer = new ResizeObserver(calculateLabelCount);
         observer.observe(el);
         return () => observer.disconnect();
@@ -480,11 +499,11 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
                 >
                     <Image src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path}`} alt={compareAppsForChart[0].displayName} width={24} height={24} className="rounded-full shrink-0 " />
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center gap-x-[5px]">
                         <div className="text-xxs">Compare to</div>
-                        <div className="flex items-center gap-x-[5px]">
+                        <div className="flex items-center gap-x-[5px] text-center w-full max-w-[180px]">
                             
-                            <div className="heading-small-xs"> {compareAppsForChart[0].displayName}</div>
+                            <div className="heading-small-xs text-nowrap truncate overflow-hidden "> {compareAppsForChart[0].displayName}</div>
                         </div>
                     </div>
                     <GTPIcon icon="gtp-chevronright-monochrome" containerClassName="!size-[34px] flex p-[5px] opacity-0 items-center justify-center" className="!size-[16px]" size="sm" />
@@ -515,8 +534,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 <CompareLoader key={key} owner_project={key} onDataLoaded={handleCompareDataLoaded} />
             ))}
 
-            {/* Hidden label measurement spans — used by calculateLabelCount to get exact text widths
-                without triggering a render loop. Must match the font/size of the actual button labels. */}
+            {/* Hidden label measurement spans — read by calculateLabelCount to get exact text widths. */}
             <div
                 aria-hidden="true"
                 style={{ position: "absolute", top: 0, left: 0, visibility: "hidden", pointerEvents: "none", display: "flex" }}
@@ -532,41 +550,50 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 ))}
             </div>
 
-            <div className="w-full flex justify-between  lg:items-center gap-x-[15px] lg:flex-row flex-col gap-y-[10px] ">
-                <div ref={chainsSelectedRef} className="flex min-w-0 w-full items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
+            <div className="w-full flex flex-row items-center gap-x-[15px] relative z-10">
+                <div ref={chainsSelectedRef} className="flex flex-1 min-w-0 items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div ref={chainsTextRef} className="text-xs md:text-sm shrink-0">{isMobile ? "Chains" : "Chains Selected"}</div>
-                    <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full ">
-                    {filteredSortedChains.map((chain, i) => {
-                        const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
-                        return (
-                            <GTPButton
-                                key={chain + i}
-                                label={AllChainsByKeys[chain]?.name_short}
-                                leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
-                                leftIconStyle={{ color: chainColor }}
-                                visualState={deselectedChains.includes(chain) ? "default" : "active"}
-                                className="z-40"
-                                labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
-                                size={isMobile ? "sm" : "md"}
-                                clickHandler={() => {
-                                    setDeselectedChains((prev) => {
-                                        const next = new Set(prev);
-                                        if (next.has(chain)) {
-                                            next.delete(chain);
-                                        } else {
-                                            const totalChains = (data.chains_by_size ?? []).filter((c) => AllChainsByKeys[c]).length;
-                                            if (totalChains - next.size <= 1) return prev;
-                                            next.add(chain);
-                                        }
-                                        return Array.from(next);
-                                    });
-                                }}
-                            />
-                        )
-                    })}
-                    </div>
+                    <HorizontalScrollContainer
+                        includeMargin={false}
+                        hideScrollbar={true}
+                        hideGradientOverlays={true}
+                        enableDragScroll={true}
+                    >
+                        <div className="flex flex-nowrap items-center gap-x-[2px]">
+                            <div className="flex shrink-0 items-center gap-x-[2px] border-color-bg-default border rounded-full">
+                            {filteredSortedChains.map((chain, i) => {
+                                const chainColor = AllChainsByKeys[chain]?.colors?.[theme ?? "dark"]?.[0];
+                                return (
+                                    <GTPButton
+                                        key={chain + i}
+                                        label={AllChainsByKeys[chain]?.name_short}
+                                        leftIcon={`gtp:${AllChainsByKeys[chain]?.urlKey}-logo-monochrome` as GTPIconName}
+                                        leftIconStyle={{ color: chainColor }}
+                                        visualState={deselectedChains.includes(chain) ? "default" : "active"}
+                                        className="z-40"
+                                        labelDisplay={i < dynamicLabelCount ? "always" : "hover"}
+                                        size={"md"}
+                                        clickHandler={() => {
+                                            setDeselectedChains((prev) => {
+                                                const next = new Set(prev);
+                                                if (next.has(chain)) {
+                                                    next.delete(chain);
+                                                } else {
+                                                    if (filteredSortedChains.length - next.size <= 1) return prev;
+                                                    next.add(chain);
+                                                }
+                                                return Array.from(next);
+                                            });
+                                        }}
+                                    />
+                                )
+                            })}
+                            </div>
+                            <div className="shrink-0" style={{ width: adaptiveSpacerWidth }} aria-hidden="true" />
+                        </div>
+                    </HorizontalScrollContainer>
                 </div>
-                <div ref={compareDropdownRef} className="relative lg:min-w-[230px] lg:max-w-[261px] w-full">
+                <div ref={compareDropdownRef} className="relative shrink-0 lg:min-w-[230px] lg:max-w-[261px]">
                     {/* Compare pill button — relative + z-20 so it sits above the dropdown */}
 
                     {comparePill}
@@ -637,6 +664,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                                                     </div>
                                                 );
                                             })}
+                                            {compareAppKeys.length > 2 && (
+                                                <div
+                                                    className="flex items-center gap-x-[8px] px-[8px] py-[5px] rounded-full cursor-pointer hover:bg-color-bg-medium transition-colors w-full min-w-0"
+                                                    onClick={() => setCompareAppKeys([])}
+                                                >
+                                                    <GTPIcon icon="gtp-checkmark-unchecked-monochrome" className="!size-[16px] shrink-0 " containerClassName="!size-[16px] shrink-0 flex items-center justify-center" />
+                                                    <span className="truncate flex-1 min-w-0">Deselect All</span>
+                                                </div>
+                                            )}
                                             {compareAppKeys.length > 0 && compareSearchResults.length > 0 && (
                                                 <div className="my-[6px] border-t border-color-bg-medium" />
                                             )}
@@ -733,6 +769,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 {Object.keys(data.metrics ?? {})
                     .filter((metric) => master?.app_metrics?.[metric])
                     .filter((metric) => hasMetricDataForInterval[metric])
+                    .filter((metric) => !onlyStarknet || metric !== "success_rate")
                     .map((metric, index) => (
                     <AppMetricChart key={metric} data={data} owner_project={owner_project} projectMetadata={projectMetadata} metric={metric} metric_data={master?.app_metrics?.[metric] as MetricInfo} timeInterval={timeInterval} selectedTotal={effectiveSelectedTotal} deselectedChains={deselectedChains} setDeselectedChains={setDeselectedChains} compareApps={compareAppsForChart} syncId="app-metrics" index={index} xMin={timespans[selectedTimespan]?.value === 0 ? globalXMin : undefined} highlightMetric={highlightMetric} onHighlightConsumed={onHighlightConsumed}/>
                 ))}

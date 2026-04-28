@@ -1216,7 +1216,7 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
-              
+              fillWidth
             />
             <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}

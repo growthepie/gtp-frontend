@@ -13,7 +13,7 @@ import {
 } from "react-jsx-highcharts";
 import { useTheme } from "next-themes";
 import { l2_data } from "@/types/api/EconomicsResponse";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
@@ -35,6 +35,9 @@ import {
 } from "@/components/layout/TopRow";
 import Container from "../Container";
 import { Carousel } from "@/components/Carousel";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 
 
 const COLORS = {
@@ -94,6 +97,7 @@ export default function EconHeadCharts({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
   const isMobile = useUIContext((state) => state.isMobile);
+  const rowBreakpoint = useMediaQuery("(max-width: 1024px)");
   const selectedScale: string = "absolute";
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -103,6 +107,7 @@ export default function EconHeadCharts({
 
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const isSafariBrowser = useUIContext((state) => state.isSafariBrowser);
+  const resolution = isMonthly ? "monthly" : "daily";
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
@@ -152,7 +157,6 @@ export default function EconHeadCharts({
         day: "numeric",
         year: "numeric",
       });
-      const chartTitle = this.series.chart.title.textStr;
 
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
@@ -345,11 +349,11 @@ export default function EconHeadCharts({
     Object.keys(data).map((key, i) => {
       if (
         i === 0 ||
-        data[key].daily.data[data[key].daily.data.length - 1][unixIndex] <
+        data[key][resolution].data[data[key][resolution].data.length - 1][unixIndex] <
         smallestUnixTimestamp
       ) {
         smallestUnixTimestamp =
-          data[key].daily.data[data[key].daily.data.length - 1][unixIndex];
+          data[key][resolution].data[data[key][resolution].data.length - 1][unixIndex];
         lastIndexKey = key;
       }
     });
@@ -364,9 +368,9 @@ export default function EconHeadCharts({
     Object.keys(data).map((key, i) => {
       if (
         i === 0 ||
-        data[key].daily.data[0][unixIndex] < largestUnixTimestamp
+        data[key][resolution].data[0][unixIndex] < largestUnixTimestamp
       ) {
-        largestUnixTimestamp = data[key].daily.data[0][unixIndex];
+        largestUnixTimestamp = data[key][resolution].data[0][unixIndex];
         firstIndexKey = key;
       }
     });
@@ -378,8 +382,8 @@ export default function EconHeadCharts({
     let sum = 0;
     Object.keys(data).map((key) => {
       sum +=
-        data[key].daily.data[data[key].daily.data.length - 1][
-        data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
+        data[key][resolution].data[data[key][resolution].data.length - 1][
+        data[key][resolution].types.indexOf(showUsd ? "usd" : "eth")
         ];
     });
 
@@ -394,11 +398,11 @@ export default function EconHeadCharts({
       // chart_data.metrics[key]
       if (key === "costs") {
         Object.keys(chart_data.metrics[key]).map((cost_key) => {
-          chart_data.metrics[key][cost_key].daily.data.map((data) => {
-            const min = chart_data.metrics[key][cost_key].daily.data[0][0];
+          chart_data.metrics[key][cost_key][resolution].data.map((data) => {
+            const min = chart_data.metrics[key][cost_key][resolution].data[0][0];
             const max =
-              chart_data.metrics[key][cost_key].daily.data[
-              chart_data.metrics[key][cost_key].daily.data.length - 1
+              chart_data.metrics[key][cost_key][resolution].data[
+              chart_data.metrics[key][cost_key][resolution].data.length - 1
               ][0];
 
             xMin = Math.min(min, xMin);
@@ -406,10 +410,10 @@ export default function EconHeadCharts({
           });
         });
       } else {
-        const min = chart_data.metrics[key].daily.data[0][0];
+        const min = chart_data.metrics[key][resolution].data[0][0];
         const max =
-          chart_data.metrics[key].daily.data[
-          chart_data.metrics[key].daily.data.length - 1
+          chart_data.metrics[key][resolution].data[
+          chart_data.metrics[key][resolution].data.length - 1
           ][0];
 
         xMin = Math.min(min, xMin);
@@ -418,7 +422,7 @@ export default function EconHeadCharts({
     });
 
     return { xMin, xMax };
-  }, [chart_data]);
+  }, [chart_data, resolution]);
 
   const timespans = useMemo(() => {
     let xMin = dataTimestampExtremes.xMin;
@@ -499,11 +503,11 @@ export default function EconHeadCharts({
   return (
     <>
       <Container className="">
-        <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full ">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
-            <TopRowChild
+        <GTPButtonContainer>
+          <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>            
+            <GTPButton
               isSelected={!isMonthly}
-              onClick={() => {
+              clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
                 if (!isTransferrableTimespan) {
@@ -511,20 +515,12 @@ export default function EconHeadCharts({
                 }
                 setIsMonthly(false);
               }}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
 
-              style={{
-                paddingTop: "10.5px",
-                paddingBottom: "10.5px",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-              }}
-            >
-              {"Daily"}
-            </TopRowChild>
-            <TopRowChild
+              label="Daily"
+            />
+            <GTPButton
               isSelected={isMonthly}
-              onClick={() => {
+              clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
                 if (!isTransferrableTimespan) {
@@ -532,51 +528,35 @@ export default function EconHeadCharts({
                 }
                 setIsMonthly(true);
               }}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-
-              style={{
-                paddingTop: "10.5px",
-                paddingBottom: "10.5px",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-              }}
-            >
-              {"Monthly"}
-            </TopRowChild>
-          </TopRowParent>
-          <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-          </div>
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px] ">
+              label="Monthly"
+            />
+          </GTPButtonRow>
+          <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>
+            
             {Object.keys(timespans).map((key) => {
+              console.log(key);
               {
                 return (
-                  <TopRowChild
-                    className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-
-                    onClick={() => {
+                  <GTPButton
+                    clickHandler={() => {
                       setSelectedTimespan(key);
                     }}
                     key={key}
-                    style={{
-                      paddingTop: "10.5px",
-                      paddingBottom: "10.5px",
-                      paddingLeft: "16px",
-                      paddingRight: "16px",
-                    }}
+                    
                     isSelected={selectedTimespan === key}
-                  >
-                    {selectedTimespan === key
+                  
+                    label={selectedTimespan === key
                       ? timespans[key].label
                       : timespans[key].shortLabel}
-                  </TopRowChild>
+                  />
                 );
               }
             })}
-          </TopRowParent>
-        </TopRowContainer>
+          </GTPButtonRow>
+        </GTPButtonContainer>
       </Container>
-      <div className={`transition-height duration-500 relative overflow-visible ${selectedTimespan === "1d" ? "h-[0px]" : "h-[calc(197px)]"}`}>
+      {selectedTimespan !== "1d" && (
+      <div className={`transition-height duration-500 relative overflow-visible h-[calc(197px)]`}>
         <Carousel
           ariaId="economics-traction-title"
           heightClass="h-[calc(197px)]" // height of the slides + height of the dots + distance from the slides to the dots
@@ -595,13 +575,13 @@ export default function EconHeadCharts({
               const link = key !== "costs" ? urls[key] : undefined;
 
               const lastIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.data.length - 1
+                ? chart_data.metrics[key][resolution].data.length - 1
                 : 0;
               const unixIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.types.indexOf("unix")
+                ? chart_data.metrics[key][resolution].types.indexOf("unix")
                 : 0;
               const dataIndex = !isMultipleSeries
-                ? chart_data.metrics[key].daily.types.indexOf(
+                ? chart_data.metrics[key][resolution].types.indexOf(
                   showUsd ? "usd" : "eth",
                 )
                 : 0;
@@ -652,7 +632,7 @@ export default function EconHeadCharts({
                         maximumFractionDigits: 2,
                         minimumFractionDigits: 2,
                       }).format(
-                        chart_data.metrics[key].daily.data[lastIndex][
+                        chart_data.metrics[key][resolution].data[lastIndex][
                         dataIndex
                         ],
                       )
@@ -697,7 +677,7 @@ export default function EconHeadCharts({
                     <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
                       {!isMultipleSeries
                         ? new Date(
-                          chart_data.metrics[key].daily.data[lastIndex][
+                          chart_data.metrics[key][resolution].data[lastIndex][
                           unixIndex
                           ],
                         ).toLocaleDateString("en-GB", {
@@ -709,8 +689,8 @@ export default function EconHeadCharts({
                         : new Date(
                           chart_data.metrics[key][
                             lastMultiIndex
-                          ].daily.data[
-                          chart_data.metrics[key][lastMultiIndex].daily
+                          ][resolution].data[
+                          chart_data.metrics[key][lastMultiIndex][resolution]
                             .data.length - 1
                           ][unixIndex],
                         ).toLocaleDateString("en-GB", {
@@ -1024,8 +1004,8 @@ export default function EconHeadCharts({
                           ordinal={false}
                           minorTicks={false}
                           minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                          min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-                          max={timespans[selectedTimespan].xMax}
+                          min={(timespans[selectedTimespan].xMin ?? dataTimestampExtremes.xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+                          max={timespans[selectedTimespan].xMax ?? dataTimestampExtremes.xMax}
                         ></XAxis>
 
                         <YAxis
@@ -1063,13 +1043,13 @@ export default function EconHeadCharts({
                               name={chart_data.metrics[key].metric_name}
                               showInLegend={false}
                               lineWidth={1.5}
-                              data={chart_data.metrics[key].daily.data.map(
+                              data={chart_data.metrics[key][resolution].data.map(
                                 (d: any) => [
                                   d[0],
                                   d[
                                   chart_data.metrics[
                                     key
-                                  ].daily.types.indexOf(
+                                  ][resolution].types.indexOf(
                                     showUsd ? "usd" : "eth",
                                   )
                                   ],
@@ -1110,12 +1090,12 @@ export default function EconHeadCharts({
                                       showInLegend={false}
                                       data={chart_data.metrics[key][
                                         costKey
-                                      ].daily.data.map((d: any) => [
+                                      ][resolution].data.map((d: any) => [
                                         d[0],
                                         d[
                                         chart_data.metrics[key][
                                           costKey
-                                        ].daily.types.indexOf(
+                                        ][resolution].types.indexOf(
                                           showUsd ? "usd" : "eth",
                                         )
                                         ],
@@ -1206,6 +1186,7 @@ export default function EconHeadCharts({
             })}
         </Carousel>
       </div>
+      )}
     </>
   );
 }

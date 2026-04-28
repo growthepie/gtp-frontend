@@ -619,8 +619,8 @@ function BreakdownCharts({
               area: {
                 lineWidth: 1.5,
                 dataGrouping: {
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 },
 
                 // marker: {
@@ -757,8 +757,8 @@ function BreakdownCharts({
               //         (timespans[selectedTimespan].value - 1)
               //     : undefined
               // }
-              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-              max={timespans[selectedTimespan].xMax}
+              min={(timespans[selectedTimespan].xMin ?? timespans["max"].xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax ?? timespans["max"].xMax}
               panningEnabled={true}
             ></XAxis>
             <YAxis
@@ -828,8 +828,8 @@ function BreakdownCharts({
                   d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
                 dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 }}
                 lineWidth={1.5}
                 fillColor={{
@@ -859,8 +859,8 @@ function BreakdownCharts({
                   d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
                 dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                  enabled: !isMonthly,
+                  units: [["day", [1]]],
                 }}
                 lineWidth={1.5}
                 fillColor={{
@@ -1092,8 +1092,8 @@ function BreakdownCharts({
               //         (timespans[selectedTimespan].value - 1)
               //     : undefined
               // }
-              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
-              max={timespans[selectedTimespan].xMax}
+              min={(timespans[selectedTimespan].xMin ?? timespans["max"].xMin) + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax ?? timespans["max"].xMax}
               panningEnabled={true}
             >
               <XAxis.Title></XAxis.Title>

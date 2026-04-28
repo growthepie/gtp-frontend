@@ -55,7 +55,7 @@ const ethSupply: QuickBiteData = createQuickBite({
             yIndex: 1,
             suffix: " ETH",
             tooltipDecimals: 0,
-            url: "https://api.growthepie.xyz/v1/eim/eth_supply.json",
+            url: "https://api.growthepie.com/v1/eim/eth_supply.json",
             pathToData: "data.chart.eth_supply.daily.data",
           },
           {
@@ -68,7 +68,7 @@ const ethSupply: QuickBiteData = createQuickBite({
             yIndex: 1,
             suffix: "%",
             tooltipDecimals: 2,
-            url: "https://api.growthepie.xyz/v1/eim/eth_supply.json",
+            url: "https://api.growthepie.com/v1/eim/eth_supply.json",
             pathToData: "data.chart.eth_issuance_rate.daily.data",
             yMultiplication: 100,
           }

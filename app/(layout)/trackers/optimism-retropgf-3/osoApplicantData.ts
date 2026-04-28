@@ -247,7 +247,7 @@ export const OsoApplicantData: OsoApplicantData[] = [
       "Project Name": "growthepie",
       "Applicant Type": "PROJECT",
       "Bio": "Layer 2 Analytics & Knowledge Platform. Metrics, Blockspace, Labeling and APIs.",
-      "Website": "https://growthepie.xyz",
+      "Website": "https://growthepie.com",
       "Date": 1696931229,
       "Attester Address": "0x9438b8B447179740cD97869997a2FCc9b4AA63a2",
       "Payout Address": "0x700E73d289DE10b6143465E02E6931E6e6a0CA15",
@@ -261,7 +261,7 @@ export const OsoApplicantData: OsoApplicantData[] = [
       ],
       "Contributions: Contracts": [],
       "Contributions: Other": [
-          "https://growthepie.xyz",
+          "https://growthepie.com",
           "https://mirror.xyz/blog.growthepie.eth",
           "https://twitter.com/growthepie_eth",
           "https://twitter.com/growthepie_eth/status/1699418958007329183"
@@ -9620,12 +9620,12 @@ export const OsoApplicantData: OsoApplicantData[] = [
           "https://lnrz.xyz/",
           "https://twitter.com/decentxyz/status/1711106152132415943"
       ],
-      "Impact Description": "Decent has the most active NFT contract ever on Optimism (as seen here: https://www.growthepie.xyz/blockspace/category-comparison). Thousands of creators, including members of the Optimism Collective, have deployed NFTs through us while over 1 million unique wallets have collected/ minted NFTs through Decent as well. We have made it simple and easy to do so, and are heavily responsible for providing activity in the Optimism NFT ecosystem. We also helped grow the Optimism brand by doing commemorative NFT releases with Optimism, Worldcoin, Conduit, and others that did over 20 million mints combined. ",
+      "Impact Description": "Decent has the most active NFT contract ever on Optimism (as seen here: https://www.growthepie.com/blockspace/category-comparison). Thousands of creators, including members of the Optimism Collective, have deployed NFTs through us while over 1 million unique wallets have collected/ minted NFTs through Decent as well. We have made it simple and easy to do so, and are heavily responsible for providing activity in the Optimism NFT ecosystem. We also helped grow the Optimism brand by doing commemorative NFT releases with Optimism, Worldcoin, Conduit, and others that did over 20 million mints combined. ",
       "Impact Metrics": [
           "https://hq.decent.xyz/10/Editions/0xcBA5609AB435969dEF6Ab164c4C0A4165E805783",
           "https://optimistic.etherscan.io/address/0x6a886C76693Ed6f4319a289e3FE2e670b803a2Da",
-          "https://www.growthepie.xyz/blockspace/category-comparison",
-          "https://www.growthepie.xyz/blockspace/category-comparison"
+          "https://www.growthepie.com/blockspace/category-comparison",
+          "https://www.growthepie.com/blockspace/category-comparison"
       ],
       "Funding Sources": [
           "REVENUE"

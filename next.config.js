@@ -1,5 +1,59 @@
 // import million from "million/compiler";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const createContentSecurityPolicy = ({ allowEmbedding = false } = {}) =>
+  [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    `frame-ancestors ${allowEmbedding ? "*" : "'self'"}`,
+    "object-src 'none'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https: ws: wss:",
+    "frame-src 'self' https:",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+  ].join("; ");
+
+const createSecurityHeaders = ({ allowEmbedding = false } = {}) => [
+  {
+    key: "Content-Security-Policy",
+    value: createContentSecurityPolicy({ allowEmbedding }),
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  ...(allowEmbedding
+    ? []
+    : [
+        {
+          key: "X-Frame-Options",
+          value: "SAMEORIGIN",
+        },
+      ]),
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+  ...(isProduction
+    ? [
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=63072000; includeSubDomains; preload",
+        },
+      ]
+    : []),
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
@@ -18,7 +72,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "fees.growthepie.xyz",
+              value: "fees.growthepie.com",
             },
           ],
           destination: "/fees",
@@ -38,7 +92,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.fees.growthepie.xyz",
+              value: "dev.fees.growthepie.com",
             },
           ],
           destination: "/fees",
@@ -58,7 +112,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "labels.growthepie.xyz",
+              value: "labels.growthepie.com",
             },
           ],
           destination: "/labels",
@@ -78,7 +132,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.labels.growthepie.xyz",
+              value: "dev.labels.growthepie.com",
             },
           ],
           destination: "/labels",
@@ -98,7 +152,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "icons.growthepie.xyz",
+              value: "icons.growthepie.com",
             },
           ],
           destination: "/icons",
@@ -118,7 +172,7 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "dev.icons.growthepie.xyz",
+              value: "dev.icons.growthepie.com",
             },
           ],
           destination: "/icons",
@@ -141,6 +195,11 @@ const nextConfig = {
     const isDevelopment = process.env.NODE_ENV === 'development';
     
     return [
+      {
+        source: "/new-apps/:slug",
+        destination: "/applications/:slug",
+        permanent: true,
+      },
       {
         source: "/quick-bites/eip8004",
         destination: "/quick-bites/eip-8004",
@@ -227,6 +286,15 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Public embed routes must remain frameable on third-party sites.
+        source: "/embed/:path*",
+        headers: createSecurityHeaders({ allowEmbedding: true }),
+      },
+      {
+        source: "/((?!embed(?:/|$)).*)",
+        headers: createSecurityHeaders(),
+      },
+      {
         // All build assets (JS, CSS, fonts, images in /_next/static)
         source: "/_next/static/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],
@@ -265,7 +333,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api.growthepie.xyz",
+        hostname: "api.growthepie.com",
       },
       {
         protocol: "https",

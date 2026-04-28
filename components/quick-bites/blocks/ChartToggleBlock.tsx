@@ -97,12 +97,14 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
       : 'bg-color-bg-default rounded-2xl md:rounded-full p-1'
     : '';
 
+  const { sideChart: rawSideChart, ...mainChartProps } = (selectedChart ?? {}) as ChartBlockType & { sideChart?: ChartBlockType };
+
   const chartForRender: ChartBlockType | undefined = selectedChart
     ? {
-        ...selectedChart,
+        ...mainChartProps,
         suppressWrapperSpacing: true,
         className: [
-          selectedChart.className,
+          mainChartProps.className,
           isChainQuickBitesTabRightFlush ? CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS : null,
           isChainQuickBitesTabLeftFlush ? CHAIN_QUICK_BITES_TAB_LEFT_FLUSH_CLASS : null,
         ]
@@ -110,6 +112,11 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
           .join(" "),
       }
     : undefined;
+
+  const sideChartForRender: ChartBlockType | undefined = rawSideChart
+    ? { ...rawSideChart, suppressWrapperSpacing: true }
+    : undefined;
+
   const chainQuickBitesTopBar = showControls && isChainQuickBitesTabBlock ? (
     <div ref={optionsContainerRef}>
       <GTPButtonRow wrap className="!w-auto">
@@ -146,6 +153,29 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
   };
 
   const wrapperClassName = `${isChainQuickBitesTabBlock ? '' : 'my-8'} ${block.className || ''}`.trim();
+
+  const renderMainChart = (extraProps?: { topBar?: React.ReactNode; titleSuffix?: string }) => {
+    if (!chartForRender) return null;
+    const mainChart = (
+      <ChartBlock
+        key={chartForRender.id}
+        block={chartForRender}
+        chainQuickBitesTopBar={extraProps?.topBar}
+        chainQuickBitesTitleSuffix={extraProps?.titleSuffix}
+      />
+    );
+
+    if (sideChartForRender) {
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] items-start gap-[15px]">
+          <ChartBlock key={sideChartForRender.id} block={sideChartForRender} />
+          {mainChart}
+        </div>
+      );
+    }
+
+    return mainChart;
+  };
 
   return (
     <div className={wrapperClassName}>
@@ -189,26 +219,13 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
         ? showExternalControls
           ? (
             <div className="mt-[15px]">
-              <ChartBlock
-                key={chartForRender.id}
-                block={chartForRender}
-                chainQuickBitesTopBar={chainQuickBitesTopBar}
-                chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix}
-              />
+              {renderMainChart({ topBar: chainQuickBitesTopBar, titleSuffix: chainQuickBitesTitleSuffix })}
             </div>
           )
-          : (
-            <ChartBlock
-              key={chartForRender.id}
-              block={chartForRender}
-              chainQuickBitesTopBar={chainQuickBitesTopBar}
-              chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix}
-            />
-          )
+          : renderMainChart({ topBar: chainQuickBitesTopBar, titleSuffix: chainQuickBitesTitleSuffix })
         : null}
     </div>
   );
 };
 
 export default ChartToggleBlock;
-

@@ -11,6 +11,8 @@ import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { useMediaQuery } from "usehooks-ts";
 import { StreaksData } from "@/types/api/ChainOverviewResponse";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { GrayOverlay } from "@/components/layout/Backgrounds";
 
 // Helper hook to get CSS variable colors for ECharts (which renders to canvas and can't read CSS vars)
 const useCssColors = () => {
@@ -291,6 +293,16 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const isMobile = useMediaQuery("(max-width: 768px)");
     const cssColors = useCssColors();
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!selectedKey) return;
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setSelectedKey(null);
+        };
+        document.addEventListener("keydown", handler);
+        return () => document.removeEventListener("keydown", handler);
+    }, [selectedKey]);
 
     const transparentChartOptions = (progressValue: number, chartSize: number = 74): EChartsOption => {
         const remainingValue = 100 - progressValue;
@@ -512,7 +524,12 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
 
                     return (
                         <div className="flex flex-col flex-1 xs:flex-none items-center overflow-visible" key={key + "lifetime"}>
-                            <div className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible ">
+                            <div
+                                className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible cursor-pointer"
+                                onClick={() => setSelectedKey(key)}
+                                role="button"
+                                aria-label={`Enlarge ${master.metrics[key].name} achievement`}
+                            >
                                 <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                     <ReactECharts
                                         option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 80)}
@@ -575,6 +592,76 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                 })}
             </div>
 
+            {selectedKey && typeof document !== "undefined" && createPortal(
+                (() => {
+                    const key = selectedKey;
+                    const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
+                    const prefix = master.metrics[key].units[valueType].prefix;
+                    const suffix = master.metrics[key].units[valueType].suffix;
+                    const entry = data.lifetime[key][valueType];
+                    const formattedValue = `${prefix || ""}${formatNumber(entry.total_value, 2)}${suffix || ""}`;
+                    const tooltipText = buildLifetimeTooltipText(key, master.chains[chainKey].name, master.metrics[key].name, formattedValue);
+                    const chartSize = 280;
+                    const innerSize = 238;
+
+                    return (
+                        <>
+                            <GrayOverlay onClick={() => setSelectedKey(null)} zIndex={1100} />
+                            <div
+                                className="fixed inset-0 flex items-center justify-center z-[1101] pointer-events-none p-[15px]"
+                                onClick={() => setSelectedKey(null)}
+                            >
+                                <div
+                                    role="dialog"
+                                    aria-modal="true"
+                                    className="pointer-events-auto max-w-[380px] w-[calc(100vw-30px)] rounded-[15px] bg-color-bg-default shadow-standard px-[25px] py-[25px] flex flex-col items-center gap-y-[15px]"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="relative flex items-center justify-center overflow-visible" style={{ width: chartSize, height: chartSize }}>
+                                        <div className="absolute inset-0 flex items-center justify-center z-20 overflow-visible">
+                                            <ReactECharts
+                                                option={getChartOptions(entry.percent_to_next_level, chartSize)}
+                                                style={{ width: chartSize, height: chartSize, overflow: 'visible' }}
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                                            <ReactECharts
+                                                option={transparentChartOptions(entry.percent_to_next_level, innerSize)}
+                                                style={{ width: innerSize, height: innerSize }}
+                                            />
+                                        </div>
+                                        <div className="absolute -top-[10px] -left-[20px] w-[100px] h-[100px] flex flex-col justify-center items-center bg-color-bg-medium rounded-full z-30">
+                                            <div className="text-xs">Level</div>
+                                            <div className="numbers-2xl -mt-[4px]">{entry.level}</div>
+                                        </div>
+                                        <div className="absolute flex flex-col gap-y-[6px] justify-center items-center right-0 left-0 top-[38%] z-[10]">
+                                            <div className="numbers-2xl">{prefix}{formatNumber(entry.total_value)}{suffix}</div>
+                                            <div className="flex gap-x-[4px] h-fit items-center text-color-text-secondary">
+                                                <div className="numbers-md">{Math.round(entry.percent_to_next_level)}%</div>
+                                                <div className="text-xs">to</div>
+                                                <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full bg-color-bg-medium numbers-md text-color-text-primary">
+                                                    {entry.level + 1}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-x-[6px] pt-[5px]">
+                                        <GTPIcon
+                                            icon={`gtp-${master.metrics[key].icon.replace(/^(metrics-)(.*)/, (match, iconPrefix, rest) => iconPrefix + rest.replace(/-/g, ''))}` as GTPIconName}
+                                            size="md"
+                                        />
+                                        <div className="heading-large-md">{master.metrics[key].name}</div>
+                                    </div>
+                                    <div className="text-xs text-color-text-secondary text-center leading-[16px]">
+                                        {tooltipText}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    );
+                })(),
+                document.body
+            )}
         </div>
     )
 }

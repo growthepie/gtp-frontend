@@ -21,6 +21,8 @@ import celoAnniversaryReport from './qb-celo-anniversary-report';
 import polygonBurn from './qb-polygon-burn';
 import EigenDAMegaETH from './qb-eigenda-megaeth';
 import txCostsVsActivity from './qb-txcosts-vs-activity';
+import CompilerTvs from './qb-compiler-tvs';
+import CompilerFlow from './qb-compiler-flow';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -44,6 +46,8 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "eigenda-megaeth": EigenDAMegaETH,
   "stablecoins-for-fiat": StablecoinFiat,
   "tx-costs-vs-activity": txCostsVsActivity,
+  "compiler-tvs": CompilerTvs,
+  "compiler-flow": CompilerFlow,
 };
 
 export default QUICK_BITES_DATA;

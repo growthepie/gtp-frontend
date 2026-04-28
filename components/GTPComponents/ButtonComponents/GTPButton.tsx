@@ -10,6 +10,8 @@ export type GTPButtonSize = "xs" | "sm" | "md" | "lg";
 type GTPButtonIconVariant = "none" | "left" | "right" | "both" | "alone";
 
 export interface GTPButtonProps {
+  /** Custom content; when set, it replaces the `label` slot (icons still render as configured). */
+  children?: React.ReactNode;
   label?: string;
   labelDisplay?: "always" | "active" | "hover";
   rightIcon?: GTPIconName;
@@ -153,6 +155,7 @@ const getFillClassName = (variant: GTPButtonVariant, state: GTPButtonState) => {
 };
 
 export const GTPButton = ({
+  children,
   label,
   labelDisplay = "always",
   rightIcon,
@@ -192,22 +195,24 @@ export const GTPButton = ({
   }
   const animatedRightIconValue = rightIcon ?? lastRightIcon;
 
-  const hasLabel = Boolean(label);
+  const hasStringLabel = Boolean(label);
+  const hasCustomContent = Boolean(children);
   const resolvedVariant = variant ?? (gradientOutline ? "highlight" : "primary");
   const resolvedState: GTPButtonState = disabled
     ? "disabled"
     : visualState ?? (isSelected ? "active" : "default");
 
   // "active" and "hover" modes both animate the label in/out
-  const isAnimatedLabelMode = hasLabel && (labelDisplay === "active" || labelDisplay === "hover");
-  const shouldShowLabel = hasLabel && (
+  const isAnimatedLabelMode = hasStringLabel && (labelDisplay === "active" || labelDisplay === "hover");
+  const shouldShowLabel = hasStringLabel && (
     labelDisplay === "always" ||
     (labelDisplay === "active" && resolvedState === "active") ||
     // Also respect forced hover visual state so controlled components work
     (labelDisplay === "hover" && (isHovered || resolvedState === "hover"))
   );
+  const showTextContent = hasCustomContent || shouldShowLabel;
   const iconVariant = resolveIconVariant({
-    hasLabel: shouldShowLabel,
+    hasLabel: showTextContent,
     hasLeftIcon: Boolean(leftIcon) || Boolean(leftIconOverride),
     hasRightIcon: Boolean(rightIcon) || Boolean(rightIconOverride) || (animateRightIcon && Boolean(animatedRightIconValue)),
   });
@@ -238,13 +243,13 @@ export const GTPButton = ({
   const iconSizeClassName = isResponsive
     ? RESPONSIVE_BUTTON_CLASSES.iconClassName
     : buttonSize!.iconClassName;
-  const gapClassName = isResponsive && shouldShowLabel
+  const gapClassName = isResponsive && showTextContent
     ? RESPONSIVE_BUTTON_CLASSES.gapClassName
     : "";
   const paddingClassName = isResponsive
     ? RESPONSIVE_BUTTON_CLASSES.paddingByIconVariant[iconVariant]
     : "";
-  const buttonGapStyle = !isResponsive ? (shouldShowLabel ? buttonSize!.gap : 0) : undefined;
+  const buttonGapStyle = !isResponsive ? (showTextContent ? buttonSize!.gap : 0) : undefined;
   const buttonPaddingStyle = !isResponsive
     ? buttonSize!.paddingByIconVariant[iconVariant]
     : undefined;
@@ -300,7 +305,12 @@ export const GTPButton = ({
           {leftIconOverride}
           </>
         )}
-        {hasLabel && (
+        {hasCustomContent && (
+          <span className={`${textClassName} ${buttonTextClassName}`}>
+            {children}
+          </span>
+        )}
+        {!hasCustomContent && hasStringLabel && (
           <GTPButtonAnimatedLabel
             label={label ?? ""}
             textClassName={textClassName}
@@ -476,10 +486,9 @@ const GTPButtonAnimatedLabel = ({
       style={{
         display: "grid",
         gridTemplateColumns: show ? "1fr" : "0fr",
-        gridTemplateRows: show ? "1fr" : "0fr",
         overflow: "hidden",
         opacity: show ? 1 : 0,
-        transition: "grid-template-columns 200ms ease-out, grid-template-rows 200ms ease-out, opacity 200ms ease-out",
+        transition: "grid-template-columns 200ms ease-out, opacity 200ms ease-out",
       }}
       aria-hidden={!show}
     >

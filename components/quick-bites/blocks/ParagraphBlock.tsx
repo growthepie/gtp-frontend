@@ -1,6 +1,9 @@
+'use client';
 // File: components/quick-dives/blocks/ParagraphBlock.tsx
 import React from 'react';
 import { ParagraphBlock as ParagraphBlockType } from '@/lib/types/blockTypes';
+import { useQuickBite } from '@/contexts/QuickBiteContext';
+import Mustache from 'mustache';
 
 interface ParagraphBlockProps {
   block: ParagraphBlockType;
@@ -28,7 +31,9 @@ const parseMarkdownLinksToHtml = (text: string): string => {
 };
 
 export const ParagraphBlock: React.FC<ParagraphBlockProps> = ({ block }) => {
-  const contentWithLinks = parseMarkdownLinksToHtml(block.content);
+  const { sharedState } = useQuickBite();
+  const resolved = block.content?.includes('{{') ? Mustache.render(block.content, sharedState) : block.content;
+  const contentWithLinks = parseMarkdownLinksToHtml(resolved);
   return (
     <div 
       className={`my-[15px] text-xs md:text-sm leading-[1.5] ${block.className || ''}`} 

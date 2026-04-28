@@ -23,7 +23,7 @@ import { useSort } from "@/app/(layout)/applications/_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
 import useDragScroll from "@/hooks/useDragScroll";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MetricInfo, ChainInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
@@ -568,7 +568,6 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   const { selectedTimespan } = useTimespan();
   const { sort } = useSort();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
@@ -596,7 +595,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   );
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
+    <Link href={`/applications/${application.owner_project}`}>
       <GridTableRow
         className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
         style={{

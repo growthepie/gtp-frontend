@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { ApplicationDetailsDataProvider } from "../_contexts/ApplicationDetailsDataContext";
 import { ChartSyncProvider } from "../_contexts/GTPChartSyncContext";
+import { TimespanProvider } from "../_contexts/TimespanContext";
 import { getPageMetadata } from "@/lib/metadata";
 import { getAllProjectsMetadata } from "@/lib/projects-metadata";
 import { serializeJsonLd } from "@/utils/json-ld";
@@ -190,11 +191,25 @@ export default async function Layout(
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(graph) }}
           />
         ))}
-        <ApplicationDetailsDataProvider owner_project={owner_project}>
-          <ChartSyncProvider>
-            {children}
-          </ChartSyncProvider>
-        </ApplicationDetailsDataProvider>
+        <TimespanProvider
+          timespans={{
+            "1d":   { shortLabel: "1d",   label: "1 day",    value: 1 },
+            "3d":   { shortLabel: "3d",   label: "3 days",   value: 3 },
+            "7d":   { shortLabel: "7d",   label: "7 days",   value: 7 },
+            "30d":  { shortLabel: "30d",  label: "30 days",  value: 30 },
+            "90d":  { shortLabel: "90d",  label: "90 days",  value: 90 },
+            "180d": { shortLabel: "180d", label: "180 days", value: 180 },
+            "365d": { shortLabel: "1y",   label: "1 year",   value: 365 },
+            max:    { shortLabel: "Max",  label: "Max",      value: 0 },
+          }}
+          defaultTimespan="90d"
+        >
+          <ApplicationDetailsDataProvider owner_project={owner_project}>
+            <ChartSyncProvider>
+              {children}
+            </ChartSyncProvider>
+          </ApplicationDetailsDataProvider>
+        </TimespanProvider>
     </>
   )
 }
