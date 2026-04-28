@@ -1214,6 +1214,7 @@ export default function GTPChart({
             stack: false,
             yAxisMin: secondaryYAxisMin,
             yAxisMaxOverride: secondaryYAxisMaxOverride,
+            ySplitNumber,
           })
         : null,
     [
@@ -1223,6 +1224,7 @@ export default function GTPChart({
       containerHeight,
       secondaryYAxisMin,
       secondaryYAxisMaxOverride,
+      ySplitNumber,
     ],
   );
 

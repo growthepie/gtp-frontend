@@ -70,7 +70,7 @@ const ChainSectionHead = ({
     const measureMultiline = () => {
       const titleElement = titleRef.current;
       if (!titleElement) {
-        setIsTitleMultiline(false);
+        setTitleIsMultilineMeasured(false);
         return;
       }
 

@@ -520,11 +520,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         data: [[row.txCostX, Math.round(row.metricY)]],
         prefix: "$",
         tooltipDecimals: 4,
-        ...(metricKey === "throughput"
-          ? { suffix: " gas/s", tooltipDecimals: 4 }
-          : metricKey === "tvl" || metricKey === "fees" || metricKey === "profit"
-            ? { tooltipDecimals: 4 }
-            : {}),
+        ...(metricKey === "throughput" ? { suffix: " gas/s" } : {}),
       }));
   };
 
