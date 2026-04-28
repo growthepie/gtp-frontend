@@ -1141,22 +1141,39 @@ export default function GTPChart({
   // Compute the actual rendered x-axis bounds before y-axis layout.
   const effectiveXBounds = useMemo(() => {
     if (xAxisType !== "time") return { min: xAxisMin, max: xAxisMax };
-    const allTs = pairedSeries.flatMap((s) =>
+    const dataTs = pairedSeries.flatMap((s) =>
       s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
     );
+    const lineTs = (xAxisLines ?? [])
+      .map((line) => Number(line.xValue))
+      .filter(Number.isFinite);
     const barData = pairedSeries
       .filter((s) => s.seriesType === "bar")
       .map((s) => s.pairedData);
     const layout = buildTimeXAxisLayout({
-      timestamps: allTs,
+      timestamps: [...dataTs, ...lineTs],
       barSeriesData: barData,
       xAxisMin,
       xAxisMax,
       grid: { left: 0, right: 0, top: 0, bottom: 0 },
       snapToCleanBoundary,
     });
-    return { min: layout.min, max: layout.max };
-  }, [pairedSeries, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
+    let min = layout.min;
+    let max = layout.max;
+    // A markLine drawn exactly on the right (or left) edge of the chart gets
+    // hidden behind the axis frame. When an annotation lands at-or-past the
+    // data extent, push the bound out by a small fraction of the visible range
+    // so the line and its label render inside the plot area.
+    if (lineTs.length > 0 && Number.isFinite(min) && Number.isFinite(max)) {
+      const range = Number(max) - Number(min);
+      const pad = range > 0 ? range * 0.01 : 0;
+      const maxLineTs = Math.max(...lineTs);
+      const minLineTs = Math.min(...lineTs);
+      if (maxLineTs >= Number(max)) max = maxLineTs + pad;
+      if (minLineTs <= Number(min)) min = minLineTs - pad;
+    }
+    return { min, max };
+  }, [pairedSeries, xAxisLines, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const primaryYAxisLayout = useMemo(
@@ -1287,9 +1304,12 @@ export default function GTPChart({
   // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
   const timeAxisLayout = useMemo(() => {
     if (xAxisType !== "time") return undefined;
-    const allTs = pairedSeries.flatMap((s) =>
+    const dataTs = pairedSeries.flatMap((s) =>
       s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
     );
+    const lineTs = (xAxisLines ?? [])
+      .map((line) => Number(line.xValue))
+      .filter(Number.isFinite);
     const barData = pairedSeries.filter((s) => s.seriesType === "bar").map((s) => s.pairedData);
     const g = {
       left: dynamicGridLeft,
@@ -1297,8 +1317,8 @@ export default function GTPChart({
       top: gridOverride?.top ?? DEFAULT_GRID.top,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
-    return buildTimeXAxisLayout({
-      timestamps: allTs,
+    const layout = buildTimeXAxisLayout({
+      timestamps: [...dataTs, ...lineTs],
       barSeriesData: barData,
       xAxisMin,
       xAxisMax,
@@ -1308,8 +1328,24 @@ export default function GTPChart({
       tickAlignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
       barEdgePaddingRatio: timeAxisBarEdgePaddingRatio,
     });
+    // A markLine drawn exactly on the chart's right (or left) edge is hidden
+    // behind the axis frame. When an annotation lands at-or-past the data
+    // extent, push the bound out by a small fraction of the visible range so
+    // the line and its label render inside the plot area.
+    if (lineTs.length > 0 && Number.isFinite(layout.min) && Number.isFinite(layout.max)) {
+      const range = Number(layout.max) - Number(layout.min);
+      const pad = range > 0 ? range * 0.01 : 0;
+      const maxLineTs = Math.max(...lineTs);
+      const minLineTs = Math.min(...lineTs);
+      let { min, max } = layout;
+      if (maxLineTs >= Number(max)) max = maxLineTs + pad;
+      if (minLineTs <= Number(min)) min = minLineTs - pad;
+      return { ...layout, min, max };
+    }
+    return layout;
   }, [
     pairedSeries,
+    xAxisLines,
     xAxisType,
     gridOverride,
     xAxisMin,

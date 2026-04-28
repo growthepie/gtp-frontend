@@ -91,7 +91,7 @@ const ProjectedScaling = [
       {
         xValue: 1806591485000,
         annotationPositionY: 10,
-        annotationPositionX: -49,
+        annotationPositionX: -110,
         annotationText: "100 TPS, Apr 2027",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -103,7 +103,7 @@ const ProjectedScaling = [
       {
         xValue: 1872341885000,
         annotationPositionY: 10,
-        annotationPositionX: -55,
+        annotationPositionX: -120,
         annotationText: "1,000 TPS, May 2029",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -115,7 +115,7 @@ const ProjectedScaling = [
       {
         xValue: 1938092285000,
         annotationPositionY: 10,
-        annotationPositionX: -56,
+        annotationPositionX: -125,
         annotationText: "10,000 TPS, Jun 2031",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -170,7 +170,7 @@ const L2Scaling = [
       {
         xValue: 1938092285000,
         annotationPositionY: 10,
-        annotationPositionX: -65,
+        annotationPositionX: -135,
         annotationText: "1 Million TPS, Jun 2031",
         lineStyle: "Dash",
         lineColor: "#19D9D6",

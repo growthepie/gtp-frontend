@@ -819,7 +819,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           lineStyle: mapLineStyle(line.lineStyle),
           lineColor: line.lineColor,
           lineWidth: line.lineWidth,
-          textColor: hasEqualTextAndBackground ? undefined : fallbackTextColor,
+          // When text and background match (would render an invisible pill),
+          // keep the requested text color and drop the background instead.
+          textColor: fallbackTextColor,
           textFontSize: line.textFontSize ? Number.parseFloat(line.textFontSize) : undefined,
           backgroundColor: hasEqualTextAndBackground ? "transparent" : fallbackBackgroundColor,
         };

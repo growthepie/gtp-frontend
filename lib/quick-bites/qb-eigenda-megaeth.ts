@@ -218,7 +218,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -230,7 +230,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -299,7 +299,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -311,7 +311,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -363,7 +363,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -375,7 +375,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
