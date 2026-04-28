@@ -198,7 +198,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                         containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                         style={{ color: AllChainsByKeys[contractMap.chain_key as string].colors[theme ?? "dark"][0] }}
                       />
-                      <span className="truncate text-xs">{contractMap.name as string}</span>
+                      <span className="truncate text-xs max-w-[165px]">{contractMap.name as string}</span>
                       <div className="flex items-center gap-x-[4px] shrink-0">
                         {contractMap.verified ? (
                           <GTPTooltipNew
