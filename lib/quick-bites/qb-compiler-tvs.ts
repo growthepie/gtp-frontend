@@ -421,7 +421,7 @@ export const faqItems: FaqItem[] = [
   },
   {
     q: "Where does the compiler and verification data come from?",
-    a: "Compiler attribution comes from two sources. The primary source is the [Open Labels Initiative](https://www.openlabelsinitiative.org/) label pool, a shared data lake where [Sourcify](https://sourcify.dev) has attested its verified smart contracts. We pull compiler and language labels directly from there.\n\nAs a fallback, we also analyze contract bytecode. Solidity and Vyper each produce identifiable patterns in the compiled output, so even when no source code has been submitted for verification, we can often still determine the language. This means a contract can appear without a source link but still be correctly attributed to Solidity or Vyper.",
+    a: "Compiler attribution comes from two sources. The primary source is the [Open Labels Initiative](https://www.openlabelsinitiative.org/) label pool, a shared data lake where [Sourcify](https://sourcify.dev) has attested its verified smart contracts. We pull compiler and language labels directly from there.\n\nAs a fallback, we also analyze contract bytecode. Solidity and Vyper each produce identifiable patterns in the compiled output, so even when no source code has been submitted for verification, we can often still determine the language by reading the CBOR metadata ([Solidity](https://docs.soliditylang.org/en/v0.8.34/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode), [Vyper](https://github.com/vyperlang/vyper/pull/2860)). This means a contract can appear without a source link but still be attributed to Solidity or Vyper.",
   },
   {
     q: "What about other chains?",
@@ -438,18 +438,15 @@ const CompilerTvs: QuickBiteData = {
   subtitle: "Analyzing the top 1,000 Ethereum contracts by Total Value Secured across smart contract languages and compiler versions.",
   content: [
     "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
-    "Most value on Ethereum is held by smart contracts, making it critical that the programming languages used to build them are safe and secure. Two languages dominate: Solidity, a statically typed language with syntax influenced by JavaScript and C++ and Vyper, a Pythonic language designed for simplicity and auditability. ",
-    "In this analysis, we use Sourcify-verified contracts to identify the programming language of each contract. Since not all contracts are verified, an additional “unknown” category is included. The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
-
+    "Most value on Ethereum is held by smart contracts, making it critical that the programming languages used to build them are safe and secure. Two languages dominate: Solidity, a statically typed language with syntax influenced by JavaScript and C++ and Vyper, a Pythonic language designed for simplicity and auditability. The detection of the languages was made possible by a simple heuristic analysis of bytecode patterns (more in the methodology section).",
+    "In this analysis, we use [Sourcify](https://sourcify.dev)-verified contracts to identify the programming language of each contract. For contracts that aren't verified on Sourcify, we try identifying the language through heuristics on the bytecode. Otherwise we mark the contract language as 'unknown'.",
+    "The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
     ...TvsCompilerLineChart,
 
     "## Top 1,000 Ethereum Contracts by TVS",
-    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through [Sourcify](https://sourcify.dev) show their compiler and version. Unknown contracts have no readable source code onchain.",
+    "The table below shows the latest snapshot of the top 1,000 Ethereum contracts ranked by TVS. Contracts verified through Sourcify show their compiler and version. Unknown contracts have no readable source code, therefor we also cannot infer the compiler via heuristics.",
 
     ...TopContractsTable,
-
-    "# How Sourcify Is Reducing the Unknown",
-    "Prior to the emergence of Sourcify, interpreting raw production bytecode was largely infeasible, limiting transparency into how smart contracts were implemented. Through systematic source code verification, Sourcify now enables visibility into more than 75% of the TVS in contracts. This significantly enhances transparency and introduces an additional layer of confidence and verifiability for users whose funds are held within these contracts.",
 
     "```container",
     JSON.stringify({
