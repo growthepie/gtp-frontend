@@ -487,6 +487,9 @@ export default function GTPUniversalChart({
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
   const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
+  // Tracks whether the most recent pointer interaction came from a touch/pen.
+  // Used by the tooltip positioner to lift the tooltip off the user's finger.
+  const isTouchInteractionRef = useRef(false);
   const hasAutoSelectedContextChainsRef = useRef(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
@@ -1174,10 +1177,26 @@ export default function GTPUniversalChart({
         contentWidth,
         contentHeight,
         hostRect: chartTooltipHostRef.current?.getBoundingClientRect(),
+        isTouch: isTouchInteractionRef.current,
       });
     },
     [],
   );
+
+  // Track whether the active pointer is a finger/pen so the tooltip can be
+  // lifted clear of the user's hand. Per-interaction (not per-device) so hybrid
+  // devices still get desktop-style placement when the user switches to a mouse.
+  useEffect(() => {
+    const el = chartTooltipHostRef.current;
+    if (!el) return;
+    const onPointerDown = (event: PointerEvent) => {
+      isTouchInteractionRef.current = event.pointerType === "touch" || event.pointerType === "pen";
+    };
+    el.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
   const textXxsTypography = useMemo(
     () =>
