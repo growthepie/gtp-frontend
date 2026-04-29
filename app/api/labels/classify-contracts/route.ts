@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createUsageCategoryRegistry } from "@openlabels/oli-sdk/chains";
 
+export const maxDuration = 60;
+
 const GEMINI_API_BASE_URL =
   process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta";
 const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
@@ -14,7 +16,6 @@ interface OLICategories {
 
 async function fetchOLICategories(): Promise<OLICategories> {
   try {
-    // Fetch GTP master to determine which categories are supported
     let allowedIds: string[] | undefined;
     const gtpResponse = await fetch(GTP_MASTER_URL);
     if (gtpResponse.ok) {
@@ -22,21 +23,15 @@ async function fetchOLICategories(): Promise<OLICategories> {
         const gtpData = await gtpResponse.json() as { blockspace_categories?: { sub_categories?: Record<string, string> } };
         const subs = gtpData.blockspace_categories?.sub_categories;
         if (subs) allowedIds = Object.keys(subs);
-      } catch { /* ignore — use full OLI list as fallback */ }
+      } catch { /* ignore */ }
     }
-
-    // SDK handles in-process caching internally
     const registry = await createUsageCategoryRegistry({ allowedIds, revalidateSeconds: 3600 });
     const categories = registry.allowed;
-
     const context = categories
       .map((c) => `- ${c.id}: ${c.name}${c.description ? ` - ${c.description}` : ""}`)
       .join("\n");
-    const validIds = categories.map((c) => c.id);
-
-    return { context, validIds };
+    return { context, validIds: categories.map((c) => c.id) };
   } catch {
-    // Fall back to empty if fetch fails — classifyContracts will handle gracefully
     return { context: "", validIds: [] };
   }
 }
@@ -109,7 +104,7 @@ async function callGeminiStructured(
       lastError = raw;
       const shouldRetry = raw.includes("overloaded") || raw.includes("UNAVAILABLE");
       if (attempt < RETRY_ATTEMPTS && shouldRetry) {
-        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
+        await new Promise((r) => setTimeout(r, 500 * attempt));
         continue;
       }
       throw new Error(`Gemini error (${resp.status}): ${raw.slice(0, 200)}`);
@@ -124,8 +119,6 @@ async function callGeminiStructured(
   throw new Error(lastError);
 }
 
-type ExtractedContract = { address: string; name: string; chain: string };
-
 function resolveChain(raw: string, defaultChainId: string): string {
   if (!raw) return defaultChainId;
   if (raw.startsWith("eip155:")) return raw;
@@ -133,41 +126,50 @@ function resolveChain(raw: string, defaultChainId: string): string {
   return CHAIN_MAPPING[raw.toLowerCase()] ?? defaultChainId;
 }
 
-function fallbackExtract(text: string, defaultChainId: string): ExtractedContract[] {
+type ContractResult = { address: string; name: string; chain: string; category_id: string };
+
+function fallbackExtract(text: string, defaultChainId: string, fallbackId: string): ContractResult[] {
   const matches = [...text.matchAll(/(?:"|')?0x[a-fA-F0-9]{40}(?:"|')?/g)].map((m) =>
     m[0].replace(/['"]/g, ""),
   );
-  const unique = [...new Set(matches)];
-  return unique.map((addr) => {
+  return [...new Set(matches)].map((addr) => {
     const propMatch = text.match(new RegExp(`"([^"]+)"\\s*:\\s*["']${addr}["']`));
     return {
       address: addr.toLowerCase(),
       name: propMatch?.[1] ?? `Contract-${addr.substring(0, 8)}`,
       chain: defaultChainId,
+      category_id: fallbackId,
     };
   });
 }
 
-async function preprocessContracts(
+async function extractAndClassify(
   text: string,
   defaultChainId: string,
   autoDetectChain: boolean,
+  project: string,
   apiKey: string,
-): Promise<ExtractedContract[]> {
-  const systemInstruction = `You are a specialized extraction tool that processes blockchain-related text and extracts contract addresses with their names${autoDetectChain ? " and associated blockchain chains" : ""}. You can handle various input formats including plain text, JSON structures, CSV data, and mixed content. Always return a valid JSON array, even if empty.`;
+  categories: OLICategories,
+): Promise<ContractResult[]> {
+  const { context, validIds } = categories;
+  const fallbackId = validIds.includes("other") ? "other" : (validIds[0] ?? "other");
 
   const chainInstructions = autoDetectChain
-    ? `3. Try to identify which blockchain chain each address belongs to based on context (chain names, chainId values, network mentions). Use the EIP155 format (eip155:CHAIN_ID). If no chain is mentioned, use "${defaultChainId}".`
-    : `3. Use "${defaultChainId}" as the chain for ALL contracts — do not attempt to detect the chain from text.`;
+    ? `3. Detect the chain from context (chain names, chainId values, network mentions). Use EIP155 format (eip155:CHAIN_ID). Default to "${defaultChainId}" if unknown.`
+    : `3. Use "${defaultChainId}" as the chain for ALL contracts.`;
 
-  const userPrompt = `Extract all Ethereum contract addresses (0x...) from the following text, along with appropriate names for each contract.
+  const systemInstruction = `You are a blockchain contract extraction and classification tool. Extract all Ethereum contract addresses from freeform text and assign each a name, chain, and usage category in one pass. Handle any input format: plain text, JSON, CSV, mixed content. Always return a valid JSON array, even if empty.`;
 
-For each address:
-1. Assign a meaningful name based on the text immediately preceding or surrounding the address. For JSON structures, use the property name as the contract name. If no name is found, use "Contract-[first 8 chars of address]".
-2. If multiple instances of the same address exist, only include it once with its most relevant name.
+  const userPrompt = `Extract all Ethereum contract addresses (0x...) from the text below. For each:
+1. Assign a meaningful name from surrounding context. For JSON keys use the key name. Fallback: "Contract-[first 8 chars]".
+2. Deduplicate — include each address only once.
 ${chainInstructions}
+4. Assign the most appropriate category_id from the list.${project ? ` Project context: ${project}.` : ""}
 
-Input:
+# Usage Categories
+${context || "(none — use 'other')"}
+
+# Input
 ${text}`;
 
   const responseSchema = {
@@ -175,83 +177,31 @@ ${text}`;
     items: {
       type: "OBJECT",
       properties: {
-        address: { type: "STRING", description: "The contract address (0x...)" },
-        name: { type: "STRING", description: "The contract name" },
-        chain: { type: "STRING", description: "The EIP155 chain ID (e.g., eip155:1)" },
+        address: { type: "STRING", description: "Contract address (0x...)" },
+        name: { type: "STRING", description: "Contract name" },
+        chain: { type: "STRING", description: "EIP155 chain ID (e.g. eip155:1)" },
+        category_id: { type: "STRING", description: "Usage category", ...(validIds.length ? { enum: validIds } : {}) },
       },
-      required: ["address", "name", "chain"],
+      required: ["address", "name", "chain", "category_id"],
     },
   };
 
   try {
     const content = await callGeminiStructured(apiKey, systemInstruction, userPrompt, responseSchema);
-    const parsed = JSON.parse(content) as { address?: string; name?: string; chain?: string }[];
+    const parsed = JSON.parse(content) as { address?: string; name?: string; chain?: string; category_id?: string }[];
     return parsed
       .filter((item) => typeof item.address === "string" && /^0x[a-fA-F0-9]{40}$/i.test(item.address))
       .map((item) => ({
         address: item.address!.trim().toLowerCase(),
         name: item.name?.trim() || `Contract-${item.address!.substring(0, 8)}`,
         chain: resolveChain(item.chain ?? "", defaultChainId),
+        category_id:
+          item.category_id && (validIds.length === 0 || validIds.includes(item.category_id))
+            ? item.category_id
+            : fallbackId,
       }));
   } catch {
-    return fallbackExtract(text, defaultChainId);
-  }
-}
-
-async function classifyContracts(
-  contracts: ExtractedContract[],
-  project: string,
-  apiKey: string,
-  categories: OLICategories,
-): Promise<Record<string, string>> {
-  if (!contracts.length) return {};
-
-  const { context, validIds } = categories;
-  const fallbackId = validIds.includes("other") ? "other" : (validIds[0] ?? "other");
-
-  const systemInstruction = `You are a blockchain contract classifier. Assign the most appropriate category_id from the provided list to each contract based on its name and project. Use ONLY the category_ids listed. If unsure, use "${fallbackId}".`;
-
-  const contractList = contracts
-    .map((c) => `- address: ${c.address}, name: ${c.name}${project ? `, project: ${project}` : ""}`)
-    .join("\n");
-
-  const userPrompt = `# Category Definitions
-${context}
-
-# Contracts to Classify
-${contractList}
-
-Return a JSON array where each element has "address" (the contract address) and "category_id" (chosen from the allowed list).`;
-
-  // Use ARRAY schema to avoid unreliable dynamic property names (0x... keys)
-  const responseSchema = {
-    type: "ARRAY",
-    items: {
-      type: "OBJECT",
-      properties: {
-        address: { type: "STRING", description: "The contract address (0x...)" },
-        category_id: {
-          type: "STRING",
-          description: "The usage category",
-          enum: validIds.length ? validIds : undefined,
-        },
-      },
-      required: ["address", "category_id"],
-    },
-  };
-
-  try {
-    const content = await callGeminiStructured(apiKey, systemInstruction, userPrompt, responseSchema);
-    const parsed = JSON.parse(content) as { address?: string; category_id?: string }[];
-    const result: Record<string, string> = {};
-    parsed.forEach((item) => {
-      if (item.address && item.category_id && (validIds.length === 0 || validIds.includes(item.category_id))) {
-        result[item.address.toLowerCase()] = item.category_id;
-      }
-    });
-    return result;
-  } catch {
-    return {};
+    return fallbackExtract(text, defaultChainId, fallbackId);
   }
 }
 
@@ -272,24 +222,20 @@ export async function POST(request: Request) {
     const defaultChainId: string = body.chain_id || "eip155:1";
     const autoDetectChain: boolean = body.auto_detect_chain ?? true;
 
-    // Step 1: Extract contract addresses/names/chains from freeform text
-    const contracts = await preprocessContracts(text, defaultChainId, autoDetectChain, apiKey);
+    // Fetch categories first — needed in prompt, then single Gemini call does extract + classify
+    const oliCategories = await fetchOLICategories();
+    const results = await extractAndClassify(text, defaultChainId, autoDetectChain, project, apiKey, oliCategories);
 
-    if (!contracts.length) {
+    if (!results.length) {
       return NextResponse.json({ rows: [] });
     }
 
-    // Step 2: Fetch OLI usage categories (cached) and classify each contract
-    const oliCategories = await fetchOLICategories();
-    const categories = await classifyContracts(contracts, project, apiKey, oliCategories);
-
-    // Step 3: Map to AttestationRowInput shape
-    const rows = contracts.map((c) => ({
-      chain_id: c.chain,
-      address: c.address,
-      contract_name: c.name,
+    const rows = results.map((r) => ({
+      chain_id: r.chain,
+      address: r.address,
+      contract_name: r.name,
       owner_project: project,
-      usage_category: categories[c.address] || (oliCategories.validIds.includes("other") ? "other" : oliCategories.validIds[0] ?? "other"),
+      usage_category: r.category_id,
     }));
 
     return NextResponse.json({ rows });
