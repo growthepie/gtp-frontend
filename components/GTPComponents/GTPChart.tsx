@@ -451,6 +451,9 @@ export default function GTPChart({
   const dragStartAxisXRef = useRef<number | null>(null);
   const latestAxisXRef = useRef<number | null>(null);
   const lastDragPixelRef = useRef<number | null>(null);
+  // Tracks whether the most recent pointer interaction came from a touch/pen.
+  // Used by the tooltip positioner to lift the tooltip off the user's finger.
+  const isTouchInteractionRef = useRef(false);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -638,6 +641,7 @@ export default function GTPChart({
         contentWidth,
         contentHeight,
         hostRect: tooltipHostRef.current?.getBoundingClientRect(),
+        isTouch: isTouchInteractionRef.current,
       });
     },
     [],
@@ -931,6 +935,22 @@ export default function GTPChart({
       setDragOverlay(null);
     };
   }, [onDragSelect, querySnappedXAtPixel]);
+
+  // Track whether the active pointer is a finger/pen so the tooltip can be
+  // lifted clear of the user's hand. Per-interaction (not per-device) so hybrid
+  // devices like a Surface or iPad-with-trackpad still get desktop-style
+  // placement when the user switches to a mouse.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onPointerDown = (event: PointerEvent) => {
+      isTouchInteractionRef.current = event.pointerType === "touch" || event.pointerType === "pen";
+    };
+    el.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
   // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
   useEffect(() => {

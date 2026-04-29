@@ -14,6 +14,9 @@ export const GTP_TOOLTIP_BASE_CLASS =
 
 export const DEFAULT_TOOLTIP_VIEWPORT_PADDING = 12;
 export const DEFAULT_TOOLTIP_CURSOR_OFFSET = 14;
+// Clearance required so a fingertip + nearby fingers do not occlude the tooltip.
+// Calibrated to typical fingertip contact area on phones (~40–50 CSS px).
+export const DEFAULT_TOOLTIP_TOUCH_OFFSET = 56;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -32,6 +35,8 @@ export const getViewportAwareTooltipLocalPosition = ({
   hostRect,
   viewportPadding = DEFAULT_TOOLTIP_VIEWPORT_PADDING,
   cursorOffset = DEFAULT_TOOLTIP_CURSOR_OFFSET,
+  isTouch = false,
+  touchOffset = DEFAULT_TOOLTIP_TOUCH_OFFSET,
 }: {
   anchorLocalX: number;
   anchorLocalY: number;
@@ -40,6 +45,8 @@ export const getViewportAwareTooltipLocalPosition = ({
   hostRect?: DOMRect | null;
   viewportPadding?: number;
   cursorOffset?: number;
+  isTouch?: boolean;
+  touchOffset?: number;
 }): [number, number] => {
   const hostLeft = hostRect?.left ?? 0;
   const hostTop = hostRect?.top ?? 0;
@@ -49,6 +56,32 @@ export const getViewportAwareTooltipLocalPosition = ({
   const viewportHeight = Math.max(typeof window !== "undefined" ? window.innerHeight : contentHeight, 1);
   const maxX = Math.max(viewportWidth - contentWidth - viewportPadding, viewportPadding);
   const maxY = Math.max(viewportHeight - contentHeight - viewportPadding, viewportPadding);
+
+  if (isTouch) {
+    // Touch placement: prefer above the finger, horizontally centered on it.
+    // The finger (and the user's hand) occludes everything below-and-right of the
+    // contact point, so placing the tooltip there — as we do for a mouse cursor —
+    // hides it during scrubbing. Centering horizontally also avoids confusing
+    // left/right flips as the finger drags across the chart.
+    let xAbs = anchorAbsX - contentWidth / 2;
+    xAbs = clamp(xAbs, viewportPadding, maxX);
+
+    const spaceAbove = anchorAbsY - touchOffset - viewportPadding;
+    const spaceBelow = viewportHeight - viewportPadding - (anchorAbsY + touchOffset);
+
+    let yAbs: number;
+    if (contentHeight <= spaceAbove) {
+      yAbs = anchorAbsY - contentHeight - touchOffset;
+    } else if (contentHeight <= spaceBelow) {
+      yAbs = anchorAbsY + touchOffset;
+    } else {
+      // No room either side at the touch offset — pin to the top of the viewport.
+      // This keeps the tooltip visible even when the chart fills the screen.
+      yAbs = viewportPadding;
+    }
+    yAbs = clamp(yAbs, viewportPadding, maxY);
+    return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
+  }
 
   let xAbs = anchorAbsX + cursorOffset;
   if (xAbs + contentWidth > viewportWidth - viewportPadding) {

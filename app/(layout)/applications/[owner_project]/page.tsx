@@ -971,6 +971,7 @@ export default function Page({
     }
   }, [data, selectedTab, owner_project, projectMetadata, enrichmentData, navigateToMetric, pendingHighlightMetric]);
 
+
   return (
     <>
     {owner_project && projectMetadata && (
@@ -994,7 +995,9 @@ export default function Page({
                 comingSoon={ tab.key === "user_insights" ? true : false}
                 icon={tab.icon as GTPIconName}
                 appIconOverride={tab.key === "overview"
-                  ? <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" />
+                  ? projectMetadata.logo_path ? 
+                    <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" />
+                  : <GTPIcon icon="gtp-project" size="md" className="!size-[24px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
                   : undefined
                 }
                 header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}

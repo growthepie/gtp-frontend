@@ -488,7 +488,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     className="relative z-20 w-full p-[5px] pl-[10px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
                     onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
                 >
+                    {ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path ? 
                     <Image src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path}`} alt={compareAppsForChart[0].displayName} width={24} height={24} className="rounded-full shrink-0 " />
+                    : <GTPIcon icon="gtp-project" size="md" className="!size-[24px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
+                    }
                     <div className="flex flex-col items-center gap-x-[5px]">
                         <div className="text-xxs">Compare to</div>
                         <div className="flex items-center gap-x-[5px] text-center w-full max-w-[180px]">
