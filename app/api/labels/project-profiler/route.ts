@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 const GEMINI_API_BASE_URL =
   process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta";
 const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
@@ -55,39 +57,29 @@ websites:
 
 Return YAML only. Do not include any social links or github.`;
 
-    const toolAttempts: Array<Array<Record<string, unknown>> | undefined> = [
-      [{ google_search: {} }],
-      [{ google_search_retrieval: {} }],
-      undefined,
-    ];
+    const res = await fetch(
+      `${GEMINI_API_BASE_URL}/models/${encodeURIComponent(DEFAULT_GEMINI_MODEL)}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1 },
+          tools: [{ google_search: {} }],
+        }),
+        cache: "no-store",
+      },
+    );
 
-    for (const tools of toolAttempts) {
-      const reqBody: Record<string, unknown> = {
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1 },
-      };
-      if (tools) reqBody.tools = tools;
+    const raw = await res.text();
+    const payload = raw ? (JSON.parse(raw) as GeminiApiResponse) : {};
+    const text = extractGeminiText(payload);
 
-      const res = await fetch(
-        `${GEMINI_API_BASE_URL}/models/${encodeURIComponent(DEFAULT_GEMINI_MODEL)}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(reqBody),
-          cache: "no-store",
-        },
-      );
-
-      const raw = await res.text();
-      const payload = raw ? (JSON.parse(raw) as GeminiApiResponse) : {};
-      const text = extractGeminiText(payload);
-
-      if (res.ok && text) {
-        return NextResponse.json({ yaml: stripYamlFence(text), model: DEFAULT_GEMINI_MODEL });
-      }
+    if (!res.ok || !text) {
+      return NextResponse.json({ error: "Profiler returned no output." }, { status: 502 });
     }
 
-    return NextResponse.json({ error: "Profiler returned no output." }, { status: 502 });
+    return NextResponse.json({ yaml: stripYamlFence(text), model: DEFAULT_GEMINI_MODEL });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || "Unexpected profiler error." },

@@ -597,6 +597,8 @@ export default function ProjectEditPageClient() {
                 addressEditRow={queueHook.addressEditRow}
                 setAddressEditRow={queueHook.setAddressEditRow}
                 getQueueRowErrorMessages={queueHook.getQueueRowErrorMessages}
+                pendingDuplicates={queueHook.pendingDuplicates}
+                isDuplicateCheckLoading={queueHook.isDuplicateCheckLoading}
                 csvInputRef={queueHook.csvInputRef}
                 onCsvInputChange={queueHook.onCsvInputChange}
                 smartPasteOpen={queueHook.smartPasteOpen}

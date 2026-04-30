@@ -292,6 +292,12 @@ export function ProjectDetailsStep({
                   {validationErrors.website && (
                     <p className="mt-[6px] text-xs text-color-negative">{validationErrors.website}</p>
                   )}
+                  {isAddMode && form.website.trim() && !isProfiling && !profilerError && !profilerInfo && (
+                    <p className="mt-[5px] text-xxs text-color-text-secondary flex items-center gap-x-[4px]">
+                      <Icon icon="feather:clock" className="size-[10px] shrink-0" />
+                      AI profiling can take 10–30 seconds
+                    </p>
+                  )}
                   {isAddMode && (profilerError || profilerInfo) && (
                     <div className="mt-[4px] flex items-center gap-x-[6px]">
                       {profilerError && <p className="text-xs text-color-negative">{profilerError}</p>}

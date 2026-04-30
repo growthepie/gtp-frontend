@@ -52,6 +52,10 @@ type ContractsStepProps = {
   csvInputRef: React.RefObject<HTMLInputElement>;
   onCsvInputChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
 
+  // Duplicate detection
+  pendingDuplicates: Set<string>;
+  isDuplicateCheckLoading: boolean;
+
   // Smart paste
   smartPasteOpen: boolean;
   setSmartPasteOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -125,6 +129,8 @@ export function ContractsStep({
   addQueueRow,
   removeQueueRow,
   getQueueRowErrorMessages,
+  pendingDuplicates,
+  isDuplicateCheckLoading,
   csvInputRef,
   onCsvInputChange,
   smartPasteOpen,
@@ -161,6 +167,9 @@ export function ContractsStep({
   onSurveySubmit,
   isMetadataSubmitted,
 }: ContractsStepProps) {
+  const [duplicateMemoOpen, setDuplicateMemoOpen] = useState(true);
+  const [duplicateDetailsOpen, setDuplicateDetailsOpen] = useState(false);
+  const [duplicateIssueOpen, setDuplicateIssueOpen] = useState(false);
   const [activeRowDropdown, setActiveRowDropdown] = useState<string | null>(null);
   const [rowDropdownQuery, setRowDropdownQuery] = useState<Record<string, string>>({});
   const [tableContainerWidth, setTableContainerWidth] = useState(9999);
@@ -174,6 +183,27 @@ export function ContractsStep({
 
   // Tracks whether the user has explicitly proceeded through step 3 via the "Continue to review" button
   const [step3Completed, setStep3Completed] = useState(false);
+
+  // Re-show memo and reset acknowledgment whenever a new set of duplicates arrives
+  useEffect(() => {
+    if (pendingDuplicates.size > 0) {
+      setDuplicateMemoOpen(true);
+      setDuplicateDetailsOpen(false);
+      setDuplicateIssueOpen(false);
+    }
+  }, [pendingDuplicates]);
+
+  const focusContractStep = () => {
+    setQueueSubmitPreview(null);
+    setDuplicateMemoOpen(false);
+    setDuplicateDetailsOpen(false);
+    setDuplicateIssueOpen(false);
+    setActiveStep(2);
+    requestAnimationFrame(() => {
+      step2CardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      step2HeaderRef.current?.focus();
+    });
+  };
 
   // Error block
   const [errorExpanded, setErrorExpanded] = useState(false);
@@ -200,6 +230,11 @@ export function ContractsStep({
     }, "Contract name"); // fallback matches the input placeholder
   }, [bulkController.queue.rows]);
 
+  const hasEmptyChainRows = useMemo(
+    () => bulkController.queue.rows.some((row) => !toStringValue(row.chain_id).trim()),
+    [bulkController.queue.rows],
+  );
+
   useEffect(() => {
     const w = measureTextPx(longestName);
     setNameColWidth(Math.max(60, Math.min(240, w + 24))); // +24 for cell padding
@@ -224,7 +259,7 @@ export function ContractsStep({
     const fixed = 32 + 46; // num + delete only
     const padding = 72;
     const totalBudget = Math.max(300, containerW - fixed - padding);
-    const chainBase = 40;
+    const chainBase = hasEmptyChainRows ? 136 : 40;
     const nameW = nameColWidth; // content-driven, never stolen from
     const flexBudget = Math.max(200, totalBudget - chainBase - nameW);
     const addrBase = Math.max(100, Math.floor(flexBudget * 0.30));
@@ -234,7 +269,7 @@ export function ContractsStep({
     if (!expanding || progress === 0) return { chain: chainBase, addr: addrBase, name: nameW, owner: ownerBase, usage: usageBase };
 
     if (expanding === "chain") {
-      const target = Math.min(Math.floor(totalBudget * 0.30), 250);
+      const target = Math.max(chainBase, Math.min(Math.floor(totalBudget * 0.30), 250));
       const delta = (target - chainBase) * progress;
       return { chain: chainBase + delta, addr: Math.max(70, addrBase - delta * 0.5), name: nameW, owner: Math.max(70, ownerBase - delta * 0.3), usage: Math.max(50, usageBase - delta * 0.2) };
     }
@@ -303,7 +338,7 @@ export function ContractsStep({
 
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRowDropdown]);
+  }, [activeRowDropdown, hasEmptyChainRows]);
 
   const filterRowOptions = (options: SearchDropdownOption[], query: string) => {
     const q = query.trim().toLowerCase();
@@ -356,7 +391,7 @@ export function ContractsStep({
     setTableContainerWidth(containerW);
     applyColWidths(getColWidths(containerW, null, 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeStep, nameColWidth, bulkController.queue.rows.length]);
+  }, [activeStep, nameColWidth, bulkController.queue.rows.length, hasEmptyChainRows]);
 
   // Auto-advance to step 3 when all rows pass validation
   useEffect(() => {
@@ -366,7 +401,7 @@ export function ContractsStep({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueHasValidationResult, queueStats.errors, meaningfulRows.length]);
 
-  const openChainDropdown = (rowIndex: number, selectedLabel: string) => {
+  const openChainDropdown = (rowIndex: number) => {
     const key = `chain-${rowIndex}`;
     setRowDropdownQuery((prev) => ({ ...prev, [key]: "" }));
     setActiveRowDropdown(key);
@@ -517,6 +552,18 @@ export function ContractsStep({
                         setClassifyError(null);
                       }}
                     />
+                    {!isClassifying && smartPasteText.trim() && (
+                      <span className="flex items-center gap-x-[4px] text-xxs text-color-text-secondary">
+                        <Icon icon="feather:clock" className="size-[10px] shrink-0" />
+                        May take 15–30 seconds
+                      </span>
+                    )}
+                    {isClassifying && (
+                      <span className="flex items-center gap-x-[4px] text-xxs text-color-text-secondary">
+                        <Icon icon="feather:loader" className="size-[10px] shrink-0 animate-spin" />
+                        Extracting and classifying contracts...
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
@@ -527,7 +574,7 @@ export function ContractsStep({
               <table className="w-full table-fixed text-xs border-separate border-spacing-y-[5px]">
                 <colgroup>
                   <col style={{ width: "32px" }} />
-                  <col ref={colChainRef} style={{ width: "40px" }} />
+                  <col ref={colChainRef} style={{ width: hasEmptyChainRows ? "136px" : "40px" }} />
                   <col ref={colAddrRef} />
                   <col ref={colNameRef} />
                   <col ref={colOwnerRef} />
@@ -557,7 +604,7 @@ export function ContractsStep({
                     const ownerCollapsed = activeExpanding !== null && activeExpanding !== "owner";
                     const usageCollapsed = activeExpanding !== null && activeExpanding !== "usage";
                     return bulkController.queue.rows.map((row, rowIndex) => {
-                    const chainId = toStringValue(row.chain_id).trim() || defaultQueueChainId;
+                    const chainId = toStringValue(row.chain_id).trim();
                     const rowOwnerProject = toStringValue(row.owner_project).trim();
                     const normalizedRowOwner = rowOwnerProject.toLowerCase();
                     const usageCategory = toStringValue(row.usage_category).trim();
@@ -603,6 +650,7 @@ export function ContractsStep({
                       activeRowDropdown === chainDropdownKey
                         ? (rowDropdownQuery[chainDropdownKey] ?? selectedChainLabel)
                         : selectedChainLabel;
+                    const showChainInput = activeRowDropdown === chainDropdownKey || !chainId;
                     const usageQuery =
                       activeRowDropdown === usageDropdownKey
                         ? (rowDropdownQuery[usageDropdownKey] ?? selectedUsageLabel)
@@ -612,16 +660,25 @@ export function ContractsStep({
                       <Fragment key={rowIndex}>
                         <tr style={activeRowDropdown?.startsWith(`chain-${rowIndex}`) || activeRowDropdown?.startsWith(`addr-${rowIndex}`) || activeRowDropdown?.startsWith(`owner-${rowIndex}`) || activeRowDropdown?.startsWith(`usage-${rowIndex}`) ? { position: "relative", zIndex: 50 } : undefined}>
                           <td className={`${cellFirst} text-color-text-secondary text-xxs`}>
-                            {rowIsClean
-                              ? <Icon icon="feather:check" className="size-[12px] text-color-positive" />
-                              : rowIndex + 1}
+                            {(() => {
+                              const isDuplicate = pendingDuplicates.has(`${addressVal.toLowerCase()}:${chainId}`);
+                              if (isDuplicate) return (
+                                <span title="Already attested — pending approval">
+                                  <Icon icon="feather:clock" className="size-[12px] text-amber-400" />
+                                </span>
+                              );
+                              if (rowIsClean) return (
+                                <Icon icon="feather:check" className="size-[12px] text-color-positive" />
+                              );
+                              return rowIndex + 1;
+                            })()}
                           </td>
                           <td className={`${cellMid} px-[2px]`}>
                             <div className="relative flex items-center justify-center" data-row-dropdown-root="true">
                               <div
                                 className="relative focus-within:z-50 w-full"
                               >
-                                {activeRowDropdown === chainDropdownKey ? (
+                                {showChainInput ? (
                                   <div className={`relative z-10 flex w-full items-center bg-color-bg-default rounded-full h-[24px] pl-[6px] pr-[8px] ${rowHasError ? "bg-color-negative/20 ring-1 ring-color-negative/50" : ""}`}>
                                     <div className="mr-[4px] shrink-0 size-[15px] flex items-center justify-center">
                                       {chainIconRenderer(chainId)}
@@ -643,7 +700,10 @@ export function ContractsStep({
                                     <button
                                       type="button"
                                       className="shrink-0 rounded-full p-[2px] hover:bg-color-ui-hover transition-colors"
-                                      onClick={() => setActiveRowDropdown(null)}
+                                      onClick={() => {
+                                        setRowDropdownQuery((prev) => ({ ...prev, [chainDropdownKey]: "" }));
+                                        setActiveRowDropdown(chainDropdownKey);
+                                      }}
                                     >
                                       <Icon icon="feather:chevron-down" className="size-[10px] text-color-text-secondary" />
                                     </button>
@@ -652,7 +712,7 @@ export function ContractsStep({
                                   <button
                                     type="button"
                                     className={`size-[28px] rounded-full flex items-center justify-center transition-colors ${rowHasError ? "bg-color-negative/15 outline outline-1 outline-color-negative/40" : "bg-color-bg-default hover:bg-color-ui-hover"}`}
-                                    onClick={() => openChainDropdown(rowIndex, selectedChainLabel)}
+                                    onClick={() => openChainDropdown(rowIndex)}
                                     title={selectedChainLabel || "Chain"}
                                   >
                                     {chainIconRenderer(chainId)}
@@ -910,6 +970,108 @@ export function ContractsStep({
                 </tbody>
               </table>
             </div>
+
+            {/* Duplicate memo popup */}
+            {pendingDuplicates.size > 0 && duplicateMemoOpen && (
+              <div
+                className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                onClick={focusContractStep}
+              >
+                <div
+                  className="mx-[16px] w-full max-w-[440px] rounded-[20px] border border-color-ui-shadow/40 bg-color-bg-default p-[24px] shadow-[0px_8px_40px_rgba(0,0,0,0.5)]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="mb-[4px] flex items-center gap-x-[8px]">
+                    <Icon icon="feather:alert-triangle" className="size-[16px] shrink-0 text-color-text-primary" />
+                    <div className="text-sm font-semibold">Duplicate attestation found</div>
+                  </div>
+
+                  <p className="mb-[12px] text-sm text-color-text-secondary">
+                    {pendingDuplicates.size === 1 ? "1 contract" : `${pendingDuplicates.size} contracts`} already {pendingDuplicates.size === 1 ? "has" : "have"} a matching label from your wallet. Before submitting, confirm the following:
+                  </p>
+
+                  <div className="mb-[16px] flex items-center justify-center gap-x-[4px]">
+                    {[
+                      { key: "wallet", icon: "feather:credit-card", filled: Boolean(walletAddress) },
+                      { key: "chain", icon: "feather:layers", filled: false },
+                      { key: "address", icon: "feather:hash", filled: false },
+                      { key: "label", icon: "feather:tag", filled: false },
+                      { key: "pending", icon: "feather:clock", filled: false },
+                    ].map(({ key, icon, filled }) => (
+                      <div
+                        key={key}
+                        className={`flex size-[24px] items-center justify-center rounded-full border ${
+                          filled
+                            ? "border-color-positive/30 bg-color-positive/10 text-color-positive"
+                            : "border-color-negative/30 bg-color-negative/10 text-color-negative"
+                        }`}
+                      >
+                        <Icon icon={icon} className="!h-[11px] !w-[11px]" />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mb-[12px] flex flex-col gap-y-[6px]">
+                    <div className="overflow-hidden rounded-[10px] border border-color-ui-shadow/30 bg-color-bg-medium">
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-x-[10px] px-[12px] py-[10px] text-left"
+                        onClick={() => setDuplicateDetailsOpen((v) => !v)}
+                      >
+                        <Icon icon="feather:edit-2" className="mt-[1px] size-[13px] shrink-0 text-color-text-primary" />
+                        <span className="flex-1 text-xs text-color-text-primary">Did you intend to edit anything in that label?</span>
+                        <Icon icon={duplicateDetailsOpen ? "feather:chevron-up" : "feather:chevron-down"} className="size-[11px] shrink-0 text-color-text-secondary" />
+                      </button>
+                      {duplicateDetailsOpen && (
+                        <div className="px-[12px] pb-[10px]">
+                          <span className="text-[11px] text-color-text-primary/60">
+                            If yes, change the contract name, owner project, usage category, chain, or address in the contract row. If nothing changed, do not re-attest it.
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-[16px] overflow-hidden rounded-[10px] border border-color-negative/30 bg-color-negative/10">
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-x-[6px] px-[12px] py-[8px]"
+                      onClick={() => setDuplicateIssueOpen((v) => !v)}
+                    >
+                      <div className="flex items-center gap-x-[6px]">
+                        <Icon icon="feather:alert-circle" className="size-[12px] shrink-0 text-color-negative" />
+                        <span className="text-xs font-medium text-color-negative">
+                          Duplicate blocked <span className="font-normal opacity-70">({pendingDuplicates.size} item{pendingDuplicates.size !== 1 ? "s" : ""})</span>
+                        </span>
+                      </div>
+                      <Icon icon={duplicateIssueOpen ? "feather:chevron-up" : "feather:chevron-down"} className="size-[12px] shrink-0 text-color-negative/70" />
+                    </button>
+                    {duplicateIssueOpen && (
+                      <div className="flex flex-col gap-y-[4px] px-[12px] pb-[10px]">
+                        <div className="flex items-start gap-x-[6px]">
+                          <Icon icon="feather:clock" className="mt-[2px] size-[11px] shrink-0 text-color-negative/70" />
+                          <span className="text-[11px] text-color-negative/80">These labels are pending approval and would create duplicate onchain entries.</span>
+                        </div>
+                        <div className="flex items-start gap-x-[6px]">
+                          <Icon icon="feather:edit-2" className="mt-[2px] size-[11px] shrink-0 text-color-negative/70" />
+                          <span className="text-[11px] text-color-negative/80">Go back to the contract step and edit the row before reviewing again.</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-x-[8px]">
+                    <button
+                      type="button"
+                      className="rounded-full border border-color-ui-shadow bg-color-bg-default px-[14px] py-[8px] text-sm text-color-text-primary transition-colors hover:bg-color-ui-hover"
+                      onClick={focusContractStep}
+                    >
+                      Back to contracts
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mt-[10px] flex items-center justify-end gap-x-[8px]">
               <GTPButton
@@ -1178,6 +1340,33 @@ export function ContractsStep({
                   </table>
                 </div>
 
+                {pendingDuplicates.size > 0 && (
+                  <div className="mt-[10px] rounded-[12px] border border-amber-500/40 bg-[#1a1600] overflow-hidden">
+                    <div className="flex gap-x-[0px]">
+                      <div className="w-[3px] shrink-0 bg-amber-400" />
+                      <div className="px-[12px] py-[10px]">
+                        <div className="flex items-center gap-x-[7px]">
+                          <Icon icon="feather:alert-triangle" className="size-[13px] shrink-0 text-amber-400" />
+                          <span className="text-xs font-semibold text-amber-400">
+                            {pendingDuplicates.size === 1 ? "1 contract" : `${pendingDuplicates.size} contracts`} already attested by your wallet
+                          </span>
+                        </div>
+                        <p className="mt-[5px] text-xs text-color-text-primary leading-relaxed">
+                          These labels are <span className="font-medium text-amber-400">pending approval</span>. Did you intend to edit anything in that label? Update the contract row before submitting.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={focusContractStep}
+                          className="mt-[8px] inline-flex items-center gap-x-[5px] rounded-full border border-amber-500/30 bg-amber-500/10 px-[10px] py-[5px] text-xs text-amber-400 transition-colors hover:bg-amber-500/20"
+                        >
+                          <Icon icon="feather:arrow-left" className="size-[11px] shrink-0" />
+                          Back to contracts
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-[10px] flex items-center justify-end gap-x-[8px]">
                   <GTPButton
                     label="Cancel"
@@ -1196,9 +1385,9 @@ export function ContractsStep({
                     }
                     size="sm"
                     variant="highlight"
-                    disabled={isSubmittingFromPreview}
+                    disabled={isSubmittingFromPreview || pendingDuplicates.size > 0}
                     clickHandler={confirmQueueSubmit}
-                    className={!isSubmittingFromPreview ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}
+                    className={!isSubmittingFromPreview && pendingDuplicates.size === 0 ? "bg-color-text-primary text-color-bg-default" : "border border-color-ui-shadow bg-color-bg-default"}
                   />
                 </div>
               </div>

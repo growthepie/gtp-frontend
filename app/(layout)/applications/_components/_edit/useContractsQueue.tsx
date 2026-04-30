@@ -97,6 +97,10 @@ export type ContractsQueueReturn = {
   queueStats: { errors: number; warnings: number; suggestions: number; conversions: number };
   rowErrors: { rowIndex: number; errors: string[] }[];
 
+  // Duplicate detection
+  pendingDuplicates: Set<string>;
+  isDuplicateCheckLoading: boolean;
+
   // Refs
   csvInputRef: React.RefObject<HTMLInputElement>;
 
@@ -218,6 +222,10 @@ export function useContractsQueue({
   const [bulkSubmitResult, setBulkSubmitResult] = useState<BulkOnchainSubmitResult | null>(null);
   const [lastSubmitChainId, setLastSubmitChainId] = useState("");
   const [addressEditRow, setAddressEditRow] = useState<number | null>(null);
+
+  // Duplicate detection state
+  const [pendingDuplicates, setPendingDuplicates] = useState<Set<string>>(new Set());
+  const [isDuplicateCheckLoading, setIsDuplicateCheckLoading] = useState(false);
 
   // Smart paste state
   const [smartPasteOpen, setSmartPasteOpen] = useState(false);
@@ -361,11 +369,7 @@ export function useContractsQueue({
     [normalizedProjects],
   );
 
-  const defaultQueueChainId = useMemo(() => {
-    const baseOption = chainOptions.find((option) => option.value === "eip155:8453");
-    if (baseOption) return baseOption.value;
-    return chainOptions[0]?.value || "eip155:8453";
-  }, [chainOptions]);
+  const defaultQueueChainId = "";
 
   // ── Attest controllers ────────────────────────────────────────────────────
 
@@ -377,7 +381,7 @@ export function useContractsQueue({
   const singleController = useSingleAttestUI(attestClient, {
     mode: "simpleProfile",
     initialRow: {
-      chain_id: defaultQueueChainId,
+      chain_id: "",
       owner_project: ownerProject.trim(),
     },
     validationOptions: { projects: normalizedProjects, usageCategoryRegistry },
@@ -387,8 +391,8 @@ export function useContractsQueue({
     () =>
       mode === "edit" && intent.source === "application-page"
         ? []
-        : [{ chain_id: defaultQueueChainId, owner_project: ownerProject.trim() }],
-    [defaultQueueChainId, intent.source, mode, ownerProject],
+        : [{ chain_id: "", owner_project: ownerProject.trim() }],
+    [intent.source, mode, ownerProject],
   );
 
   const bulkController = useBulkCsvAttestUI(attestClient, {
@@ -404,13 +408,13 @@ export function useContractsQueue({
   const prepareRowForQueue = useCallback(
     (row: AttestationRowInput): AttestationRowInput => ({
       ...row,
-      chain_id: toStringValue(row.chain_id).trim() || defaultQueueChainId,
+      chain_id: toStringValue(row.chain_id).trim(),
       address: toStringValue(row.address).trim().toLowerCase(),
       contract_name: toStringValue(row.contract_name).trim(),
       owner_project: toStringValue(row.owner_project).trim(),
       usage_category: resolveUsageCategoryValue(toStringValue(row.usage_category).trim()),
     }),
-    [defaultQueueChainId, resolveUsageCategoryValue],
+    [resolveUsageCategoryValue],
   );
 
   const meaningfulRows = useMemo(
@@ -445,12 +449,12 @@ export function useContractsQueue({
   const singleRowSyncTarget = useMemo(() => {
     if (!isSingleFlow) return null;
     const fallbackRow: AttestationRowInput = {
-      chain_id: defaultQueueChainId,
+      chain_id: "",
       owner_project: ownerProject.trim(),
     };
     const row = meaningfulRows[0] || bulkController.queue.rows[0] || fallbackRow;
     return prepareRowForQueue(row);
-  }, [bulkController.queue.rows, defaultQueueChainId, ownerProject, isSingleFlow, meaningfulRows, prepareRowForQueue]);
+  }, [bulkController.queue.rows, ownerProject, isSingleFlow, meaningfulRows, prepareRowForQueue]);
 
   useEffect(() => {
     if (!singleRowSyncTarget) {
@@ -535,12 +539,72 @@ export function useContractsQueue({
       bulkController.queue.setRows(
         merged.length > 0
           ? merged
-          : [prepareRowForQueue({ chain_id: defaultQueueChainId, owner_project: ownerProject.trim() })],
+          : [prepareRowForQueue({ chain_id: "", owner_project: ownerProject.trim() })],
       );
       setQueueValidated(false);
     },
-    [bulkController, defaultQueueChainId, ownerProject, meaningfulRows, prepareRowForQueue],
+    [bulkController, ownerProject, meaningfulRows, prepareRowForQueue],
   );
+
+  const checkForDuplicates = useCallback(
+    async (rows: AttestationRowInput[], attester: string) => {
+      const addressed = rows.filter((r) => toStringValue(r.address).trim());
+      if (!attester || addressed.length === 0) {
+        setPendingDuplicates(new Set());
+        return;
+      }
+      setIsDuplicateCheckLoading(true);
+      try {
+        const proxyUrl = `/api/labels/attestations?attester=${encodeURIComponent(attester)}&limit=500`;
+        const proxyRes = await fetch(proxyUrl);
+        const response = await proxyRes.json() as { attestations: Array<{ revoked: boolean; recipient: string | null; chain_id: string | null; tags_json: Record<string, unknown> | null }> };
+        if (!proxyRes.ok) throw new Error("Duplicate check failed.");
+        const existingKeys = new Set(
+          response.attestations
+            .filter((a) => !a.revoked && a.recipient && a.chain_id)
+            .map((a) =>
+              [
+                a.recipient?.toLowerCase() ?? "",
+                String(a.chain_id ?? ""),
+                String(a.tags_json?.contract_name ?? ""),
+                String(a.tags_json?.owner_project ?? ""),
+                String(a.tags_json?.usage_category ?? ""),
+              ].join("::"),
+            ),
+        );
+        const duplicates = new Set<string>();
+        for (const row of addressed) {
+          const address = toStringValue(row.address).trim().toLowerCase();
+          const chainId = toStringValue(row.chain_id).trim();
+          const contractName = toStringValue(row.contract_name).trim();
+          const ownerProj = toStringValue(row.owner_project).trim();
+          const usageCategory = toStringValue(row.usage_category).trim();
+          const isExactMatch = existingKeys.has(
+            [address, chainId, contractName, ownerProj, usageCategory].join("::"),
+          );
+          if (isExactMatch) duplicates.add(`${address}:${chainId}`);
+        }
+        setPendingDuplicates(duplicates);
+      } catch {
+        // best-effort — silently ignore failures
+        setPendingDuplicates(new Set());
+      } finally {
+        setIsDuplicateCheckLoading(false);
+      }
+    },
+    [],
+  );
+
+  // Run duplicate check when wallet connects and rows already exist
+  useEffect(() => {
+    if (walletAddress && meaningfulRows.length > 0) {
+      void checkForDuplicates(meaningfulRows, walletAddress);
+    } else {
+      setPendingDuplicates(new Set());
+    }
+    // Only react to wallet change, not every row edit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress]);
 
   const importCsvFile = useCallback(
     async (file: File) => {
@@ -580,7 +644,7 @@ export function useContractsQueue({
           chain_id:
             smartPasteChainMode === "fixed" && smartPasteFixedChain
               ? smartPasteFixedChain
-              : defaultQueueChainId,
+              : "",
           auto_detect_chain: smartPasteChainMode === "auto",
         }),
       });
@@ -599,7 +663,7 @@ export function useContractsQueue({
     } finally {
       setIsClassifying(false);
     }
-  }, [smartPasteText, ownerProject, mergeRowsIntoQueue, smartPasteChainMode, smartPasteFixedChain, defaultQueueChainId]);
+  }, [smartPasteText, ownerProject, mergeRowsIntoQueue, smartPasteChainMode, smartPasteFixedChain]);
 
   const onCsvInputChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -704,7 +768,10 @@ export function useContractsQueue({
 
   const validateQueue = useCallback(async () => {
     await runQueueValidation();
-  }, [runQueueValidation]);
+    if (walletAddress) {
+      void checkForDuplicates(meaningfulRows, walletAddress);
+    }
+  }, [runQueueValidation, walletAddress, meaningfulRows, checkForDuplicates]);
 
   useEffect(() => {
     if (!shouldAutoValidateAfterImport) return;
@@ -834,6 +901,8 @@ export function useContractsQueue({
     }
     setIsPreparingSubmitPreview(true);
     try {
+      // Check for duplicates at submission time — most accurate point (wallet + final rows known)
+      await checkForDuplicates(meaningfulRows, walletAddress);
       const validation = await runQueueValidation();
       if (!validation) return;
       const preparedRows = await Promise.all(
@@ -859,7 +928,7 @@ export function useContractsQueue({
     } finally {
       setIsPreparingSubmitPreview(false);
     }
-  }, [walletAddress, runQueueValidation, attestClient, normalizedProjects]);
+  }, [walletAddress, runQueueValidation, attestClient, normalizedProjects, checkForDuplicates, meaningfulRows]);
 
   const confirmQueueSubmit = useCallback(async () => {
     if (!queueSubmitPreview) return;
@@ -898,14 +967,13 @@ export function useContractsQueue({
   // ── Row CRUD ──────────────────────────────────────────────────────────────
 
   const addQueueRow = useCallback(() => {
-    const firstRowChainId = toStringValue(bulkController.queue.rows[0]?.chain_id).trim() || defaultQueueChainId;
     const row = prepareRowForQueue({
-      chain_id: firstRowChainId,
+      chain_id: "",
       owner_project: ownerProject.trim(),
     });
     bulkController.queue.addRow(row);
     setQueueValidated(false);
-  }, [bulkController, defaultQueueChainId, ownerProject, prepareRowForQueue]);
+  }, [bulkController, ownerProject, prepareRowForQueue]);
 
   const removeQueueRow = useCallback(
     (rowIndex: number) => {
@@ -976,6 +1044,8 @@ export function useContractsQueue({
     hasCurrentQueueValidation,
     queueStats,
     rowErrors,
+    pendingDuplicates,
+    isDuplicateCheckLoading,
     csvInputRef,
     prepareRowForQueue,
     mergeRowsIntoQueue,
