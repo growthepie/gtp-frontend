@@ -22,6 +22,7 @@ import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
+import { normalizeString } from "@/lib/searchNormalize";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -229,13 +230,13 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     const { ownerProjectToProjectData } = useProjectsMetadata();
 
     const compareSearchResults = useMemo(() => {
-        const term = searchQuery.toLowerCase().trim();
+        const term = normalizeString(searchQuery);
         return Object.values(ownerProjectToProjectData)
             .filter(app =>
                 app.on_apps_page &&
                 app.owner_project !== owner_project &&
                 !compareAppKeys.includes(app.owner_project) &&
-                (term === "" || app.display_name.toLowerCase().includes(term)),
+                (term === "" || normalizeString(app.display_name).includes(term)),
             );
     }, [searchQuery, ownerProjectToProjectData, owner_project, compareAppKeys]);
 

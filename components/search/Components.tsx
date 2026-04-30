@@ -29,9 +29,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 import { useUIContext } from "@/contexts/UIContext";
-
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === "string" && value.trim().length > 0;
+import { isIgnoredChar, isNonEmptyString, normalizeString } from "@/lib/searchNormalize";
 
 const filterOptions = <T extends { label: unknown }>(options: T[]) =>
   options.filter(option => isNonEmptyString(option.label));
@@ -43,11 +41,6 @@ const filterGroups = <T extends { label: unknown; options: { label: unknown }[] 
       options: filterOptions(group.options),
     }))
     .filter(group => isNonEmptyString(group.label) && group.options.length > 0);
-
-function normalizeString(str: string | null | undefined) {
-  if (!isNonEmptyString(str)) return "";
-  return str.toLowerCase().replace(/[\s:\-]+/g, "");
-}
 
 const RECENT_SEARCHES_STORAGE_KEY = "gtp:recent-searches";
 const MAX_RECENT_SEARCHES = 5;
@@ -1534,8 +1527,6 @@ const OpacityUnmatchedText = ({
   }
 
   // Map normalized match index back to original string indices
-  const isIgnoredChar = (char: string) => /[\s:\-]/.test(char);
-
   let origStart = 0, normCount = 0;
   while (origStart < text.length && normCount < matchIndex) {
     if (!isIgnoredChar(text[origStart])) normCount++;
@@ -1557,6 +1548,36 @@ const OpacityUnmatchedText = ({
     text.length > SEARCH_RESULT_CONTEXT_MAX_CHARS &&
     matchIndex > Math.floor(SEARCH_RESULT_CONTEXT_MAX_CHARS * 0.45);
 
+  // Render a matched substring with ignored chars (spaces, hyphens, etc.) faded
+  // so only the actual letter matches pop visually.
+  const fadedSegmentClass = inheritParentColor
+    ? "opacity-35"
+    : "text-color-text-primary opacity-35";
+  const highlightSegmentClass = inheritParentColor
+    ? undefined
+    : "text-color-text-primary";
+  const renderMatchSegments = (matchText: string) => {
+    const segments: { text: string; ignored: boolean }[] = [];
+    for (let i = 0; i < matchText.length; i++) {
+      const char = matchText[i];
+      const ignored = isIgnoredChar(char);
+      const last = segments[segments.length - 1];
+      if (last && last.ignored === ignored) {
+        last.text += char;
+      } else {
+        segments.push({ text: char, ignored });
+      }
+    }
+    return segments.map((seg, i) => (
+      <span
+        key={i}
+        className={seg.ignored ? fadedSegmentClass : highlightSegmentClass}
+      >
+        {seg.text}
+      </span>
+    ));
+  };
+
   if (shouldUseContextSnippet && contextSnippet) {
     return (
       <span
@@ -1575,7 +1596,7 @@ const OpacityUnmatchedText = ({
           <span className={inheritParentColor ? "opacity-50" : undefined}>...</span>
         )}
         <span className={inheritParentColor ? undefined : "text-color-text-primary"}>
-          {contextSnippet.match}
+          {renderMatchSegments(contextSnippet.match)}
         </span>
         {contextSnippet.showEndEllipsis && (
           <span className={inheritParentColor ? "opacity-50" : undefined}>...</span>
@@ -1625,7 +1646,7 @@ const OpacityUnmatchedText = ({
           ref={matchRef}
           className={inheritParentColor ? undefined : "text-color-text-primary"}
         >
-          {match}
+          {renderMatchSegments(match)}
         </span>
         {after && (
           <span

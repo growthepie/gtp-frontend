@@ -16,10 +16,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useSearchBuckets, SearchBadge, BucketItem } from "../../search/Components";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import Sidebar from "@/components/sidebar/Sidebar";
-
-function normalizeString(str: string | null | undefined) {
-  return (typeof str === "string" ? str : "").toLowerCase().replace(/[\s:\-]+/g, "");
-}
+import { normalizeString } from "@/lib/searchNormalize";
 
 // Text highlighting component (simplified from original)
 const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {

@@ -5,10 +5,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { navigationItems } from "@/lib/navigation";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-
-function normalizeString(str: string) {
-  return str.toLowerCase().replace(/[\s:\-]+/g, '');
-}
+import { normalizeString } from "@/lib/searchNormalize";
 
 // Search bucket type definition
 type SearchBucket = {
