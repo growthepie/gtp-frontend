@@ -454,6 +454,10 @@ export default function GTPChart({
   // Tracks whether the most recent pointer interaction came from a touch/pen.
   // Used by the tooltip positioner to lift the tooltip off the user's finger.
   const isTouchInteractionRef = useRef(false);
+  // Shared auto-hide timer for the tooltip — reused by the mousemove path and
+  // the touch-tap path so a tap-shown tooltip gets the same fade-out window as
+  // a hovered one.
+  const tooltipHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -936,49 +940,103 @@ export default function GTPChart({
     };
   }, [onDragSelect, querySnappedXAtPixel]);
 
-  // Track whether the active pointer is a finger/pen so the tooltip can be
-  // lifted clear of the user's hand. Per-interaction (not per-device) so hybrid
-  // devices like a Surface or iPad-with-trackpad still get desktop-style
-  // placement when the user switches to a mouse.
+  const clearTooltipHideTimer = useCallback(() => {
+    if (tooltipHideTimerRef.current !== null) {
+      clearTimeout(tooltipHideTimerRef.current);
+      tooltipHideTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleTooltipHide = useCallback(() => {
+    clearTooltipHideTimer();
+    tooltipHideTimerRef.current = setTimeout(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      instance?.dispatchAction({ type: "hideTip" });
+      tooltipHideTimerRef.current = null;
+    }, TOOLTIP_AUTO_HIDE_MS);
+  }, [clearTooltipHideTimer]);
+
+  // Pointer tracking on the chart container:
+  //  • Sets the touch flag used by the tooltip positioner so the tooltip is
+  //    lifted clear of the user's hand on touch interactions, and reverts to
+  //    desktop placement when a hybrid device switches back to a mouse.
+  //  • Detects taps (touch pointerdown→pointerup with negligible travel) and
+  //    force-shows the axis tooltip at the tap location. Without this, ECharts'
+  //    axis-trigger tooltip only follows mousemove, so a quick tap on a chart
+  //    produces no tooltip at all — common when the user is scanning between
+  //    multiple charts on a phone.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
+    let downClientX: number | null = null;
+    let downClientY: number | null = null;
+    let downWasTouch = false;
+    const TAP_TRAVEL_THRESHOLD_PX = 8;
+
     const onPointerDown = (event: PointerEvent) => {
-      isTouchInteractionRef.current = event.pointerType === "touch" || event.pointerType === "pen";
+      const isTouchPointer = event.pointerType === "touch" || event.pointerType === "pen";
+      isTouchInteractionRef.current = isTouchPointer;
+      downClientX = event.clientX;
+      downClientY = event.clientY;
+      downWasTouch = isTouchPointer;
     };
-    el.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      el.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, []);
 
-  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
-  useEffect(() => {
-    let hideTimer: ReturnType<typeof setTimeout> | null = null;
-    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
-    let onMoveHandler: (() => void) | null = null;
-
-    const clearHideTimer = () => {
-      if (hideTimer !== null) {
-        clearTimeout(hideTimer);
-        hideTimer = null;
+    const onPointerMove = (event: PointerEvent) => {
+      // Hybrid devices: if the user switches from finger to mouse without
+      // re-tapping, revert to desktop placement on the next hover.
+      if (event.pointerType === "mouse") {
+        isTouchInteractionRef.current = false;
       }
     };
 
-    const scheduleHide = () => {
-      clearHideTimer();
-      hideTimer = setTimeout(() => {
-        const instance = echartsRef.current?.getEchartsInstance?.();
-        instance?.dispatchAction({ type: "hideTip" });
-      }, TOOLTIP_AUTO_HIDE_MS);
+    const onPointerUp = (event: PointerEvent) => {
+      const wasTouch = downWasTouch;
+      const startX = downClientX;
+      const startY = downClientY;
+      downClientX = null;
+      downClientY = null;
+      downWasTouch = false;
+
+      if (!wasTouch || startX === null || startY === null) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (dx * dx + dy * dy > TAP_TRAVEL_THRESHOLD_PX * TAP_TRAVEL_THRESHOLD_PX) return;
+
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+      const rect = el.getBoundingClientRect();
+      instance.dispatchAction({
+        type: "showTip",
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+      scheduleTooltipHide();
     };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [scheduleTooltipHide]);
+
+  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
+  useEffect(() => {
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
+    let onMoveHandler: (() => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
-      onMoveHandler = scheduleHide;
+      onMoveHandler = scheduleTooltipHide;
       zr.on("mousemove", onMoveHandler);
     });
 
@@ -988,7 +1046,7 @@ export default function GTPChart({
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       if (!containerRef.current.contains(target)) {
-        clearHideTimer();
+        clearTooltipHideTimer();
         const instance = echartsRef.current?.getEchartsInstance?.();
         instance?.dispatchAction({ type: "hideTip" });
       }
@@ -998,13 +1056,13 @@ export default function GTPChart({
 
     return () => {
       cancelAnimationFrame(frame);
-      clearHideTimer();
+      clearTooltipHideTimer();
       document.removeEventListener("touchstart", handleOutsideTap);
       if (zr && onMoveHandler) {
         zr.off("mousemove", onMoveHandler);
       }
     };
-  }, []);
+  }, [scheduleTooltipHide, clearTooltipHideTimer]);
 
   // Cross-chart axis pointer sync — no echarts.connect, no tooltip pipeline involvement.
   //

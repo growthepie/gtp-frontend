@@ -487,6 +487,7 @@ export default function GTPUniversalChart({
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
   const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
+  const echartsRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
   // Tracks whether the most recent pointer interaction came from a touch/pen.
   // Used by the tooltip positioner to lift the tooltip off the user's finger.
   const isTouchInteractionRef = useRef(false);
@@ -1183,18 +1184,71 @@ export default function GTPUniversalChart({
     [],
   );
 
-  // Track whether the active pointer is a finger/pen so the tooltip can be
-  // lifted clear of the user's hand. Per-interaction (not per-device) so hybrid
-  // devices still get desktop-style placement when the user switches to a mouse.
+  // Pointer tracking on the chart container:
+  //  • Sets the touch flag used by the tooltip positioner so the tooltip is
+  //    lifted clear of the user's hand on touch interactions, and reverts to
+  //    desktop placement when a hybrid device switches back to a mouse.
+  //  • Detects taps (touch pointerdown→pointerup with negligible travel) and
+  //    force-shows the axis tooltip at the tap location. Without this, ECharts'
+  //    axis-trigger tooltip only follows mousemove, so a quick tap on a chart
+  //    produces no tooltip at all on a phone.
   useEffect(() => {
     const el = chartTooltipHostRef.current;
     if (!el) return;
+
+    let downClientX: number | null = null;
+    let downClientY: number | null = null;
+    let downWasTouch = false;
+    const TAP_TRAVEL_THRESHOLD_PX = 8;
+
     const onPointerDown = (event: PointerEvent) => {
-      isTouchInteractionRef.current = event.pointerType === "touch" || event.pointerType === "pen";
+      const isTouchPointer = event.pointerType === "touch" || event.pointerType === "pen";
+      isTouchInteractionRef.current = isTouchPointer;
+      downClientX = event.clientX;
+      downClientY = event.clientY;
+      downWasTouch = isTouchPointer;
     };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") {
+        isTouchInteractionRef.current = false;
+      }
+    };
+
+    const onPointerUp = (event: PointerEvent) => {
+      const wasTouch = downWasTouch;
+      const startX = downClientX;
+      const startY = downClientY;
+      downClientX = null;
+      downClientY = null;
+      downWasTouch = false;
+
+      if (!wasTouch || startX === null || startY === null) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (dx * dx + dy * dy > TAP_TRAVEL_THRESHOLD_PX * TAP_TRAVEL_THRESHOLD_PX) return;
+
+      const instance = echartsRef.current?.getEchartsInstance?.() as
+        | { dispatchAction: (action: Record<string, unknown>) => void }
+        | undefined;
+      if (!instance) return;
+      const rect = el.getBoundingClientRect();
+      instance.dispatchAction({
+        type: "showTip",
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+    };
+
     el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
     return () => {
       el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
@@ -2348,6 +2402,7 @@ export default function GTPUniversalChart({
                   style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
                 >
                   <ReactEChartsCore
+                    ref={echartsRef}
                     echarts={echarts}
                     option={chartOption}
                     notMerge
