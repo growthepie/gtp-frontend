@@ -997,7 +997,7 @@ export default function Page({
                 appIconOverride={tab.key === "overview"
                   ? projectMetadata.logo_path ? 
                     <Image src={`https://api.growthepie.com/v1/apps/logos/${projectMetadata.logo_path}`} alt={projectMetadata.display_name} width={24} height={24} className="rounded-full" />
-                  : <GTPIcon icon="gtp-project" size="md" className="!size-[24px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
+                  : <GTPIcon icon="gtp-project-monochrome" size="md" className="!size-[24px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
                   : undefined
                 }
                 header={tab.key === "overview" ? projectMetadata.display_name : tab.getHeader?.()}
