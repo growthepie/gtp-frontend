@@ -30,6 +30,7 @@ export interface MetricData {
   unit: string;
   source: string[];
   changes: Changes;
+  hourly?: IntervalData;
   daily: IntervalData;
   weekly?: IntervalData;
   monthly?: IntervalData;

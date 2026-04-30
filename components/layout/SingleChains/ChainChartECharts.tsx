@@ -16,12 +16,10 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import { TopRowContainer, TopRowChild, TopRowParent } from "@/components/layout/TopRow";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { metricItems, getFundamentalsByKey, metricCategories } from "@/lib/metrics";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
-import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -42,6 +40,12 @@ const transformMetricDetails = (details: MetricDetails): MetricData => {
     unit: "",
     source: [],
     changes: details.changes.daily as any,
+    hourly: details.timeseries.hourly
+      ? {
+          types: details.timeseries.hourly.types,
+          data: details.timeseries.hourly.data as [number, number][],
+        }
+      : undefined,
     daily: {
       types: details.timeseries.daily.types,
       data: details.timeseries.daily.data as [number, number][],
@@ -863,7 +867,17 @@ const MetricChart = memo(
             const date = new Date(params[0].value[0]);
             let dateString: string;
 
-            if (selectedTimeInterval === "weekly") {
+            if (selectedTimeInterval === "hourly") {
+              dateString = date.toLocaleString("en-GB", {
+                timeZone: "UTC",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              });
+            } else if (selectedTimeInterval === "weekly") {
               const start = new Date(date);
               const end = new Date(date);
               end.setUTCDate(start.getUTCDate() + 6);
@@ -1005,9 +1019,9 @@ const MetricChart = memo(
       filteredDataMap,
       minDataValue,
       maxDataValue,
-      minDataValue,
       chartType,
       theme,
+      echartsColors.textPrimary,
       AllChainsByKeys,
       activeTimespan,
       zoomed,
@@ -1596,22 +1610,7 @@ export default function ChainChartECharts({
   const [showUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  const [lineType, setLineType] = useLocalStorage<"complex" | "simple">("fundamentalsLineTypeV2", "simple");
-  const [mounted, setMounted] = useState(false);
-  
-  // Ensure component is mounted before rendering toggle to avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Reset to simple whenever the fundamentals tab is opened
-  useEffect(() => {
-    setLineType("simple");
-  }, [setLineType]);
-  
-  const handleLineTypeChange = useCallback((value: string) => {
-    setLineType(value as "complex" | "simple");
-  }, [setLineType]);
+  const lineType = "simple" as const;
   const [isPending, startTransition] = useTransition();
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
@@ -1628,17 +1627,27 @@ export default function ChainChartECharts({
 
   // Available intervals
   const availableIntervals = useMemo(() => {
-    const intervals: string[] = [];
+    const intervals = new Set<string>();
     if (data.length === 0 || !data[0].metrics) return ["daily"];
-    const firstMetricKey = Object.keys(data[0].metrics)[0];
-    if (!firstMetricKey) return ["daily"];
-    const firstMetric = data[0].metrics[firstMetricKey];
-    if (firstMetric.daily) intervals.push("daily");
-    if (firstMetric.weekly) intervals.push("weekly");
-    if (firstMetric.monthly) intervals.push("monthly");
-    if (firstMetric.quarterly) intervals.push("quarterly");
-    return intervals.length > 0 ? intervals : ["daily"];
+
+    Object.values(data[0].metrics).forEach((metric) => {
+      if (metric.hourly?.data?.length) intervals.add("hourly");
+      if (metric.daily?.data?.length) intervals.add("daily");
+      if (metric.weekly?.data?.length) intervals.add("weekly");
+      if (metric.monthly?.data?.length) intervals.add("monthly");
+      if (metric.quarterly?.data?.length) intervals.add("quarterly");
+    });
+
+    const intervalOrder = ["hourly", "daily", "weekly", "monthly", "quarterly"];
+    const orderedIntervals = intervalOrder.filter((interval) => intervals.has(interval));
+    return orderedIntervals.length > 0 ? orderedIntervals : ["daily"];
   }, [data]);
+
+  useEffect(() => {
+    if (!availableIntervals.includes(selectedTimeInterval)) {
+      setSelectedTimeInterval(availableIntervals[0] ?? "daily");
+    }
+  }, [availableIntervals, selectedTimeInterval]);
 
   // Fetch chain data
   const fetchChainData = useCallback(async () => {
@@ -1723,7 +1732,14 @@ export default function ChainChartECharts({
 
     let timespansResult: any;
 
-    if (selectedTimeInterval === "weekly") {
+    if (selectedTimeInterval === "hourly") {
+      timespansResult = {
+        "24h": { label: "24 hours", shortLabel: "24h", value: 24, xMin: clampMin(dayMs), xMax: maxUnix, daysDiff: 1 },
+        "3d": { label: "3 days", shortLabel: "3d", value: 3, xMin: clampMin(3 * dayMs), xMax: maxUnix, daysDiff: 3 },
+        "7d": { label: "7 days", shortLabel: "7d", value: 7, xMin: clampMin(7 * dayMs), xMax: maxUnix, daysDiff: 7 },
+        "14d": { label: "14 days", shortLabel: "14d", value: 14, xMin: clampMin(14 * dayMs), xMax: maxUnix, daysDiff: 14 }
+      };
+    } else if (selectedTimeInterval === "weekly") {
       timespansResult = {
         "12w": { label: "3 months", shortLabel: "3m", value: 12, xMin: clampMin(12 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(12 * 7 * dayMs)) / dayMs) },
         "24w": { label: "6 months", shortLabel: "6m", value: 24, xMin: clampMin(24 * 7 * dayMs), xMax: maxUnix, daysDiff: Math.round((maxUnix - clampMin(24 * 7 * dayMs)) / dayMs) },
@@ -1777,6 +1793,7 @@ export default function ChainChartECharts({
   // Timespan map for interval changes
   const timespanMap = useMemo(
     () => ({
+      hourly: ["24h", "3d", "7d", "14d"],
       daily: ["90d", "180d", "365d", "max"],
       weekly: ["12w", "24w", "52w", "maxW"],
       monthly: ["6m", "12m", "maxM"],
@@ -1888,19 +1905,6 @@ export default function ChainChartECharts({
           <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
             Fundamental Metrics
           </Heading>
-          {mounted && !IS_PRODUCTION && (
-            <ToggleSwitch
-              values={[
-                { value: "simple", label: "simple" },
-                { value: "complex", label: "complex" },
-              ]}
-              value={lineType}
-              onChange={handleLineTypeChange}
-              size="sm"
-              ariaLabel="Line type toggle"
-              className="ml-[12px]"
-            />
-          )}
         </div>
 
         {/* Chain Compare Dropdown */}
@@ -2030,6 +2034,8 @@ export default function ChainChartECharts({
               .filter((timespan) =>
                 selectedTimeInterval === "daily"
                   ? ["90d", "180d", "365d", "max"].includes(timespan)
+                  : selectedTimeInterval === "hourly"
+                  ? ["24h", "3d", "7d", "14d"].includes(timespan)
                   : selectedTimeInterval === "weekly"
                   ? ["12w", "24w", "52w", "maxW"].includes(timespan)
                   : selectedTimeInterval === "monthly"
@@ -2089,7 +2095,9 @@ export default function ChainChartECharts({
                   {enabledFundamentalsKeys
                     .filter((key) => getFundamentalsByKey[key]?.category === categoryKey)
                     .map((key) => {
-                      if (!Object.keys(data[0]?.metrics || {}).includes(key)) return null;
+                      const metricData = data[0]?.metrics?.[key];
+                      const intervalData = metricData?.[selectedTimeInterval as keyof typeof metricData] as IntervalData | undefined;
+                      if (!intervalData?.data?.length) return null;
 
                       return (
                         <LazyChart key={key} height={224}>
