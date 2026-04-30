@@ -2271,7 +2271,12 @@ export default function GTPChart({
         backgroundColor: "transparent",
         borderWidth: 0,
         padding: 0,
-        extraCssText: "box-shadow:none; border:none; z-index:2147483647;",
+        // pointer-events:none lets taps pass through the body-level tooltip to
+        // the chart canvas underneath. Without it, a tap that lands on a
+        // lingering tooltip from the previous chart would be swallowed by the
+        // tooltip element instead of reaching the new chart, forcing the user
+        // to tap a second time.
+        extraCssText: "box-shadow:none; border:none; z-index:2147483647; pointer-events:none;",
         textStyle: {
           color: textPrimary,
           fontFamily: "var(--font-raleway), sans-serif",

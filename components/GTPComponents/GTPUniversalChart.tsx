@@ -1465,7 +1465,10 @@ export default function GTPUniversalChart({
         backgroundColor: "transparent",
         borderWidth: 0,
         padding: 0,
-        extraCssText: "box-shadow:none; border:none; z-index:2147483647;",
+        // pointer-events:none lets taps pass through the body-level tooltip to
+        // the chart canvas underneath, so a tap on a lingering tooltip doesn't
+        // get swallowed instead of triggering a fresh tooltip on the chart.
+        extraCssText: "box-shadow:none; border:none; z-index:2147483647; pointer-events:none;",
         textStyle: {
           color: textPrimary,
           fontFamily: "var(--font-raleway), sans-serif",
