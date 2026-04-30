@@ -58,26 +58,32 @@ export const getViewportAwareTooltipLocalPosition = ({
   const maxY = Math.max(viewportHeight - contentHeight - viewportPadding, viewportPadding);
 
   if (isTouch) {
-    // Touch placement: prefer above the finger, horizontally centered on it.
-    // The finger (and the user's hand) occludes everything below-and-right of the
-    // contact point, so placing the tooltip there — as we do for a mouse cursor —
-    // hides it during scrubbing. Centering horizontally also avoids confusing
-    // left/right flips as the finger drags across the chart.
+    // Touch placement: pin the tooltip at the top of the chart host with X
+    // centered on the finger. Following the finger's Y (as a mouse-style cursor
+    // tooltip would) makes the tooltip drift up and down as the hand wobbles
+    // during a horizontal scrub, which feels janky. Anchoring vertically to the
+    // chart turns the tooltip into a stable readout band — only the values
+    // inside change as the finger moves — matching iOS Stocks / Robinhood etc.
     let xAbs = anchorAbsX - contentWidth / 2;
     xAbs = clamp(xAbs, viewportPadding, maxX);
 
-    const spaceAbove = anchorAbsY - touchOffset - viewportPadding;
-    const spaceBelow = viewportHeight - viewportPadding - (anchorAbsY + touchOffset);
+    const STABLE_TOP_PADDING = 8;
+    const stableTopAbs = Math.max(hostTop + STABLE_TOP_PADDING, viewportPadding);
+    // Only abandon the stable top position when the finger is so close to the
+    // top of the chart that the tooltip would visually overlap it. Once that
+    // happens, drop the tooltip below the finger instead.
+    const stableTopFingerClearanceY = stableTopAbs + contentHeight + touchOffset;
 
     let yAbs: number;
-    if (contentHeight <= spaceAbove) {
-      yAbs = anchorAbsY - contentHeight - touchOffset;
-    } else if (contentHeight <= spaceBelow) {
-      yAbs = anchorAbsY + touchOffset;
+    if (anchorAbsY >= stableTopFingerClearanceY) {
+      yAbs = stableTopAbs;
     } else {
-      // No room either side at the touch offset — pin to the top of the viewport.
-      // This keeps the tooltip visible even when the chart fills the screen.
-      yAbs = viewportPadding;
+      const belowYAbs = anchorAbsY + touchOffset;
+      if (belowYAbs + contentHeight <= viewportHeight - viewportPadding) {
+        yAbs = belowYAbs;
+      } else {
+        yAbs = viewportPadding;
+      }
     }
     yAbs = clamp(yAbs, viewportPadding, maxY);
     return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
