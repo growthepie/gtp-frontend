@@ -9,12 +9,21 @@ import dayjs from "@/lib/dayjs";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Cap on escalated precision for sub-unit values (e.g. token price in ETH)
+const MAX_SMALL_DECIMALS = 8;
+
 const formatLargeNumber = (value: number, decimals = 2): string => {
   if (value == null || isNaN(value)) return "—";
   const abs = Math.abs(value);
   if (abs >= 1e9) return (value / 1e9).toFixed(decimals) + "B";
   if (abs >= 1e6) return (value / 1e6).toFixed(decimals) + "M";
   if (abs >= 1e3) return (value / 1e3).toFixed(decimals) + "K";
+  // Escalate decimals for small non-zero values so they don't render as "0.00".
+  // Show at least 2 significant figures, capped at MAX_SMALL_DECIMALS.
+  if (abs > 0 && abs < 0.5 * Math.pow(10, -decimals)) {
+    const needed = Math.ceil(-Math.log10(abs)) + 1;
+    return value.toFixed(Math.min(MAX_SMALL_DECIMALS, Math.max(decimals, needed)));
+  }
   return value.toFixed(decimals);
 };
 

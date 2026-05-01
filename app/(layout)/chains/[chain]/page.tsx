@@ -38,6 +38,7 @@ import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { useUIContext } from "@/contexts/UIContext";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -1157,6 +1158,18 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
         : "",
     );
+
+    // Disable the global ETH/USD switch while on the Quick Bites tab — quick bites
+    // are USD-only by default, matching the standalone /quick-bites pages. Cleanup
+    // re-enables the switch when leaving the tab or unmounting the page.
+    const setEthUsdSwitchEnabled = useUIContext((state) => state.setEthUsdSwitchEnabled);
+    useEffect(() => {
+      if (selectedTab !== "quick_bites") return;
+      setEthUsdSwitchEnabled(false);
+      return () => {
+        setEthUsdSwitchEnabled(true);
+      };
+    }, [selectedTab, setEthUsdSwitchEnabled]);
 
     // Update URL when selectedTab changes
     useEffect(() => {

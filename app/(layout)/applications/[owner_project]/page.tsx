@@ -25,7 +25,7 @@ import MetricsBody from "@/components/layout/Applications/MetricsBody";
 import { useAppColors } from "@/hooks/useAppColors";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
-import { useMediaQuery } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 
@@ -714,6 +714,7 @@ const OverviewContent = memo(({
   const { resolvedTheme } = useTheme();
   const { getAppColors } = useAppColors();
   const appColor = getAppColors(owner_project, resolvedTheme);
+  const [showUsd] = useLocalStorage("showUsd", true);
   // Callback ref pattern: ResizeObserver is set up the moment React attaches the
   // element, so leftColHeight is correct even on the first mount (avoids the
   // useElementSizeObserver issue where ref.current is null on the first render).
@@ -790,19 +791,43 @@ const OverviewContent = memo(({
           <PartitionLine title="Yesterday" />
           {data.kpi_cards && (
             <>
-          {Object.keys(data.kpi_cards).map((metric) => (
-            <GTPMetricCard
-              key={metric}
-              label={masterData?.app_metrics[metric].name ?? metric}
-              value={data.kpi_cards[metric].current_values.data[0]}
-              wowChange={data.kpi_cards[metric].wow_change.data[0] * 100}
-              sparkline={data.kpi_cards[metric].sparkline.data.map((item: any) => item[1])}
-              color={appColor[0]}
-              icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"}
-              onClick={() => navigateToMetric(metric)}
-            />
-
-          ))}
+          {Object.keys(data.kpi_cards).map((metric) => {
+            const card = data.kpi_cards[metric];
+            const units = masterData?.app_metrics[metric]?.units ?? {};
+            const unitKey = "usd" in units || "eth" in units
+              ? (showUsd ? "usd" : "eth")
+              : "value";
+            const unit = units[unitKey];
+            // Pick the column for the active currency. Each block's `types` array maps
+            // 1:1 to its data row indices (e.g. ['unix','usd','eth'] → row[1]=usd, row[2]=eth).
+            const pickIdx = (types: string[] | undefined, fallback: number): number => {
+              const arr = types ?? [];
+              let idx = arr.indexOf(unitKey);
+              if (idx === -1 && unitKey !== "value") idx = arr.indexOf(unitKey === "usd" ? "eth" : "usd");
+              if (idx === -1) idx = arr.indexOf("value");
+              return idx === -1 ? fallback : idx;
+            };
+            const valueIdx = pickIdx(card.current_values?.types, 0);
+            const wowIdx = pickIdx(card.wow_change?.types, 0);
+            const sparklineIdx = pickIdx(card.sparkline?.types, 1);
+            // success_rate comes back as a 0–1 fraction; scale to a percentage for display.
+            const isPercentage = metric === "success_rate";
+            const scale = isPercentage ? 100 : 1;
+            return (
+              <GTPMetricCard
+                key={metric}
+                label={masterData?.app_metrics[metric].name ?? metric}
+                value={card.current_values.data[valueIdx] * scale}
+                wowChange={card.wow_change.data[wowIdx] * 100}
+                sparkline={card.sparkline.data.map((item: any) => item[sparklineIdx] * scale)}
+                prefix={unit?.prefix ?? ""}
+                suffix={isPercentage ? "%" : (unit?.suffix ?? "")}
+                color={appColor[0]}
+                icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"}
+                onClick={() => navigateToMetric(metric)}
+              />
+            );
+          })}
           </>
           )}
                   <PartitionLine />

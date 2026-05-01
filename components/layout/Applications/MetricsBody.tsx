@@ -35,20 +35,32 @@ type CompareAppEntry = {
     displayName: string;
 };
 
-// Handles both raw array format and { data: number[][] } object format
-const getTimeseriesRows = (value: unknown): number[][] => {
+// Handles both raw array format and { types, data } object format
+const getTimeseries = (value: unknown): { types: string[]; rows: number[][] } => {
     if (Array.isArray(value)) {
-        return value as number[][];
+        return { types: [], rows: value as number[][] };
     }
-    if (
-        value &&
-        typeof value === "object" &&
-        "data" in value &&
-        Array.isArray((value as { data?: unknown }).data)
-    ) {
-        return (value as { data: number[][] }).data;
+    if (value && typeof value === "object") {
+        const obj = value as { data?: unknown; types?: unknown };
+        const rows = Array.isArray(obj.data) ? (obj.data as number[][]) : [];
+        const types = Array.isArray(obj.types) ? (obj.types as string[]) : [];
+        return { types, rows };
     }
-    return [];
+    return { types: [], rows: [] };
+};
+
+const getTimeseriesRows = (value: unknown): number[][] => getTimeseries(value).rows;
+
+// Picks the column index for the active currency, falling back to "value" for
+// non-currency metrics and finally to index 1 when types is unavailable.
+const resolveValueIndex = (types: string[], showUsd: boolean): number => {
+    if (types.length === 0) return 1;
+    const preferred = showUsd ? "usd" : "eth";
+    const fallback = showUsd ? "eth" : "usd";
+    let idx = types.indexOf(preferred);
+    if (idx === -1) idx = types.indexOf(fallback);
+    if (idx === -1) idx = types.indexOf("value");
+    return idx === -1 ? 1 : idx;
 };
 
 type SeriesEntry = { name: string; data: [number, number | null][] };
@@ -63,8 +75,9 @@ function computeMetricSeriesData(params: {
     isComparing: boolean;
     compareApps: CompareAppEntry[];
     showAvg: boolean;
+    showUsd: boolean;
 }): SeriesEntry[] {
-    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg } = params;
+    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg, showUsd } = params;
     const overTime = data.metrics[metric]?.over_time;
     if (!overTime) return [];
 
@@ -76,10 +89,12 @@ function computeMetricSeriesData(params: {
         const counts = new Map<number, number>();
         for (const chain of Object.keys(ot)) {
             if (excludeChains.includes(chain)) continue;
-            const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
-            for (const d of points) {
+            const { types, rows } = getTimeseries((ot[chain] as any)?.[timeInterval]);
+            const valIdx = resolveValueIndex(types, showUsd);
+            for (const d of rows) {
                 const ts = Number(d[0]);
-                const val: number | null = d[1] == null ? null : Number(d[1]);
+                const raw = d[valIdx];
+                const val: number | null = raw == null ? null : Number(raw);
                 if (!sums.has(ts)) {
                     sums.set(ts, val);
                     counts.set(ts, val !== null ? 1 : 0);
@@ -100,24 +115,27 @@ function computeMetricSeriesData(params: {
     }
 
     if (!hasChainData) {
-        const intervalData = getTimeseriesRows(
-            (overTime as any)?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
-        );
+        const series =
+            (overTime as any)?.all?.[timeInterval] ??
+            (overTime as Record<string, unknown>)[timeInterval];
+        const { types, rows } = getTimeseries(series);
+        const valIdx = resolveValueIndex(types, showUsd);
         const mainSeries: SeriesEntry = {
             name: "Total",
-            data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            data: rows.map((d): [number, number | null] => [Number(d[0]), d[valIdx] == null ? null : Number(d[valIdx])]),
         };
         if (!isComparing) return [mainSeries];
         const compareSeries = compareApps
             .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
             .map(app => {
-                const appIntervalData = getTimeseriesRows(
+                const appSeries =
                     (app.data.metrics[metric].over_time as any)?.all?.[timeInterval] ??
-                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
-                );
+                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval];
+                const { types: appTypes, rows: appRows } = getTimeseries(appSeries);
+                const appValIdx = resolveValueIndex(appTypes, showUsd);
                 return {
                     name: `compare_${app.owner_project}`,
-                    data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                    data: appRows.map((d): [number, number | null] => [Number(d[0]), d[appValIdx] == null ? null : Number(d[appValIdx])]),
                 } as SeriesEntry;
             });
         return [mainSeries, ...compareSeries];
@@ -125,11 +143,12 @@ function computeMetricSeriesData(params: {
 
     const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
     const perChain: SeriesEntry[] = chains.flatMap((chain) => {
-        const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
-        if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
+        const { types, rows } = getTimeseries((overTime[chain] as any)?.[timeInterval]);
+        if (rows.length === 0) return [];
+        const valIdx = resolveValueIndex(types, showUsd);
         return [{
             name: chain,
-            data: intervalData.map((d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            data: rows.map((d: number[]): [number, number | null] => [Number(d[0]), d[valIdx] == null ? null : Number(d[valIdx])]),
         }];
     });
 
@@ -201,6 +220,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     const [timeInterval, setTimeInterval] = useState("daily");
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
+    const [showUsd] = useLocalStorage("showUsd", true);
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     const [isCompareDropdownOpen, setIsCompareDropdownOpen] = useState(false);
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
@@ -450,6 +470,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 isComparing,
                 compareApps: compareAppsForChart,
                 showAvg: master?.app_metrics?.[m]?.all_l2s_aggregate === "avg",
+                showUsd,
             });
             // Apply the same visibleSeries filter used in AppMetricChart
             const visible = series.filter(s =>
@@ -462,7 +483,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         }
 
         return earliestTs !== Infinity ? earliestTs : undefined;
-    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart]);
+    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart, showUsd]);
 
     const comparePill = useMemo(() => {
 
@@ -863,7 +884,8 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         isComparing,
         compareApps,
         showAvg: resolvedMetricData?.all_l2s_aggregate === "avg",
-    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
+        showUsd,
+    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing, showUsd]);
 
     const metricData = resolvedMetricData;
     const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");
