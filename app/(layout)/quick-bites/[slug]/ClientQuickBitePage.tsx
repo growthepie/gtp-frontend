@@ -29,6 +29,8 @@ import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
 
 type Props = {
   params: { slug: string };
+  initialQuickBite?: QuickBiteData | null;
+  initialContentBlocks?: ContentBlock[];
 };
 
 const normalizeChainAlias = (value: string) => value.toLowerCase().replace(/[\s:_-]+/g, "");
@@ -241,15 +243,28 @@ const appendChartChainTopics = (
   return topicsToAppend.length > 0 ? [...topics, ...topicsToAppend] : topics;
 };
 
-export default function ClientQuickBitePage({ params }: Props) {
+export default function ClientQuickBitePage({
+  params,
+  initialQuickBite = null,
+  initialContentBlocks = [],
+}: Props) {
   const TOPIC_GAP_PX = 5;
   const { AllChainsByKeys } = useMaster();
   const setEthUsdSwitchEnabled = useUIContext((state) => state.setEthUsdSwitchEnabled);
-  const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(null);
-  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
-  const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>([]);
+  const hasServerBlocks = initialContentBlocks.length > 0;
+  const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(initialQuickBite);
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>(initialContentBlocks);
+  const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>(() => {
+    if (!initialQuickBite?.related?.length) return [];
+    return initialQuickBite.related
+      .map((slug) => {
+        const data = getQuickBiteBySlug(slug);
+        return data ? { ...data, slug } : null;
+      })
+      .filter((item): item is QuickBiteWithSlug => item !== null);
+  });
   const [showNotFound, setShowNotFound] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!hasServerBlocks);
   const [visibleTopicCount, setVisibleTopicCount] = useState(0);
   const [topicViewportWidth, setTopicViewportWidth] = useState(0);
   const { theme } = useTheme();
@@ -380,10 +395,18 @@ export default function ClientQuickBitePage({ params }: Props) {
   }, [params.slug, setEthUsdSwitchEnabled]);
 
   useEffect(() => {
+    // Server-side pre-processing in page.tsx normally provides the parsed
+    // blocks via props. Only fall back to client-side processing when the
+    // server didn't supply any (e.g. processing error on the server).
+    if (hasServerBlocks) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchContentBlocks = async () => {
       try {
         setIsLoading(true);
-        
+
         const quickBite = getQuickBiteBySlug(params.slug);
         if (!quickBite) {
           setShowNotFound(true);
@@ -406,7 +429,7 @@ export default function ClientQuickBitePage({ params }: Props) {
 
         const blocks = await processMarkdownContent(processedContent);
         setContentBlocks(blocks);
-        
+
       } catch (error) {
         console.error('Error processing quick bite content:', error);
         setShowNotFound(true);
@@ -414,9 +437,9 @@ export default function ClientQuickBitePage({ params }: Props) {
         setIsLoading(false);
       }
     };
-    
+
     fetchContentBlocks();
-  }, [params.slug]);
+  }, [params.slug, hasServerBlocks]);
 
   if (showNotFound) {
     return notFound();

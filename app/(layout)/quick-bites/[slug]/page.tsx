@@ -9,6 +9,10 @@ import {
   generateJsonLdBreadcrumbs,
 } from '@/lib/quick-bites/seo_helper';
 import { serializeJsonLd } from '@/utils/json-ld';
+import { processDynamicContent } from '@/lib/utils/dynamicContent';
+import { processMarkdownContent } from '@/lib/utils/markdownParser';
+import type { ContentBlock } from '@/lib/types/blockTypes';
+import type { QuickBiteData } from '@/lib/types/quickBites';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -44,6 +48,19 @@ export default async function Page({ params }: Props) {
   const qb = getQuickBiteBySlug(slug);
   if (!qb) return notFound();
 
+  // Pre-process content server-side so headings, paragraphs, lists and other
+  // static text appear in the initial HTML for crawlers and AI readers.
+  // Dynamic blocks (charts, live metrics) still hydrate on the client.
+  let initialQuickBite: QuickBiteData = qb;
+  let initialContentBlocks: ContentBlock[] = [];
+  try {
+    const processedContent = await processDynamicContent(qb.content);
+    initialQuickBite = { ...qb, content: processedContent };
+    initialContentBlocks = await processMarkdownContent(processedContent);
+  } catch (error) {
+    console.error(`Failed to pre-process quick bite "${slug}" on server:`, error);
+  }
+
   const jsonLdArticle = generateJsonLdArticle(slug, qb, {
     dateModified: qb.date,
     language: 'en',
@@ -78,7 +95,11 @@ export default async function Page({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(obj) }}
         />
       ))}
-      <ClientQuickBitePage params={{ slug }} />
+      <ClientQuickBitePage
+        params={{ slug }}
+        initialQuickBite={initialQuickBite}
+        initialContentBlocks={initialContentBlocks}
+      />
     </>
   );
 }
