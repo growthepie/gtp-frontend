@@ -14,6 +14,23 @@ import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import type { ContentBlock } from '@/lib/types/blockTypes';
 import type { QuickBiteData } from '@/lib/types/quickBites';
 
+// Strip markdown / fenced data blocks so AI consumers see only the prose.
+const ARTICLE_BODY_MAX_CHARS = 5000;
+const extractPlainText = (content: string[]): string => {
+  const joined = content.join('\n\n');
+  const stripped = joined
+    .replace(/```[\s\S]*?```/g, ' ') // fenced blocks (chart configs, KPIs, faq json)
+    .replace(/`[^`]*`/g, ' ') // inline code
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ') // images
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links → label
+    .replace(/^\s{0,3}>\s?/gm, '') // blockquote markers
+    .replace(/^#{1,6}\s+/gm, '') // heading markers
+    .replace(/[*_~]+/g, '') // emphasis markers
+    .replace(/\s+/g, ' ')
+    .trim();
+  return stripped;
+};
+
 type Props = { params: Promise<{ slug: string }> };
 
 // ----- SEO: generate <head> metadata -----
@@ -53,10 +70,18 @@ export default async function Page({ params }: Props) {
   // Dynamic blocks (charts, live metrics) still hydrate on the client.
   let initialQuickBite: QuickBiteData = qb;
   let initialContentBlocks: ContentBlock[] = [];
+  let articleBody: string | undefined;
+  let wordCount: number | undefined;
   try {
     const processedContent = await processDynamicContent(qb.content);
     initialQuickBite = { ...qb, content: processedContent };
     initialContentBlocks = await processMarkdownContent(processedContent);
+
+    const plainText = extractPlainText(processedContent);
+    if (plainText) {
+      articleBody = plainText.slice(0, ARTICLE_BODY_MAX_CHARS);
+      wordCount = plainText.split(/\s+/).filter(Boolean).length;
+    }
   } catch (error) {
     console.error(`Failed to pre-process quick bite "${slug}" on server:`, error);
   }
@@ -64,6 +89,8 @@ export default async function Page({ params }: Props) {
   const jsonLdArticle = generateJsonLdArticle(slug, qb, {
     dateModified: qb.date,
     language: 'en',
+    articleBody,
+    wordCount,
   });
   const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(slug, qb);
 

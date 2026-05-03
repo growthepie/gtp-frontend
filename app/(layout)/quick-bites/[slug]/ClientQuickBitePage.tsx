@@ -456,27 +456,39 @@ export default function ClientQuickBitePage({
           className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
           isPageRoot
         >
-          {/* Header section */}
-          <div className=" flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
-            <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
-              <SmartBackButton />
-              <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>   
-                <GTPIcon icon="gtp-quick-bites" size="lg" />
+          <article
+            className="contents"
+            itemScope
+            itemType="https://schema.org/TechArticle"
+          >
+            {/* Header section */}
+            <header className="flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
+              <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
+                <SmartBackButton />
+                <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>
+                  <GTPIcon icon="gtp-quick-bites" size="lg" />
+                </div>
+                <h1
+                  itemProp="headline"
+                  className={`leading-snug heading-large-md md:heading-large-lg xl:heading-large-xl flex items-center `}
+                >
+                  {quickBiteWithChartTopics && quickBiteWithChartTopics.title}
+                </h1>
               </div>
-              <h1 className={`leading-snug heading-large-md md:heading-large-lg xl:heading-large-xl flex items-center `}>
-                {quickBiteWithChartTopics && quickBiteWithChartTopics.title}
-              </h1>
-            </div>
 
-            {/* Author section */}
-            <div className="flex lg:justify-normal justify-between lg:w-auto w-full  items-center h-full gap-x-2 text-sm">
-              <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={"/"}>
-                <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
-              </Link>  
-              <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
-                {quickBiteWithChartTopics && quickBiteWithChartTopics.author && (
-                  <>
-                    <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'>
+              {/* Author + date */}
+              <div className="flex lg:justify-normal justify-between lg:w-auto w-full items-center h-full gap-x-2 text-sm">
+                <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={"/"}>
+                  <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`} />
+                </Link>
+                <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
+                  {quickBiteWithChartTopics && quickBiteWithChartTopics.author && (
+                    <div
+                      className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'
+                      itemProp="author"
+                      itemScope
+                      itemType="https://schema.org/Person"
+                    >
                       {quickBiteWithChartTopics.author.map((author) => (
                         <Fragment key={author.xUsername}>
                           <ClientAuthorLink name={author.name} xUsername={author.xUsername} />
@@ -486,23 +498,42 @@ export default function ClientQuickBitePage({
                         </Fragment>
                       ))}
                     </div>
-                  </>
-                )}
-                <span className='text-xxs lg:text-sm'>{quickBiteWithChartTopics && formatDate(quickBiteWithChartTopics.date)}</span>
+                  )}
+                  {quickBiteWithChartTopics && (
+                    <time
+                      className='text-xxs lg:text-sm'
+                      dateTime={quickBiteWithChartTopics.date}
+                      itemProp="datePublished"
+                    >
+                      {formatDate(quickBiteWithChartTopics.date)}
+                    </time>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Main content */}
-          <QuickBiteProvider>
-            <div className="lg:pl-[45px] lg:pr-[120px]">
-              <div className=" md:mx-auto">
-                {contentBlocks.map((block) => (
-                  <Block key={block.id} block={block} />
-                ))}
+            </header>
+
+            {/* Visible deck / subtitle — renders the article description as
+                AI-quotable prose under the headline. */}
+            {quickBiteWithChartTopics?.subtitle && (
+              <p
+                className="quickbite-deck text-color-text-secondary text-md lg:text-lg leading-relaxed lg:pl-[45px] lg:pr-[120px]"
+                itemProp="description"
+              >
+                {quickBiteWithChartTopics.subtitle}
+              </p>
+            )}
+
+            {/* Main content */}
+            <QuickBiteProvider>
+              <div className="lg:pl-[45px] lg:pr-[120px]">
+                <div className="quickbite-prose md:mx-auto" itemProp="articleBody">
+                  {contentBlocks.map((block) => (
+                    <Block key={block.id} block={block} />
+                  ))}
+                </div>
               </div>
-            </div>
-          </QuickBiteProvider>
+            </QuickBiteProvider>
+          </article>
 
           {/* Topics */}
           <div className="relative h-[34px] px-[15px] py-[5px] bg-color-bg-default rounded-full flex items-center gap-x-[10px]">

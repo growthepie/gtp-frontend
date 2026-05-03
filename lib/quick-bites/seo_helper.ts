@@ -68,15 +68,30 @@ export interface SEOData {
   };
 }
 
+export type JsonLdImageObject = {
+  ["@type"]: "ImageObject";
+  url: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+};
+
 export type JsonLdAuthor = {
   ["@type"]: "Person";
   name: string;
   sameAs?: string[];
+  worksFor?: { ["@id"]: string };
 };
 
 export type JsonLdAboutThing = {
   ["@type"]: "Thing";
   name: string;
+  sameAs?: string[];
+};
+
+export type JsonLdSpeakable = {
+  ["@type"]: "SpeakableSpecification";
+  cssSelector: string[];
 };
 
 export interface JsonLdArticle {
@@ -91,14 +106,18 @@ export interface JsonLdArticle {
   author?: JsonLdAuthor[];
   publisher?: {
     ["@type"]: "Organization";
+    ["@id"]?: string;
     name: string;
     url: string;
     logo?: { ["@type"]: "ImageObject"; url: string };
   };
-  image?: string[];
+  image?: (string | JsonLdImageObject)[];
   mainEntityOfPage?: { ["@type"]: "WebPage"; ["@id"]: string };
   keywords?: string[] | string;
   about?: JsonLdAboutThing[];
+  speakable?: JsonLdSpeakable;
+  articleBody?: string;
+  wordCount?: number;
 }
 
 export interface JsonLdBreadcrumbs {
@@ -119,6 +138,9 @@ export interface GenerateSeoOptions {
   publisherLogoUrl?: string; // default: <siteUrl>/brand/logo-assets/growthepie_logo_round_BG_dark.png
   dateModified?: string; // override if you track commit time
   language?: string; // default: "en"
+  articleBody?: string; // optional pre-extracted plain-text body for AI/SEO consumers
+  wordCount?: number; // optional pre-computed word count
+  speakableSelectors?: string[]; // CSS selectors for SpeakableSpecification
 }
 
 // helper: normalize to ISO-8601 WITH timezone
@@ -234,12 +256,34 @@ export function generateJsonLdArticle(
   const canonical = `${siteUrl.replace(/\/$/, "")}/${section}/${slug}`;
   const summary = pickSummary(data);
   const image = pickImage(data);
+  const publisherId = `${siteUrl.replace(/\/$/, "")}/#organization`;
 
   // 🆕 normalize dates
   const datePublishedIso = toIsoWithTZ((data as any).date || (data as any).publishedAt);
   const dateModifiedIso = toIsoWithTZ(
     opts.dateModified ?? (data as any).updatedAt ?? (data as any).date
   );
+
+  const authors = toAuthors(data).map((a) => ({
+    ...a,
+    worksFor: { "@id": publisherId },
+  }));
+
+  const imageObject: JsonLdImageObject | undefined = image
+    ? {
+        "@type": "ImageObject",
+        url: image,
+        caption: data.subtitle || data.title,
+      }
+    : undefined;
+
+  const speakableSelectors =
+    opts.speakableSelectors ?? [
+      ".quickbite-deck",
+      ".quickbite-prose h2",
+      ".quickbite-prose h3",
+      ".quickbite-prose p",
+    ];
 
   return {
     "@context": "https://schema.org",
@@ -251,17 +295,23 @@ export function generateJsonLdArticle(
     // only include if valid ISO with TZ
     ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
     ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
-    author: toAuthors(data),
+    author: authors,
     publisher: {
       "@type": "Organization",
+      "@id": publisherId,
       name: publisherName,
       url: siteUrl,
       logo: { "@type": "ImageObject", url: publisherLogoUrl },
     },
-    image: image ? [image] : undefined,
+    image: imageObject ? [imageObject] : undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
     keywords: toKeywords(data),
     about: toAboutThings(data),
+    speakable: { "@type": "SpeakableSpecification", cssSelector: speakableSelectors },
+    ...(opts.articleBody ? { articleBody: opts.articleBody } : {}),
+    ...(typeof opts.wordCount === "number" && opts.wordCount > 0
+      ? { wordCount: opts.wordCount }
+      : {}),
   };
 }
 
