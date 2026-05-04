@@ -7,29 +7,14 @@ import {
   generateSeo,
   generateJsonLdArticle,
   generateJsonLdBreadcrumbs,
+  generateJsonLdDatasetFromContent,
+  computeArticleStats,
 } from '@/lib/quick-bites/seo_helper';
 import { serializeJsonLd } from '@/utils/json-ld';
 import { processDynamicContent } from '@/lib/utils/dynamicContent';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import type { ContentBlock } from '@/lib/types/blockTypes';
 import type { QuickBiteData } from '@/lib/types/quickBites';
-
-// Strip markdown / fenced data blocks so AI consumers see only the prose.
-const ARTICLE_BODY_MAX_CHARS = 5000;
-const extractPlainText = (content: string[]): string => {
-  const joined = content.join('\n\n');
-  const stripped = joined
-    .replace(/```[\s\S]*?```/g, ' ') // fenced blocks (chart configs, KPIs, faq json)
-    .replace(/`[^`]*`/g, ' ') // inline code
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ') // images
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links → label
-    .replace(/^\s{0,3}>\s?/gm, '') // blockquote markers
-    .replace(/^#{1,6}\s+/gm, '') // heading markers
-    .replace(/[*_~]+/g, '') // emphasis markers
-    .replace(/\s+/g, ' ')
-    .trim();
-  return stripped;
-};
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -72,16 +57,15 @@ export default async function Page({ params }: Props) {
   let initialContentBlocks: ContentBlock[] = [];
   let articleBody: string | undefined;
   let wordCount: number | undefined;
+  let processedContent: string[] = qb.content;
   try {
-    const processedContent = await processDynamicContent(qb.content);
+    processedContent = await processDynamicContent(qb.content);
     initialQuickBite = { ...qb, content: processedContent };
     initialContentBlocks = await processMarkdownContent(processedContent);
 
-    const plainText = extractPlainText(processedContent);
-    if (plainText) {
-      articleBody = plainText.slice(0, ARTICLE_BODY_MAX_CHARS);
-      wordCount = plainText.split(/\s+/).filter(Boolean).length;
-    }
+    const stats = computeArticleStats(processedContent);
+    articleBody = stats.articleBody;
+    wordCount = stats.wordCount;
   } catch (error) {
     console.error(`Failed to pre-process quick bite "${slug}" on server:`, error);
   }
@@ -105,6 +89,16 @@ export default async function Page({ params }: Props) {
       jsonLdDatasets = mod.jsonLdDatasets;
     }
   } catch {}
+
+  // Auto-emit a Dataset schema for any article whose content references
+  // api.growthepie.com endpoints, unless one is already supplied. This
+  // benefits every chart-driven quick bite without per-article curation.
+  if (jsonLdDatasets.length === 0) {
+    const auto = generateJsonLdDatasetFromContent(slug, qb, processedContent, {
+      dateModified: qb.date,
+    });
+    if (auto) jsonLdDatasets = [auto];
+  }
 
   const graphs = [
     jsonLdArticle,

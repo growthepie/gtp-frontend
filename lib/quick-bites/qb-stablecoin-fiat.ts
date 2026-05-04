@@ -1,4 +1,83 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { renderFaqMarkdown, generateJsonLdFaq, type FaqItem } from './seo_helper';
+
+const faqItems: FaqItem[] = [
+  {
+    q: "What is a fiat-pegged stablecoin?",
+    a: "A fiat-pegged stablecoin is a token issued onchain that aims to maintain a 1:1 value with a specific fiat currency (e.g. USD, EUR). Issuers typically back each token with cash or short-duration reserves and redeem on demand to keep the peg.",
+  },
+  {
+    q: "Which fiat currencies have stablecoins on Ethereum?",
+    a: "We track every fiat currency that has at least one stablecoin issued in the Ethereum ecosystem. The current list of tokenized currencies is shown in the dropdown above and updates daily as new currencies launch onchain.",
+  },
+  {
+    q: "How is on-chain stablecoin supply measured?",
+    a: "We read the total supply of each tracked stablecoin contract directly onchain and aggregate daily. For lock-and-mint stablecoins we deduct the locked amount on the source chain to avoid double counting, and we deduct issuer-held treasury balances that are authorized but not yet in circulation.",
+  },
+  {
+    q: "Why is the USD share so dominant?",
+    a: "The vast majority of stablecoin supply in the Ethereum ecosystem is pegged to the US dollar, driven primarily by USDC (Circle) and USDT (Tether). Non-USD pegs exist (EUR, BRL, etc.) but their combined supply is a small fraction of total stablecoin float.",
+  },
+  {
+    q: "Why isn't Solana or Tron supply included?",
+    a: "This page only tracks stablecoins inside the Ethereum ecosystem (Ethereum L1 and its L2s). Supply on other L1s such as Solana or Tron is not included, so totals shown here are lower than a currency's full global stablecoin market cap.",
+  },
+  {
+    q: "Which stablecoins are excluded from this dataset?",
+    a: "We exclude value-accruing stablecoins that don't hold a 1:1 peg to the underlying asset (e.g. sUSDS), stablecoins that primarily wrap other stablecoins unless the wrapping is part of a bridge mechanism (e.g. Aave aUSDC), and permissioned or institutional-only tokens (e.g. BlackRock BUIDL).",
+  },
+];
+
+const datasetSchemas = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Ethereum Ecosystem Stablecoin Supply by Fiat Currency",
+    description: "Daily circulating supply of fiat-pegged stablecoins in the Ethereum ecosystem (Ethereum L1 + L2s), broken down by fiat currency, issuer, and chain. Adjusted for lock-and-mint bridges and issuer treasury balances.",
+    url: "https://www.growthepie.com/quick-bites/stablecoins-for-fiat",
+    license: "https://creativecommons.org/licenses/by-nc/4.0/",
+    isAccessibleForFree: true,
+    keywords: [
+      "stablecoins",
+      "fiat-pegged stablecoins",
+      "Ethereum",
+      "USDC",
+      "USDT",
+      "EURC",
+      "stablecoin supply",
+      "onchain data",
+    ],
+    creator: { "@id": "https://www.growthepie.com/#organization" },
+    publisher: { "@id": "https://www.growthepie.com/#organization" },
+    temporalCoverage: "2020-01-01/..",
+    variableMeasured: [
+      "Circulating supply (native units)",
+      "Circulating supply (USD equivalent)",
+      "Share of total stablecoin supply by fiat currency",
+      "Count of unique fiat currencies tokenized",
+    ],
+    distribution: [
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json",
+        name: "Stablecoin supply share by fiat currency (timeseries)",
+      },
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/unique-fiat-count.json",
+        name: "Unique fiat currencies tokenized over time",
+      },
+      {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: "https://api.growthepie.com/v1/quick-bites/stablecoins/dropdown-fiat.json",
+        name: "List of tracked fiat currencies",
+      },
+    ],
+  },
+];
 
 const fiatDropdown = {
   label: "Select a Fiat Currency",
@@ -282,6 +361,11 @@ const mainContent = [
 
   "# Methodology",
   "We track stablecoin supply by reading onchain total supply values for known stablecoins directly on each chain. For lock-and-mint stablecoins, we deduct the locked amount from the source chain to avoid double counting. Beyond bridged amounts, we also deduct stablecoins held in known treasury or reserve wallets on Ethereum that are authorized but not yet in circulation. This is relevant for issuers like Tether (USDT), where a portion of the onchain supply is pre-minted and sitting in issuer-controlled wallets, representing authorized but not yet issued supply. Supply is aggregated daily. We have three inclusion rules for a stablecoin to be included: value-accruing stablecoins are excluded since they do not hold a 1:1 peg to the underlying asset (e.g. sUSDS). Stablecoins that primarily wrap other stablecoins are also excluded, unless the wrapping is part of a bridge mechanism (e.g. Aave aUSDC, IUSD, dtrinity USD). Finally, we only include stablecoins that anyone can freely hold, permissioned or institutional-only tokens are out of scope (e.g. Blackrock BUIDL). If we are missing a stablecoin, you can open a PR on our [mapping file on GitHub](https://github.com/growthepie/gtp-backend/blob/main/backend/src/stables_config_v2.py).",
+
+  ...renderFaqMarkdown(faqItems, {
+    title: "Frequently Asked Questions",
+    layout: "accordion",
+  }),
 ];
 
 const StablecoinFiat: QuickBiteData = {
@@ -303,9 +387,72 @@ const StablecoinFiat: QuickBiteData = {
     {
       icon: "gtp-metrics-stablecoinmarketcap",
       name: "Stablecoin Supply",
-      url: "/fundamentals/stablecoin-market-cap"
+      url: "/fundamentals/stablecoin-market-cap",
+      wikipedia: "https://en.wikipedia.org/wiki/Stablecoin",
+      wikidata: "https://www.wikidata.org/wiki/Q56241176",
     },
   ],
+  entities: [
+    {
+      name: "USD Coin (USDC)",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/USD_Coin",
+        "https://www.wikidata.org/wiki/Q105942633",
+      ],
+    },
+    {
+      name: "Tether (USDT)",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Tether_(cryptocurrency)",
+        "https://www.wikidata.org/wiki/Q26210251",
+      ],
+    },
+    {
+      name: "Dai (DAI)",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Dai_(cryptocurrency)",
+        "https://www.wikidata.org/wiki/Q63967587",
+      ],
+    },
+    {
+      name: "Circle Internet Financial",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Circle_(company)",
+        "https://www.wikidata.org/wiki/Q24732654",
+      ],
+    },
+    {
+      name: "Tether Limited",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Tether_Limited",
+        "https://www.wikidata.org/wiki/Q97154417",
+      ],
+    },
+    {
+      name: "Ethereum",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Ethereum",
+        "https://www.wikidata.org/wiki/Q20990683",
+      ],
+    },
+    {
+      name: "United States dollar",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/United_States_dollar",
+        "https://www.wikidata.org/wiki/Q4917",
+      ],
+    },
+    {
+      name: "Euro",
+      sameAs: [
+        "https://en.wikipedia.org/wiki/Euro",
+        "https://www.wikidata.org/wiki/Q4916",
+      ],
+    },
+  ],
+  faq: faqItems,
+  jsonLdFaq: generateJsonLdFaq(faqItems),
+  jsonLdDatasets: datasetSchemas,
   icon: "",
   showInMenu: true,
 };

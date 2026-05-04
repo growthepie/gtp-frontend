@@ -49,7 +49,12 @@ export const generateJsonLdFaq = (items: FaqItem[]) => ({
 
 // General SEO helper functions and types
 // lib/utils/seo.ts
-import { QuickBiteData } from "@/lib/types/quickBites";
+import { QuickBiteData, JsonLdThing } from "@/lib/types/quickBites";
+import {
+  lookupTopic,
+  lookupEntity,
+  detectEntitiesInText,
+} from "./registries";
 
 export interface SEOData {
   metaTitle: string;
@@ -187,19 +192,110 @@ const pickSummary = (data: QuickBiteData) =>
 
 const pickImage = (data: QuickBiteData) => data.og_image || data.image || "";
 
-const toKeywords = (data: QuickBiteData) => {
-  const topicNames = (data.topics || []).map((t: any) => t.name).filter(Boolean);
-  return Array.from(new Set(topicNames));
+const buildSameAs = (...urls: (string | undefined | null)[]): string[] | undefined => {
+  const cleaned = urls
+    .map((u) => (typeof u === "string" ? u.trim() : ""))
+    .filter(Boolean);
+  if (cleaned.length === 0) return undefined;
+  return Array.from(new Set(cleaned));
 };
 
-const toAboutThings = (data: QuickBiteData): JsonLdAboutThing[] =>
-  (data.topics ?? [])
-    .map((t: any) => {
-      const name = t?.name ? String(t.name) : "";
-      if (!name) return null;
-      return { "@type": "Thing" as const, name };
-    })
-    .filter(Boolean) as JsonLdAboutThing[];
+// Strip markdown / fenced data blocks so AI consumers (and our own entity
+// detection) see only prose. Exported so server pages can reuse it.
+const ARTICLE_BODY_MAX_CHARS = 5000;
+export const extractPlainText = (content: string[] | string): string => {
+  const joined = Array.isArray(content) ? content.join("\n\n") : content;
+  return joined
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/[*_~]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+export const computeArticleStats = (content: string[] | string) => {
+  const plain = extractPlainText(content);
+  if (!plain) return { articleBody: undefined, wordCount: undefined } as const;
+  return {
+    articleBody: plain.slice(0, ARTICLE_BODY_MAX_CHARS),
+    wordCount: plain.split(/\s+/).filter(Boolean).length,
+  } as const;
+};
+
+// All terms used to seed keyword/entity detection: title + subtitle + topics +
+// declared entities + (optionally) extracted body text.
+const buildSearchCorpus = (data: QuickBiteData, body?: string): string => {
+  const parts: string[] = [];
+  if (data.title) parts.push(data.title);
+  if (data.subtitle) parts.push(data.subtitle);
+  if ((data as any).summary) parts.push(String((data as any).summary));
+  for (const t of data.topics ?? []) if ((t as any)?.name) parts.push((t as any).name);
+  for (const e of data.entities ?? []) if ((e as any)?.name) parts.push((e as any).name);
+  if (body) parts.push(body);
+  return parts.join(" \n ");
+};
+
+const toKeywords = (data: QuickBiteData, body?: string) => {
+  const topicNames = (data.topics || []).map((t: any) => t.name).filter(Boolean);
+  const entityNames = (data.entities || []).map((e: any) => e?.name).filter(Boolean);
+  // Auto-detected entities from title+subtitle+body broaden keyword coverage.
+  const corpus = buildSearchCorpus(data, body);
+  const detected = detectEntitiesInText(corpus).map((e) => e.name);
+  return Array.from(new Set([...topicNames, ...entityNames, ...detected]));
+};
+
+const toAboutThings = (data: QuickBiteData, body?: string): JsonLdAboutThing[] => {
+  const items: JsonLdAboutThing[] = [];
+
+  // Topics: enrich from registry if no explicit wikipedia/wikidata supplied.
+  for (const t of data.topics ?? []) {
+    const name = (t as any)?.name ? String((t as any).name) : "";
+    if (!name) continue;
+    const reg = lookupTopic(name);
+    const sameAs = buildSameAs(
+      (t as any)?.wikipedia ?? reg?.wikipedia,
+      (t as any)?.wikidata ?? reg?.wikidata,
+    );
+    items.push(sameAs ? { "@type": "Thing", name, sameAs } : { "@type": "Thing", name });
+  }
+
+  // Explicit entities: enrich from registry if no sameAs supplied.
+  for (const e of data.entities ?? []) {
+    const name = (e as any)?.name ? String((e as any).name) : "";
+    if (!name) continue;
+    const explicit = Array.isArray((e as any)?.sameAs) ? (e as any).sameAs : [];
+    let sameAs = buildSameAs(...explicit);
+    if (!sameAs) {
+      const reg = lookupEntity(name);
+      sameAs = buildSameAs(reg?.wikipedia, reg?.wikidata);
+    }
+    items.push(sameAs ? { "@type": "Thing", name, sameAs } : { "@type": "Thing", name });
+  }
+
+  // Auto-detected from title/subtitle/body.
+  const corpus = buildSearchCorpus(data, body);
+  for (const det of detectEntitiesInText(corpus)) {
+    const sameAs = det.sameAs && det.sameAs.length ? det.sameAs : undefined;
+    items.push(sameAs ? { "@type": "Thing", name: det.name, sameAs } : { "@type": "Thing", name: det.name });
+  }
+
+  // Dedup by name (case-insensitive); prefer the entry with sameAs.
+  const byName = new Map<string, JsonLdAboutThing>();
+  for (const it of items) {
+    const key = it.name.toLowerCase();
+    const existing = byName.get(key);
+    if (!existing) {
+      byName.set(key, it);
+    } else if (!existing.sameAs && it.sameAs) {
+      byName.set(key, it);
+    }
+  }
+  return Array.from(byName.values());
+};
 
 const toAuthors = (data: QuickBiteData): JsonLdAuthor[] =>
   (data.author ?? [])
@@ -305,8 +401,8 @@ export function generateJsonLdArticle(
     },
     image: imageObject ? [imageObject] : undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
-    keywords: toKeywords(data),
-    about: toAboutThings(data),
+    keywords: toKeywords(data, opts.articleBody),
+    about: toAboutThings(data, opts.articleBody),
     speakable: { "@type": "SpeakableSpecification", cssSelector: speakableSelectors },
     ...(opts.articleBody ? { articleBody: opts.articleBody } : {}),
     ...(typeof opts.wordCount === "number" && opts.wordCount > 0
@@ -337,5 +433,87 @@ export function generateJsonLdBreadcrumbs(
         item: `${base}/${section}/${slug}`,
       },
     ],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Auto-derived Dataset schema
+// ---------------------------------------------------------------------------
+// Scans the markdown content for fenced data blocks (chart, chart-toggle,
+// table, kpi-cards, line, area) and extracts every api.growthepie.com URL
+// they reference. Returns one Dataset with one DataDownload per unique URL,
+// or undefined if the article has no API-driven content (e.g. narrative
+// pieces) — in which case Dataset schema would be misleading.
+
+const API_HOST = "api.growthepie.com";
+
+const collectApiUrls = (content: string[] | string): string[] => {
+  const blocks = Array.isArray(content) ? content : [content];
+  const urls = new Set<string>();
+  // Match any `"url": "https://api.growthepie.com/..."` or contentUrl variant
+  // inside content strings — works whether the JSON spans one block or several
+  // since markdown fences are flattened across the array.
+  const re = /"(?:url|contentUrl)"\s*:\s*"(https:\/\/[^"]+)"/g;
+  for (const b of blocks) {
+    if (typeof b !== "string") continue;
+    if (!b.includes(API_HOST)) continue;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(b)) !== null) {
+      const u = m[1];
+      if (u && u.includes(API_HOST)) urls.add(u);
+    }
+  }
+  return Array.from(urls);
+};
+
+const filenameFromUrl = (u: string): string => {
+  try {
+    const path = new URL(u).pathname;
+    const last = path.split("/").pop() || path;
+    return last.replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").trim() || u;
+  } catch {
+    return u;
+  }
+};
+
+export function generateJsonLdDatasetFromContent(
+  slug: string,
+  data: QuickBiteData,
+  content: string[] | string,
+  opts: GenerateSeoOptions = {}
+): JsonLdThing | undefined {
+  const urls = collectApiUrls(content);
+  if (urls.length === 0) return undefined;
+
+  const siteUrl = opts.siteUrl ?? "https://www.growthepie.com";
+  const section = opts.section ?? "quick-bites";
+  const base = siteUrl.replace(/\/$/, "");
+  const canonical = `${base}/${section}/${slug}`;
+  const orgId = `${base}/#organization`;
+
+  const datePublishedIso = toIsoWithTZ((data as any).date);
+  const dateModifiedIso = toIsoWithTZ(opts.dateModified ?? (data as any).updatedAt ?? (data as any).date);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: `${data.title} — Source Data`,
+    description:
+      (data as any).summary ||
+      data.subtitle ||
+      `Source data backing the "${data.title}" analysis on growthepie.`,
+    url: canonical,
+    license: "https://creativecommons.org/licenses/by-nc/4.0/",
+    isAccessibleForFree: true,
+    creator: { "@id": orgId },
+    publisher: { "@id": orgId },
+    ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
+    ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+    distribution: urls.map((u) => ({
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: u,
+      name: filenameFromUrl(u),
+    })),
   };
 }
