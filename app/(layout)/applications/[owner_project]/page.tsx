@@ -684,7 +684,7 @@ const FeaturedCard = memo(({ feature }: { feature: string }) => {
   return (
     <div className="flex flex-1 gap-[6px] min-h-[60px] items-center justify-center rounded-[11px] bg-color-bg-default px-[13px] py-[8px] select-none">
       <GTPIcon icon={`gtp:${categoryIconMap[feature]}` as GTPIconName} size="md" />
-      <div className="text-center text-lg text-color-text-primary whitespace-nowrap">
+      <div className="text-center text-md text-color-text-primary whitespace-nowrap">
         {feature}
       </div>
     </div>
