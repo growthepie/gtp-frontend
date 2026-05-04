@@ -40,5 +40,13 @@ export function proxy(request: NextRequest) {
   const redirect = handleUrlNormalization(request)
   if (redirect) return redirect
 
-  return NextResponse.next()
+  // Forward the request pathname so root-level Server Components can read it
+  // via headers() and emit per-route JSON-LD as parse-time HTML siblings of
+  // the <Providers> client boundary.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  })
 }
