@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 const SidebarContainer = dynamic(() => import("@/components/layout/SidebarContainer"), { ssr: true });
 
 import { generateJsonLd } from "@/utils/json-ld";
+import QuickBiteRouteSchemas from "@/components/quick-bites/QuickBiteRouteSchemas";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
@@ -192,6 +193,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Per-route JSON-LD (emitted parse-time, outside <Providers> client boundary) */}
+        <QuickBiteRouteSchemas />
         <Providers>
           <div
             id="background-container"
