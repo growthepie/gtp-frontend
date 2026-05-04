@@ -126,22 +126,35 @@ function computeYAxisTicks({
       .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
   );
 
-  const maxSeriesValue =
-    shouldStack && pairedSeries.length > 0
-      ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
-          const pointTs = Number(point[0]);
-          if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return maxVal;
-          const stackedValue = pairedSeries.reduce((sum, s) => {
-            const pv = s.pairedData[index]?.[1];
-            return typeof pv === "number" && Number.isFinite(pv) ? sum + pv : sum;
-          }, 0);
-          return Math.max(maxVal, stackedValue);
-        }, 0)
-      : allValues.length > 0
-        ? Math.max(...allValues)
-        : 0;
+  let maxSeriesValue: number;
+  let minSeriesValue: number;
 
-  const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  if (shouldStack && pairedSeries.length > 0) {
+    // Stack positives and negatives separately so a mix of signs (e.g. revenue vs.
+    // negated costs) sizes the axis to the gross stack heights, not the net sum.
+    let posMaxStack = 0;
+    let negMinStack = 0;
+    pairedSeries[0].pairedData.forEach((point, index) => {
+      const pointTs = Number(point[0]);
+      if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return;
+      let posSum = 0;
+      let negSum = 0;
+      pairedSeries.forEach((s) => {
+        const pv = s.pairedData[index]?.[1];
+        if (typeof pv !== "number" || !Number.isFinite(pv)) return;
+        if (pv > 0) posSum += pv;
+        else if (pv < 0) negSum += pv;
+      });
+      if (posSum > posMaxStack) posMaxStack = posSum;
+      if (negSum < negMinStack) negMinStack = negSum;
+    });
+    maxSeriesValue = posMaxStack;
+    minSeriesValue = negMinStack;
+  } else {
+    maxSeriesValue = allValues.length > 0 ? Math.max(...allValues) : 0;
+    minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  }
+
   const hasNegativeValues = minSeriesValue < 0;
 
   // When ySplitNumber is set, compute a clean step that divides evenly
