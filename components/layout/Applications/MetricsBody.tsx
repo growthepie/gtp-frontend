@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { useSearchParams, usePathname } from "next/navigation";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
@@ -10,7 +11,7 @@ import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
@@ -216,8 +217,35 @@ const COMPARE_LIST_MAX_HEIGHT = 220;
 export default function MetricsBody({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
 
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const [, startIntervalTransition] = useTransition();
+
     const [selectedTotal, setSelectedTotal] = useState(true);
-    const [timeInterval, setTimeInterval] = useState("daily");
+    // timeInterval is derived from the URL so a shared link / refresh restores it.
+    // Same replaceState pattern as TimespanContext: no history entry is added, so the
+    // browser back button still navigates to whatever page brought the user here.
+    const intervalParam = searchParams.get("interval");
+    const timeInterval = intervalParam === "hourly" ? "hourly" : "daily";
+
+    const setTimeInterval = useCallback((value: string) => {
+        if (value === timeInterval) return;
+        startIntervalTransition(() => {
+            // Read the live URL rather than the captured `searchParams` snapshot. The
+            // toggle handler calls setSelectedTimespan immediately before this, which
+            // already wrote to the URL via replaceState — using the snapshot here would
+            // overwrite that timespan change.
+            const currentParams = new URLSearchParams(window.location.search);
+            if (value === "daily") {
+                currentParams.delete("interval");
+            } else {
+                currentParams.set("interval", value);
+            }
+            const queryString = currentParams.toString();
+            const url = `${pathname}${queryString ? `?${decodeURIComponent(queryString)}` : ""}`;
+            window.history.replaceState(null, "", url);
+        });
+    }, [timeInterval, pathname]);
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
     const [showUsd] = useLocalStorage("showUsd", true);
@@ -243,6 +271,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isCompareDropdownOpen]);
+
+    // If the URL-driven timespan is filtered out by the current time interval (e.g. landing
+    // here with ?timespan=30d while timeInterval defaults to "daily"), no timespan button
+    // would appear selected. Snap to the interval's default so the UI stays consistent.
+    useEffect(() => {
+        if (!filterTimespans(selectedTimespan, timeInterval)) {
+            setSelectedTimespan(timeInterval === "hourly" ? "7d" : "90d");
+        }
+    }, [selectedTimespan, timeInterval, setSelectedTimespan]);
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
     const [compareAppsData, setCompareAppsData] = useState<Map<string, ApplicationDetailsData>>(new Map());
