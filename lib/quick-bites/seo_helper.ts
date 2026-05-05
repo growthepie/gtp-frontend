@@ -55,6 +55,7 @@ import {
   lookupEntity,
   detectEntitiesInText,
 } from "./registries";
+import { lookupAuthor } from "./authors";
 
 export interface SEOData {
   metaTitle: string;
@@ -84,6 +85,10 @@ export type JsonLdImageObject = {
 export type JsonLdAuthor = {
   ["@type"]: "Person";
   name: string;
+  description?: string;
+  jobTitle?: string;
+  image?: string;
+  url?: string;
   sameAs?: string[];
   worksFor?: { ["@id"]: string };
 };
@@ -304,13 +309,27 @@ const buildSearchCorpus = (data: QuickBiteData, body?: string): string => {
   return parts.join(" \n ");
 };
 
+const KEYWORDS_MAX = 15;
 const toKeywords = (data: QuickBiteData, body?: string) => {
   const topicNames = (data.topics || []).map((t: any) => t.name).filter(Boolean);
   const entityNames = (data.entities || []).map((e: any) => e?.name).filter(Boolean);
   // Auto-detected entities from title+subtitle+body broaden keyword coverage.
   const corpus = buildSearchCorpus(data, body);
   const detected = detectEntitiesInText(corpus).map((e) => e.name);
-  return Array.from(new Set([...topicNames, ...entityNames, ...detected]));
+  // Order matters: explicit topics outrank explicit entities outrank auto-
+  // detected mentions. Cap so JSON-LD `keywords` doesn't dilute relevance —
+  // schema.org best practice and Google's own guidance say <=15.
+  const ordered = [...topicNames, ...entityNames, ...detected];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const k of ordered) {
+    const key = String(k).toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(k);
+    if (out.length >= KEYWORDS_MAX) break;
+  }
+  return out;
 };
 
 const toAboutThings = (data: QuickBiteData, body?: string): JsonLdAboutThing[] => {
@@ -367,8 +386,17 @@ const toAuthors = (data: QuickBiteData): JsonLdAuthor[] =>
     .map((a: any) => {
       const name = a?.name ? String(a.name) : "";
       if (!name) return null;
-      const sameAs = a?.xUsername ? [`https://x.com/${String(a.xUsername)}`] : undefined;
-      return { "@type": "Person" as const, name, sameAs };
+      const xUsername = a?.xUsername ? String(a.xUsername) : undefined;
+      const profile = lookupAuthor({ xUsername, name });
+      const xSameAs = xUsername ? [`https://x.com/${xUsername}`] : [];
+      const sameAs = buildSameAs(...xSameAs, ...(profile?.sameAs ?? []));
+      const node: JsonLdAuthor = { "@type": "Person", name };
+      if (profile?.description) node.description = profile.description;
+      if (profile?.jobTitle) node.jobTitle = profile.jobTitle;
+      if (profile?.image) node.image = profile.image;
+      if (profile?.url) node.url = profile.url;
+      if (sameAs) node.sameAs = sameAs;
+      return node;
     })
     .filter(Boolean) as JsonLdAuthor[];
 
@@ -525,7 +553,11 @@ const collectApiUrls = (content: string[] | string): string[] => {
     let m: RegExpExecArray | null;
     while ((m = re.exec(b)) !== null) {
       const u = m[1];
-      if (u && u.includes(API_HOST)) urls.add(u);
+      if (!u || !u.includes(API_HOST)) continue;
+      // Skip Mustache template strings — these are placeholders that get
+      // expanded client-side and aren't valid `DataDownload.contentUrl` values.
+      if (u.includes("{{") || u.includes("}}")) continue;
+      urls.add(u);
     }
   }
   return Array.from(urls);
