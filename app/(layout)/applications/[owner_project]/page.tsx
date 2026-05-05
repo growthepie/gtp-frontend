@@ -11,7 +11,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName, iconNames } from "@/icons/gtp-icon-names";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
@@ -919,6 +919,7 @@ export default function Page({
   use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { data, owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
 
@@ -950,6 +951,13 @@ export default function Page({
 
   // Sync tab selection to URL
   useEffect(() => {
+    // Bail if we've navigated away from this page (e.g. the back chevron called
+    // router.push("/applications")). Without this guard, this effect can fire
+    // mid-navigation with a stale selectedTab and call router.replace, which
+    // overrides the in-flight push by re-applying ?tab=metrics — the user has
+    // to click the chevron a second time to actually leave.
+    if (pathname !== `/applications/${owner_project}`) return;
+
     const currentTab = searchParams.get("tab");
     const targetTab = selectedTab === "overview" ? null : selectedTab;
     if (currentTab === targetTab) return;
@@ -960,11 +968,11 @@ export default function Page({
     } else {
       currentParams.set("tab", selectedTab);
     }
-    const newUrl = `${window.location.pathname}${
+    const newUrl = `${pathname}${
       currentParams.toString() ? `?${currentParams.toString()}` : ""
     }`;
     router.replace(newUrl, { scroll: false });
-  }, [selectedTab, router, searchParams]);
+  }, [selectedTab, router, searchParams, pathname, owner_project]);
 
   const TabContent = useMemo(() => {
     switch (selectedTab) {
