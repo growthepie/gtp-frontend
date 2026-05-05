@@ -1,0 +1,109 @@
+// Shared per-request article processor. Wrapped in React's cache() so the
+// root layout's <QuickBiteRouteSchemas /> and the route page don't duplicate
+// processDynamicContent work — they share the same memoised result within
+// a single request.
+
+import { cache } from "react";
+import { getQuickBiteBySlug } from "./quickBites";
+import { processDynamicContent } from "@/lib/utils/dynamicContent";
+import { processMarkdownContent } from "@/lib/utils/markdownParser";
+import {
+  generateJsonLdArticle,
+  generateJsonLdBreadcrumbs,
+  generateJsonLdDatasetFromContent,
+  computeArticleStats,
+  extractStructuredProse,
+  type ProseChunk,
+} from "./seo_helper";
+import type { ContentBlock } from "@/lib/types/blockTypes";
+import type { QuickBiteData } from "@/lib/types/quickBites";
+
+export type ProcessedArticle = {
+  qb: QuickBiteData;
+  initialQuickBite: QuickBiteData;
+  processedContent: string[];
+  initialContentBlocks: ContentBlock[];
+  articleBody?: string;
+  wordCount?: number;
+  prose: ProseChunk[]; // structured h2/h3/p/li chunks for the static SEO shell
+  faq?: { q: string; a: string }[];
+  schemas: any[]; // ordered: Article, Breadcrumbs, [FAQ], [...Datasets]
+};
+
+export const processArticle = cache(
+  async (slug: string): Promise<ProcessedArticle | null> => {
+    const qb = getQuickBiteBySlug(slug);
+    if (!qb) return null;
+
+    let processedContent: string[] = qb.content;
+    let initialContentBlocks: ContentBlock[] = [];
+    let articleBody: string | undefined;
+    let wordCount: number | undefined;
+
+    try {
+      processedContent = await processDynamicContent(qb.content);
+      initialContentBlocks = await processMarkdownContent(processedContent);
+      const stats = computeArticleStats(processedContent);
+      articleBody = stats.articleBody;
+      wordCount = stats.wordCount;
+    } catch (error) {
+      console.error(`processArticle failed for "${slug}":`, error);
+    }
+
+    const initialQuickBite: QuickBiteData = { ...qb, content: processedContent };
+
+    const jsonLdArticle = generateJsonLdArticle(slug, qb, {
+      dateModified: qb.date,
+      language: "en",
+      articleBody,
+      wordCount,
+    });
+    const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(slug, qb);
+
+    let jsonLdFaq: any | undefined = qb.jsonLdFaq;
+    let jsonLdDatasets: any[] = qb.jsonLdDatasets ?? [];
+    let faq: { q: string; a: string }[] | undefined = qb.faq;
+
+    // Optional per-QB module exports kept for backward compatibility.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const mod = require(`@/lib/quick-bites/${slug}.ts`);
+      if (!jsonLdFaq && mod.jsonLdFaq) jsonLdFaq = mod.jsonLdFaq;
+      if (jsonLdDatasets.length === 0 && mod.jsonLdDatasets) {
+        jsonLdDatasets = mod.jsonLdDatasets;
+      }
+      if (!faq && mod.faq) faq = mod.faq;
+      if (!faq && Array.isArray(mod.faqItems)) faq = mod.faqItems;
+    } catch {
+      // file not present or no extra exports — fine.
+    }
+
+    if (jsonLdDatasets.length === 0) {
+      const auto = generateJsonLdDatasetFromContent(slug, qb, processedContent, {
+        dateModified: qb.date,
+      });
+      if (auto) jsonLdDatasets = [auto];
+    }
+
+    const schemas: any[] = [
+      jsonLdArticle,
+      jsonLdBreadcrumbs,
+      ...(jsonLdFaq ? [jsonLdFaq] : []),
+      ...jsonLdDatasets,
+    ];
+
+    const prose = extractStructuredProse(processedContent);
+
+    return {
+      qb,
+      initialQuickBite,
+      processedContent,
+      initialContentBlocks,
+      articleBody,
+      wordCount,
+      prose,
+      faq,
+      schemas,
+    };
+  },
+);

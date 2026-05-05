@@ -12,6 +12,13 @@ export interface Author {
     name: string;
     url: string;
     color?: string;
+    wikipedia?: string;
+    wikidata?: string;
+  }
+
+  export interface QuickBiteEntity {
+    name: string;
+    sameAs?: string[];
   }
   
 export interface ChartMeta {
@@ -59,6 +66,7 @@ export interface JsonLdThing {
     jsonLdFaq?: JsonLdThing;
     jsonLdDatasets?: JsonLdThing[];
     faq?: FaqItem[];
+    entities?: QuickBiteEntity[];
   }
 
   export interface KpiCard {
