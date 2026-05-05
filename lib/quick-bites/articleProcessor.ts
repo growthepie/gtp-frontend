@@ -12,6 +12,8 @@ import {
   generateJsonLdBreadcrumbs,
   generateJsonLdDatasetFromContent,
   computeArticleStats,
+  extractStructuredProse,
+  type ProseChunk,
 } from "./seo_helper";
 import type { ContentBlock } from "@/lib/types/blockTypes";
 import type { QuickBiteData } from "@/lib/types/quickBites";
@@ -23,6 +25,8 @@ export type ProcessedArticle = {
   initialContentBlocks: ContentBlock[];
   articleBody?: string;
   wordCount?: number;
+  prose: ProseChunk[]; // structured h2/h3/p/li chunks for the static SEO shell
+  faq?: { q: string; a: string }[];
   schemas: any[]; // ordered: Article, Breadcrumbs, [FAQ], [...Datasets]
 };
 
@@ -58,6 +62,7 @@ export const processArticle = cache(
 
     let jsonLdFaq: any | undefined = qb.jsonLdFaq;
     let jsonLdDatasets: any[] = qb.jsonLdDatasets ?? [];
+    let faq: { q: string; a: string }[] | undefined = qb.faq;
 
     // Optional per-QB module exports kept for backward compatibility.
     try {
@@ -67,6 +72,8 @@ export const processArticle = cache(
       if (jsonLdDatasets.length === 0 && mod.jsonLdDatasets) {
         jsonLdDatasets = mod.jsonLdDatasets;
       }
+      if (!faq && mod.faq) faq = mod.faq;
+      if (!faq && Array.isArray(mod.faqItems)) faq = mod.faqItems;
     } catch {
       // file not present or no extra exports — fine.
     }
@@ -85,6 +92,8 @@ export const processArticle = cache(
       ...jsonLdDatasets,
     ];
 
+    const prose = extractStructuredProse(processedContent);
+
     return {
       qb,
       initialQuickBite,
@@ -92,6 +101,8 @@ export const processArticle = cache(
       initialContentBlocks,
       articleBody,
       wordCount,
+      prose,
+      faq,
       schemas,
     };
   },

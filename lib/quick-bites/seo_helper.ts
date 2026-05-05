@@ -217,6 +217,71 @@ export const extractPlainText = (content: string[] | string): string => {
     .trim();
 };
 
+// Returns ordered semantic chunks suitable for emitting as static HTML so AI
+// crawlers see article structure (h1/h2/h3, paragraphs, list items) before
+// React hydrates the interactive UI. Fenced code blocks (```chart, ```table,
+// ```faq, ```container, etc.) are skipped — they're rendered interactively by
+// the client app, and their captions/JSON aren't useful prose.
+export type ProseChunk = { tag: "h2" | "h3" | "h4" | "p" | "li"; text: string };
+
+export const extractStructuredProse = (content: string[] | string): ProseChunk[] => {
+  const blocks = Array.isArray(content) ? content : [content];
+  const chunks: ProseChunk[] = [];
+
+  let inFence = false;
+  for (const block of blocks) {
+    if (typeof block !== "string") continue;
+    const lines = block.split(/\r?\n/);
+    for (const raw of lines) {
+      const line = raw.trim();
+
+      if (line.startsWith("```")) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
+      if (!line) continue;
+
+      const stripInline = (s: string) =>
+        s
+          .replace(/`([^`]+)`/g, "$1")
+          .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+          .replace(/[*_~]+/g, "")
+          .trim();
+
+      const heading = line.match(/^(#{2,4})\s+(.+)$/);
+      if (heading) {
+        const level = heading[1].length;
+        const tag = (level === 2 ? "h2" : level === 3 ? "h3" : "h4") as ProseChunk["tag"];
+        const text = stripInline(heading[2]);
+        if (text) chunks.push({ tag, text });
+        continue;
+      }
+      if (/^#{1}\s+/.test(line)) {
+        // Skip H1 — the article title is rendered separately.
+        continue;
+      }
+
+      const list = line.match(/^[-*+]\s+(.+)$/) || line.match(/^\d+\.\s+(.+)$/);
+      if (list) {
+        const text = stripInline(list[1]);
+        if (text) chunks.push({ tag: "li", text });
+        continue;
+      }
+
+      // Skip horizontal rules and table separators.
+      if (/^[-=]{3,}$/.test(line)) continue;
+      if (/^\|/.test(line)) continue;
+
+      const text = stripInline(line);
+      if (text) chunks.push({ tag: "p", text });
+    }
+  }
+
+  return chunks;
+};
+
 export const computeArticleStats = (content: string[] | string) => {
   const plain = extractPlainText(content);
   if (!plain) return { articleBody: undefined, wordCount: undefined } as const;
