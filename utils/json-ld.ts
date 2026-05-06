@@ -25,11 +25,31 @@ export const generateJsonLd = ({
     "@id": "https://www.growthepie.com/#organization",
     name: "growthepie",
     legalName: "orbal GmbH",
+    alternateName: ["growthepie.com", "GTP"],
     url: "https://www.growthepie.com",
     logo: {
       "@type": "ImageObject",
       url: "https://www.growthepie.com/logo-full.svg",
     },
+    description:
+      "Open analytics platform for the Ethereum ecosystem. Tracks Ethereum Mainnet, Layer 2 networks, and onchain applications: active addresses, throughput, transaction costs, fees, TVL, stablecoin supply, and more.",
+    slogan: "Visualizing Ethereum's Story Through Data",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Berlin",
+      addressCountry: "DE",
+    },
+    areaServed: "Worldwide",
+    knowsAbout: [
+      "Ethereum",
+      "Ethereum Layer 2",
+      "Rollups",
+      "Blockchain Analytics",
+      "Onchain Data",
+      "Decentralized Applications",
+      "Stablecoins",
+      "Data Availability",
+    ],
     sameAs: [
       "https://twitter.com/growthepie_eth",
       "https://mirror.xyz/blog.growthepie.eth",
