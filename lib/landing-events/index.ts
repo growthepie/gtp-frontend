@@ -14,9 +14,9 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-polygon-stablecoin": {
+  "ath-starknet-stablecoin": {
     allTimeHigh: {
-      chainKey: "polygon_pos",
+      chainKey: "starknet",
       metricKey: "stablecoin-market-cap",
     },
   },

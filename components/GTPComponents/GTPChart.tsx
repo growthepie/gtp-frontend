@@ -1394,6 +1394,15 @@ export default function GTPChart({
     return Math.ceil(maxLabelWidth) + 14;
   }, [formatValueForAxis, gridOverride, hasSecondaryAxis, secondaryYAxisLabelFormatter, secondaryYAxisLayout]);
 
+  // Reserve headroom above the plot when any series renders an ATH pill, so the
+  // label drawn above the all-time-high point isn't clipped by the chart top.
+  const hasAthLabel = useMemo(
+    () => pairedSeries.some((s) => s.showAllTimeHigh),
+    [pairedSeries],
+  );
+  const resolvedTop =
+    gridOverride?.top ?? (hasAthLabel ? Math.max(DEFAULT_GRID.top, 24) : DEFAULT_GRID.top);
+
   // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
   const timeAxisLayout = useMemo(() => {
     if (xAxisType !== "time") return undefined;
@@ -1407,7 +1416,7 @@ export default function GTPChart({
     const g = {
       left: dynamicGridLeft,
       right: dynamicGridRight,
-      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      top: resolvedTop,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
     const layout = buildTimeXAxisLayout({
@@ -1441,6 +1450,7 @@ export default function GTPChart({
     xAxisLines,
     xAxisType,
     gridOverride,
+    resolvedTop,
     xAxisMin,
     xAxisMax,
     snapToCleanBoundary,
@@ -1457,14 +1467,14 @@ export default function GTPChart({
     const base = {
       left: dynamicGridLeft,
       right: dynamicGridRight,
-      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      top: resolvedTop,
       bottom: resolvedBottom,
     };
     if (!timeAxisLayout?.grid) return base;
     return compactXAxis
       ? { ...timeAxisLayout.grid, bottom: resolvedBottom, right: dynamicGridRight }
       : { ...timeAxisLayout.grid, right: dynamicGridRight };
-  }, [dynamicGridLeft, dynamicGridRight, gridOverride, timeAxisLayout, compactXAxis]);
+  }, [dynamicGridLeft, dynamicGridRight, gridOverride, resolvedTop, timeAxisLayout, compactXAxis]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
