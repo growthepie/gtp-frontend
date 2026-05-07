@@ -14,14 +14,15 @@ import {
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
-import { theme } from "highcharts";
 import { useTheme } from "next-themes";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
-import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
+import { Icon } from "@iconify/react";
+import Link from "next/link";
+import { getExplorerAddressUrl } from "@/lib/helpers";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
-const CONTRACT_GRID_COLS = "grid-cols-[minmax(200px,220px),130px,minmax(140px,1fr),105px,105px,100px]";
+const CONTRACT_GRID_COLS = "grid-cols-[minmax(220px,1fr),130px,160px,105px,105px,100px]";
 
 const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: ApplicationDetailsData; containerHeight?: number; owner_project: string }) => {
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
@@ -37,12 +38,12 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
 
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [footerRef, { height: footerHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [bottomCtaRef, { height: bottomCtaHeight }] = useElementSizeObserver<HTMLDivElement>();
 
-  // Outer card has py-[15px] (30px) and gap-y-[10px] with 3 flex children → 2 gaps (20px)
-  const VERTICAL_OVERHEAD = 50;
+  // Outer card has py-[15px] (30px) plus one gap between the intro and table (10px).
+  const VERTICAL_OVERHEAD = 40 + (oliHide ? bottomCtaHeight + 10 : 0);
   const scrollAreaHeight = containerHeight && containerHeight > 0
-    ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - footerHeight - VERTICAL_OVERHEAD)
+    ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - VERTICAL_OVERHEAD)
     : 350;
 
   const iconNames = {
@@ -108,11 +109,11 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
               Most Active Contracts
             </div>
           </div>
-          <div ref={footerRef} className="relative w-full flex items-center justify-end">
+          <div className="relative w-full flex items-center justify-end">
             {!oliHide && (
               <>
                 <GTPButton
-                  label="Don't see your contract? Label here."
+                  label="Contract missing? Label here."
                   leftIcon={"oli-open-labels-initiative" as GTPIconName}
                   size="xs"
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
@@ -122,7 +123,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                   }}
                 />
                 <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[212px]"
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[184px]"
                   style={{
                     background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
                   }}
@@ -182,10 +183,15 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                 const suffix = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.suffix ?? "";
                 const decimals = master?.app_metrics["gas_fees"]?.units[showUsd ? "usd" : "eth"]?.decimals ?? 2;
                 const mainCategoryIcon = iconNames[contractMap.main_category_key as string] ?? "gtp-unknown";
+                const chainKey = contractMap.chain_key as string;
+                const chainMeta = AllChainsByKeys[chainKey];
+                const blockExplorer = master?.chains[chainKey]?.block_explorer;
+                const address = contractMap.address as string;
+                const chainColor = chainMeta.colors[theme ?? "dark"][0];
 
                 return (
                   <GridTableRow
-                    key={contractMap.address + index.toString() + "CONTRACT_ROW"}
+                    key={address + index.toString() + "CONTRACT_ROW"}
                     gridDefinitionColumns={CONTRACT_GRID_COLS}
                     className="h-[34px] text-[12px] !py-0 !gap-x-[10px]"
                     style={{ paddingLeft: "0px" }}
@@ -193,10 +199,10 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                     {/* Contract name + copy + explorer */}
                     <div className="flex items-center gap-x-[6px] min-w-0">
                       <GTPIcon
-                        icon={`gtp:${AllChainsByKeys[contractMap.chain_key as string].urlKey}-logo-monochrome` as GTPIconName}
+                        icon={`gtp:${chainMeta.urlKey}-logo-monochrome` as GTPIconName}
                         className="!size-[16px]"
                         containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
-                        style={{ color: AllChainsByKeys[contractMap.chain_key as string].colors[theme ?? "dark"][0] }}
+                        style={{ color: chainColor }}
                       />
                       <span className="truncate text-xs">{contractMap.name as string}</span>
                       <div className="flex items-center gap-x-[4px] shrink-0">
@@ -235,19 +241,33 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                             <div className="text-xs pl-[15px]">Unverified</div>
                           </GTPTooltipNew>
                         )}
-                        {/* <button
-                          onClick={() => handleCopy(contractMap.address as string)}
-                          className="text-color-text-secondary hover:text-color-text-primary transition-colors"
+                        <button
+                          type="button"
+                          aria-label="Copy contract address"
+                          title="Copy contract address"
+                          onClick={() => handleCopy(address)}
+                          className="flex size-[14px] items-center justify-center opacity-70 transition-opacity hover:opacity-100"
                         >
                           <Icon
-                            icon={copiedAddress === contractMap.address ? "feather:check" : "feather:copy"}
-                            className="w-[11px] h-[11px]"
+                            icon={copiedAddress === address ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
+                            className="size-[12px]"
                           />
                         </button>
-                        <Icon
-                          icon="gtp:gtp-block-explorer-alt"
-                          className="w-[11px] h-[11px] text-color-text-secondary"
-                        /> */}
+                        {blockExplorer && (
+                          <Link
+                            href={getExplorerAddressUrl(blockExplorer, address)}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            aria-label="Open contract in block explorer"
+                            title="Open contract in block explorer"
+                            className="flex size-[14px] items-center justify-center opacity-70 transition-opacity hover:opacity-100"
+                          >
+                            <Icon
+                              icon="gtp:gtp-block-explorer"
+                              className="size-[12px]"
+                            />
+                          </Link>
+                        )}
                       </div>
                     </div>
 
@@ -284,9 +304,9 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           
         </HorizontalScrollContainer>
         {oliHide && (
-          <div className="relative flex items-center justify-start mt-[5px]">
+          <div ref={bottomCtaRef} className="relative flex items-center justify-start mt-[5px]">
                 <GTPButton
-                  label="Don't see your contract? Label here."
+                  label="Contract missing? Label here."
                   leftIcon={"oli-open-labels-initiative" as GTPIconName}
                   size="xs"
                   rightIcon={"in-button-right-monochrome" as GTPIconName}
@@ -296,7 +316,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                   }}
                 />
                 <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[212px]"
+                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[183px]"
                   style={{
                     background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
                   }}
