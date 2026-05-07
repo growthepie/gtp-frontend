@@ -3,25 +3,21 @@ import appCount from "./app-count";
 import topAppsEvent from "./top-apps";
 import eip8004 from "./eip-8004";
 import fusaka from "./fusaka";
+import stablecoinFiat from "./stablecoin-fiat";
 import { metricItems } from "@/lib/metrics";
 import { getChainMetricURL, MetricURLKeyToAPIKey } from "@/lib/urls";
 import type { EventExample } from "./types";
 
 export const EVENTS_BY_ID = {
   "eip-8004": eip8004,
+  "top-apps": topAppsEvent,
   "app-count": appCount,
   "fusaka": fusaka,
-  "top-apps": topAppsEvent,
+  "stablecoin-fiat": stablecoinFiat,
   "ath-polygon-stablecoin": {
     allTimeHigh: {
       chainKey: "polygon_pos",
       metricKey: "stablecoin-market-cap",
-    },
-  },
-  "ath-polygon-throughput": {
-    allTimeHigh: {
-      chainKey: "polygon_pos",
-      metricKey: "throughput",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,

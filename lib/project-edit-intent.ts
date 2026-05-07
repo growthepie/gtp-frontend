@@ -23,6 +23,7 @@ export type ParsedProjectEditIntent = {
   source: ProjectEditSource;
   project: string;
   website: string;
+  address: string;
   focus: ProjectEditFocus | "";
   start: ProjectEditStart;
 };
@@ -32,6 +33,7 @@ export type BuildProjectEditIntentInput = {
   source?: ProjectEditSource;
   project?: string;
   website?: string;
+  address?: string;
   focus?: ProjectEditFocus;
   start?: ProjectEditStart;
 };
@@ -145,6 +147,7 @@ export const parseProjectEditIntent = ({
   const modeParam = normalizeMode(readParam(params, "mode"));
   const project = readParam(params, "project");
   const website = readParam(params, "website");
+  const address = readParam(params, "address");
   const sourceParam = normalizeSource(readParam(params, "source"));
   const focus = normalizeFocus(readParam(params, "focus"));
   const startParam = normalizeStart(readParam(params, "start"));
@@ -157,6 +160,7 @@ export const parseProjectEditIntent = ({
     source: sourceParam || defaultSource,
     project,
     website,
+    address,
     focus,
     start: inferStart({ mode, focus, start: startParam, website }),
   };
@@ -167,6 +171,7 @@ export const buildProjectEditHref = ({
   source,
   project,
   website,
+  address,
   focus,
   start,
 }: BuildProjectEditIntentInput): string => {
@@ -182,6 +187,9 @@ export const buildProjectEditHref = ({
   if (isNonEmptyString(website)) {
     query.set("website", website.trim());
   }
+  if (isNonEmptyString(address)) {
+    query.set("address", address.trim());
+  }
   if (focus) {
     query.set("focus", focus);
   }
@@ -194,6 +202,6 @@ export const buildProjectEditHref = ({
 };
 
 export const getProjectEditIntentKey = (intent: ParsedProjectEditIntent): string =>
-  [intent.mode, intent.source, intent.project, intent.website, intent.focus, intent.start]
+  [intent.mode, intent.source, intent.project, intent.website, intent.address, intent.focus, intent.start]
     .join("|")
     .toLowerCase();

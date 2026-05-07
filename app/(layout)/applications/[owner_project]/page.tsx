@@ -546,17 +546,16 @@ const FeaturedSection = memo(({
   features: string[];
   primary_functions: string[];
 }) => {
-  if (!features.length) {
+  const displayedFeatures = [...primary_functions, ...features].slice(0, 5);
+
+  if (!displayedFeatures.length) {
     return null;
   }
 
   return (
     <div className="flex w-full flex-wrap gap-[10px] rounded-[15px] select-none">
-      {primary_functions.map((primary_function: string, i: number) => (
-        <FeaturedCard key={i} feature={primary_function} />
-      ))}
-      {features.map((feature: string, i: number) => (
-        <FeaturedCard key={i} feature={feature} />
+      {displayedFeatures.map((feature: string, i: number) => (
+        <FeaturedCard key={`${feature}-${i}`} feature={feature} />
       ))}
     </div>
   );
@@ -781,7 +780,7 @@ const OverviewContent = memo(({
           </div>
         </div>
         <div className="text-sm ">
-          The Market Cap is the total value of all circulating tokens, calculated by multiplying the current price of a single token by the total number of tokens in circulation.
+          Key performance indicators over the last 60 days with week-over-week growth, as well as the most active contracts. Click on any metric for a deep dive into its trends.
         </div>
       </div>
       {/* Two-column grid: side cards left, main cards right */}

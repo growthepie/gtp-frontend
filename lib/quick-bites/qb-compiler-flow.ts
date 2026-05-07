@@ -272,7 +272,7 @@ export const jsonLdFaq = generateJsonLdFaq(faqItems);
 
 const CompilerFlow: QuickBiteData = {
   title: "Programming Languages That Power Onchain Activity",
-  shortTitle: "Smart Contract Language by Flow",
+  shortTitle: "Activity by Compiler",
   subtitle: "Analysing active contract interactions to reveal compiler and language usage in production environments.",
   content: [
 
@@ -303,7 +303,7 @@ const CompilerFlow: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/compiler-flow.png",
   og_image: "",
-  date: "2026-04-27",
+  date: "2026-05-06",
   related: [],
   author: [
     {
@@ -329,7 +329,7 @@ const CompilerFlow: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
   faq: faqItems,
   jsonLdFaq: jsonLdFaq,
 };

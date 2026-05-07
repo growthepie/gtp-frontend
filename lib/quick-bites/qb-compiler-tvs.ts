@@ -434,7 +434,7 @@ export const jsonLdFaq = generateJsonLdFaq(faqItems);
 // Quick Bite
 const CompilerTvs: QuickBiteData = {
   title: "Programming Languages Securing Ethereum's Value",
-  shortTitle: "Smart Contract Language by TVS",
+  shortTitle: "TVS by Compiler",
   subtitle: "Analyzing the top 1,000 Ethereum contracts by Total Value Secured across smart contract languages and compiler versions.",
   content: [
     "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
@@ -486,7 +486,7 @@ const CompilerTvs: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/compiler-tvs.png",
   og_image: "",
-  date: "2026-04-27",
+  date: "2026-05-06",
   related: [],
   author: [
     {
@@ -518,7 +518,7 @@ const CompilerTvs: QuickBiteData = {
     },
   ],
   icon: "",
-  showInMenu: false,
+  showInMenu: true,
   faq: faqItems,
   jsonLdFaq: jsonLdFaq,
 };

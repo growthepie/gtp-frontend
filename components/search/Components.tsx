@@ -24,12 +24,13 @@ import type { InputHTMLAttributes } from 'react';
 import { Get_SupportedChainKeys } from "@/lib/chains";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import useSWR from "swr";
-import { MasterURL } from "@/lib/urls";
+import { ApplicationsURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 import { useUIContext } from "@/contexts/UIContext";
 import { isIgnoredChar, isNonEmptyString, normalizeString } from "@/lib/searchNormalize";
+import { buildProjectEditHref } from "@/lib/project-edit-intent";
 
 const filterOptions = <T extends { label: unknown }>(options: T[]) =>
   options.filter(option => isNonEmptyString(option.label));
@@ -42,6 +43,15 @@ const filterGroups = <T extends { label: unknown; options: { label: unknown }[] 
     }))
     .filter(group => isNonEmptyString(group.label) && group.options.length > 0);
 
+const normalizeContractAddressQuery = (str: string | null | undefined) =>
+  isNonEmptyString(str) ? str.trim().toLowerCase().replace(/\s+/g, "") : "";
+
+const isContractAddressQuery = (str: string | null | undefined) =>
+  /^0x[0-9a-f]{2,}$/i.test(normalizeContractAddressQuery(str));
+
+const isFullContractAddressQuery = (str: string | null | undefined) =>
+  /^(0x[0-9a-f]{40}|0x[0-9a-f]{64})$/i.test(normalizeContractAddressQuery(str));
+
 const RECENT_SEARCHES_STORAGE_KEY = "gtp:recent-searches";
 const MAX_RECENT_SEARCHES = 5;
 const MIN_RECENT_SEARCH_LENGTH = 2;
@@ -53,6 +63,20 @@ type RecentResultEntry = {
   url: string;
   icon?: string;
   color?: string;
+};
+
+type SearchOption = {
+  label: string;
+  url: string;
+  icon: string;
+  color?: string;
+};
+
+type ContractMappingsResponse = {
+  data?: {
+    types?: string[];
+    data?: unknown[][];
+  };
 };
 
 function readRecentSearches(): string[] {
@@ -1023,22 +1047,78 @@ export const useSearchBuckets = () => {
 
   // Get the master data to check deployment status
   const { data: master } = useSWR<MasterResponse>(MasterURL);
+  const shouldSearchContractAddresses = isContractAddressQuery(query);
+  const { data: contractMappingsRawData } = useSWR<ContractMappingsResponse>(
+    shouldSearchContractAddresses ? ApplicationsURLs.contractMappings : null,
+  );
 
   // search buckets structure
   type SearchBucket = {
     label: string;
     icon: GTPIconName;
-    options: { 
-      label: string; 
-      url: string; 
-      icon: string; 
-      color?: string;
-    }[];
+    options: SearchOption[];
     groupOptions?: { 
       label: string; 
-      options: { label: string; url: string; icon: string, color?: string }[]
+      options: SearchOption[]
     }[];
   };
+
+  const contractAddressOptions = useMemo<SearchOption[]>(() => {
+    if (!shouldSearchContractAddresses || !contractMappingsRawData?.data) {
+      return [];
+    }
+
+    const { types, data } = contractMappingsRawData.data;
+    if (!Array.isArray(types) || !Array.isArray(data)) {
+      return [];
+    }
+
+    const addressIndex = types.indexOf("address");
+    const ownerProjectIndex = types.indexOf("owner_project");
+    if (addressIndex === -1 || ownerProjectIndex === -1) {
+      return [];
+    }
+
+    const normalizedQuery = normalizeContractAddressQuery(query);
+    const matches = data
+      .map<SearchOption | null>((row) => {
+        const address = String(row[addressIndex] ?? "").toLowerCase();
+        const ownerProject = String(row[ownerProjectIndex] ?? "");
+        if (!address || !ownerProject || !address.includes(normalizedQuery)) {
+          return null;
+        }
+
+        const project = ownerProjectToProjectData[ownerProject];
+        return {
+          label: address,
+          url: `/applications/${ownerProject}`,
+          icon: project?.logo_path
+            ? `https://api.growthepie.com/v1/apps/logos/${project.logo_path}`
+            : "gtp-labeled",
+        };
+      })
+      .filter((option): option is SearchOption => option !== null);
+
+    if (matches.length === 0 && isFullContractAddressQuery(query)) {
+      return [{
+        label: `Label ${normalizedQuery}`,
+        url: buildProjectEditHref({
+          mode: "edit",
+          source: "applications-list",
+          focus: "contracts",
+          start: "contracts",
+          address: normalizedQuery,
+        }),
+        icon: "gtp-label-add",
+      }];
+    }
+
+    return [
+      ...matches.filter(option => option.label === normalizedQuery),
+      ...matches.filter(option => option.label !== normalizedQuery && option.label.startsWith(normalizedQuery)),
+      ...matches.filter(option => !option.label.startsWith(normalizedQuery)),
+    ].slice(0, 20);
+  }, [contractMappingsRawData, ownerProjectToProjectData, query, shouldSearchContractAddresses]);
 
   // first bucket = chains
   const searchBuckets: SearchBucket[] = useMemo(() => {
@@ -1340,9 +1420,16 @@ export const useSearchBuckets = () => {
           }))
           .filter(group => isNonEmptyString(group.label) && group.options.length > 0)
       },
+      ...(contractAddressOptions.length > 0
+        ? [{
+            label: "Contract Addresses",
+            icon: "gtp-labeled" as GTPIconName,
+            options: contractAddressOptions,
+          }]
+        : []),
       ...processedNavigationItems,
     ];
-  }, [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks, master]);
+  }, [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks, master, contractAddressOptions]);
 
 
   const allFilteredData = useMemo(() => {
