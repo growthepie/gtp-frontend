@@ -382,6 +382,7 @@ export function useContractsQueue({
     mode: "simpleProfile",
     initialRow: {
       chain_id: "",
+      address: intent.address.trim().toLowerCase(),
       owner_project: ownerProject.trim(),
     },
     validationOptions: { projects: normalizedProjects, usageCategoryRegistry },
@@ -391,8 +392,12 @@ export function useContractsQueue({
     () =>
       mode === "edit" && intent.source === "application-page"
         ? []
-        : [{ chain_id: "", owner_project: ownerProject.trim() }],
-    [intent.source, mode, ownerProject],
+        : [{
+            chain_id: "",
+            address: intent.address.trim().toLowerCase(),
+            owner_project: ownerProject.trim(),
+          }],
+    [intent.address, intent.source, mode, ownerProject],
   );
 
   const bulkController = useBulkCsvAttestUI(attestClient, {
