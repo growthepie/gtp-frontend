@@ -29,6 +29,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { track } from "@/lib/tracking";
 import { getExpandedSearchTermsForBucket, getExcludedGroupLabelsForBucket, getBucketLabelForShortQuery, getNormalSearchTerms, shouldShowSubheadingForShortQuery } from "@/lib/searchExpansions";
 import { useUIContext } from "@/contexts/UIContext";
+import { buildProjectEditHref } from "@/lib/project-edit-intent";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
@@ -54,6 +55,9 @@ const normalizeContractAddressQuery = (str: string | null | undefined) =>
 
 const isContractAddressQuery = (str: string | null | undefined) =>
   /^0x[0-9a-f]{2,}$/i.test(normalizeContractAddressQuery(str));
+
+const isFullContractAddressQuery = (str: string | null | undefined) =>
+  /^(0x[0-9a-f]{40}|0x[0-9a-f]{64})$/i.test(normalizeContractAddressQuery(str));
 
 const RECENT_SEARCHES_STORAGE_KEY = "gtp:recent-searches";
 const MAX_RECENT_SEARCHES = 5;
@@ -1101,6 +1105,20 @@ export const useSearchBuckets = () => {
         };
       })
       .filter((option): option is SearchOption => option !== null);
+
+    if (matches.length === 0 && isFullContractAddressQuery(query)) {
+      return [{
+        label: `Label ${normalizedQuery}`,
+        url: buildProjectEditHref({
+          mode: "edit",
+          source: "applications-list",
+          focus: "contracts",
+          start: "contracts",
+          address: normalizedQuery,
+        }),
+        icon: "gtp-label-add",
+      }];
+    }
 
     return [
       ...matches.filter(option => option.label === normalizedQuery),
