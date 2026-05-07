@@ -18,6 +18,8 @@ const SidebarContainer = dynamic(() => import("@/components/layout/SidebarContai
 import { generateJsonLd } from "@/utils/json-ld";
 import QuickBiteRouteSchemas from "@/components/quick-bites/QuickBiteRouteSchemas";
 import QuickBiteRouteStaticShell from "@/components/quick-bites/QuickBiteRouteStaticShell";
+import FundamentalsRouteSchemas from "@/components/fundamentals/FundamentalsRouteSchemas";
+import FundamentalsRouteStaticShell from "@/components/fundamentals/FundamentalsRouteStaticShell";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
@@ -196,11 +198,13 @@ export default function RootLayout({
         />
         {/* Per-route JSON-LD (emitted parse-time, outside <Providers> client boundary) */}
         <QuickBiteRouteSchemas />
+        <FundamentalsRouteSchemas />
         {/* Per-route static SEO shell — visible-text article surface in
             parse-time HTML so non-JS AI crawlers see headings, prose, and FAQ
             content. Visually hidden (sr-only) so it doesn't duplicate the
             interactive React UI for sighted users. */}
         <QuickBiteRouteStaticShell />
+        <FundamentalsRouteStaticShell />
         <Providers>
           <div
             id="background-container"
