@@ -39,6 +39,7 @@ import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3"
+import { getCssVarAsRgb } from "@/lib/echarts-utils";
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
@@ -2012,53 +2013,56 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         marginLeft: quickBiteTabRightEdgeFlush ? "auto" : undefined,
       }
     : undefined;
-  const quickBitePageFooterClassName = isQuickBitePageScatter
-    ? "md:px-[50px] relative bottom-0 mt-0 flex flex-col justify-between gap-y-[3px] md:gap-y-0"
-    : "md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0";
-
   return (
     <div className={`relative ${wrapperPaddingClass}`} style={quickBitesTabWrapperStyle}>
       <div
         ref={chartCardRef}
         style={{ width, height }}
         className={`${
-          isChainQuickBitesTabChart
-            ? `chain-quick-bites-tab-chart-anchor bg-color-bg-default rounded-[18px] px-[8px] pb-[42px] ${
-                chainQuickBitesTopBar ? "pt-[38px]" : "pt-[8px]"
-              }`
-            : "bg-transparent md:bg-color-ui-active rounded-[25px] shadow-none md:shadow-md md:p-[15px]"
+          isChainQuickBitesTabChart ? "chain-quick-bites-tab-chart-anchor " : ""
+        }bg-color-bg-default rounded-[18px] px-[8px] pb-[42px] ${
+          chainQuickBitesTopBar ? "pt-[38px]" : "pt-[8px]"
         } relative flex flex-col ${isQuickBitePageScatter ? "gap-y-[10px]" : "gap-y-[12px]"} h-full`}
       >
-        {isChainQuickBitesTabChart ? (
-          <>
-            {chainQuickBitesTopBar ? (
-              <div className="absolute inset-x-0 top-0 z-[30]">
-                <div className="w-full bg-color-bg-medium rounded-full p-[2px]">
-                  <div className="mr-auto w-fit">{chainQuickBitesTopBar}</div>
-                </div>
-              </div>
-            ) : null}
+        {chainQuickBitesTopBar ? (
+          <div className="absolute inset-x-0 top-0 z-[30]">
+            <div className="w-full bg-color-bg-medium rounded-full p-[2px]">
+              <div className="mr-auto w-fit">{chainQuickBitesTopBar}</div>
+            </div>
+          </div>
+        ) : null}
+        {(title || (seeMetricURL && !isChainQuickBitesTabChart)) ? (
+          <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
             {title ? (
-              <div className="flex items-center gap-x-[6px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
+              <div className="flex items-center gap-x-[6px] min-w-0">
                 <GTPIcon
                   icon={CHAIN_QUICKBITES_HEADER_ICON}
                   className="!w-[12px] !h-[12px] text-color-text-primary"
                   containerClassName="!w-[12px] !h-[12px]"
                 />
-                <span className="text-xxs text-color-text-primary/85">{title}</span>
+                <span className="text-xxs text-color-text-primary/85 truncate">{title}</span>
               </div>
+            ) : <div />}
+            {seeMetricURL && !isChainQuickBitesTabChart ? (
+              <a
+                href={seeMetricURL}
+                rel="_noopener"
+                className="flex items-center gap-x-[4px] rounded-full pl-[8px] pr-[3px] h-[20px] shrink-0"
+                style={{
+                  border: `1px solid transparent`,
+                  backgroundImage: `linear-gradient(rgb(var(--bg-default)), rgb(var(--bg-default))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
+                  backgroundOrigin: 'border-box',
+                  backgroundClip: 'padding-box, border-box',
+                }}
+              >
+                <span className="text-xxs text-color-text-primary whitespace-nowrap">See metric page</span>
+                <span className="w-[14px] h-[14px] flex items-center justify-center bg-color-bg-medium rounded-full">
+                  <Icon icon="fluent:arrow-right-32-filled" className="w-[9px] h-[9px]" />
+                </span>
+              </a>
             ) : null}
-          </>
-        ) : (
-          <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-color-bg-default rounded-full">
-            <div className="flex items-center justify-center md:justify-between">
-              <div className="flex items-center gap-x-[5px]">
-                <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
-                <div className="heading-small-md">{title}</div>
-              </div>
-            </div>
           </div>
-        )}
+        ) : null}
         {renderWithGTPChart ? (
           <div className="relative h-full min-h-0 flex-1">
             <GTPChart
@@ -2549,7 +2553,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               split={false}
               followPointer={true}
               followTouchMove={true}
-              backgroundColor={"#2A3433EE"}
+              backgroundColor={getCssVarAsRgb("--bg-default", theme === "dark" ? "rgb(31, 39, 38)" : "rgb(240, 244, 244)")}
               padding={0}
               hideDelay={300}
               stickOnContact={false}
@@ -2564,7 +2568,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 offsetY: 2,
               }}
               style={{
-                color: "rgb(215, 223, 222)",
+                color: getCssVarAsRgb("--text-primary", theme === "dark" ? "rgb(205, 216, 211)" : "rgb(31, 39, 38)"),
               }}
               formatter={chartType === 'pie' ? pieTooltipFormatter : tooltipFormatter}
             />
@@ -2587,182 +2591,89 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        {isChainQuickBitesTabChart ? (
-          <>
-            {legendCategories.length > 0 && (
-              <div className="min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
-                {[...primaryLegendCategories, ...secondaryLegendCategories].map((category: any) => {
-                  const isActive = isLegendCategoryActive(category);
-                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
-                  const markerOpacity = isActive ? 1 : 0.35;
+        {legendCategories.length > 0 && (
+          <div className="min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
+            {[...primaryLegendCategories, ...secondaryLegendCategories].map((category: any) => {
+              const isActive = isLegendCategoryActive(category);
+              const seriesColor = typeof category.color === "string" ? category.color : "#999999";
+              const markerOpacity = isActive ? 1 : 0.35;
 
-                  return (
-                    <GTPButton
-                      key={category.name}
-                      label={category.name}
-                      variant={isActive ? "primary" : "no-background"}
-                      size="xs"
-                      clickHandler={() => toggleLegendCategory(category)}
-                      onMouseEnter={() => setHoverLegendSeriesName(category.name)}
-                      onMouseLeave={() => setHoverLegendSeriesName(null)}
-                      rightIcon={
-                        hoverLegendSeriesName === category.name
-                          ? isActive
-                            ? "in-button-close"
-                            : "in-button-plus"
-                          : undefined
-                      }
-                      rightIconClassname="!w-[12px] !h-[12px]"
-                      textClassName={isActive ? undefined : "text-color-text-secondary"}
-                      className={isActive ? undefined : "border border-color-bg-medium"}
-                      leftIconOverride={(
-                        category?.isScatterTrendline ? (
-                          <div
-                            className="min-w-[16px] h-0 border-t-2 border-dashed rounded-none"
-                            style={{ borderColor: seriesColor, opacity: markerOpacity }}
-                          />
-                        ) : (
-                          <div
-                            className="min-w-[6px] min-h-[6px] rounded-full"
-                            style={{ backgroundColor: seriesColor, opacity: markerOpacity }}
-                          />
-                        )
-                      )}
-                    />
-                  );
-                })}
-                {shouldShowLegendReset && (
-                  <GTPButton
-                    label="Reset"
-                    variant="highlight"
-                    size="xs"
-                    leftIcon="gtp-close-monochrome"
-                    clickHandler={resetLegendFilters}
-                  />
-                )}
-              </div>
-            )}
-            <div className="absolute inset-x-0 bottom-0 z-[30]">
-              <GTPButtonContainer>
-                <div className="mr-auto">
-                  <GTPButtonRow className="shrink-0">
-                    <GTPButtonDropdown
-                      openDirection="top"
-                      matchTriggerWidthToDropdown
-                      buttonProps={{
-                        label: "Share",
-                        labelDisplay: "active",
-                        leftIcon: "gtp-share-monochrome",
-                        size: "xs",
-                        variant: "no-background",
-                      }}
-                      isOpen={isSharePopoverOpen}
-                      onOpenChange={setIsSharePopoverOpen}
-                      dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
-                    />
-                    <GTPButton
-                      leftIcon="gtp-download-monochrome"
-                      size="xs"
-                      variant="no-background"
-                      visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
-                      disabled={isDownloadingChartSnapshot}
-                      clickHandler={handleDownloadChartSnapshot}
-                    />
-                  </GTPButtonRow>
-                </div>
-              </GTPButtonContainer>
-            </div>
-          </>
-        ) : (
-          <div className={quickBitePageFooterClassName}>
-            <div className="flex flex-col gap-y-[5px]">
-              <div className="flex flex-1 gap-[5px] flex-wrap items-center justify-center">
-                {primaryLegendCategories.map((category: any) => {
-                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if (!isLegendCategoryActive(category)) {
-                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
+              return (
+                <GTPButton
+                  key={category.name}
+                  label={category.name}
+                  variant={isActive ? "primary" : "no-background"}
+                  size="xs"
+                  clickHandler={() => toggleLegendCategory(category)}
+                  onMouseEnter={() => setHoverLegendSeriesName(category.name)}
+                  onMouseLeave={() => setHoverLegendSeriesName(null)}
+                  rightIcon={
+                    hoverLegendSeriesName === category.name
+                      ? isActive
+                        ? "in-button-close"
+                        : "in-button-plus"
+                      : undefined
                   }
-                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
-                  const markerOpacity = isLegendCategoryActive(category) ? 1 : 0.35;
-
-                  return (
-                    <div
-                      key={category.name}
-                      className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`}
-                      onClick={() => toggleLegendCategory(category)}
-                    >
-                      {category?.isScatterTrendline ? (
-                        <div
-                          className="w-[16px] h-0 border-t-2 border-dashed rounded-none"
-                          style={{ borderColor: seriesColor, opacity: markerOpacity }}
-                        ></div>
-                      ) : (
-                        <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: seriesColor, opacity: markerOpacity }}></div>
-                      )}
-                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
-                    </div>
-                  )
-                })}
-
-                {secondaryLegendCategories.map((category: any) => {
-                  let bgBorderClass = "border-[1px] border-color-bg-medium bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover ";
-                  if (!isLegendCategoryActive(category)) {
-                    bgBorderClass = "border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover";
-                  }
-                  const seriesColor = typeof category.color === "string" ? category.color : "#999999";
-                  const markerOpacity = isLegendCategoryActive(category) ? 1 : 0.35;
-
-                  return (
-                    <div
-                      key={category.name}
-                      className={`bg-color-bg-medium hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[2px] pl-[3px] pr-[4px] h-[18px] cursor-pointer ${bgBorderClass}`}
-                      onClick={() => toggleLegendCategory(category)}
-                    >
-                      {category?.isScatterTrendline ? (
-                        <div
-                          className="w-[16px] h-0 border-t-2 border-dashed rounded-none"
-                          style={{ borderColor: seriesColor, opacity: markerOpacity }}
-                        ></div>
-                      ) : (
-                        <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: seriesColor, opacity: markerOpacity }}></div>
-                      )}
-                      <div className="text-xxxs -mb-[1px] whitespace-nowrap">{category.name}</div>
-                    </div>
-                  )
-                })}
-                {shouldShowLegendReset && (
-                  <div
-                    className="border-[1px] border-color-bg-medium bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover flex items-center justify-center rounded-full gap-x-[5px] pl-[3px] pr-[4px] h-[18px] cursor-pointer"
-                    onClick={resetLegendFilters}
-                  >
-                    <div className="w-[5px] h-[5px] rounded-full flex items-center justify-center">
-                      <GTPIcon
-                        icon={"gtp-close-monochrome"}
-                        className={"!size-[7px] text-red-500"}
-                        containerClassName="!size-[7px]"
+                  rightIconClassname="!w-[12px] !h-[12px]"
+                  textClassName={isActive ? undefined : "text-color-text-secondary"}
+                  className={isActive ? undefined : "border border-color-bg-medium"}
+                  leftIconOverride={(
+                    category?.isScatterTrendline ? (
+                      <div
+                        className="min-w-[16px] h-0 border-t-2 border-dashed rounded-none"
+                        style={{ borderColor: seriesColor, opacity: markerOpacity }}
                       />
-                    </div>
-                    <div className="text-xxxs whitespace-nowrap">Reset</div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
-              <div className="flex flex-row md:flex-col gap-y-[2px]"></div>
-              {seeMetricURL && (
-                <a className="bg-color-bg-medium md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
-                  border: `1px solid transparent`,
-                backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, rgb(var(--bg-medium))), var(--Gradient-Red-Yellow, rgb(var(--bg-medium)))), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
-                backgroundOrigin: 'border-box',
-                backgroundClip: 'padding-box, border-box'
-              }}>
-                <div className="heading-small-xs text-color-text-primary">See metric page</div>
-                <div className="w-[24px] h-[24px] flex items-center justify-center bg-color-bg-medium rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
-              </a>
-              )}
-            </div>
+                    ) : (
+                      <div
+                        className="min-w-[6px] min-h-[6px] rounded-full"
+                        style={{ backgroundColor: seriesColor, opacity: markerOpacity }}
+                      />
+                    )
+                  )}
+                />
+              );
+            })}
+            {shouldShowLegendReset && (
+              <GTPButton
+                label="Reset"
+                variant="highlight"
+                size="xs"
+                leftIcon="gtp-close-monochrome"
+                clickHandler={resetLegendFilters}
+              />
+            )}
           </div>
         )}
+        <div className="absolute inset-x-0 bottom-0 z-[30]">
+          <GTPButtonContainer>
+            <div className="mr-auto">
+              <GTPButtonRow className="shrink-0">
+                <GTPButtonDropdown
+                  openDirection="top"
+                  matchTriggerWidthToDropdown
+                  buttonProps={{
+                    label: "Share",
+                    labelDisplay: "active",
+                    leftIcon: "gtp-share-monochrome",
+                    size: "xs",
+                    variant: "no-background",
+                  }}
+                  isOpen={isSharePopoverOpen}
+                  onOpenChange={setIsSharePopoverOpen}
+                  dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
+                />
+                <GTPButton
+                  leftIcon="gtp-download-monochrome"
+                  size="xs"
+                  variant="no-background"
+                  visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
+                  disabled={isDownloadingChartSnapshot}
+                  clickHandler={handleDownloadChartSnapshot}
+                />
+              </GTPButtonRow>
+            </div>
+          </GTPButtonContainer>
+        </div>
       </div>
     </div>
   );
