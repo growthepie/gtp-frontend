@@ -174,6 +174,10 @@ export interface ChartBlock extends BaseBlock {
     color: string;
   }[];
   disableTooltipSort?: boolean;
+  /** When true, preserves the meta array order for stacked series instead of
+   *  auto-sorting by first-non-zero-data-point timestamp. The first series in
+   *  meta becomes the bottom of the stack. */
+  preserveMetaOrder?: boolean;
   useNewChart?: boolean;
   snapToCleanBoundary?: boolean;
   timeAxisTickIntervalDays?: number;

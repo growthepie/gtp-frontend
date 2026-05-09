@@ -602,6 +602,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
               } : undefined
             }
             disableTooltipSort={block.disableTooltipSort}
+            preserveMetaOrder={block.preserveMetaOrder}
             useNewChart={block.useNewChart}
             snapToCleanBoundary={block.snapToCleanBoundary}
             timeAxisTickIntervalDays={block.timeAxisTickIntervalDays}

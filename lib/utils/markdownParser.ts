@@ -630,6 +630,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
       disableTooltipSort: chartConfig.disableTooltipSort || false,
+      preserveMetaOrder: typeof chartConfig.preserveMetaOrder === 'boolean' ? chartConfig.preserveMetaOrder : undefined,
       useNewChart: typeof chartConfig.useNewChart === 'boolean' ? chartConfig.useNewChart : undefined,
       snapToCleanBoundary: typeof chartConfig.snapToCleanBoundary === 'boolean' ? chartConfig.snapToCleanBoundary : undefined,
       timeAxisTickIntervalDays: typeof chartConfig.timeAxisTickIntervalDays === 'number' ? chartConfig.timeAxisTickIntervalDays : undefined,

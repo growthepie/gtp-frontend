@@ -167,9 +167,11 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
 
     if (sideChartForRender) {
       return (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] items-start gap-[15px]">
-          <ChartBlock key={sideChartForRender.id} block={sideChartForRender} />
-          {mainChart}
+        <div className="@container">
+          <div className="grid grid-cols-1 @[750px]:grid-cols-2 @[1200px]:grid-cols-[1fr_2fr] @[750px]:items-start gap-[15px]">
+            <ChartBlock key={sideChartForRender.id} block={sideChartForRender} />
+            {mainChart}
+          </div>
         </div>
       );
     }

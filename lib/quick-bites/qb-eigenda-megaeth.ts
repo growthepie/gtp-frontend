@@ -1,5 +1,6 @@
 // Quick Bite: EigenDA x MegaETH
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { QB_SIDE_BY_SIDE_CHARTS } from './layouts';
 
 const EthBlobChart = ["```chart",
   JSON.stringify({
@@ -402,7 +403,7 @@ const EigenDAMegaETH: QuickBiteData = {
     "```container",
     JSON.stringify({
       blocks: [EthBlobChart, EigenDACapacityChart],
-      className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
+      className: QB_SIDE_BY_SIDE_CHARTS,
     }),
     "```",
 

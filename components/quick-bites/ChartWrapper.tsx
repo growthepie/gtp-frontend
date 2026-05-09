@@ -92,6 +92,9 @@ interface ChartWrapperProps {
   showXAsDate?: boolean;
   showZeroTooltip?: boolean;
   showTotalTooltip?: boolean;
+  /** When true, preserves the meta array order for stacked series instead of
+   *  auto-sorting by first-non-zero-data-point timestamp. */
+  preserveMetaOrder?: boolean;
   useNewChart?: boolean;
   snapToCleanBoundary?: boolean;
   timeAxisTickIntervalDays?: number;
@@ -213,6 +216,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   disableTooltipSort = false,
   showZeroTooltip = true,
   showTotalTooltip = false,
+  preserveMetaOrder = false,
   useNewChart = true,
   snapToCleanBoundary,
   timeAxisTickIntervalDays,
@@ -481,7 +485,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       };
     });
 
-    if (!shouldSortStackedSeriesByAge) {
+    if (!shouldSortStackedSeriesByAge || preserveMetaOrder) {
       return baseEntries;
     }
 
@@ -503,7 +507,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     const secondaryEntries = baseEntries.filter((entry) => entry.series?.oppositeYAxis === true);
 
     return [...sortStackGroup(primaryEntries), ...sortStackGroup(secondaryEntries)];
-  }, [jsonMeta?.meta, processedSeriesData, shouldSortStackedSeriesByAge]);
+  }, [jsonMeta?.meta, processedSeriesData, shouldSortStackedSeriesByAge, preserveMetaOrder]);
 
   const normalizedTop10MetricKey = useMemo(
     () => normalizeSeriesLabel(top10ByMetric?.trim() || ""),
