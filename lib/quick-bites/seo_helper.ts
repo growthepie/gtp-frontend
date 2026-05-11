@@ -144,6 +144,9 @@ export interface JsonLdBreadcrumbs {
 export interface GenerateSeoOptions {
   siteUrl?: string; // default: https://www.growthepie.com
   section?: string; // default: "quick-bites"
+  // Human-readable label for the section breadcrumb. Defaults to "Quick Bites"
+  // when section is "quick-bites" or omitted, otherwise a Title-cased section.
+  breadcrumbLabel?: string;
   publisherName?: string; // default: "growthepie"
   publisherLogoUrl?: string; // default: <siteUrl>/brand/logo-assets/growthepie_logo_round_BG_dark.png
   dateModified?: string; // override if you track commit time
@@ -208,6 +211,7 @@ const buildSameAs = (...urls: (string | undefined | null)[]): string[] | undefin
 // Strip markdown / fenced data blocks so AI consumers (and our own entity
 // detection) see only prose. Exported so server pages can reuse it.
 const ARTICLE_BODY_MAX_CHARS = 5000;
+const ANSWER_BODY_MAX_CHARS = 20000;
 export const extractPlainText = (content: string[] | string): string => {
   const joined = Array.isArray(content) ? content.join("\n\n") : content;
   return joined
@@ -287,14 +291,21 @@ export const extractStructuredProse = (content: string[] | string): ProseChunk[]
   return chunks;
 };
 
-export const computeArticleStats = (content: string[] | string) => {
+export const computeArticleStats = (
+  content: string[] | string,
+  maxChars: number = ARTICLE_BODY_MAX_CHARS,
+) => {
   const plain = extractPlainText(content);
   if (!plain) return { articleBody: undefined, wordCount: undefined } as const;
   return {
-    articleBody: plain.slice(0, ARTICLE_BODY_MAX_CHARS),
+    articleBody: plain.slice(0, maxChars),
     wordCount: plain.split(/\s+/).filter(Boolean).length,
   } as const;
 };
+
+// Pre-set ceiling for canonical answer pages (`/answers/[slug]`) — these are
+// often longer-form than quick bites and shouldn't be silently truncated.
+export const ANSWER_BODY_CEILING = ANSWER_BODY_MAX_CHARS;
 
 // All terms used to seed keyword/entity detection: title + subtitle + topics +
 // declared entities + (optionally) extracted body text.
@@ -512,13 +523,22 @@ export function generateJsonLdBreadcrumbs(
   const siteUrl = opts.siteUrl ?? "https://www.growthepie.com";
   const section = opts.section ?? "quick-bites";
   const base = siteUrl.replace(/\/$/, "");
+  const sectionLabel =
+    opts.breadcrumbLabel ??
+    (section === "quick-bites"
+      ? "Quick Bites"
+      : section
+          .split(/[-_/]/)
+          .filter(Boolean)
+          .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+          .join(" "));
 
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: `${base}/` },
-      { "@type": "ListItem", position: 2, name: "Quick Bites", item: `${base}/${section}` },
+      { "@type": "ListItem", position: 2, name: sectionLabel, item: `${base}/${section}` },
       {
         "@type": "ListItem",
         position: 3,
@@ -527,6 +547,150 @@ export function generateJsonLdBreadcrumbs(
       },
     ],
   };
+}
+
+// ---------------------------------------------------------------------------
+// QAPage schema (for /answers/[slug])
+// ---------------------------------------------------------------------------
+// Canonical answer pages whose primary purpose is to answer ONE question are
+// best modelled as schema.org QAPage with a mainEntity Question + Answer.
+// AI search engines (Google AI Overviews, ChatGPT search, Perplexity) use
+// this type explicitly to surface direct answers.
+
+export interface JsonLdQAPage {
+  ['@context']: 'https://schema.org';
+  ['@type']: 'QAPage';
+  datePublished?: string;
+  dateModified?: string;
+  mainEntity: {
+    ['@type']: 'Question';
+    name: string;
+    text: string;
+    answerCount: number;
+    inLanguage?: string;
+    author?: JsonLdAuthor[];
+    dateCreated?: string;
+    dateModified?: string;
+    acceptedAnswer: {
+      ['@type']: 'Answer';
+      text: string;
+      inLanguage?: string;
+      author?: JsonLdAuthor[];
+      url?: string;
+      dateCreated?: string;
+      dateModified?: string;
+    };
+  };
+  about?: JsonLdAboutThing[];
+  keywords?: string[] | string;
+  isPartOf?: { ['@type']: 'WebSite'; ['@id']?: string; name: string; url: string };
+  publisher?: {
+    ['@type']: 'Organization';
+    ['@id']?: string;
+    name: string;
+    url: string;
+    logo?: { ['@type']: 'ImageObject'; url: string };
+  };
+  speakable?: JsonLdSpeakable;
+  url?: string;
+}
+
+export interface GenerateQAPageOptions extends GenerateSeoOptions {
+  // Direct, AI-quotable accepted-answer text. If omitted the caller is
+  // expected to derive one (e.g. first prose paragraph).
+  acceptedAnswer: string;
+  // ISO timestamp marking when the answer was first published. Optional;
+  // omitted from JSON-LD when not provided.
+  datePublished?: string;
+}
+
+export function generateJsonLdQAPage(
+  slug: string,
+  data: QuickBiteData,
+  opts: GenerateQAPageOptions,
+): JsonLdQAPage {
+  const siteUrl = opts.siteUrl ?? 'https://www.growthepie.com';
+  const section = opts.section ?? 'answers';
+  const publisherName = opts.publisherName ?? 'growthepie';
+  const publisherLogoUrl =
+    opts.publisherLogoUrl ??
+    `${siteUrl.replace(/\/$/, '')}/brand/logo-assets/growthepie_logo_round_BG_dark.png`;
+  const base = siteUrl.replace(/\/$/, '');
+  const canonical = `${base}/${section}/${slug}`;
+  const publisherId = `${base}/#organization`;
+  const websiteId = `${base}/#website`;
+
+  const authors = toAuthors(data).map((a) => ({
+    ...a,
+    worksFor: { '@id': publisherId },
+  }));
+
+  const speakableSelectors =
+    opts.speakableSelectors ?? [
+      '.quickbite-deck',
+      '.quickbite-prose h2',
+      '.quickbite-prose h3',
+      '.quickbite-prose p',
+    ];
+
+  const datePublishedIso = toIsoWithTZ(opts.datePublished ?? (data as any).date);
+  const dateModifiedIso = toIsoWithTZ(opts.dateModified);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'QAPage',
+    ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
+    ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+    mainEntity: {
+      '@type': 'Question',
+      name: data.title,
+      text: data.title,
+      answerCount: 1,
+      inLanguage: opts.language ?? 'en',
+      author: authors.length ? authors : undefined,
+      ...(datePublishedIso ? { dateCreated: datePublishedIso } : {}),
+      ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: opts.acceptedAnswer,
+        inLanguage: opts.language ?? 'en',
+        author: authors.length ? authors : undefined,
+        url: canonical,
+        ...(datePublishedIso ? { dateCreated: datePublishedIso } : {}),
+        ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+      },
+    },
+    about: toAboutThings(data, opts.articleBody),
+    keywords: toKeywords(data, opts.articleBody),
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': websiteId,
+      name: publisherName,
+      url: siteUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': publisherId,
+      name: publisherName,
+      url: siteUrl,
+      logo: { '@type': 'ImageObject', url: publisherLogoUrl },
+    },
+    speakable: { '@type': 'SpeakableSpecification', cssSelector: speakableSelectors },
+    url: canonical,
+  };
+}
+
+// Best-effort accepted-answer extraction: prefer an explicit `acceptedAnswer`
+// field on the data, otherwise take the first non-empty prose paragraph from
+// the article body. Used by /answers/[slug] when the editor didn't pin one.
+export function deriveAcceptedAnswer(
+  data: QuickBiteData,
+  prose: ProseChunk[],
+): string {
+  const explicit = (data as any).acceptedAnswer;
+  if (typeof explicit === 'string' && explicit.trim()) return explicit.trim();
+  const firstPara = prose.find((c) => c.tag === 'p' && c.text.trim().length > 0);
+  return firstPara?.text.trim() || data.subtitle || '';
 }
 
 // ---------------------------------------------------------------------------

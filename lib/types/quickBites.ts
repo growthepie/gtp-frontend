@@ -63,6 +63,19 @@ export interface JsonLdThing {
     showInChainTab?: boolean; // Optional property to control chain quick bites tab visibility, defaults to true
     ethUsdSwitchEnabled?: boolean; // Optional override for ETH/USD toggle on Quick Bites pages
     autoAddChartChainsToTopics?: boolean; // Optional: append chart chain names (long names) to topics from chart series
+    // Hide the published date in the page header. Used by answer pages where
+    // the page is meant to read as evergreen / continuously updated rather
+    // than dated. Defaults to false (date shown) — quick bites unaffected.
+    hideDate?: boolean;
+    // Hide the visible "Topics Discussed" chip bar at the bottom of the
+    // article. JSON-LD `keywords` / `about[]` and the static SEO shell still
+    // expose the same topics to AI crawlers — this only suppresses the
+    // user-facing chip UI. Defaults to false — quick bites unaffected.
+    hideTopicsBar?: boolean;
+    // Explicit accepted-answer text for QAPage schema (used by /answers/[slug]).
+    // If omitted, the answer processor falls back to the first prose paragraph.
+    // Quick bites ignore this field.
+    acceptedAnswer?: string;
     jsonLdFaq?: JsonLdThing;
     jsonLdDatasets?: JsonLdThing[];
     faq?: FaqItem[];

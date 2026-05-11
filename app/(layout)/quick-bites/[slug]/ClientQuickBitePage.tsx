@@ -489,17 +489,25 @@ export default function ClientQuickBitePage({
                       itemScope
                       itemType="https://schema.org/Person"
                     >
-                      {quickBiteWithChartTopics.author.map((author) => (
-                        <Fragment key={author.xUsername}>
-                          <ClientAuthorLink name={author.name} xUsername={author.xUsername} />
-                          <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
-                            <circle cx="3" cy="3" r="3" />
-                          </svg>
-                        </Fragment>
-                      ))}
+                      {quickBiteWithChartTopics.author.map((author, idx, arr) => {
+                        // Skip trailing bullet when the date is hidden and this
+                        // is the last author — avoids a dangling separator.
+                        const showBullet =
+                          !(quickBiteWithChartTopics.hideDate && idx === arr.length - 1);
+                        return (
+                          <Fragment key={author.xUsername}>
+                            <ClientAuthorLink name={author.name} xUsername={author.xUsername} />
+                            {showBullet && (
+                              <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
+                                <circle cx="3" cy="3" r="3" />
+                              </svg>
+                            )}
+                          </Fragment>
+                        );
+                      })}
                     </div>
                   )}
-                  {quickBiteWithChartTopics && (
+                  {quickBiteWithChartTopics && !quickBiteWithChartTopics.hideDate && (
                     <time
                       className='text-xxs lg:text-sm'
                       dateTime={quickBiteWithChartTopics.date}
@@ -535,7 +543,10 @@ export default function ClientQuickBitePage({
             </QuickBiteProvider>
           </article>
 
-          {/* Topics */}
+          {/* Topics — opt-out via `hideTopicsBar` (used by /answers/[slug]).
+              JSON-LD `keywords`/`about[]` and the static SEO shell still
+              expose topics to AI crawlers when this is hidden. */}
+          {!quickBiteWithChartTopics?.hideTopicsBar && (
           <div className="relative h-[34px] px-[15px] py-[5px] bg-color-bg-default rounded-full flex items-center gap-x-[10px]">
             <span className="text-xxs text-color-text-secondary whitespace-nowrap">Topics Discussed</span>
             <div
@@ -618,6 +629,7 @@ export default function ClientQuickBitePage({
               </div>
             </div>
           </div>
+          )}
 
           <RelatedQuickBites slug={params.slug} />
         </Container>

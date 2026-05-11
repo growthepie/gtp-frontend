@@ -844,6 +844,15 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const gtpXAxisMin = useMemo(() => {
     if (!renderWithGTPChart || gtpSeries.length === 0) return undefined;
 
+    // Explicit override via chart config (`options.xAxis.min`). Used by
+    // `/answers/[slug]` to lock every chart to a 2026-02-01 start. Takes
+    // precedence over the data-derived min so users see a consistent window
+    // even when one series happens to extend further back.
+    const configuredMin = options?.xAxis?.min;
+    if (typeof configuredMin === "number" && Number.isFinite(configuredMin)) {
+      return configuredMin;
+    }
+
     let minTimestampNonZero: number | undefined;
     let minTimestampAnyValue: number | undefined;
 
@@ -864,7 +873,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     });
 
     return minTimestampNonZero ?? minTimestampAnyValue;
-  }, [gtpSeries, renderWithGTPChart]);
+  }, [gtpSeries, renderWithGTPChart, options?.xAxis?.min]);
 
   const computedTimeAxisTickConfig = useMemo(() => {
     const explicitIntervalMs =
