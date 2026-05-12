@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-const INACTIVITY_MS = 20 * 60 * 1000; // 20 minutes
+const INACTIVITY_MS = 10 * 60 * 1000; // 20 minutes
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'] as const;
 
 export function StaleTabGuard() {
