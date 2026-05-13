@@ -24,6 +24,11 @@ const HUB_TITLE = 'Answers about Ethereum, L2s and onchain applications';
 const HUB_DESCRIPTION =
   "Direct, data-backed answers to common questions about Ethereum and its wider ecosystem. This includes Layer 2s, onchain applications, tokens, and stablecoins. Each answer page is recomputed daily from growthepie's public API and links to the underlying datasets.";
 
+// Stable per-UTC-day stamp so AI crawlers see consistent og:image URLs
+// within a day without forfeiting cache busting across days.
+const HUB_OG_DATE = new Date().toISOString().split('T')[0];
+const HUB_OG_IMAGE = `https://api.growthepie.com/v1/og_images/landing.jpg?date=${HUB_OG_DATE}`;
+
 export const metadata: Metadata = {
   title: `${HUB_TITLE} | growthepie`,
   description: HUB_DESCRIPTION,
@@ -33,12 +38,23 @@ export const metadata: Metadata = {
     title: HUB_TITLE,
     description: HUB_DESCRIPTION,
     url: `${SITE_URL}${SECTION_PATH}`,
+    images: [
+      {
+        url: HUB_OG_IMAGE,
+        width: 1200,
+        height: 627,
+        alt: 'growthepie — Answers about Ethereum L2s',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: HUB_TITLE,
     description: HUB_DESCRIPTION,
+    images: [HUB_OG_IMAGE],
   },
+  // Explicit override of the root layout's `nocache: true` default — answer
+  // pages are designed to be cached and quoted by AI engines.
   robots: {
     index: true,
     follow: true,

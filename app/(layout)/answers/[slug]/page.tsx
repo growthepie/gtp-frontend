@@ -34,6 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: seo.twitter.description,
       images: seo.twitter.image ? [seo.twitter.image] : undefined,
     },
+    // Explicit override of the root layout's `nocache: true` default — answer
+    // pages are designed to be cached and quoted by AI engines (especially
+    // Bing Copilot, which respects `nocache` as "don't show cached snippet").
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 

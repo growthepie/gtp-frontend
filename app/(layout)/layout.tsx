@@ -22,6 +22,8 @@ import FundamentalsRouteSchemas from "@/components/fundamentals/FundamentalsRout
 import FundamentalsRouteStaticShell from "@/components/fundamentals/FundamentalsRouteStaticShell";
 import AnswerRouteSchemas from "@/components/answers/AnswerRouteSchemas";
 import AnswerRouteStaticShell from "@/components/answers/AnswerRouteStaticShell";
+import AnswerHubSchemas from "@/components/answers/AnswerHubSchemas";
+import AnswerHubStaticShell from "@/components/answers/AnswerHubStaticShell";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
@@ -202,6 +204,7 @@ export default function RootLayout({
         <QuickBiteRouteSchemas />
         <FundamentalsRouteSchemas />
         <AnswerRouteSchemas />
+        <AnswerHubSchemas />
         {/* Per-route static SEO shell — visible-text article surface in
             parse-time HTML so non-JS AI crawlers see headings, prose, and FAQ
             content. Visually hidden (sr-only) so it doesn't duplicate the
@@ -209,6 +212,7 @@ export default function RootLayout({
         <QuickBiteRouteStaticShell />
         <FundamentalsRouteStaticShell />
         <AnswerRouteStaticShell />
+        <AnswerHubStaticShell />
         <Providers>
           <div
             id="background-container"

@@ -98,7 +98,7 @@ export default async function AnswerRouteStaticShell() {
           {qb.date && <meta itemProp="dateCreated" content={qb.date} />}
           <meta itemProp="dateModified" content={todayUtcIso} />
           {qb.author && qb.author.length > 0 && (
-            <div itemProp="author" itemScope itemType="https://schema.org/Organization">
+            <div itemProp="author" itemScope itemType="https://schema.org/Person">
               <meta itemProp="name" content={qb.author.map((a) => a.name).join(', ')} />
             </div>
           )}

@@ -226,10 +226,13 @@ const mostUsedEthereumL2: QuickBiteData = createQuickBite({
   acceptedAnswer:
     'Data currently unavailable. See growthepie.com/fundamentals/throughput for the live Ethereum L2 leaderboards.',
   related: [],
+  // Named human authors enrich the QAPage `Person` schema via the
+  // `lookupAuthor` registry (lib/quick-bites/authors.ts), giving AI engines a
+  // stronger Expertise/Authoritativeness signal than the org-level byline.
   author: [
     {
-      name: 'growthepie research analysts',
-      xUsername: 'growthepie_eth',
+      name: 'Matthias Seidl',
+      xUsername: 'web3_data',
     },
   ],
   topics: [
