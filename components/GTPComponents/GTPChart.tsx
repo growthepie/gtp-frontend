@@ -126,22 +126,35 @@ function computeYAxisTicks({
       .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
   );
 
-  const maxSeriesValue =
-    shouldStack && pairedSeries.length > 0
-      ? pairedSeries[0].pairedData.reduce((maxVal, point, index) => {
-          const pointTs = Number(point[0]);
-          if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return maxVal;
-          const stackedValue = pairedSeries.reduce((sum, s) => {
-            const pv = s.pairedData[index]?.[1];
-            return typeof pv === "number" && Number.isFinite(pv) ? sum + pv : sum;
-          }, 0);
-          return Math.max(maxVal, stackedValue);
-        }, 0)
-      : allValues.length > 0
-        ? Math.max(...allValues)
-        : 0;
+  let maxSeriesValue: number;
+  let minSeriesValue: number;
 
-  const minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  if (shouldStack && pairedSeries.length > 0) {
+    // Stack positives and negatives separately so a mix of signs (e.g. revenue vs.
+    // negated costs) sizes the axis to the gross stack heights, not the net sum.
+    let posMaxStack = 0;
+    let negMinStack = 0;
+    pairedSeries[0].pairedData.forEach((point, index) => {
+      const pointTs = Number(point[0]);
+      if (!Number.isFinite(pointTs) || !isWithinVisibleRange(pointTs)) return;
+      let posSum = 0;
+      let negSum = 0;
+      pairedSeries.forEach((s) => {
+        const pv = s.pairedData[index]?.[1];
+        if (typeof pv !== "number" || !Number.isFinite(pv)) return;
+        if (pv > 0) posSum += pv;
+        else if (pv < 0) negSum += pv;
+      });
+      if (posSum > posMaxStack) posMaxStack = posSum;
+      if (negSum < negMinStack) negMinStack = negSum;
+    });
+    maxSeriesValue = posMaxStack;
+    minSeriesValue = negMinStack;
+  } else {
+    maxSeriesValue = allValues.length > 0 ? Math.max(...allValues) : 0;
+    minSeriesValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  }
+
   const hasNegativeValues = minSeriesValue < 0;
 
   // When ySplitNumber is set, compute a clean step that divides evenly
@@ -224,6 +237,8 @@ export interface GTPChartSeries {
   name: string;
   data: [number, number | null][];
   seriesType: GTPChartSeriesType;
+  /** Assign series to secondary (right) y-axis when set to 1. */
+  yAxisIndex?: 0 | 1;
   color?: string | [string, string];
   /** When set, bar values below 0 use this color instead of the primary color. */
   negativeColor?: string | [string, string];
@@ -260,14 +275,22 @@ export interface GTPChartProps {
   series: GTPChartSeries[];
   stack?: boolean;
   percentageMode?: boolean;
+  /** Preserve incoming series order for stack rendering (disables percentage-mode reordering). */
+  preserveStackOrder?: boolean;
   snapToCleanBoundary?: boolean;
+  timeAxisTickIntervalMs?: number;
+  timeAxisTickAlignToCleanBoundary?: boolean;
+  timeAxisBarEdgePaddingRatio?: number;
   xAxisType?: "time" | "category";
   xAxisLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
+  secondaryYAxisLabelFormatter?: (value: number) => string;
   xAxisMin?: number;
   xAxisMax?: number;
   yAxisMin?: number;
   yAxisMax?: number;
+  secondaryYAxisMin?: number;
+  secondaryYAxisMax?: number;
   grid?: { left?: number; right?: number; top?: number; bottom?: number };
   tooltipFormatter?: (params: GTPChartTooltipParams[]) => string;
   /** Limits tooltip rows. Extra rows are collapsed into a final "(X) Others" row with summed value. */
@@ -275,6 +298,10 @@ export interface GTPChartProps {
   suffix?: string;
   prefix?: string;
   decimals?: number;
+  secondarySuffix?: string;
+  secondaryPrefix?: string;
+  secondaryDecimals?: number;
+  hidePrimaryYAxisWhenEmpty?: boolean;
   limitTooltipRows?: number;
   showWatermark?: boolean;
   watermarkMetricName?: string | null;
@@ -360,20 +387,31 @@ export default function GTPChart({
   series,
   stack = false,
   percentageMode = false,
+  preserveStackOrder = false,
   snapToCleanBoundary = true,
+  timeAxisTickIntervalMs,
+  timeAxisTickAlignToCleanBoundary,
+  timeAxisBarEdgePaddingRatio,
   xAxisType = "time",
   xAxisMin,
   xAxisMax,
   xAxisLabelFormatter,
   yAxisLabelFormatter,
+  secondaryYAxisLabelFormatter,
   yAxisMin = 0,
   yAxisMax: yAxisMaxOverride,
+  secondaryYAxisMin = 0,
+  secondaryYAxisMax: secondaryYAxisMaxOverride,
   grid: gridOverride,
   tooltipFormatter,
   tooltipTitle,
   suffix,
   prefix,
   decimals,
+  secondarySuffix,
+  secondaryPrefix,
+  secondaryDecimals,
+  hidePrimaryYAxisWhenEmpty = false,
   limitTooltipRows,
   minHeight = null,
   maxHeight = null,
@@ -426,6 +464,13 @@ export default function GTPChart({
   const dragStartAxisXRef = useRef<number | null>(null);
   const latestAxisXRef = useRef<number | null>(null);
   const lastDragPixelRef = useRef<number | null>(null);
+  // Tracks whether the most recent pointer interaction came from a touch/pen.
+  // Used by the tooltip positioner to lift the tooltip off the user's finger.
+  const isTouchInteractionRef = useRef(false);
+  // Shared auto-hide timer for the tooltip — reused by the mousemove path and
+  // the touch-tap path so a tap-shown tooltip gets the same fade-out window as
+  // a hovered one.
+  const tooltipHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -613,6 +658,7 @@ export default function GTPChart({
         contentWidth,
         contentHeight,
         hostRect: tooltipHostRef.current?.getBoundingClientRect(),
+        isTouch: isTouchInteractionRef.current,
       });
     },
     [],
@@ -907,33 +953,103 @@ export default function GTPChart({
     };
   }, [onDragSelect, querySnappedXAtPixel]);
 
-  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
-  useEffect(() => {
-    let hideTimer: ReturnType<typeof setTimeout> | null = null;
-    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
-    let onMoveHandler: (() => void) | null = null;
+  const clearTooltipHideTimer = useCallback(() => {
+    if (tooltipHideTimerRef.current !== null) {
+      clearTimeout(tooltipHideTimerRef.current);
+      tooltipHideTimerRef.current = null;
+    }
+  }, []);
 
-    const clearHideTimer = () => {
-      if (hideTimer !== null) {
-        clearTimeout(hideTimer);
-        hideTimer = null;
+  const scheduleTooltipHide = useCallback(() => {
+    clearTooltipHideTimer();
+    tooltipHideTimerRef.current = setTimeout(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      instance?.dispatchAction({ type: "hideTip" });
+      tooltipHideTimerRef.current = null;
+    }, TOOLTIP_AUTO_HIDE_MS);
+  }, [clearTooltipHideTimer]);
+
+  // Pointer tracking on the chart container:
+  //  • Sets the touch flag used by the tooltip positioner so the tooltip is
+  //    lifted clear of the user's hand on touch interactions, and reverts to
+  //    desktop placement when a hybrid device switches back to a mouse.
+  //  • Detects taps (touch pointerdown→pointerup with negligible travel) and
+  //    force-shows the axis tooltip at the tap location. Without this, ECharts'
+  //    axis-trigger tooltip only follows mousemove, so a quick tap on a chart
+  //    produces no tooltip at all — common when the user is scanning between
+  //    multiple charts on a phone.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let downClientX: number | null = null;
+    let downClientY: number | null = null;
+    let downWasTouch = false;
+    const TAP_TRAVEL_THRESHOLD_PX = 8;
+
+    const onPointerDown = (event: PointerEvent) => {
+      const isTouchPointer = event.pointerType === "touch" || event.pointerType === "pen";
+      isTouchInteractionRef.current = isTouchPointer;
+      downClientX = event.clientX;
+      downClientY = event.clientY;
+      downWasTouch = isTouchPointer;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      // Hybrid devices: if the user switches from finger to mouse without
+      // re-tapping, revert to desktop placement on the next hover.
+      if (event.pointerType === "mouse") {
+        isTouchInteractionRef.current = false;
       }
     };
 
-    const scheduleHide = () => {
-      clearHideTimer();
-      hideTimer = setTimeout(() => {
-        const instance = echartsRef.current?.getEchartsInstance?.();
-        instance?.dispatchAction({ type: "hideTip" });
-      }, TOOLTIP_AUTO_HIDE_MS);
+    const onPointerUp = (event: PointerEvent) => {
+      const wasTouch = downWasTouch;
+      const startX = downClientX;
+      const startY = downClientY;
+      downClientX = null;
+      downClientY = null;
+      downWasTouch = false;
+
+      if (!wasTouch || startX === null || startY === null) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (dx * dx + dy * dy > TAP_TRAVEL_THRESHOLD_PX * TAP_TRAVEL_THRESHOLD_PX) return;
+
+      const instance = echartsRef.current?.getEchartsInstance?.();
+      if (!instance) return;
+      const rect = el.getBoundingClientRect();
+      instance.dispatchAction({
+        type: "showTip",
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+      scheduleTooltipHide();
     };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("pointercancel", onPointerUp);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [scheduleTooltipHide]);
+
+  // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
+  useEffect(() => {
+    let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
+    let onMoveHandler: (() => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
-      onMoveHandler = scheduleHide;
+      onMoveHandler = scheduleTooltipHide;
       zr.on("mousemove", onMoveHandler);
     });
 
@@ -943,7 +1059,7 @@ export default function GTPChart({
       if (!touch) return;
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       if (!containerRef.current.contains(target)) {
-        clearHideTimer();
+        clearTooltipHideTimer();
         const instance = echartsRef.current?.getEchartsInstance?.();
         instance?.dispatchAction({ type: "hideTip" });
       }
@@ -953,13 +1069,13 @@ export default function GTPChart({
 
     return () => {
       cancelAnimationFrame(frame);
-      clearHideTimer();
+      clearTooltipHideTimer();
       document.removeEventListener("touchstart", handleOutsideTap);
       if (zr && onMoveHandler) {
         zr.off("mousemove", onMoveHandler);
       }
     };
-  }, []);
+  }, [scheduleTooltipHide, clearTooltipHideTimer]);
 
   // Cross-chart axis pointer sync — no echarts.connect, no tooltip pipeline involvement.
   //
@@ -1056,14 +1172,17 @@ export default function GTPChart({
 
   // Apply percentage mode transformation if needed
   const pairedSeries = useMemo(() => {
+    const primarySeries = chartNormalizedSeries.filter((entry) => (entry.yAxisIndex ?? 0) !== 1);
+
     return chartNormalizedSeries.map((s) => {
       let paired: [number, number | null][] = s.data;
+      const axisIndex = s.yAxisIndex === 1 ? 1 : 0;
 
       // Percentage mode transformation
-      if (percentageMode) {
+      if (percentageMode && axisIndex === 0) {
         paired = paired.map<[number, number | null]>(([x, value], i) => {
           if (value === null || !Number.isFinite(value)) return [x, null];
-          const total = chartNormalizedSeries.reduce((sum, other) => {
+          const total = primarySeries.reduce((sum, other) => {
             const otherY = other.data[i]?.[1] ?? null;
             return typeof otherY === "number" && Number.isFinite(otherY) ? sum + otherY : sum;
           }, 0);
@@ -1074,6 +1193,29 @@ export default function GTPChart({
       return { ...s, pairedData: paired };
     });
   }, [chartNormalizedSeries, percentageMode]);
+
+  const primaryAxisSeries = useMemo(
+    () => pairedSeries.filter((entry) => (entry.yAxisIndex ?? 0) !== 1),
+    [pairedSeries],
+  );
+  const secondaryAxisSeries = useMemo(
+    () => pairedSeries.filter((entry) => (entry.yAxisIndex ?? 0) === 1),
+    [pairedSeries],
+  );
+  const hasSecondaryAxis = secondaryAxisSeries.length > 0;
+  const hasPrimaryAxisSeries = primaryAxisSeries.length > 0;
+  const hidePrimaryAxis = hidePrimaryYAxisWhenEmpty && hasSecondaryAxis && !hasPrimaryAxisSeries;
+
+  const formatValueForAxis = useCallback(
+    (value: number, axisIndex: 0 | 1) => {
+      if (percentageMode && axisIndex === 0) return `${Math.round(value)}%`;
+      const axisPrefix = axisIndex === 1 ? secondaryPrefix : prefix;
+      const axisSuffix = axisIndex === 1 ? secondarySuffix : suffix;
+      const axisDecimals = axisIndex === 1 ? secondaryDecimals : decimals;
+      return `${axisPrefix ?? ""}${formatCompactNumber(value, axisDecimals)}${axisSuffix ?? ""}`;
+    },
+    [decimals, percentageMode, prefix, secondaryDecimals, secondaryPrefix, secondarySuffix, suffix],
+  );
 
   const formatDefaultYAxisTick = useCallback(
     (value: number) => {
@@ -1087,53 +1229,102 @@ export default function GTPChart({
     [decimals, percentageMode, decimalPercentage, prefix, suffix],
   );
 
-  // Compute the actual rendered x-axis bounds before yAxisLayout so the y-max
-  // calculation accounts for data in the expanded range (clean-boundary snap
-  // can pull effectiveXMin earlier than the raw xAxisMin prop; bar padding can
-  // extend effectiveXMax beyond xAxisMax). A dummy grid is fine here because
-  // buildTimeXAxisLayout's min/max output does not depend on the grid argument.
+  // Compute the actual rendered x-axis bounds before y-axis layout.
   const effectiveXBounds = useMemo(() => {
     if (xAxisType !== "time") return { min: xAxisMin, max: xAxisMax };
-    const allTs = pairedSeries.flatMap((s) =>
+    const dataTs = pairedSeries.flatMap((s) =>
       s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
     );
+    const lineTs = (xAxisLines ?? [])
+      .map((line) => Number(line.xValue))
+      .filter(Number.isFinite);
     const barData = pairedSeries
       .filter((s) => s.seriesType === "bar")
       .map((s) => s.pairedData);
     const layout = buildTimeXAxisLayout({
-      timestamps: allTs,
+      timestamps: [...dataTs, ...lineTs],
       barSeriesData: barData,
       xAxisMin,
       xAxisMax,
       grid: { left: 0, right: 0, top: 0, bottom: 0 },
       snapToCleanBoundary,
     });
-    return { min: layout.min, max: layout.max };
-  }, [pairedSeries, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
+    let min = layout.min;
+    let max = layout.max;
+    // A markLine drawn exactly on the right (or left) edge of the chart gets
+    // hidden behind the axis frame. When an annotation lands at-or-past the
+    // data extent, push the bound out by a small fraction of the visible range
+    // so the line and its label render inside the plot area.
+    if (lineTs.length > 0 && Number.isFinite(min) && Number.isFinite(max)) {
+      const range = Number(max) - Number(min);
+      const pad = range > 0 ? range * 0.01 : 0;
+      const maxLineTs = Math.max(...lineTs);
+      const minLineTs = Math.min(...lineTs);
+      if (maxLineTs >= Number(max)) max = maxLineTs + pad;
+      if (minLineTs <= Number(min)) min = minLineTs - pad;
+    }
+    return { min, max };
+  }, [pairedSeries, xAxisLines, xAxisType, xAxisMin, xAxisMax, snapToCleanBoundary]);
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
-  const effectiveYMaxOverride = decimalPercentage && yAxisMaxOverride === undefined ? 1 : yAxisMaxOverride;
-  const yAxisLayout = useMemo(
+  const primaryYAxisLayout = useMemo(
     () =>
       computeYAxisTicks({
-        pairedSeries,
+        pairedSeries: primaryAxisSeries.length > 0 ? primaryAxisSeries : pairedSeries,
         xAxisMin: effectiveXBounds.min,
         xAxisMax: effectiveXBounds.max,
         containerHeight,
         percentageMode,
         stack,
         yAxisMin,
-        yAxisMaxOverride: effectiveYMaxOverride,
+        yAxisMaxOverride,
         ySplitNumber,
       }),
-    [pairedSeries, effectiveXBounds, containerHeight, percentageMode, stack, yAxisMin, effectiveYMaxOverride, ySplitNumber],
+    [
+      primaryAxisSeries,
+      pairedSeries,
+      effectiveXBounds,
+      containerHeight,
+      percentageMode,
+      stack,
+      yAxisMin,
+      yAxisMaxOverride,
+      ySplitNumber,
+    ],
+  );
+
+  const secondaryYAxisLayout = useMemo(
+    () =>
+      hasSecondaryAxis
+        ? computeYAxisTicks({
+            pairedSeries: secondaryAxisSeries,
+            xAxisMin: effectiveXBounds.min,
+            xAxisMax: effectiveXBounds.max,
+            containerHeight,
+            percentageMode: false,
+            stack: false,
+            yAxisMin: secondaryYAxisMin,
+            yAxisMaxOverride: secondaryYAxisMaxOverride,
+            ySplitNumber,
+          })
+        : null,
+    [
+      hasSecondaryAxis,
+      secondaryAxisSeries,
+      effectiveXBounds,
+      containerHeight,
+      secondaryYAxisMin,
+      secondaryYAxisMaxOverride,
+      ySplitNumber,
+    ],
   );
 
   // --- Dynamic grid.left based on measured y-axis label widths ---
   const dynamicGridLeft = useMemo(() => {
     if (gridOverride?.left !== undefined) return gridOverride.left;
+    if (hidePrimaryAxis) return 8;
 
-    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = primaryYAxisLayout;
     const tickCount = splitCount + 1;
     const step = yAxisStep > 0 ? yAxisStep : Math.max((computedYAxisMax - computedYAxisMin) / splitCount, Number.EPSILON);
 
@@ -1147,7 +1338,7 @@ export default function GTPChart({
     if (ticks[ticks.length - 1] < computedYAxisMax) ticks.push(computedYAxisMax);
 
     const labels = ticks.map((v) =>
-      yAxisLabelFormatter ? yAxisLabelFormatter(v) : formatDefaultYAxisTick(v),
+      yAxisLabelFormatter ? yAxisLabelFormatter(v) : formatValueForAxis(v, 0),
     );
 
     const ctx = getMeasureCtx();
@@ -1165,45 +1356,125 @@ export default function GTPChart({
 
     // 6px left margin inside the grid + 8px gap between label and axis line
     return Math.ceil(maxLabelWidth) + 14;
-  }, [formatDefaultYAxisTick, gridOverride, yAxisLayout, yAxisLabelFormatter]);
+  }, [formatValueForAxis, gridOverride, hidePrimaryAxis, primaryYAxisLayout, yAxisLabelFormatter]);
+
+  const dynamicGridRight = useMemo(() => {
+    if (gridOverride?.right !== undefined) return gridOverride.right;
+    if (!hasSecondaryAxis || !secondaryYAxisLayout) return DEFAULT_GRID.right;
+
+    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = secondaryYAxisLayout;
+    const tickCount = splitCount + 1;
+    const step = yAxisStep > 0 ? yAxisStep : Math.max((computedYAxisMax - computedYAxisMin) / splitCount, Number.EPSILON);
+
+    const ticks: number[] = [];
+    for (let i = 0; i < tickCount; i++) {
+      const v = computedYAxisMin + i * step;
+      if (v > computedYAxisMax + step * 0.01) break;
+      ticks.push(v);
+    }
+    if (ticks[ticks.length - 1] < computedYAxisMax) ticks.push(computedYAxisMax);
+
+    const labels = ticks.map((v) =>
+      secondaryYAxisLabelFormatter ? secondaryYAxisLabelFormatter(v) : formatValueForAxis(v, 1),
+    );
+
+    const ctx = getMeasureCtx();
+    const font = `500 10px Fira Sans, sans-serif`;
+    const maxLabelWidth = labels.reduce((max, label) => {
+      let w: number;
+      if (ctx) {
+        ctx.font = font;
+        w = ctx.measureText(label).width;
+      } else {
+        w = label.length * 6;
+      }
+      return Math.max(max, w);
+    }, 0);
+
+    return Math.ceil(maxLabelWidth) + 14;
+  }, [formatValueForAxis, gridOverride, hasSecondaryAxis, secondaryYAxisLabelFormatter, secondaryYAxisLayout]);
+
+  // Reserve headroom above the plot when any series renders an ATH pill, so the
+  // label drawn above the all-time-high point isn't clipped by the chart top.
+  const hasAthLabel = useMemo(
+    () => pairedSeries.some((s) => s.showAllTimeHigh),
+    [pairedSeries],
+  );
+  const resolvedTop =
+    gridOverride?.top ?? (hasAthLabel ? Math.max(DEFAULT_GRID.top, 24) : DEFAULT_GRID.top);
 
   // --- X-axis layout (extracted so both chartOption and the label overlay can use it) ---
   const timeAxisLayout = useMemo(() => {
     if (xAxisType !== "time") return undefined;
-    const allTs = pairedSeries.flatMap((s) =>
+    const dataTs = pairedSeries.flatMap((s) =>
       s.pairedData.map((p) => Number(p[0])).filter(Number.isFinite),
     );
+    const lineTs = (xAxisLines ?? [])
+      .map((line) => Number(line.xValue))
+      .filter(Number.isFinite);
     const barData = pairedSeries.filter((s) => s.seriesType === "bar").map((s) => s.pairedData);
     const g = {
       left: dynamicGridLeft,
-      right: gridOverride?.right ?? DEFAULT_GRID.right,
-      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      right: dynamicGridRight,
+      top: resolvedTop,
       bottom: gridOverride?.bottom ?? DEFAULT_GRID.bottom,
     };
-    return buildTimeXAxisLayout({
-      timestamps: allTs,
+    const layout = buildTimeXAxisLayout({
+      timestamps: [...dataTs, ...lineTs],
       barSeriesData: barData,
       xAxisMin,
       xAxisMax,
       grid: g,
       snapToCleanBoundary,
+      tickIntervalMs: timeAxisTickIntervalMs,
+      tickAlignToCleanBoundary: timeAxisTickAlignToCleanBoundary,
+      barEdgePaddingRatio: timeAxisBarEdgePaddingRatio,
     });
-  }, [pairedSeries, xAxisType, gridOverride, xAxisMin, xAxisMax, snapToCleanBoundary, dynamicGridLeft]);
+    // A markLine drawn exactly on the chart's right (or left) edge is hidden
+    // behind the axis frame. When an annotation lands at-or-past the data
+    // extent, push the bound out by a small fraction of the visible range so
+    // the line and its label render inside the plot area.
+    if (lineTs.length > 0 && Number.isFinite(layout.min) && Number.isFinite(layout.max)) {
+      const range = Number(layout.max) - Number(layout.min);
+      const pad = range > 0 ? range * 0.01 : 0;
+      const maxLineTs = Math.max(...lineTs);
+      const minLineTs = Math.min(...lineTs);
+      let { min, max } = layout;
+      if (maxLineTs >= Number(max)) max = maxLineTs + pad;
+      if (minLineTs <= Number(min)) min = minLineTs - pad;
+      return { ...layout, min, max };
+    }
+    return layout;
+  }, [
+    pairedSeries,
+    xAxisLines,
+    xAxisType,
+    gridOverride,
+    resolvedTop,
+    xAxisMin,
+    xAxisMax,
+    snapToCleanBoundary,
+    timeAxisTickIntervalMs,
+    timeAxisTickAlignToCleanBoundary,
+    timeAxisBarEdgePaddingRatio,
+    dynamicGridLeft,
+    dynamicGridRight,
+  ]);
 
   const effectiveGrid = useMemo(() => {
     const defaultBottom = compactXAxis ? 24 : DEFAULT_GRID.bottom;
     const resolvedBottom = gridOverride?.bottom ?? defaultBottom;
     const base = {
       left: dynamicGridLeft,
-      right: gridOverride?.right ?? DEFAULT_GRID.right,
-      top: gridOverride?.top ?? DEFAULT_GRID.top,
+      right: dynamicGridRight,
+      top: resolvedTop,
       bottom: resolvedBottom,
     };
     if (!timeAxisLayout?.grid) return base;
     return compactXAxis
-      ? { ...timeAxisLayout.grid, bottom: resolvedBottom }
-      : timeAxisLayout.grid;
-  }, [dynamicGridLeft, gridOverride, timeAxisLayout, compactXAxis]);
+      ? { ...timeAxisLayout.grid, bottom: resolvedBottom, right: dynamicGridRight }
+      : { ...timeAxisLayout.grid, right: dynamicGridRight };
+  }, [dynamicGridLeft, dynamicGridRight, gridOverride, resolvedTop, timeAxisLayout, compactXAxis]);
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
@@ -1274,10 +1545,16 @@ export default function GTPChart({
     const shouldStack = stack || percentageMode;
 
     // Y-axis tick values come from the shared yAxisLayout memo
-    const { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount } = yAxisLayout;
+    const {
+      computedYAxisMin: primaryYAxisMinValue,
+      computedYAxisMax: primaryYAxisMaxValue,
+      yAxisStep: primaryYAxisStep,
+      splitCount: primarySplitCount,
+    } = primaryYAxisLayout;
+    const secondaryYAxisValues = secondaryYAxisLayout ?? undefined;
 
     // Sort series for percentage mode (ascending by last value so smallest is on top)
-    const sortedSeries = percentageMode
+    const sortedSeries = percentageMode && !preserveStackOrder
       ? [...pairedSeries].sort((a, b) => {
           const aLast = [...a.pairedData].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
           const bLast = [...b.pairedData].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
@@ -1296,14 +1573,15 @@ export default function GTPChart({
       if (normalized === "solid") return "solid";
       return "solid";
     };
-    const formatTooltipValue = (value: number) => {
-      if (percentageMode) return `${value.toFixed(1)}%`;
-      if (decimalPercentage) return `${(value * 100).toFixed(1)}%`;
-      const resolvedPrefix = prefix ?? "";
-      const resolvedSuffix = suffix ?? "";
+    const formatTooltipValue = (value: number, axisIndex: 0 | 1 = 0) => {
+      if (percentageMode && axisIndex === 0) return `${value.toFixed(1)}%`;
+      if (decimalPercentage && axisIndex === 0) return `${(value * 100).toFixed(1)}%`;
+      const resolvedPrefix = axisIndex === 1 ? (secondaryPrefix ?? "") : (prefix ?? "");
+      const resolvedSuffix = axisIndex === 1 ? (secondarySuffix ?? "") : (suffix ?? "");
+      const axisDecimals = axisIndex === 1 ? secondaryDecimals : decimals;
       const resolvedDecimals =
-        typeof decimals === "number" && Number.isFinite(decimals)
-          ? Math.max(0, Math.floor(decimals))
+        typeof axisDecimals === "number" && Number.isFinite(axisDecimals)
+          ? Math.max(0, Math.floor(axisDecimals))
           : 2;
 
       if (
@@ -1319,7 +1597,7 @@ export default function GTPChart({
         }
       }
 
-      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
+      return `${resolvedPrefix}${formatCompactNumber(value, axisDecimals)}${resolvedSuffix}`;
     };
     const measureAthLabelWidth = (labelText: string) => {
       const ctx = getMeasureCtx();
@@ -1355,17 +1633,19 @@ export default function GTPChart({
       const [primary, secondary] = resolveSeriesColors(s.color, fallbackColor);
       const type = s.seriesType;
 
+      const axisIndex = s.yAxisIndex === 1 ? 1 : 0;
+
       let config: Record<string, unknown> = {
         name: s.name,
         data: s.pairedData,
-        stack: shouldStack ? "total" : undefined,
+        stack: shouldStack && axisIndex === 0 ? "total" : undefined,
+        yAxisIndex: axisIndex,
         smooth,
       };
 
       if (type === "line" || type === "area") {
         config.type = "line";
         config.lineStyle = { width: lineWidth, color: primary };
-
         // Hover halo — invisible symbols normally, visible circle on emphasis
         config.symbol = "circle";
         config.symbolSize = 8;
@@ -1518,7 +1798,7 @@ export default function GTPChart({
               ? Number(effectiveXMin)
               : allPoints[0]?.[0] ?? athTimestamp;
             const athLabelPrefix = s.allTimeHighLabel?.trim();
-            const formattedAthValue = formatTooltipValue(athValue);
+            const formattedAthValue = formatTooltipValue(athValue, axisIndex);
             const athLabelText = athLabelPrefix
               ? `${athLabelPrefix} ${formattedAthValue}`
               : formattedAthValue;
@@ -1831,7 +2111,8 @@ export default function GTPChart({
           if (!Number.isFinite(v)) return "";
           const meta = normalizedSeries.find((s) => s.name === point.seriesName);
           const [lineColor] = resolveSeriesColors(meta?.color, point.color ?? textPrimary);
-          const formattedValue = formatTooltipValue(v);
+          const axisIndex = meta?.yAxisIndex === 1 ? 1 : 0;
+          const formattedValue = formatTooltipValue(v, axisIndex);
           const valueWithPrefix = point.showUpToPrefix
             ? `<span class="font-bold">Up to&nbsp;</span>${formattedValue}`
             : formattedValue;
@@ -1851,16 +2132,14 @@ export default function GTPChart({
         .join("");
 
       const totalRow = (() => {
-        if (!showTotal) return "";
+        if (!showTotal || hasSecondaryAxis) return "";
         const total = dedupedSortedPoints.reduce((sum, p) => sum + p.numericValue, 0);
-        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatCompactNumber(total, decimals);
-        const prefixStd = percentageMode ? "" : (prefix ?? "");
-        const suffixStd = percentageMode ? "" : (suffix ?? "");
+        const formattedTotal = percentageMode ? `${total.toFixed(1)}%` : formatTooltipValue(total, 0);
         return `
           <div class="flex w-full space-x-1.5 items-center font-bold leading-tight pt-[0px]">
             <div class="w-[15px] h-[10px]"></div>
             <div class="tooltip-point-name heading-small-xxs">Total:</div>
-            <div class="flex-1 text-right justify-end flex numbers-xs">${prefixStd}${formattedTotal}${suffixStd}</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">${formattedTotal}</div>
           </div>
         `;
       })();
@@ -1899,38 +2178,108 @@ export default function GTPChart({
         axisLabel: { show: xAxisType !== "time" },
         splitLine: { show: false },
       } as any,
-      yAxis: {
-        type: "value",
-        min: computedYAxisMin,
-        max: computedYAxisMax,
-        interval: yAxisStep,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: {
-          color: textPrimary,
-          fontSize: numbersXxsTypography.fontSize,
-          fontFamily: numbersXxsTypography.fontFamily,
-          fontWeight: numbersXxsTypography.fontWeight,
-          formatter: (value: number) => {
-            const formatted = yAxisLabelFormatter
-              ? yAxisLabelFormatter(value)
-              : formatDefaultYAxisTick(value);
-            return `{num|${formatted}}`;
-          },
-          rich: {
-            num: {
+      yAxis: hasSecondaryAxis
+        ? [
+            {
+              type: "value",
+              min: primaryYAxisMinValue,
+              max: primaryYAxisMaxValue,
+              interval: primaryYAxisStep,
+              splitNumber: primarySplitCount,
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: {
+                show: !hidePrimaryAxis,
+                color: textPrimary,
+                fontSize: numbersXxsTypography.fontSize,
+                fontFamily: numbersXxsTypography.fontFamily,
+                fontWeight: numbersXxsTypography.fontWeight,
+                formatter: (value: number) => {
+                  const formatted = yAxisLabelFormatter
+                    ? yAxisLabelFormatter(value)
+                    : formatValueForAxis(value, 0);
+                  return `{num|${formatted}}`;
+                },
+                rich: {
+                  num: {
+                    color: textPrimary,
+                    fontSize: numbersXxsTypography.fontSize,
+                    fontFamily: numbersXxsTypography.fontFamily,
+                    fontWeight: numbersXxsTypography.fontWeight,
+                    lineHeight: numbersXxsTypography.lineHeight,
+                  },
+                },
+              },
+              splitLine: {
+                lineStyle: { color: withOpacity(textPrimary, 0.11), width: 1 },
+              },
+            },
+            {
+              type: "value",
+              min: secondaryYAxisValues?.computedYAxisMin,
+              max: secondaryYAxisValues?.computedYAxisMax,
+              interval: secondaryYAxisValues?.yAxisStep,
+              splitNumber: secondaryYAxisValues?.splitCount,
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: {
+                color: textPrimary,
+                fontSize: numbersXxsTypography.fontSize,
+                fontFamily: numbersXxsTypography.fontFamily,
+                fontWeight: numbersXxsTypography.fontWeight,
+                formatter: (value: number) => {
+                  const formatted = secondaryYAxisLabelFormatter
+                    ? secondaryYAxisLabelFormatter(value)
+                    : formatValueForAxis(value, 1);
+                  return `{num|${formatted}}`;
+                },
+                rich: {
+                  num: {
+                    color: textPrimary,
+                    fontSize: numbersXxsTypography.fontSize,
+                    fontFamily: numbersXxsTypography.fontFamily,
+                    fontWeight: numbersXxsTypography.fontWeight,
+                    lineHeight: numbersXxsTypography.lineHeight,
+                  },
+                },
+              },
+              splitLine: { show: false },
+              position: "right",
+            },
+          ]
+        : {
+            type: "value",
+            min: primaryYAxisMinValue,
+            max: primaryYAxisMaxValue,
+            interval: primaryYAxisStep,
+            splitNumber: primarySplitCount,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: {
               color: textPrimary,
               fontSize: numbersXxsTypography.fontSize,
               fontFamily: numbersXxsTypography.fontFamily,
               fontWeight: numbersXxsTypography.fontWeight,
-              lineHeight: numbersXxsTypography.lineHeight,
+              formatter: (value: number) => {
+                const formatted = yAxisLabelFormatter
+                  ? yAxisLabelFormatter(value)
+                  : formatValueForAxis(value, 0);
+                return `{num|${formatted}}`;
+              },
+              rich: {
+                num: {
+                  color: textPrimary,
+                  fontSize: numbersXxsTypography.fontSize,
+                  fontFamily: numbersXxsTypography.fontFamily,
+                  fontWeight: numbersXxsTypography.fontWeight,
+                  lineHeight: numbersXxsTypography.lineHeight,
+                },
+              },
+            },
+            splitLine: {
+              lineStyle: { color: withOpacity(textPrimary, 0.11), width: 1 },
             },
           },
-        },
-        splitLine: {
-          lineStyle: { color: withOpacity(textPrimary, 0.11), width: 1 },
-        },
-      },
       tooltip: {
         trigger: "axis",
         renderMode: "html",
@@ -1945,7 +2294,12 @@ export default function GTPChart({
         backgroundColor: "transparent",
         borderWidth: 0,
         padding: 0,
-        extraCssText: "box-shadow:none; border:none; z-index:2147483647;",
+        // pointer-events:none lets taps pass through the body-level tooltip to
+        // the chart canvas underneath. Without it, a tap that lands on a
+        // lingering tooltip from the previous chart would be swallowed by the
+        // tooltip element instead of reaching the new chart, forcing the user
+        // to tap a second time.
+        extraCssText: "box-shadow:none; border:none; z-index:2147483647; pointer-events:none;",
         textStyle: {
           color: textPrimary,
           fontFamily: "var(--font-raleway), sans-serif",
@@ -1971,6 +2325,8 @@ export default function GTPChart({
     effectiveGrid,
     effectiveXMin,
     effectiveXMax,
+    hidePrimaryAxis,
+    hasSecondaryAxis,
     hasBarSeries,
     textPrimary,
     lineWidth,
@@ -1978,7 +2334,12 @@ export default function GTPChart({
     optionOverrides,
     prefix,
     suffix,
+    secondaryDecimals,
+    secondaryPrefix,
+    secondarySuffix,
     percentageMode,
+    preserveStackOrder,
+    primaryYAxisLayout,
     xAxisLines,
     pairedSeries,
     normalizedSeries,
@@ -1993,9 +2354,10 @@ export default function GTPChart({
     limitTooltipRows,
     xAxisType,
     yAxisLabelFormatter,
-    formatDefaultYAxisTick,
-    yAxisLayout,
-    decimalPercentage
+    secondaryYAxisLabelFormatter,
+    formatValueForAxis,
+    secondaryYAxisLayout,
+    decimalPercentage,
   ]);
 
   const watermarkOverlayClassName =

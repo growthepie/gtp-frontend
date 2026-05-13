@@ -13,6 +13,7 @@ import { useSort } from "./SortContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Get_SupportedChainKeys } from "@/lib/chains";
+import { normalizeString } from "@/lib/searchNormalize";
 
 export type AggregatedDataRow = {
   owner_project: string;
@@ -164,7 +165,7 @@ function aggregateProjectData(
 
   // Convert chain filter to Set for O(1) lookups
   const chainFilter = new Set(filters.origin_key);
-  const stringFilters = filters.owner_project.map(f => f.toLowerCase()); // Ensure string filters are lowercase
+  const stringFilters = filters.owner_project.map(f => normalizeString(f));
   const mainCategoryFilter = new Set(filters.main_category.map(c => c.toLowerCase())); // Ensure main_category filters are lowercase
 
   // Create a lookup object for faster type index access
@@ -207,8 +208,8 @@ function aggregateProjectData(
     
     // Skip if not matching string filters (early bailout)
     if (stringFilters.length > 0) {
-      const ownerProjectDisplay = ownerProjectToProjectData[owner]?.display_name?.toLowerCase();
-      if (!ownerProjectDisplay || !stringFilters.some(filter => // stringFilters are already lowercase
+      const ownerProjectDisplay = normalizeString(ownerProjectToProjectData[owner]?.display_name);
+      if (!ownerProjectDisplay || !stringFilters.some(filter =>
         ownerProjectDisplay.includes(filter))) {
         continue;
       }

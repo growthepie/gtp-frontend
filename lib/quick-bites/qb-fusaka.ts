@@ -22,7 +22,7 @@ const Fusaka: QuickBiteData = {
       defaultIndex: 2,
       charts: [
         {
-          toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
+          toggleLabel: "since Fusaka-BPO2",
           type: "line",
           title: "Is Blob Capacity Since Fusaka-BPO2 Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
@@ -70,7 +70,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
-          toggleLabel: "since Fusaka-BPO1 (2025-12-09)",
+          toggleLabel: "since Fusaka-BPO1",
           type: "line",
           title: "Is Blob Capacity Since Fusaka-BPO1 Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
@@ -131,7 +131,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
-          toggleLabel: "since Fusaka (2025-12-03)",
+          toggleLabel: "since Fusaka",
           type: "line",
           title: "Is Blob Capacity Since Fusaka Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
@@ -204,7 +204,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
-          toggleLabel: "since Pectra (2025-05-07)",
+          toggleLabel: "since Pectra",
           type: "line",
           title: "Is Blob Capacity Since Pectra Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
@@ -265,7 +265,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka-BPO1 & BPO2 increase blob targets, enabling more data availability capacity for L2s.",
         },
         {
-          toggleLabel: "since Dencun (2024-03-13)",
+          toggleLabel: "since Dencun",
           type: "line",
           title: "Is Blob Capacity Since Dencun Keeping Up with Demand?",
           subtitle: "Average blobs per block vs target and blob fees in ETH.",
@@ -352,7 +352,7 @@ const Fusaka: QuickBiteData = {
       defaultIndex: 3,
       charts: [
         {
-          toggleLabel: "since Fusaka-BPO2 (2026-01-07)",
+          toggleLabel: "since Fusaka-BPO2",
           type: "line",
           title: "Can We Scale L1 Gas Fast Enough Since Fusaka-BPO2 to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
@@ -400,7 +400,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
-          toggleLabel: "since Fusaka-BPO1 (2025-12-09)",
+          toggleLabel: "since Fusaka-BPO1",
           type: "line",
           title: "Can We Scale L1 Gas Fast Enough Since Fusaka-BPO1 to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
@@ -461,7 +461,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
-          toggleLabel: "since Fusaka (2025-12-03)",
+          toggleLabel: "since Fusaka",
           type: "line",
           title: "Can We Scale L1 Gas Fast Enough Since Fusaka to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
@@ -534,7 +534,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
-          toggleLabel: "since Pectra (2025-05-07)",
+          toggleLabel: "since Pectra",
           type: "line",
           title: "Can We Scale L1 Gas Fast Enough Since Pectra to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",
@@ -594,7 +594,7 @@ const Fusaka: QuickBiteData = {
           caption: "Fusaka enabled higher L1 execution capacity through an increased gas limit.",
         },
         {
-          toggleLabel: "since Dencun (2024-03-13)",
+          toggleLabel: "since Dencun",
           type: "line",
           title: "Can We Scale L1 Gas Fast Enough Since Dencun to Lower Fees?",
           subtitle: "Average gas per block vs max gas and base gas fees in ETH.",

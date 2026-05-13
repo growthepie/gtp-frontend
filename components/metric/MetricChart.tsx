@@ -157,79 +157,46 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const hiddenSelectedChainsCount = Math.max(selectedChains.length - visibleSelectedChains.length, 0);
 
   return (
-    <div className="w-full overflow-hidden  "
-    style={{height: containerMobile ? `${300 + (collapseTable ? 30 : 0)}px` : collapseTable ? `${400 + (collapseTable ? 30 : 0)}px` : `${440 + (collapseTable ? 30 : 0)}px`}}
-    >
-      <GTPChart
-        series={chartSeries}
-        stack={selectedScale === "stacked"}
-        percentageMode={selectedScale === "percentage"}
-        xAxisType="time"
-        xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
-        xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
-        suffix={suffix}
-        prefix={prefix}
-        tooltipTitle={metricMeta?.name ?? undefined}
-        decimals={decimals}
-        limitTooltipRows={10}
-        watermarkMetricName={metricMeta?.name ?? null}
-        showWatermark
-        height={containerMobile ? 300 : 415}
-        minHeight={containerMobile ? 300 : 415}
-        maxHeight={containerMobile ? 300 : 415}
-        emptyStateMessage="Select chains to show their historic data"
-        onDragSelect={(xStart, xEnd) => {
+    <div className="">
+        <GTPChart
+          series={chartSeries}
+          stack={selectedScale === "stacked"}
+          percentageMode={selectedScale === "percentage"}
           
-          if(xStart < xEnd) {
-            setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
-          } else {
-            setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
-          }
-        }}
-        dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
-        dragSelectIcon={"feather:zoom-in" as GTPIconName}
-        minDragSelectPoints={2}
-        yAxisLabelFormatter={(value) => {
-          return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
-        }}
-        showTooltipTimestamp={timeIntervalKey === "hourly"}
-        showTotal={selectedScale === "stacked"}
-        reverseTooltipOrder={reversePerformer}
-      />
+          xAxisType="time"
+          xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
+          xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
+          suffix={suffix}
+          prefix={prefix}
+          tooltipTitle={metricMeta?.name ?? undefined}
+          decimals={decimals}
+          limitTooltipRows={10}
+          watermarkMetricName={metricMeta?.name ?? null}
+          showWatermark
+          className="mb-[30px]"
+          height={(containerMobile ? 300 : 440) + (collapseTable ? 30 : 0)}
 
+          emptyStateMessage="Select chains to show their historic data"
+          onDragSelect={(xStart, xEnd) => {
+            
+            if(xStart < xEnd) {
+              setSelectedRange([Math.floor(xStart), Math.floor(xEnd)]);
+            } else {
+              setSelectedRange([Math.floor(xEnd), Math.floor(xStart)]);
+            }
+          }}
+          dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
+          dragSelectIcon={"feather:zoom-in" as GTPIconName}
+          minDragSelectPoints={2}
+          yAxisLabelFormatter={(value) => {
+            return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
+          }}
+          showTooltipTimestamp={timeIntervalKey === "hourly"}
+          showTotal={selectedScale === "stacked"}
+          reverseTooltipOrder={reversePerformer}
+          showLegend={collapseTable}
+        />
+  </div>
 
-      {collapseTable && (
-        <div className="h-[30px] w-full relative bottom-[9px]  flex items-center justify-center gap-[5px]" 
-        
-        >
-          {visibleSelectedChains.map((chain) => (
-            <GTPButton
-              key={chain}
-              label={master?.chains?.[chain]?.name}
-              variant="primary"
-              size="xs"
-              clickHandler={() => {
-                setSelectedChains(selectedChains.filter((selectedChain) => selectedChain !== chain));
-              }}
-              onMouseEnter={() => setHoverChainKey(chain)}
-              onMouseLeave={() => setHoverChainKey(null)}
-              rightIcon={hoverChainKey === chain ? "in-button-close" : undefined}
-              rightIconClassname="!w-[12px] !h-[12px]"
-              leftIconOverride={<div className="min-w-[6px] min-h-[6px] rounded-full" style={{ backgroundColor: master?.chains?.[chain]?.colors?.[theme ?? "dark"]?.[0] }}></div>}
-            />
-          ))}
-          {hiddenSelectedChainsCount > 0 && (
-            <GTPButton
-              key={"hidden-chains"}
-              label={`+${hiddenSelectedChainsCount} chains`}
-              variant="primary"
-              size="xs"
-            />
-          )}
-        </div>
-      )}
-      
-   
-    </div>
   );
 }

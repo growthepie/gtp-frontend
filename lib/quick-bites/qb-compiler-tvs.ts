@@ -3,6 +3,7 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 import {
   FaqItem, renderFaqMarkdown, generateJsonLdFaq,
 } from './seo_helper';
+import { QB_SIDE_BY_SIDE_CHARTS } from './layouts';
 
 // Compiler colors
 const COLOR_SOLC = "#FE5468";
@@ -451,7 +452,7 @@ const CompilerTvs: QuickBiteData = {
     "```container",
     JSON.stringify({
       blocks: [CompilerShareCountChart, CompilerShareTvsChart],
-      className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
+      className: QB_SIDE_BY_SIDE_CHARTS,
     }),
     "```",
 
@@ -461,7 +462,7 @@ const CompilerTvs: QuickBiteData = {
     "```container",
     JSON.stringify({
       blocks: [SolcVersionCountChart, SolcVersionTvsChart],
-      className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
+      className: QB_SIDE_BY_SIDE_CHARTS,
     }),
     "```",
 
@@ -473,7 +474,7 @@ const CompilerTvs: QuickBiteData = {
     "```container",
     JSON.stringify({
       blocks: [VyperVersionCountChart, VyperVersionTvsChart],
-      className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
+      className: QB_SIDE_BY_SIDE_CHARTS,
     }),
     "```",
 

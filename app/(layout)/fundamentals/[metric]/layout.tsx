@@ -1,9 +1,5 @@
 import { Metadata } from "next";
 import {
-  buildAboutThings,
-  buildDatasetJsonLd,
-  buildDefinedTermSet,
-  buildFaqJsonLd,
   buildKeywords,
   canonicalUrlForMetric,
   findMetricConfig,
@@ -22,7 +18,6 @@ import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { cache } from "react";
-import { serializeJsonLd } from "@/utils/json-ld";
 
 type Props = {
   params: Promise<{ metric: string }>;
@@ -143,35 +138,13 @@ export default async function Layout({
     icon: "",
   };
   const pageTitle = pageData.title || metricConfig.label || "No Title";
-  const metadata = await getPageMetadata(`/fundamentals/${metric}`, {});
-  const master = await fetchMasterData();
-  const keywords = buildKeywords(metricConfig);
-  const aboutThings = buildAboutThings(metricConfig);
-  const lastUpdated = master.last_updated_utc
-    ? new Date(master.last_updated_utc).toISOString()
-    : new Date().toISOString();
 
-  const faqJsonLd = buildFaqJsonLd(metric, metricConfig.page);
-  const datasetJsonLd = buildDatasetJsonLd(metric, metricConfig.page, {
-    description: metadata.description,
-    keywords,
-    about: aboutThings,
-    dateModified: lastUpdated,
-  });
-  const definedTermSetJsonLd = buildDefinedTermSet(metric, metricConfig.page);
-  const jsonLdGraphs = [datasetJsonLd, faqJsonLd, definedTermSetJsonLd].filter(Boolean) as Record<
-    string,
-    unknown
-  >[];
+  // JSON-LD for this route (Dataset / FAQPage / DefinedTermSet) is emitted by
+  // <FundamentalsRouteSchemas /> as a sibling of <Providers> in the outer
+  // (layout)/layout.tsx, so it lands in parse-time HTML rather than the RSC
+  // stream. See components/fundamentals/FundamentalsRouteSchemas.tsx.
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
-      {jsonLdGraphs.map((graph, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(graph) }}
-        />
-      ))}
       <PageContainer paddingY="none" >
         <Section>
           <div className="flex items-center gap-x-[8px]">

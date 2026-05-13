@@ -1,6 +1,7 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
 import { createQuickBite } from '@/lib/quick-bites/createQuickBite';
+import { QB_SIDE_BY_SIDE_CHARTS_REVERSE } from './layouts';
 
 
 const ArbStacked = ["```chart",
@@ -86,7 +87,7 @@ const ArbPercentage = [
 const arbitrumCharts = ["```container",
   JSON.stringify({
     blocks: [ArbStacked, ArbPercentage],
-    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center",
+    className: QB_SIDE_BY_SIDE_CHARTS_REVERSE,
   }),
   "```",
 ];
@@ -96,6 +97,7 @@ const CircleStacked = [
     JSON.stringify({
       type: "area",
       title: "USDC Supply Breakdown",
+      hideOnChainTabs: true,
       margins: "none",
       showXAsDate: true,
       dataAsJson: {
@@ -136,6 +138,7 @@ const CirclePercentage = [
     JSON.stringify({
       type: "area",
       title: "Hyperliquid USDC Market Share",
+      hideOnChainTabs: true,
       margins: "none",
       showXAsDate: true,
       dataAsJson: {
@@ -175,7 +178,7 @@ const CirclePercentage = [
 const CircleCharts = ["```container",
   JSON.stringify({
     blocks: [CircleStacked, CirclePercentage],
-    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center gap-[15px]",
+    className: QB_SIDE_BY_SIDE_CHARTS_REVERSE,
   }),
   "```",
 ];

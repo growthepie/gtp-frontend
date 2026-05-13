@@ -173,7 +173,7 @@ function CascadingTabItem({
         ${tab.isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
         ${isSelected
           ? " h-[42px] bg-color-ui-active border-color-bg-medium"
-          : ` ${unselectedHeightClasses} bg-medium-background hover:bg-color-ui-hover border-medium-background hover:border-color-ui-hover`
+          : ` ${unselectedHeightClasses} bg-color-bg-medium hover:bg-color-ui-hover border-color-bg-medium hover:border-color-ui-hover`
         }
       `}
       style={{
@@ -215,7 +215,7 @@ function CascadingTabItem({
       {!isSelected && (
         <div
           aria-hidden
-          className="tab-shadow pointer-events-none absolute inset-y-0 right-0 w-[28px] transition-opacity duration-200 group-hover/tab:opacity-0 bg-gradient-to-r from-transparent to-gray-100 dark:to-gray-800 group-hover/tab:to-gray-200 dark:group-hover/tab:to-gray-700"
+          className="tab-shadow pointer-events-none absolute inset-y-0 right-0 w-[28px] transition-opacity duration-200 group-hover/tab:opacity-0 bg-gradient-to-r from-transparent to-color-bg-medium group-hover/tab:to-color-ui-hover"
         />
       )}
     </button>

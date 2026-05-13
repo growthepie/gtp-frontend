@@ -110,14 +110,6 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                   clickHandler={() => openExternalLinkWithDisclaimer(`https://github.com/${projectMetadata.main_github}`)}
                 />
               )}
-              {projectMetadata.website && (
-                <GTPButton
-                  size="sm"
-                  leftIcon="gtp-read"
-                  label="Docs"
-                  clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
-                />
-              )}
               {projectMetadata.governance && (
                 <GTPButton
                   size="sm"
@@ -199,15 +191,6 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                     label="Github"
                     clickHandler={() => openExternalLinkWithDisclaimer(`https://github.com/${projectMetadata.main_github}`)}
                     />
-                )}
-                {projectMetadata.website && (
-                  <GTPButton
-                    size="sm"
-                    leftIcon="gtp-read"
-                    label="Docs"
-                    clickHandler={() => openExternalLinkWithDisclaimer(projectMetadata.website ?? "")}
-
-                  />
                 )}
                 {projectMetadata.governance && (
                   <GTPButton

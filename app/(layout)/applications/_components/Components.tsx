@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
@@ -31,6 +32,7 @@ import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 import { SmartBackButton } from "@/components/SmartBackButton";
 import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
+import { zinc } from "tailwindcss/colors";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -253,10 +255,71 @@ export type MultipleSelectTopRowChildProps = {
   }[];
   canSelectNone?: boolean;
 };
+type DropdownOptionListProps = {
+  options: MultipleSelectTopRowChildProps["options"];
+  selected: string[];
+  setSelected: MultipleSelectTopRowChildProps["setSelected"];
+  onSelect?: MultipleSelectTopRowChildProps["onSelect"];
+  canSelectNone: boolean;
+};
+
+const DropdownOptionList = ({ options, selected, setSelected, onSelect, canSelectNone }: DropdownOptionListProps) => (
+  <div className="pb-[20px] lg:pb-[16px]">
+    <div className="h-[10px] lg:h-[37px]"></div>
+    {options.map((opt, index) => (
+      <div
+        className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+        onClick={() => {
+          const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
+          if (newSelected.length === 0 && !canSelectNone)
+            return;
+
+          setSelected(newSelected);
+          onSelect && onSelect(newSelected);
+        }}
+        key={index}
+      >
+        <Icon
+          icon={selected.includes(opt.key) ? "feather:check-circle" : "feather:circle"}
+          className={`size-[15px] ${selected.includes(opt.key) ? "text-color-text-primary" : "text-color-text-secondary"}`}
+        />
+        {opt.icon && (
+          <GTPIcon
+            icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
+            className="size-[24px] text-color-text-secondary"
+          />
+        )}
+        <div>{opt.name}</div>
+      </div>
+    ))}
+  </div>
+);
+
 export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false }: MultipleSelectTopRowChildProps) => {
   const isMobile = useUIContext((state) => state.isMobile);
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Anchor used to position the desktop dropdown when portaled to <body>.
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [anchorRect, setAnchorRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const update = () => {
+      const el = triggerRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setAnchorRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [isMobile, isOpen]);
 
   // Hover behavior with 300ms delay (and touch guard)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -313,10 +376,11 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
   return (
     <>
       <div
-        className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]"
+        className="group flex flex-col h-[34px] relative w-full lg:w-[300px]"
 
       >
         <div
+          ref={triggerRef}
           className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer bg-color-bg-medium ${isMobile ? "w-full" : "w-[271px]"}`}
           onMouseEnter={openWithDelay}
           onMouseLeave={cancelHover}
@@ -340,57 +404,59 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             </div>
           </div>
           <div
-            className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
+            className="rounded-full w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handleNext}
 
           >
             <GTPIcon icon="gtp-chevronright-monochrome" size="sm" />
           </div>
         </div>
-        <div
-          className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
-            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] border-color-bg-medium lg:rounded-b-[22px] shadow-standard`
-            : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
-            } `}
-          style={{
-            maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
-          }}
-          onMouseEnter={openWithDelay}
-          onMouseLeave={cancelHover}
-        >
-          <div className="pb-[20px] lg:pb-[16px]">
-            <div className="h-[10px] lg:h-[37px]"></div>
-            {options.map((opt, index) => (
-              <div
-                className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                onClick={() => {
-                  // setIsOpen(false);
-
-
-                  const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
-                  if (newSelected.length === 0 && !canSelectNone)
-                    return;
-
-                  setSelected(newSelected);
-                  onSelect && onSelect(newSelected);
-                }}
-                key={index}
-              >
-                <Icon
-                  icon={selected.includes(opt.key) ? "feather:check-circle" : "feather:circle"}
-                  className={`size-[15px] ${selected.includes(opt.key) ? "text-color-text-primary" : "text-color-text-secondary"}`}
-                />
-                {opt.icon && (
-                  <GTPIcon
-                    icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
-                    className="size-[24px] text-color-text-secondary"
-                  />
-                )}
-                <div>{opt.name}</div>
-              </div>
-            ))}
+        {isMobile && (
+          <div
+            className={`flex flex-col relative bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 transition-all ease-in-out duration-300 ${isOpen
+              ? `overflow-hidden border-transparent rounded-b-[30px] border-color-bg-medium shadow-standard`
+              : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
+              } `}
+            style={{
+              maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
+            }}
+            onMouseEnter={openWithDelay}
+            onMouseLeave={cancelHover}
+          >
+            <DropdownOptionList
+              options={options}
+              selected={selected}
+              setSelected={setSelected}
+              onSelect={onSelect}
+              canSelectNone={canSelectNone}
+            />
           </div>
-        </div>
+        )}
+        {!isMobile && anchorRect && createPortal(
+          <div
+            className={`flex flex-col fixed bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 border-b border-l border-r transition-[max-height,opacity] ease-in-out duration-300 ${isOpen
+              ? `z-[10] overflow-hidden border-transparent rounded-b-[22px] border-color-bg-medium shadow-standard`
+              : "max-h-0 z-[9] overflow-hidden border-transparent rounded-b-[22px] pointer-events-none"
+              } `}
+            style={{
+              top: anchorRect.top + anchorRect.height / 2,
+              left: anchorRect.left,
+              width: anchorRect.width,
+              maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
+            }}
+            onMouseEnter={openWithDelay}
+            onMouseLeave={cancelHover}
+          >
+            <DropdownOptionList
+              options={options}
+              selected={selected}
+              setSelected={setSelected}
+              onSelect={onSelect}
+              canSelectNone={canSelectNone}
+            />
+          </div>,
+          document.getElementById("content-panel") ?? document.body
+        )}
         {isOpen && (
           <div
             className={`hidden lg:block lg:fixed inset-0 z-[3]`}

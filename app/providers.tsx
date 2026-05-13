@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { StaleTabGuard } from "@/components/StaleTabGuard";
+import { NavDebugLogger } from "@/components/NavDebugLogger";
 
 // load icons
 // addCollection(GTPIcons);
@@ -161,6 +162,7 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
         </ThemeProvider>
       </NavigationProvider>
       <StaleTabGuard />
+      <NavDebugLogger />
     </>
   );
 }

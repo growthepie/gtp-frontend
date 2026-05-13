@@ -15,6 +15,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { normalizeString } from "@/lib/searchNormalize";
 
 // New props to support chain-scoped usage
 type SearchProps = {
@@ -399,25 +400,26 @@ export default function Search({ hideChainSection = false }: SearchProps) {
       return;
     }
 
+    const normalizedSearch = normalizeString(search);
+
     // Autocomplete for main categories using the derived list
     const categoryAutocomplete = availableMainCategories.filter((category) =>
-      category.toLowerCase().includes(search.toLowerCase())
+      normalizeString(category).includes(normalizedSearch)
     );
 
     // Autocomplete for subcategories (assuming this still comes from master)
     const subcategoryAutocomplete = master.blockspace_categories?.sub_categories
       ? Object.keys(master.blockspace_categories.sub_categories).filter((subcategory) =>
-          master.blockspace_categories.sub_categories[subcategory]
-            .toLowerCase()
-            .includes(search.toLowerCase())
+          normalizeString(master.blockspace_categories.sub_categories[subcategory])
+            .includes(normalizedSearch)
         )
       : [];
 
     const chainAutocomplete = hideChainSection ? [] : applicationsChains.filter((chainKey) =>
-      master.chains[chainKey]?.name.toLowerCase().includes(search.toLowerCase())
+      normalizeString(master.chains[chainKey]?.name).includes(normalizedSearch)
     );
     const ownerProjectAutocomplete = applicationsOwnerProjects.filter((row) =>
-      row.owner_project.toLowerCase().includes(search.toLowerCase()),
+      normalizeString(row.owner_project).includes(normalizedSearch),
     );
 
     setApplicationsAutocomplete({
@@ -446,7 +448,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
   return (
     <div className="relative w-full h-[44px]">
       <div
-        className="hidden md:block fixed inset-0 bg-black/10 z-[15]"
+        className="hidden md:block fixed inset-0 bg-black/10 z-[110]"
         onMouseDown={() => setIsOpen(false)}
         style={{
           opacity: isOpen ? 0.5 : 0,
@@ -458,8 +460,8 @@ export default function Search({ hideChainSection = false }: SearchProps) {
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
-          <div className="absolute flex items-center w-full bg-color-bg-default gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[17]" />
-          <div className="absolute inset-0 z-[18] flex items-center w-full">
+          <div className="absolute flex items-center w-full bg-color-bg-default gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[112]" />
+          <div className="absolute inset-0 z-[113] flex items-center w-full">
             <div className={`relative flex justify-center items-center pl-[10px]`}>
               {isOpen ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
@@ -539,7 +541,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
           {/* Only render dropdown content when open */}
           {/* {isOpen && ( */}
             <div
-              className={`${isOpen ? "max-h-[400px] shadow-standard" : "max-h-0 shadow-none"} pt-[10px] md:pt-0 md:pb-[10px] gap-y-[15px] md:gap-y-[10px] transition-[max-height] z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-color-ui-active left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
+              className={`${isOpen ? "max-h-[400px] shadow-standard" : "max-h-0 shadow-none"} pt-[10px] md:pt-0 md:pb-[10px] gap-y-[15px] md:gap-y-[10px] transition-[max-height] z-[111] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-color-ui-active left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
             >
               <div className={`select-none flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-color-bg-medium z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
                 <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">

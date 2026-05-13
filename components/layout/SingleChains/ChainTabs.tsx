@@ -16,6 +16,10 @@ const TAB_INFO = {
     "header": "Fundamentals",
     "icon": "gtp:gtp-fundamentals",
   },
+  "quick_bites": {
+    "header": "Quick Bites",
+    "icon": "gtp:gtp-quick-bites",
+  },
   "economics": {
     "header": "Economics",
     "icon": "gtp:gtp-metrics-economics",
@@ -67,6 +71,7 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab, fill
 
   const tabStatus = {
     ...chainInfo.tab_status,
+    quick_bites: "active",
     ...(IS_PRODUCTION ? {} : { user_insights: "active" }),
   };
 
@@ -80,10 +85,10 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab, fill
       const status = tabStatus[tabId];
       const isLocked = status === "locked";
       const isSoon = status === "soon";
-      
+
       // Look up the specific icon and header from TAB_INFO
       const tabData = TAB_INFO[tabId] || { header: "Unknown", icon: "gtp:gtp-project" };
-      
+
       const isDisabled = isLocked || isSoon;
       // Overview tab already uses the monochrome chain logo; other tabs swap
       // to their `-monochrome` variant when locked/soon for a muted look.

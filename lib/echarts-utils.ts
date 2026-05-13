@@ -92,6 +92,7 @@ export const formatCompactNumber = (value: number, decimals?: number) => {
     notation: "compact",
     maximumFractionDigits: maxDecimals,
     minimumFractionDigits: isCompact ? Math.min(2, maxDecimals) : 0,
+    trailingZeroDisplay: "stripIfInteger",
   }).format(value);
 };
 

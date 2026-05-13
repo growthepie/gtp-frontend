@@ -266,15 +266,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                         containerClassName="!size-[30px] flex items-center justify-center bg-color-ui-active rounded-full"
                         style={{ color: chainColor }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(address, chainKey)}
-                        className="truncate text-xs text-color-text-primary hover:text-color-text-secondary transition-colors text-left"
-                        title={`Click to copy: ${address}`}
-                        aria-label={`Copy contract address: ${address}`}
-                      >
-                        {contractMap.name as string}
-                      </button>
+                      <span className="truncate text-xs max-w-[165px]">{contractMap.name as string}</span>
                       <div className="flex items-center gap-x-[4px] shrink-0">
                         {contractMap.verified ? (
                           <GTPTooltipNew

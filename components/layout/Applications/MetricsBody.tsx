@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { useSearchParams, usePathname } from "next/navigation";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts/ApplicationDetailsDataContext";
@@ -10,7 +11,7 @@ import { useTheme } from "next-themes";
 import { GTPIcon } from "../GTPIcon";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from "react";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
@@ -22,6 +23,7 @@ import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
+import { normalizeString } from "@/lib/searchNormalize";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -34,20 +36,32 @@ type CompareAppEntry = {
     displayName: string;
 };
 
-// Handles both raw array format and { data: number[][] } object format
-const getTimeseriesRows = (value: unknown): number[][] => {
+// Handles both raw array format and { types, data } object format
+const getTimeseries = (value: unknown): { types: string[]; rows: number[][] } => {
     if (Array.isArray(value)) {
-        return value as number[][];
+        return { types: [], rows: value as number[][] };
     }
-    if (
-        value &&
-        typeof value === "object" &&
-        "data" in value &&
-        Array.isArray((value as { data?: unknown }).data)
-    ) {
-        return (value as { data: number[][] }).data;
+    if (value && typeof value === "object") {
+        const obj = value as { data?: unknown; types?: unknown };
+        const rows = Array.isArray(obj.data) ? (obj.data as number[][]) : [];
+        const types = Array.isArray(obj.types) ? (obj.types as string[]) : [];
+        return { types, rows };
     }
-    return [];
+    return { types: [], rows: [] };
+};
+
+const getTimeseriesRows = (value: unknown): number[][] => getTimeseries(value).rows;
+
+// Picks the column index for the active currency, falling back to "value" for
+// non-currency metrics and finally to index 1 when types is unavailable.
+const resolveValueIndex = (types: string[], showUsd: boolean): number => {
+    if (types.length === 0) return 1;
+    const preferred = showUsd ? "usd" : "eth";
+    const fallback = showUsd ? "eth" : "usd";
+    let idx = types.indexOf(preferred);
+    if (idx === -1) idx = types.indexOf(fallback);
+    if (idx === -1) idx = types.indexOf("value");
+    return idx === -1 ? 1 : idx;
 };
 
 type SeriesEntry = { name: string; data: [number, number | null][] };
@@ -62,8 +76,9 @@ function computeMetricSeriesData(params: {
     isComparing: boolean;
     compareApps: CompareAppEntry[];
     showAvg: boolean;
+    showUsd: boolean;
 }): SeriesEntry[] {
-    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg } = params;
+    const { data, metric, timeInterval, selectedTotal, deselectedChains, hasChainData, isComparing, compareApps, showAvg, showUsd } = params;
     const overTime = data.metrics[metric]?.over_time;
     if (!overTime) return [];
 
@@ -75,10 +90,12 @@ function computeMetricSeriesData(params: {
         const counts = new Map<number, number>();
         for (const chain of Object.keys(ot)) {
             if (excludeChains.includes(chain)) continue;
-            const points = ((ot[chain] as any)?.[timeInterval]?.data ?? []) as number[][];
-            for (const d of points) {
+            const { types, rows } = getTimeseries((ot[chain] as any)?.[timeInterval]);
+            const valIdx = resolveValueIndex(types, showUsd);
+            for (const d of rows) {
                 const ts = Number(d[0]);
-                const val: number | null = d[1] == null ? null : Number(d[1]);
+                const raw = d[valIdx];
+                const val: number | null = raw == null ? null : Number(raw);
                 if (!sums.has(ts)) {
                     sums.set(ts, val);
                     counts.set(ts, val !== null ? 1 : 0);
@@ -99,24 +116,27 @@ function computeMetricSeriesData(params: {
     }
 
     if (!hasChainData) {
-        const intervalData = getTimeseriesRows(
-            (overTime as any)?.all?.[timeInterval] ?? (overTime as Record<string, unknown>)[timeInterval],
-        );
+        const series =
+            (overTime as any)?.all?.[timeInterval] ??
+            (overTime as Record<string, unknown>)[timeInterval];
+        const { types, rows } = getTimeseries(series);
+        const valIdx = resolveValueIndex(types, showUsd);
         const mainSeries: SeriesEntry = {
             name: "Total",
-            data: intervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            data: rows.map((d): [number, number | null] => [Number(d[0]), d[valIdx] == null ? null : Number(d[valIdx])]),
         };
         if (!isComparing) return [mainSeries];
         const compareSeries = compareApps
             .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
             .map(app => {
-                const appIntervalData = getTimeseriesRows(
+                const appSeries =
                     (app.data.metrics[metric].over_time as any)?.all?.[timeInterval] ??
-                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval],
-                );
+                    (app.data.metrics[metric].over_time as Record<string, unknown>)[timeInterval];
+                const { types: appTypes, rows: appRows } = getTimeseries(appSeries);
+                const appValIdx = resolveValueIndex(appTypes, showUsd);
                 return {
                     name: `compare_${app.owner_project}`,
-                    data: appIntervalData.map((d): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+                    data: appRows.map((d): [number, number | null] => [Number(d[0]), d[appValIdx] == null ? null : Number(d[appValIdx])]),
                 } as SeriesEntry;
             });
         return [mainSeries, ...compareSeries];
@@ -124,11 +144,12 @@ function computeMetricSeriesData(params: {
 
     const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
     const perChain: SeriesEntry[] = chains.flatMap((chain) => {
-        const intervalData = (overTime[chain] as any)?.[timeInterval]?.data;
-        if (!Array.isArray(intervalData) || intervalData.length === 0) return [];
+        const { types, rows } = getTimeseries((overTime[chain] as any)?.[timeInterval]);
+        if (rows.length === 0) return [];
+        const valIdx = resolveValueIndex(types, showUsd);
         return [{
             name: chain,
-            data: intervalData.map((d: number[]): [number, number | null] => [Number(d[0]), d[1] == null ? null : Number(d[1])]),
+            data: rows.map((d: number[]): [number, number | null] => [Number(d[0]), d[valIdx] == null ? null : Number(d[valIdx])]),
         }];
     });
 
@@ -196,10 +217,38 @@ const COMPARE_LIST_MAX_HEIGHT = 220;
 export default function MetricsBody({ data, owner_project, projectMetadata, highlightMetric, onHighlightConsumed }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, highlightMetric?: string | null, onHighlightConsumed?: () => void }) {
     const { timespans, selectedTimespan, setSelectedTimespan } = useTimespan();
 
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const [, startIntervalTransition] = useTransition();
+
     const [selectedTotal, setSelectedTotal] = useState(true);
-    const [timeInterval, setTimeInterval] = useState("daily");
+    // timeInterval is derived from the URL so a shared link / refresh restores it.
+    // Same replaceState pattern as TimespanContext: no history entry is added, so the
+    // browser back button still navigates to whatever page brought the user here.
+    const intervalParam = searchParams.get("interval");
+    const timeInterval = intervalParam === "hourly" ? "hourly" : "daily";
+
+    const setTimeInterval = useCallback((value: string) => {
+        if (value === timeInterval) return;
+        startIntervalTransition(() => {
+            // Read the live URL rather than the captured `searchParams` snapshot. The
+            // toggle handler calls setSelectedTimespan immediately before this, which
+            // already wrote to the URL via replaceState — using the snapshot here would
+            // overwrite that timespan change.
+            const currentParams = new URLSearchParams(window.location.search);
+            if (value === "daily") {
+                currentParams.delete("interval");
+            } else {
+                currentParams.set("interval", value);
+            }
+            const queryString = currentParams.toString();
+            const url = `${pathname}${queryString ? `?${decodeURIComponent(queryString)}` : ""}`;
+            window.history.replaceState(null, "", url);
+        });
+    }, [timeInterval, pathname]);
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
+    const [showUsd] = useLocalStorage("showUsd", true);
     const [deselectedChains, setDeselectedChains] = useState<string[]>([]);
     const [isCompareDropdownOpen, setIsCompareDropdownOpen] = useState(false);
     const [cachedTimespans, setCachedTimespans] = useState<string | null>(null);
@@ -222,6 +271,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isCompareDropdownOpen]);
+
+    // If the URL-driven timespan is filtered out by the current time interval (e.g. landing
+    // here with ?timespan=30d while timeInterval defaults to "daily"), no timespan button
+    // would appear selected. Snap to the interval's default so the UI stays consistent.
+    useEffect(() => {
+        if (!filterTimespans(selectedTimespan, timeInterval)) {
+            setSelectedTimespan(timeInterval === "hourly" ? "7d" : "90d");
+        }
+    }, [selectedTimespan, timeInterval, setSelectedTimespan]);
     // ─── Compare state ────────────────────────────────────────────────────────
     const [compareAppKeys, setCompareAppKeys] = useState<string[]>([]);
     const [compareAppsData, setCompareAppsData] = useState<Map<string, ApplicationDetailsData>>(new Map());
@@ -229,13 +287,13 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
     const { ownerProjectToProjectData } = useProjectsMetadata();
 
     const compareSearchResults = useMemo(() => {
-        const term = searchQuery.toLowerCase().trim();
+        const term = normalizeString(searchQuery);
         return Object.values(ownerProjectToProjectData)
             .filter(app =>
                 app.on_apps_page &&
                 app.owner_project !== owner_project &&
                 !compareAppKeys.includes(app.owner_project) &&
-                (term === "" || app.display_name.toLowerCase().includes(term)),
+                (term === "" || normalizeString(app.display_name).includes(term)),
             );
     }, [searchQuery, ownerProjectToProjectData, owner_project, compareAppKeys]);
 
@@ -449,6 +507,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                 isComparing,
                 compareApps: compareAppsForChart,
                 showAvg: master?.app_metrics?.[m]?.all_l2s_aggregate === "avg",
+                showUsd,
             });
             // Apply the same visibleSeries filter used in AppMetricChart
             const visible = series.filter(s =>
@@ -461,7 +520,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
         }
 
         return earliestTs !== Infinity ? earliestTs : undefined;
-    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart]);
+    }, [data, master, hasMetricDataForInterval, timeInterval, effectiveSelectedTotal, deselectedChains, compareAppsForChart, showUsd]);
 
     const comparePill = useMemo(() => {
 
@@ -488,7 +547,10 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     className="relative z-20 w-full p-[5px] pl-[10px] bg-color-bg-medium rounded-full flex items-center justify-between cursor-pointer select-none"
                     onClick={() => setIsCompareDropdownOpen((prev) => !prev)}
                 >
+                    {ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path ? 
                     <Image src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[compareAppsForChart[0].owner_project]?.logo_path}`} alt={compareAppsForChart[0].displayName} width={24} height={24} className="rounded-full shrink-0 " />
+                    : <GTPIcon icon="gtp-project" size="md" className="!size-[24px] text-color-ui-hover" containerClassName="flex items-center justify-center" />
+                    }
                     <div className="flex flex-col items-center gap-x-[5px]">
                         <div className="text-xxs">Compare to</div>
                         <div className="flex items-center gap-x-[5px] text-center w-full max-w-[180px]">
@@ -859,7 +921,8 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         isComparing,
         compareApps,
         showAvg: resolvedMetricData?.all_l2s_aggregate === "avg",
-    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing]);
+        showUsd,
+    }), [data, metric, selectedTotal, deselectedChains, timeInterval, resolvedMetricData, hasChainData, compareApps, isComparing, showUsd]);
 
     const metricData = resolvedMetricData;
     const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");

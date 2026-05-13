@@ -198,6 +198,156 @@ const StablecoinChain: QuickBiteData = {
       name: "Stablecoin Supply",
       url: "/fundamentals/stablecoin-market-cap"
     },
+    {
+      icon: "ethereum-logo-monochrome",
+      color: "rgb(var(--chains-ethereum))",
+      name: "Ethereum Mainnet",
+      url: "/chains/ethereum"
+    },
+    {
+      icon: "celo-logo-monochrome",
+      color: "rgb(var(--chains-celo))",
+      name: "Celo",
+      url: "/chains/celo"
+    },
+    {
+      icon: "megaeth-logo-monochrome",
+      color: "rgb(var(--chains-megaeth))",
+      name: "MegaETH",
+      url: "/chains/megaeth"
+    },
+    {
+      icon: "polygon-pos-logo-monochrome",
+      color: "rgb(var(--chains-polygon))",
+      name: "Polygon PoS",
+      url: "/chains/polygon-pos"
+    },
+    {
+      icon: "starknet-logo-monochrome",
+      color: "rgb(var(--chains-starknet))",
+      name: "Starknet",
+      url: "/chains/starknet"
+    },
+    {
+      icon: "arbitrum-logo-monochrome",
+      color: "rgb(var(--chains-arbitrum-one))",
+      name: "Arbitrum One",
+      url: "/chains/arbitrum"
+    },
+    {
+      icon: "unichain-logo-monochrome",
+      color: "rgb(var(--chains-unichain))",
+      name: "Unichain",
+      url: "/chains/unichain"
+    },
+    {
+      icon: "arbitrum-nova-logo-monochrome",
+      color: "rgb(var(--chains-arbitrum-nova))",
+      name: "Arbitrum Nova",
+      url: "/chains/arbitrum-nova"
+    },
+    {
+      icon: "base-logo-monochrome",
+      color: "rgb(var(--chains-base))",
+      name: "Base Chain",
+      url: "/chains/base"
+    },
+    {
+      icon: "optimism-logo-monochrome",
+      color: "rgb(var(--chains-op-mainnet))",
+      name: "OP Mainnet",
+      url: "/chains/op-mainnet"
+    },
+    {
+      icon: "worldchain-logo-monochrome",
+      color: "rgb(var(--chains-world))",
+      name: "World Chain",
+      url: "/chains/worldchain"
+    },
+    {
+      icon: "fraxtal-logo-monochrome",
+      color: "rgb(var(--chains-fraxtal))",
+      name: "Fraxtal",
+      url: "/chains/fraxtal"
+    },
+    {
+      icon: "gravity-logo-monochrome",
+      color: "rgb(var(--chains-gravity))",
+      name: "Gravity",
+      url: "/chains/gravity"
+    },
+    {
+      icon: "plume-logo-monochrome",
+      color: "rgb(var(--chains-plume))",
+      name: "Plume Network",
+      url: "/chains/plume"
+    },
+    {
+      icon: "linea-logo-monochrome",
+      color: "rgb(var(--chains-linea))",
+      name: "Linea",
+      url: "/chains/linea"
+    },
+    {
+      icon: "lisk-logo-monochrome",
+      color: "rgb(var(--chains-lisk))",
+      name: "Lisk",
+      url: "/chains/lisk"
+    },
+    {
+      icon: "taiko-logo-monochrome",
+      color: "rgb(var(--chains-taiko))",
+      name: "Taiko Alethia",
+      url: "/chains/taiko"
+    },
+    {
+      icon: "manta-logo-monochrome",
+      color: "rgb(var(--chains-manta))",
+      name: "Manta Pacific",
+      url: "/chains/manta"
+    },
+    {
+      icon: "mode-logo-monochrome",
+      color: "rgb(var(--chains-mode))",
+      name: "Mode",
+      url: "/chains/mode"
+    },
+    {
+      icon: "scroll-logo-monochrome",
+      color: "rgb(var(--chains-scroll))",
+      name: "Scroll",
+      url: "/chains/scroll"
+    },
+    {
+      icon: "mantle-logo-monochrome",
+      color: "rgb(var(--chains-mantle))",
+      name: "Mantle",
+      url: "/chains/mantle"
+    },
+    {
+      icon: "soneium-logo-monochrome",
+      color: "rgb(var(--chains-soneium))",
+      name: "Soneium",
+      url: "/chains/soneium"
+    },
+    {
+      icon: "ink-logo-monochrome",
+      color: "rgb(var(--chains-ink))",
+      name: "Ink",
+      url: "/chains/ink"
+    },
+    {
+      icon: "loopring-logo-monochrome",
+      color: "rgb(var(--chains-loopring))",
+      name: "Loopring",
+      url: "/chains/loopring"
+    },
+    {
+      icon: "metis-logo-monochrome",
+      color: "rgb(var(--chains-metis))",
+      name: "Metis",
+      url: "/chains/metis"
+    },
   ],
   icon: "",
   showInMenu: true,

@@ -7,11 +7,16 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useSort } from "../_contexts/SortContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Icon from "@/components/layout/Icon";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { useMediaQuery } from "@react-hook/media-query";
 
 const Controls = memo(() => {
   const { sort, setSort } = useSort();
   const { metricsDef, selectedMetrics, setSelectedMetrics, metricIcons } = useMetrics();
   const { selectedTimespan, setSelectedTimespan, timespans } = useTimespan();
+  const isMobile = useMediaQuery("(max-width: 1024px)");
 
   // Memoize handlers to prevent recreating functions on each render
   const handleNextMetric = useCallback(() => {
@@ -36,12 +41,15 @@ const Controls = memo(() => {
     setSort({...sort, metric: selected[selected.length - 1]});
   }, [setSort, sort]);
 
-  console.log("metricsDef", metricsDef);
-
   return (
     <>
-      <TopRowContainer className="gap-y-[10px] rounded-t-[15px] rounded-b-[24px] flex-col-reverse">
-        <TopRowParent className="">
+      <GTPButtonContainer className="relative z-[20]" style={{ flexWrap: 'wrap-reverse', }}
+
+      >
+        <GTPButtonRow 
+          className="flex-nowrap"
+          style={{width: isMobile ? "100%" : "auto"}}
+        >
           <MultipleSelectTopRowChild 
             handleNext={handleNextMetric}
             handlePrev={handlePrevMetric}
@@ -54,31 +62,25 @@ const Controls = memo(() => {
             setSelected={setSelectedMetrics}
             onSelect={handleMetricSelect}
           />
-        </TopRowParent>
+        </GTPButtonRow>
         
-        <TopRowParent className="-py-[10px]">
+        <GTPButtonRow className="flex-nowrap" style={{width: isMobile ? "100%" : "auto"}} wrap={isMobile ? true : false}>
           {Object.keys(timespans).map((key) => (
-            <TopRowChild
+            <GTPButton
               key={key}
-              className="flex items-center justify-center h-[28px] md:h-[44px]"
-              onClick={() => {
+              className="w-full justify-center" 
+              innerStyle={{ width: "100%" }}
+              clickHandler={() => {
                   setSelectedTimespan(key);
               }}
               isSelected={selectedTimespan === key}
-            >
-              {selectedTimespan === key ? (
-                  <>
-                    <div className="hidden md:block">{timespans[key].label}</div>
-                    <div className="block md:hidden">{timespans[key].shortLabel}</div>
-                  </>
-                ) : (
-                  timespans[key].shortLabel
-                )
-              }
-            </TopRowChild>
+              label={isMobile ? timespans[key].shortLabel : timespans[key].label}
+              size="md"
+              variant="primary"
+            />
           ))}
-        </TopRowParent>
-      </TopRowContainer>
+        </GTPButtonRow>
+      </GTPButtonContainer>
     </>
   );
 });

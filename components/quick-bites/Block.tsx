@@ -21,9 +21,10 @@ import { SpacerBlock } from './blocks/SpacerBlock';
 
 interface BlockProps {
   block: ContentBlock;
+  chainQuickBitesTitleSuffix?: string;
 }
 
-const Block: React.FC<BlockProps> = ({ block }) => {
+const Block: React.FC<BlockProps> = ({ block, chainQuickBitesTitleSuffix }) => {
  
   
   // Check if block should be hidden from menu
@@ -41,9 +42,9 @@ const Block: React.FC<BlockProps> = ({ block }) => {
     case 'image':
       return <ImageBlock block={block} />;
     case 'chart':
-      return <ChartBlock block={block} />;
+      return <ChartBlock block={block} chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix} />;
     case 'chart-toggle':
-      return <ChartToggleBlock block={block} />;
+      return <ChartToggleBlock block={block} chainQuickBitesTitleSuffix={chainQuickBitesTitleSuffix} />;
     case 'callout':
       return <CalloutBlock block={block} />;
     case 'iframe':

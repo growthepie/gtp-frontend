@@ -16,6 +16,12 @@ import dynamic from "next/dynamic";
 const SidebarContainer = dynamic(() => import("@/components/layout/SidebarContainer"), { ssr: true });
 
 import { generateJsonLd } from "@/utils/json-ld";
+import QuickBiteRouteSchemas from "@/components/quick-bites/QuickBiteRouteSchemas";
+import QuickBiteRouteStaticShell from "@/components/quick-bites/QuickBiteRouteStaticShell";
+import FundamentalsRouteSchemas from "@/components/fundamentals/FundamentalsRouteSchemas";
+import FundamentalsRouteStaticShell from "@/components/fundamentals/FundamentalsRouteStaticShell";
+import AnswerRouteSchemas from "@/components/answers/AnswerRouteSchemas";
+import AnswerRouteStaticShell from "@/components/answers/AnswerRouteStaticShell";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
@@ -192,6 +198,17 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Per-route JSON-LD (emitted parse-time, outside <Providers> client boundary) */}
+        <QuickBiteRouteSchemas />
+        <FundamentalsRouteSchemas />
+        <AnswerRouteSchemas />
+        {/* Per-route static SEO shell — visible-text article surface in
+            parse-time HTML so non-JS AI crawlers see headings, prose, and FAQ
+            content. Visually hidden (sr-only) so it doesn't duplicate the
+            interactive React UI for sighted users. */}
+        <QuickBiteRouteStaticShell />
+        <FundamentalsRouteStaticShell />
+        <AnswerRouteStaticShell />
         <Providers>
           <div
             id="background-container"

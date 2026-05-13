@@ -326,6 +326,15 @@ const testBite: QuickBiteData = createQuickBite({
     }),
     "```",
 
+    "## Scatter Charts: How to Use",
+    "Use scatter charts when each chain should be represented by a single marker (x metric vs y metric).",
+    "- Top 10 chains: set `top10ByMetric` on the chart block. The renderer ranks chains by that metric and keeps only the top 10 visible series.",
+    "- Trendline: enable with `scatterTrendline: { enabled: true, label: \"Trendline\" }`. This adds a dashed trendline with an `Avg ratio` label.",
+    "- Legend controls: click chain pills to hide/show individual chains. Click the trendline pill to toggle the trendline on or off.",
+    "- Ratio formatting: ratio values inherit the y-series unit formatting (for example `$` or ` gas/s`) in tooltip and trendline label.",
+    "- Single-chain behavior: if only one chain remains active, the trendline still renders.",
+    "- Label visibility: when a trendline is active, the chart preserves right-side x-axis buffer and hides the trailing max tick label/gridline so the avg-ratio marker remains readable.",
+
     "## Dropdown Examples ",
     "With hardcoded options:",
     
@@ -968,6 +977,7 @@ const testBite: QuickBiteData = createQuickBite({
     url: "/chains/base"
   }],
   showInMenu: false,
+  showInChainTab: false,
   ethUsdSwitchEnabled: true
 });
 

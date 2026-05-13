@@ -1,5 +1,6 @@
 // Quick Bite: EigenDA x MegaETH
 import { QuickBiteData } from '@/lib/types/quickBites';
+import { QB_SIDE_BY_SIDE_CHARTS } from './layouts';
 
 const EthBlobChart = ["```chart",
   JSON.stringify({
@@ -218,7 +219,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -230,7 +231,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -299,7 +300,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -311,7 +312,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -363,7 +364,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1768996800000,
           annotationPositionY: -8,
-          annotationPositionX: -25,
+          annotationPositionX: -100,
           annotationText: "Stress Test Start",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -375,7 +376,7 @@ const EigenDAMegaETH: QuickBiteData = {
         {
           xValue: 1769688000000,
           annotationPositionY: -8,
-          annotationPositionX: 25,
+          annotationPositionX: 0,
           annotationText: "Stress Test End",
           lineStyle: "Dash",
           lineColor: "#CDD8D3",
@@ -402,7 +403,7 @@ const EigenDAMegaETH: QuickBiteData = {
     "```container",
     JSON.stringify({
       blocks: [EthBlobChart, EigenDACapacityChart],
-      className: "flex flex-col lg:grid lg:grid-cols-2 items-start gap-[15px]",
+      className: QB_SIDE_BY_SIDE_CHARTS,
     }),
     "```",
 

@@ -217,6 +217,62 @@ const dataAvailabilityGroup: NavigationItem = {
   ],
 };
 
+const quickBitesGroup: NavigationItem = {
+  name: "Quick Bites",
+  label: "Quick Bites",
+  icon: "gtp-quick-bites",
+  newChild: true,
+  options: [
+    {
+      label: "All Quick Bites",
+      page: {
+        title: "All Quick Bites",
+        description: `An overview of all available articles and research released by the growthepie team.`,
+        icon: "gtp-overview",
+      },
+      icon: "gtp-overview",
+      key: "quick-bites-overview",
+      rootKey: "quick-bites",
+      urlKey: "quick-bites",
+      url: "/quick-bites",
+    },
+    ...Object.entries(QUICK_BITES_DATA)
+      .reverse()
+      .filter(([slug]) => QUICK_BITES_DATA[slug].showInMenu === true)
+      .slice(0, 5)
+      .map(([slug, data], index) => ({
+        label: data.shortTitle,
+        icon: "gtp-chevronright" as GTPIconName,
+        category: "latest",
+        key: slug,
+        rootKey: slug,
+        urlKey: slug,
+        url: `/quick-bites/${slug}`,
+        group: "latest",
+        showNew: index === 0 ? true : false,
+      })),
+    {
+      label: "Octant",
+      icon: "octant-monochrome",
+      category: "public-goods-funding",
+      key: "octant",
+      rootKey: "octant",
+      urlKey: "octant",
+      url: "/trackers/octant",
+      // showNew: false,
+    },
+    {
+      label: "Glo Dollar",
+      icon: "glo-dollar-monochrome",
+      category: "public-goods-funding",
+      key: "glodollar",
+      rootKey: "glodollar",
+      urlKey: "glodollar",
+      url: "/trackers/glodollar",
+    },
+  ],
+};
+
 export const navigationItems: NavigationItem[] = [
   {
     name: "Ecosystem",
@@ -542,6 +598,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  quickBitesGroup,
   {
     name: "Blockspace",
     label: "Blockspace",
@@ -627,67 +684,6 @@ export const navigationItems: NavigationItem[] = [
     // href: "",
   },
   ...[dataAvailabilityGroup],
-
-  {
-    name: "Quick Bites",
-    label: "Quick Bites",
-    icon: "gtp-quick-bites",
-    newChild: true,
-    options: [
-      {
-        label: "Overview",
-        page: {
-          title: "Overview",
-          description: `Our Onchain Economics page breaks down how profitable L2s operate.`,
-          icon: "gtp-overview",
-        },
-        icon: "gtp-overview",
-        key: "quick-bites-overview",
-        rootKey: "quick-bites",
-        urlKey: "quick-bites",
-        url: "/quick-bites",
-      },
-      ...Object.entries(QUICK_BITES_DATA).reverse().filter(([slug], index) => QUICK_BITES_DATA[slug].showInMenu === true).map(([slug, data], index) => ({
-        label: data.shortTitle,
-        icon: "gtp-chevronright" as GTPIconName,
-        category: "latest",
-        key: slug,
-        rootKey: slug,
-        urlKey: slug,
-        url: `/quick-bites/${slug}`,
-        group: "latest",
-        showNew: index === 0 ? true : false
-      })),
-      {
-        label: "Octant",
-        icon: "octant-monochrome",
-        category: "public-goods-funding",
-        key: "octant",
-        rootKey: "octant",
-        urlKey: "octant",
-        url: "/trackers/octant",
-        // showNew: false,
-      },
-      {
-        label: "Glo Dollar",
-        icon: "glo-dollar-monochrome",
-        category: "public-goods-funding",
-        key: "glodollar",
-        rootKey: "glodollar",
-        urlKey: "glodollar",
-        url: "/trackers/glodollar",
-      },
-      {
-        label: "OP RetroPGF 3",
-        icon: "optimism-logo-monochrome",
-        category: "public-goods-funding",
-        key: "rpgf3",
-        rootKey: "rpgf3",
-        urlKey: "optimism-retropgf-3",
-        url: "/trackers/optimism-retropgf-3",
-      },
-    ],
-  },
 
 
   // // put navigation items that we want to hide in production here

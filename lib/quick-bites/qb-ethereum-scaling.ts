@@ -91,7 +91,7 @@ const ProjectedScaling = [
       {
         xValue: 1806591485000,
         annotationPositionY: 10,
-        annotationPositionX: -49,
+        annotationPositionX: -110,
         annotationText: "100 TPS, Apr 2027",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -103,7 +103,7 @@ const ProjectedScaling = [
       {
         xValue: 1872341885000,
         annotationPositionY: 10,
-        annotationPositionX: -55,
+        annotationPositionX: -120,
         annotationText: "1,000 TPS, May 2029",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -115,7 +115,7 @@ const ProjectedScaling = [
       {
         xValue: 1938092285000,
         annotationPositionY: 10,
-        annotationPositionX: -56,
+        annotationPositionX: -125,
         annotationText: "10,000 TPS, Jun 2031",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
@@ -138,20 +138,9 @@ const L2Scaling = [
     type: "area",
     title: "Ethereum Ecosystem: Toward 1,000,000+ TPS with Layer 2s",
     showXAsDate: true,
+    preserveMetaOrder: true,
     dataAsJson: {
       meta: [
-        {
-          name: "Layer 2s Combined",
-          color: "#FFDF27",
-          xIndex: 0,
-          yIndex: 1,
-          suffix: " TPS",
-          prefix: null,
-          tooltipDecimals: 2,
-          stacking: "normal",
-          url: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
-          pathToData: "data.l2_projected_tps.monthly.values",
-        },
         {
           name: "Ethereum Mainnet",
           color: "#A3B8D9",
@@ -164,13 +153,25 @@ const L2Scaling = [
           url: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
           pathToData: "data.projected_tps.monthly.values",
         },
+        {
+          name: "Layer 2s Combined",
+          color: "#FFDF27",
+          xIndex: 0,
+          yIndex: 1,
+          suffix: " TPS",
+          prefix: null,
+          tooltipDecimals: 2,
+          stacking: "normal",
+          url: "https://api.growthepie.com/v1/quick-bites/ethereum-scaling/data.json",
+          pathToData: "data.l2_projected_tps.monthly.values",
+        },
       ],
     },
     yAxisLine: [
       {
         xValue: 1938092285000,
         annotationPositionY: 10,
-        annotationPositionX: -65,
+        annotationPositionX: -135,
         annotationText: "1 Million TPS, Jun 2031",
         lineStyle: "Dash",
         lineColor: "#19D9D6",
