@@ -5,44 +5,79 @@ import {
   generateJsonLdFaq,
 } from '@/lib/quick-bites/seo_helper';
 
-// Charts are no longer hand-built here. The processor expands the
-// `{{l2_*_chart}}` placeholders below into ```chart``` fenced blocks whose
-// series are exactly the top-5 entries on each leaderboard, so the visible
-// chart and the prose ranking always agree. See lib/answers/articleProcessor.ts
-// and lib/answers/computeL2Leaderboard.ts:buildChartFencedBlock.
+// This page is AI-first: the static SEO shell only renders prose chunks
+// (h2/h3/h4/p/li), so we keep the per-metric "leaderboard" section as a
+// single dense sentence (the `{{l2_*_dense}}` placeholder, expanded server-
+// side) instead of an interactive table — non-JS AI crawlers can't see
+// table blocks anyway. Weekly and monthly values come from growthepie's
+// period-native aggregations (not sums of daily values), so DAA isn't
+// double-counted across days. See lib/answers/computeL2Leaderboard.ts:
+// buildDenseSentence and buildAcceptedAnswer.
 
 export const faqItems: FaqItem[] = [
   {
     q: 'What is the most used Ethereum L2?',
-    a: 'It depends on the metric. Today by throughput (gas processed per second) the leader is {{l2_throughput_leader}}. By raw daily transactions: {{l2_txcount_leader}}. By daily active addresses: {{l2_daa_leader}}. These rankings are computed every day from growthepie\'s data — see the methodology section for the full L2 universe and exclusions. Live leaderboards: growthepie.com/fundamentals/throughput.',
+    a: 'It depends on the metric and the time horizon. As of {{l2_data_date}} UTC: by throughput (gas processed per second) the daily leader is {{l2_throughput_leader}}; by raw daily transactions: {{l2_txcount_leader}}; by daily active addresses: {{l2_daa_leader}}. Weekly and monthly leaders may differ — see the metric-specific FAQs below. All rankings are computed daily from growthepie\'s data; live leaderboards: growthepie.com/fundamentals/throughput.',
   },
   {
     q: 'Why does the answer depend on the metric?',
-    a: 'Different metrics measure different things. Throughput (Mgas/s) is hardest to game and best reflects sustained workload. Transaction count is intuitive but inflates chains with small, cheap transactions. Daily active addresses approximate users but addresses are not users — one person can control many addresses. The honest answer compares all three.',
+    a: 'Different metrics measure different things. Throughput (Mgas/s) is hardest to game and best reflects sustained workload. Transaction count is intuitive but inflates chains with small, cheap transactions. Daily active addresses approximate users but addresses are not users — one person can control many addresses. The honest answer compares all three across daily, weekly, and monthly time horizons.',
+  },
+  // ----- Throughput -----
+  {
+    q: 'Which Ethereum L2 has the highest throughput today?',
+    a: "On {{l2_data_date}} UTC, the top three Ethereum L2s by daily throughput are {{l2_throughput_daily_top3}}. Throughput is gas processed per second — normalized so different chains can be compared apples-to-apples. Recomputed daily from growthepie's data.",
   },
   {
-    q: 'Which Ethereum L2 has the highest throughput?',
-    a: "Today's top three by throughput are {{l2_throughput_top3}}. Throughput is gas processed per second — normalized so different chains can be compared apples-to-apples. This list is recomputed daily from growthepie's data.",
+    q: 'Which Ethereum L2 had the highest throughput this week?',
+    a: "Over the most recent completed week (data {{l2_data_date}} UTC), the top three Ethereum L2s by weekly throughput are {{l2_throughput_weekly_top3}}. Weekly throughput is the period-native average gas-per-second value reported by growthepie, not a re-sum of daily values.",
   },
+  {
+    q: 'Which Ethereum L2 had the highest throughput this month?',
+    a: "Over the most recent completed month (data {{l2_data_date}} UTC), the top three Ethereum L2s by monthly throughput are {{l2_throughput_monthly_top3}}. The monthly leader is {{l2_throughput_monthly_leader}}.",
+  },
+  // ----- Transactions -----
   {
     q: 'Which L2 has the most daily transactions?',
-    a: "Today's top three by daily transactions are {{l2_txcount_top3}}. Always check the live leaderboard at growthepie.com/fundamentals/transaction-count for the very latest values.",
+    a: "On {{l2_data_date}} UTC, the top three Ethereum L2s by daily transactions are {{l2_txcount_daily_top3}}. Check the live leaderboard at growthepie.com/fundamentals/transaction-count for the latest values.",
   },
   {
-    q: 'Which L2 has the most users (daily active addresses)?',
-    a: "Today's top three by daily active addresses are {{l2_daa_top3}}. Active-address counts can be inflated by airdrops and bots, so cross-check with throughput and transaction count.",
+    q: 'Which Ethereum L2 processed the most transactions this week?',
+    a: "Over the most recent completed week (data {{l2_data_date}} UTC), the top three Ethereum L2s by weekly transaction count are {{l2_txcount_weekly_top3}}. Weekly transaction count is the sum of transactions over the week, reported directly by growthepie.",
   },
+  {
+    q: 'Which Ethereum L2 processed the most transactions this month?',
+    a: "Over the most recent completed month (data {{l2_data_date}} UTC), the top three Ethereum L2s by monthly transaction count are {{l2_txcount_monthly_top3}}. The monthly leader is {{l2_txcount_monthly_leader}}.",
+  },
+  // ----- Active addresses -----
+  {
+    q: 'Which L2 has the most users (daily active addresses)?',
+    a: "On {{l2_data_date}} UTC, the top three Ethereum L2s by daily active addresses are {{l2_daa_daily_top3}}. Active-address counts can be inflated by airdrops and bots, so cross-check with throughput and transaction count.",
+  },
+  {
+    q: 'Which Ethereum L2 had the most active addresses this week?',
+    a: "Over the most recent completed week (data {{l2_data_date}} UTC), the top three Ethereum L2s by weekly active addresses are {{l2_daa_weekly_top3}}. **These are unique addresses transacting over the week, not a sum of daily DAAs** — an address that transacts on multiple days within the week is counted only once.",
+  },
+  {
+    q: 'Which Ethereum L2 had the most active addresses this month?',
+    a: "Over the most recent completed month (data {{l2_data_date}} UTC), the top three Ethereum L2s by monthly active addresses are {{l2_daa_monthly_top3}}. **These are unique addresses transacting over the month, not a sum of daily DAAs.** The monthly leader is {{l2_daa_monthly_leader}}.",
+  },
+  // ----- Methodology / scope -----
   {
     q: 'Is Polygon PoS an Ethereum L2?',
     a: 'No. Polygon PoS is a sidechain with its own validator set; it does not post transaction data to Ethereum for security and is therefore excluded from the L2 leaderboards on this page (and from L2BEAT). Polygon zkEVM is a ZK rollup and would qualify.',
   },
   {
     q: 'How many L2s are included in the ranking?',
-    a: '{{l2_universe_size}} chains. The full list (computed today from growthepie\'s master chain catalogue) is: {{l2_universe_list}}.',
+    a: '{{l2_universe_size}} chains. The full list (computed on {{l2_data_date}} UTC from growthepie\'s master chain catalogue) is: {{l2_universe_list}}.',
   },
   {
     q: 'Where does this answer come from?',
-    a: 'The leaderboards are derived in real time from two growthepie endpoints: master.json (the chain catalogue, including L1/L2/sidechain classification via the `bucket` and `chain_type` fields) and landing_page.json (the per-chain rankings used by the homepage tables). The L2 filter excludes any chain whose `bucket` is "Layer 1" or which is on an explicit non-L2 list. Today\'s active sidechain exclusions: {{l2_excluded_sidechains}}. No editorial overrides.',
+    a: 'The daily / weekly / monthly leaderboards are derived in real time from growthepie\'s public API: master.json (the chain catalogue, including L1/L2/sidechain classification via the `bucket` and `chain_type` fields) for membership, and per-chain timeseries (`metrics/chains/{chain}/<metric>.json`) for the period-native daily, weekly, and monthly values. The L2 filter excludes any chain whose `bucket` is "Layer 1" or which is on an explicit non-L2 list. Sidechain exclusions on {{l2_data_date}} UTC: {{l2_excluded_sidechains}}. No editorial overrides.',
+  },
+  {
+    q: 'Why aren\'t weekly and monthly active addresses just the sum of daily values?',
+    a: 'Because the same address often transacts on multiple days. Summing daily DAAs would double-count those addresses and inflate the weekly/monthly figure. growthepie\'s API reports weekly and monthly active addresses as the count of **unique** addresses transacting over the period, so this page uses those values directly. The same applies if you ever see weekly/monthly DAA discussed elsewhere — confirm whether it\'s a unique-count or a daily-sum, because the two can differ by 2–5×.',
   },
   {
     q: 'Where can I see live L2 usage data?',
@@ -128,40 +163,38 @@ export const jsonLdDatasets = [
 const mostUsedEthereumL2: QuickBiteData = createQuickBite({
   title: 'What is the most used Ethereum L2?',
   subtitle:
-    'A direct, data-backed answer across throughput, transactions, and active addresses — with live charts and methodology.',
+    'A direct, data-backed answer across throughput, transactions, and active addresses — with live daily / weekly / monthly leaderboards and methodology.',
   shortTitle: 'Most Used L2',
   summary:
-    "The most used Ethereum L2 depends on the metric. growthepie's live leaderboards rank every tracked L2 by throughput (Mgas/s), daily transactions, and daily active addresses — this page shows all three with methodology, computed daily from growthepie's data. Ethereum mainnet and sidechains (e.g. Polygon PoS) are excluded.",
+    "The most used Ethereum L2 depends on the metric and the time horizon. growthepie's live leaderboards rank every tracked L2 by throughput (Mgas/s), transaction count, and active addresses — over daily, weekly, and monthly windows. Weekly and monthly active addresses are unique counts over the period, not sums of daily values (so the same wallet active on multiple days is only counted once). Ethereum mainnet and sidechains (e.g. Polygon PoS) are excluded. Recomputed daily from growthepie's public API.",
   content: [
-    "**Short answer:** By throughput, the leading Ethereum L2 is currently {{l2_throughput_leader}}. By daily transactions: {{l2_txcount_leader}}. By daily active addresses: {{l2_daa_leader}}. Computed from today's growthepie data.",
+    "**Short answer (data {{l2_data_date}} UTC):** By throughput the leading Ethereum L2 is {{l2_throughput_leader}}. By daily transactions: {{l2_txcount_leader}}. By daily active addresses: {{l2_daa_leader}}. Weekly and monthly leaders may differ — see the per-metric leaderboards below.",
 
-    "> Updated daily — every leaderboard, chart, and dataset on this page is recomputed from growthepie's public API. The numbers above reflect the most recent day for which all chains have reported data.",
+    "> Updated daily — every leaderboard and dataset on this page is recomputed from growthepie's public API. Daily values use the latest available day; weekly and monthly values use the most recent **completed** period (not the in-progress one).",
 
     '# How we measure "most used"',
-    'There three main metrics we use to measure L2 usage:',
+    'There are three main metrics we use to measure L2 usage:',
     '- **Throughput (Mgas/s)** — gas processed per second on the chain, like a speedometer for real onchain work. Hard to inflate with cheap spam because every operation costs gas proportional to its complexity.',
-    '- **Daily transactions** — raw count of transactions per day. Most intuitive but biased toward chains with very low fees and very small transaction sizes (e.g. cheap micro-payments).',
-    '- **Daily active addresses (DAA)** — count of unique addresses that transacted that day. Best proxy for users, but a single person can hold many addresses and airdrops can briefly inflate the number.',
+    '- **Transaction count** — raw count of transactions per period. Most intuitive but biased toward chains with very low fees and very small transaction sizes (e.g. cheap micro-payments).',
+    '- **Active addresses** — count of **unique** addresses that transacted in the period. Best proxy for users, but a single person can hold many addresses and airdrops can briefly inflate the number. Weekly and monthly values count each address once even if it transacted on multiple days.',
 
     '# Live leaderboard: Throughput',
-    "**Top 5 by throughput today:** {{l2_throughput_top5}}.",
-    '{{l2_throughput_chart}}',
+    '{{l2_throughput_dense}}',
 
-    '# Live leaderboard: Daily Transactions',
-    "**Top 5 by daily transactions today:** {{l2_txcount_top5}}.",
-    '{{l2_txcount_chart}}',
+    '# Live leaderboard: Transactions',
+    '{{l2_txcount_dense}}',
 
-    '# Live leaderboard: Daily Active Addresses',
-    "**Top 5 by daily active addresses today:** {{l2_daa_top5}}.",
-    '{{l2_daa_chart}}',
+    '# Live leaderboard: Active Addresses',
+    '{{l2_daa_dense}}',
 
     '# Methodology and data sources',
     '**How the answer is derived (transparent methodology):**',
     "1. Pull the [master chain catalogue](https://api.growthepie.com/v1/master.json) and filter to chains where `bucket !== \"Layer 1\"`, `deployment === \"PROD\"`, and the chain key is not on the explicit non-L2 list below.",
-    "2. Pull the [per-chain rankings](https://api.growthepie.com/v1/landing_page.json) — specifically `data.metrics.table_visual[chain].ranking[metric]`. This is the same ranking used by the growthepie homepage tables.",
-    "3. Sort the chains by raw value for each metric and take the top entries.",
+    "2. For each L2 in the universe, pull the per-chain metric endpoint (`/v1/metrics/chains/{chain}/<metric>.json`) which exposes the daily / weekly / monthly aggregations natively. Daily uses the latest available data point; weekly and monthly use the most recent **completed** period.",
+    "3. For weekly and monthly active addresses we use the API's period-native aggregate (unique addresses transacting in the window) — not a sum of daily DAAs — so a wallet that transacts on multiple days within a period is only counted once.",
+    "4. Sort the chains by raw value for each (metric, period) pair and take the top 3.",
 
-    "All charts and rankings on this page pull live from growthepie's public API and refresh daily:",
+    "All rankings on this page pull live from growthepie's public API and refresh daily; the values shown above were generated on {{l2_data_date}} UTC:",
     '- Master chain list (with bucket / chain_type classification): `https://api.growthepie.com/v1/master.json`',
     '- Per-chain rankings used to compute the leaderboards: `https://api.growthepie.com/v1/landing_page.json` (path `data.metrics.table_visual`)',
     '- Throughput time series: `https://api.growthepie.com/v1/metrics/chains/{chain}/throughput.json`',

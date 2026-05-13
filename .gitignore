@@ -64,3 +64,6 @@ test-analytics.mjs
 
 .claude/
 .env*.local
+
+# third-party Claude skill checkout (installed into ~/.claude/skills, not vendored)
+/geo-seo-claude/

@@ -31,6 +31,9 @@ const NON_L2_KEYS = new Set([
 const SUPPORTED_METRICS = ['throughput', 'txcount', 'daa'] as const;
 export type LeaderboardMetric = (typeof SUPPORTED_METRICS)[number];
 
+export const SUPPORTED_PERIODS = ['daily', 'weekly', 'monthly'] as const;
+export type LeaderboardPeriod = (typeof SUPPORTED_PERIODS)[number];
+
 export type LeaderboardEntry = {
   key: string;
   name: string;
@@ -49,7 +52,18 @@ export type L2Leaderboard = {
   // appear here only while they remain non-L2). Used by the answer prose to
   // name what's out and why, instead of hard-coding "Polygon PoS, Ronin".
   excludedNonL2Keys: string[];
+  // Daily-only leaderboard derived from landing_page.json (kept for the
+  // single-leader / FAQ acceptedAnswer placeholders). Equivalent to
+  // byMetricByPeriod[metric].daily but cheaper to compute.
   byMetric: Record<LeaderboardMetric, LeaderboardEntry[]>;
+  // Period-aware leaderboards derived from per-chain timeseries endpoints.
+  // For DAA the API's weekly/monthly are unique-address aggregates (NOT a
+  // sum of daily values), so they avoid the double-counting that summing
+  // dailies would introduce.
+  byMetricByPeriod: Record<
+    LeaderboardMetric,
+    Record<LeaderboardPeriod, LeaderboardEntry[]>
+  >;
 };
 
 // Helper — fetch JSON via Next.js `fetch` so the response is cached at the
@@ -66,6 +80,61 @@ const fetchJson = async (url: string): Promise<any> => {
     throw new Error(`Fetch ${url} failed: ${res.status} ${res.statusText}`);
   }
   return res.json();
+};
+
+// Per-chain metric endpoint path. The same shape is used for daa/txcount/
+// throughput — only the URL slug changes.
+const METRIC_API_SLUG: Record<LeaderboardMetric, string> = {
+  throughput: 'throughput.json',
+  txcount: 'txcount.json',
+  daa: 'daa.json',
+};
+
+// Pick the most recent value for a given period. Daily uses the very last
+// data point; weekly/monthly use the second-to-last so partial in-progress
+// periods (e.g. a week with only one day of data) don't end up represented
+// as the "weekly" or "monthly" value. The growthepie API exposes
+// daily/weekly/monthly aggregates that are computed natively for the period
+// — so for DAA the weekly value is unique addresses over the week, NOT a
+// sum of daily DAAs (which would double-count addresses transacting on
+// multiple days).
+const pickLatestValue = (
+  series: any,
+  period: LeaderboardPeriod,
+): number | null => {
+  const data: any[] | undefined = series?.data;
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const idx = period === 'daily' ? data.length - 1 : data.length - 2;
+  if (idx < 0) return null;
+  const row = data[idx];
+  if (!Array.isArray(row) || row.length < 2) return null;
+  const v = row[1];
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+};
+
+// Fetch the per-chain timeseries for one metric. Soft-fails (returns null)
+// so a single bad chain doesn't break the whole leaderboard.
+const fetchChainSeries = async (
+  key: string,
+  metric: LeaderboardMetric,
+): Promise<{
+  daily: number | null;
+  weekly: number | null;
+  monthly: number | null;
+} | null> => {
+  try {
+    const url = `https://api.growthepie.com/v1/metrics/chains/${key}/${METRIC_API_SLUG[metric]}`;
+    const json = await fetchJson(url);
+    const ts = json?.data?.details?.timeseries ?? json?.details?.timeseries;
+    if (!ts) return null;
+    return {
+      daily: pickLatestValue(ts.daily, 'daily'),
+      weekly: pickLatestValue(ts.weekly, 'weekly'),
+      monthly: pickLatestValue(ts.monthly, 'monthly'),
+    };
+  } catch {
+    return null;
+  }
 };
 
 export const getL2UsageLeaderboard = cache(
@@ -106,6 +175,11 @@ export const getL2UsageLeaderboard = cache(
       return c?.dark?.[0] ?? c?.light?.[0] ?? '#A3B8D9';
     };
 
+    const nameFor = (key: string): string =>
+      tableVisual[key]?.chain_name ?? chains[key]?.name ?? key;
+    const urlKeyFor = (key: string): string =>
+      chains[key]?.url_key ?? key.replace(/_/g, '-');
+
     const byMetric = {} as Record<LeaderboardMetric, LeaderboardEntry[]>;
     for (const metric of SUPPORTED_METRICS) {
       const entries: LeaderboardEntry[] = [];
@@ -126,6 +200,51 @@ export const getL2UsageLeaderboard = cache(
       byMetric[metric] = entries.slice(0, 5);
     }
 
+    // Fetch per-chain daily/weekly/monthly values for every L2 in the
+    // universe across every supported metric. ~26 chains × 3 metrics = ~78
+    // requests, fired in parallel and cached at the Next.js fetch layer for
+    // an hour, so the cold-start cost amortizes across the whole UTC day.
+    const fetchTasks: Promise<{
+      key: string;
+      metric: LeaderboardMetric;
+      values: { daily: number | null; weekly: number | null; monthly: number | null } | null;
+    }>[] = [];
+    for (const key of universeKeys) {
+      for (const metric of SUPPORTED_METRICS) {
+        fetchTasks.push(
+          fetchChainSeries(key, metric).then((values) => ({ key, metric, values })),
+        );
+      }
+    }
+    const results = await Promise.all(fetchTasks);
+
+    const byMetricByPeriod = {} as Record<
+      LeaderboardMetric,
+      Record<LeaderboardPeriod, LeaderboardEntry[]>
+    >;
+    for (const metric of SUPPORTED_METRICS) {
+      byMetricByPeriod[metric] = { daily: [], weekly: [], monthly: [] };
+    }
+    for (const period of SUPPORTED_PERIODS) {
+      for (const metric of SUPPORTED_METRICS) {
+        const entries: LeaderboardEntry[] = [];
+        for (const r of results) {
+          if (r.metric !== metric || !r.values) continue;
+          const v = r.values[period];
+          if (v == null) continue;
+          entries.push({
+            key: r.key,
+            name: nameFor(r.key),
+            urlKey: urlKeyFor(r.key),
+            value: v,
+            color: colorFor(r.key),
+          });
+        }
+        entries.sort((a, b) => b.value - a.value);
+        byMetricByPeriod[metric][period] = entries.slice(0, 5);
+      }
+    }
+
     // Report the sidechain exclusions in display-name form so prose can
     // render them without hard-coding chain keys. Ethereum is always
     // implicitly excluded (it's L1) and isn't reported here.
@@ -140,6 +259,7 @@ export const getL2UsageLeaderboard = cache(
       universeKeys,
       excludedNonL2Keys: sidechainExclusions,
       byMetric,
+      byMetricByPeriod,
     };
   },
 );
@@ -173,130 +293,130 @@ export const formatTopList = (
     .map((e, i) => `${i + 1}. ${formatLeaderEntry(e, metric)}`)
     .join(', ');
 
-// Build a markdown-fenced ```chart``` block whose series exactly match the
-// top-N entries on the named leaderboard. Used to keep the visible chart and
-// the prose ranking in sync — adding/removing a chain in the L2 universe
-// (e.g. Ronin's L2 transition on 2026-05-12) updates both surfaces at once.
-const METRIC_CHART_CONFIG: Record<
+// Per-metric display config: the unit suffix shown next to numbers and a
+// short human label used in the dense leader sentence.
+const METRIC_DISPLAY: Record<
   LeaderboardMetric,
-  {
-    title: string;
-    subtitle: string;
-    suffix?: string | null;
-    tooltipDecimals: number;
-    apiPath: string; // path inside `metrics/chains/{key}/{apiPath}`
-    seeMetricURL: string;
-    caption: string;
-  }
+  { suffix: string; label: string }
 > = {
-  throughput: {
-    title: 'Ethereum L2 Throughput (Mgas/s) — top {{N}}',
-    subtitle:
-      'Mainnet-equivalent gas processed per second — chains shown match the live leaderboard.',
-    suffix: ' Mgas/s',
-    tooltipDecimals: 2,
-    apiPath: 'throughput.json',
-    seeMetricURL: '/fundamentals/throughput',
-    caption:
-      'Daily throughput in millions of gas per second. Live data from growthepie.',
-  },
-  txcount: {
-    title: 'Daily Transactions on Ethereum L2s — top {{N}}',
-    subtitle:
-      'Raw transaction count — chains shown match the live leaderboard.',
-    suffix: null,
-    tooltipDecimals: 0,
-    apiPath: 'txcount.json',
-    seeMetricURL: '/fundamentals/transaction-count',
-    caption: 'Daily transactions per chain. Live data from growthepie.',
-  },
-  daa: {
-    title: 'Daily Active Addresses on Ethereum L2s — top {{N}}',
-    subtitle:
-      'Unique addresses transacting per day — chains shown match the live leaderboard.',
-    suffix: null,
-    tooltipDecimals: 0,
-    apiPath: 'daa.json',
-    seeMetricURL: '/fundamentals/daily-active-addresses',
-    caption: 'Daily active addresses per chain. Live data from growthepie.',
-  },
+  throughput: { suffix: ' Mgas/s', label: 'throughput' },
+  txcount: { suffix: '', label: 'transaction count' },
+  daa: { suffix: '', label: 'active addresses' },
 };
 
-// Minimum visible x-axis date for every chart on /answers/[slug]. Starting
-// the window at 1 Feb 2026 trims the long pre-2026 history (which makes
-// recent leader changes hard to read) without filtering the underlying data
-// — Highcharts still loads the full series, just zooms to this window by
-// default. Update here if the editorial start date changes.
-const ANSWER_CHART_MIN_TIMESTAMP_MS = Date.UTC(2026, 1, 1); // Feb is month index 1
-
-export const buildChartFencedBlock = (
+// Build the top-3 prose string for a (metric, period) pair so the SEO
+// shell's text-only output exposes weekly/monthly rankings to AI consumers.
+export const formatPeriodTopList = (
   lb: L2Leaderboard,
   metric: LeaderboardMetric,
-  count = 5,
+  period: LeaderboardPeriod,
+  count = 3,
 ): string => {
-  const entries = lb.byMetric[metric].slice(0, count);
-  if (entries.length === 0) return '';
-
-  const cfg = METRIC_CHART_CONFIG[metric];
-  const title = cfg.title.replace('{{N}}', String(entries.length));
-
-  const meta = entries.map((e) => ({
-    name: e.name,
-    color: e.color,
-    xIndex: 0,
-    yIndex: 1,
-    tooltipDecimals: cfg.tooltipDecimals,
-    suffix: cfg.suffix,
-    url: `https://api.growthepie.com/v1/metrics/chains/${e.key}/${cfg.apiPath}`,
-    pathToData: 'details.timeseries.daily.data',
-  }));
-
-  const chartConfig = {
-    type: 'line',
-    title,
-    subtitle: cfg.subtitle,
-    showXAsDate: true,
-    stacking: null,
-    dataAsJson: { meta },
-    height: 400,
-    caption: cfg.caption,
-    // The "See metric page" pill is rendered by ChartWrapper from this URL —
-    // no need to duplicate the same CTA in the caption or the prose below.
-    seeMetricURL: cfg.seeMetricURL,
-    options: {
-      xAxis: {
-        min: ANSWER_CHART_MIN_TIMESTAMP_MS,
-      },
-    },
-  };
-
-  return ['```chart', JSON.stringify(chartConfig), '```'].join('\n');
+  const entries = lb.byMetricByPeriod?.[metric]?.[period];
+  if (!entries || entries.length === 0) return 'unavailable';
+  const suffix = METRIC_DISPLAY[metric].suffix;
+  return entries
+    .slice(0, count)
+    .map((e, i) => `${i + 1}. ${e.name} (${fmtCompact(e.value)}${suffix})`)
+    .join(', ');
 };
 
-// Single-sentence answer derived from today's leaderboard. Becomes the
-// QAPage `acceptedAnswer.text` if the data file doesn't pin one explicitly.
-// Methodology / exclusion details live in the page's methodology section
-// and the FAQ ("Where does this answer come from?") so the primary answer
-// stays direct and AI-quotable without procedural caveats.
-export const buildAcceptedAnswer = (lb: L2Leaderboard): string => {
-  const tp = lb.byMetric.throughput[0];
-  const tx = lb.byMetric.txcount[0];
-  const daa = lb.byMetric.daa[0];
-  if (!tp || !tx || !daa) {
-    return 'Data currently unavailable. See growthepie.com/fundamentals/throughput for the live Ethereum L2 leaderboards.';
-  }
-  const sameLeader = tp.key === tx.key && tx.key === daa.key;
-  if (sameLeader) {
+export const formatPeriodLeader = (
+  lb: L2Leaderboard,
+  metric: LeaderboardMetric,
+  period: LeaderboardPeriod,
+): string => {
+  const e = lb.byMetricByPeriod?.[metric]?.[period]?.[0];
+  if (!e) return 'unavailable';
+  return `${e.name} (${fmtCompact(e.value)}${METRIC_DISPLAY[metric].suffix})`;
+};
+
+// Single dense sentence per metric. Collapses the three "Daily / Weekly /
+// Monthly top 3" prose lines into one quotable claim that AI extractors
+// can lift verbatim. Branches on whether one chain leads at all horizons
+// (the common case — Base today) or the leader rotates per period.
+export const buildDenseSentence = (
+  lb: L2Leaderboard,
+  metric: LeaderboardMetric,
+  dataDateUtc: string,
+): string => {
+  const cfg = METRIC_DISPLAY[metric];
+  const dailyLeader = lb.byMetricByPeriod?.[metric]?.daily?.[0];
+  const weeklyLeader = lb.byMetricByPeriod?.[metric]?.weekly?.[0];
+  const monthlyLeader = lb.byMetricByPeriod?.[metric]?.monthly?.[0];
+
+  if (!dailyLeader || !weeklyLeader || !monthlyLeader) {
+    const dailyList = formatPeriodTopList(lb, metric, 'daily', 3);
+    const weeklyList = formatPeriodTopList(lb, metric, 'weekly', 3);
+    const monthlyList = formatPeriodTopList(lb, metric, 'monthly', 3);
     return (
-      `${tp.name} is currently the most used Ethereum L2 across all three primary usage metrics: ` +
-      `throughput (${fmtCompact(tp.value)} Mgas/s), daily transactions (${fmtCompact(tx.value)}), and daily active addresses (${fmtCompact(daa.value)}). ` +
-      `Live leaderboards: growthepie.com/fundamentals/throughput.`
+      `**Top Ethereum L2s by ${cfg.label}** (data ${dataDateUtc} UTC): ` +
+      `daily — ${dailyList}; weekly — ${weeklyList}; monthly — ${monthlyList}.`
     );
   }
+
+  const valueTriple =
+    `daily ${fmtCompact(dailyLeader.value)}${cfg.suffix}, ` +
+    `weekly ${fmtCompact(weeklyLeader.value)}${cfg.suffix}, ` +
+    `monthly ${fmtCompact(monthlyLeader.value)}${cfg.suffix}`;
+
+  const allSame =
+    dailyLeader.key === weeklyLeader.key &&
+    weeklyLeader.key === monthlyLeader.key;
+
+  if (allSame) {
+    return (
+      `**${dailyLeader.name}** leads Ethereum L2 ${cfg.label} across all three time horizons ` +
+      `(${valueTriple}; data ${dataDateUtc} UTC). ` +
+      `Daily top 3: ${formatPeriodTopList(lb, metric, 'daily', 3)}. ` +
+      `Weekly top 3: ${formatPeriodTopList(lb, metric, 'weekly', 3)}. ` +
+      `Monthly top 3: ${formatPeriodTopList(lb, metric, 'monthly', 3)}.`
+    );
+  }
+
   return (
-    `By throughput the leader is ${tp.name} (${fmtCompact(tp.value)} Mgas/s); ` +
-    `by daily transactions ${tx.name} (${fmtCompact(tx.value)}); ` +
-    `by daily active addresses ${daa.name} (${fmtCompact(daa.value)}). ` +
-    `Live leaderboards: growthepie.com/fundamentals/throughput.`
+    `**Top Ethereum L2 by ${cfg.label}** (data ${dataDateUtc} UTC) — ` +
+    `daily: ${dailyLeader.name} (${fmtCompact(dailyLeader.value)}${cfg.suffix}); ` +
+    `weekly: ${weeklyLeader.name} (${fmtCompact(weeklyLeader.value)}${cfg.suffix}); ` +
+    `monthly: ${monthlyLeader.name} (${fmtCompact(monthlyLeader.value)}${cfg.suffix}). ` +
+    `Daily top 3: ${formatPeriodTopList(lb, metric, 'daily', 3)}. ` +
+    `Weekly top 3: ${formatPeriodTopList(lb, metric, 'weekly', 3)}. ` +
+    `Monthly top 3: ${formatPeriodTopList(lb, metric, 'monthly', 3)}.`
+  );
+};
+
+// Multi-sentence acceptedAnswer that names the leader at daily, weekly,
+// AND monthly horizons across every metric. This is what AI engines pull
+// out via QAPage.acceptedAnswer.text — so we make it self-contained: a
+// reader who quotes just this paragraph still gets the full answer.
+export const buildAcceptedAnswer = (lb: L2Leaderboard): string => {
+  const dataDate = lb.generatedAtIso.slice(0, 10);
+  const hasMinimum = (['throughput', 'txcount', 'daa'] as LeaderboardMetric[]).every(
+    (m) =>
+      lb.byMetricByPeriod?.[m]?.daily?.[0] &&
+      lb.byMetricByPeriod?.[m]?.weekly?.[0] &&
+      lb.byMetricByPeriod?.[m]?.monthly?.[0],
+  );
+  if (!hasMinimum) {
+    return 'Data currently unavailable. See growthepie.com/fundamentals/throughput for the live Ethereum L2 leaderboards.';
+  }
+  const sentenceFor = (metric: LeaderboardMetric, prefix: string): string => {
+    const d = lb.byMetricByPeriod[metric].daily[0];
+    const w = lb.byMetricByPeriod[metric].weekly[0];
+    const m = lb.byMetricByPeriod[metric].monthly[0];
+    const suffix = METRIC_DISPLAY[metric].suffix;
+    return (
+      `${prefix} the daily leader is ${d.name} (${fmtCompact(d.value)}${suffix}); ` +
+      `weekly leader: ${w.name} (${fmtCompact(w.value)}${suffix}); ` +
+      `monthly leader: ${m.name} (${fmtCompact(m.value)}${suffix}).`
+    );
+  };
+  return (
+    sentenceFor('throughput', 'By throughput,') +
+    ' ' +
+    sentenceFor('txcount', 'By transaction count,') +
+    ' ' +
+    sentenceFor('daa', 'By active addresses (unique per period for weekly/monthly, not summed daily values),') +
+    ` Data: ${dataDate} UTC. Live leaderboards: growthepie.com/fundamentals/throughput.`
   );
 };

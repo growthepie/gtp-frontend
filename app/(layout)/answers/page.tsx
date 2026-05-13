@@ -20,9 +20,9 @@ import { serializeJsonLd } from '@/utils/json-ld';
 
 const SITE_URL = 'https://www.growthepie.com';
 const SECTION_PATH = '/answers';
-const HUB_TITLE = 'Answers about Ethereum L2s';
+const HUB_TITLE = 'Answers about Ethereum, L2s and onchain applications';
 const HUB_DESCRIPTION =
-  "Direct, data-backed answers to common questions about Ethereum Layer 2s. Each answer page is recomputed daily from growthepie's public API and links to the underlying datasets.";
+  "Direct, data-backed answers to common questions about Ethereum and its wider ecosystem. This includes Layer 2s, onchain applications, tokens, and stablecoins. Each answer page is recomputed daily from growthepie's public API and links to the underlying datasets.";
 
 export const metadata: Metadata = {
   title: `${HUB_TITLE} | growthepie`,

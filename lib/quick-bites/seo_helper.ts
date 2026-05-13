@@ -253,6 +253,7 @@ export const extractStructuredProse = (content: string[] | string): ProseChunk[]
 
       const stripInline = (s: string) =>
         s
+          .replace(/^>\s*/, "")
           .replace(/`([^`]+)`/g, "$1")
           .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
           .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -268,7 +269,12 @@ export const extractStructuredProse = (content: string[] | string): ProseChunk[]
         continue;
       }
       if (/^#{1}\s+/.test(line)) {
-        // Skip H1 — the article title is rendered separately.
+        // The static SEO shell already renders the article title as the
+        // page's only H1, so we demote body-level H1s to H2 here. Skipping
+        // them entirely would hide every major section heading from non-JS
+        // AI crawlers (which is what consumes the static shell).
+        const text = stripInline(line.replace(/^#\s+/, ""));
+        if (text) chunks.push({ tag: "h2", text });
         continue;
       }
 

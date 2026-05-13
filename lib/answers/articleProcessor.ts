@@ -22,11 +22,12 @@ import type { QuickBiteData } from '@/lib/types/quickBites';
 import {
   getL2UsageLeaderboard,
   buildAcceptedAnswer,
-  buildChartFencedBlock,
+  buildDenseSentence,
   formatLeaderEntry,
   formatTopList,
+  formatPeriodTopList,
+  formatPeriodLeader,
   type L2Leaderboard,
-  type LeaderboardMetric,
 } from './computeL2Leaderboard';
 
 const SECTION = 'answers';
@@ -62,6 +63,7 @@ const buildLeaderboardReplacements = (
   const tp = lb.byMetric.throughput;
   const tx = lb.byMetric.txcount;
   const daa = lb.byMetric.daa;
+  const dataDate = lb.generatedAtIso.slice(0, 10);
   return {
     l2_universe_size: String(lb.universeSize),
     l2_universe_list: lb.universeKeys.join(', '),
@@ -69,6 +71,9 @@ const buildLeaderboardReplacements = (
       lb.excludedNonL2Keys.length > 0
         ? lb.excludedNonL2Keys.join(', ')
         : 'none',
+    // Absolute UTC date the page data was generated for. Used in prose
+    // and FAQ so cached AI answers stay attributable to a specific day.
+    l2_data_date: dataDate,
     l2_throughput_leader: tp[0] ? formatLeaderEntry(tp[0], 'throughput') : 'unavailable',
     l2_throughput_top3: formatTopList(tp, 'throughput', 3),
     l2_throughput_top5: formatTopList(tp, 'throughput', 5),
@@ -78,6 +83,29 @@ const buildLeaderboardReplacements = (
     l2_daa_leader: daa[0] ? formatLeaderEntry(daa[0], 'daa') : 'unavailable',
     l2_daa_top3: formatTopList(daa, 'daa', 3),
     l2_daa_top5: formatTopList(daa, 'daa', 5),
+    // Period-aware top-3 prose strings used by the SEO shell so AI
+    // consumers see the weekly/monthly rankings.
+    l2_throughput_daily_top3: formatPeriodTopList(lb, 'throughput', 'daily', 3),
+    l2_throughput_weekly_top3: formatPeriodTopList(lb, 'throughput', 'weekly', 3),
+    l2_throughput_monthly_top3: formatPeriodTopList(lb, 'throughput', 'monthly', 3),
+    l2_txcount_daily_top3: formatPeriodTopList(lb, 'txcount', 'daily', 3),
+    l2_txcount_weekly_top3: formatPeriodTopList(lb, 'txcount', 'weekly', 3),
+    l2_txcount_monthly_top3: formatPeriodTopList(lb, 'txcount', 'monthly', 3),
+    l2_daa_daily_top3: formatPeriodTopList(lb, 'daa', 'daily', 3),
+    l2_daa_weekly_top3: formatPeriodTopList(lb, 'daa', 'weekly', 3),
+    l2_daa_monthly_top3: formatPeriodTopList(lb, 'daa', 'monthly', 3),
+    // Single-leader strings for FAQ answers that name one chain.
+    l2_throughput_weekly_leader: formatPeriodLeader(lb, 'throughput', 'weekly'),
+    l2_throughput_monthly_leader: formatPeriodLeader(lb, 'throughput', 'monthly'),
+    l2_txcount_weekly_leader: formatPeriodLeader(lb, 'txcount', 'weekly'),
+    l2_txcount_monthly_leader: formatPeriodLeader(lb, 'txcount', 'monthly'),
+    l2_daa_weekly_leader: formatPeriodLeader(lb, 'daa', 'weekly'),
+    l2_daa_monthly_leader: formatPeriodLeader(lb, 'daa', 'monthly'),
+    // Dense quotable sentence per metric — replaces the three separate
+    // daily / weekly / monthly bullet lines with one self-contained claim.
+    l2_throughput_dense: buildDenseSentence(lb, 'throughput', dataDate),
+    l2_txcount_dense: buildDenseSentence(lb, 'txcount', dataDate),
+    l2_daa_dense: buildDenseSentence(lb, 'daa', dataDate),
   };
 };
 
@@ -86,44 +114,14 @@ const substitute = (s: string, repl: Record<string, string>): string =>
     Object.prototype.hasOwnProperty.call(repl, name) ? repl[name] : `{{${name}}}`,
   );
 
-// Whole-entry chart placeholders need to be expanded into three separate
-// array entries so `markdownParser.processMarkdownContent` (which expects
-// ```chart``` / JSON / ``` as content[i] / content[i+1] / content[i+2])
-// can pick them up. Anywhere else the placeholder is treated as inline text.
-const CHART_PLACEHOLDER_RE = /^\{\{(l2_(?:throughput|txcount|daa)_chart)\}\}$/;
-const METRIC_FROM_CHART_PLACEHOLDER: Record<string, LeaderboardMetric> = {
-  l2_throughput_chart: 'throughput',
-  l2_txcount_chart: 'txcount',
-  l2_daa_chart: 'daa',
-};
-
 const applyLeaderboardPlaceholders = (
   content: string[],
   lb: L2Leaderboard,
 ): string[] => {
   const repl = buildLeaderboardReplacements(lb);
-  const out: string[] = [];
-  for (const block of content) {
-    if (typeof block !== 'string') {
-      out.push(block);
-      continue;
-    }
-    const chartMatch = block.trim().match(CHART_PLACEHOLDER_RE);
-    if (chartMatch) {
-      const metric = METRIC_FROM_CHART_PLACEHOLDER[chartMatch[1]];
-      const fenced = buildChartFencedBlock(lb, metric, 5);
-      if (fenced) {
-        // Split into ['```chart', '{...}', '```'] so the markdown parser sees
-        // the same shape as a hand-authored chart block.
-        out.push(...fenced.split('\n'));
-      }
-      // Drop the placeholder when no leaderboard data is available rather
-      // than leaving a literal `{{l2_..._chart}}` rendered as a paragraph.
-      continue;
-    }
-    out.push(substitute(block, repl));
-  }
-  return out;
+  return content.map((block) =>
+    typeof block === 'string' ? substitute(block, repl) : block,
+  );
 };
 
 // Substitute placeholders inside the FAQ JSON-LD that was generated at module
