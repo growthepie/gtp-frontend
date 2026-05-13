@@ -162,6 +162,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           series={chartSeries}
           stack={selectedScale === "stacked"}
           percentageMode={selectedScale === "percentage"}
+          
           xAxisType="time"
           xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
           xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
@@ -173,7 +174,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           watermarkMetricName={metricMeta?.name ?? null}
           showWatermark
           className="mb-[30px]"
-          height={containerMobile ? 300 : 440}
+          height={(containerMobile ? 300 : 440) + (collapseTable ? 30 : 0)}
 
           emptyStateMessage="Select chains to show their historic data"
           onDragSelect={(xStart, xEnd) => {
