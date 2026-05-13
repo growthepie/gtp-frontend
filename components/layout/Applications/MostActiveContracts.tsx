@@ -39,10 +39,11 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
 
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [mobileDownloadRef, { height: mobileDownloadHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [bottomCtaRef, { height: bottomCtaHeight }] = useElementSizeObserver<HTMLDivElement>();
 
   // Outer card has py-[15px] (30px) plus one gap between the intro and table (10px).
-  const VERTICAL_OVERHEAD = 40 + (oliHide ? bottomCtaHeight + 10 : 0);
+  const VERTICAL_OVERHEAD = 40 + (isMobile ? mobileDownloadHeight + 10 : 0) + (oliHide ? bottomCtaHeight + 10 : 0);
   const scrollAreaHeight = containerHeight && containerHeight > 0
     ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - VERTICAL_OVERHEAD)
     : 350;
@@ -188,11 +189,14 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           <div className="text-xs text-color-text-primary">
             See the most active contracts for this application in the last 7 days.
           </div>
-          <GTPButton
-            leftIcon={"gtp-download" as GTPIconName}
-            size="xs"
-            clickHandler={handleDownloadContracts}
-          />
+          <div className="hidden md:block">
+            <GTPButton
+              leftIcon={"gtp-download" as GTPIconName}
+              label="Download Contracts"
+              size="xs"
+              clickHandler={handleDownloadContracts}
+            />
+          </div>
         </div>
       </div>
 
@@ -318,7 +322,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                           >
                             <Icon
                               icon="gtp:gtp-block-explorer"
-                              className="size-[12px]"
+                              className="size-[14px]"
                             />
                           </Link>
                         )}
@@ -375,6 +379,14 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
+        <div ref={mobileDownloadRef} className="flex md:hidden items-center justify-start">
+          <GTPButton
+            leftIcon={"gtp-download" as GTPIconName}
+            label="Download Contracts"
+            size="xs"
+            clickHandler={handleDownloadContracts}
+          />
+        </div>
         {oliHide && (
           <div ref={bottomCtaRef} className="relative flex items-center justify-start mt-[5px]">
                 <GTPButton
