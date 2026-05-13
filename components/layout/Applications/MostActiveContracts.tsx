@@ -30,6 +30,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     sortOrder: "desc",
   });
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [justCopied, setJustCopied] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { data: master, AllChainsByKeys } = useMaster();
   const { theme } = useTheme();
@@ -38,10 +39,11 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
 
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [mobileDownloadRef, { height: mobileDownloadHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [bottomCtaRef, { height: bottomCtaHeight }] = useElementSizeObserver<HTMLDivElement>();
 
   // Outer card has py-[15px] (30px) plus one gap between the intro and table (10px).
-  const VERTICAL_OVERHEAD = 40 + (oliHide ? bottomCtaHeight + 10 : 0);
+  const VERTICAL_OVERHEAD = 40 + (isMobile ? mobileDownloadHeight + 10 : 0) + (oliHide ? bottomCtaHeight + 10 : 0);
   const scrollAreaHeight = containerHeight && containerHeight > 0
     ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - VERTICAL_OVERHEAD)
     : 350;
@@ -84,10 +86,61 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     });
   }, [data.contracts_table, sort, showUsd]);
 
-  const handleCopy = (address: string) => {
+  const handleCopy = (address: string, chainKey: string) => {
+    const key = `${address}:${chainKey}`;
     navigator.clipboard.writeText(address);
-    setCopiedAddress(address);
-    setTimeout(() => setCopiedAddress(null), 1000);
+    setCopiedAddress(key);
+    setJustCopied(key);
+    setTimeout(() => {
+      setCopiedAddress(null);
+      setTimeout(() => setJustCopied(null), 400);
+    }, 1000);
+  };
+
+  const handleDownloadContracts = () => {
+    const types = data.contracts_table["7d"].types;
+    const headers = ["Address", "Name", "Chain", "Category", "Subcategory", "Transaction Count", "Active Addresses", "Fees Paid"];
+    const rows = sortedContracts.map((contract) => {
+      const contractMap = {
+        address: contract[types.indexOf("address")],
+        name: contract[types.indexOf("name")],
+        chain_key: contract[types.indexOf("origin_key")],
+        main_category_key: contract[types.indexOf("main_category_key")],
+        sub_category_key: contract[types.indexOf("sub_category_key")],
+        txcount: contract[types.indexOf("txcount")],
+        daa: contract[types.indexOf("daa")],
+        fees_paid: showUsd ? contract[types.indexOf("fees_paid_usd")] : contract[types.indexOf("fees_paid_eth")],
+      };
+      const chainName = AllChainsByKeys[contractMap.chain_key as string]?.label ?? contractMap.chain_key;
+      const mainCategoryName = master?.blockspace_categories.main_categories?.[contractMap.main_category_key as string] ?? "Unlabeled";
+      const subCategoryName = master?.blockspace_categories.sub_categories?.[contractMap.sub_category_key as string] ?? "Unlabeled";
+
+      return [
+        contractMap.address,
+        contractMap.name,
+        chainName,
+        mainCategoryName,
+        subCategoryName,
+        contractMap.txcount,
+        contractMap.daa,
+        contractMap.fees_paid,
+      ];
+    });
+
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `contracts-${owner_project}-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
 
@@ -130,11 +183,20 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                 />
               </>
             )}
+          </div>
         </div>
-
-        </div>
-        <div className="text-xs text-color-text-primary">
-          See the most active contracts for this application in the last 7 days.
+        <div className="flex items-center justify-between gap-x-[10px]">
+          <div className="text-xs text-color-text-primary">
+            See the most active contracts for this application in the last 7 days.
+          </div>
+          <div className="hidden md:block">
+            <GTPButton
+              leftIcon={"gtp-download" as GTPIconName}
+              label="Download Contracts"
+              size="xs"
+              clickHandler={handleDownloadContracts}
+            />
+          </div>
         </div>
       </div>
 
@@ -197,7 +259,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                     style={{ paddingLeft: "0px" }}
                   >
                     {/* Contract name + copy + explorer */}
-                    <div className="flex items-center gap-x-[6px] min-w-0">
+                    <div className="group flex items-center gap-x-[6px] min-w-0">
                       <GTPIcon
                         icon={`gtp:${chainMeta.urlKey}-logo-monochrome` as GTPIconName}
                         className="!size-[16px]"
@@ -241,18 +303,6 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                             <div className="text-xs pl-[15px]">Unverified</div>
                           </GTPTooltipNew>
                         )}
-                        <button
-                          type="button"
-                          aria-label="Copy contract address"
-                          title="Copy contract address"
-                          onClick={() => handleCopy(address)}
-                          className="flex size-[14px] items-center justify-center opacity-70 transition-opacity hover:opacity-100"
-                        >
-                          <Icon
-                            icon={copiedAddress === address ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
-                            className="size-[12px]"
-                          />
-                        </button>
                         {blockExplorer && (
                           <Link
                             href={getExplorerAddressUrl(blockExplorer, address)}
@@ -264,10 +314,28 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                           >
                             <Icon
                               icon="gtp:gtp-block-explorer"
-                              className="size-[12px]"
+                              className="size-[14px]"
                             />
                           </Link>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(address, chainKey)}
+                          aria-label="Copy contract address"
+                          title="Copy contract address"
+                          className="flex size-[14px] items-center justify-center"
+                        >
+                          <Icon
+                            icon={copiedAddress === `${address}:${chainKey}` || justCopied === `${address}:${chainKey}` ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
+                            className={`size-[12px] transition-all ${
+                              copiedAddress === `${address}:${chainKey}`
+                                ? "opacity-100 text-color-text-primary"
+                                : justCopied === `${address}:${chainKey}`
+                                  ? "opacity-0 text-color-text-secondary"
+                                  : "opacity-0 group-hover:opacity-70 text-color-text-secondary"
+                            }`}
+                          />
+                        </button>
                       </div>
                     </div>
 
@@ -303,6 +371,14 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
+        <div ref={mobileDownloadRef} className="flex md:hidden items-center justify-start">
+          <GTPButton
+            leftIcon={"gtp-download" as GTPIconName}
+            label="Download Contracts"
+            size="xs"
+            clickHandler={handleDownloadContracts}
+          />
+        </div>
         {oliHide && (
           <div ref={bottomCtaRef} className="relative flex items-center justify-start mt-[5px]">
                 <GTPButton
