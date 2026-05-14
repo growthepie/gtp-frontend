@@ -22,13 +22,16 @@ import type { QuickBiteData } from '@/lib/types/quickBites';
 import {
   getL2UsageLeaderboard,
   buildAcceptedAnswer,
+  buildAnswerTables,
   buildDenseSentence,
   formatLeaderEntry,
   formatTopList,
   formatPeriodTopList,
   formatPeriodLeader,
+  type AnswerTable,
   type L2Leaderboard,
 } from './computeL2Leaderboard';
+import { getSupportersProseList } from '@/lib/contributors';
 
 const SECTION = 'answers';
 const BREADCRUMB_LABEL = 'Answers';
@@ -44,6 +47,10 @@ export type ProcessedAnswer = {
   acceptedAnswer: string;
   faq?: { q: string; a: string }[];
   schemas: any[];
+  // Structured leaderboard tables rendered by AnswerRouteStaticShell as
+  // real <table> elements so AI extractors (Perplexity, AIO, Copilot)
+  // can lift them directly. Empty when the answer isn't leaderboard-driven.
+  tables: AnswerTable[];
 };
 
 // Lookup table mapping slug → leaderboard metric we should derive prose from.
@@ -109,16 +116,26 @@ const buildLeaderboardReplacements = (
   };
 };
 
+// Site-wide placeholders that don't depend on per-page data. Synced from
+// canonical sources (e.g. `Supporters` in lib/contributors) so edits there
+// flow into every answer page's prose automatically.
+const buildSiteReplacements = (): Record<string, string> => ({
+  gtp_supporters: getSupportersProseList(),
+});
+
 const substitute = (s: string, repl: Record<string, string>): string =>
-  s.replace(/\{\{(l2_[a-z0-9_]+)\}\}/g, (_, name) =>
+  s.replace(/\{\{((?:l2|gtp)_[a-z0-9_]+)\}\}/g, (_, name) =>
     Object.prototype.hasOwnProperty.call(repl, name) ? repl[name] : `{{${name}}}`,
   );
 
-const applyLeaderboardPlaceholders = (
+const applyPlaceholders = (
   content: string[],
-  lb: L2Leaderboard,
+  lb: L2Leaderboard | null,
 ): string[] => {
-  const repl = buildLeaderboardReplacements(lb);
+  const repl: Record<string, string> = {
+    ...buildSiteReplacements(),
+    ...(lb ? buildLeaderboardReplacements(lb) : {}),
+  };
   return content.map((block) =>
     typeof block === 'string' ? substitute(block, repl) : block,
   );
@@ -129,10 +146,13 @@ const applyLeaderboardPlaceholders = (
 // editor-side `faqItems` export remains untouched.
 const applyLeaderboardToFaqJsonLd = (
   faqJsonLd: any,
-  lb: L2Leaderboard,
+  lb: L2Leaderboard | null,
 ): any => {
   if (!faqJsonLd || typeof faqJsonLd !== 'object') return faqJsonLd;
-  const repl = buildLeaderboardReplacements(lb);
+  const repl: Record<string, string> = {
+    ...buildSiteReplacements(),
+    ...(lb ? buildLeaderboardReplacements(lb) : {}),
+  };
   const mainEntity = Array.isArray(faqJsonLd.mainEntity)
     ? faqJsonLd.mainEntity.map((q: any) => ({
         ...q,
@@ -154,10 +174,13 @@ const applyLeaderboardToFaqJsonLd = (
 
 const applyLeaderboardToFaq = (
   faq: { q: string; a: string }[] | undefined,
-  lb: L2Leaderboard,
+  lb: L2Leaderboard | null,
 ): { q: string; a: string }[] | undefined => {
   if (!faq) return faq;
-  const repl = buildLeaderboardReplacements(lb);
+  const repl: Record<string, string> = {
+    ...buildSiteReplacements(),
+    ...(lb ? buildLeaderboardReplacements(lb) : {}),
+  };
   return faq.map((item) => ({
     q: substitute(item.q, repl),
     a: substitute(item.a, repl),
@@ -184,8 +207,10 @@ export const processAnswer = cache(
       : null;
 
     try {
-      let rawContent = qb.content;
-      if (leaderboard) rawContent = applyLeaderboardPlaceholders(rawContent, leaderboard);
+      // Always apply site-wide placeholders (e.g. {{gtp_supporters}}) so
+      // every answer page benefits, regardless of whether it's leaderboard-
+      // driven. Leaderboard replacements are merged in when available.
+      const rawContent = applyPlaceholders(qb.content, leaderboard);
       processedContent = await processDynamicContent(rawContent);
       initialContentBlocks = await processMarkdownContent(processedContent);
       const stats = computeArticleStats(processedContent, ANSWER_BODY_CEILING);
@@ -220,20 +245,27 @@ export const processAnswer = cache(
       dateModified: todayUtcIso,
     } as const;
 
+    // Collect @ids from author-supplied Datasets so the QAPage can declare
+    // `mentions` referencing them — ties the answer and its source datasets
+    // into one connected graph node for AI knowledge-graph builders.
+    const datasetMentions = (qb.jsonLdDatasets ?? [])
+      .map((d: any) => (d && typeof d === 'object' && typeof d['@id'] === 'string' ? { '@id': d['@id'] } : null))
+      .filter((m): m is { '@id': string } => m !== null);
+
     const jsonLdQAPage = generateJsonLdQAPage(slug, qb, {
       ...opts,
       acceptedAnswer,
       datePublished: qb.date,
+      ...(datasetMentions.length > 0 ? { mentions: datasetMentions } : {}),
     });
     const jsonLdBreadcrumbs = generateJsonLdBreadcrumbs(slug, qb, opts);
 
-    const jsonLdFaq = leaderboard
-      ? applyLeaderboardToFaqJsonLd(qb.jsonLdFaq, leaderboard)
-      : qb.jsonLdFaq;
+    // Run both JSON-LD FAQ and visible FAQ through the placeholder layer
+    // unconditionally so site-wide tokens (e.g. {{gtp_supporters}}) expand
+    // even on answers that aren't leaderboard-driven.
+    const jsonLdFaq = applyLeaderboardToFaqJsonLd(qb.jsonLdFaq, leaderboard);
     let jsonLdDatasets: any[] = qb.jsonLdDatasets ?? [];
-    const faq = leaderboard
-      ? applyLeaderboardToFaq(qb.faq, leaderboard)
-      : qb.faq;
+    const faq = applyLeaderboardToFaq(qb.faq, leaderboard);
 
     // Stamp every Dataset with today's dateModified so AI consumers see the
     // underlying data as actively maintained. We also set creativeWorkStatus
@@ -275,6 +307,8 @@ export const processAnswer = cache(
       ...jsonLdDatasets,
     ];
 
+    const tables = leaderboard ? buildAnswerTables(leaderboard) : [];
+
     return {
       qb,
       initialQuickBite,
@@ -286,6 +320,7 @@ export const processAnswer = cache(
       acceptedAnswer,
       faq,
       schemas,
+      tables,
     };
   },
 );

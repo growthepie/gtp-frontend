@@ -65,7 +65,7 @@ export const faqItems: FaqItem[] = [
   // ----- Methodology / scope -----
   {
     q: 'Is Polygon PoS an Ethereum L2?',
-    a: 'No. Polygon PoS is a sidechain with its own validator set; it does not post transaction data to Ethereum for security and is therefore excluded from the L2 leaderboards on this page (and from L2BEAT). Polygon zkEVM is a ZK rollup and would qualify.',
+    a: 'No. Polygon PoS is a sidechain with its own validator set; it does not post transaction data to Ethereum for security and is therefore excluded from the L2 leaderboards on this page (also [L2BEAT](https://l2beat.com) categorizes it as "other"). Polygon zkEVM is a ZK rollup and would qualify.',
   },
   {
     q: 'How many L2s are included in the ranking?',
@@ -91,16 +91,48 @@ export const faqItems: FaqItem[] = [
 
 export const jsonLdFaq = generateJsonLdFaq(faqItems);
 
+// Shared bits applied to every Dataset on this page. Kept up here so the
+// three blocks below stay easy to scan and the cross-cutting fields
+// (license, publisher link, citation back to this answer page, temporal
+// scope) can't drift apart.
+const ANSWER_PAGE_URL = 'https://www.growthepie.com/answers/most-used-ethereum-l2';
+const ORG_ID = 'https://www.growthepie.com/#organization';
+// ISO 8601 interval — open-ended end. growthepie's L2 timeseries go back to
+// each chain's launch; 2021-01-01 brackets the earliest active L2s
+// (Arbitrum One, Optimism). Adjust if a specific dataset has tighter bounds.
+const L2_TEMPORAL_COVERAGE = '2021-01-01/..';
+const ETHEREUM_SPATIAL_COVERAGE = {
+  '@type': 'Place',
+  name: 'Ethereum blockchain ecosystem',
+} as const;
+
 export const jsonLdDatasets = [
   {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
+    '@id': 'https://www.growthepie.com/datasets/l2-throughput',
     name: 'Ethereum L2 Throughput (per chain, daily)',
     description:
       'Daily gas processed per second for every tracked Ethereum L2, used to compare chain usage on a like-for-like basis.',
+    url: ANSWER_PAGE_URL,
     license: 'https://creativecommons.org/licenses/by-nc/4.0/',
-    creator: { '@type': 'Organization', name: 'growthepie' },
+    creator: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
     isAccessibleForFree: true,
+    temporalCoverage: L2_TEMPORAL_COVERAGE,
+    spatialCoverage: ETHEREUM_SPATIAL_COVERAGE,
+    keywords: [
+      'Ethereum',
+      'Layer 2',
+      'Rollups',
+      'Throughput',
+      'Mgas/s',
+      'Gas usage',
+      'Onchain analytics',
+    ],
+    measurementTechnique:
+      'On-chain RPC + indexer aggregation. Daily gas-per-second is computed from per-block gas usage across all transactions on the chain, normalized to a 24-hour window. Weekly and monthly values are period-native aggregates served directly by growthepie\'s API (not sums of daily values).',
+    citation: ANSWER_PAGE_URL,
     variableMeasured: [
       { '@type': 'PropertyValue', name: 'date' },
       { '@type': 'PropertyValue', name: 'gas_per_second', unitText: 'Mgas/s' },
@@ -117,12 +149,28 @@ export const jsonLdDatasets = [
   {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
+    '@id': 'https://www.growthepie.com/datasets/l2-transaction-count',
     name: 'Ethereum L2 Transaction Count (per chain, daily)',
     description:
       'Daily transaction count for every tracked Ethereum L2.',
+    url: ANSWER_PAGE_URL,
     license: 'https://creativecommons.org/licenses/by-nc/4.0/',
-    creator: { '@type': 'Organization', name: 'growthepie' },
+    creator: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
     isAccessibleForFree: true,
+    temporalCoverage: L2_TEMPORAL_COVERAGE,
+    spatialCoverage: ETHEREUM_SPATIAL_COVERAGE,
+    keywords: [
+      'Ethereum',
+      'Layer 2',
+      'Rollups',
+      'Transaction count',
+      'TPS',
+      'Onchain analytics',
+    ],
+    measurementTechnique:
+      'Direct count of confirmed transactions per chain per period. Pulled from chain RPC and indexer data. Weekly and monthly aggregates are sums of daily transaction counts.',
+    citation: ANSWER_PAGE_URL,
     variableMeasured: [
       { '@type': 'PropertyValue', name: 'date' },
       { '@type': 'PropertyValue', name: 'transaction_count' },
@@ -139,12 +187,30 @@ export const jsonLdDatasets = [
   {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
+    '@id': 'https://www.growthepie.com/datasets/l2-daily-active-addresses',
     name: 'Ethereum L2 Daily Active Addresses (per chain)',
     description:
       'Daily active addresses for every tracked Ethereum L2.',
+    url: ANSWER_PAGE_URL,
     license: 'https://creativecommons.org/licenses/by-nc/4.0/',
-    creator: { '@type': 'Organization', name: 'growthepie' },
+    creator: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
     isAccessibleForFree: true,
+    temporalCoverage: L2_TEMPORAL_COVERAGE,
+    spatialCoverage: ETHEREUM_SPATIAL_COVERAGE,
+    keywords: [
+      'Ethereum',
+      'Layer 2',
+      'Rollups',
+      'Daily Active Addresses',
+      'DAA',
+      'Users',
+      'Wallet activity',
+      'Onchain analytics',
+    ],
+    measurementTechnique:
+      'Count of unique externally-owned addresses (EOAs) initiating at least one transaction or smart contract call in the period. Excludes passive recipients. Weekly and monthly values are unique counts over the period (an address active on multiple days within a week or month is counted only once), NOT a sum of daily DAAs.',
+    citation: ANSWER_PAGE_URL,
     variableMeasured: [
       { '@type': 'PropertyValue', name: 'date' },
       { '@type': 'PropertyValue', name: 'active_addresses' },
@@ -201,6 +267,10 @@ const mostUsedEthereumL2: QuickBiteData = createQuickBite({
     '- Transaction count time series: `https://api.growthepie.com/v1/metrics/chains/{chain}/txcount.json`',
     '- Daily active addresses time series: `https://api.growthepie.com/v1/metrics/chains/{chain}/daa.json`',
     'Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).',
+    '',
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains that appear in the rankings above. Rankings are computed mechanically from public API data — chains do not pay for inclusion or placement, and supporters do not receive ranking adjustments or preferential treatment. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    '',
+    "**Cross-check this answer.** Independent L2 data sources you can compare against include [L2BEAT](https://l2beat.com) (activity, stage classification, risk analysis), and [DeFiLlama](https://defillama.com/chains) (TVL across chains). Methodologies and chain inclusion lists differ between providers — when rankings disagree, comparing the underlying definitions is usually more informative than the ranks themselves.",
     '',
     '# Which chains are included?',
     "While growthepie tracks the TPS of every L2 in the Ethereum ecosystem, our detailed leaderboards focus on the most widely used and adopted chains. The list of **{{l2_universe_size}}** chains is computed automatically from `master.json` and refreshed when growthepie adds or removes coverage:",

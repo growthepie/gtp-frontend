@@ -71,3 +71,10 @@ export function lookupAuthor(opts: { xUsername?: string; name?: string }): Autho
   }
   return undefined;
 }
+
+// Founders of growthepie (orbal GmbH). Derived from AUTHORS by filtering on
+// the "Co-founder" job title — single source of truth so adding/removing a
+// co-founder above flows automatically into Organization.founder[] in the
+// site-wide JSON-LD (utils/json-ld.ts).
+export const getFounders = (): AuthorProfile[] =>
+  AUTHORS.filter((a) => (a.jobTitle ?? '').toLowerCase().includes('co-founder'));

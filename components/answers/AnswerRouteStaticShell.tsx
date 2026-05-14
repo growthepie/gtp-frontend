@@ -10,9 +10,11 @@
 //     and as `abstract` for AI consumers that prefer that signal
 //   - No date rendering — answer pages are evergreen
 
+import { Fragment } from 'react';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { processAnswer } from '@/lib/answers/articleProcessor';
+import { lookupAuthor } from '@/lib/quick-bites/authors';
 
 const ANSWER_RE = /^\/answers\/([^/?#]+)\/?$/;
 
@@ -45,7 +47,7 @@ export default async function AnswerRouteStaticShell() {
   }
   if (!processed) return null;
 
-  const { qb, prose, faq, acceptedAnswer } = processed;
+  const { qb, prose, faq, acceptedAnswer, tables } = processed;
   const siteUrl = 'https://www.growthepie.com';
   const canonical = `${siteUrl}/answers/${slug}`;
   // Stable per-UTC-day timestamp so AI crawlers see consistent freshness
@@ -98,9 +100,48 @@ export default async function AnswerRouteStaticShell() {
           {qb.date && <meta itemProp="dateCreated" content={qb.date} />}
           <meta itemProp="dateModified" content={todayUtcIso} />
           {qb.author && qb.author.length > 0 && (
-            <div itemProp="author" itemScope itemType="https://schema.org/Person">
-              <meta itemProp="name" content={qb.author.map((a) => a.name).join(', ')} />
-            </div>
+            // Visible prose byline so AI extractors that read top-down (not
+            // just JSON-LD-aware ones) see a "By <author>, <org>" attribution
+            // — the standard E-E-A-T cue Google/AIO/Perplexity look for. The
+            // visual UI renders its own ClientAuthorLink chip; this lives in
+            // the screen-reader-hidden SEO shell.
+            <p data-byline>
+              By{' '}
+              {qb.author.map((a, idx, arr) => {
+                const profile = lookupAuthor({ xUsername: a.xUsername, name: a.name });
+                const xUrl = a.xUsername ? `https://x.com/${a.xUsername}` : undefined;
+                const linkedinUrl = profile?.sameAs?.find((u) => u.includes('linkedin.com'));
+                const sep =
+                  idx < arr.length - 2 ? ', ' : idx === arr.length - 2 ? ' and ' : '';
+                return (
+                  <Fragment key={a.name}>
+                    <span
+                      itemProp="author"
+                      itemScope
+                      itemType="https://schema.org/Person"
+                    >
+                      <span itemProp="name">{a.name}</span>
+                      {profile?.jobTitle && (
+                        <>
+                          {', '}
+                          <span itemProp="jobTitle">{profile.jobTitle}</span>
+                        </>
+                      )}
+                      {xUrl && <link itemProp="sameAs" href={xUrl} />}
+                      {linkedinUrl && <link itemProp="sameAs" href={linkedinUrl} />}
+                    </span>
+                    {sep}
+                  </Fragment>
+                );
+              })}
+              {' — '}
+              <span itemProp="publisher" itemScope itemType="https://schema.org/Organization">
+                <span itemProp="name">growthepie</span>
+                <meta itemProp="legalName" content="orbal GmbH" />
+                <meta itemProp="address" content="Berlin, Germany" />
+              </span>
+              .
+            </p>
           )}
 
           {qb.subtitle && (
@@ -120,7 +161,7 @@ export default async function AnswerRouteStaticShell() {
               {qb.date && <meta itemProp="dateCreated" content={qb.date} />}
               <meta itemProp="dateModified" content={todayUtcIso} />
               {qb.author && qb.author.length > 0 && (
-                <div itemProp="author" itemScope itemType="https://schema.org/Organization">
+                <div itemProp="author" itemScope itemType="https://schema.org/Person">
                   <meta itemProp="name" content={qb.author.map((a) => a.name).join(', ')} />
                 </div>
               )}
@@ -141,6 +182,39 @@ export default async function AnswerRouteStaticShell() {
 
         {bodyChunks.length > 0 && (
           <section className="quickbite-prose">{renderProse(bodyChunks)}</section>
+        )}
+
+        {tables && tables.length > 0 && (
+          // Real HTML tables generated from structured leaderboard data so
+          // AI extractors that preferentially quote tables (Perplexity, AIO,
+          // Copilot) can lift the ranking rows directly. Lives in the SR-only
+          // SEO shell — the visual UI has its own interactive presentation.
+          <section aria-label="Leaderboard tables">
+            <h2>Leaderboard tables</h2>
+            {tables.map((t, i) => (
+              <table key={i}>
+                <caption>{t.caption ?? t.title}</caption>
+                <thead>
+                  <tr>
+                    {t.headers.map((h, j) => (
+                      <th key={j} scope="col">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {t.rows.map((row, ri) => (
+                    <tr key={ri}>
+                      {row.map((cell, ci) => (
+                        <td key={ci}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ))}
+          </section>
         )}
 
         {faq && faq.length > 0 && (

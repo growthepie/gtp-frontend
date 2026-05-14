@@ -196,3 +196,16 @@ export const Supporters = [
 ];
 
 export { EthereumFoundationLogo };
+
+// Format a prose list of supporter names ("Optimism, Octant, and EigenDA")
+// for inline-text disclosures elsewhere on the site (e.g. the funding-
+// disclosure paragraph on /answers pages). Single source of truth so the
+// /donate page Support section and the disclosure prose always agree —
+// edit the `Supporters` array above and every consumer updates automatically.
+export const getSupportersProseList = (): string => {
+  const names = Supporters.map((s) => s.name);
+  if (names.length === 0) return '';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+};

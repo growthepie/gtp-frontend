@@ -9,10 +9,14 @@ export type RegistryEntry = {
   aliases?: string[];
   wikipedia?: string;
   wikidata?: string;
+  // Extra equivalence URLs for entities that don't (yet) have a Wikipedia /
+  // Wikidata page — e.g. an official site or CoinGecko/CMC page. Merged into
+  // the entity's JSON-LD `sameAs` alongside wikipedia/wikidata.
+  sameAs?: string[];
 };
 
 const sameAs = (e: RegistryEntry): string[] | undefined => {
-  const urls = [e.wikipedia, e.wikidata].filter(Boolean) as string[];
+  const urls = [e.wikipedia, e.wikidata, ...(e.sameAs ?? [])].filter(Boolean) as string[];
   return urls.length ? urls : undefined;
 };
 
@@ -33,7 +37,7 @@ export const ENTITY_REGISTRY: RegistryEntry[] = [
   { name: "Solana", wikipedia: "https://en.wikipedia.org/wiki/Solana_(blockchain_platform)", wikidata: "https://www.wikidata.org/wiki/Q90405904" },
   { name: "Tron", aliases: ["TRX"], wikipedia: "https://en.wikipedia.org/wiki/Tron_(cryptocurrency)", wikidata: "https://www.wikidata.org/wiki/Q41680189" },
   { name: "Celo", wikipedia: "https://en.wikipedia.org/wiki/Celo_(cryptocurrency)" },
-  { name: "MegaETH" },
+  { name: "MegaETH", sameAs: ["https://megaeth.com", "https://www.coingecko.com/en/coins/megaeth"] },
   { name: "EigenDA" },
 
   // Stablecoins
@@ -55,7 +59,7 @@ export const ENTITY_REGISTRY: RegistryEntry[] = [
 
   // Concepts / standards
   { name: "Stablecoin", aliases: ["stablecoins"], wikipedia: "https://en.wikipedia.org/wiki/Stablecoin", wikidata: "https://www.wikidata.org/wiki/Q56241176" },
-  { name: "Layer 2", aliases: ["L2", "rollup", "rollups", "Layer-2"], wikipedia: "https://en.wikipedia.org/wiki/Ethereum#Scalability" },
+  { name: "Layer 2", aliases: ["L2", "rollup", "rollups", "Layer-2"], wikipedia: "https://en.wikipedia.org/wiki/Blockchain_scalability" },
   { name: "Smart contract", aliases: ["smart contracts"], wikipedia: "https://en.wikipedia.org/wiki/Smart_contract", wikidata: "https://www.wikidata.org/wiki/Q3955018" },
   { name: "Ether", aliases: ["ETH"], wikipedia: "https://en.wikipedia.org/wiki/Ether_(cryptocurrency)" },
 ];
@@ -65,8 +69,8 @@ export const ENTITY_REGISTRY: RegistryEntry[] = [
 export const TOPIC_REGISTRY: RegistryEntry[] = [
   { name: "Stablecoin Supply", wikipedia: "https://en.wikipedia.org/wiki/Stablecoin", wikidata: "https://www.wikidata.org/wiki/Q56241176" },
   { name: "Ethereum", wikipedia: "https://en.wikipedia.org/wiki/Ethereum", wikidata: "https://www.wikidata.org/wiki/Q20990683" },
-  { name: "Layer 2", wikipedia: "https://en.wikipedia.org/wiki/Ethereum#Scalability" },
-  { name: "Scaling", wikipedia: "https://en.wikipedia.org/wiki/Ethereum#Scalability" },
+  { name: "Layer 2", wikipedia: "https://en.wikipedia.org/wiki/Blockchain_scalability" },
+  { name: "Scaling", wikipedia: "https://en.wikipedia.org/wiki/Blockchain_scalability" },
   { name: "Transaction Costs", wikipedia: "https://en.wikipedia.org/wiki/Ethereum#Gas" },
   ...ENTITY_REGISTRY, // entities also serve as topics
 ];

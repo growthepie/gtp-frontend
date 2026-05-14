@@ -51,6 +51,12 @@ Individual chain pages track all fundamental metrics for a specific network. Rep
 - [Mode](https://www.growthepie.com/chains/mode): OP Stack L2 focused on DeFi.
 - [Taiko](https://www.growthepie.com/chains/taiko): Based rollup on Ethereum using a decentralized proposer model.
 
+## Answers — Direct Q&A
+
+Purpose-built answer pages for AI search engines. Each answers a single high-intent question with a dense, attribution-safe response backed by live data, plus a long-tail FAQ. Absolute UTC timestamps so cached AI answers stay accurate. Recomputed daily.
+
+- [What is the most used Ethereum L2?](https://www.growthepie.com/answers/most-used-ethereum-l2): Live leaderboards ranking every tracked Ethereum L2 by throughput (Mgas/s), transaction count, and daily active addresses across daily, weekly, and monthly windows. Includes methodology, chain inclusion list (excludes Ethereum Mainnet and sidechains like Polygon PoS), and a 15-question FAQ covering metric definitions, the unique-vs-summed-daily DAA distinction, and edge cases. Recomputed daily.
+
 ## Research & Analysis — Quick Bites
 
 Data-driven short articles on Ethereum ecosystem trends. Published by Matthias Seidl (@web3_data) and contributors. Licensed CC BY-NC 4.0. Recent and representative Quick Bites include:

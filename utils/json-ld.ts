@@ -6,7 +6,8 @@
  * @returns The structured data Graph object.
  */
 
-import { Graph, Organization, WebSite } from "schema-dts";
+import { Graph, Organization, Person, WebSite } from "schema-dts";
+import { getFounders } from "@/lib/quick-bites/authors";
 
 interface JsonLdOptions {
   host?: string;
@@ -19,6 +20,22 @@ export const generateJsonLd = ({
   withSearchAction = false,
 }: JsonLdOptions = {}): Graph => {
   const baseUrl = `https://${host}`;
+
+  // Person entities for Organization.founder[]. Sourced from
+  // lib/quick-bites/authors.ts so the team list stays in one place.
+  const founderPersons: Person[] = getFounders().map((f) => {
+    const sameAs = [
+      ...(f.xUsername ? [`https://x.com/${f.xUsername}`] : []),
+      ...(f.sameAs ?? []),
+    ];
+    const person: Person = {
+      "@type": "Person",
+      name: f.name,
+      ...(f.jobTitle ? { jobTitle: f.jobTitle } : {}),
+      ...(sameAs.length > 0 ? { sameAs } : {}),
+    };
+    return person;
+  });
 
   const organization: Organization = {
     "@type": "Organization",
@@ -34,6 +51,8 @@ export const generateJsonLd = ({
     description:
       "Open analytics platform for the Ethereum ecosystem. Tracks Ethereum Mainnet, Layer 2 networks, and onchain applications: active addresses, throughput, transaction costs, fees, TVL, stablecoin supply, and more.",
     slogan: "Visualizing Ethereum's Story Through Data",
+    foundingDate: "2023",
+    ...(founderPersons.length > 0 ? { founder: founderPersons } : {}),
     address: {
       "@type": "PostalAddress",
       addressLocality: "Berlin",
@@ -55,6 +74,8 @@ export const generateJsonLd = ({
       "https://mirror.xyz/blog.growthepie.eth",
       "https://github.com/growthepie",
       "https://www.linkedin.com/company/growthepie",
+      "https://farcaster.xyz/growthepie",
+      "https://discord.gg/fxjJFe7QyN",
     ],
   };
 

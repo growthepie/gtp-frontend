@@ -32,6 +32,7 @@ const gtpMain = {
     "/server-sitemap.xml",
     "/applications-sitemap.xml",
     "/quick-bites-sitemap.xml",
+    "/answers-sitemap.xml",
     // internals
     "/_next/*",
     "/_next/image*",
@@ -77,6 +78,7 @@ const gtpMain = {
       "https://www.growthepie.com/chains-sitemap.xml",
       "https://www.growthepie.com/fundamentals-sitemap.xml",
       "https://www.growthepie.com/quick-bites-sitemap.xml",
+      "https://www.growthepie.com/answers-sitemap.xml",
     ],
   },
 };

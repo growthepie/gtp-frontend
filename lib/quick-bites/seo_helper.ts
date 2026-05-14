@@ -198,6 +198,27 @@ const pickSummary = (data: QuickBiteData) =>
   data.subtitle ||
   "Explore data and insights from the Ethereum ecosystem.";
 
+// SERP snippet limit. Google truncates around 155–160 chars; we cap at 160 and
+// trim at the last word boundary so meta description never ends mid-word.
+const META_DESCRIPTION_MAX = 160;
+const truncateAtWord = (s: string, max: number): string => {
+  if (s.length <= max) return s;
+  const slice = s.slice(0, max);
+  const lastSpace = slice.lastIndexOf(" ");
+  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).replace(
+    /[\s.,;:—–-]+$/u,
+    "",
+  ) + "…";
+};
+
+// Meta description (SERP). Prefer the short subtitle; fall back to the long
+// summary trimmed to SERP-safe length. og:description and JSON-LD keep the
+// full long summary — only the <meta name="description"> tag is truncated.
+const pickMetaDescription = (data: QuickBiteData): string => {
+  const candidate = (data.subtitle || pickSummary(data) || "").trim();
+  return truncateAtWord(candidate, META_DESCRIPTION_MAX);
+};
+
 const pickImage = (data: QuickBiteData) => data.og_image || data.image || "";
 
 const buildSameAs = (...urls: (string | undefined | null)[]): string[] | undefined => {
@@ -431,7 +452,7 @@ export function generateSeo(
 
   return {
     metaTitle: `${data.title} | growthepie`,
-    metaDescription: summary,
+    metaDescription: pickMetaDescription(data),
     og: {
       image,
       title: data.title,
@@ -598,6 +619,11 @@ export interface JsonLdQAPage {
     logo?: { ['@type']: 'ImageObject'; url: string };
   };
   speakable?: JsonLdSpeakable;
+  // References to other JSON-LD nodes on the same page (typically Datasets
+  // backing the answer). Schema.org `mentions` is the right relation for
+  // "this CreativeWork references that Thing" — AI knowledge-graph builders
+  // use it to resolve QAPage and its source Datasets as one connected unit.
+  mentions?: { ['@id']: string }[];
   url?: string;
 }
 
@@ -608,6 +634,9 @@ export interface GenerateQAPageOptions extends GenerateSeoOptions {
   // ISO timestamp marking when the answer was first published. Optional;
   // omitted from JSON-LD when not provided.
   datePublished?: string;
+  // Optional @id references to Datasets (or other nodes) defined elsewhere
+  // on the same page. Emitted as `mentions` in the QAPage JSON-LD.
+  mentions?: { ['@id']: string }[];
 }
 
 export function generateJsonLdQAPage(
@@ -682,6 +711,7 @@ export function generateJsonLdQAPage(
       logo: { '@type': 'ImageObject', url: publisherLogoUrl },
     },
     speakable: { '@type': 'SpeakableSpecification', cssSelector: speakableSelectors },
+    ...(opts.mentions && opts.mentions.length > 0 ? { mentions: opts.mentions } : {}),
     url: canonical,
   };
 }

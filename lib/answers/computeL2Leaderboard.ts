@@ -304,6 +304,50 @@ const METRIC_DISPLAY: Record<
   daa: { suffix: '', label: 'active addresses' },
 };
 
+// Generic structured-table shape rendered by the answer route's static SEO
+// shell. Kept intentionally simple (headers + string rows) so the static
+// shell stays render-only and any future leaderboard source can populate it.
+export type AnswerTable = {
+  title: string;
+  caption?: string;
+  headers: string[];
+  rows: string[][];
+};
+
+// Build one structured table per metric (Throughput / Transaction count /
+// Active addresses), each with rows for daily / weekly / monthly and columns
+// for the top 3 chains. The static SEO shell renders these as real <table>
+// elements — AI extractors (Perplexity, AIO, Copilot) preferentially quote
+// tables for "which X has the most Y" queries.
+export const buildAnswerTables = (lb: L2Leaderboard): AnswerTable[] => {
+  const dataDate = lb.generatedAtIso.slice(0, 10);
+  const metrics: Array<{ key: LeaderboardMetric; title: string; suffix: string }> = [
+    { key: 'throughput', title: 'Throughput', suffix: ' Mgas/s' },
+    { key: 'txcount', title: 'Transaction count', suffix: '' },
+    { key: 'daa', title: 'Active addresses', suffix: '' },
+  ];
+  return metrics.map(({ key, title, suffix }) => {
+    const cell = (entry?: LeaderboardEntry) =>
+      entry ? `${entry.name} (${fmtCompact(entry.value)}${suffix})` : '—';
+    const top3 = (period: LeaderboardPeriod): LeaderboardEntry[] =>
+      (lb.byMetricByPeriod?.[key]?.[period] ?? []).slice(0, 3);
+    return {
+      title: `${title} leaderboard`,
+      caption: `Top 3 Ethereum L2s by ${title.toLowerCase()} as of ${dataDate} UTC.`,
+      headers: ['Period', '#1', '#2', '#3'],
+      rows: SUPPORTED_PERIODS.map((p) => {
+        const arr = top3(p);
+        return [
+          p.charAt(0).toUpperCase() + p.slice(1),
+          cell(arr[0]),
+          cell(arr[1]),
+          cell(arr[2]),
+        ];
+      }),
+    };
+  });
+};
+
 // Build the top-3 prose string for a (metric, period) pair so the SEO
 // shell's text-only output exposes weekly/monthly rankings to AI consumers.
 export const formatPeriodTopList = (
@@ -355,30 +399,26 @@ export const buildDenseSentence = (
     );
   }
 
-  const valueTriple =
-    `daily ${fmtCompact(dailyLeader.value)}${cfg.suffix}, ` +
-    `weekly ${fmtCompact(weeklyLeader.value)}${cfg.suffix}, ` +
-    `monthly ${fmtCompact(monthlyLeader.value)}${cfg.suffix}`;
-
   const allSame =
     dailyLeader.key === weeklyLeader.key &&
     weeklyLeader.key === monthlyLeader.key;
 
-  if (allSame) {
-    return (
-      `**${dailyLeader.name}** leads Ethereum L2 ${cfg.label} across all three time horizons ` +
-      `(${valueTriple}; data ${dataDateUtc} UTC). ` +
-      `Daily top 3: ${formatPeriodTopList(lb, metric, 'daily', 3)}. ` +
-      `Weekly top 3: ${formatPeriodTopList(lb, metric, 'weekly', 3)}. ` +
-      `Monthly top 3: ${formatPeriodTopList(lb, metric, 'monthly', 3)}.`
-    );
-  }
+  // Lead sentence is engineered to fit under ~155 chars (AI answer cards on
+  // Google AI Overviews and Perplexity often truncate around 160-200) so the
+  // monthly figure isn't lost in the cut. The unit suffix is attached only to
+  // the daily value — the reader infers it carries through.
+  const lead = allSame
+    ? `As of ${dataDateUtc} UTC, **${dailyLeader.name}** leads Ethereum L2 ${cfg.label} at ` +
+      `${fmtCompact(dailyLeader.value)}${cfg.suffix} daily, ` +
+      `${fmtCompact(weeklyLeader.value)} weekly, ` +
+      `${fmtCompact(monthlyLeader.value)} monthly.`
+    : `As of ${dataDateUtc} UTC, top Ethereum L2 by ${cfg.label}: ` +
+      `${dailyLeader.name} ${fmtCompact(dailyLeader.value)}${cfg.suffix} daily, ` +
+      `${weeklyLeader.name} ${fmtCompact(weeklyLeader.value)} weekly, ` +
+      `${monthlyLeader.name} ${fmtCompact(monthlyLeader.value)} monthly.`;
 
   return (
-    `**Top Ethereum L2 by ${cfg.label}** (data ${dataDateUtc} UTC) — ` +
-    `daily: ${dailyLeader.name} (${fmtCompact(dailyLeader.value)}${cfg.suffix}); ` +
-    `weekly: ${weeklyLeader.name} (${fmtCompact(weeklyLeader.value)}${cfg.suffix}); ` +
-    `monthly: ${monthlyLeader.name} (${fmtCompact(monthlyLeader.value)}${cfg.suffix}). ` +
+    `${lead} ` +
     `Daily top 3: ${formatPeriodTopList(lb, metric, 'daily', 3)}. ` +
     `Weekly top 3: ${formatPeriodTopList(lb, metric, 'weekly', 3)}. ` +
     `Monthly top 3: ${formatPeriodTopList(lb, metric, 'monthly', 3)}.`
