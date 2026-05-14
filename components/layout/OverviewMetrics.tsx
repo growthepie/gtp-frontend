@@ -24,6 +24,9 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { TitleButtonLink } from "./TextHeadingComponents";
@@ -276,11 +279,14 @@ export default function OverviewMetrics({
       {invalidTimespan !== selectedTimespan && (
         <div className="w-full flex-col relative">
           <Container>
-            <TopRowContainer>
-              <TopRowParent>
-                <TopRowChild
+            <GTPButtonContainer>
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
+                <GTPButton
                   isSelected={selectedMode.includes("gas_fees")}
-                  onClick={() => {
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
                     setSelectedMode(
                       selectedValue === "absolute"
                         ? showUsd
@@ -291,44 +297,39 @@ export default function OverviewMetrics({
                         : "gas_fees_share_eth",
                     );
                   }}
-                >
-                  Gas Fees
-                </TopRowChild>
-                <TopRowChild
+                  label="Gas Fees"
+                />
+                <GTPButton
                   isSelected={selectedMode.includes("txcount")}
-                  onClick={() => {
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
                     setSelectedMode(
                       selectedValue === "absolute"
                         ? "txcount_absolute"
                         : "txcount_share",
                     );
                   }}
-                >
-                  Transaction Count
-                </TopRowChild>
-              </TopRowParent>
-              <div className="block lg:hidden w-[70%] mx-auto my-[2.5px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-              </div>
-              <TopRowParent>
+                  label="Transaction Count"
+                />
+              </GTPButtonRow>
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
                 {Object.keys(timespans).map((timespan) => (
-                  <TopRowChild
+                  <GTPButton
                     key={timespan}
+                    className="w-full justify-center"
+                    innerStyle={{ width: "100%" }}
                     isSelected={selectedTimespan === timespan}
-                    onClick={() => {
+                    size="sm"
+                    clickHandler={() => {
                       setSelectedTimespan(timespan);
                     }}
-                  >
-                    <span className="hidden md:block">
-                      {timespans[timespan].label}
-                    </span>
-                    <span className="block md:hidden">
-                      {timespans[timespan].shortLabel}
-                    </span>
-                  </TopRowChild>
+                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                  />
                 ))}
-              </TopRowParent>
-            </TopRowContainer>
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </Container>
           {/*Chain Rows/List */}
           <div id="content-container" className="block w-full">
@@ -436,57 +437,51 @@ export default function OverviewMetrics({
           )}
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
-            {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
-              {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-              {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-              {/* toggle ETH */}
-              <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedValue === "absolute"
-                    ? "bg-color-ui-active"
-                    : "bg-color-ui-default hover:bg-color-ui-hover"
-                }`}
-                onClick={() => {
-                  setSelectedValue("absolute");
-                  if (!selectedMode.includes("absolute")) {
+            <GTPButtonContainer className="mt-[8px] md:justify-end">
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
+                <GTPButton
+                  isSelected={selectedValue === "absolute"}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setSelectedValue("absolute");
+                    if (!selectedMode.includes("absolute")) {
+                      if (selectedMode.includes("gas_fees")) {
+                        if (showUsd) {
+                          setSelectedMode("gas_fees_usd_absolute");
+                        } else {
+                          setSelectedMode("gas_fees_eth_absolute");
+                        }
+                      } else {
+                        setSelectedMode("txcount_absolute");
+                      }
+                    }
+                  }}
+                  label="Absolute"
+                />
+                <GTPButton
+                  isSelected={selectedValue === "share"}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setSelectedValue("share");
+
                     if (selectedMode.includes("gas_fees")) {
                       if (showUsd) {
-                        setSelectedMode("gas_fees_usd_absolute");
+                        setSelectedMode("gas_fees_share_usd");
                       } else {
-                        setSelectedMode("gas_fees_eth_absolute");
+                        setSelectedMode("gas_fees_share_eth");
                       }
                     } else {
-                      setSelectedMode("txcount_absolute");
+                      setSelectedMode("txcount_share");
                     }
-                  }
-                }}
-              >
-                Absolute
-              </button>
-              <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedValue === "share"
-                    ? "bg-color-ui-active"
-                    : "bg-color-ui-default hover:bg-color-ui-hover"
-                }`}
-                onClick={() => {
-                  setSelectedValue("share");
-
-                  if (selectedMode.includes("gas_fees")) {
-                    if (showUsd) {
-                      setSelectedMode("gas_fees_share_usd");
-                    } else {
-                      setSelectedMode("gas_fees_share_eth");
-                    }
-                  } else {
-                    setSelectedMode("txcount_share");
-                  }
-                }}
-              >
-                Share of Chain Usage
-              </button>
-            </div>
+                  }}
+                  label="Share of Chain Usage"
+                />
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </Container>
           {/*Contracts Header */}
           <Container>

@@ -509,6 +509,7 @@ export default function EconHeadCharts({
               isSelected={!isMonthly}
               className="w-full justify-center"
               innerStyle={{ width: "100%" }}
+              size="sm"
               clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
@@ -524,6 +525,7 @@ export default function EconHeadCharts({
               isSelected={isMonthly}
               className="w-full justify-center"
               innerStyle={{ width: "100%" }}
+              size="sm"
               clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
@@ -549,7 +551,7 @@ export default function EconHeadCharts({
                     className="w-full justify-center"
                     innerStyle={{ width: "100%" }}
                     isSelected={selectedTimespan === key}
-
+                    size="sm"
                     label={rowBreakpoint
                       ? timespans[key].shortLabel
                       : timespans[key].label}
