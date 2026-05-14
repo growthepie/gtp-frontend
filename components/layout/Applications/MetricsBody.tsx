@@ -66,6 +66,19 @@ const resolveValueIndex = (types: string[], showUsd: boolean): number => {
 
 type SeriesEntry = { name: string; data: [number, number | null][] };
 
+const escapeCsvCell = (value: string | number | null | undefined) => {
+    if (value === null || value === undefined) return "";
+    const stringValue = String(value);
+    if (!/[",\n\r]/.test(stringValue)) return stringValue;
+    return `"${stringValue.replace(/"/g, '""')}"`;
+};
+
+const slugifyFilenamePart = (value: string | undefined) =>
+    (value ?? "chart")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "chart";
+
 function computeMetricSeriesData(params: {
     data: ApplicationDetailsData;
     metric: string;
@@ -196,6 +209,14 @@ const INTERVALS = {
     },
 } as const;
 
+function filterTimespans(timespan: string, interval: string) {
+    if (interval === "daily") {
+        return !(timespan === "1d" || timespan === "3d" || timespan === "7d" || timespan === "30d");
+    } else {
+        return !(timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
+    }
+}
+
 // Fetches compare app data and reports back — renders nothing visible
 const CompareLoader = ({ owner_project, onDataLoaded }: {
     owner_project: string;
@@ -245,7 +266,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
             const url = `${pathname}${queryString ? `?${decodeURIComponent(queryString)}` : ""}`;
             window.history.replaceState(null, "", url);
         });
-    }, [timeInterval, pathname]);
+    }, [timeInterval, pathname, startIntervalTransition]);
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
     const [showUsd] = useLocalStorage("showUsd", true);
@@ -478,14 +499,6 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
             }),
         ) as Record<string, boolean>;
     }, [data, master, timeInterval]);
-
-    function filterTimespans(timespan: string, interval: string) {
-        if (interval === "daily") {
-            return !(timespan === "1d" || timespan === "3d" || timespan === "7d" || timespan === "30d");
-        } else {
-            return !(timespan === "30d" || timespan === "90d" || timespan === "180d" || timespan === "365d" || timespan === "max");
-        }
-    }
 
     // Compute the global xMin across all visible metric series so every chart shares the same x-axis start.
     const globalXMin = useMemo(() => {
@@ -978,6 +991,101 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
     if (!metricData) return null;
 
+    const handleDownloadSelectedChartData = () => {
+        if (typeof window === "undefined" || visibleSeries.length === 0) return;
+
+        const filteredSeries = visibleSeries
+            .map((series) => {
+                const { displayName } = resolveSeriesInfo(series.name);
+                const valuesByTimestamp = new Map<number, number | null>();
+
+                series.data.forEach(([timestamp, value]) => {
+                    if (typeof xMin === "number" && timestamp < xMin) return;
+                    if (typeof xMax === "number" && timestamp > xMax) return;
+                    valuesByTimestamp.set(timestamp, value);
+                });
+
+                return {
+                    name: displayName,
+                    valuesByTimestamp,
+                };
+            })
+            .filter((series) => series.valuesByTimestamp.size > 0);
+
+        if (filteredSeries.length === 0) return;
+
+        const timestamps = Array.from(
+            new Set(filteredSeries.flatMap((series) => Array.from(series.valuesByTimestamp.keys()))),
+        ).sort((a, b) => a - b);
+
+        if (timestamps.length === 0) return;
+
+        const unitLabel = selectedScale === "percentage" || isSuccessRateMetric
+            ? "percent"
+            : isValueMetric
+              ? "value"
+              : showUsd
+                ? "usd"
+                : "eth";
+
+        const headers = [
+            "timestamp",
+            "datetime_utc",
+            "owner_project",
+            "app_name",
+            "metric_id",
+            "metric_name",
+            "time_interval",
+            "scale",
+            "unit",
+            ...filteredSeries.map((series) => series.name),
+        ];
+
+        const rows = timestamps.map((timestamp) => {
+            const values = filteredSeries.map((series) => series.valuesByTimestamp.get(timestamp) ?? null);
+            const displayedValues = selectedScale === "percentage"
+                ? values.map((value) => {
+                    if (typeof value !== "number" || !Number.isFinite(value)) return null;
+                    const total = values.reduce<number>(
+                        (sum, item) => typeof item === "number" && Number.isFinite(item) ? sum + item : sum,
+                        0,
+                    );
+                    return total > 0 ? (value / total) * 100 : null;
+                })
+                : isSuccessRateMetric
+                  ? values.map((value) => typeof value === "number" && Number.isFinite(value) ? value * 100 : null)
+                  : values;
+
+            return [
+                timestamp,
+                new Date(timestamp).toISOString(),
+                owner_project,
+                projectMetadata.display_name,
+                metric,
+                metricData.name,
+                timeInterval,
+                selectedScale,
+                unitLabel,
+                ...displayedValues,
+            ];
+        });
+
+        const csv = [
+            headers.map(escapeCsvCell).join(","),
+            ...rows.map((row) => row.map(escapeCsvCell).join(",")),
+        ].join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `growthepie-${slugifyFilenamePart(owner_project)}-${slugifyFilenamePart(metric)}-${timeInterval}-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(url);
+    };
+
     return (
         <div
             ref={wrapperRef}
@@ -1042,7 +1150,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                                 matchTriggerWidthToDropdown
                                 buttonProps={{
                                     label: "Share",
-                                    labelDisplay: "active",
+                                    labelDisplay: "hover",
                                     leftIcon: "gtp-share-monochrome",
                                     size: isMobile ? "xs" : "sm",
                                     variant: "no-background",
@@ -1053,12 +1161,24 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                             />
 
                             <GTPButton
-                                leftIcon="gtp-download-monochrome"
+                                leftIcon="gtp-png-monochrome"
+                                label="Take Screenshot"
+                                labelDisplay="hover"
                                 size={isMobile ? "xs" : "sm"}
                                 variant="no-background"
                                 visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                                 disabled={isDownloadingChartSnapshot}
                                 clickHandler={() => setIsDownloadingChartSnapshot(true)}
+                            />
+                            <GTPButton
+                                leftIcon="gtp-download-monochrome"
+                                label="Download Data"
+                                labelDisplay="hover"
+                                size={isMobile ? "xs" : "sm"}
+                                variant="no-background"
+                                visualState={visibleSeries.length === 0 ? "disabled" : "default"}
+                                disabled={visibleSeries.length === 0}
+                                clickHandler={handleDownloadSelectedChartData}
                             />
                         </GTPButtonRow>
                         <GTPButtonRow wrap={false}
