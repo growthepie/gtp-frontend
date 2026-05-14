@@ -27,6 +27,20 @@ import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { metricItems } from "@/lib/metrics";
+
+const escapeCsvCell = (value: string | number | null | undefined) => {
+    if (value === null || value === undefined) return "";
+    const stringValue = String(value);
+    if (!/[",\n\r]/.test(stringValue)) return stringValue;
+    return `"${stringValue.replace(/"/g, '""')}"`;
+};
+
+const slugifyFilenamePart = (value: string | undefined) =>
+    (value ?? "metric")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "metric";
 
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 967px)");
@@ -54,6 +68,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         setSelectedScale,
         showEthereumMainnet,
         setShowEthereumMainnet,
+        selectedChains,
         selectedTimeInterval,
         setSelectedTimeInterval,
         selectedTimespan,
@@ -64,6 +79,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
     const { data: master } = useMaster();
     const valueKey = Object.keys(master?.metrics?.[metric_id]?.units ?? {}).find(key => key !== "usd" && key !== "eth");
+    const showGwei = Boolean(metricItems.find((item) => item.key === metric_id)?.page?.showGwei);
     
 
     const suffix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
@@ -129,6 +145,146 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             setIsDownloadingChartSnapshot(false);
         }
     }, [isDownloadingChartSnapshot, metricData?.metric_name]);
+
+    const handleDownloadSelectedChartData = useCallback(() => {
+        if (!metricData || typeof window === "undefined") return;
+
+        const activeTimespan = timespans[selectedTimespan] ?? timespans.max;
+        const xMin = selectedRange ? selectedRange[0] : activeTimespan?.xMin;
+        const xMax = selectedRange ? selectedRange[1] : activeTimespan?.xMax;
+
+        const visibleChainKeys = chainKeys.filter((chainKey) => {
+            if (!selectedChains.includes(chainKey)) return false;
+            if (chainKey !== "ethereum") return true;
+            if (!focusEnabled) return true;
+            return showEthereumMainnet;
+        });
+
+        const seriesRows = visibleChainKeys
+            .map((chainKey) => {
+                const intervalData = metricData.chains[chainKey]?.[timeIntervalKey];
+                if (!intervalData) return null;
+
+                const valueTypes = intervalData.types ?? [];
+                const usdIdx = valueTypes.indexOf("usd");
+                const ethIdx = valueTypes.indexOf("eth");
+                let valueIndex = valueTypes.length > 1 ? 1 : 0;
+
+                if (usdIdx !== -1 && ethIdx !== -1) {
+                    valueIndex = showUsd ? usdIdx : ethIdx;
+                }
+
+                const multiplier = !showUsd && showGwei && ethIdx !== -1 ? 1_000_000_000 : 1;
+                const valuesByTimestamp = new Map<number, number | null>();
+
+                (intervalData.data ?? []).forEach((row) => {
+                    const timestamp = row[0];
+                    if (typeof xMin === "number" && timestamp < xMin) return;
+                    if (typeof xMax === "number" && timestamp > xMax) return;
+
+                    const rawValue = row[valueIndex];
+                    valuesByTimestamp.set(
+                        timestamp,
+                        typeof rawValue === "number" && Number.isFinite(rawValue)
+                            ? rawValue * multiplier
+                            : null,
+                    );
+                });
+
+                return {
+                    chainKey,
+                    chainName: master?.chains?.[chainKey]?.name ?? metricData.chains[chainKey]?.chain_name ?? chainKey,
+                    valuesByTimestamp,
+                };
+            })
+            .filter((item): item is {
+                chainKey: string;
+                chainName: string;
+                valuesByTimestamp: Map<number, number | null>;
+            } => Boolean(item));
+
+        if (seriesRows.length === 0) return;
+
+        const timestamps = Array.from(
+            new Set(seriesRows.flatMap((series) => Array.from(series.valuesByTimestamp.keys()))),
+        ).sort((a, b) => a - b);
+
+        if (timestamps.length === 0) return;
+
+        const unitLabel = selectedScale === "percentage"
+            ? "percent"
+            : showUsd
+            ? "usd"
+            : showGwei
+              ? "gwei"
+              : valueKey ?? "eth";
+
+        const headers = [
+            "timestamp",
+            "datetime_utc",
+            "metric_id",
+            "metric_name",
+            "time_interval",
+            "scale",
+            "unit",
+            ...seriesRows.map((series) => series.chainName),
+        ];
+
+        const rows = timestamps.map((timestamp) => {
+            const values = seriesRows.map((series) => series.valuesByTimestamp.get(timestamp) ?? null);
+            const displayedValues = selectedScale === "percentage"
+                ? values.map((value) => {
+                    if (typeof value !== "number" || !Number.isFinite(value)) return null;
+                    const total = values.reduce<number>(
+                        (sum, item) => typeof item === "number" && Number.isFinite(item) ? sum + item : sum,
+                        0,
+                    );
+                    return total > 0 ? (value / total) * 100 : null;
+                })
+                : values;
+
+            return [
+                timestamp,
+                new Date(timestamp).toISOString(),
+                metricData.metric_id,
+                metricData.metric_name,
+                timeIntervalKey,
+                selectedScale,
+                unitLabel,
+                ...displayedValues,
+            ];
+        });
+
+        const csv = [
+            headers.map(escapeCsvCell).join(","),
+            ...rows.map((row) => row.map(escapeCsvCell).join(",")),
+        ].join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `growthepie-${slugifyFilenamePart(metricData.metric_id)}-${timeIntervalKey}-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(url);
+    }, [
+        chainKeys,
+        focusEnabled,
+        master?.chains,
+        metricData,
+        selectedChains,
+        selectedRange,
+        selectedScale,
+        selectedTimespan,
+        showEthereumMainnet,
+        showGwei,
+        showUsd,
+        timeIntervalKey,
+        timespans,
+        valueKey,
+    ]);
 
     const lastUpdatedString = useMemo(() => {
 
@@ -421,7 +577,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             matchTriggerWidthToDropdown
                             buttonProps={{
                                 label: "Share",
-                                labelDisplay: "active",
+                                labelDisplay: "hover",
                                 leftIcon: "gtp-share-monochrome",
                                 size: "sm",
                                 variant: "no-background",
@@ -432,12 +588,24 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         />
                       
                         <GTPButton
-                            leftIcon="gtp-download-monochrome"
+                            leftIcon="gtp-png-monochrome"
+                            label="Take Screenshot"
+                            labelDisplay="hover"
                             size={"sm"}
                             variant="no-background"
                             visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                             disabled={isDownloadingChartSnapshot}
                             clickHandler={handleDownloadChartSnapshot}
+                        />
+                        <GTPButton
+                            leftIcon="gtp-download-monochrome"
+                            label="Download Data"
+                            labelDisplay="hover"
+                            size={"sm"}
+                            variant="no-background"
+                            visualState={!metricData ? "disabled" : "default"}
+                            disabled={!metricData}
+                            clickHandler={handleDownloadSelectedChartData}
                         />
                      
                     </GTPButtonRow>

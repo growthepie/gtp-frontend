@@ -139,8 +139,6 @@ export default function GTPButtonDropdown({
   }, [isOpen, setOpen]);
 
   const resolvedVisualState: GTPButtonState | undefined = isOpen ? "active" : buttonProps.visualState;
-  // For responsive (null) size, fall back to "sm" as a reasonable pre-measurement estimate.
-  const buttonHeightPx = buttonProps.size ? GTP_BUTTON_APPROX_HEIGHT_BY_SIZE[buttonProps.size] : 28;
   const resolvedButtonSize = buttonProps.size ?? "sm";
   const approxTriggerHeight = GTP_BUTTON_APPROX_HEIGHT_BY_SIZE[resolvedButtonSize];
   // Prefer the real measured height once available; the approximation covers the first render.
@@ -185,7 +183,6 @@ export default function GTPButtonDropdown({
           visualState={resolvedVisualState}
           clickHandler={handleTriggerClick}
           size={buttonProps.size}
-          innerStyle={{ height: buttonHeightPx }} 
         />
       </div>
 
