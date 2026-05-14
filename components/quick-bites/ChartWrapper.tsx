@@ -2605,7 +2605,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         </div>
         {/*Footer*/}
         {legendCategories.length > 0 && (
-          <div className="min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
+          <div className="mb-[6px] min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
             {[...primaryLegendCategories, ...secondaryLegendCategories].map((category: any) => {
               const isActive = isLegendCategoryActive(category);
               const seriesColor = typeof category.color === "string" ? category.color : "#999999";
@@ -2666,9 +2666,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   matchTriggerWidthToDropdown
                   buttonProps={{
                     label: "Share",
-                    labelDisplay: "active",
+                    labelDisplay: "hover",
                     leftIcon: "gtp-share-monochrome",
-                    size: "xs",
+                    size: "sm",
                     variant: "no-background",
                   }}
                   isOpen={isSharePopoverOpen}
@@ -2676,8 +2676,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                 />
                 <GTPButton
-                  leftIcon="gtp-download-monochrome"
-                  size="xs"
+                  leftIcon="gtp-png-monochrome"
+                  label='Take Screenshot'
+                  labelDisplay="hover"
+                  size="sm"
                   variant="no-background"
                   visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                   disabled={isDownloadingChartSnapshot}
