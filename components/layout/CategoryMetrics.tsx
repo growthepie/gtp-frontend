@@ -31,6 +31,9 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 
@@ -912,73 +915,60 @@ export default function CategoryMetrics({
       {selectedSubcategories && (
         <div className="relative w-full flex-col">
           <Container>
-            <TopRowContainer>
-              <TopRowParent>
-                <TopRowChild
+            <GTPButtonContainer>
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
+                <GTPButton
                   isSelected={"gas_fees_" === selectedMode}
-                  onClick={() => {
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
                     setSelectedMode("gas_fees_");
                   }}
-                >
-                  Gas Fees
-                </TopRowChild>
-                <TopRowChild
+                  label="Gas Fees"
+                />
+                <GTPButton
                   isSelected={"txcount_" === selectedMode}
-                  onClick={() => {
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
                     setSelectedMode("txcount_");
                   }}
-                >
-                  Transaction Count
-                </TopRowChild>
-              </TopRowParent>
-              <div className="mx-auto my-[10px] block w-[70%] lg:hidden">
-                <hr className="border-top-[1px] h-[0.5px] border-dotted border-forest-400" />
-              </div>
-              <TopRowParent>
+                  label="Transaction Count"
+                />
+              </GTPButtonRow>
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
                 {Object.keys(timespans).map((timespan) => (
-                  <TopRowChild
+                  <GTPButton
                     key={timespan}
+                    className="w-full justify-center"
+                    innerStyle={{ width: "100%" }}
                     isSelected={selectedTimespan === timespan}
-                    onClick={() => {
+                    size="sm"
+                    clickHandler={() => {
                       setSelectedTimespan(timespan);
-
-                      // setXAxis();
-                      // chartComponent?.current?.xAxis[0].update({
-                      //   min: timespans[selectedTimespan].xMin,
-                      //   max: timespans[selectedTimespan].xMax,
-                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      //   tickPositions: getTickPositions(
-                      //     timespans.max.xMin,
-                      //     timespans.max.xMax,
-                      //   ),
-                      // });
                     }}
-                  >
-                    <span className="hidden md:block">
-                      {timespans[timespan].label}
-                    </span>
-                    <span className="block md:hidden">
-                      {timespans[timespan].shortLabel}
-                    </span>
-                  </TopRowChild>
+                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                  />
                 ))}
-                <div
-                  className={`absolute right-[22px] top-[63px] -z-10 w-[calc(50%-34px)] pr-[15px] text-xs transition-[transform] duration-300 ease-in-out md:right-[65px] md:top-[68px] md:w-[calc(50%-56px)] lg:right-[65px] lg:top-0 lg:w-[168px] lg:pr-[23px] xl:w-[158px] xl:pr-[23px] ${
-                    !isMobile
-                      ? ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(-100%+3px)]"
-                        : "translate-y-0"
-                      : ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(40%+3px)]"
-                        : "-translate-y-[calc(40%+3px)]"
-                  }`}
-                >
-                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-color-border bg-color-bg-default py-1 text-center font-medium dark:border-forest-400 dark:bg-color-ui-active lg:rounded-b-none lg:rounded-t-2xl">
-                    7-day rolling average
-                  </div>
+              </GTPButtonRow>
+              <div
+                className={`absolute right-[22px] top-[63px] -z-10 w-[calc(50%-34px)] pr-[15px] text-xs transition-[transform] duration-300 ease-in-out md:right-[65px] md:top-[68px] md:w-[calc(50%-56px)] lg:right-[65px] lg:top-0 lg:w-[168px] lg:pr-[23px] xl:w-[158px] xl:pr-[23px] ${
+                  !isMobile
+                    ? ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(-100%+3px)]"
+                      : "translate-y-0"
+                    : ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(40%+3px)]"
+                      : "-translate-y-[calc(40%+3px)]"
+                }`}
+              >
+                <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-color-border bg-color-bg-default py-1 text-center font-medium dark:border-forest-400 dark:bg-color-ui-active lg:rounded-b-none lg:rounded-t-2xl">
+                  7-day rolling average
                 </div>
-              </TopRowParent>
-            </TopRowContainer>
+              </div>
+            </GTPButtonContainer>
           </Container>
 
           <div id="content-container" className="w-full">
@@ -1277,48 +1267,40 @@ export default function CategoryMetrics({
             </Container>
           </div>
           <Container>
-            {" "}
-            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-color-bg-default md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
-              {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-              {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-              {/* toggle ETH */}
-              <button
-                className={`rounded-full px-[16px] py-[4px] ${
-                  selectedChartType === "absolute"
-                    ? "bg-color-ui-active"
-                    : "bg-color-ui-default hover:bg-color-ui-hover"
-                }`}
-                onClick={() => {
-                  setSelectedChartType("absolute");
-                }}
-              >
-                Absolute
-              </button>
-              <button
-                className={`rounded-full px-[16px] py-[4px] ${
-                  selectedChartType === "stacked"
-                    ? "bg-color-ui-active"
-                    : "bg-color-ui-default hover:bg-color-ui-hover"
-                }`}
-                onClick={() => {
-                  setSelectedChartType("stacked");
-                }}
-              >
-                Stacked
-              </button>
-              <button
-                className={`rounded-full px-[16px] py-[4px] ${
-                  selectedChartType === "percentage"
-                    ? "bg-color-ui-active"
-                    : "bg-color-ui-default hover:bg-color-ui-hover"
-                }`}
-                onClick={() => {
-                  setSelectedChartType("percentage");
-                }}
-              >
-                Percentage
-              </button>
-            </div>
+            <GTPButtonContainer className="mt-8 md:justify-end">
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
+                <GTPButton
+                  isSelected={selectedChartType === "absolute"}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setSelectedChartType("absolute");
+                  }}
+                  label="Absolute"
+                />
+                <GTPButton
+                  isSelected={selectedChartType === "stacked"}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setSelectedChartType("stacked");
+                  }}
+                  label="Stacked"
+                />
+                <GTPButton
+                  isSelected={selectedChartType === "percentage"}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setSelectedChartType("percentage");
+                  }}
+                  label="Percentage"
+                />
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </Container>
           <Container>
             <div className="mx-auto mt-[5px] flex w-[97%] flex-col lg:mt-[30px]">

@@ -507,6 +507,9 @@ export default function EconHeadCharts({
           <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>            
             <GTPButton
               isSelected={!isMonthly}
+              className="w-full justify-center"
+              innerStyle={{ width: "100%" }}
+              size="sm"
               clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
@@ -520,6 +523,9 @@ export default function EconHeadCharts({
             />
             <GTPButton
               isSelected={isMonthly}
+              className="w-full justify-center"
+              innerStyle={{ width: "100%" }}
+              size="sm"
               clickHandler={() => {
                 const isTransferrableTimespan =
                   selectedTimespan === "max" || selectedTimespan === "365d";
@@ -534,7 +540,7 @@ export default function EconHeadCharts({
           <GTPButtonRow className="flex-nowrap" style={{width: rowBreakpoint ? "100%" : "auto"}} wrap={isMobile ? true : false}>
             
             {Object.keys(timespans).map((key) => {
-              console.log(key);
+             
               {
                 return (
                   <GTPButton
@@ -542,12 +548,13 @@ export default function EconHeadCharts({
                       setSelectedTimespan(key);
                     }}
                     key={key}
-                    
+                    className="w-full justify-center"
+                    innerStyle={{ width: "100%" }}
                     isSelected={selectedTimespan === key}
-                  
-                    label={selectedTimespan === key
-                      ? timespans[key].label
-                      : timespans[key].shortLabel}
+                    size="sm"
+                    label={rowBreakpoint
+                      ? timespans[key].shortLabel
+                      : timespans[key].label}
                   />
                 );
               }
