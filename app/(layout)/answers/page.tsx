@@ -61,6 +61,18 @@ export const metadata: Metadata = {
   },
 };
 
+// Count Q&As an answer page exposes: 1 for the headline question (the page
+// title itself) plus each sub-question in the FAQ. Surfaced on the hub as a
+// "X questions answered" label so AI engines see a concrete depth signal
+// without us listing bare questions (which would read as thin content).
+const countQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
+  1 + (a.faq?.length ?? 0);
+
+// Count FAQ-only sub-questions (the core question is the page title itself
+// and is counted separately at the hub level).
+const countSubQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
+  a.faq?.length ?? 0;
+
 export default function AnswersHubPage() {
   const answers = getAllAnswers().sort((a, b) =>
     // Newest first — when there are many answers, AI engines crawl the top of
@@ -68,6 +80,9 @@ export default function AnswersHubPage() {
     // re-quoted) at the top.
     new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
+
+  const coreCount = answers.length;
+  const subCount = answers.reduce((sum, a) => sum + countSubQuestions(a), 0);
 
   const collectionPage = {
     '@context': 'https://schema.org',
@@ -160,6 +175,11 @@ export default function AnswersHubPage() {
           <p className="text-md text-color-text-secondary mb-[24px]">
             {HUB_DESCRIPTION}
           </p>
+          <p className="text-sm text-color-text-secondary mb-[24px]">
+            Answers to {coreCount} core question
+            {coreCount === 1 ? '' : 's'} with a total of {subCount} sub question
+            {subCount === 1 ? '' : 's'}.
+          </p>
         </header>
 
         <ol
@@ -169,6 +189,7 @@ export default function AnswersHubPage() {
           {answers.map((a) => {
             const url = `${SECTION_PATH}/${a.slug}`;
             const snippet = a.summary || a.subtitle;
+            const qCount = countQuestions(a);
             return (
               <li key={a.slug} className="list-none">
                 <article
@@ -200,6 +221,9 @@ export default function AnswersHubPage() {
                       {snippet}
                     </p>
                   )}
+                  <p className="text-xs text-color-text-secondary mt-[6px]">
+                    {qCount} question{qCount === 1 ? '' : 's'} answered
+                  </p>
                   {a.topics && a.topics.length > 0 && (
                     <p className="text-xs text-color-text-secondary mt-[6px]">
                       Topics:{' '}

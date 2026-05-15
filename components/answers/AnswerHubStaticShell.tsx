@@ -31,6 +31,17 @@ const SR_ONLY: React.CSSProperties = {
   border: 0,
 };
 
+// Total Q&A count per answer page: 1 for the headline question (the page
+// title) plus each sub-question in the FAQ. Used by the per-card "X questions
+// answered" label so AI crawlers see the same depth signal as users.
+const countQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
+  1 + (a.faq?.length ?? 0);
+
+// FAQ-only sub-question count, used for the hub-level summary which treats
+// the page title as the "core" question and the FAQ as "sub" questions.
+const countSubQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
+  a.faq?.length ?? 0;
+
 export default async function AnswerHubStaticShell() {
   const h = await headers();
   const pathname = h.get('x-pathname') || '';
@@ -39,6 +50,8 @@ export default async function AnswerHubStaticShell() {
   const answers = getAllAnswers().sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
+  const coreCount = answers.length;
+  const subCount = answers.reduce((sum, a) => sum + countSubQuestions(a), 0);
 
   return (
     <div
@@ -59,12 +72,18 @@ export default async function AnswerHubStaticShell() {
       <header>
         <h1>{HUB_TITLE}</h1>
         <p>{HUB_DESCRIPTION}</p>
+        <p>
+          Answers to {coreCount} core question
+          {coreCount === 1 ? '' : 's'} with a total of {subCount} sub question
+          {subCount === 1 ? '' : 's'}.
+        </p>
       </header>
 
       <ol aria-label="Answer pages">
         {answers.map((a) => {
           const url = `${SECTION_PATH}/${a.slug}`;
           const snippet = (a as any).summary || a.subtitle;
+          const qCount = countQuestions(a);
           return (
             <li key={a.slug}>
               <article
@@ -84,6 +103,9 @@ export default async function AnswerHubStaticShell() {
                   </Link>
                 </h2>
                 {snippet && <p itemProp="description">{snippet}</p>}
+                <p>
+                  {qCount} question{qCount === 1 ? '' : 's'} answered
+                </p>
                 {a.topics && a.topics.length > 0 && (
                   <p>
                     Topics:{' '}
