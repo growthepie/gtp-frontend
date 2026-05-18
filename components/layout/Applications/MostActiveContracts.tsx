@@ -274,7 +274,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                             size="fit"
                             allowInteract={true}
                             trigger={
-                              <div className="w-[12px] h-[12px] flex items-center justify-center">
+                              <div className="w-[12px] h-[34px] flex items-center justify-center cursor-pointer">
                                 <GTPIcon
                                   icon="gtp-verified"
                                   className="!size-[12px]"
@@ -291,7 +291,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                             size="fit"
                             allowInteract={true}
                             trigger={
-                              <div className="w-[12px] h-[12px] flex items-center justify-center">
+                              <div className="w-[12px] h-[34px] flex items-center justify-center cursor-pointer">
                                 <GTPIcon
                                   icon="gtp-unverified-monochrome"
                                   className="!size-[12px]"
@@ -310,7 +310,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                             target="_blank"
                             aria-label="Open contract in block explorer"
                             title="Open contract in block explorer"
-                            className="flex size-[14px] items-center justify-center opacity-70 transition-opacity hover:opacity-100"
+                            className="flex h-[34px] w-[14px] items-center justify-center opacity-70 transition-opacity hover:opacity-100"
                           >
                             <Icon
                               icon="gtp:gtp-block-explorer"
@@ -323,7 +323,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                           onClick={() => handleCopy(address, chainKey)}
                           aria-label="Copy contract address"
                           title="Copy contract address"
-                          className="flex size-[14px] items-center justify-center"
+                          className="flex h-[34px] w-[14px] items-center justify-center"
                         >
                           <Icon
                             icon={copiedAddress === `${address}:${chainKey}` || justCopied === `${address}:${chainKey}` ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
