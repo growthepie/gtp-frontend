@@ -13,13 +13,15 @@ import Image from "next/image";
 import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 import { StepSwitch } from "@/components/layout/StepSwitch";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { FloatingPortal } from "@floating-ui/react";
 import dayjs from "@/lib/dayjs";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 
 type RawTreeMapResponse = {
@@ -694,6 +696,7 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const [selectedGroupBy, setSelectedGroupBy] = useState<GroupByKey>("chain");
   const [includeChainBreakdown, setIncludeChainBreakdown] = useState<boolean>(true);
   const [showUsd] = useLocalStorage("showUsd", true);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const [showUnlabeled, setShowUnlabeled] = useState<boolean>(false);
   const [selectedDepth, setSelectedDepth] = useState<number>(DEFAULT_DEPTH);
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
@@ -1259,34 +1262,34 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
     <div className="flex flex-col gap-y-[15px]">
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
-      <TopRowContainer className="gap-y-[10px]">
-        <TopRowParent>
+      <GTPButtonContainer>
+        <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
           {Object.entries(METRIC_LABELS).map(([key, { label, shortLabel }]) => (
-            <TopRowChild
+            <GTPButton
               key={key}
-              className="flex items-center justify-center h-[28px] lg:h-[44px]"
+              size="sm"
               isSelected={selectedMetric === (key as MetricKey)}
-              onClick={() => setSelectedMetric(key as MetricKey)}
-            >
-              <span className="hidden sm:block">{label}</span>
-              <span className="block sm:hidden">{shortLabel}</span>
-            </TopRowChild>
+              className="w-full justify-center"
+              innerStyle={{ width: "100%" }}
+              clickHandler={() => setSelectedMetric(key as MetricKey)}
+              label={isMobile ? shortLabel : label}
+            />
           ))}
-        </TopRowParent>
-        <TopRowParent>
+        </GTPButtonRow>
+        <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
           {[
             { id: "1d", label: "Yesterday", shortLabel: "1d" },
             { id: "7d", label: "Last 7 Days", shortLabel: "7d" },
           ].map((option) => (
-            <TopRowChild
+            <GTPButton
               key={option.id}
-              className="flex items-center justify-center h-[28px] lg:h-[44px]"
+              size="sm"
               isSelected={selectedTimespan === option.id}
-              onClick={() => setSelectedTimespan(option.id as "1d" | "7d")}
-            >
-              <span className="hidden sm:block">{option.label}</span>
-              <span className="block sm:hidden">{option.shortLabel}</span>
-            </TopRowChild>
+              className="w-full justify-center"
+              innerStyle={{ width: "100%" }}
+              clickHandler={() => setSelectedTimespan(option.id as "1d" | "7d")}
+              label={isMobile ? option.shortLabel : option.label}
+            />
           ))}
           <div
             className="relative z-[50]"
@@ -1294,14 +1297,14 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
             onMouseLeave={() => setHoverSettings(false)}
           >
             <div
-              className={`flex items-center relative h-[28px] lg:h-[44px] bg-color-ui-active gap-x-[10px] rounded-full px-[7px] overflow-clip md:px-[15px] py-[10px] transition-all z-[2] duration-300 hover:cursor-pointer ${hoverSettings ? "w-[190px] md:w-[336px] justify-start" : "w-[28px] md:w-[128px] justify-start"
+              className={`flex items-center relative h-[30px] bg-color-ui-active gap-x-[10px] rounded-full px-[7px] overflow-clip md:px-[15px] py-[5px] transition-all z-[2] duration-300 hover:cursor-pointer ${hoverSettings ? "w-[190px] md:w-[336px] justify-start" : "w-[30px] md:w-[128px] justify-start"
                 }`}
             >
               <GTPIcon
                 icon="gtp-settings"
                 size="sm"
-                className="!size-[15px] lg:!size-[24px]"
-                containerClassName="!size-[28px] flex items-center jusity-center lg:!size-[24px]"
+                className="!size-[16px]"
+                containerClassName="!size-[16px] flex items-center justify-center"
               />
 
               <div className="font-semibold transition-all">Settings</div>
@@ -1408,8 +1411,8 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </div>
             </div>
           </div>
-        </TopRowParent>
-      </TopRowContainer>
+        </GTPButtonRow>
+      </GTPButtonContainer>
 
       <div className="flex flex-col gap-y-[3px]">
         {/* Ancestor path (smaller) — animates in/out */}
