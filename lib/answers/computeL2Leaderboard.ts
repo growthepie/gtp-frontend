@@ -7,7 +7,7 @@
 //   1. master.json `chains[].bucket` — drops chains where bucket === "Layer 1"
 //      (Ethereum) or "-" (aggregate keys like all_l2s, multiple).
 //   2. An explicit non-L2 exclusion list — chains with their own validator
-//      sets that don't post data to Ethereum (Polygon PoS, Ronin). These have
+//      sets that don't post data to Ethereum (e.g. Polygon PoS). These have
 //      `bucket: "Others"` so a bucket filter alone wouldn't catch them.
 //
 // The metric values come from `landing_page.json` `data.metrics.table_visual`
@@ -50,7 +50,7 @@ export type L2Leaderboard = {
   universeKeys: string[];
   // Chain keys excluded today (Ethereum is always excluded as L1; sidechains
   // appear here only while they remain non-L2). Used by the answer prose to
-  // name what's out and why, instead of hard-coding "Polygon PoS, Ronin".
+  // name what's out and why, instead of hard-coding any specific chain name.
   excludedNonL2Keys: string[];
   // Daily-only leaderboard derived from landing_page.json (kept for the
   // single-leader / FAQ acceptedAnswer placeholders). Equivalent to
@@ -245,8 +245,8 @@ export const getL2UsageLeaderboard = cache(
       }
     }
 
-    // Report the sidechain exclusions in display-name form so prose can
-    // render them without hard-coding chain keys. Ethereum is always
+    // Report the sidechain / non-L2 exclusions in display-name form so prose
+    // can render them without hard-coding chain keys. Ethereum is always
     // implicitly excluded (it's L1) and isn't reported here.
     const sidechainExclusions = Array.from(NON_L2_KEYS)
       .filter((k) => k !== 'ethereum' && k !== 'all_l2s' && k !== 'multiple')

@@ -84,6 +84,89 @@ import {
   formatRatioPhrase as formatScalingRatioPhrase,
   type EthereumScalingComparison,
 } from './computeEthereumScaling';
+import {
+  getL2Growth,
+  buildGrowthAcceptedAnswer,
+  buildGrowthAnswerTables,
+  buildGrowthDense,
+  formatLeader as formatGrowthLeader,
+  formatTopList as formatGrowthTopList,
+  type L2Growth,
+} from './computeL2Growth';
+import {
+  getL2TvsRanking,
+  buildTvsAcceptedAnswer,
+  buildTvsAnswerTables,
+  buildTvsDenseSentence,
+  formatLeader as formatTvsLeader,
+  formatTopList as formatTvsTopList,
+  type L2TvsRanking,
+} from './computeL2TvsRanking';
+import {
+  getL2Profit,
+  buildProfitAcceptedAnswer,
+  buildProfitAnswerTables,
+  buildProfitDenseSentence,
+  formatLeader30d as formatProfitLeader30d,
+  formatTopList as formatProfitTopList,
+  formatEcosystemTotal as formatProfitEcosystemTotal,
+  type L2Profit,
+} from './computeL2Profit';
+import {
+  getL2RentToMainnet,
+  buildRentAcceptedAnswer,
+  buildRentAnswerTables,
+  buildRentDenseSentence,
+  formatContributorLeader as formatRentContributorLeader,
+  formatContributorTopList as formatRentContributorTopList,
+  formatEcosystemTotal as formatRentEcosystemTotal,
+  type L2RentToMainnet,
+} from './computeL2RentToMainnet';
+import {
+  getL2Maturity,
+  buildMaturityAcceptedAnswer,
+  buildMaturityAnswerTables,
+  buildMaturityGroupsMarkdown,
+  formatGroupChains as formatMaturityGroupChains,
+  countAtLevel as countMaturityAtLevel,
+  type L2MaturityRanking,
+} from './computeL2Maturity';
+import {
+  getL2Eip7702Activity,
+  buildEip7702AcceptedAnswer,
+  buildEip7702AnswerTables,
+  buildEip7702DenseSentence,
+  formatLeader as formatEip7702Leader,
+  formatTopList as formatEip7702TopList,
+  formatEthereumMainnet as formatEip7702EthereumMainnet,
+  type L2Eip7702Activity,
+} from './computeL2Eip7702';
+import {
+  getDefiL1VsL2,
+  buildDefiAcceptedAnswer,
+  buildDefiAnswerTables,
+  buildDefiDenseSentence,
+  formatEthereumSwapFee as formatDefiEthereumSwapFee,
+  formatCheapestL2SwapFee as formatDefiCheapestL2SwapFee,
+  formatCheapestL2SwapChain as formatDefiCheapestL2SwapChain,
+  formatSwapMultiplier as formatDefiSwapMultiplier,
+  buildSwapFeePhrase as buildDefiSwapFeePhrase,
+  formatStablesL1 as formatDefiStablesL1,
+  formatStablesL2 as formatDefiStablesL2,
+  formatStablesL2Share,
+  formatStablesRatio,
+  formatL2ContributorTopList as formatDefiContributorTopList,
+  type DefiL1VsL2,
+} from './computeDefiL1VsL2';
+import {
+  getDaProviderComparison,
+  buildDaAcceptedAnswer,
+  buildDaProviderAnswerTables,
+  buildDaDenseSentence,
+  formatProviderFee as formatDaProviderFee,
+  formatRatio as formatDaRatio,
+  type DaProviderComparison,
+} from './computeDaProviderComparison';
 import { getSupportersProseList } from '@/lib/contributors';
 
 const SECTION = 'answers';
@@ -115,7 +198,15 @@ type LeaderboardKind =
   | 'l2-stables'
   | 'l2-txs'
   | 'l2-apps'
-  | 'l2-scaling';
+  | 'l2-scaling'
+  | 'l2-growth'
+  | 'l2-tvs'
+  | 'l2-profit'
+  | 'l2-rent'
+  | 'l2-maturity'
+  | 'l2-eip7702'
+  | 'defi-l1-vs-l2'
+  | 'da-providers';
 const LEADERBOARD_KIND_BY_SLUG: Record<string, LeaderboardKind> = {
   'most-used-ethereum-l2': 'l2-usage',
   'lowest-fee-ethereum-l2': 'l2-fees',
@@ -123,6 +214,14 @@ const LEADERBOARD_KIND_BY_SLUG: Record<string, LeaderboardKind> = {
   'ethereum-l2-transaction-count': 'l2-txs',
   'top-apps-ethereum-l2s': 'l2-apps',
   'is-ethereum-scaling-through-l2s': 'l2-scaling',
+  'fastest-growing-ethereum-l2': 'l2-growth',
+  'most-value-secured-ethereum-l2': 'l2-tvs',
+  'most-profitable-ethereum-l2': 'l2-profit',
+  'ethereum-mainnet-revenue-from-l2s': 'l2-rent',
+  'ethereum-l2-maturity-stages': 'l2-maturity',
+  'most-smart-account-activity-ethereum-l2': 'l2-eip7702',
+  'defi-l1-vs-l2': 'defi-l1-vs-l2',
+  'what-is-data-availability': 'da-providers',
 };
 
 // Tagged union so downstream callers can branch on `kind` without re-fetching
@@ -132,6 +231,14 @@ type LeaderboardData =
   | { kind: 'l2-fees'; lb: L2FeesLeaderboard }
   | { kind: 'l2-stables'; lb: L2StablesLeaderboard }
   | { kind: 'l2-txs'; lb: L2TxsEcosystem }
+  | { kind: 'l2-growth'; lb: L2Growth }
+  | { kind: 'l2-tvs'; lb: L2TvsRanking }
+  | { kind: 'l2-profit'; lb: L2Profit }
+  | { kind: 'l2-rent'; lb: L2RentToMainnet }
+  | { kind: 'l2-maturity'; lb: L2MaturityRanking }
+  | { kind: 'l2-eip7702'; lb: L2Eip7702Activity }
+  | { kind: 'defi-l1-vs-l2'; lb: DefiL1VsL2 }
+  | { kind: 'da-providers'; lb: DaProviderComparison }
   | { kind: 'l2-apps'; lb: L2TopApps }
   | { kind: 'l2-scaling'; lb: EthereumScalingComparison };
 
@@ -398,6 +505,258 @@ const buildScalingReplacements = (
   };
 };
 
+// Build the placeholder dictionary for the L2 growth-rate answer page.
+// Namespaced `l2_growth_*` so tokens can't collide with the other namespaces.
+const buildGrowthReplacements = (
+  data: L2Growth,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_growth_data_date: dataDate,
+    l2_growth_universe_size: String(data.universeSize),
+    l2_growth_universe_list: data.universeKeys.join(', '),
+    l2_growth_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    // Per-(metric, window) single-leader strings.
+    l2_growth_throughput_monthly_leader: formatGrowthLeader(
+      data.byMetricByWindow.throughput.monthly,
+      'throughput',
+    ),
+    l2_growth_throughput_quarterly_leader: formatGrowthLeader(
+      data.byMetricByWindow.throughput.quarterly,
+      'throughput',
+    ),
+    l2_growth_txcount_monthly_leader: formatGrowthLeader(
+      data.byMetricByWindow.txcount.monthly,
+      'txcount',
+    ),
+    l2_growth_txcount_quarterly_leader: formatGrowthLeader(
+      data.byMetricByWindow.txcount.quarterly,
+      'txcount',
+    ),
+    l2_growth_daa_monthly_leader: formatGrowthLeader(
+      data.byMetricByWindow.daa.monthly,
+      'daa',
+    ),
+    l2_growth_daa_quarterly_leader: formatGrowthLeader(
+      data.byMetricByWindow.daa.quarterly,
+      'daa',
+    ),
+    l2_growth_tvl_monthly_leader: formatGrowthLeader(
+      data.byMetricByWindow.tvl.monthly,
+      'tvl',
+    ),
+    l2_growth_tvl_quarterly_leader: formatGrowthLeader(
+      data.byMetricByWindow.tvl.quarterly,
+      'tvl',
+    ),
+    // Per-(metric, window) top-3 prose strings.
+    l2_growth_throughput_monthly_top3: formatGrowthTopList(
+      data.byMetricByWindow.throughput.monthly,
+      'throughput',
+      3,
+    ),
+    l2_growth_throughput_quarterly_top3: formatGrowthTopList(
+      data.byMetricByWindow.throughput.quarterly,
+      'throughput',
+      3,
+    ),
+    l2_growth_txcount_monthly_top3: formatGrowthTopList(
+      data.byMetricByWindow.txcount.monthly,
+      'txcount',
+      3,
+    ),
+    l2_growth_txcount_quarterly_top3: formatGrowthTopList(
+      data.byMetricByWindow.txcount.quarterly,
+      'txcount',
+      3,
+    ),
+    l2_growth_daa_monthly_top3: formatGrowthTopList(
+      data.byMetricByWindow.daa.monthly,
+      'daa',
+      3,
+    ),
+    l2_growth_daa_quarterly_top3: formatGrowthTopList(
+      data.byMetricByWindow.daa.quarterly,
+      'daa',
+      3,
+    ),
+    l2_growth_tvl_monthly_top3: formatGrowthTopList(
+      data.byMetricByWindow.tvl.monthly,
+      'tvl',
+      3,
+    ),
+    l2_growth_tvl_quarterly_top3: formatGrowthTopList(
+      data.byMetricByWindow.tvl.quarterly,
+      'tvl',
+      3,
+    ),
+    // Dense quotable sentences — one per window collapsing four metrics.
+    l2_growth_monthly_dense: buildGrowthDense(data, 'monthly', dataDate),
+    l2_growth_quarterly_dense: buildGrowthDense(data, 'quarterly', dataDate),
+  };
+};
+
+// --- Placeholder builders for the six newer leaderboard kinds -------------
+
+const buildTvsReplacements = (data: L2TvsRanking): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  const fmtTotal = (n: number | null): string => {
+    if (n == null || !Number.isFinite(n)) return '—';
+    if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'k';
+    return '$' + n.toFixed(2);
+  };
+  return {
+    l2_tvs_data_date: dataDate,
+    l2_tvs_universe_size: String(data.universeSize),
+    l2_tvs_universe_list: data.universeKeys.join(', '),
+    l2_tvs_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0 ? data.excludedNonL2Keys.join(', ') : 'none',
+    l2_tvs_leader: formatTvsLeader(data),
+    l2_tvs_top10: formatTvsTopList(data, 10),
+    l2_tvs_dense: buildTvsDenseSentence(data, dataDate),
+    l2_tvs_ecosystem_total: fmtTotal(data.ecosystemTotalUsd),
+  };
+};
+
+const buildProfitReplacements = (data: L2Profit): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_profit_data_date: dataDate,
+    l2_profit_universe_size: String(data.universeSize),
+    l2_profit_universe_list: data.universeKeys.join(', '),
+    l2_profit_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    l2_profit_leader_30d: formatProfitLeader30d(data),
+    l2_profit_top10: formatProfitTopList(data, 10),
+    l2_profit_dense: buildProfitDenseSentence(data, dataDate),
+    l2_profit_ecosystem_30d: formatProfitEcosystemTotal(data, '30d'),
+    l2_profit_ecosystem_90d: formatProfitEcosystemTotal(data, '90d'),
+    l2_profit_ecosystem_alltime: formatProfitEcosystemTotal(data, 'allTime'),
+  };
+};
+
+const buildRentReplacements = (data: L2RentToMainnet): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_rent_data_date: dataDate,
+    l2_rent_universe_size: String(data.universeSize),
+    l2_rent_universe_list: data.universeKeys.join(', '),
+    l2_rent_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0 ? data.excludedNonL2Keys.join(', ') : 'none',
+    l2_rent_daily: formatRentEcosystemTotal(data, 'daily'),
+    l2_rent_30d: formatRentEcosystemTotal(data, '30d'),
+    l2_rent_90d: formatRentEcosystemTotal(data, '90d'),
+    l2_rent_alltime: formatRentEcosystemTotal(data, 'allTime'),
+    l2_rent_top_contributor: formatRentContributorLeader(data),
+    l2_rent_top_contributors_top3: formatRentContributorTopList(data, 3),
+    l2_rent_dense: buildRentDenseSentence(data, dataDate),
+  };
+};
+
+const buildMaturityReplacements = (
+  data: L2MaturityRanking,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_mat_data_date: dataDate,
+    l2_mat_universe_size: String(data.universeSize),
+    l2_mat_universe_list: data.universeKeys.join(', '),
+    l2_mat_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0 ? data.excludedNonL2Keys.join(', ') : 'none',
+    l2_mat_maturing_chains: formatMaturityGroupChains(data, '3_maturing'),
+    l2_mat_developing_chains: formatMaturityGroupChains(data, '2_developing'),
+    l2_mat_emerging_chains: formatMaturityGroupChains(data, '1_emerging'),
+    l2_mat_early_chains: formatMaturityGroupChains(data, '0_early_phase'),
+    l2_mat_maturing_count: String(countMaturityAtLevel(data, '3_maturing')),
+    l2_mat_developing_count: String(countMaturityAtLevel(data, '2_developing')),
+    l2_mat_emerging_count: String(countMaturityAtLevel(data, '1_emerging')),
+    l2_mat_early_count: String(countMaturityAtLevel(data, '0_early_phase')),
+    l2_mat_groups_md: buildMaturityGroupsMarkdown(data),
+  };
+};
+
+const buildEip7702Replacements = (
+  data: L2Eip7702Activity,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_7702_data_date: dataDate,
+    l2_7702_leader: formatEip7702Leader(data),
+    l2_7702_top10: formatEip7702TopList(data, 10),
+    l2_7702_ethereum: formatEip7702EthereumMainnet(data),
+    l2_7702_dense: buildEip7702DenseSentence(data, dataDate),
+  };
+};
+
+const buildDefiReplacements = (data: DefiL1VsL2): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  const fmtCount = (n: number | null): string => {
+    if (n == null || !Number.isFinite(n)) return 'unavailable';
+    if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'k';
+    return Math.round(n).toString();
+  };
+  const fmtUsd = (n: number | null): string => {
+    if (n == null || !Number.isFinite(n)) return 'unavailable';
+    if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'k';
+    return '$' + n.toFixed(2);
+  };
+  const fmtShare = (n: number | null): string => {
+    if (n == null || !Number.isFinite(n)) return '—';
+    if (n >= 0.1) return (n * 100).toFixed(0) + '%';
+    return (n * 100).toFixed(1) + '%';
+  };
+  return {
+    l2_defi_data_date: dataDate,
+    l2_defi_dense: buildDefiDenseSentence(data, dataDate),
+    // L1 vs L2 finance-category activity (blockspace overview).
+    l2_defi_l1_txs_30d: fmtCount(data.byWindow['30d']?.l1Txcount ?? null),
+    l2_defi_l2_txs_30d: fmtCount(data.byWindow['30d']?.l2Txcount ?? null),
+    l2_defi_l1_gas_30d: fmtUsd(data.byWindow['30d']?.l1GasFeesUsd ?? null),
+    l2_defi_l2_gas_30d: fmtUsd(data.byWindow['30d']?.l2GasFeesUsd ?? null),
+    l2_defi_l2_share_txs_30d: fmtShare(data.byWindow['30d']?.l2ShareTxcount ?? null),
+    l2_defi_l2_share_gas_30d: fmtShare(data.byWindow['30d']?.l2ShareGasFeesUsd ?? null),
+    l2_defi_top_l2s_30d: formatDefiContributorTopList(data, 5),
+    // L1 vs L2 capital via stablecoin supply.
+    l2_defi_stables_l1: formatDefiStablesL1(data),
+    l2_defi_stables_l2: formatDefiStablesL2(data),
+    l2_defi_stables_l2_share: formatStablesL2Share(data),
+    l2_defi_stables_l2_vs_l1_ratio: formatStablesRatio(data),
+    // Live swap-fee comparison.
+    l2_defi_eth_swap_fee: formatDefiEthereumSwapFee(data),
+    l2_defi_l2_swap_fee: formatDefiCheapestL2SwapFee(data),
+    l2_defi_l2_swap_chain: formatDefiCheapestL2SwapChain(data),
+    l2_defi_swap_multiplier: formatDefiSwapMultiplier(data),
+    l2_defi_swap_phrase: buildDefiSwapFeePhrase(data),
+  };
+};
+
+const buildDaProvidersReplacements = (
+  data: DaProviderComparison,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_da_data_date: dataDate,
+    l2_da_celestia_per_mb: formatDaProviderFee(data, 'da_celestia', '30d'),
+    l2_da_eigenda_per_mb: formatDaProviderFee(data, 'da_eigenda', '30d'),
+    l2_da_ethereum_per_mb: formatDaProviderFee(data, 'da_ethereum_blobs', '30d'),
+    l2_da_avail_per_mb: formatDaProviderFee(data, 'da_avail', '30d'),
+    l2_da_celestia_vs_eigenda: formatDaRatio(data, 'da_celestia', 'da_eigenda', '30d'),
+    l2_da_eigenda_vs_celestia: formatDaRatio(data, 'da_eigenda', 'da_celestia', '30d'),
+    l2_da_dense: buildDaDenseSentence(data, dataDate),
+  };
+};
+
 // Dispatch on leaderboard kind so processAnswer doesn't care which subtype
 // it has.
 const buildLeaderboardReplacements = (
@@ -416,6 +775,22 @@ const buildLeaderboardReplacements = (
       return buildAppsReplacements(data.lb);
     case 'l2-scaling':
       return buildScalingReplacements(data.lb);
+    case 'l2-growth':
+      return buildGrowthReplacements(data.lb);
+    case 'l2-tvs':
+      return buildTvsReplacements(data.lb);
+    case 'l2-profit':
+      return buildProfitReplacements(data.lb);
+    case 'l2-rent':
+      return buildRentReplacements(data.lb);
+    case 'l2-maturity':
+      return buildMaturityReplacements(data.lb);
+    case 'l2-eip7702':
+      return buildEip7702Replacements(data.lb);
+    case 'defi-l1-vs-l2':
+      return buildDefiReplacements(data.lb);
+    case 'da-providers':
+      return buildDaProvidersReplacements(data.lb);
   }
 };
 
@@ -526,6 +901,30 @@ export const processAnswer = cache(
     } else if (leaderboardKind === 'l2-scaling') {
       const lb = await getEthereumScaling();
       if (lb) leaderboardData = { kind: 'l2-scaling', lb };
+    } else if (leaderboardKind === 'l2-growth') {
+      const lb = await getL2Growth();
+      if (lb) leaderboardData = { kind: 'l2-growth', lb };
+    } else if (leaderboardKind === 'l2-tvs') {
+      const lb = await getL2TvsRanking();
+      if (lb) leaderboardData = { kind: 'l2-tvs', lb };
+    } else if (leaderboardKind === 'l2-profit') {
+      const lb = await getL2Profit();
+      if (lb) leaderboardData = { kind: 'l2-profit', lb };
+    } else if (leaderboardKind === 'l2-rent') {
+      const lb = await getL2RentToMainnet();
+      if (lb) leaderboardData = { kind: 'l2-rent', lb };
+    } else if (leaderboardKind === 'l2-maturity') {
+      const lb = await getL2Maturity();
+      if (lb) leaderboardData = { kind: 'l2-maturity', lb };
+    } else if (leaderboardKind === 'l2-eip7702') {
+      const lb = await getL2Eip7702Activity();
+      if (lb) leaderboardData = { kind: 'l2-eip7702', lb };
+    } else if (leaderboardKind === 'defi-l1-vs-l2') {
+      const lb = await getDefiL1VsL2();
+      if (lb) leaderboardData = { kind: 'defi-l1-vs-l2', lb };
+    } else if (leaderboardKind === 'da-providers') {
+      const lb = await getDaProviderComparison();
+      if (lb) leaderboardData = { kind: 'da-providers', lb };
     }
 
     try {
@@ -560,7 +959,23 @@ export const processAnswer = cache(
                 ? buildTopAppsAcceptedAnswer(leaderboardData.lb)
                 : leaderboardData?.kind === 'l2-scaling'
                   ? buildScalingAcceptedAnswer(leaderboardData.lb)
-                  : deriveAcceptedAnswer(qb, prose);
+                  : leaderboardData?.kind === 'l2-growth'
+                    ? buildGrowthAcceptedAnswer(leaderboardData.lb)
+                    : leaderboardData?.kind === 'l2-tvs'
+                      ? buildTvsAcceptedAnswer(leaderboardData.lb)
+                      : leaderboardData?.kind === 'l2-profit'
+                        ? buildProfitAcceptedAnswer(leaderboardData.lb)
+                        : leaderboardData?.kind === 'l2-rent'
+                          ? buildRentAcceptedAnswer(leaderboardData.lb)
+                          : leaderboardData?.kind === 'l2-maturity'
+                            ? buildMaturityAcceptedAnswer(leaderboardData.lb)
+                            : leaderboardData?.kind === 'l2-eip7702'
+                              ? buildEip7702AcceptedAnswer(leaderboardData.lb)
+                              : leaderboardData?.kind === 'defi-l1-vs-l2'
+                                ? buildDefiAcceptedAnswer(leaderboardData.lb)
+                                : leaderboardData?.kind === 'da-providers'
+                                  ? buildDaAcceptedAnswer(leaderboardData.lb)
+                                  : deriveAcceptedAnswer(qb, prose);
 
     // The data backing every chart/dataset on an answer page refreshes daily
     // from growthepie's API, so stamp `dateModified` to today's UTC date.
@@ -653,7 +1068,23 @@ export const processAnswer = cache(
                 ? buildTopAppsAnswerTables(leaderboardData.lb)
                 : leaderboardData?.kind === 'l2-scaling'
                   ? buildScalingAnswerTables(leaderboardData.lb)
-                  : [];
+                  : leaderboardData?.kind === 'l2-growth'
+                    ? buildGrowthAnswerTables(leaderboardData.lb)
+                    : leaderboardData?.kind === 'l2-tvs'
+                      ? buildTvsAnswerTables(leaderboardData.lb)
+                      : leaderboardData?.kind === 'l2-profit'
+                        ? buildProfitAnswerTables(leaderboardData.lb)
+                        : leaderboardData?.kind === 'l2-rent'
+                          ? buildRentAnswerTables(leaderboardData.lb)
+                          : leaderboardData?.kind === 'l2-maturity'
+                            ? buildMaturityAnswerTables(leaderboardData.lb)
+                            : leaderboardData?.kind === 'l2-eip7702'
+                              ? buildEip7702AnswerTables(leaderboardData.lb)
+                              : leaderboardData?.kind === 'defi-l1-vs-l2'
+                                ? buildDefiAnswerTables(leaderboardData.lb)
+                                : leaderboardData?.kind === 'da-providers'
+                                  ? buildDaProviderAnswerTables(leaderboardData.lb)
+                                  : [];
 
     return {
       qb,
