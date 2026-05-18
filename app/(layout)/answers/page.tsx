@@ -4,11 +4,15 @@
 //
 // SEO surfaces emitted:
 //   - `CollectionPage` JSON-LD whose `mainEntity` is an `ItemList` of every
-//     QAPage. Each list item embeds the question text and abstract so AI
-//     can index the entire section in one fetch.
+//     QAPage. Each list item embeds the question text and accepted answer so
+//     AI can index the entire section in one fetch.
 //   - `BreadcrumbList` JSON-LD (Home → Answers).
 //   - Visible semantic HTML: H1, intro <p>, an <ol> of <article> elements,
-//     each carrying schema.org microdata (`QAPage` / `Question`).
+//     each carrying schema.org microdata (`QAPage` / `Question` /
+//     `Answer.text`). The visible accepted-answer paragraph mirrors the
+//     JSON-LD `acceptedAnswer.text` so AI extractors see the same answer in
+//     both rendered HTML and structured data — visible-text agreement is
+//     what turns a schema hint into a confident citation.
 //   - Canonical URL + Open Graph metadata.
 //   - Plain link list at the bottom for non-JS crawlers and AI bots that
 //     prefer flat link discovery over nested microdata.
@@ -16,6 +20,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllAnswers } from '@/lib/answers';
+import { processAnswer } from '@/lib/answers/articleProcessor';
 import { serializeJsonLd } from '@/utils/json-ld';
 
 const SITE_URL = 'https://www.growthepie.com';
@@ -73,13 +78,28 @@ const countQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
 const countSubQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
   a.faq?.length ?? 0;
 
-export default function AnswersHubPage() {
-  const answers = getAllAnswers().sort((a, b) =>
+export default async function AnswersHubPage() {
+  const rawAnswers = getAllAnswers().sort((a, b) =>
     // Newest first — when there are many answers, AI engines crawl the top of
     // the list more aggressively, so put the most recent (most likely to be
     // re-quoted) at the top.
     new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
+
+  // Run each answer through the same processor the deep page uses so the
+  // visible/JSON-LD `acceptedAnswer` is the live-data-derived string (e.g.
+  // "Base has the lowest median fee at $0.003 …") rather than the editor-
+  // pinned "Data currently unavailable" fallback stub. processAnswer is
+  // React-cached, and so are the underlying leaderboard fetchers, so each
+  // leaderboard kind is fetched at most once per request even though many
+  // answers share the same upstream.
+  const processed = await Promise.all(
+    rawAnswers.map((a) => processAnswer(a.slug)),
+  );
+  const answers = rawAnswers.map((a, i) => ({
+    ...a,
+    acceptedAnswer: processed[i]?.acceptedAnswer ?? a.acceptedAnswer,
+  }));
 
   const coreCount = answers.length;
   const subCount = answers.reduce((sum, a) => sum + countSubQuestions(a), 0);
@@ -121,7 +141,7 @@ export default function AnswersHubPage() {
             answerCount: 1,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: (a as any).acceptedAnswer || a.summary || a.subtitle,
+              text: a.acceptedAnswer || a.summary || a.subtitle,
               url: `${SITE_URL}${SECTION_PATH}/${a.slug}`,
             },
           },
@@ -198,21 +218,31 @@ export default function AnswersHubPage() {
                   className="border-b border-color-bg-medium pb-[15px]"
                 >
                   <link itemProp="url" href={`${SITE_URL}${url}`} />
-                  <h2 className="heading-md mb-[6px]">
-                    <Link
-                      href={url}
-                      itemProp="mainEntityOfPage"
-                      className="hover:underline"
-                    >
-                      <span
-                        itemProp="name"
-                        itemScope
-                        itemType="https://schema.org/Question"
-                      >
+                  <div
+                    itemProp="mainEntity"
+                    itemScope
+                    itemType="https://schema.org/Question"
+                  >
+                    <h2 className="heading-md mb-[6px]">
+                      <Link href={url} className="hover:underline">
                         <span itemProp="name">{a.title}</span>
-                      </span>
-                    </Link>
-                  </h2>
+                      </Link>
+                    </h2>
+                    {a.acceptedAnswer && (
+                      <div
+                        itemProp="acceptedAnswer"
+                        itemScope
+                        itemType="https://schema.org/Answer"
+                      >
+                        <p
+                          itemProp="text"
+                          className="text-md text-color-text-primary mb-[8px]"
+                        >
+                          {a.acceptedAnswer}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   {snippet && (
                     <p
                       itemProp="description"

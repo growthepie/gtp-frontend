@@ -107,6 +107,7 @@ Data-driven short articles on Ethereum ecosystem trends. Published by Matthias S
 
 ## Indexes
 
+- [Full Content (Answers section)](https://www.growthepie.com/llms-full.txt): Single-fetch plaintext dump of every page in the /answers section — direct answer, full prose, and FAQ for each — recomputed daily with live data substituted from growthepie's API.
 - [Main Sitemap](https://www.growthepie.com/sitemap.xml): Canonical index of public pages.
 - [Chains Sitemap](https://www.growthepie.com/chains-sitemap.xml): Index of chain dashboard pages.
 - [Fundamentals Sitemap](https://www.growthepie.com/fundamentals-sitemap.xml): Index of ecosystem-wide metrics pages.
