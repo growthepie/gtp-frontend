@@ -20,7 +20,7 @@ import useSWR from 'swr';
 import { ChainMetrics, HistoryData, HistoryItem } from './types';
 import { useMediaQuery } from 'usehooks-ts';
 
-import { TPSChart } from './TPSChart';
+import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { throttle } from 'lodash';
 import { LinkButton } from '../LinkButton';
 import dayjs from "@/lib/dayjs";
@@ -371,6 +371,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   handleToggleTPS,
 }: EthereumEcosystemTPSCardProps) => {
   const { AllChainsByKeys, SupportedChainKeys } = useMaster();
+  const { theme } = useTheme();
   // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
 
   // --- DATA FETCHING ---
@@ -411,6 +412,18 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
+
+  const chartSeries = useMemo<GTPChartSeries[]>(() => {
+    const colors: [string, string] = theme === "dark"
+      ? ["#1df7ef", "#10808c"]
+      : ["#00cfc5", "#0e6f7a"];
+    return [{
+      name: "Ethereum Ecosystem",
+      seriesType: "bar",
+      data: tpsHistory.slice(-40).map(item => [new Date(item.timestamp).getTime(), item.tps]),
+      color: colors,
+    }];
+  }, [tpsHistory, theme]);
 
   // --- MEMOIZED CALCULATIONS ---
 
@@ -485,7 +498,62 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
         {/* TPS Chart - Pass the combined historical and live data */}
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
-          <TPSChart data={tpsHistory} anchorZero />
+          <GTPChart
+            series={chartSeries}
+            xAxisType="category"
+            yAxisMin={0}
+            animation={false}
+            showWatermark={false}
+            grid={{ right: 0, top: 5, bottom: 0 }}
+            ySplitNumber={1}
+            yAxisLabelFormatter={(v) => {
+              if (v === 0) return "0";
+              if (Math.abs(v) >= 1_000_000) return `${+(v / 1_000_000).toPrecision(3)}M`;
+              if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}k`;
+              return String(Math.round(v));
+            }}
+            seriesOverrides={(s) => ({
+              ...s,
+              itemStyle: {
+                ...(s.itemStyle as Record<string, unknown>),
+                color: {
+                  type: "linear",
+                  x: 0, y: 1, x2: 0, y2: 0,
+                  colorStops: [
+                    { offset: 0, color: theme === "dark" ? "#10808c" : "#0e6f7a" },
+                    { offset: 1, color: theme === "dark" ? "#1df7ef" : "#00cfc5" },
+                  ],
+                },
+              },
+            })}
+            tooltipFormatter={(params) => {
+              const p = params[0];
+              if (!p) return "";
+              const time = new Intl.DateTimeFormat("en-GB", {
+                hour: "2-digit", minute: "2-digit", second: "2-digit",
+                hour12: false, timeZone: "UTC",
+              }).format(new Date(p.value[0]));
+              const val = p.value[1].toLocaleString("en-GB", {
+                minimumFractionDigits: 1, maximumFractionDigits: 1,
+              });
+              const color = theme === "dark" ? "#1df7ef" : "#00cfc5";
+              return `
+                <div class="flex flex-col gap-y-[5px] py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard w-fit mt-3 mr-3 mb-3 min-w-60">
+                  <div class="flex items-center justify-between font-bold text-[13px] ml-[18px] mb-1">
+                    <div>${time} UTC</div>
+                    <span class="text-xs font-medium text-color-text-primary">TPS</span>
+                  </div>
+                  <div class="flex w-full space-x-1.5 items-center font-medium leading-tight">
+                    <div class="w-[15px] h-[10px] rounded-r-full" style="background-color:${color}"></div>
+                    <div class="tooltip-point-name text-xs">${p.seriesName}</div>
+                    <div class="flex-1 text-right justify-end flex numbers-xs">${val}</div>
+                  </div>
+                </div>`;
+            }}
+            suffix=" TPS"
+            decimals={1}
+            height="100%"
+          />
         </div>
       </div>
 
