@@ -14,10 +14,11 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-starknet-stablecoin": {
+  "ath-celo-onchain-profit": {
+    title: "All-Time High: Onchain Profit for Celo",
     allTimeHigh: {
-      chainKey: "starknet",
-      metricKey: "stablecoin-market-cap",
+      chainKey: "celo",
+      metricKey: "profit",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,
