@@ -54,7 +54,7 @@ const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C", "#667170", "#5A6665", "#4F5
 const toMs = (ts: number) => ts > 1e10 ? ts : ts * 1000;
 
 const XAxisLabels = React.memo(({ xMin, xMax, rightMargin, isMobile }: { xMin: number, xMax: number, rightMargin?: string, isMobile: boolean }) => (
-  <div className={`absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] ${isMobile ? "pr-[3px]" : "pr-[19px]"} opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>
+  <div className={`absolute bottom-[10px] left-0 right-0 flex w-full justify-between items-center pl-[15px] ${isMobile ? "pr-[3px]" : "pr-[19px]"} opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>
     <div className='text-xxs flex gap-x-[2px] items-center bg-color-bg-medium/50 rounded-full px-[5px] py-[2px]'>
       <div className='w-[6px] rounded-full h-[6px] bg-color-text-primary' />
       {new Date(xMin).getFullYear()}
