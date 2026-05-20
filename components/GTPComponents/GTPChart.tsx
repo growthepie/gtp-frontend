@@ -352,6 +352,13 @@ export interface GTPChartProps {
   legendInactiveSeries?: string[];
   /** When true, the watermark will overlap with the legend. */
   watermarkOverlap?: boolean;
+  /**
+   * Called with the pixel coordinates {pixelX, pixelY} of the rightmost visible data point.
+   * For stacked series, pixelY reflects the top of the positive stack at that timestamp.
+   * Coordinates are relative to the GTPChart container's top-left corner.
+   * Only supported when xAxisType="time". Returns null when coordinates cannot be resolved.
+   */
+  onLastDataPointCoords?: (coords: { pixelX: number; pixelY: number } | null) => void;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -445,6 +452,7 @@ export default function GTPChart({
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
   watermarkOverlap = false,
+  onLastDataPointCoords,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1478,6 +1486,74 @@ export default function GTPChart({
 
   const effectiveXMin = xAxisType === "time" ? timeAxisLayout?.min : xAxisMin;
   const effectiveXMax = xAxisType === "time" ? timeAxisLayout?.max : xAxisMax;
+
+  // --- Emit last visible data point pixel coordinates ---
+  const onLastDataPointCoordsRef = useRef(onLastDataPointCoords);
+  useEffect(() => { onLastDataPointCoordsRef.current = onLastDataPointCoords; }, [onLastDataPointCoords]);
+
+  useEffect(() => {
+    if (!onLastDataPointCoords) return;
+    if (xAxisType !== "time") {
+      onLastDataPointCoordsRef.current?.(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const instance = echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined;
+      if (!instance || chartNormalizedSeries.length === 0) {
+        onLastDataPointCoordsRef.current?.(null);
+        return;
+      }
+
+      const visibleMin = Number.isFinite(Number(effectiveXMin)) ? Number(effectiveXMin) : -Infinity;
+      const visibleMax = Number.isFinite(Number(effectiveXMax)) ? Number(effectiveXMax) : Infinity;
+
+      // Find the rightmost timestamp that has a valid value within the visible x range
+      let lastTs: number | null = null;
+      chartNormalizedSeries.forEach((s) => {
+        s.data.forEach(([ts, v]) => {
+          const t = Number(ts);
+          if (!Number.isFinite(t) || t < visibleMin || t > visibleMax) return;
+          if (typeof v !== "number" || !Number.isFinite(v)) return;
+          if (lastTs === null || t > lastTs) lastTs = t;
+        });
+      });
+
+      if (lastTs === null) {
+        onLastDataPointCoordsRef.current?.(null);
+        return;
+      }
+
+      // Sum positive values across all series at lastTs (works for both stacked and single-series)
+      let stackedValue = 0;
+      chartNormalizedSeries.forEach((s) => {
+        const point = s.data.find(([ts]) => Number(ts) === lastTs);
+        if (point && typeof point[1] === "number" && Number.isFinite(point[1]) && point[1] > 0) {
+          stackedValue += point[1];
+        }
+      });
+
+      // Fall back to the largest value when all values are non-positive
+      if (stackedValue === 0) {
+        chartNormalizedSeries.forEach((s) => {
+          const point = s.data.find(([ts]) => Number(ts) === lastTs);
+          if (point && typeof point[1] === "number" && Number.isFinite(point[1])) {
+            stackedValue = Math.max(stackedValue, point[1]);
+          }
+        });
+      }
+
+      const pixelCoords = instance.convertToPixel("grid", [lastTs, stackedValue]);
+      if (!pixelCoords || !Number.isFinite(pixelCoords[0]) || !Number.isFinite(pixelCoords[1])) {
+        onLastDataPointCoordsRef.current?.(null);
+        return;
+      }
+
+      onLastDataPointCoordsRef.current?.({ pixelX: pixelCoords[0], pixelY: pixelCoords[1] });
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, [chartNormalizedSeries, containerWidth, containerHeight, effectiveXMin, effectiveXMax, onLastDataPointCoords, xAxisType]);
 
   // --- Shared pixel mapper for overlay labels and subticks ---
   const axisPixelMap = useMemo(() => {
