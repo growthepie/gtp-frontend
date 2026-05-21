@@ -27,6 +27,14 @@ const gtpMain = {
   siteUrl: "https://www.growthepie.com",
   generateRobotsTxt: true,
   generateIndexSitemap: false,
+  additionalPaths: async () => [
+    {
+      loc: "/privacy-policy",
+      changefreq: "monthly",
+      priority: 0.7,
+      lastmod: "2026-05-21T00:00:00.000Z",
+    },
+  ],
 
   // Keep non-pages & internals out of XML sitemaps
   exclude: [
