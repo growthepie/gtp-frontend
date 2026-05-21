@@ -26,6 +26,7 @@ const baseUrl = "https://www.growthepie.com";
 const gtpMain = {
   siteUrl: "https://www.growthepie.com",
   generateRobotsTxt: true,
+  generateIndexSitemap: false,
 
   // Keep non-pages & internals out of XML sitemaps
   exclude: [
@@ -37,6 +38,8 @@ const gtpMain = {
     "/_next/*",
     "/_next/image*",
     "/api/*",
+    "/testchart",
+    "/icons",
     // existing
     "/blog",
     "/trackers/*",
