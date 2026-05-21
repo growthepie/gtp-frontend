@@ -20,6 +20,12 @@ import whatIsDataAvailability from './qb-what-is-data-availability';
 import whatWasTheMerge from './qb-what-was-the-merge';
 import mostSmartAccountActivityEthereumL2 from './qb-most-smart-account-activity-ethereum-l2';
 import defiL1VsL2 from './qb-defi-l1-vs-l2';
+import mostPopularDaLayer from './qb-most-popular-da-layer-for-ethereum-l2s';
+import ethereumEcosystemTps from './qb-ethereum-ecosystem-tps';
+import percentageOfEthereumActivityOnL2s from './qb-percentage-of-ethereum-activity-on-l2s';
+import baseVsArbitrum from './qb-base-vs-arbitrum';
+import highestMarketCapL2Token from './qb-highest-market-cap-l2-token';
+import areEthereumL2FeesGettingCheaper from './qb-are-ethereum-l2-fees-getting-cheaper';
 
 const ANSWERS_DATA: Record<string, QuickBiteData> = {
   'most-used-ethereum-l2': mostUsedEthereumL2,
@@ -42,6 +48,12 @@ const ANSWERS_DATA: Record<string, QuickBiteData> = {
   'what-was-the-merge': whatWasTheMerge,
   'most-smart-account-activity-ethereum-l2': mostSmartAccountActivityEthereumL2,
   'defi-l1-vs-l2': defiL1VsL2,
+  'most-popular-da-layer-for-ethereum-l2s': mostPopularDaLayer,
+  'ethereum-ecosystem-tps': ethereumEcosystemTps,
+  'percentage-of-ethereum-activity-on-l2s': percentageOfEthereumActivityOnL2s,
+  'base-vs-arbitrum': baseVsArbitrum,
+  'highest-market-cap-l2-token': highestMarketCapL2Token,
+  'are-ethereum-l2-fees-getting-cheaper': areEthereumL2FeesGettingCheaper,
 };
 
 export default ANSWERS_DATA;

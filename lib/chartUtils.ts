@@ -45,7 +45,7 @@ export const tooltipFormatter = (
       year: "numeric",
     });
 
-    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 rounded-[15px] bg-color-bg-default text-color-text-primary shadow-standard py-[15px] pr-[15px] text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
 
     let pointsSum = points.reduce((acc: number, point: any) => {
@@ -198,7 +198,7 @@ export const tooltipFormatter = (
       return acc;
     }, 0);
 
-    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 rounded-[15px] bg-color-bg-default text-color-text-primary shadow-standard py-[15px] pr-[15px] text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
 
     points

@@ -614,7 +614,7 @@ export default function OverviewChart({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 rounded-[15px] bg-color-bg-default text-color-text-primary shadow-standard py-[15px] pr-[15px] text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -642,6 +642,18 @@ export default function OverviewChart({
 
       const tooltipPoints = points
         .sort((a: any, b: any) => {
+          if (forceSelectedChain) {
+            const aIsUnlabeled =
+              typeof a?.series?.name === "string" &&
+              a.series.name.toLowerCase().includes("unlabeled");
+            const bIsUnlabeled =
+              typeof b?.series?.name === "string" &&
+              b.series.name.toLowerCase().includes("unlabeled");
+
+            if (aIsUnlabeled !== bIsUnlabeled) {
+              return aIsUnlabeled ? 1 : -1;
+            }
+          }
           return b.y - a.y;
         })
 
@@ -707,7 +719,17 @@ export default function OverviewChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, showUsd, selectedValue, selectedChain, selectedMode],
+    [
+      AllChainsByKeys,
+      valuePrefix,
+      reversePerformer,
+      showUsd,
+      selectedValue,
+      selectedChain,
+      selectedMode,
+      theme,
+      forceSelectedChain,
+    ],
   );
 
   const decimalPercentageToHex = (percentage: number) => {
@@ -875,7 +897,7 @@ export default function OverviewChart({
                 split={false}
                 followPointer={true}
                 followTouchMove={true}
-                backgroundColor={"#2A3433EE"}
+                backgroundColor={"transparent"}
                 padding={0}
                 hideDelay={300}
                 stickOnContact={true}
@@ -883,14 +905,9 @@ export default function OverviewChart({
                 borderRadius={17}
                 borderWidth={0}
                 outside={true}
-                shadow={{
-                  color: "black",
-                  opacity: 0.015,
-                  offsetX: 2,
-                  offsetY: 2,
-                }}
+                shadow={false}
                 style={{
-                  color: "rgb(215, 223, 222)",
+                  color: "rgb(var(--text-primary))",
                 }}
                 //formatter={tooltipFormatter}
                 // ensure tooltip is always above the chart

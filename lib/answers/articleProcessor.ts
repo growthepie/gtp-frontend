@@ -82,6 +82,13 @@ import {
   buildScalingDense,
   buildYesHeadline as buildScalingYesHeadline,
   formatRatioPhrase as formatScalingRatioPhrase,
+  buildShareAcceptedAnswer,
+  buildShareAnswerTables,
+  buildShareDenseSentence,
+  buildShareHeadline,
+  buildSharePhrase,
+  formatL2SharePct,
+  formatL1SharePct,
   type EthereumScalingComparison,
 } from './computeEthereumScaling';
 import {
@@ -167,6 +174,74 @@ import {
   formatRatio as formatDaRatio,
   type DaProviderComparison,
 } from './computeDaProviderComparison';
+import {
+  getDaLayerAdoption,
+  buildAdoptionAcceptedAnswer,
+  buildAdoptionAnswerTables,
+  buildAdoptionDenseSentence,
+  formatAdoptionLeader,
+  formatAdoptionTopList,
+  formatFees30dLeader,
+  formatBucketCount,
+  formatBucketFees,
+  formatBucketL2List,
+  formatBucketCostPerMb,
+  type DaLayerAdoption,
+} from './computeDaLayerAdoption';
+import {
+  getEthereumEcosystemTps,
+  buildEcosystemTpsAcceptedAnswer,
+  buildEcosystemTpsAnswerTables,
+  buildEcosystemTpsDenseSentence,
+  formatEcosystemLiveTps,
+  formatL1LiveTps,
+  formatL2LiveTps,
+  formatCount as formatEcoCount,
+  formatL2Share as formatEcoL2Share,
+  type EthereumEcosystemTps,
+} from './computeEthereumEcosystemTps';
+import {
+  getBaseVsArbitrum,
+  buildHeadToHeadAcceptedAnswer,
+  buildHeadToHeadAnswerTables,
+  buildHeadToHeadHeadline,
+  buildMetricPhrase as buildHeadToHeadMetricPhrase,
+  formatSideValue as formatH2HSideValue,
+  formatWinnerName as formatH2HWinnerName,
+  formatMultiple as formatH2HMultiple,
+  formatOverallWinnerName as formatH2HOverallWinnerName,
+  formatChainMeta as formatH2HChainMeta,
+  type ChainHeadToHead,
+} from './computeChainHeadToHead';
+import {
+  getL2TokenMarketCap,
+  buildL2TokenAcceptedAnswer,
+  buildL2TokenAnswerTables,
+  buildL2TokenDenseSentence,
+  formatLeader as formatL2TokenLeader,
+  formatTopList as formatL2TokenTopList,
+  formatNoTokenList as formatL2TokenNoTokenList,
+  formatEcosystemMarketCap,
+  formatEcosystemFdv,
+  formatLeaderName as formatL2TokenLeaderName,
+  formatLeaderMarketCap as formatL2TokenLeaderMC,
+  formatLeaderFdv as formatL2TokenLeaderFdv,
+  formatRunnerUp as formatL2TokenRunnerUp,
+  formatThirdPlace as formatL2TokenThirdPlace,
+  type L2TokenMarketCap,
+} from './computeL2TokenMarketCap';
+import {
+  getL2FeesTrend,
+  buildTrendAcceptedAnswer,
+  buildTrendAnswerTables,
+  buildTrendDenseSentence,
+  formatAnchorFee,
+  formatAnchorMonth,
+  formatPctChangeBetween,
+  formatMultipleReduction,
+  formatDirection,
+  type L2FeesTrend,
+} from './computeL2FeesTrend';
 import { getSupportersProseList } from '@/lib/contributors';
 
 const SECTION = 'answers';
@@ -206,7 +281,13 @@ type LeaderboardKind =
   | 'l2-maturity'
   | 'l2-eip7702'
   | 'defi-l1-vs-l2'
-  | 'da-providers';
+  | 'da-providers'
+  | 'da-adoption'
+  | 'ethereum-ecosystem-tps'
+  | 'l2-share'
+  | 'base-vs-arbitrum'
+  | 'l2-token-market-cap'
+  | 'l2-fees-trend';
 const LEADERBOARD_KIND_BY_SLUG: Record<string, LeaderboardKind> = {
   'most-used-ethereum-l2': 'l2-usage',
   'lowest-fee-ethereum-l2': 'l2-fees',
@@ -222,6 +303,12 @@ const LEADERBOARD_KIND_BY_SLUG: Record<string, LeaderboardKind> = {
   'most-smart-account-activity-ethereum-l2': 'l2-eip7702',
   'defi-l1-vs-l2': 'defi-l1-vs-l2',
   'what-is-data-availability': 'da-providers',
+  'most-popular-da-layer-for-ethereum-l2s': 'da-adoption',
+  'ethereum-ecosystem-tps': 'ethereum-ecosystem-tps',
+  'percentage-of-ethereum-activity-on-l2s': 'l2-share',
+  'base-vs-arbitrum': 'base-vs-arbitrum',
+  'highest-market-cap-l2-token': 'l2-token-market-cap',
+  'are-ethereum-l2-fees-getting-cheaper': 'l2-fees-trend',
 };
 
 // Tagged union so downstream callers can branch on `kind` without re-fetching
@@ -239,6 +326,12 @@ type LeaderboardData =
   | { kind: 'l2-eip7702'; lb: L2Eip7702Activity }
   | { kind: 'defi-l1-vs-l2'; lb: DefiL1VsL2 }
   | { kind: 'da-providers'; lb: DaProviderComparison }
+  | { kind: 'da-adoption'; lb: DaLayerAdoption }
+  | { kind: 'ethereum-ecosystem-tps'; lb: EthereumEcosystemTps }
+  | { kind: 'l2-share'; lb: EthereumScalingComparison }
+  | { kind: 'base-vs-arbitrum'; lb: ChainHeadToHead }
+  | { kind: 'l2-token-market-cap'; lb: L2TokenMarketCap }
+  | { kind: 'l2-fees-trend'; lb: L2FeesTrend }
   | { kind: 'l2-apps'; lb: L2TopApps }
   | { kind: 'l2-scaling'; lb: EthereumScalingComparison };
 
@@ -757,6 +850,275 @@ const buildDaProvidersReplacements = (
   };
 };
 
+const buildDaAdoptionReplacements = (
+  data: DaLayerAdoption,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_da_adopt_data_date: dataDate,
+    l2_da_adopt_universe_size: String(data.universeSize),
+    l2_da_adopt_universe_list: data.universeKeys.join(', '),
+    l2_da_adopt_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    l2_da_adopt_unknown_chains:
+      data.unknownDaL2Keys.length > 0
+        ? data.unknownDaL2Keys.join(', ')
+        : 'none',
+    // Headline ranking.
+    l2_da_adopt_leader: formatAdoptionLeader(data),
+    l2_da_adopt_top5: formatAdoptionTopList(data, 5),
+    l2_da_adopt_fees30d_leader: formatFees30dLeader(data),
+    l2_da_adopt_dense: buildAdoptionDenseSentence(data, dataDate),
+    // Per-bucket scalar strings for FAQ answers / table prose.
+    l2_da_adopt_eth_blobs_count: formatBucketCount(data, 'ethereum_blobs'),
+    l2_da_adopt_celestia_count: formatBucketCount(data, 'celestia'),
+    l2_da_adopt_eigenda_count: formatBucketCount(data, 'eigenda'),
+    l2_da_adopt_avail_count: formatBucketCount(data, 'avail'),
+    l2_da_adopt_other_count: formatBucketCount(data, 'other'),
+    l2_da_adopt_eth_blobs_chains: formatBucketL2List(data, 'ethereum_blobs'),
+    l2_da_adopt_celestia_chains: formatBucketL2List(data, 'celestia'),
+    l2_da_adopt_eigenda_chains: formatBucketL2List(data, 'eigenda'),
+    l2_da_adopt_avail_chains: formatBucketL2List(data, 'avail'),
+    l2_da_adopt_other_chains: formatBucketL2List(data, 'other'),
+    l2_da_adopt_eth_blobs_fees_30d: formatBucketFees(data, 'ethereum_blobs', '30d'),
+    l2_da_adopt_celestia_fees_30d: formatBucketFees(data, 'celestia', '30d'),
+    l2_da_adopt_eigenda_fees_30d: formatBucketFees(data, 'eigenda', '30d'),
+    l2_da_adopt_eth_blobs_fees_alltime: formatBucketFees(data, 'ethereum_blobs', 'allTime'),
+    l2_da_adopt_celestia_fees_alltime: formatBucketFees(data, 'celestia', 'allTime'),
+    l2_da_adopt_eigenda_fees_alltime: formatBucketFees(data, 'eigenda', 'allTime'),
+    l2_da_adopt_eth_blobs_cost_per_mb: formatBucketCostPerMb(data, 'ethereum_blobs'),
+    l2_da_adopt_celestia_cost_per_mb: formatBucketCostPerMb(data, 'celestia'),
+    l2_da_adopt_eigenda_cost_per_mb: formatBucketCostPerMb(data, 'eigenda'),
+    l2_da_adopt_avail_cost_per_mb: formatBucketCostPerMb(data, 'avail'),
+  };
+};
+
+const buildEcosystemTpsReplacements = (
+  data: EthereumEcosystemTps,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_ecotps_data_date: dataDate,
+    // Live TPS values.
+    l2_ecotps_live_ecosystem: formatEcosystemLiveTps(data),
+    l2_ecotps_live_l1: formatL1LiveTps(data),
+    l2_ecotps_live_l2: formatL2LiveTps(data),
+    l2_ecotps_live_l2_share: formatEcoL2Share(data, 'liveTps'),
+    // Daily / weekly / monthly / all-time counts per layer.
+    l2_ecotps_l1_daily: formatEcoCount(data, 'l1', 'daily'),
+    l2_ecotps_l1_weekly: formatEcoCount(data, 'l1', 'weekly'),
+    l2_ecotps_l1_monthly: formatEcoCount(data, 'l1', 'monthly'),
+    l2_ecotps_l1_alltime: formatEcoCount(data, 'l1', 'allTime'),
+    l2_ecotps_l2_daily: formatEcoCount(data, 'l2', 'daily'),
+    l2_ecotps_l2_weekly: formatEcoCount(data, 'l2', 'weekly'),
+    l2_ecotps_l2_monthly: formatEcoCount(data, 'l2', 'monthly'),
+    l2_ecotps_l2_alltime: formatEcoCount(data, 'l2', 'allTime'),
+    l2_ecotps_eco_daily: formatEcoCount(data, 'ecosystem', 'daily'),
+    l2_ecotps_eco_weekly: formatEcoCount(data, 'ecosystem', 'weekly'),
+    l2_ecotps_eco_monthly: formatEcoCount(data, 'ecosystem', 'monthly'),
+    l2_ecotps_eco_alltime: formatEcoCount(data, 'ecosystem', 'allTime'),
+    // L2 share of the combined total per window.
+    l2_ecotps_l2_share_daily: formatEcoL2Share(data, 'daily'),
+    l2_ecotps_l2_share_weekly: formatEcoL2Share(data, 'weekly'),
+    l2_ecotps_l2_share_monthly: formatEcoL2Share(data, 'monthly'),
+    l2_ecotps_l2_share_alltime: formatEcoL2Share(data, 'allTime'),
+    // Dense quotable sentence.
+    l2_ecotps_dense: buildEcosystemTpsDenseSentence(data, dataDate),
+  };
+};
+
+const buildShareReplacements = (
+  data: EthereumScalingComparison,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_share_data_date: dataDate,
+    l2_share_universe_size: String(data.universeSize),
+    l2_share_universe_list: data.universeKeys.join(', '),
+    l2_share_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    // Headline sentence + per-metric dense summaries.
+    l2_share_headline: buildShareHeadline(data, dataDate),
+    l2_share_txcount_dense: buildShareDenseSentence(data, 'txcount', dataDate),
+    l2_share_throughput_dense: buildShareDenseSentence(data, 'throughput', dataDate),
+    // Per-(metric, period) L2 share percentages.
+    l2_share_txcount_daily: formatL2SharePct('txcount', 'daily', data.byMetric.txcount.daily),
+    l2_share_txcount_weekly: formatL2SharePct('txcount', 'weekly', data.byMetric.txcount.weekly),
+    l2_share_txcount_monthly: formatL2SharePct('txcount', 'monthly', data.byMetric.txcount.monthly),
+    l2_share_throughput_daily: formatL2SharePct('throughput', 'daily', data.byMetric.throughput.daily),
+    l2_share_throughput_weekly: formatL2SharePct('throughput', 'weekly', data.byMetric.throughput.weekly),
+    l2_share_throughput_monthly: formatL2SharePct('throughput', 'monthly', data.byMetric.throughput.monthly),
+    // Mirror L1 share strings so prose can render "85% on L2s, 15% on
+    // mainnet" without arithmetic in the markdown. Kept inside the `l2_*`
+    // namespace so the articleProcessor placeholder regex picks them up.
+    l2_share_l1_txcount_daily: formatL1SharePct('txcount', 'daily', data.byMetric.txcount.daily),
+    l2_share_l1_txcount_weekly: formatL1SharePct('txcount', 'weekly', data.byMetric.txcount.weekly),
+    l2_share_l1_txcount_monthly: formatL1SharePct('txcount', 'monthly', data.byMetric.txcount.monthly),
+    l2_share_l1_throughput_daily: formatL1SharePct('throughput', 'daily', data.byMetric.throughput.daily),
+    l2_share_l1_throughput_weekly: formatL1SharePct('throughput', 'weekly', data.byMetric.throughput.weekly),
+    l2_share_l1_throughput_monthly: formatL1SharePct('throughput', 'monthly', data.byMetric.throughput.monthly),
+    // Per-(metric, period) full prose phrase.
+    l2_share_txcount_daily_phrase: buildSharePhrase('txcount', 'daily', data.byMetric.txcount.daily),
+    l2_share_txcount_weekly_phrase: buildSharePhrase('txcount', 'weekly', data.byMetric.txcount.weekly),
+    l2_share_txcount_monthly_phrase: buildSharePhrase('txcount', 'monthly', data.byMetric.txcount.monthly),
+    l2_share_throughput_daily_phrase: buildSharePhrase('throughput', 'daily', data.byMetric.throughput.daily),
+    l2_share_throughput_weekly_phrase: buildSharePhrase('throughput', 'weekly', data.byMetric.throughput.weekly),
+    l2_share_throughput_monthly_phrase: buildSharePhrase('throughput', 'monthly', data.byMetric.throughput.monthly),
+  };
+};
+
+const buildHeadToHeadReplacements = (
+  data: ChainHeadToHead,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_h2h_data_date: dataDate,
+    l2_h2h_a_name: data.a.name,
+    l2_h2h_b_name: data.b.name,
+    l2_h2h_headline: buildHeadToHeadHeadline(data, dataDate),
+    l2_h2h_overall_winner: formatH2HOverallWinnerName(data),
+    l2_h2h_a_wins: String(data.aWinCount),
+    l2_h2h_b_wins: String(data.bWinCount),
+    l2_h2h_total_metrics: String(data.metrics.length),
+    // Per-metric phrases for FAQ answers.
+    l2_h2h_txcount_daily_phrase: buildHeadToHeadMetricPhrase(data, 'txcount_daily'),
+    l2_h2h_txcount_weekly_phrase: buildHeadToHeadMetricPhrase(data, 'txcount_weekly'),
+    l2_h2h_txcount_monthly_phrase: buildHeadToHeadMetricPhrase(data, 'txcount_monthly'),
+    l2_h2h_daa_daily_phrase: buildHeadToHeadMetricPhrase(data, 'daa_daily'),
+    l2_h2h_daa_weekly_phrase: buildHeadToHeadMetricPhrase(data, 'daa_weekly'),
+    l2_h2h_daa_monthly_phrase: buildHeadToHeadMetricPhrase(data, 'daa_monthly'),
+    l2_h2h_throughput_daily_phrase: buildHeadToHeadMetricPhrase(data, 'throughput_daily'),
+    l2_h2h_throughput_weekly_phrase: buildHeadToHeadMetricPhrase(data, 'throughput_weekly'),
+    l2_h2h_throughput_monthly_phrase: buildHeadToHeadMetricPhrase(data, 'throughput_monthly'),
+    l2_h2h_tvl_phrase: buildHeadToHeadMetricPhrase(data, 'tvl_latest'),
+    l2_h2h_stables_phrase: buildHeadToHeadMetricPhrase(data, 'stables_mcap_latest'),
+    l2_h2h_fees_30d_phrase: buildHeadToHeadMetricPhrase(data, 'fees_30d'),
+    l2_h2h_profit_30d_phrase: buildHeadToHeadMetricPhrase(data, 'profit_30d'),
+    // Per-side, per-metric raw display values for in-line markdown ("X txs vs Y txs").
+    l2_h2h_a_txcount_daily: formatH2HSideValue(data, 'a', 'txcount_daily'),
+    l2_h2h_b_txcount_daily: formatH2HSideValue(data, 'b', 'txcount_daily'),
+    l2_h2h_a_daa_daily: formatH2HSideValue(data, 'a', 'daa_daily'),
+    l2_h2h_b_daa_daily: formatH2HSideValue(data, 'b', 'daa_daily'),
+    l2_h2h_a_throughput_daily: formatH2HSideValue(data, 'a', 'throughput_daily'),
+    l2_h2h_b_throughput_daily: formatH2HSideValue(data, 'b', 'throughput_daily'),
+    l2_h2h_a_tvl: formatH2HSideValue(data, 'a', 'tvl_latest'),
+    l2_h2h_b_tvl: formatH2HSideValue(data, 'b', 'tvl_latest'),
+    l2_h2h_a_stables: formatH2HSideValue(data, 'a', 'stables_mcap_latest'),
+    l2_h2h_b_stables: formatH2HSideValue(data, 'b', 'stables_mcap_latest'),
+    l2_h2h_a_fees_30d: formatH2HSideValue(data, 'a', 'fees_30d'),
+    l2_h2h_b_fees_30d: formatH2HSideValue(data, 'b', 'fees_30d'),
+    l2_h2h_a_profit_30d: formatH2HSideValue(data, 'a', 'profit_30d'),
+    l2_h2h_b_profit_30d: formatH2HSideValue(data, 'b', 'profit_30d'),
+    // Winners per metric (chain names).
+    l2_h2h_txcount_daily_winner: formatH2HWinnerName(data, 'txcount_daily'),
+    l2_h2h_daa_daily_winner: formatH2HWinnerName(data, 'daa_daily'),
+    l2_h2h_throughput_daily_winner: formatH2HWinnerName(data, 'throughput_daily'),
+    l2_h2h_tvl_winner: formatH2HWinnerName(data, 'tvl_latest'),
+    l2_h2h_stables_winner: formatH2HWinnerName(data, 'stables_mcap_latest'),
+    l2_h2h_fees_30d_winner: formatH2HWinnerName(data, 'fees_30d'),
+    l2_h2h_profit_30d_winner: formatH2HWinnerName(data, 'profit_30d'),
+    // Multiples per metric ("X×" — how many times the leader exceeds the trailer).
+    l2_h2h_txcount_daily_multiple: formatH2HMultiple(data, 'txcount_daily'),
+    l2_h2h_daa_daily_multiple: formatH2HMultiple(data, 'daa_daily'),
+    l2_h2h_throughput_daily_multiple: formatH2HMultiple(data, 'throughput_daily'),
+    l2_h2h_tvl_multiple: formatH2HMultiple(data, 'tvl_latest'),
+    // Chain metadata.
+    l2_h2h_a_launch: formatH2HChainMeta(data, 'a', 'launchDate'),
+    l2_h2h_b_launch: formatH2HChainMeta(data, 'b', 'launchDate'),
+    l2_h2h_a_stack: formatH2HChainMeta(data, 'a', 'stack'),
+    l2_h2h_b_stack: formatH2HChainMeta(data, 'b', 'stack'),
+    l2_h2h_a_da: formatH2HChainMeta(data, 'a', 'daLayer'),
+    l2_h2h_b_da: formatH2HChainMeta(data, 'b', 'daLayer'),
+    l2_h2h_a_token: formatH2HChainMeta(data, 'a', 'nativeToken'),
+    l2_h2h_b_token: formatH2HChainMeta(data, 'b', 'nativeToken'),
+  };
+};
+
+const buildL2TokenReplacements = (
+  data: L2TokenMarketCap,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_token_data_date: dataDate,
+    l2_token_universe_size: String(data.universeSize),
+    l2_token_universe_list: data.universeKeys.join(', '),
+    l2_token_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    l2_token_no_token_list: formatL2TokenNoTokenList(data),
+    l2_token_no_token_count: String(data.noTokenL2s.length),
+    l2_token_tracked_count: String(
+      data.ranked.filter((e) => e.marketCapUsd != null).length,
+    ),
+    // Headline / dense.
+    l2_token_leader: formatL2TokenLeader(data),
+    l2_token_leader_name: formatL2TokenLeaderName(data),
+    l2_token_leader_mc: formatL2TokenLeaderMC(data),
+    l2_token_leader_fdv: formatL2TokenLeaderFdv(data),
+    l2_token_runner_up: formatL2TokenRunnerUp(data),
+    l2_token_third_place: formatL2TokenThirdPlace(data),
+    l2_token_top10: formatL2TokenTopList(data, 10),
+    l2_token_top5: formatL2TokenTopList(data, 5),
+    l2_token_dense: buildL2TokenDenseSentence(data, dataDate),
+    l2_token_ecosystem_mc: formatEcosystemMarketCap(data),
+    l2_token_ecosystem_fdv: formatEcosystemFdv(data),
+  };
+};
+
+const buildFeesTrendReplacements = (
+  data: L2FeesTrend,
+): Record<string, string> => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return {
+    l2_trend_data_date: dataDate,
+    l2_trend_universe_size: String(data.universeSize),
+    l2_trend_universe_list: data.universeKeys.join(', '),
+    l2_trend_excluded_sidechains:
+      data.excludedNonL2Keys.length > 0
+        ? data.excludedNonL2Keys.join(', ')
+        : 'none',
+    l2_trend_dense: buildTrendDenseSentence(data, dataDate),
+    // Anchor fee values.
+    l2_trend_latest_fee: formatAnchorFee(data.latestMonth),
+    l2_trend_latest_month: formatAnchorMonth(data.latestMonth),
+    l2_trend_pre_dencun_fee: formatAnchorFee(data.preDencun),
+    l2_trend_pre_dencun_month: formatAnchorMonth(data.preDencun),
+    l2_trend_post_dencun_fee: formatAnchorFee(data.postDencun),
+    l2_trend_post_dencun_month: formatAnchorMonth(data.postDencun),
+    l2_trend_pre_pectra_fee: formatAnchorFee(data.prePectra),
+    l2_trend_pre_pectra_month: formatAnchorMonth(data.prePectra),
+    l2_trend_post_pectra_fee: formatAnchorFee(data.postPectra),
+    l2_trend_post_pectra_month: formatAnchorMonth(data.postPectra),
+    l2_trend_pre_fusaka_fee: formatAnchorFee(data.preFusaka),
+    l2_trend_pre_fusaka_month: formatAnchorMonth(data.preFusaka),
+    l2_trend_post_fusaka_fee: formatAnchorFee(data.postFusaka),
+    l2_trend_post_fusaka_month: formatAnchorMonth(data.postFusaka),
+    l2_trend_one_year_ago_fee: formatAnchorFee(data.oneYearAgo),
+    l2_trend_one_year_ago_month: formatAnchorMonth(data.oneYearAgo),
+    // Change-per-upgrade prose strings.
+    l2_trend_dencun_change_pct: formatPctChangeBetween(data.preDencun, data.postDencun),
+    l2_trend_dencun_multiple: formatMultipleReduction(data.preDencun, data.postDencun),
+    l2_trend_pectra_change_pct: formatPctChangeBetween(data.prePectra, data.postPectra),
+    l2_trend_pectra_multiple: formatMultipleReduction(data.prePectra, data.postPectra),
+    l2_trend_fusaka_change_pct: formatPctChangeBetween(data.preFusaka, data.postFusaka),
+    l2_trend_fusaka_multiple: formatMultipleReduction(data.preFusaka, data.postFusaka),
+    // Long-run summaries vs the latest month.
+    l2_trend_vs_pre_dencun_pct: formatPctChangeBetween(data.preDencun, data.latestMonth),
+    l2_trend_vs_pre_dencun_multiple: formatMultipleReduction(data.preDencun, data.latestMonth),
+    l2_trend_vs_one_year_ago_pct: formatPctChangeBetween(data.oneYearAgo, data.latestMonth),
+    l2_trend_vs_one_year_ago_multiple: formatMultipleReduction(data.oneYearAgo, data.latestMonth),
+    // Direction word ("cheaper" / "more expensive" / "about the same") for
+    // long-run framing.
+    l2_trend_long_run_direction: formatDirection(data.preDencun, data.latestMonth),
+    l2_trend_one_year_direction: formatDirection(data.oneYearAgo, data.latestMonth),
+  };
+};
+
 // Dispatch on leaderboard kind so processAnswer doesn't care which subtype
 // it has.
 const buildLeaderboardReplacements = (
@@ -791,6 +1153,18 @@ const buildLeaderboardReplacements = (
       return buildDefiReplacements(data.lb);
     case 'da-providers':
       return buildDaProvidersReplacements(data.lb);
+    case 'da-adoption':
+      return buildDaAdoptionReplacements(data.lb);
+    case 'ethereum-ecosystem-tps':
+      return buildEcosystemTpsReplacements(data.lb);
+    case 'l2-share':
+      return buildShareReplacements(data.lb);
+    case 'base-vs-arbitrum':
+      return buildHeadToHeadReplacements(data.lb);
+    case 'l2-token-market-cap':
+      return buildL2TokenReplacements(data.lb);
+    case 'l2-fees-trend':
+      return buildFeesTrendReplacements(data.lb);
   }
 };
 
@@ -925,6 +1299,24 @@ export const processAnswer = cache(
     } else if (leaderboardKind === 'da-providers') {
       const lb = await getDaProviderComparison();
       if (lb) leaderboardData = { kind: 'da-providers', lb };
+    } else if (leaderboardKind === 'da-adoption') {
+      const lb = await getDaLayerAdoption();
+      if (lb) leaderboardData = { kind: 'da-adoption', lb };
+    } else if (leaderboardKind === 'ethereum-ecosystem-tps') {
+      const lb = await getEthereumEcosystemTps();
+      if (lb) leaderboardData = { kind: 'ethereum-ecosystem-tps', lb };
+    } else if (leaderboardKind === 'l2-share') {
+      const lb = await getEthereumScaling();
+      if (lb) leaderboardData = { kind: 'l2-share', lb };
+    } else if (leaderboardKind === 'base-vs-arbitrum') {
+      const lb = await getBaseVsArbitrum();
+      if (lb) leaderboardData = { kind: 'base-vs-arbitrum', lb };
+    } else if (leaderboardKind === 'l2-token-market-cap') {
+      const lb = await getL2TokenMarketCap();
+      if (lb) leaderboardData = { kind: 'l2-token-market-cap', lb };
+    } else if (leaderboardKind === 'l2-fees-trend') {
+      const lb = await getL2FeesTrend();
+      if (lb) leaderboardData = { kind: 'l2-fees-trend', lb };
     }
 
     try {
@@ -975,7 +1367,19 @@ export const processAnswer = cache(
                                 ? buildDefiAcceptedAnswer(leaderboardData.lb)
                                 : leaderboardData?.kind === 'da-providers'
                                   ? buildDaAcceptedAnswer(leaderboardData.lb)
-                                  : deriveAcceptedAnswer(qb, prose);
+                                  : leaderboardData?.kind === 'da-adoption'
+                                    ? buildAdoptionAcceptedAnswer(leaderboardData.lb)
+                                    : leaderboardData?.kind === 'ethereum-ecosystem-tps'
+                                      ? buildEcosystemTpsAcceptedAnswer(leaderboardData.lb)
+                                      : leaderboardData?.kind === 'l2-share'
+                                        ? buildShareAcceptedAnswer(leaderboardData.lb)
+                                        : leaderboardData?.kind === 'base-vs-arbitrum'
+                                          ? buildHeadToHeadAcceptedAnswer(leaderboardData.lb)
+                                          : leaderboardData?.kind === 'l2-token-market-cap'
+                                            ? buildL2TokenAcceptedAnswer(leaderboardData.lb)
+                                            : leaderboardData?.kind === 'l2-fees-trend'
+                                              ? buildTrendAcceptedAnswer(leaderboardData.lb)
+                                              : deriveAcceptedAnswer(qb, prose);
 
     // The data backing every chart/dataset on an answer page refreshes daily
     // from growthepie's API, so stamp `dateModified` to today's UTC date.
@@ -1084,7 +1488,19 @@ export const processAnswer = cache(
                                 ? buildDefiAnswerTables(leaderboardData.lb)
                                 : leaderboardData?.kind === 'da-providers'
                                   ? buildDaProviderAnswerTables(leaderboardData.lb)
-                                  : [];
+                                  : leaderboardData?.kind === 'da-adoption'
+                                    ? buildAdoptionAnswerTables(leaderboardData.lb)
+                                    : leaderboardData?.kind === 'ethereum-ecosystem-tps'
+                                      ? buildEcosystemTpsAnswerTables(leaderboardData.lb)
+                                      : leaderboardData?.kind === 'l2-share'
+                                        ? buildShareAnswerTables(leaderboardData.lb)
+                                        : leaderboardData?.kind === 'base-vs-arbitrum'
+                                          ? buildHeadToHeadAnswerTables(leaderboardData.lb)
+                                          : leaderboardData?.kind === 'l2-token-market-cap'
+                                            ? buildL2TokenAnswerTables(leaderboardData.lb)
+                                            : leaderboardData?.kind === 'l2-fees-trend'
+                                              ? buildTrendAnswerTables(leaderboardData.lb)
+                                              : [];
 
     return {
       qb,

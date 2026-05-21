@@ -410,3 +410,172 @@ export const buildScalingAcceptedAnswer = (
     `Live leaderboards: growthepie.com/fundamentals/throughput.`
   );
 };
+
+// ---------------------------------------------------------------------------
+// Share / percentage view (used by the "/answers/percentage-of-ethereum-
+// activity-on-l2s" page). Derived from the same ScalingPair data — L2 share
+// = L2 / (L2 + L1), L1 share = L1 / (L2 + L1). The "share" framing is what
+// AI search receives when users ask "what % of Ethereum is on L2s" rather
+// than "how much more do L2s do" — same underlying numbers, different
+// presentation.
+// ---------------------------------------------------------------------------
+
+const safeShare = (
+  numerator: number | null,
+  total: number | null,
+): number | null =>
+  numerator != null && total != null && total > 0 && Number.isFinite(total)
+    ? numerator / total
+    : null;
+
+// L2 / (L2 + L1) — what fraction of combined activity happens on L2s.
+export const computeL2Share = (pair: ScalingPair): number | null => {
+  if (pair.l2 == null || pair.ethereum == null) return null;
+  return safeShare(pair.l2, pair.l2 + pair.ethereum);
+};
+
+export const computeL1Share = (pair: ScalingPair): number | null => {
+  if (pair.l2 == null || pair.ethereum == null) return null;
+  return safeShare(pair.ethereum, pair.l2 + pair.ethereum);
+};
+
+const fmtSharePct = (s: number | null): string => {
+  if (s == null || !Number.isFinite(s) || s < 0) return '—';
+  // Tight integer formatting for "headline percentage" framing AI cards
+  // prefer: "85%" reads stronger than "84.7%" and the page already exposes
+  // the exact underlying values in the tables.
+  if (s >= 0.995) return '99%+';
+  if (s <= 0.005) return '<1%';
+  return Math.round(s * 100) + '%';
+};
+
+export const formatL2SharePct = (
+  metric: ScalingMetric,
+  period: ScalingPeriod,
+  pair: ScalingPair,
+): string => fmtSharePct(computeL2Share(pair));
+
+export const formatL1SharePct = (
+  metric: ScalingMetric,
+  period: ScalingPeriod,
+  pair: ScalingPair,
+): string => fmtSharePct(computeL1Share(pair));
+
+// "85% of daily transactions happen on L2s (15% on Ethereum mainnet)" —
+// self-contained phrase for FAQ answers.
+export const buildSharePhrase = (
+  metric: ScalingMetric,
+  period: ScalingPeriod,
+  pair: ScalingPair,
+): string => {
+  const l2 = computeL2Share(pair);
+  const l1 = computeL1Share(pair);
+  if (l2 == null || l1 == null) return 'unavailable';
+  const noun = METRIC_NOUN[metric];
+  return `${fmtSharePct(l2)} of ${PERIOD_LABEL[period]} ${noun} happen on L2s, ${fmtSharePct(l1)} on Ethereum mainnet (L2s ${formatValue(
+    metric,
+    pair.l2,
+  )} vs Ethereum ${formatValue(metric, pair.ethereum)})`;
+};
+
+// Dense quotable sentence per metric for the share page — collapses the
+// three periods into one quotable claim about the L2 share.
+export const buildShareDenseSentence = (
+  data: EthereumScalingComparison,
+  metric: ScalingMetric,
+  dataDateUtc: string,
+): string => {
+  const noun = METRIC_NOUN[metric];
+  const d = data.byMetric[metric].daily;
+  const w = data.byMetric[metric].weekly;
+  const m = data.byMetric[metric].monthly;
+  const dShare = computeL2Share(d);
+  const wShare = computeL2Share(w);
+  const mShare = computeL2Share(m);
+  if (dShare == null || wShare == null || mShare == null) {
+    return `**L2 share of Ethereum ${noun}** (data ${dataDateUtc} UTC): unavailable.`;
+  }
+  return (
+    `As of ${dataDateUtc} UTC, **${fmtSharePct(dShare)} of all Ethereum ${noun} happen on L2s** ` +
+    `(daily); ${fmtSharePct(wShare)} weekly; ${fmtSharePct(mShare)} monthly. ` +
+    `Ethereum mainnet handles the remainder.`
+  );
+};
+
+// Headline sentence covering both metrics in one quotable claim — for the
+// share page lead and the QAPage acceptedAnswer.
+export const buildShareHeadline = (
+  data: EthereumScalingComparison,
+  dataDateUtc: string,
+): string => {
+  const txShare = computeL2Share(data.byMetric.txcount.daily);
+  const tpShare = computeL2Share(data.byMetric.throughput.daily);
+  if (txShare == null || tpShare == null) {
+    return `L2 share data currently unavailable (data ${dataDateUtc} UTC).`;
+  }
+  return (
+    `As of ${dataDateUtc} UTC, Ethereum L2s account for **${fmtSharePct(
+      txShare,
+    )} of all daily transactions** and **${fmtSharePct(
+      tpShare,
+    )} of all daily throughput (gas processed per second)** across the Ethereum ecosystem. ` +
+    `Ethereum mainnet handles the rest.`
+  );
+};
+
+export const buildShareAnswerTables = (
+  data: EthereumScalingComparison,
+): AnswerTable[] => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  return SCALING_METRICS.map((metric) => {
+    const title =
+      metric === 'txcount'
+        ? 'Share of Ethereum transactions — L2s vs Mainnet'
+        : 'Share of Ethereum throughput (Mgas/s) — L2s vs Mainnet';
+    return {
+      title,
+      caption: `L2 share = L2 ecosystem total / (L2 + Ethereum mainnet). Same underlying data as the scaling-ratio page, expressed as a percentage. Data: ${dataDate} UTC.`,
+      headers: [
+        'Period',
+        'L2 share',
+        'Mainnet share',
+        'L2 total',
+        'Ethereum mainnet',
+      ],
+      rows: SCALING_PERIODS.map((p) => {
+        const pair = data.byMetric[metric][p];
+        return [
+          p.charAt(0).toUpperCase() + p.slice(1),
+          fmtSharePct(computeL2Share(pair)),
+          fmtSharePct(computeL1Share(pair)),
+          formatValue(metric, pair.l2),
+          formatValue(metric, pair.ethereum),
+        ];
+      }),
+    };
+  });
+};
+
+export const buildShareAcceptedAnswer = (
+  data: EthereumScalingComparison,
+): string => {
+  const dataDate = data.generatedAtIso.slice(0, 10);
+  const txD = data.byMetric.txcount.daily;
+  const tpD = data.byMetric.throughput.daily;
+  const txShare = computeL2Share(txD);
+  const tpShare = computeL2Share(tpD);
+  if (txShare == null || tpShare == null) {
+    return `L2 share of Ethereum activity is currently unavailable. See growthepie.com/fundamentals/throughput for the live L2 vs mainnet view.`;
+  }
+  return (
+    `As of ${dataDate} UTC, the majority of Ethereum activity happens on Layer 2s. ` +
+    `Ethereum L2s account for ${fmtSharePct(txShare)} of all daily transactions and ${fmtSharePct(
+      tpShare,
+    )} of all daily throughput (gas processed per second) across the combined Ethereum ecosystem (L1 + L2s). ` +
+    `Ethereum mainnet handles the remaining ${fmtSharePct(computeL1Share(txD))} of transactions and ${fmtSharePct(
+      computeL1Share(tpD),
+    )} of throughput. ` +
+    `The share trends in the same direction across weekly and monthly windows — see the tables on the page for the full breakdown. ` +
+    `Live leaderboards: growthepie.com/fundamentals/throughput. Data: ${dataDate} UTC.`
+  );
+};

@@ -586,6 +586,11 @@ export const Chart = ({
                       },
                       tooltip: {
                         ...baseOptions.tooltip,
+                        backgroundColor: "transparent",
+                        shadow: false,
+                        style: {
+                          color: "rgb(var(--text-primary))",
+                        },
                         formatter:
                           yScale === "percentageDecimal"
                             ? tooltipFormatter(true, true, decimalToPercent)
