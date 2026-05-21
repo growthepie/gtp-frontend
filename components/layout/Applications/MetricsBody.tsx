@@ -939,7 +939,9 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
 
     const metricData = resolvedMetricData;
     const [selectedScale, setSelectedScale] = useState(metricData?.toggles?.[0] ?? "stacked");
-    const isValueMetric = Object.keys(metricData?.units ?? {}).includes("value");
+    const metricUnits = metricData?.units ?? {};
+    const isValueMetric = Object.keys(metricUnits).includes("value");
+    const hasCurrencyUnits = "usd" in metricUnits || "eth" in metricUnits;
     const isSuccessRateMetric = metric === "success_rate";
 
     // Resolves display name and gradient colors for both chain series and compare-app series
@@ -1037,7 +1039,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             "metric_name",
             "time_interval",
             "scale",
-            "unit",
+            ...(hasCurrencyUnits ? ["unit"] : []),
             ...filteredSeries.map((series) => series.name),
         ];
 
@@ -1065,7 +1067,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                 metricData.name,
                 timeInterval,
                 selectedScale,
-                unitLabel,
+                ...(hasCurrencyUnits ? [unitLabel] : []),
                 ...displayedValues,
             ];
         });

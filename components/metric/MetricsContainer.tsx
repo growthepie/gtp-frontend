@@ -78,13 +78,15 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     } = useMetricChartControls();
 
     const { data: master } = useMaster();
-    const valueKey = Object.keys(master?.metrics?.[metric_id]?.units ?? {}).find(key => key !== "usd" && key !== "eth");
+    const metricUnits = master?.metrics?.[metric_id]?.units ?? {};
+    const valueKey = Object.keys(metricUnits).find(key => key !== "usd" && key !== "eth");
+    const hasCurrencyUnits = "usd" in metricUnits || "eth" in metricUnits;
     const showGwei = Boolean(metricItems.find((item) => item.key === metric_id)?.page?.showGwei);
     
 
-    const suffix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
-    const prefix = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
-    const decimals = master?.metrics?.[metric_id]?.units?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
+    const suffix = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
+    const prefix = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
+    const decimals = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
     const gweiOverrides = decimals && decimals > 6;
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const [topIsWrapping, setTopIsWrapping] = useState(false);
@@ -226,7 +228,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
             "metric_name",
             "time_interval",
             "scale",
-            "unit",
+            ...(hasCurrencyUnits ? ["unit"] : []),
             ...seriesRows.map((series) => series.chainName),
         ];
 
@@ -250,7 +252,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 metricData.metric_name,
                 timeIntervalKey,
                 selectedScale,
-                unitLabel,
+                ...(hasCurrencyUnits ? [unitLabel] : []),
                 ...displayedValues,
             ];
         });
@@ -284,6 +286,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
         timeIntervalKey,
         timespans,
         valueKey,
+        hasCurrencyUnits,
     ]);
 
     const lastUpdatedString = useMemo(() => {
