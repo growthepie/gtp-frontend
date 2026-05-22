@@ -65,6 +65,30 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   return (
     <>
+      {/* Server-rendered content for AI crawlers and screen readers — not visible to sighted users */}
+      <section className="sr-only" aria-label="Platform overview">
+        <h1>growthepie — Ethereum Ecosystem Analytics</h1>
+        <p>
+          growthepie is the open analytics platform for the Ethereum ecosystem. We track real-time and
+          historical metrics across Ethereum Mainnet and 27+ Layer 2 networks — including daily active
+          addresses, transaction counts, throughput (TPS), fees paid, stablecoin market cap, total value
+          locked (TVL), and onchain application revenue. Data is updated daily or in real-time via our
+          public API.
+        </p>
+        <p>
+          Browse <a href="/fundamentals">Fundamentals</a> for cross-chain comparisons, explore
+          individual chains in <a href="/chains">Chains</a>, read data-driven research in{" "}
+          <a href="/quick-bites">Quick Bites</a>, or get direct answers to common Ethereum questions in
+          our <a href="/answers">Answers</a> section. Developer access is available through our{" "}
+          <a href="/api">public API</a>.
+        </p>
+        <p>
+          The Ethereum ecosystem includes Ethereum Mainnet (L1) and Layer 2 scaling networks such as
+          Arbitrum, OP Mainnet, Base, zkSync Era, Scroll, Linea, and many others. All dates and
+          timestamps use UTC. All data is open and free to use.
+        </p>
+      </section>
+
       <Container className="flex flex-col flex-1 w-full pt-[30px] pb-[15px] gap-y-[10px]">
         <Heading
           className="heading-large-xl max-w-[900px]"
