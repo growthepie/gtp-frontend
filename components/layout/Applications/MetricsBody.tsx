@@ -95,10 +95,59 @@ function computeMetricSeriesData(params: {
     const overTime = data.metrics[metric]?.over_time;
     if (!overTime) return [];
 
+    function buildActiveTsByChain(weightsOt: Record<string, unknown>): Map<string, Map<number, number>> {
+        const result = new Map<string, Map<number, number>>();
+        for (const chain of Object.keys(weightsOt)) {
+            const { types, rows } = getTimeseries((weightsOt[chain] as any)?.[timeInterval]);
+            const idx = resolveValueIndex(types, showUsd);
+            const m = new Map<number, number>();
+            for (const r of rows) {
+                const w = Number(r[idx]);
+                if (Number.isFinite(w) && w > 0) m.set(Number(r[0]), w);
+            }
+            result.set(chain, m);
+        }
+        return result;
+    }
+
     function sumChainSeries(
         ot: Record<string, unknown>,
         excludeChains: string[] = [],
+        weightsOt: Record<string, unknown> | null = null,
     ): [number, number | null][] {
+        // Weighted-average path: a chain only contributes at a timestamp where its weight
+        // is > 0. Used for success_rate so chains with no txs that day aren't counted
+        // as "0% success rate" and don't drag the average down.
+        if (weightsOt) {
+            const activeByChain = buildActiveTsByChain(weightsOt);
+            const weightedSums = new Map<number, number>();
+            const weightTotals = new Map<number, number>();
+            const tsSet = new Set<number>();
+            for (const chain of Object.keys(ot)) {
+                if (excludeChains.includes(chain)) continue;
+                const { types, rows } = getTimeseries((ot[chain] as any)?.[timeInterval]);
+                const valIdx = resolveValueIndex(types, showUsd);
+                const weightByTs = activeByChain.get(chain);
+                for (const d of rows) {
+                    const ts = Number(d[0]);
+                    tsSet.add(ts);
+                    if (!weightByTs) continue;
+                    const w = weightByTs.get(ts);
+                    if (w === undefined) continue;
+                    const v = Number(d[valIdx]);
+                    if (!Number.isFinite(v)) continue;
+                    weightedSums.set(ts, (weightedSums.get(ts) ?? 0) + v * w);
+                    weightTotals.set(ts, (weightTotals.get(ts) ?? 0) + w);
+                }
+            }
+            return Array.from(tsSet)
+                .sort((a, b) => a - b)
+                .map((ts): [number, number | null] => {
+                    const wt = weightTotals.get(ts) ?? 0;
+                    return [ts, wt > 0 ? (weightedSums.get(ts) ?? 0) / wt : null];
+                });
+        }
+
         const sums = new Map<number, number | null>();
         const counts = new Map<number, number>();
         for (const chain of Object.keys(ot)) {
@@ -156,13 +205,28 @@ function computeMetricSeriesData(params: {
     }
 
     const chains = Object.keys(overTime).filter((chain) => !deselectedChains.includes(chain));
+
+    // success_rate is a rate, not a sum — weight per-chain contributions by txcount so
+    // chains with no activity neither show as a flat 0% line nor drag the Total down.
+    const mainWeightsOverTime = metric === "success_rate"
+        ? (data.metrics.txcount?.over_time as Record<string, unknown> | undefined) ?? null
+        : null;
+    const mainActiveTsByChain = mainWeightsOverTime
+        ? buildActiveTsByChain(mainWeightsOverTime)
+        : null;
+
     const perChain: SeriesEntry[] = chains.flatMap((chain) => {
         const { types, rows } = getTimeseries((overTime[chain] as any)?.[timeInterval]);
         if (rows.length === 0) return [];
         const valIdx = resolveValueIndex(types, showUsd);
+        const activeTs = mainActiveTsByChain?.get(chain) ?? null;
         return [{
             name: chain,
-            data: rows.map((d: number[]): [number, number | null] => [Number(d[0]), d[valIdx] == null ? null : Number(d[valIdx])]),
+            data: rows.map((d: number[]): [number, number | null] => {
+                const ts = Number(d[0]);
+                if (activeTs && !activeTs.has(ts)) return [ts, null];
+                return [ts, d[valIdx] == null ? null : Number(d[valIdx])];
+            }),
         }];
     });
 
@@ -170,7 +234,7 @@ function computeMetricSeriesData(params: {
 
     const mainTotalSeries: SeriesEntry = {
         name: "Total",
-        data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains),
+        data: sumChainSeries(overTime as Record<string, unknown>, deselectedChains, mainWeightsOverTime),
     };
 
     if (!isComparing) return [mainTotalSeries];
@@ -179,9 +243,12 @@ function computeMetricSeriesData(params: {
         .filter((app): app is CompareAppEntry => Boolean(app.data?.metrics?.[metric]))
         .map(app => {
             const compareOverTime = app.data.metrics[metric].over_time as Record<string, unknown>;
+            const compareWeights = metric === "success_rate"
+                ? (app.data.metrics.txcount?.over_time as Record<string, unknown> | undefined) ?? null
+                : null;
             return {
                 name: `compare_${app.owner_project}`,
-                data: sumChainSeries(compareOverTime, deselectedChains),
+                data: sumChainSeries(compareOverTime, deselectedChains, compareWeights),
             } as SeriesEntry;
         });
 

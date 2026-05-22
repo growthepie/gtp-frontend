@@ -1209,24 +1209,16 @@ export default function GTPChart({
   const formatValueForAxis = useCallback(
     (value: number, axisIndex: 0 | 1) => {
       if (percentageMode && axisIndex === 0) return `${Math.round(value)}%`;
+      if (decimalPercentage && axisIndex === 0) {
+        const pct = value * 100;
+        return `${Number.isInteger(pct) ? pct : pct.toFixed(1)}%`;
+      }
       const axisPrefix = axisIndex === 1 ? secondaryPrefix : prefix;
       const axisSuffix = axisIndex === 1 ? secondarySuffix : suffix;
       const axisDecimals = axisIndex === 1 ? secondaryDecimals : decimals;
       return `${axisPrefix ?? ""}${formatCompactNumber(value, axisDecimals)}${axisSuffix ?? ""}`;
     },
-    [decimals, percentageMode, prefix, secondaryDecimals, secondaryPrefix, secondarySuffix, suffix],
-  );
-
-  const formatDefaultYAxisTick = useCallback(
-    (value: number) => {
-      if (percentageMode) return `${Math.round(value)}%`;
-      if (decimalPercentage) {
-        const pct = value * 100;
-        return `${Number.isInteger(pct) ? pct : pct.toFixed(1)}%`;
-      }
-      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
-    },
-    [decimals, percentageMode, decimalPercentage, prefix, suffix],
+    [decimals, percentageMode, decimalPercentage, prefix, secondaryDecimals, secondaryPrefix, secondarySuffix, suffix],
   );
 
   // Compute the actual rendered x-axis bounds before y-axis layout.
