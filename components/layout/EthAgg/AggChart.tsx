@@ -419,7 +419,8 @@ export function AggChart({
         {/* SVG overlay: circle in header + dashed vertical line to last data point */}
         {lastPointCoords && (
           <svg
-            className='absolute top-[-46px] left-0 w-full h-full pointer-events-none z-10'
+            className='absolute top-[-46px] left-0 w-full pointer-events-none z-10'
+            style={{ height: 'calc(100% + 46px)' }}
           >
             <circle
               cx={lastPointCoords.x}
@@ -430,7 +431,7 @@ export function AggChart({
             />
             <line
               x1={lastPointCoords.x}
-              y1={lastPointCoords.circleY}
+              y1={9.5}
               x2={lastPointCoords.x}
               y2={lastPointCoords.y + 46}
               className='text-color-text-primary stroke-color-text-primary'

@@ -505,9 +505,9 @@ export const EthereumEcosystemTPSCard = React.memo(({
             animation={false}
             showWatermark={false}
             grid={{ right: 0, top: 5, bottom: 0 }}
-            ySplitNumber={1}
+            ySplitNumber={2}
             yAxisLabelFormatter={(v) => {
-              if (v === 0) return "0";
+              if (v === 0) return "";
               if (Math.abs(v) >= 1_000_000) return `${+(v / 1_000_000).toPrecision(3)}M`;
               if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}k`;
               return String(Math.round(v));
