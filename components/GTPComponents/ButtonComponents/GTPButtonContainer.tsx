@@ -42,7 +42,7 @@ export default function GTPButtonContainer({
   return (
     <div
       ref={ref}
-      className={`select-none  flex gap-y-[5px] rounded-[15px] py-[2px] px-[2px] text-xs lg:gap-y-0 lg:text-base flex-wrap flex-row w-full justify-between items-center lg:rounded-full bg-color-bg-medium ${className}`}
+      className={`select-none  flex gap-y-[5px] rounded-[15px] py-[2px] px-[2px] text-xs lg:gap-y-0 flex-wrap flex-row w-full justify-between items-center lg:rounded-full bg-color-bg-medium ${className}`}
       style={style}
     >
       {children}
