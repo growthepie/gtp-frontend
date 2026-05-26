@@ -11,6 +11,7 @@ import { useApplicationDetailsData } from "@/app/(layout)/applications/_contexts
 import { formatNumber } from "@/app/(layout)/applications/_components/Components";
 import { openExternalLinkWithDisclaimer } from "@/components/ExternalLink/ExternalLink";
 import { useMediaQuery } from "usehooks-ts";
+import SeoSummaryTooltip from "@/components/seo/SeoSummaryTooltip";
 
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
@@ -81,6 +82,11 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
                 }`}
             />
             <div className="heading-large-md text-color-text-secondary">App Overview</div>
+            <SeoSummaryTooltip
+              family="apps"
+              slug={owner_project}
+              placement="top-start"
+            />
           </div>
   
           {/* Links inline with header — shown only when closed */}
