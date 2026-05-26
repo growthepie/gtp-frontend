@@ -1009,6 +1009,15 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     // Snapped lower bound captured at start of replay so the chart-render filter knows where
     // data drawing begins (matches the chart's snapToCleanBoundary padding).
     const replayLowerBoundRef = useRef<number>(0);
+    // Pre-trimmed series captured at replay start. The raw API series can carry 1000+ historical
+    // points; trimming to [visualXMin, xMax] means ECharts only redraws ~90 points per frame
+    // (for a 90d view) instead of ~1000, which removes the perceived lag during playback.
+    const replayTrimmedSeriesRef = useRef<typeof visibleSeries>([]);
+    // DEBUG: instrumentation refs for measuring lag
+    const replayLastFrameTsRef = useRef<number>(0);
+    const replayLastSetTsRef = useRef<number>(0);
+    const replayFrameCountRef = useRef<number>(0);
+    const replayJankCountRef = useRef<number>(0);
     const cardRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -1215,40 +1224,67 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         const intervalMs = timeInterval === "hourly" ? 3600 * 1000 : 86400 * 1000;
         const initialEndTs = Math.min(visualXMinForStats + intervalMs, xMax);
         replayLowerBoundRef.current = visualXMinForStats;
+        // Pre-trim each series to the visible window so ECharts redraws only the points it
+        // would actually paint. The raw `s.data` can hold years of history before xMin; nulling
+        // them per-frame still leaves ECharts iterating the full array, which is what makes
+        // the playback feel laggy on dense charts.
+        const trimT0 = performance.now();
+        replayTrimmedSeriesRef.current = visibleSeries.map((s) => ({
+            ...s,
+            data: s.data.filter(([ts]) => ts >= visualXMinForStats && ts <= xMax),
+        }));
+        const trimT1 = performance.now();
+        const totalPointsBefore = visibleSeries.reduce((sum, s) => sum + s.data.length, 0);
+        const totalPointsAfter = replayTrimmedSeriesRef.current.reduce((sum, s) => sum + s.data.length, 0);
+        replayLastFrameTsRef.current = 0;
+        replayLastSetTsRef.current = 0;
+        replayFrameCountRef.current = 0;
+        replayJankCountRef.current = 0;
+        // eslint-disable-next-line no-console
+        console.log(
+            `[replay/perf] ${metric} trim=${(trimT1 - trimT0).toFixed(1)}ms points=${totalPointsBefore}→${totalPointsAfter} seriesCount=${visibleSeries.length} duration=${duration}ms intervals=${replayTickIntervalsRef.current}`,
+        );
 
         setReplayEndTs(initialEndTs);
 
-        // Double rAF — the first frame lets React commit the initial state and the browser
-        // paint it; the second frame begins the animation. Without this, ECharts' lazyUpdate
-        // can swallow the initial-state render and the user only ever sees the animation
-        // mid-stride (which is what made it look like the replay was "starting at ~25 points").
-        const begin = () => {
-            if (replayFrameRef.current === null) return; // canceled before we got here
-            const startWall = performance.now();
-            const step = (now: number) => {
-                // rAF's `now` is the frame-start timestamp and can sit a few ms before
-                // performance.now() captured in begin() mid-frame, producing a negative t and
-                // a replayEndTs *before* initialEndTs — which dropped the visible point count
-                // from 2 to 1 on the first animation step. Clamp t to [0, 1].
-                const t = Math.max(0, Math.min((now - startWall) / duration, 1));
-                // ease-in-out cubic — relaxed pace at the edges, steady through the middle
-                const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-                setReplayEndTs(initialEndTs + (xMax - initialEndTs) * eased);
-                if (t < 1) {
-                    replayFrameRef.current = requestAnimationFrame(step);
-                } else {
-                    replayFrameRef.current = null;
-                    // brief hold on the full chart, then release the cutoff
-                    setTimeout(() => setReplayEndTs(null), 500);
-                }
-            };
-            replayFrameRef.current = requestAnimationFrame(step);
-        };
-        const waitOneFrame = () => {
+        // Single rAF — start the animation immediately so the 2-point initial state isn't
+        // held for an extra frame before the loop kicks in. The trimmed-series optimization
+        // (replayTrimmedSeriesRef) keeps the per-frame redraw cheap enough that the initial
+        // state still paints without needing the double-rAF defensive wait.
+        const startWall = performance.now();
+        const step = (now: number) => {
             if (replayFrameRef.current === null) return; // canceled
-            replayFrameRef.current = requestAnimationFrame(begin);
+            // DEBUG: track frame gap and jank
+            const lastFrame = replayLastFrameTsRef.current;
+            if (lastFrame > 0) {
+                const gap = now - lastFrame;
+                // anything >25ms means we dropped from 60fps → flag as jank
+                if (gap > 25) replayJankCountRef.current++;
+            }
+            replayLastFrameTsRef.current = now;
+            replayFrameCountRef.current++;
+
+            // rAF's `now` can sit a few ms before startWall, producing a negative t. Clamp
+            // so replayEndTs never moves backwards (which would drop visible points).
+            const t = Math.max(0, Math.min((now - startWall) / duration, 1));
+            // ease-in-out cubic — relaxed pace at the edges, steady through the middle
+            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            replayLastSetTsRef.current = performance.now();
+            setReplayEndTs(initialEndTs + (xMax - initialEndTs) * eased);
+            if (t < 1) {
+                replayFrameRef.current = requestAnimationFrame(step);
+            } else {
+                replayFrameRef.current = null;
+                // DEBUG: summary at end of replay
+                // eslint-disable-next-line no-console
+                console.log(
+                    `[replay/perf] ${metric} DONE frames=${replayFrameCountRef.current} janky=${replayJankCountRef.current} (${((replayJankCountRef.current / Math.max(replayFrameCountRef.current, 1)) * 100).toFixed(0)}%) targetFps=${Math.round(replayFrameCountRef.current / (duration / 1000))}`,
+                );
+                // brief hold on the full chart, then release the cutoff
+                setTimeout(() => setReplayEndTs(null), 500);
+            }
         };
-        replayFrameRef.current = requestAnimationFrame(waitOneFrame);
+        replayFrameRef.current = requestAnimationFrame(step);
     }, [xMin, xMax, xMinProp, visibleSeries, timeInterval, selectedScale]);
 
     // Cancel any in-flight replay when the viewing window or data shape changes
@@ -1263,6 +1299,16 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     useEffect(() => () => {
         if (replayFrameRef.current !== null) cancelAnimationFrame(replayFrameRef.current);
     }, []);
+
+    // DEBUG: measure how long React takes to commit a replayEndTs update
+    useEffect(() => {
+        if (replayEndTs === null || replayLastSetTsRef.current === 0) return;
+        const commitMs = performance.now() - replayLastSetTsRef.current;
+        if (commitMs > 16) {
+            // eslint-disable-next-line no-console
+            console.warn(`[replay/perf] ${metric} slow commit ${commitMs.toFixed(1)}ms`);
+        }
+    }, [replayEndTs, metric]);
 
     // While replaying, force the y-axis to (intervals × step) where `intervals` was captured
     // at replay start (so the tick count stays constant) and `step` only grows (so labels never
@@ -1568,26 +1614,40 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
                         preserveStackOrder={selectedScale === "percentage"}
-                        series={(selectedScale === "percentage" && visibleSeries.length > 1
+                        series={(() => {
+                            // replay: use the pre-trimmed series (only points in the visible window)
+                            // to keep ECharts' per-frame redraw cheap. Outside replay, use the full
+                            // series so the chart renders exactly as before.
+                            const sourceSeries = replayEndTs !== null
+                                ? replayTrimmedSeriesRef.current
+                                : visibleSeries;
                             // replay: pre-sort percentage-mode series by full-data last value so
                             // GTPChart's internal re-sort (which uses truncated data during replay)
                             // doesn't swap stack positions mid-animation. Paired with preserveStackOrder.
-                            ? [...visibleSeries].sort((a, b) => {
-                                const aLast = [...a.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
-                                const bLast = [...b.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
-                                return (aLast as number) - (bLast as number);
-                            })
-                            : visibleSeries
-                        ).map((s: { name: string; data: [number, number | null][] }) => {
+                            return (selectedScale === "percentage" && sourceSeries.length > 1
+                                ? [...sourceSeries].sort((a, b) => {
+                                    const aLast = [...a.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
+                                    const bLast = [...b.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
+                                    return (aLast as number) - (bLast as number);
+                                })
+                                : sourceSeries
+                            );
+                        })().map((s: { name: string; data: [number, number | null][] }) => {
                             const { displayName, color } = resolveSeriesInfo(s.name);
-                            // replay: while replaying, null out anything outside [lowerBound, replayEndTs].
-                            // lowerBound is the chart's SNAPPED left edge (e.g. 90d view snaps Feb 24 → Feb 1)
-                            // — using raw xMin would skip the visible padded region. Array length is kept
-                            // stable so ECharts' hover dataIndex bookkeeping doesn't crash.
-                            const lowerBound = replayLowerBoundRef.current;
+                            // replay: slice s.data up to the first point past replayEndTs so ECharts
+                            // renders a growing array instead of a same-size array with most values nulled.
+                            // Allocating 1040 [ts, null] tuples per frame was the dominant per-frame cost;
+                            // a binary-search slice does one allocation and ECharts has fewer points to paint.
                             const data = replayEndTs !== null
-                                ? s.data.map(([ts, val]): [number, number | null] =>
-                                    [ts, (ts >= lowerBound && ts <= replayEndTs) ? val : null])
+                                ? (() => {
+                                    let lo = 0, hi = s.data.length;
+                                    while (lo < hi) {
+                                        const mid = (lo + hi) >>> 1;
+                                        if (s.data[mid][0] <= replayEndTs) lo = mid + 1;
+                                        else hi = mid;
+                                    }
+                                    return s.data.slice(0, lo);
+                                })()
                                 : s.data;
                             return {
                                 ...s,
@@ -1615,6 +1675,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         syncId={syncId}
                         showLegend={true}
                         watermarkOverlap={mediumBreakpoint ? index === 0 : index === 1}
+                        notMerge={!isReplaying}
                     />
                     </div>
 

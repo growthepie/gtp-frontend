@@ -355,6 +355,10 @@ export interface GTPChartProps {
   legendInactiveSeries?: string[];
   /** When true, the watermark will overlap with the legend. */
   watermarkOverlap?: boolean;
+  /** Pass false to let ECharts merge option updates instead of fully rebuilding. Defaults to true.
+   *  Set to false during high-frequency series updates (e.g. replay) so ECharts diffs data instead
+   *  of tearing down and recreating series each frame. */
+  notMerge?: boolean;
   /**
    * Called with the pixel coordinates {pixelX, pixelY} of the rightmost visible data point.
    * For stacked series, pixelY reflects the top of the positive stack at that timestamp.
@@ -456,6 +460,7 @@ export default function GTPChart({
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
   watermarkOverlap = false,
+  notMerge = true,
   onLastDataPointCoords,
 }: GTPChartProps) {
 
@@ -2454,7 +2459,7 @@ export default function GTPChart({
           ref={echartsRef}
           echarts={echarts}
           option={chartOption}
-          notMerge
+          notMerge={notMerge}
           lazyUpdate
           style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
