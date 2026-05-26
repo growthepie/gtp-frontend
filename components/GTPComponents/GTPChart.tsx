@@ -337,6 +337,9 @@ export interface GTPChartProps {
   compactXAxis?: boolean;
   /** Overrides the auto-computed split count for y-axis ticks. Controls how many intervals the y-axis is divided into. */
   ySplitNumber?: number;
+  /** Overrides the auto-computed y-axis interval (step between ticks). When combined with yAxisMax,
+   *  forces exactly (yAxisMax - yAxisMin) / yAxisInterval intervals. */
+  yAxisInterval?: number;
   /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
   decimalPercentage?: boolean;
   /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
@@ -446,6 +449,7 @@ export default function GTPChart({
   compactXAxis = false,
   ySplitNumber,
   decimalPercentage = false,
+  yAxisInterval,
   syncId,
   showLegend = false,
   legendLabels,
@@ -1268,8 +1272,8 @@ export default function GTPChart({
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const primaryYAxisLayout = useMemo(
-    () =>
-      computeYAxisTicks({
+    () => {
+      const layout = computeYAxisTicks({
         pairedSeries: primaryAxisSeries.length > 0 ? primaryAxisSeries : pairedSeries,
         xAxisMin: effectiveXBounds.min,
         xAxisMax: effectiveXBounds.max,
@@ -1279,7 +1283,14 @@ export default function GTPChart({
         yAxisMin,
         yAxisMaxOverride,
         ySplitNumber,
-      }),
+      });
+      if (yAxisInterval === undefined || yAxisInterval <= 0) return layout;
+      // Caller is forcing a fixed tick step (e.g. replay mode). Re-derive splitCount so the
+      // gutter measurement and the echarts axis agree on tick positions.
+      const range = layout.computedYAxisMax - layout.computedYAxisMin;
+      const splitCount = Math.max(1, Math.round(range / yAxisInterval));
+      return { ...layout, yAxisStep: yAxisInterval, splitCount };
+    },
     [
       primaryAxisSeries,
       pairedSeries,
@@ -1290,6 +1301,7 @@ export default function GTPChart({
       yAxisMin,
       yAxisMaxOverride,
       ySplitNumber,
+      yAxisInterval,
     ],
   );
 
