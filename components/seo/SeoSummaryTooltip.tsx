@@ -71,15 +71,14 @@ export default function SeoSummaryTooltip({
         <button
           type="button"
           aria-label="Show AI-readable summary"
-          className="flex h-[26px] items-center gap-x-[5px] rounded-full bg-color-bg-medium px-[8px] text-[10px] font-semibold uppercase leading-none text-color-text-secondary transition-colors hover:bg-color-ui-hover hover:text-color-text-primary"
+          className="flex size-[26px] items-center justify-center rounded-full bg-color-bg-medium text-color-text-secondary transition-colors hover:bg-color-ui-hover hover:text-color-text-primary"
           onClick={(e) => e.stopPropagation()}
         >
           <GTPIcon
-            icon="gtp-info-monochrome"
+            icon="gtp-read"
             size="sm"
-            className="!size-[12px]"
+            className="!size-[14px]"
           />
-          AI
         </button>
       }
       containerClass="flex flex-col gap-y-[10px] max-w-[420px]"
