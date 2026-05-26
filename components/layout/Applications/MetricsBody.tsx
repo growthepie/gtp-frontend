@@ -24,6 +24,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { normalizeString } from "@/lib/searchNormalize";
+import { IS_PRODUCTION } from "@/lib/helpers";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -264,10 +265,11 @@ function computeMetricSeriesData(params: {
 //      <div pointerEvents=...> wrapper around <GTPChart>
 //   4. In components/GTPComponents/GTPChart.tsx, remove the `yAxisInterval`
 //      prop, destructure, and the override branch inside primaryYAxisLayout
-// The button itself is gated behind REPLAY_BUTTON_ENABLED (dev-only) — flip
-// the flag to false to hide it without ripping out the code.
+// The button itself is gated behind REPLAY_BUTTON_ENABLED — same !IS_PRODUCTION
+// pattern that ChainTabs uses for the User Insights tab (lib/helpers.ts). True on
+// local `next dev` and on the dev / preview Vercel deploys, false on prod.
 
-const REPLAY_BUTTON_ENABLED = process.env.NODE_ENV === "development";
+const REPLAY_BUTTON_ENABLED = !IS_PRODUCTION;
 
 // Mirrors GTPChart / buildTimeXAxisLayout's snap behavior so the replay can use the same
 // padded lower-bound the chart actually renders (e.g. 90d view snaps Feb 24 → Feb 1).
