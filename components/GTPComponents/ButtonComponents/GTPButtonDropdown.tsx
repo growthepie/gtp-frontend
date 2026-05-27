@@ -178,7 +178,7 @@ export default function GTPButtonDropdown({
       <div ref={triggerRef} className="relative z-10 inline-flex w-full pointer-events-auto">
         <GTPButton
           {...buttonProps}
-          fill={matchTriggerWidthToDropdown && isOpen ? "full" : buttonProps.fill}
+          fill={matchTriggerWidthToDropdown && isOpen ? "stretch" : buttonProps.fill}
           className={buttonProps.className}
           visualState={resolvedVisualState}
           clickHandler={handleTriggerClick}

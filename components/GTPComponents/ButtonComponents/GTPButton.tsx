@@ -24,7 +24,7 @@ export interface GTPButtonProps {
   size?: GTPButtonSize | null;
   textClassName?: string;
   className?: string;
-  fill?: "none" | "full" | "mobile";
+  fill?: "none" | "full" | "mobile" | "stretch";
   buttonType?: "button" | "submit" | "reset";
   rightIconClassname?: string;
   leftIconClassname?: string;
@@ -207,8 +207,10 @@ export const GTPButton = ({
   const shouldShowLabel = hasStringLabel && (
     labelDisplay === "always" ||
     (labelDisplay === "active" && resolvedState === "active") ||
-    // Also respect forced hover visual state so controlled components work
-    (labelDisplay === "hover" && (isHovered || resolvedState === "hover"))
+    // Also respect forced hover visual state so controlled components work.
+    // Also keep visible in active state (e.g. dropdown is open) so the label
+    // doesn't disappear when the user stops hovering while the dropdown is open.
+    (labelDisplay === "hover" && (isHovered || resolvedState === "hover" || resolvedState === "active"))
   );
   const showTextContent = hasCustomContent || shouldShowLabel;
   const iconVariant = resolveIconVariant({
@@ -254,8 +256,8 @@ export const GTPButton = ({
     ? buttonSize!.paddingByIconVariant[iconVariant]
     : undefined;
 
-  const wrapperFillClassName = fill === "full" || rightIconPushToEdge ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
-  const buttonFillClassName = fill === "full" || rightIconPushToEdge ? "w-full justify-between" : fill === "mobile" ? "w-full md:w-auto justify-center" : "";
+  const wrapperFillClassName = fill === "full" || fill === "stretch" || rightIconPushToEdge ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
+  const buttonFillClassName = fill === "full" || rightIconPushToEdge ? "w-full justify-between" : fill === "stretch" ? "w-full justify-start" : fill === "mobile" ? "w-full md:w-auto justify-center" : "justify-center";
 
   return (
     <div
@@ -267,7 +269,7 @@ export const GTPButton = ({
     >
       <button
         type={buttonType}
-        className={`inline-flex justify-center items-center  rounded-full font-raleway font-medium whitespace-nowrap transition-[background-color,color,padding,gap] duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
+        className={`inline-flex items-center rounded-full font-raleway font-medium whitespace-nowrap ${isAnimatedLabelMode ? "transition-[background-color,color]" : "transition-[background-color,color,padding,gap]"} duration-200 ease-out ${buttonFillClassName} ${gapClassName} ${paddingClassName} ${
           getFillClassName(resolvedVariant, resolvedState)
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
