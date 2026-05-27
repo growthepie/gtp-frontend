@@ -337,6 +337,9 @@ export interface GTPChartProps {
   compactXAxis?: boolean;
   /** Overrides the auto-computed split count for y-axis ticks. Controls how many intervals the y-axis is divided into. */
   ySplitNumber?: number;
+  /** Overrides the auto-computed y-axis interval (step between ticks). When combined with yAxisMax,
+   *  forces exactly (yAxisMax - yAxisMin) / yAxisInterval intervals. */
+  yAxisInterval?: number;
   /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
   decimalPercentage?: boolean;
   /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
@@ -352,6 +355,10 @@ export interface GTPChartProps {
   legendInactiveSeries?: string[];
   /** When true, the watermark will overlap with the legend. */
   watermarkOverlap?: boolean;
+  /** Pass false to let ECharts merge option updates instead of fully rebuilding. Defaults to true.
+   *  Set to false during high-frequency series updates (e.g. replay) so ECharts diffs data instead
+   *  of tearing down and recreating series each frame. */
+  notMerge?: boolean;
   /**
    * Called with the pixel coordinates {pixelX, pixelY} of the rightmost visible data point.
    * For stacked series, pixelY reflects the top of the positive stack at that timestamp.
@@ -446,12 +453,14 @@ export default function GTPChart({
   compactXAxis = false,
   ySplitNumber,
   decimalPercentage = false,
+  yAxisInterval,
   syncId,
   showLegend = false,
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
   watermarkOverlap = false,
+  notMerge = true,
   onLastDataPointCoords,
 }: GTPChartProps) {
 
@@ -1217,24 +1226,16 @@ export default function GTPChart({
   const formatValueForAxis = useCallback(
     (value: number, axisIndex: 0 | 1) => {
       if (percentageMode && axisIndex === 0) return `${Math.round(value)}%`;
+      if (decimalPercentage && axisIndex === 0) {
+        const pct = value * 100;
+        return `${Number.isInteger(pct) ? pct : pct.toFixed(1)}%`;
+      }
       const axisPrefix = axisIndex === 1 ? secondaryPrefix : prefix;
       const axisSuffix = axisIndex === 1 ? secondarySuffix : suffix;
       const axisDecimals = axisIndex === 1 ? secondaryDecimals : decimals;
       return `${axisPrefix ?? ""}${formatCompactNumber(value, axisDecimals)}${axisSuffix ?? ""}`;
     },
-    [decimals, percentageMode, prefix, secondaryDecimals, secondaryPrefix, secondarySuffix, suffix],
-  );
-
-  const formatDefaultYAxisTick = useCallback(
-    (value: number) => {
-      if (percentageMode) return `${Math.round(value)}%`;
-      if (decimalPercentage) {
-        const pct = value * 100;
-        return `${Number.isInteger(pct) ? pct : pct.toFixed(1)}%`;
-      }
-      return `${prefix ?? ""}${formatCompactNumber(value, decimals)}${suffix ?? ""}`;
-    },
-    [decimals, percentageMode, decimalPercentage, prefix, suffix],
+    [decimals, percentageMode, decimalPercentage, prefix, secondaryDecimals, secondaryPrefix, secondarySuffix, suffix],
   );
 
   // Compute the actual rendered x-axis bounds before y-axis layout.
@@ -1276,8 +1277,8 @@ export default function GTPChart({
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const primaryYAxisLayout = useMemo(
-    () =>
-      computeYAxisTicks({
+    () => {
+      const layout = computeYAxisTicks({
         pairedSeries: primaryAxisSeries.length > 0 ? primaryAxisSeries : pairedSeries,
         xAxisMin: effectiveXBounds.min,
         xAxisMax: effectiveXBounds.max,
@@ -1287,7 +1288,14 @@ export default function GTPChart({
         yAxisMin,
         yAxisMaxOverride,
         ySplitNumber,
-      }),
+      });
+      if (yAxisInterval === undefined || yAxisInterval <= 0) return layout;
+      // Caller is forcing a fixed tick step (e.g. replay mode). Re-derive splitCount so the
+      // gutter measurement and the echarts axis agree on tick positions.
+      const range = layout.computedYAxisMax - layout.computedYAxisMin;
+      const splitCount = Math.max(1, Math.round(range / yAxisInterval));
+      return { ...layout, yAxisStep: yAxisInterval, splitCount };
+    },
     [
       primaryAxisSeries,
       pairedSeries,
@@ -1298,6 +1306,7 @@ export default function GTPChart({
       yAxisMin,
       yAxisMaxOverride,
       ySplitNumber,
+      yAxisInterval,
     ],
   );
 
@@ -2450,7 +2459,7 @@ export default function GTPChart({
           ref={echartsRef}
           echarts={echarts}
           option={chartOption}
-          notMerge
+          notMerge={notMerge}
           lazyUpdate
           style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}

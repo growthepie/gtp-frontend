@@ -22,6 +22,7 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
+import SeoSummaryTooltip from "@/components/seo/SeoSummaryTooltip";
 
 
 const socials = {
@@ -498,6 +499,11 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
           />
           </div>
           <div className="heading-large-md text-color-text-secondary whitespace-nowrap min-w-0 truncate">{chainData.name}</div>
+          <SeoSummaryTooltip
+            family="chains"
+            slug={chainData.url_key}
+            placement="top-start"
+          />
         </div>
         {/* <HorizontalScrollContainer className="flex-1 pb-[15px] h-[35px] overflow-hidden"> */}
         <div className={`px-[30px] @[1155px]/header:pl-0 w-fit flex-wrap flex @[1155px]:justify-end items-center gap-[5px] sm:gap-[10px] ${!open ? "max-w-[1200px] max-h-[110px] opacity-100 transition-[opacity] duration-300  " : "max-h-0 pointer-events-none opacity-0 lg:max-w-0 lg:max-h-0"}`}>
