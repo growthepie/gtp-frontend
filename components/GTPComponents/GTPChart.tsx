@@ -337,9 +337,6 @@ export interface GTPChartProps {
   compactXAxis?: boolean;
   /** Overrides the auto-computed split count for y-axis ticks. Controls how many intervals the y-axis is divided into. */
   ySplitNumber?: number;
-  /** Overrides the auto-computed y-axis interval (step between ticks). When combined with yAxisMax,
-   *  forces exactly (yAxisMax - yAxisMin) / yAxisInterval intervals. */
-  yAxisInterval?: number;
   /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
   decimalPercentage?: boolean;
   /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
@@ -355,10 +352,10 @@ export interface GTPChartProps {
   legendInactiveSeries?: string[];
   /** When true, the watermark will overlap with the legend. */
   watermarkOverlap?: boolean;
-  /** Pass false to let ECharts merge option updates instead of fully rebuilding. Defaults to true.
-   *  Set to false during high-frequency series updates (e.g. replay) so ECharts diffs data instead
-   *  of tearing down and recreating series each frame. */
-  notMerge?: boolean;
+  /** Replay reveal: 0..1 progress. When set, an opaque overlay covers the plot area
+   *  (skipping y-axis labels, x-axis labels, and legend) and shrinks left-to-right
+   *  to reveal the data. Animation is pure CSS clip-path (compositor-only). */
+  revealProgress?: number | null;
   /**
    * Called with the pixel coordinates {pixelX, pixelY} of the rightmost visible data point.
    * For stacked series, pixelY reflects the top of the positive stack at that timestamp.
@@ -453,14 +450,13 @@ export default function GTPChart({
   compactXAxis = false,
   ySplitNumber,
   decimalPercentage = false,
-  yAxisInterval,
   syncId,
   showLegend = false,
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
   watermarkOverlap = false,
-  notMerge = true,
+  revealProgress = null,
   onLastDataPointCoords,
 }: GTPChartProps) {
 
@@ -1277,8 +1273,8 @@ export default function GTPChart({
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const primaryYAxisLayout = useMemo(
-    () => {
-      const layout = computeYAxisTicks({
+    () =>
+      computeYAxisTicks({
         pairedSeries: primaryAxisSeries.length > 0 ? primaryAxisSeries : pairedSeries,
         xAxisMin: effectiveXBounds.min,
         xAxisMax: effectiveXBounds.max,
@@ -1288,14 +1284,7 @@ export default function GTPChart({
         yAxisMin,
         yAxisMaxOverride,
         ySplitNumber,
-      });
-      if (yAxisInterval === undefined || yAxisInterval <= 0) return layout;
-      // Caller is forcing a fixed tick step (e.g. replay mode). Re-derive splitCount so the
-      // gutter measurement and the echarts axis agree on tick positions.
-      const range = layout.computedYAxisMax - layout.computedYAxisMin;
-      const splitCount = Math.max(1, Math.round(range / yAxisInterval));
-      return { ...layout, yAxisStep: yAxisInterval, splitCount };
-    },
+      }),
     [
       primaryAxisSeries,
       pairedSeries,
@@ -1306,7 +1295,6 @@ export default function GTPChart({
       yAxisMin,
       yAxisMaxOverride,
       ySplitNumber,
-      yAxisInterval,
     ],
   );
 
@@ -2459,12 +2447,82 @@ export default function GTPChart({
           ref={echartsRef}
           echarts={echarts}
           option={chartOption}
-          notMerge={notMerge}
+          notMerge
           lazyUpdate
           style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
+      {/* Replay reveal overlay: covers only the plot grid (so y-axis labels, x-axis
+          labels, watermark, and legend stay visible) and clips itself right-to-left
+          via clip-path. z-[3] sits above the canvas but below the watermark (z-[40])
+          and x-axis label DOM (DOM-order).
+          Horizontal grid lines are re-drawn inside the overlay so they stay
+          continuous across the reveal seam — color/opacity matches the ECharts
+          splitLine style above (withOpacity(textPrimary, 0.11)). */}
+      {revealProgress !== null && revealProgress !== undefined && revealProgress < 1 && (() => {
+        // Match ECharts' splitLine count exactly: it draws one line per tick from
+        // computedYAxisMin to computedYAxisMax stepping by yAxisStep, so the interval
+        // count is (max-min)/step rather than the requested splitCount (e.g. percentage
+        // mode forces step=25 with range 0-100 → 4 intervals, 5 lines).
+        const { computedYAxisMin, computedYAxisMax, yAxisStep } = primaryYAxisLayout;
+        const intervals = yAxisStep > 0
+          ? Math.max(1, Math.round((computedYAxisMax - computedYAxisMin) / yAxisStep))
+          : 1;
+        const lineColor = withOpacity(textPrimary, 0.11);
+        // ECharts line stroke (lineWidth ~2) and end-point symbols (symbolSize 8) extend
+        // a few pixels past the grid rectangle. Without these extensions the rightmost
+        // end-symbol and any line touching y≈0 peek out past the overlay during replay.
+        // Left extension stays small — there's only an 8px gap between the y-axis
+        // labels and the plot edge (see dynamicGridLeft), so 2px is the safe budget.
+        const EXTEND_TOP = 3;
+        const EXTEND_RIGHT = 6;
+        const EXTEND_BOTTOM = 3;
+        const EXTEND_LEFT = 2;
+        return (
+          <div
+            className="pointer-events-none absolute overflow-hidden bg-color-bg-default z-[3]"
+            style={{
+              top: Math.max(0, effectiveGrid.top - EXTEND_TOP),
+              left: Math.max(0, effectiveGrid.left - EXTEND_LEFT),
+              right: Math.max(0, effectiveGrid.right - EXTEND_RIGHT),
+              bottom: Math.max(0, effectiveGrid.bottom - EXTEND_BOTTOM),
+              clipPath: `inset(0 0 0 ${revealProgress * 100}%)`,
+            }}
+          >
+            {/* Inner box anchored to the actual plot bounds (insets undo the EXTEND_*
+                values) so the horizontal grid lines line up pixel-for-pixel with the
+                ECharts splitLines underneath. */}
+            {!hidePrimaryAxis && (
+              <div
+                className="absolute"
+                style={{
+                  top: EXTEND_TOP,
+                  left: EXTEND_LEFT,
+                  right: EXTEND_RIGHT,
+                  bottom: EXTEND_BOTTOM,
+                }}
+              >
+                {Array.from({ length: intervals + 1 }).map((_, i) => {
+                  // Top edge pinned with top:0, bottom edge with bottom:0, interior
+                  // lines pixel-centered on their fractional Y — same convention as
+                  // ECharts' splitLine rendering.
+                  const isTop = i === 0;
+                  const isBottom = i === intervals;
+                  const style: React.CSSProperties = {
+                    height: 1,
+                    backgroundColor: lineColor,
+                  };
+                  if (isTop) style.top = 0;
+                  else if (isBottom) style.bottom = 0;
+                  else style.top = `calc(${(i / intervals) * 100}% - 0.5px)`;
+                  return <div key={i} className="absolute left-0 right-0" style={style} />;
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {/* External crosshair overlay — shown by peer charts in the same syncId group.
           Updated imperatively (no React state) to avoid re-renders on every mouse move.
           Uses repeating-linear-gradient with the exact zrender dash formula:
