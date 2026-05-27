@@ -302,6 +302,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
 
   // Anchor used to position the desktop dropdown when portaled to <body>.
   const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [anchorRect, setAnchorRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
   useEffect(() => {
@@ -350,6 +351,21 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
       if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
     };
   }, []);
+
+  // Close on click outside (replaces the fixed-inset backdrop)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
+      ) return;
+      setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [isOpen]);
 
   const openWithDelay = () => {
     if (isTouchRef.current) return;
@@ -434,6 +450,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
         )}
         {!isMobile && anchorRect && createPortal(
           <div
+            ref={dropdownRef}
             className={`flex flex-col fixed bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 border-b border-l border-r transition-[max-height,opacity] ease-in-out duration-300 ${isOpen
               ? `z-[10] overflow-hidden border-transparent rounded-b-[22px] border-color-bg-medium shadow-standard`
               : "max-h-0 z-[9] overflow-hidden border-transparent rounded-b-[22px] pointer-events-none"
@@ -456,14 +473,6 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             />
           </div>,
           document.getElementById("content-panel") ?? document.body
-        )}
-        {isOpen && (
-          <div
-            className={`hidden lg:block lg:fixed inset-0 z-[3]`}
-            onClick={() => {
-              setIsOpen(false);
-            }}
-          />
         )}
       </div>
     </>
