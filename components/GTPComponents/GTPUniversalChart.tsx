@@ -83,8 +83,8 @@ const CONTEXT_TOP_RIGHT_KEYS_BY_AGGREGATION: Record<AggregationMode, string[]> =
 
 const DEFAULT_BOTTOM_RIGHT_ITEMS = [
   { id: "absolute", label: "Absolute" },
-  { id: "percentage", label: "Percentage" },
   { id: "stacked", label: "Stacked" },
+  { id: "percentage", label: "Percentage" },
 ] satisfies GTPTabButtonSetItem[];
 
 const DEFAULT_TOP_LEFT_SELECTED_ID = "daily";
@@ -1572,12 +1572,14 @@ export default function GTPUniversalChart({
           width: 2,
           color: series.row.accentColor,
         },
-        areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: withHexOpacity(series.row.accentColor, shouldStackSeries ? 0.36 : 0.22) },
-            { offset: 1, color: withHexOpacity(series.row.accentColor, 0.04) },
-          ]),
-        },
+        areaStyle: shouldStackSeries
+          ? {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: withHexOpacity(series.row.accentColor, 0.36) },
+                { offset: 1, color: withHexOpacity(series.row.accentColor, 0.04) },
+              ]),
+            }
+          : undefined,
         markLine:
           index === 0
             ? {
@@ -2039,31 +2041,49 @@ export default function GTPUniversalChart({
       mobileVariant="inline"
       leftClassName="!flex-none shrink-0"
       rightClassName={isMobileLayout ? "min-w-0 flex-1" : undefined}
-      className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px]"
+      className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px] text-xs"
       left={bottomLeftControls}
       right={(
         bottomRightItems.length > 0 ? (
           <GTPTabButtonSet
-            items={bottomRightItems}
-            selectedId={effectiveBottomRightSelectedId}
             size={tabSize}
             fill={isMobileLayout ? "full" : "none"}
-            onChange={(id, item) => {
-              if (bottomRightConfig?.selectedId === undefined) {
-                setBottomRightSelection(id);
-              }
+          >
+            {bottomRightItems.map((item) => {
+              const isSelected = item.id === effectiveBottomRightSelectedId;
+              return (
+                <GTPButton
+                  key={item.id}
+                  label={item.label}
+                  leftIcon={item.leftIcon}
+                  rightIcon={item.rightIcon}
+                  size={tabSize}
+                  fill={isMobileLayout ? "full" : "none"}
+                  className={isMobileLayout ? "flex-1" : undefined}
+                  innerStyle={isMobileLayout ? { width: "100%" } : undefined}
+                  variant="primary"
+                  isSelected={isSelected}
+                  disabled={item.disabled}
+                  clickHandler={() => {
+                    item.onClick?.();
+                    if (bottomRightConfig?.selectedId === undefined) {
+                      setBottomRightSelection(item.id);
+                    }
 
-              if (
-                isMetricContextActive &&
-                bottomRightConfig?.selectedId === undefined &&
-                ["absolute", "percentage", "stacked"].includes(id)
-              ) {
-                setContextSelectedScale(id);
-              }
+                    if (
+                      isMetricContextActive &&
+                      bottomRightConfig?.selectedId === undefined &&
+                      ["absolute", "percentage", "stacked"].includes(item.id)
+                    ) {
+                      setContextSelectedScale(item.id);
+                    }
 
-              bottomRightConfig?.onChange?.(id, item);
-            }}
-          />
+                    bottomRightConfig?.onChange?.(item.id, item);
+                  }}
+                />
+              );
+            })}
+          </GTPTabButtonSet>
         ) : null
       )}
     />
