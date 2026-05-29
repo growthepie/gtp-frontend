@@ -7,7 +7,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow, GridTableChainIcon, GridTableAddressCell } from "@/components/layout/GridTable";
 import Heading from "@/components/layout/Heading";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
@@ -17,7 +17,9 @@ import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/Proje
 import { GTPTooltipNew, GTPApplicationTooltip, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import Image from "next/image";
 import { Category } from "@/app/(layout)/applications/_components/Components";
-import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import router from "next/router";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
@@ -59,6 +61,9 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
 
   const [selectedTimespanNewUsers, setSelectedTimespanNewUsers] = useState("1d");
   const [selectedTimespanCrossChain, setSelectedTimespanCrossChain] = useState("1d");
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [isNewUsersWrapping, setIsNewUsersWrapping] = useState(false);
+  const [isCrossChainWrapping, setIsCrossChainWrapping] = useState(false);
 
   const [crossChainSort, setCrossChainSort] = useState<{ metric: string; sortOrder: string }>({
     metric: "share_of_users",
@@ -213,24 +218,22 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
 
           {/* Timespan Selector */}
           <div className="w-full flex justify-end">
-            <TopRowContainer className="w-auto !p-1">
-              <TopRowParent>
-                <></>
-              </TopRowParent>
-              <TopRowParent className="!gap-x-1">
+            <GTPButtonContainer isWrapping={isNewUsersWrapping} setIsWrapping={setIsNewUsersWrapping}>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
                 {Object.keys(timespans).filter(t => data?.data?.new_user_contracts && data.data.new_user_contracts[t]).map((timespan) => (
-                  <TopRowChild
+                  <GTPButton
                     key={timespan}
+                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                    variant="primary"
+                    size="sm"
                     isSelected={selectedTimespanNewUsers === timespan}
-                    onClick={() => setSelectedTimespanNewUsers(timespan)}
-                    className="!py-0 !px-[12px] text-xs lg:text-sm h-[28px] md:h-[44px] flex items-center justify-center"
-                  >
-                    <span className="hidden md:block">{timespans[timespan].label}</span>
-                    <span className="block md:hidden">{timespans[timespan].shortLabel}</span>
-                  </TopRowChild>
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    clickHandler={() => setSelectedTimespanNewUsers(timespan)}
+                  />
                 ))}
-              </TopRowParent>
-            </TopRowContainer>
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </div>
 
           <div className="flex flex-col w-full">
@@ -480,24 +483,22 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
 
           {/* Timespan Selector */}
           <div className="w-full flex justify-end">
-            <TopRowContainer className="w-auto !p-1">
-              <TopRowParent>
-                <></>
-              </TopRowParent>
-              <TopRowParent className="!gap-x-1">
+            <GTPButtonContainer isWrapping={isCrossChainWrapping} setIsWrapping={setIsCrossChainWrapping}>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
                 {Object.keys(timespans).filter(t => data?.data?.cross_chain_addresses && data.data.cross_chain_addresses[t]).map((timespan) => (
-                  <TopRowChild
+                  <GTPButton
                     key={timespan}
+                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                    variant="primary"
+                    size="sm"
                     isSelected={selectedTimespanCrossChain === timespan}
-                    onClick={() => setSelectedTimespanCrossChain(timespan)}
-                    className="!py-0 !px-[12px] text-xs lg:text-sm h-[28px] md:h-[44px] flex items-center justify-center"
-                  >
-                    <span className="hidden md:block">{timespans[timespan].label}</span>
-                    <span className="block md:hidden">{timespans[timespan].shortLabel}</span>
-                  </TopRowChild>
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    clickHandler={() => setSelectedTimespanCrossChain(timespan)}
+                  />
                 ))}
-              </TopRowParent>
-            </TopRowContainer>
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </div>
 
           <div className="flex flex-col w-full">

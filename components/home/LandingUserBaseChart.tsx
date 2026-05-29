@@ -5,7 +5,6 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { EthereumEcosystemOverviewResponse, MeetL2s } from "@/types/api/EthereumEcosystemOverviewResponse";
-import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
 import { EthAggURL, LandingURL, MasterURL } from "@/lib/urls";
