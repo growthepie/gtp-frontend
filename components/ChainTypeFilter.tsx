@@ -1,6 +1,7 @@
 "use client";
-import { GTPIcon } from "./layout/GTPIcon";
-import { TopRowChild } from "./layout/TopRow";
+import { useMediaQuery } from "usehooks-ts";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type ChainType = 'l1' | 'rollup' | 'others';
 
@@ -20,49 +21,33 @@ const chainTypeOptions: ChainTypeOption[] = [
   { value: 'others', label: 'Broader Ecosystem' },
 ];
 
-export default function ChainTypeFilter({
-  selectedTypes,
-  onChange,
-}: ChainTypeFilterProps) {
+export default function ChainTypeFilter({ selectedTypes, onChange }: ChainTypeFilterProps) {
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   const toggleType = (type: string) => {
     if (selectedTypes.includes(type)) {
-      // Prevent deselecting the last remaining type
       if (selectedTypes.length === 1) return;
-      // Remove type
       onChange(selectedTypes.filter((t) => t !== type));
     } else {
-      // Add type
       onChange([...selectedTypes, type]);
     }
   };
 
   return (
     <>
-      
       {chainTypeOptions.map((option) => {
         const isSelected = selectedTypes.includes(option.value);
+        const shortLabel = option.label.split(" ").length > 1 ? option.label.split(" ")[1] : option.label;
         return (
-          <TopRowChild
+          <GTPButton
             key={option.value}
-            // className={`flex items-center gap-x-[5px] px-[15px] py-[5px] rounded-full cursor-pointer ${isSelected ? "bg-color-ui-active" : "hover:bg-color-ui-hover/10"}`}
-            className={`flex items-center justify-center gap-x-[5px] !px-[15px] !py-[5px] flex-1 ${isSelected ? "hover:bg-color-ui-hover" : "bg-medium-background hover:bg-color-ui-hover"}`}
-            isSelected
-            onClick={() => toggleType(option.value)}
-          >
-            <GTPIcon
-              icon={isSelected ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome"}
-              size="sm"
-              className="text-color-text-primary"
-            />
-            <div className="text-sm text-nowrap">
-              <div className="hidden sm:block">
-              {option.label}
-              </div>
-              <div className="block sm:hidden">
-              {option.label.split(" ").length > 1 ? option.label.split(" ")[1] : option.label}
-              </div>
-            </div>
-          </TopRowChild>
+            label={isMobile ? shortLabel : option.label}
+            leftIcon={(isSelected ? "gtp-checkmark-checked-monochrome" : "gtp-checkmark-unchecked-monochrome") as GTPIconName}
+            variant="primary"
+            size="sm"
+            isSelected={isSelected}
+            clickHandler={() => toggleType(option.value)}
+          />
         );
       })}
     </>

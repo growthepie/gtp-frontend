@@ -12,12 +12,13 @@ import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import ChainTypeFilter from "../ChainTypeFilter";
 import { GTPIcon } from "../layout/GTPIcon";
 import Subheading from "../layout/Subheading";
 import Heading from "../layout/Heading";
-import { TopRowContainer, TopRowParent } from "../layout/TopRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import { useTheme } from "next-themes";
 import { useUIContext } from "@/contexts/UIContext";
 import ViewToggle from "../ViewToggle";
@@ -171,6 +172,8 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [isWrapping, setIsWrapping] = useState(false);
 
   const { resolvedTheme } = useTheme();
 
@@ -274,25 +277,19 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
           </Container>
     
           <Container className="pt-[15px]">
-            <TopRowContainer className="!justify-between flex-col rounded-[15px] gap-y-[5px] !p-[2px] lg:!pl-[10px] gap-x-[10px]">
-              <TopRowParent className="!justify-center lg:!justify-normal">
-                <div className="text-md hidden lg:block pl-[5px] pr-[5px] whitespace-nowrap">Choose which chains to show</div>
+            <GTPButtonContainer isWrapping={isWrapping} setIsWrapping={setIsWrapping}>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+                <span className="text-sm hidden lg:inline-block pl-[5px] pr-[3px] whitespace-nowrap">Choose which chains to show</span>
                 <ChainTypeFilter
                   selectedTypes={selectedChainTypes}
                   onChange={setSelectedChainTypes}
                 />
-              </TopRowParent>
-             
-                <TopRowParent className="w-full flex justify-end text-md lg:min-h-[30px]">
-                  <div className="flex items-center gap-x-[10px]">
-                    <ViewToggle
-                      showTable={showTable}
-                      setShowTable={setShowTable}
-                    />
-                  </div>
-                </TopRowParent>
-      
-            </TopRowContainer>
+              </GTPButtonRow>
+              <ViewToggle
+                showTable={showTable}
+                setShowTable={setShowTable}
+              />
+            </GTPButtonContainer>
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
             <div className="" style={{ display: showTable ? "block" : "none" }}>
