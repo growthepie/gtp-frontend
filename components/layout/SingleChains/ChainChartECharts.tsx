@@ -13,7 +13,10 @@ import { getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChainsData, MetricData, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
-import { TopRowContainer, TopRowChild, TopRowParent } from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { metricItems, getFundamentalsByKey, metricCategories } from "@/lib/metrics";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -1889,6 +1892,7 @@ export default function ChainChartECharts({
   };
 
   const [hoverChainKey, setHoverChainKey] = useState<string | null>(null);
+  const [isTopBarWrapping, setIsTopBarWrapping] = useState(false);
 
   const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -2012,23 +2016,26 @@ export default function ChainChartECharts({
       </div>
 
       {/* Controls */}
-      <TopRowContainer className="relative mb-[15px]">
-        <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-fit -mt-[1px]">
-          <TopRowParent>
-            {availableIntervals.map((interval) => (
-              <TopRowChild
-                key={interval}
-                isSelected={selectedTimeInterval === interval}
-                onClick={() => startTransition(() => setSelectedTimeInterval(interval))}
-                className="capitalize relative"
-              >
-                <span>{interval}</span>
-              </TopRowChild>
-            ))}
-          </TopRowParent>
-        </div>
-
-        <TopRowParent>
+      <GTPButtonContainer
+        className="relative mb-[15px]"
+        isWrapping={isTopBarWrapping}
+        setIsWrapping={setIsTopBarWrapping}
+      >
+        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+          {availableIntervals.map((interval) => (
+            <GTPButton
+              key={interval}
+              label={interval.charAt(0).toUpperCase() + interval.slice(1)}
+              innerStyle={{ width: "100%" }}
+              className="w-full justify-center"
+              variant="primary"
+              size="sm"
+              clickHandler={() => startTransition(() => setSelectedTimeInterval(interval))}
+              isSelected={selectedTimeInterval === interval}
+            />
+          ))}
+        </GTPButtonRow>
+        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
           {!zoomed ? (
             Object.keys(timespans)
               .filter((timespan) =>
@@ -2043,35 +2050,29 @@ export default function ChainChartECharts({
                   : ["4q", "8q", "maxQ"].includes(timespan)
               )
               .map((timespan) => (
-                <TopRowChild
+                <GTPButton
                   key={timespan}
+                  label={timespans[timespan].label}
+                  innerStyle={{ width: "100%" }}
+                  className="w-full justify-center"
+                  variant="primary"
+                  size="sm"
+                  clickHandler={() => setSelectedTimespan(timespan)}
                   isSelected={selectedTimespan === timespan}
-                  onClick={() => setSelectedTimespan(timespan)}
-                  style={{
-                    fontSize: isMobile ? "16px" : "",
-                    paddingTop: isMobile ? "6px" : "",
-                    paddingBottom: isMobile ? "6px" : "",
-                  }}
-                  className="py-[4px] xl:py-[13px]"
-                >
-                  <span className="hidden sm:block">{timespans[timespan].label}</span>
-                  <span className="block text-xs sm:hidden">{timespans[timespan].shortLabel}</span>
-                </TopRowChild>
+                />
               ))
           ) : (
-            <div className="flex w-full gap-x-1">
-              <button
-                className="rounded-full flex items-center justify-center space-x-1 md:space-x-3 px-[16px] py-[3px] md:px-[15px] md:py-[6px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[11px] w-full lg:w-auto text-xs md:text-base font-medium border-[0.5px] border-forest-400"
-                onClick={resetZoom}
-              >
-                <Icon icon="feather:zoom-out" className="w-4 h-4 md:w-5 md:h-5" />
-                <div className="hidden md:block">Reset Zoom</div>
-                <div className="block md:hidden">Reset</div>
-              </button>
-            </div>
+            <GTPButton
+              label="Reset Zoom"
+              leftIcon={"feather:zoom-out" as GTPIconName}
+              size="sm"
+              variant="highlight"
+              visualState="default"
+              clickHandler={resetZoom}
+            />
           )}
-        </TopRowParent>
-      </TopRowContainer>
+        </GTPButtonRow>
+      </GTPButtonContainer>
 
       {/* Charts Grid */}
       <div className={`flex flex-col gap-y-[15px] transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>
