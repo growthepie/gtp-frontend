@@ -104,12 +104,15 @@ export type JsonLdSpeakable = {
   cssSelector: string[];
 };
 
+export type JsonLdArticleType = "Article" | "BlogPosting" | "TechArticle";
+
 export interface JsonLdArticle {
   ["@context"]: "https://schema.org";
-  ["@type"]: "TechArticle";
+  ["@type"]: JsonLdArticleType | JsonLdArticleType[];
   headline: string;
   alternativeHeadline?: string;
   description: string;
+  articleSection?: string;
   datePublished?: string;
   dateModified?: string;
   inLanguage?: string;
@@ -123,6 +126,8 @@ export interface JsonLdArticle {
   };
   image?: (string | JsonLdImageObject)[];
   mainEntityOfPage?: { ["@type"]: "WebPage"; ["@id"]: string };
+  url?: string;
+  isAccessibleForFree?: boolean;
   keywords?: string[] | string;
   about?: JsonLdAboutThing[];
   speakable?: JsonLdSpeakable;
@@ -514,10 +519,11 @@ export function generateJsonLdArticle(
 
   return {
     "@context": "https://schema.org",
-    "@type": "TechArticle",
+    "@type": ["Article", "BlogPosting", "TechArticle"],
     headline: data.title,
     alternativeHeadline: data.subtitle,
     description: summary,
+    articleSection: "Quick Bites",
     inLanguage: opts.language ?? "en",
     // only include if valid ISO with TZ
     ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
@@ -532,6 +538,8 @@ export function generateJsonLdArticle(
     },
     image: imageObject ? [imageObject] : undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+    url: canonical,
+    isAccessibleForFree: true,
     keywords: toKeywords(data, opts.articleBody),
     about: toAboutThings(data, opts.articleBody),
     speakable: { "@type": "SpeakableSpecification", cssSelector: speakableSelectors },

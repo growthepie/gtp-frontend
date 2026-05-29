@@ -26,6 +26,7 @@ import AnswerHubSchemas from "@/components/answers/AnswerHubSchemas";
 import AnswerHubStaticShell from "@/components/answers/AnswerHubStaticShell";
 import PrivacyPolicyStaticShell from "@/components/legal/PrivacyPolicyStaticShell";
 import SeoSummaryRouteStaticShell from "@/components/seo/SeoSummaryRouteStaticShell";
+import HomeStaticShell from "@/components/home/HomeStaticShell";
 const jsonLd = generateJsonLd({host: "www.growthepie.com", withSearchAction: true});
 
 export const viewport = {
@@ -217,6 +218,7 @@ export default function RootLayout({
         <AnswerHubStaticShell />
         <SeoSummaryRouteStaticShell />
         <PrivacyPolicyStaticShell />
+        <HomeStaticShell />
         <Providers>
           <div
             id="background-container"

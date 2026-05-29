@@ -22,12 +22,27 @@ Module._resolveFilename = function (request, parent, isMain, options) {
 
 const baseUrl = "https://www.growthepie.com";
 
+const mainSitemaps = [
+  "https://www.growthepie.com/server-sitemap.xml",
+  "https://www.growthepie.com/server-applications-sitemap.xml",
+  "https://www.growthepie.com/chains-sitemap.xml",
+  "https://www.growthepie.com/fundamentals-sitemap.xml",
+  "https://www.growthepie.com/quick-bites-sitemap.xml",
+  "https://www.growthepie.com/answers-sitemap.xml",
+];
+
 // for www.growthepie.com & dev.growthepie.com
 const gtpMain = {
   siteUrl: "https://www.growthepie.com",
   generateRobotsTxt: true,
-  generateIndexSitemap: false,
+  generateIndexSitemap: true,
   additionalPaths: async () => [
+    {
+      loc: "/",
+      changefreq: "daily",
+      priority: "1.0",
+      lastmod: new Date().toISOString(),
+    },
     {
       loc: "/privacy-policy",
       changefreq: "monthly",
@@ -83,14 +98,7 @@ const gtpMain = {
       },
     ],
     exclude: ["/server-sitemap.xml", "/server-applications-sitemap.xml"],
-    additionalSitemaps: [
-      "https://www.growthepie.com/server-sitemap.xml",
-      "https://www.growthepie.com/server-applications-sitemap.xml",
-      "https://www.growthepie.com/chains-sitemap.xml",
-      "https://www.growthepie.com/fundamentals-sitemap.xml",
-      "https://www.growthepie.com/quick-bites-sitemap.xml",
-      "https://www.growthepie.com/answers-sitemap.xml",
-    ],
+    additionalSitemaps: mainSitemaps,
   },
 };
 
