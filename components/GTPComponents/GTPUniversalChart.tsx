@@ -21,6 +21,7 @@ import GTPButtonDropdown from "./ButtonComponents/GTPButtonDropdown";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
 import { downloadElementAsImage } from "./chartSnapshotHelpers";
+import { buildTimeXAxisLayout, enumerateTickPositions } from "@/lib/echarts-x-axis-layout";
 
 const DIVIDER_WIDTH = 18;
 const DEFAULT_SPLIT_RATIO = 506 / (506 + 650);
@@ -545,6 +546,12 @@ export default function GTPUniversalChart({
     direction: "desc",
   });
   const [showUsd] = useLocalStorage("showUsd", true);
+  // Legend shown in place of the table when it is collapsed. legendChainKeys is a
+  // frozen snapshot of the selection at collapse time so toggling a chain off
+  // dims it (and stays in the legend) instead of removing it.
+  const [legendChainKeys, setLegendChainKeys] = useState<string[] | null>(null);
+  const [wasTableCollapsed, setWasTableCollapsed] = useState(false);
+  const [hoverLegendChain, setHoverLegendChain] = useState<string | null>(null);
 
   const syncTableScrollMetrics = useCallback(() => {
     const scrollElement = tableScrollRef.current;
@@ -861,6 +868,14 @@ export default function GTPUniversalChart({
 
   const selectedChains =
     isMetricContextActive ? contextSelectedChains : localSelectedChains;
+
+  // Snapshot the selection at the moment the table collapses (adjusted during
+  // render rather than in an effect to avoid a cascading re-render). Cleared
+  // when the table reopens so the next collapse captures a fresh set.
+  if (isTableCollapsed !== wasTableCollapsed) {
+    setWasTableCollapsed(isTableCollapsed);
+    setLegendChainKeys(isTableCollapsed ? [...selectedChains] : null);
+  }
 
   const selectedChainSet = useMemo(() => new Set(selectedChains), [selectedChains]);
   const selectedChainCount = useMemo(
@@ -1328,6 +1343,30 @@ export default function GTPUniversalChart({
       minTimestamp !== undefined && maxTimestamp !== undefined ? maxTimestamp - minTimestamp : undefined;
     const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
 
+    const xAxisLayout =
+      minTimestamp !== undefined && maxTimestamp !== undefined
+        ? buildTimeXAxisLayout({
+            timestamps: allTimestamps,
+            barSeriesData: [],
+            xAxisMin: minTimestamp,
+            xAxisMax: maxTimestamp,
+            grid: { left: 52, right: 0, top: 4, bottom: 22 },
+            snapToCleanBoundary: false,
+          })
+        : undefined;
+    const xAxisTickValues =
+      xAxisLayout?.firstTick !== undefined &&
+      xAxisLayout?.lastTick !== undefined &&
+      xAxisLayout?.max !== undefined &&
+      xAxisLayout?.minInterval
+        ? enumerateTickPositions(
+            xAxisLayout.firstTick,
+            xAxisLayout.lastTick,
+            xAxisLayout.minInterval,
+            xAxisLayout.max,
+          ).map((t) => t.timestamp)
+        : undefined;
+
     const formatXAxisTick = (value: number | string) => {
       const numValue = typeof value === "string" ? Number(value) : value;
       if (!Number.isFinite(numValue)) {
@@ -1336,6 +1375,7 @@ export default function GTPUniversalChart({
 
       const date = new Date(numValue);
       const isJanFirst = date.getUTCMonth() === 0 && date.getUTCDate() === 1;
+      const isMonthFirst = date.getUTCDate() === 1;
 
       if (isLongerThan7Days && isJanFirst) {
         const yearLabel = new Intl.DateTimeFormat("en-GB", {
@@ -1345,7 +1385,16 @@ export default function GTPUniversalChart({
         return `{yearBold|${yearLabel}}`;
       }
 
+      if (isMonthFirst) {
+        return new Intl.DateTimeFormat("en-GB", {
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(numValue);
+      }
+
       return new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
         month: "short",
         year: "numeric",
         timeZone: "UTC",
@@ -1381,6 +1430,8 @@ export default function GTPUniversalChart({
         type: "time",
         show: true,
         boundaryGap: false,
+        min: xAxisLayout?.min ?? minTimestamp,
+        max: xAxisLayout?.max ?? maxTimestamp,
         axisLine: {
           lineStyle: {
             color: withOpacity(textPrimary, 0.45),
@@ -1397,6 +1448,9 @@ export default function GTPUniversalChart({
           hideOverlap: true,
           margin: 8,
           formatter: (value: number) => formatXAxisTick(value),
+          ...(xAxisTickValues && xAxisTickValues.length > 0
+            ? { customValues: xAxisTickValues }
+            : {}),
           rich: {
             yearBold: {
               color: textPrimary,
@@ -1877,6 +1931,17 @@ export default function GTPUniversalChart({
     setActiveSelectedChains(nextChains);
   };
 
+  // Legend toggle: dims/un-dims a chain and keeps a minimum of one active so the
+  // chart never goes blank. Selection is shared with the table via selectedChains.
+  const handleLegendToggle = (chain: string) => {
+    if (selectedChains.includes(chain)) {
+      if (selectedChains.length <= 1) return;
+      setActiveSelectedChains(selectedChains.filter((c) => c !== chain));
+    } else {
+      setActiveSelectedChains([...selectedChains, chain]);
+    }
+  };
+
   const selectAllChains = () => {
     setActiveSelectedChains(displayRows.map((row) => row.chain));
   };
@@ -1913,6 +1978,18 @@ export default function GTPUniversalChart({
       : "in-button-down-monochrome";
   const isTableSortKeyActive = (key: TableSortKey) => tableSort.key === key;
   const showTablePane = !isTableCollapsed;
+  const showChartLegend = isTableCollapsed;
+  const legendItems = useMemo(() => {
+    if (!showChartLegend || !legendChainKeys) return [];
+    const rowByChain = new Map(displayRows.map((row) => [row.chain, row]));
+    return legendChainKeys
+      .map((chainKey) => {
+        const row = rowByChain.get(chainKey);
+        if (!row) return null;
+        return { chain: chainKey, label: row.label, color: row.accentColor };
+      })
+      .filter((item): item is { chain: string; label: string; color: string } => Boolean(item));
+  }, [showChartLegend, legendChainKeys, displayRows]);
 
   const availableWidth = isMobileLayout
     ? Math.max(contentWidth, 0)
@@ -2418,11 +2495,11 @@ export default function GTPUniversalChart({
                 width: chartPaneWidth,
               }}
             >
-              <div className={`min-w-0 flex-1 min-h-0 ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}>
+              <div className={`min-w-0 flex-1 min-h-0 flex flex-col ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}>
                 <div
                   ref={chartTooltipHostRef}
-                  className="relative w-full overflow-hidden"
-                  style={{ height: isMobileLayout ? chartRenderHeight : "100%" }}
+                  className={`relative w-full overflow-hidden ${isMobileLayout ? "" : "flex-1 min-h-0"}`}
+                  style={{ height: isMobileLayout ? chartRenderHeight : undefined }}
                 >
                   <ReactEChartsCore
                     ref={echartsRef}
@@ -2436,6 +2513,44 @@ export default function GTPUniversalChart({
                     <ChartWatermarkWithMetricName metricName={metricLabel} className={UNIVERSAL_CHART_WATERMARK_CLASS} />
                   </div>
                 </div>
+                {showChartLegend && legendItems.length > 0 ? (
+                  <div className="relative flex shrink-0 flex-wrap items-center justify-center gap-x-[5px] gap-y-[5px] pt-[8px]">
+                    {legendItems.map((item) => {
+                      const isInactive = !selectedChainSet.has(item.chain);
+                      return (
+                        <div
+                          key={`${item.chain}-uc-legend`}
+                          onMouseEnter={() => setHoverLegendChain(item.chain)}
+                          onMouseLeave={() => setHoverLegendChain(null)}
+                        >
+                          <GTPButton
+                            label={item.label}
+                            variant="primary"
+                            size="xs"
+                            clickHandler={() => handleLegendToggle(item.chain)}
+                            rightIcon={
+                              hoverLegendChain === item.chain
+                                ? isInactive
+                                  ? "in-button-plus"
+                                  : "in-button-close"
+                                : undefined
+                            }
+                            animateRightIcon
+                            rightIconClassname="!w-[12px] !h-[12px]"
+                            textClassName={isInactive ? "text-color-text-secondary" : undefined}
+                            className={isInactive ? "border border-color-bg-medium" : undefined}
+                            leftIconOverride={
+                              <div
+                                className="min-w-[6px] min-h-[6px] rounded-full"
+                                style={{ backgroundColor: item.color, opacity: isInactive ? 0.35 : 1 }}
+                              />
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
             </div>
             {isMobileLayout && hasBottomTabBar ? (

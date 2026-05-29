@@ -494,6 +494,23 @@ export default function GTPChart({
   const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
 
+  // Prune stale entries when the parent changes the series list: without this, a
+  // chain re-added by an external control (e.g. the table) would still be hidden
+  // because its name lingers in the internal inactive set.
+  useEffect(() => {
+    setInternalInactiveSeries((prev) => {
+      if (prev.size === 0) return prev;
+      const validNames = new Set(series.map((s) => s.name));
+      let changed = false;
+      const next = new Set<string>();
+      prev.forEach((name) => {
+        if (validNames.has(name)) next.add(name);
+        else changed = true;
+      });
+      return changed ? next : prev;
+    });
+  }, [series]);
+
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
   const inactiveLegendSeries = useMemo(
     () => (legendInactiveSeriesProp ? new Set(legendInactiveSeriesProp) : internalInactiveSeries),

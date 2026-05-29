@@ -1401,7 +1401,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
-                        snapToCleanBoundary={xMinProp === undefined}
+                        snapToCleanBoundary={false}
                         showTooltipTimestamp={timeInterval === "hourly"}
                         compactXAxis
                         ySplitNumber={2}
