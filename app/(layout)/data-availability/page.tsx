@@ -1,6 +1,9 @@
 "use client"
 import { useEffect, useState, useMemo } from "react";
-import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { useMediaQuery } from "usehooks-ts";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import DAHeadCharts from "@/components/layout/DA-Overview/DAHeadCharts";
 import DATable from "@/components/layout/DA-Overview/DATable";
 import useSWR from "swr";
@@ -20,6 +23,8 @@ import { SectionDescription, SectionTitle, Title } from "@/components/layout/Tex
 export default function DAOverviewPage() {
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
+  const [isWrapping, setIsWrapping] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const { data, error, isLoading, isValidating } = useSWR<DAOverviewResponse>(DAOverviewURL);
 
@@ -117,81 +122,52 @@ export default function DAOverviewPage() {
       {data && (
         <>
           <Container className="mb-[15px]">
-            <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-              <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
-                <TopRowChild
+            <GTPButtonContainer isWrapping={isWrapping} setIsWrapping={setIsWrapping}>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+                <GTPButton
+                  label="Daily"
+                  variant="primary"
+                  size="sm"
                   isSelected={!isMonthly}
-                  onClick={() => {
+                  innerStyle={{ width: "100%" }}
+                  className="w-full justify-center"
+                  clickHandler={() => {
                     const isTransferrableTimespan =
                       selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
-
+                    if (!isTransferrableTimespan) setSelectedTimespan("max");
                     setIsMonthly(false);
                   }}
-                  className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Daily"}
-                </TopRowChild>
-                <TopRowChild
+                />
+                <GTPButton
+                  label="Monthly"
+                  variant="primary"
+                  size="sm"
                   isSelected={isMonthly}
-                  onClick={() => {
+                  innerStyle={{ width: "100%" }}
+                  className="w-full justify-center"
+                  clickHandler={() => {
                     const isTransferrableTimespan =
                       selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
+                    if (!isTransferrableTimespan) setSelectedTimespan("max");
                     setIsMonthly(true);
                   }}
-                  className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Monthly"}
-                </TopRowChild>
-              </TopRowParent>
-              <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-              </div>
-              <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
-                {Object.keys(timespans).map((key) => {
-                  {
-                    return (
-                      <TopRowChild
-                        className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
-                        onClick={() => {
-                          setSelectedTimespan(key);
-                        }}
-                        key={key}
-
-                        style={{
-                          paddingTop: "10.5px",
-                          paddingBottom: "10.5px",
-                          paddingLeft: "16px",
-                          paddingRight: "16px",
-                        }}
-                        isSelected={selectedTimespan === key}
-                      >
-                        {selectedTimespan === key
-                          ? timespans[key].label
-                          : timespans[key].shortLabel}
-                      </TopRowChild>
-                    );
-                  }
-                })}
-              </TopRowParent>
-            </TopRowContainer>
+                />
+              </GTPButtonRow>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+                {Object.keys(timespans).map((key) => (
+                  <GTPButton
+                    key={key}
+                    label={timespans[key].label}
+                    variant="primary"
+                    size="sm"
+                    isSelected={selectedTimespan === key}
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    clickHandler={() => setSelectedTimespan(key)}
+                  />
+                ))}
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </Container>
           <DAHeadCharts selectedTimespan={selectedTimespan} isMonthly={isMonthly} data={data.data.all_da} />
           <DATable breakdown_data={data.data.da_breakdown} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />
