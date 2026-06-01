@@ -14,11 +14,15 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-celo-onchain-profit": {
-    title: "All-Time High: Onchain Profit for Celo",
+  "ath-polygon-pos-stablecoin-supply": {
+    title: "All-Time High: Stablecoin Supply for Polygon PoS",
+    description: "Daily stablecoin supply on Polygon PoS, highlighting its all-time high.",
+    question: "Which chain has recently reached a new high in stablecoin supply?",
+    image: "gtp-metrics-stablecoinmarketcap",
+    link: "/fundamentals/stablecoin-market-cap",
     allTimeHigh: {
-      chainKey: "celo",
-      metricKey: "profit",
+      chainKey: "polygon_pos",
+      metricKey: "stables_mcap",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,
