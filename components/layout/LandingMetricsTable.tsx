@@ -401,7 +401,7 @@ export default memo(function LandingMetricsTable({
                 <div className="flex justify-end items-center numbers-xs">
                   {d3Format(data.chains[item.chain.key].cross_chain_activity > 0.01 ? ".1%" : ".1%")(data.chains[item.chain.key].cross_chain_activity)}
                 </div>
-                <div className="flex justify-end items-center numbers-xs">
+                <div className="flex justify-end items-center numbers-xs text-right">
                   {formatAge(item.chain.key)}
                 </div>
               </GridTableRow>
