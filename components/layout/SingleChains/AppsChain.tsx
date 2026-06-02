@@ -160,9 +160,9 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
           </div>
         </div>
       </div>
-      <div>
+      <HorizontalScrollContainer className="!px-0" includeMargin={false} reduceLeftMask={true} enableDragScroll={true}>
         <ApplicationsTable chainFilteredApplications={chainFilteredApplications} />
-      </div>
+      </HorizontalScrollContainer>
     </div>
   )
 }
