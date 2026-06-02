@@ -49,6 +49,12 @@ const gtpMain = {
       priority: 0.7,
       lastmod: "2026-05-21T00:00:00.000Z",
     },
+    {
+      loc: "/data-terms",
+      changefreq: "monthly",
+      priority: 0.7,
+      lastmod: "2026-06-02T00:00:00.000Z",
+    },
   ],
 
   // Keep non-pages & internals out of XML sitemaps

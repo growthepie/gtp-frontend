@@ -325,8 +325,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               {/* </div> */}
 
               <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
-                <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
+                <div className="text-[0.7rem] flex flex-wrap justify-center w-full gap-x-6 gap-y-2 text-inherit leading-[1] px-2  mb-[17px]">
                   <Link href="/privacy-policy">Privacy Policy</Link>
+                  <Link href="/data-terms">Data Terms</Link>
                   <Link href="/imprint">Imprint</Link>
                   <Link
                     rel="noopener"

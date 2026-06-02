@@ -183,6 +183,12 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
     "Status": "Published"
   },
   {
+    "Path": "/data-terms",
+    "Title Template": "Data & API Terms | growthepie",
+    "Description Template": "Learn how to use, cite, and access growthepie data, chart exports, CSV downloads, and public API outputs.",
+    "Status": "Published"
+  },
+  {
     "Path": "/imprint",
     "Title Template": "Imprint | growthepie",
     "Description Template": "Legal and publishing details for growthepie — the open Ethereum analytics platform.",

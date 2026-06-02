@@ -147,7 +147,7 @@ export default function Footer() {
               Disclaimer: Information on growthepie is for educational purposes only and not investment advice. Data may be inaccurate or delayed.
               </div>
             </div>
-            <div className="flex justify-between flex-col md:items-end lg:flex-row gap-y-[15px] md:w-full lg:justify-between text-xs leading-[1.5]">
+            <div className="flex flex-col gap-y-[15px] md:w-full md:items-end lg:flex-row lg:flex-wrap lg:justify-between lg:gap-x-[15px] text-xs leading-[1.5]">
               <Link href="/privacy-policy" className="block underline w-fit" onClick={() => {
                 track("clicked Privacy Policy Footer link", {
                   location: "desktop footer",
@@ -155,6 +155,14 @@ export default function Footer() {
                 });
               }}>
                 Privacy Policy
+              </Link>
+              <Link href="/data-terms" className="block underline w-fit" onClick={() => {
+                track("clicked Data Terms Footer link", {
+                  location: "desktop footer",
+                  page: window.location.pathname,
+                });
+              }}>
+                Data Terms
               </Link>
               <Link href="/imprint" className="block underline w-fit" onClick={() => {
                 track("clicked Imprint Footer link", {
@@ -199,5 +207,3 @@ const FooterLink = ({ leftIcon, label, href }: { leftIcon: React.ReactNode, labe
     </Link>
   );
 }
-
-
