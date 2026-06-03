@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
 import ChartWatermark from "../ChartWatermark";
@@ -22,6 +22,246 @@ const area_colors: Record<string, string> = {
   da_eigenda: "#3D29D9",
 };
 
+// Layout constants that must match the GTPChart grid prop below.
+const GRID_TOP = 55;
+const GRID_RIGHT = 21;
+const CHART_HEIGHT = 232;
+const PLOT_HEIGHT = CHART_HEIGHT - GRID_TOP; // 177
+
+// The circle sits at the same y as the original: plotTop/3 + 6.
+const CIRCLE_Y = GRID_TOP / 3 + 6; // ≈ 24
+
+interface SlideProps {
+  metricKey: string;
+  isMonthly: boolean;
+  showUsd: boolean;
+  valuePrefix: string;
+  normalizedData: AllDAOverview;
+  rawMetricData: any;
+  xBounds: { xMin: number; xMax: number } | undefined;
+  splitLineColor: string;
+  formatNumber: (metricKey: string, value: number) => string;
+}
+
+function DAHeadChartSlide({
+  metricKey,
+  isMonthly,
+  showUsd,
+  valuePrefix,
+  normalizedData,
+  rawMetricData,
+  xBounds,
+  splitLineColor,
+  formatNumber,
+}: SlideProps) {
+  const [lastPt, setLastPt] = useState<{ pixelX: number; pixelY: number } | null>(null);
+
+  const is_fees = metricKey.includes("fees_paid");
+  const prefix = is_fees ? valuePrefix : "";
+  const url = is_fees ? "/data-availability/fees-paid" : "/data-availability/data-posted";
+
+  const chartSeries: GTPChartSeries[] = Object.keys(rawMetricData).map((daKey) => {
+    const entry = (normalizedData.metrics as any)[metricKey][daKey];
+    const timeData = entry[isMonthly ? "monthly" : "daily"];
+    const types: string[] = timeData.types;
+    let typeIndex = 1;
+    if (types.includes("usd")) {
+      typeIndex = types.indexOf(showUsd ? "usd" : "eth");
+    }
+    return {
+      name: entry.metric_name as string,
+      data: timeData.data.map((d: any) => [d[0], d[typeIndex]] as [number, number]),
+      seriesType: "area",
+      color: area_colors[daKey] ?? "#888888",
+    };
+  });
+
+  // Latest stacked value for the summary number in the header.
+  const sumValue = (() => {
+    let sum = 0;
+    Object.keys(rawMetricData).forEach((key) => {
+      const entry = rawMetricData[key][isMonthly ? "monthly" : "daily"];
+      let typeIndex = 1;
+      if (entry.types.includes("usd")) {
+        typeIndex = entry.types.indexOf(showUsd ? "usd" : "eth");
+      }
+      const rows = entry.data;
+      sum += rows[rows.length - 1][typeIndex];
+    });
+    return sum;
+  })();
+
+  // Nice y-axis max derived from visible stacked data, aligned with GTPChart's own axis.
+  const visibleXMin = xBounds?.xMin ?? -Infinity;
+  const visibleXMax = xBounds?.xMax ?? Infinity;
+  const stackedSums = new Map<number, number>();
+  chartSeries.forEach(({ data: pts }) => {
+    pts.forEach(([t, v]) => {
+      if (typeof v === "number" && t >= visibleXMin && t <= visibleXMax) {
+        stackedSums.set(t, (stackedSums.get(t) ?? 0) + v);
+      }
+    });
+  });
+  const rawMax = stackedSums.size > 0 ? Math.max(0, ...stackedSums.values()) : 0;
+  const [, niceMax] = scaleLinear().domain([0, rawMax]).nice(3).domain() as [number, number];
+
+  // 3 HTML y-axis labels at ⅓, ⅔, and full of niceMax (skip zero).
+  const yLabels = ([1, 2 / 3, 1 / 3] as const).map((frac) => ({
+    value: niceMax * frac,
+    topPx: GRID_TOP + (1 - frac) * PLOT_HEIGHT + 3,
+  }));
+
+  return (
+    <div
+      className="select-none relative flex flex-col w-full overflow-hidden h-[232px] bg-color-bg-default rounded-2xl group"
+    >
+      {/* Title + link */}
+      <Link
+        className="absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px] z-10"
+        href={url}
+      >
+        <div>{chart_titles[metricKey as keyof typeof chart_titles]}</div>
+        <div className="rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10">
+          <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
+        </div>
+      </Link>
+
+      {/* Latest total value */}
+      <div className="absolute numbers-lg top-[17px] right-[30px] numbers">
+        {prefix +
+          Intl.NumberFormat("en-GB", {
+            notation: "standard",
+            maximumFractionDigits: is_fees ? 0 : 2,
+            minimumFractionDigits: is_fees ? 0 : 2,
+          }).format(sumValue)}
+        {is_fees ? "" : " GB"}
+      </div>
+
+      {/* Watermark */}
+      <div className="absolute w-full h-full flex top-[10px] justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
+        <ChartWatermark className="w-[128.54px] h-[25.69px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
+      </div>
+
+      {/* Date-range labels */}
+      {xBounds && (
+        <>
+          <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
+            <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full" />
+            <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
+              {new Date(xBounds.xMin).toLocaleDateString("en-GB", {
+                timeZone: "UTC",
+                month: "short",
+                year: "numeric",
+              })}
+            </div>
+          </div>
+          <div className="duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
+            <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
+              {new Date(xBounds.xMax).toLocaleDateString("en-GB", {
+                timeZone: "UTC",
+                month: "short",
+                year: "numeric",
+              })}
+            </div>
+            <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full" />
+          </div>
+        </>
+      )}
+
+      {/* Chart */}
+      <div className="absolute inset-0">
+        <GTPChart
+          series={chartSeries}
+          stack
+          xAxisType="time"
+          xAxisMin={xBounds?.xMin}
+          xAxisMax={xBounds?.xMax}
+          yAxisMax={niceMax}
+          prefix={is_fees ? valuePrefix : ""}
+          suffix={is_fees ? "" : " GB"}
+          decimals={2}
+          xAxisLabelFormatter={() => ""}
+          ySplitNumber={3}
+          showTotal
+          height="100%"
+          showWatermark={false}
+          animation={false}
+          onLastDataPointCoords={setLastPt}
+          grid={{ top: GRID_TOP, right: GRID_RIGHT, bottom: 0, left: 0 }}
+          optionOverrides={{
+            yAxis: {
+              type: "value",
+              min: 0,
+              max: niceMax,
+              splitNumber: 3,
+              axisLine: { show: false },
+              axisTick: { show: false },
+              axisLabel: { show: false },
+              splitLine: {
+                lineStyle: { color: splitLineColor, width: 1 },
+              },
+            },
+          }}
+        />
+      </div>
+
+      {/* Last-point line + circle — mirrors the original Highcharts SVG overlay */}
+      {lastPt && (
+        <svg
+          className="absolute inset-0 pointer-events-none z-[6] text-color-text-primary overflow-visible"
+          width="100%"
+          height="100%"
+          aria-hidden
+        >
+          <defs>
+            <linearGradient
+              id={`lp-grad-${metricKey}`}
+              gradientUnits="userSpaceOnUse"
+              x1={lastPt.pixelX}
+              y1={CIRCLE_Y + 5}
+              x2={lastPt.pixelX}
+              y2={lastPt.pixelY}
+            >
+              <stop offset="0%" stopColor="currentColor" stopOpacity={1} />
+              <stop offset="100%" stopColor="currentColor" stopOpacity={0.33} />
+            </linearGradient>
+          </defs>
+          {/* Vertical gradient line from last data point up to just below the circle */}
+          <line
+            x1={lastPt.pixelX}
+            y1={lastPt.pixelY}
+            x2={lastPt.pixelX}
+            y2={CIRCLE_Y + 5}
+            stroke={`url(#lp-grad-${metricKey})`}
+            strokeWidth={1}
+            shapeRendering="crispEdges"
+          />
+          {/* Dot at the top of the line */}
+          <circle
+            cx={lastPt.pixelX}
+            cy={CIRCLE_Y}
+            r={4.5}
+            fill="currentColor"
+          />
+        </svg>
+      )}
+
+      {/* HTML y-axis labels — real DOM so fontFeatureSettings (tnum/lnum) applies */}
+      <div className="absolute inset-0 pointer-events-none z-[5]">
+        {yLabels.map(({ value, topPx }) => (
+          <div
+            key={topPx}
+            className="absolute left-[6px] numbers-xxs text-color-text-primary"
+            style={{ top: topPx }}
+          >
+            {formatNumber(metricKey, value)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DAHeadCharts({
   selectedTimespan,
   isMonthly,
@@ -31,12 +271,11 @@ export default function DAHeadCharts({
   isMonthly: boolean;
   data: AllDAOverview;
 }) {
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
   const valuePrefix = useMemo(() => (showUsd ? "$" : "Ξ"), [showUsd]);
 
-  // Mirror GTPChart's splitLine color so the overridden yAxis config matches the rest of the chart.
   const splitLineColor = theme === "light" ? "rgba(31, 39, 38, 0.11)" : "rgba(205, 216, 211, 0.11)";
 
   // Backend emits monthly timestamps in microseconds (16 digits) while daily
@@ -122,20 +361,6 @@ export default function DAHeadCharts({
     [showUsd, valuePrefix],
   );
 
-  function getSumDisplayValue(isolated_data: any) {
-    let sum = 0;
-    Object.keys(isolated_data).forEach((key) => {
-      const entry = isolated_data[key][isMonthly ? "monthly" : "daily"];
-      let typeIndex = 1;
-      if (entry.types.includes("usd")) {
-        typeIndex = entry.types.indexOf(showUsd ? "usd" : "eth");
-      }
-      const rows = entry.data;
-      sum += rows[rows.length - 1][typeIndex];
-    });
-    return sum;
-  }
-
   return (
     <Carousel
       ariaId="da-overview"
@@ -149,178 +374,20 @@ export default function DAHeadCharts({
       {Object.keys(data.metrics)
         .filter(() => selectedTimespan !== "1d")
         .reverse()
-        .map((metricKey) => {
-          const is_fees = metricKey.includes("fees_paid");
-          const prefix = is_fees ? valuePrefix : "";
-          const url = is_fees
-            ? "/data-availability/fees-paid"
-            : "/data-availability/data-posted";
-
-          const xBounds = timespans[selectedTimespan as keyof typeof timespans];
-
-          const chartSeries: GTPChartSeries[] = Object.keys(
-            (data.metrics as any)[metricKey],
-          ).map((daKey) => {
-            const entry = (normalizedData.metrics as any)[metricKey][daKey];
-            const timeData = entry[isMonthly ? "monthly" : "daily"];
-            const types: string[] = timeData.types;
-            let typeIndex = 1;
-            if (types.includes("usd")) {
-              typeIndex = types.indexOf(showUsd ? "usd" : "eth");
-            }
-            return {
-              name: entry.metric_name as string,
-              data: timeData.data.map((d: any) => [d[0], d[typeIndex]] as [number, number]),
-              seriesType: "area",
-              color: area_colors[daKey] ?? "#888888",
-            };
-          });
-
-          const sumValue = getSumDisplayValue((data.metrics as any)[metricKey]);
-
-          // Compute the stacked max within the visible x-bounds so the y-axis
-          // max passed to GTPChart matches the positions of our HTML labels.
-          const visibleXMin = xBounds?.xMin ?? -Infinity;
-          const visibleXMax = xBounds?.xMax ?? Infinity;
-          const stackedSums = new Map<number, number>();
-          chartSeries.forEach(({ data: pts }) => {
-            pts.forEach(([t, v]) => {
-              if (typeof v === "number" && t >= visibleXMin && t <= visibleXMax) {
-                stackedSums.set(t, (stackedSums.get(t) ?? 0) + v);
-              }
-            });
-          });
-          const rawMax = stackedSums.size > 0 ? Math.max(0, ...stackedSums.values()) : 0;
-          const [, niceMax] = scaleLinear().domain([0, rawMax]).nice(3).domain() as [number, number];
-
-          // 3 label positions (skip 0): at niceMax, ⅔·niceMax, ⅓·niceMax.
-          // GRID_TOP=55, PLOT_HEIGHT=177 match grid={{ top:55, bottom:0 }} on a 232px card.
-          const GRID_TOP = 55;
-          const PLOT_HEIGHT = 177;
-          const yLabels = ([1, 2 / 3, 1 / 3] as const).map((frac) => ({
-            value: niceMax * frac,
-            topPx: GRID_TOP + (1 - frac) * PLOT_HEIGHT + 3,
-          }));
-
-          return (
-            <div
-              key={metricKey + "_slide"}
-              className="select-none relative flex flex-col w-full overflow-hidden h-[232px] bg-color-bg-default rounded-2xl group"
-            >
-              {/* Title + link */}
-              <Link
-                className="absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px] z-10"
-                href={url}
-              >
-                <div>{chart_titles[metricKey as keyof typeof chart_titles]}</div>
-                <div className="rounded-full w-[15px] h-[15px] bg-color-bg-medium flex items-center justify-center text-[10px] z-10">
-                  <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
-                </div>
-              </Link>
-
-              {/* Latest total value */}
-              <div className="absolute numbers-lg top-[17px] right-[30px] numbers">
-                {prefix +
-                  Intl.NumberFormat("en-GB", {
-                    notation: "standard",
-                    maximumFractionDigits: is_fees ? 0 : 2,
-                    minimumFractionDigits: is_fees ? 0 : 2,
-                  }).format(sumValue)}
-                {is_fees ? "" : " GB"}
-              </div>
-
-              {/* Watermark */}
-              <div className="absolute w-full h-full flex top-[10px] justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
-                <ChartWatermark className="w-[128.54px] h-[25.69px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
-              </div>
-
-              {/* Date-range labels */}
-              {xBounds && (
-                <>
-                  <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
-                    <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full" />
-                    <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
-                      {new Date(xBounds.xMin).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </div>
-                  </div>
-                  <div className="duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-color-bg-medium-50 pointer-events-none">
-                    <div className="text-color-text-primary text-[9px] font-medium leading-[150%]">
-                      {new Date(xBounds.xMax).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </div>
-                    <div className="w-[5px] h-[5px] bg-color-text-primary rounded-full" />
-                  </div>
-                </>
-              )}
-
-              {/* Chart */}
-              <div className="absolute inset-0">
-                <GTPChart
-                  series={chartSeries}
-                  stack
-                  xAxisType="time"
-                  xAxisMin={xBounds?.xMin}
-                  xAxisMax={xBounds?.xMax}
-                  yAxisMax={niceMax}
-                  prefix={is_fees ? valuePrefix : ""}
-                  suffix={is_fees ? "" : " GB"}
-                  decimals={2}
-                  xAxisLabelFormatter={() => ""}
-                  ySplitNumber={3}
-                  showTotal
-                  height="100%"
-                  showWatermark={false}
-                  animation={false}
-                  grid={{ top: 55, right: 5, bottom: 0, left: 0 }}
-                  optionOverrides={{
-                    xAxis: {
-                      type: "time",
-                      min: xBounds?.xMin,
-                      max: xBounds?.xMax,
-                      boundaryGap: false,
-                      axisLine: { show: false },
-                      axisTick: { show: false },
-                      axisLabel: { show: false },
-                      splitLine: { show: false },
-                    },
-                    yAxis: {
-                      type: "value",
-                      min: 0,
-                      max: niceMax,
-                      splitNumber: 3,
-                      axisLine: { show: false },
-                      axisTick: { show: false },
-                      axisLabel: { show: false },
-                      splitLine: {
-                        lineStyle: { color: splitLineColor, width: 1 },
-                      },
-                    },
-                  }}
-                />
-              </div>
-
-              {/* HTML y-axis labels — real DOM so fontFeatureSettings (tnum/lnum) applies */}
-              <div className="absolute inset-0 pointer-events-none z-[5]">
-                {yLabels.map(({ value, topPx }) => (
-                  <div
-                    key={topPx}
-                    className="absolute left-[6px] numbers-xxs text-color-text-primary"
-                    style={{ top: topPx }}
-                  >
-                    {formatNumber(metricKey, value)}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        .map((metricKey) => (
+          <DAHeadChartSlide
+            key={metricKey}
+            metricKey={metricKey}
+            isMonthly={isMonthly}
+            showUsd={showUsd}
+            valuePrefix={valuePrefix}
+            normalizedData={normalizedData}
+            rawMetricData={(data.metrics as any)[metricKey]}
+            xBounds={timespans[selectedTimespan as keyof typeof timespans]}
+            splitLineColor={splitLineColor}
+            formatNumber={formatNumber}
+          />
+        ))}
 
       {/* Top DA consumers slide */}
       {selectedTimespan === "1d" ? (

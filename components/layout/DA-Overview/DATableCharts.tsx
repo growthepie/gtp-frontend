@@ -287,8 +287,14 @@ const DATableChartsComponent = ({
                         selectedScale === "stacked"
                             ? formatBytes(val)
                             : `${total > 0 ? ((val / total) * 100).toFixed(1) : "0.0"}%`;
+                    // GTPChart sets itemStyle.color="transparent" on area series to hide hover
+                    // symbols, so p.color is transparent. Look up the real color from chartSeries.
+                    const seriesColor =
+                        (chartSeries.find((s) => s.name === p.seriesName)?.color as string | undefined)
+                        ?? p.color
+                        ?? "#888888";
                     return `<div class="flex w-full items-center gap-x-[8px] font-medium mb-[2px]">
-                    <div class="w-4 h-1.5 rounded-r-full flex-shrink-0" style="background-color:${p.color}"></div>
+                    <div class="w-4 h-1.5 rounded-r-full flex-shrink-0" style="background-color:${seriesColor}"></div>
                     <div class="text-xs flex-1 truncate">${p.seriesName}</div>
                     <div class="numbers-xs text-right whitespace-nowrap">${display}</div>
                 </div>`;
@@ -303,13 +309,13 @@ const DATableChartsComponent = ({
                 </div>`
                     : "";
 
-            return `<div class="mt-3 mr-3 mb-3 min-w-[200px] max-w-[280px] text-xs font-raleway text-color-text-primary">
-                <div class="font-bold heading-small-xs mb-2 ml-6">${dateStr}</div>
+            return `<div class="flex flex-col gap-y-[5px] py-[15px] px-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs shadow-standard mt-3 mr-3 mb-3 min-w-[200px] max-w-[280px] font-raleway">
+                <div class="font-bold heading-small-xs mb-1 ml-6">${dateStr}</div>
                 ${rows}
                 ${totalRow}
             </div>`;
         },
-        [isMonthly, selectedScale],
+        [isMonthly, selectedScale, chartSeries],
     );
 
     return (
@@ -339,13 +345,7 @@ const DATableChartsComponent = ({
                         </div>
                     </div>
 
-                    {/* Watermark */}
-                    <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-[100] opacity-40">
-                        <ChartWatermarkWithMetricName
-                            className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten"
-                            metricName={da_name}
-                        />
-                    </div>
+
 
                     {/* GTPChart fills the area below the header */}
                     <div className="absolute left-[10px] right-[5px] top-[48px] bottom-0">
@@ -361,12 +361,14 @@ const DATableChartsComponent = ({
                                     ? formatBytes(value, 1)
                                     : `${Math.round(value)}%`
                             }
-                            tooltipFormatter={tooltipFormatter}
+                            showTotal={true}
+                            ySplitNumber={3}
                             height="100%"
-                            showWatermark={false}
+                            showWatermark={true}
                             animation={false}
                             compactXAxis
                             grid={{ left: 50, right: 8, top: 10, bottom: 30 }}
+                            watermarkMetricName={da_name}
                         />
                     </div>
                 </div>
