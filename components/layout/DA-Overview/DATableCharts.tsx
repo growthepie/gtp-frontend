@@ -266,6 +266,15 @@ const DATableChartsComponent = ({
 
     const xBounds = timespans[selectedTimespan as keyof typeof timespans];
 
+    const [hoverChain, setHoverChain] = useState<string | null>(null);
+
+    // Dim all series except the one being hovered in the legend.
+    const legendInactiveSeries = useMemo(() => {
+        if (!hoverChain) return [];
+        const hoveredName = getNameFromKey[hoverChain];
+        return chartSeries.filter((s) => s.name !== hoveredName).map((s) => s.name);
+    }, [hoverChain, getNameFromKey, chartSeries]);
+
     const tooltipFormatter = useCallback(
         (params: GTPChartTooltipParams[]): string => {
             if (!params.length) return "";
@@ -361,8 +370,10 @@ const DATableChartsComponent = ({
                                     ? formatBytes(value, 1)
                                     : `${Math.round(value)}%`
                             }
+                            tooltipFormatter={tooltipFormatter}
                             showTotal={true}
                             ySplitNumber={3}
+                            legendInactiveSeries={legendInactiveSeries}
                             height="100%"
                             showWatermark={true}
                             animation={false}
@@ -381,10 +392,10 @@ const DATableChartsComponent = ({
                         isMonthly={isMonthly}
                         setSelectedChain={setSelectedChain}
                         selectedChain={selectedChain}
-                        isPie={true}
-                        pie_data={pie_data}
                         pieChartComponent={pieChartComponent}
                         getNameFromKey={getNameFromKey}
+                        hoverChain={hoverChain}
+                        setHoverChain={setHoverChain}
                     />
                     <div className="min-w-[254px] flex items-center justify-center relative">
                         <div className="absolute left-[32%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%]">
@@ -489,23 +500,22 @@ const ChartLegend = ({
     isMonthly,
     setSelectedChain,
     selectedChain,
-    isPie,
-    pie_data,
     pieChartComponent,
     getNameFromKey,
+    hoverChain,
+    setHoverChain,
 }: {
     selectedTimespan: string;
     data: any;
     isMonthly: boolean;
     setSelectedChain: React.Dispatch<React.SetStateAction<string>>;
     selectedChain: string;
-    isPie: boolean;
-    pie_data: DAConsumerChart;
-    pieChartComponent: React.MutableRefObject<Highcharts.Chart | null>;
+    pieChartComponent: React.RefObject<Highcharts.Chart | null>;
     getNameFromKey: Record<string, string>;
+    hoverChain: string | null;
+    setHoverChain: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
     const { AllChainsByKeys, data: master } = useMaster();
-    const [hoverChain, setHoverChain] = useState<string | null>(null);
     const { theme } = useTheme();
 
     // Sync hover state to pie chart only
