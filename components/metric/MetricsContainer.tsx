@@ -21,7 +21,8 @@ import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
 import GTPButtonDropdown from "../GTPComponents/ButtonComponents/GTPButtonDropdown";
 import GTPResizeDivider from "../GTPComponents/GTPLayout/GTPResizeDivider";
 import { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
-import { downloadElementAsImage } from "../GTPComponents/chartSnapshotHelpers";
+import { downloadElementAsImage, prewarmSnapshotFonts } from "../GTPComponents/chartSnapshotHelpers";
+import LoadingSpinnerIcon from "../GTPComponents/LoadingSpinnerIcon";
 import { GTPIcon } from "../layout/GTPIcon";
 import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -66,6 +67,10 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const [show7dRollingText, setShow7dRollingText] = useState(false);
     const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
+
+    // Warm the screenshot font-embed cache during idle time so the first "Take Screenshot"
+    // click is fast, without competing with page load.
+    useEffect(() => prewarmSnapshotFonts(), []);
 
     useEffect(() => {
         const cardElement = cardRef.current;
@@ -694,6 +699,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
                         <GTPButton
                             leftIcon="gtp-png-monochrome"
+                            leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
                             label="Take Screenshot"
                             labelDisplay={bottomLeftLabelDisplay}
                             size={"sm"}

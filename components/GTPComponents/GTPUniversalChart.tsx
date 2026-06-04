@@ -22,7 +22,8 @@ import GTPButtonContainer from "./ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "./ButtonComponents/GTPButtonRow";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
-import { downloadElementAsImage } from "./chartSnapshotHelpers";
+import { downloadElementAsImage, prewarmSnapshotFonts } from "./chartSnapshotHelpers";
+import LoadingSpinnerIcon from "./LoadingSpinnerIcon";
 import {
   buildTimeXAxisLayout,
   enumerateTickPositions,
@@ -913,6 +914,10 @@ export default function GTPUniversalChart({
 
     return sourceRows;
   }, [effectiveAggregation, isMetricContextActive, sourceRows]);
+
+  // Warm the screenshot font-embed cache during idle time so the first "Take Screenshot"
+  // click is fast, without competing with page load.
+  useEffect(() => prewarmSnapshotFonts(), []);
 
   useEffect(() => {
     hasAutoSelectedContextChainsRef.current = false;
@@ -2369,6 +2374,7 @@ export default function GTPUniversalChart({
         />
         <GTPButton
           leftIcon="gtp-png-monochrome"
+          leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
           label="Take Screenshot"
           labelDisplay={bottomLeftLabelDisplay}
           size={tabSize}
