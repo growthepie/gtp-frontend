@@ -646,11 +646,14 @@ export default function GTPChart({
     };
   }, []);
 
-  // Resize when container height settles — fixes charts that mount before their container has a final height.
+  // Resize when the container size settles — fixes charts that mount before their
+  // container has its final dimensions. Width is included because some browsers (notably
+  // Safari) resolve the container's width after its height; without this the canvas keeps
+  // its initial narrow width and only the y-axis strip renders (no plot area / series).
   useEffect(() => {
-    if (containerHeight <= 0) return;
+    if (containerHeight <= 0 || containerWidth <= 0) return;
     (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
-  }, [containerHeight, minHeight, maxHeight]);
+  }, [containerHeight, containerWidth, minHeight, maxHeight]);
 
   // Typography
   const textXxsTypography = useMemo(
