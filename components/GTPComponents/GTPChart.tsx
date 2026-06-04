@@ -231,7 +231,7 @@ function computeYAxisTicks({
 
 // --- Public types ---
 
-export type GTPChartSeriesType = "line" | "area" | "bar";
+export type GTPChartSeriesType = "line" | "area" | "bar" | "pie";
 
 export interface GTPChartSeries {
   name: string;
@@ -363,6 +363,16 @@ export interface GTPChartProps {
    * Only supported when xAxisType="time". Returns null when coordinates cannot be resolved.
    */
   onLastDataPointCoords?: (coords: { pixelX: number; pixelY: number } | null) => void;
+  /** Inner radius for pie/donut charts. Use e.g. "50%" for a donut. Defaults to 0 (filled pie). */
+  pieInnerRadius?: string | number;
+  /** Outer radius for pie/donut charts. Defaults to "75%". */
+  pieOuterRadius?: string | number;
+  /** When true, renders name + percentage labels on each pie slice. */
+  showPieLabels?: boolean;
+  /** Custom HTML formatter for pie chart tooltips. Overrides the default formatter. */
+  pieTooltipFormatter?: (params: { name: string; value: number; color: string; percent: number }) => string;
+  /** Opacity of non-hovered pie slices when another slice is hovered (0–1). Defaults to 1 (no dimming). */
+  pieBlurOpacity?: number;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -458,6 +468,11 @@ export default function GTPChart({
   watermarkOverlap = false,
   revealProgress = null,
   onLastDataPointCoords,
+  pieInnerRadius = 0,
+  pieOuterRadius = "75%",
+  showPieLabels = false,
+  pieTooltipFormatter,
+  pieBlurOpacity = 1,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1504,18 +1519,27 @@ export default function GTPChart({
   // --- Emit last visible data point pixel coordinates ---
   const onLastDataPointCoordsRef = useRef(onLastDataPointCoords);
   useEffect(() => { onLastDataPointCoordsRef.current = onLastDataPointCoords; }, [onLastDataPointCoords]);
+  // Guard: only call the callback when the emitted value actually changes so callers using
+  // useState as the handler don't re-render (and invalidate series memos) unnecessarily.
+  const lastEmittedCoordsRef = useRef<{ pixelX: number; pixelY: number } | null | undefined>(undefined);
 
   useEffect(() => {
+    const emitNull = () => {
+      if (lastEmittedCoordsRef.current === null) return;
+      lastEmittedCoordsRef.current = null;
+      onLastDataPointCoordsRef.current?.(null);
+    };
+
     if (!onLastDataPointCoords) return;
     if (xAxisType !== "time") {
-      onLastDataPointCoordsRef.current?.(null);
+      emitNull();
       return;
     }
 
     const timer = setTimeout(() => {
       const instance = echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined;
       if (!instance || chartNormalizedSeries.length === 0) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
@@ -1534,7 +1558,7 @@ export default function GTPChart({
       });
 
       if (lastTs === null) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
@@ -1559,11 +1583,16 @@ export default function GTPChart({
 
       const pixelCoords = instance.convertToPixel("grid", [lastTs, stackedValue]);
       if (!pixelCoords || !Number.isFinite(pixelCoords[0]) || !Number.isFinite(pixelCoords[1])) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
-      onLastDataPointCoordsRef.current?.({ pixelX: pixelCoords[0], pixelY: pixelCoords[1] });
+      const newX = Math.round(pixelCoords[0]);
+      const newY = Math.round(pixelCoords[1]);
+      const prev = lastEmittedCoordsRef.current;
+      if (prev !== null && prev !== undefined && prev.pixelX === newX && prev.pixelY === newY) return;
+      lastEmittedCoordsRef.current = { pixelX: newX, pixelY: newY };
+      onLastDataPointCoordsRef.current?.({ pixelX: newX, pixelY: newY });
     }, 80);
 
     return () => clearTimeout(timer);
@@ -1689,6 +1718,101 @@ export default function GTPChart({
 
       return `${resolvedPrefix}${formatCompactNumber(value, axisDecimals)}${resolvedSuffix}`;
     };
+
+    // --- Pie chart ---
+    const isPieChart = pairedSeries.some(s => s.seriesType === "pie");
+    if (isPieChart) {
+      const pieSlices = pairedSeries
+        .map((s, index) => {
+          const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+          const [primary] = resolveSeriesColors(s.color, fallbackColor);
+          const lastVal = [...s.pairedData].reverse().find(
+            d => typeof d[1] === "number" && d[1] !== null
+          )?.[1] ?? null;
+          return { name: s.name, value: lastVal, color: primary };
+        })
+        .filter((s): s is { name: string; value: number; color: string } => s.value !== null);
+
+      const pieSeries = pieSlices.map(s => ({
+        name: s.name,
+        value: s.value,
+        itemStyle: { color: s.color },
+      }));
+
+      const pieOption: EChartsOption = {
+        animation,
+        backgroundColor: "transparent",
+        tooltip: {
+          trigger: "item",
+          renderMode: "html",
+          appendToBody: true,
+          confine: false,
+          backgroundColor: "transparent",
+          borderWidth: 0,
+          padding: 0,
+          extraCssText: "box-shadow:none; border:none; z-index:2147483647; pointer-events:none;",
+          textStyle: {
+            color: textPrimary,
+            fontFamily: "var(--font-raleway), sans-serif",
+            fontSize: 12,
+          },
+          formatter: (param: unknown) => {
+            const p = param as { name: string; value: number; color: string; percent: number };
+            if (pieTooltipFormatter) return pieTooltipFormatter(p);
+            const formattedValue = formatTooltipValue(p.value, 0);
+            return `
+              <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
+                <div class="flex w-full space-x-1.5 items-center leading-tight">
+                  <div class="w-[10px] h-[10px] rounded-full flex-shrink-0" style="background-color:${escapeHtml(p.color)}"></div>
+                  <div class="flex-1 numbers-xxs">${escapeHtml(p.name)}</div>
+                  <div class="ml-4 numbers-xs">${formattedValue}</div>
+                  <div class="ml-2 numbers-xs">${p.percent.toFixed(1)}%</div>
+                </div>
+              </div>
+            `;
+          },
+        },
+        series: [
+          {
+            type: "pie",
+            radius: [pieInnerRadius, pieOuterRadius],
+            center: ["50%", "50%"],
+            data: pieSeries,
+            label: {
+              show: showPieLabels,
+              color: textPrimary,
+              fontFamily: numbersXxsTypography.fontFamily,
+              fontSize: numbersXxsTypography.fontSize,
+              fontWeight: numbersXxsTypography.fontWeight as any,
+              formatter: "{b}: {d}%",
+            },
+            emphasis: {
+              focus: "self",
+              itemStyle: {
+                shadowBlur: 10,
+                shadowColor: "rgba(0,0,0,0.3)",
+              },
+            },
+            blur: {
+              itemStyle: {
+                opacity: pieBlurOpacity,
+              },
+            },
+            itemStyle: {
+              borderRadius: 4,
+              borderColor: "transparent",
+              borderWidth: 2,
+            },
+          },
+        ],
+      };
+
+      if (optionOverrides) {
+        return { ...pieOption, ...optionOverrides } as EChartsOption;
+      }
+      return pieOption;
+    }
+
     const measureAthLabelWidth = (labelText: string) => {
       const ctx = getMeasureCtx();
       if (ctx) {
@@ -2448,6 +2572,11 @@ export default function GTPChart({
     formatValueForAxis,
     secondaryYAxisLayout,
     decimalPercentage,
+    pieInnerRadius,
+    pieOuterRadius,
+    showPieLabels,
+    pieTooltipFormatter,
+    pieBlurOpacity,
   ]);
 
   const watermarkOverlayClassName =

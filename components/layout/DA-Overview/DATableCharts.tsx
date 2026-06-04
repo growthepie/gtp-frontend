@@ -1,18 +1,7 @@
 "use client";
-import {
-    HighchartsProvider,
-    HighchartsChart,
-    Chart,
-    XAxis,
-    YAxis,
-    Tooltip as HighchartsTooltip,
-    PieSeries,
-} from "react-jsx-highcharts";
-import Highcharts from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
-import { useMemo, memo, useState, useCallback, useRef, useEffect } from "react";
+import { useMemo, memo, useState, useCallback } from "react";
 import { useMaster } from "@/contexts/MasterContext";
-import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
 import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -25,8 +14,6 @@ import {
 } from "@/components/layout/Tooltip";
 import { useTheme } from "next-themes";
 import GTPChart, { GTPChartSeries, GTPChartTooltipParams } from "@/components/GTPComponents/GTPChart";
-
-type PieData = { name: string; y: number; color: string }[];
 
 interface DATableChartsProps {
     selectedTimespan: string;
@@ -50,10 +37,6 @@ function formatBytes(bytes: number, decimals = 2) {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-const COLORS = {
-    PLOT_LINE: "rgb(215, 223, 222)",
-};
-
 const DATableChartsComponent = ({
     selectedTimespan,
     data,
@@ -67,7 +50,6 @@ const DATableChartsComponent = ({
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
     const [selectedChain, setSelectedChain] = useState<string>("all");
-    const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const [selectedScale, setSelectedScale] = useState<string>("stacked");
     const { theme } = useTheme();
 
@@ -166,45 +148,6 @@ const DATableChartsComponent = ({
         }
     }, [data, selectedChain, selectedTimespan, selectedScale]);
 
-    const formattedPieData = useMemo((): PieData => {
-        let pieTotal = 0;
-        pie_data.data.forEach((d) => { pieTotal += d[4]; });
-
-        const pieDataMap = new Map(
-            pie_data.data.map((d, index) => [
-                d[0],
-                {
-                    name: d[1],
-                    y: d[4],
-                    color: AllChainsByKeys[d[0]]
-                        ? AllChainsByKeys[d[0]].colors[theme ?? "dark"][0]
-                        : UNLISTED_CHAIN_COLORS[index],
-                },
-            ]),
-        );
-
-        if (selectedChain !== "all") {
-            const result: PieData = [];
-            let otherY = 0;
-            pieDataMap.forEach((value, key) => {
-                if (key !== selectedChain) otherY += value.y;
-            });
-            if (pieDataMap.has(selectedChain)) {
-                result.push(pieDataMap.get(selectedChain)!);
-                result.push({ name: "Other DA Consumers", y: otherY, color: UNLISTED_CHAIN_COLORS[0] });
-            }
-            return result;
-        }
-
-        return pie_data.data.map((d, index) => ({
-            name: d[1] ? d[1] : d[0],
-            y: d[4],
-            color: AllChainsByKeys[d[0]]
-                ? AllChainsByKeys[d[0]].colors[theme ?? "dark"][0]
-                : UNLISTED_CHAIN_COLORS[index],
-        }));
-    }, [pie_data, selectedChain, AllChainsByKeys, theme]);
-
     const getNameFromKey = useMemo<Record<string, string>>(() => {
         return pie_data.data.reduce((acc, d) => {
             acc[d[0]] = d[1];
@@ -212,23 +155,44 @@ const DATableChartsComponent = ({
         }, {} as Record<string, string>);
     }, [pie_data]);
 
-    const pieTooltipFormatter = useCallback(
-        function (this: any) {
-            const absolute = formatBytes(this.y);
-            const percentage = Intl.NumberFormat("en-GB", {
-                notation: "standard",
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 2,
-            }).format(this.percentage);
+    const pieSeries = useMemo((): GTPChartSeries[] => {
+        if (selectedChain !== "all") {
+            let otherY = 0;
+            const selectedEntry = pie_data.data.find(d => d[0] === selectedChain);
+            pie_data.data.forEach(d => { if (d[0] !== selectedChain) otherY += d[4]; });
+            const result: GTPChartSeries[] = [];
+            if (selectedEntry) {
+                const color = AllChainsByKeys[selectedEntry[0]]
+                    ? AllChainsByKeys[selectedEntry[0]].colors[theme ?? "dark"][0]
+                    : UNLISTED_CHAIN_COLORS[0];
+                result.push({ name: selectedEntry[1] || selectedEntry[0], data: [[0, selectedEntry[4]]], seriesType: "pie", color });
+            }
+            result.push({ name: "Other DA Consumers", data: [[0, otherY]], seriesType: "pie", color: UNLISTED_CHAIN_COLORS[0] });
+            return result;
+        }
 
-            return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center text-color-text-primary ">
-                <div class="flex gap-x-[5px] items-center ">
-                    <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
-                    <div class="tooltip-point-name text-xs">${this.key}</div>
+        return pie_data.data.map((d, index) => ({
+            name: d[1] ? d[1] : d[0],
+            data: [[0, d[4]]] as [number, number | null][],
+            seriesType: "pie" as const,
+            color: AllChainsByKeys[d[0]]
+                ? AllChainsByKeys[d[0]].colors[theme ?? "dark"][0]
+                : UNLISTED_CHAIN_COLORS[index],
+        }));
+    }, [pie_data, selectedChain, AllChainsByKeys, theme]);
+
+    const pieTooltipFormatter = useCallback(
+        ({ name, value, color, percent }: { name: string; value: number; color: string; percent: number }) => {
+            const absolute = formatBytes(value);
+            const pct = percent.toFixed(2);
+            return `<div class="mt-3 mr-3 mb-3 min-w-[160px] text-xs font-raleway justify-between gap-x-[5px] flex items-center text-color-text-primary rounded-[15px] bg-color-bg-default py-[10px] px-[12px]">
+                <div class="flex gap-x-[5px] items-center">
+                    <div class="w-4 h-1.5 rounded-r-full flex-shrink-0" style="background-color: ${color}"></div>
+                    <div class="tooltip-point-name text-xs">${name}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs flex flex-col items-end ">
-                    <div class="text-right whitespace-pre">${absolute}</div>
-                    <div class="text-right whitespace-pre">${percentage} %</div>
+                <div class="tooltip-point-name numbers-xs flex flex-col items-end ml-2">
+                    <div class="text-right whitespace-nowrap">${absolute}</div>
+                    <div class="text-right whitespace-nowrap">${pct}%</div>
                 </div>
             </div>`;
         },
@@ -268,7 +232,6 @@ const DATableChartsComponent = ({
 
     const [hoverChain, setHoverChain] = useState<string | null>(null);
 
-    // Dim all series except the one being hovered in the legend.
     const legendInactiveSeries = useMemo(() => {
         if (!hoverChain) return [];
         const hoveredName = getNameFromKey[hoverChain];
@@ -296,8 +259,6 @@ const DATableChartsComponent = ({
                         selectedScale === "stacked"
                             ? formatBytes(val)
                             : `${total > 0 ? ((val / total) * 100).toFixed(1) : "0.0"}%`;
-                    // GTPChart sets itemStyle.color="transparent" on area series to hide hover
-                    // symbols, so p.color is transparent. Look up the real color from chartSeries.
                     const seriesColor =
                         (chartSeries.find((s) => s.name === p.seriesName)?.color as string | undefined)
                         ?? p.color
@@ -354,8 +315,6 @@ const DATableChartsComponent = ({
                         </div>
                     </div>
 
-
-
                     {/* GTPChart fills the area below the header */}
                     <div className="absolute left-[10px] right-[5px] top-[48px] bottom-0">
                         <GTPChart
@@ -392,101 +351,24 @@ const DATableChartsComponent = ({
                         isMonthly={isMonthly}
                         setSelectedChain={setSelectedChain}
                         selectedChain={selectedChain}
-                        pieChartComponent={pieChartComponent}
                         getNameFromKey={getNameFromKey}
                         hoverChain={hoverChain}
                         setHoverChain={setHoverChain}
                     />
                     <div className="min-w-[254px] flex items-center justify-center relative">
-                        <div className="absolute left-[32%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%]">
+                        <div className="absolute left-[32%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%] pointer-events-none z-10">
                             {"% OF TOTAL USAGE"}
                         </div>
-                        <HighchartsProvider Highcharts={Highcharts}>
-                            <HighchartsChart
-                                containerProps={{
-                                    style: { height: "254px", width: "254px", overflow: "visible" },
-                                }}
-                                plotOptions={{
-                                    pie: {
-                                        allowPointSelect: false,
-                                        cursor: "pointer",
-                                        dataLabels: { enabled: false },
-                                        showInLegend: true,
-                                        borderWidth: 10,
-                                        borderColor: "transparent",
-                                    },
-                                }}
-                            >
-                                <Chart
-                                    backgroundColor=""
-                                    type="pie"
-                                    title="pie"
-                                    overflow="visible"
-                                    panning={{ enabled: false }}
-                                    panKey="shift"
-                                    zooming={{ type: undefined }}
-                                    style={{ borderRadius: 15 }}
-                                    animation={{ duration: 50 }}
-                                    marginBottom={10}
-                                    marginTop={2}
-                                    onRender={function () {
-                                        pieChartComponent.current = this as any;
-                                    }}
-                                />
-                                <HighchartsTooltip
-                                    useHTML
-                                    shared
-                                    split={false}
-                                    followPointer
-                                    followTouchMove
-                                    backgroundColor="rgb(var(--bg-default))"
-                                    padding={0}
-                                    hideDelay={300}
-                                    stickOnContact
-                                    shape="rect"
-                                    borderRadius={17}
-                                    borderWidth={0}
-                                    outside
-                                    shadow={{ color: "black", opacity: 0.015, offsetX: 2, offsetY: 2 }}
-                                    style={{ color: "rgb(215, 223, 222)" }}
-                                    formatter={pieTooltipFormatter}
-                                />
-                                <XAxis title={undefined} type="datetime" labels={{ enabled: false }} />
-                                <YAxis
-                                    opposite={false}
-                                    type="linear"
-                                    gridLineWidth={0}
-                                    labels={{ enabled: false }}
-                                    min={0}
-                                >
-                                    <PieSeries
-                                        key={`Pie-DATableCharts-${da_key}`}
-                                        name="Pie Chart"
-                                        innerSize="95%"
-                                        size="100%"
-                                        dataLabels={{ enabled: false }}
-                                        type="pie"
-                                        data={formattedPieData}
-                                        point={{
-                                            events: {
-                                                click: function (event: any) {
-                                                    if (event.point.options.name) {
-                                                        const key = Object.entries(getNameFromKey).find(
-                                                            ([_, value]) => value === event.point.options.name,
-                                                        )?.[0];
-                                                        if (key && key !== selectedChain) {
-                                                            setSelectedChain(key);
-                                                        } else if (key === selectedChain) {
-                                                            setSelectedChain("all");
-                                                        }
-                                                    }
-                                                },
-                                            },
-                                        }}
-                                    />
-                                </YAxis>
-                            </HighchartsChart>
-                        </HighchartsProvider>
+                        <GTPChart
+                            series={pieSeries}
+                            pieInnerRadius="85%"
+                            pieOuterRadius="90%"
+                            pieBlurOpacity={0.3}
+                            pieTooltipFormatter={pieTooltipFormatter}
+                            height={234}
+                            showWatermark={false}
+                            animation={false}
+                        />
                     </div>
                 </div>
             </div>
@@ -500,7 +382,6 @@ const ChartLegend = ({
     isMonthly,
     setSelectedChain,
     selectedChain,
-    pieChartComponent,
     getNameFromKey,
     hoverChain,
     setHoverChain,
@@ -510,32 +391,12 @@ const ChartLegend = ({
     isMonthly: boolean;
     setSelectedChain: React.Dispatch<React.SetStateAction<string>>;
     selectedChain: string;
-    pieChartComponent: React.RefObject<Highcharts.Chart | null>;
     getNameFromKey: Record<string, string>;
     hoverChain: string | null;
     setHoverChain: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
     const { AllChainsByKeys, data: master } = useMaster();
     const { theme } = useTheme();
-
-    // Sync hover state to pie chart only
-    useEffect(() => {
-        const chart = pieChartComponent.current;
-        if (!chart) return;
-        const series = chart.series[0];
-        if (!series) return;
-        series.points.forEach((point: any) => point.setState(""));
-        if (hoverChain) {
-            const matchedName = getNameFromKey[hoverChain];
-            const matchedPoint = series.points.find((p: any) => p.name === matchedName);
-            if (matchedPoint) {
-                matchedPoint.setState("hover");
-                chart.tooltip.refresh(matchedPoint as any);
-            }
-        } else {
-            chart.tooltip.hide();
-        }
-    }, [hoverChain, pieChartComponent, getNameFromKey]);
 
     if (!master) return null;
 
