@@ -31,6 +31,14 @@ const PLOT_HEIGHT = CHART_HEIGHT - GRID_TOP; // 177
 // The circle sits at the same y as the original: plotTop/3 + 6.
 const CIRCLE_Y = GRID_TOP / 3 + 6; // ≈ 24
 
+// Stable module-level constant — prevents a new object identity on every render,
+// which would invalidate GTPChart's chartOption useMemo and trigger a notMerge reset.
+const CHART_GRID = { top: GRID_TOP, right: GRID_RIGHT, bottom: 0, left: 0 };
+
+// Stable empty formatter — returning "" suppresses the x-axis labels without
+// creating a new function reference on every render.
+const EMPTY_X_AXIS_FORMATTER = () => "";
+
 interface SlideProps {
   metricKey: string;
   isMonthly: boolean;
@@ -60,7 +68,7 @@ function DAHeadChartSlide({
   const prefix = is_fees ? valuePrefix : "";
   const url = is_fees ? "/data-availability/fees-paid" : "/data-availability/data-posted";
 
-  const chartSeries: GTPChartSeries[] = Object.keys(rawMetricData).map((daKey) => {
+  const chartSeries = useMemo((): GTPChartSeries[] => Object.keys(rawMetricData).map((daKey) => {
     const entry = (normalizedData.metrics as any)[metricKey][daKey];
     const timeData = entry[isMonthly ? "monthly" : "daily"];
     const types: string[] = timeData.types;
@@ -74,10 +82,9 @@ function DAHeadChartSlide({
       seriesType: "area",
       color: area_colors[daKey] ?? "#888888",
     };
-  });
+  }), [rawMetricData, normalizedData, metricKey, isMonthly, showUsd]);
 
-  // Latest stacked value for the summary number in the header.
-  const sumValue = (() => {
+  const sumValue = useMemo(() => {
     let sum = 0;
     Object.keys(rawMetricData).forEach((key) => {
       const entry = rawMetricData[key][isMonthly ? "monthly" : "daily"];
@@ -89,27 +96,42 @@ function DAHeadChartSlide({
       sum += rows[rows.length - 1][typeIndex];
     });
     return sum;
-  })();
+  }, [rawMetricData, isMonthly, showUsd]);
 
-  // Nice y-axis max derived from visible stacked data, aligned with GTPChart's own axis.
-  const visibleXMin = xBounds?.xMin ?? -Infinity;
-  const visibleXMax = xBounds?.xMax ?? Infinity;
-  const stackedSums = new Map<number, number>();
-  chartSeries.forEach(({ data: pts }) => {
-    pts.forEach(([t, v]) => {
-      if (typeof v === "number" && t >= visibleXMin && t <= visibleXMax) {
-        stackedSums.set(t, (stackedSums.get(t) ?? 0) + v);
-      }
+  const niceMax = useMemo(() => {
+    const visibleXMin = xBounds?.xMin ?? -Infinity;
+    const visibleXMax = xBounds?.xMax ?? Infinity;
+    const stackedSums = new Map<number, number>();
+    chartSeries.forEach(({ data: pts }) => {
+      pts.forEach(([t, v]) => {
+        if (typeof v === "number" && t >= visibleXMin && t <= visibleXMax) {
+          stackedSums.set(t, (stackedSums.get(t) ?? 0) + v);
+        }
+      });
     });
-  });
-  const rawMax = stackedSums.size > 0 ? Math.max(0, ...stackedSums.values()) : 0;
-  const [, niceMax] = scaleLinear().domain([0, rawMax]).nice(3).domain() as [number, number];
+    const rawMax = stackedSums.size > 0 ? Math.max(0, ...stackedSums.values()) : 0;
+    return (scaleLinear().domain([0, rawMax]).nice(3).domain() as [number, number])[1];
+  }, [chartSeries, xBounds]);
 
-  // 3 HTML y-axis labels at ⅓, ⅔, and full of niceMax (skip zero).
-  const yLabels = ([1, 2 / 3, 1 / 3] as const).map((frac) => ({
+  const yLabels = useMemo(() => ([1, 2 / 3, 1 / 3] as const).map((frac) => ({
     value: niceMax * frac,
     topPx: GRID_TOP + (1 - frac) * PLOT_HEIGHT + 3,
-  }));
+  })), [niceMax]);
+
+  const chartOptionOverrides = useMemo(() => ({
+    yAxis: {
+      type: "value",
+      min: 0,
+      max: niceMax,
+      splitNumber: 3,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { show: false },
+      splitLine: {
+        lineStyle: { color: splitLineColor, width: 1 },
+      },
+    },
+  }), [niceMax, splitLineColor]);
 
   return (
     <div
@@ -180,28 +202,15 @@ function DAHeadChartSlide({
           prefix={is_fees ? valuePrefix : ""}
           suffix={is_fees ? "" : " GB"}
           decimals={2}
-          xAxisLabelFormatter={() => ""}
+          xAxisLabelFormatter={EMPTY_X_AXIS_FORMATTER}
           ySplitNumber={3}
           showTotal
           height="100%"
           showWatermark={false}
           animation={false}
           onLastDataPointCoords={setLastPt}
-          grid={{ top: GRID_TOP, right: GRID_RIGHT, bottom: 0, left: 0 }}
-          optionOverrides={{
-            yAxis: {
-              type: "value",
-              min: 0,
-              max: niceMax,
-              splitNumber: 3,
-              axisLine: { show: false },
-              axisTick: { show: false },
-              axisLabel: { show: false },
-              splitLine: {
-                lineStyle: { color: splitLineColor, width: 1 },
-              },
-            },
-          }}
+          grid={CHART_GRID}
+          optionOverrides={chartOptionOverrides}
         />
       </div>
 
