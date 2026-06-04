@@ -27,6 +27,12 @@ type MetricChartProps = {
   type?: string;
   selectedRange: [number, number] | null;
   setSelectedRange: (range: [number, number] | null) => void;
+  /** True when the chart pane is stacked above the table (split pane in its mobile
+   *  layout, bottom bar in-flow directly below the chart). Driven by the split pane's
+   *  actual content width — not the viewport — so the reserved legend footer is dropped
+   *  whenever the bottom bar sits under the chart, even when a wide viewport is narrowed
+   *  by the sidebar. */
+  isStacked?: boolean;
 };
 
 const getSeriesType = (
@@ -38,7 +44,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false }: MetricChartProps) {
   const { data: master } = useMaster();
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [showUsd] = useLocalStorage("showUsd", true);
@@ -237,7 +243,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           limitTooltipRows={10}
           watermarkMetricName={metricMeta?.name ?? null}
           showWatermark
-          className="mb-[30px]"
+          className={isStacked ? undefined : "mb-[30px]"}
           height={(containerMobile ? 300 : 440) + 30}
 
           emptyStateMessage="Select chains to show their historic data"
@@ -259,6 +265,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           showTotal={selectedScale === "stacked"}
           reverseTooltipOrder={reversePerformer}
           showLegend={collapseTable}
+          legendLift={!isStacked}
           legendInactiveSeries={legendInactiveSeriesNames}
           onLegendToggle={handleLegendToggle}
         />

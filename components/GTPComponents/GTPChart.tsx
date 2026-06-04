@@ -344,6 +344,10 @@ export interface GTPChartProps {
   syncId?: string;
   /** When true, renders an interactive series legend overlaid at the bottom of the chart. */
   showLegend?: boolean;
+  /** When true (default), the legend is lifted 30px up into the chart's reserved footer
+   *  space. Set false to let the legend sit flush at the bottom (e.g. on stacked mobile
+   *  layouts where the reserved footer would otherwise leave dead space above the next element). */
+  legendLift?: boolean;
   /** Optional display name overrides for legend items (key = series.name). Falls back to series.name. */
   legendLabels?: Record<string, string>;
   /** Called when the user toggles a series in the legend. Receives the series name and whether it is now active (true) or inactive (false). */
@@ -452,6 +456,7 @@ export default function GTPChart({
   decimalPercentage = false,
   syncId,
   showLegend = false,
+  legendLift = true,
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
@@ -2640,8 +2645,21 @@ export default function GTPChart({
         )
       ) : null}
     </div>
-    {showLegend && series.length > 0 && (
-      <div ref={legendRef} className="relative flex flex-wrap justify-center  bottom-[30px] gap-x-[5px] gap-y-[1px]">
+    {series.length > 0 && (
+      // The legend's height is animated via grid-template-rows (0fr → 1fr) so the chart
+      // canvas grows/shrinks smoothly as the legend hides/shows, instead of jumping.
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+          showLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        } ${legendLift ? "relative bottom-[30px]" : ""}`}
+      >
+      <div className="overflow-hidden">
+      <div
+        ref={legendRef}
+        className={`flex flex-wrap justify-center gap-x-[5px] gap-y-[1px] transition-opacity duration-300 ${
+          showLegend ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         {series.map((s, index) => {
           const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
           const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
@@ -2678,6 +2696,8 @@ export default function GTPChart({
             </div>
           );
         })}
+      </div>
+      </div>
       </div>
     )}
     </div>

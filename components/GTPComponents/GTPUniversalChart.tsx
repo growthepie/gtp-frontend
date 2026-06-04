@@ -4,7 +4,7 @@ import ReactEChartsCore from "echarts-for-react/lib/core";
 import { echarts } from "@/lib/echarts-setup";
 import type { EChartsOption } from "echarts";
 import { PointerEvent as ReactPointerEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { iconNames } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
@@ -18,15 +18,28 @@ import { GTPIcon } from "../layout/GTPIcon";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
 import { GTPButton, GTPButtonSize } from "./ButtonComponents/GTPButton";
 import GTPButtonDropdown from "./ButtonComponents/GTPButtonDropdown";
+import GTPButtonContainer from "./ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "./ButtonComponents/GTPButtonRow";
 import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
 import { downloadElementAsImage } from "./chartSnapshotHelpers";
-import { buildTimeXAxisLayout, enumerateTickPositions } from "@/lib/echarts-x-axis-layout";
+import {
+  buildTimeXAxisLayout,
+  enumerateTickPositions,
+  computeVisibleXAxisLabels,
+  computeSubtickPixelPositions,
+  createPlainLabelFormatter,
+  type VisibleLabel,
+} from "@/lib/echarts-x-axis-layout";
 
 const DIVIDER_WIDTH = 18;
 const DEFAULT_SPLIT_RATIO = 506 / (506 + 650);
 const BOTTOM_TAB_OVERLAY_HEIGHT = 38;
 const CHART_TO_BOTTOM_TAB_GAP = 15;
+// Plot grid shared by the ECharts option and the custom x-axis overlay. bottom:30
+// matches the fundamentals chart (DEFAULT_GRID.bottom) so the overlay tick marks
+// and labels have the same footprint and spacing.
+const CHART_GRID = { left: 52, right: 0, top: 4, bottom: 30 };
 const TABLE_CHAIN_COLUMN_WIDTH = 174;
 const TABLE_SIDE_SPACER_WIDTH = 8;
 const TABLE_ABSOLUTE_COLUMN_WIDTH = 76;
@@ -39,7 +52,9 @@ const TABLE_TOP_FADE_HEIGHT = 36;
 const TABLE_BOTTOM_FADE_HEIGHT = 54;
 const TABLE_BOTTOM_SCROLL_PADDING = 56;
 const TABLE_BOTTOM_SCROLL_PADDING_MOBILE = 8;
-const MOBILE_LAYOUT_BREAKPOINT = 768;
+// Matches the fundamentals chart (MetricsContainer / GTPSplitPane) so the table
+// stacks below the chart at the same width and the bottom bar behaves identically.
+const MOBILE_LAYOUT_BREAKPOINT = 967;
 const UNIVERSAL_CHART_TOOLTIP_CONTAINER_CLASS = getGTPTooltipContainerClass(
   "fit",
   "mt-3 mr-3 mb-3 min-w-60 md:min-w-60 max-w-[min(92vw,420px)] gap-y-[2px] py-[10px] pr-[12px] bg-color-bg-default/80",
@@ -182,6 +197,34 @@ const withHexOpacity = (color: string, opacity: number) => {
 
   return `${color}${alpha}`;
 };
+
+// Singleton canvas context for precise x-axis label width measurement, mirroring
+// the fundamentals GTPChart so the overlay label de-overlap logic measures text
+// identically.
+let _measureCtx: CanvasRenderingContext2D | null | undefined;
+const getMeasureCtx = () => {
+  if (_measureCtx !== undefined) return _measureCtx;
+  if (typeof document === "undefined") {
+    _measureCtx = null;
+    return null;
+  }
+  const canvas = document.createElement("canvas");
+  _measureCtx = canvas.getContext("2d");
+  return _measureCtx;
+};
+
+const escapeCsvCell = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return "";
+  const stringValue = String(value);
+  if (!/[",\n\r]/.test(stringValue)) return stringValue;
+  return `"${stringValue.replace(/"/g, '""')}"`;
+};
+
+const slugifyFilenamePart = (value: string | undefined) =>
+  (value ?? "metric")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "metric";
 
 const formatCompactCurrency = (value: number) =>
   `$${new Intl.NumberFormat("en-US", {
@@ -489,12 +532,20 @@ export default function GTPUniversalChart({
   const tableScrollbarTrackRef = useRef<HTMLDivElement | null>(null);
   const chartTooltipHostRef = useRef<HTMLDivElement | null>(null);
   const echartsRef = useRef<InstanceType<typeof ReactEChartsCore> | null>(null);
+  // Off-screen replica of the bottom-bar left controls (always labelled) — measured so
+  // we only switch to the expanded form when the labels actually fit, including the
+  // button text containers' own padding.
+  const bottomLeftMeasureRef = useRef<HTMLDivElement | null>(null);
+  const [bottomLeftLabelledWidth, setBottomLeftLabelledWidth] = useState(0);
   // Tracks whether the most recent pointer interaction came from a touch/pen.
   // Used by the tooltip positioner to lift the tooltip off the user's finger.
   const isTouchInteractionRef = useRef(false);
   const hasAutoSelectedContextChainsRef = useRef(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
+  // Width of the ECharts host element — used to position the custom x-axis label
+  // overlay (matching the fundamentals chart) in pixel space.
+  const [chartHostWidth, setChartHostWidth] = useState(0);
   const [tablePaneHeight, setTablePaneHeight] = useState(0);
   const [splitRatio, setSplitRatio] = useState(DEFAULT_SPLIT_RATIO);
   const [isTableCollapsed, setIsTableCollapsed] = useState(false);
@@ -509,6 +560,13 @@ export default function GTPUniversalChart({
   const [tableScrollbarTrackHeight, setTableScrollbarTrackHeight] = useState(0);
   const tableScrollSyncRafRef = useRef<number | null>(null);
   const isMobileLayout = contentWidth > 0 && contentWidth < MOBILE_LAYOUT_BREAKPOINT;
+  // Viewport-based (not content-based) breakpoint for the bottom bar's full-width
+  // stacking, mirroring fundamentals. The table stacks on content width
+  // (isMobileLayout), but the bottom bar only forces its controls onto a second
+  // full-width row once the viewport itself is narrow — so there's a band (e.g. when
+  // the sidebar narrows the content) where the table is below the chart yet the
+  // bottom bar is still a single row.
+  const isNarrowViewport = useMediaQuery(`(max-width: ${MOBILE_LAYOUT_BREAKPOINT}px)`);
 
   const topLeftConfig = tabSets?.topLeft;
   const topRightConfig = tabSets?.topRight;
@@ -630,6 +688,12 @@ export default function GTPUniversalChart({
     normalizeMetricIcon(metricInfo?.icon) ??
     normalizeMetricIcon(metricCatalogIcon) ??
     (metricContextType === "data-availability" ? "gtp-data-availability" : "gtp-metrics-marketcap");
+  // Header logo uses the monochrome variant (matching the fundamentals chart header).
+  // Falls back to the colored icon when no monochrome variant exists.
+  const metricIconMonochrome = useMemo<GTPIconName>(() => {
+    const mono = `${metricIcon}-monochrome`;
+    return GTP_ICON_NAMES_SET.has(mono) ? (mono as GTPIconName) : metricIcon;
+  }, [metricIcon]);
 
   const isMetricContextActive = useMemo(
     () =>
@@ -1175,6 +1239,80 @@ export default function GTPUniversalChart({
     },
     [isPercentageMode, metricInfo, metricValueUnitKey, useGweiFormatting],
   );
+  // Export the currently plotted series as CSV, mirroring the fundamentals chart's
+  // "Download Data". chartSeriesData already reflects the selected chains, timespan,
+  // time interval, and scale (incl. percentage / gwei transforms), so it's the source.
+  const handleDownloadChartData = useCallback(() => {
+    if (typeof window === "undefined" || chartSeriesData.length === 0) {
+      return;
+    }
+
+    const timestamps = Array.from(
+      new Set(chartSeriesData.flatMap((series) => series.data.map(([timestamp]) => timestamp))),
+    ).sort((a, b) => a - b);
+    if (timestamps.length === 0) {
+      return;
+    }
+
+    const seriesMaps = chartSeriesData.map((series) => new Map(series.data));
+    const seriesNames = chartSeriesData.map((series) => series.row.label);
+    const scaleLabel = effectiveBottomRightSelectedId;
+    const timeIntervalLabel = contextTimeIntervalKey || effectiveAggregation;
+    const unitLabel = isPercentageMode ? "percent" : useGweiFormatting ? "gwei" : metricValueUnitKey;
+
+    const headers = [
+      "timestamp",
+      "datetime_utc",
+      "metric_id",
+      "metric_name",
+      "time_interval",
+      "scale",
+      "unit",
+      ...seriesNames,
+    ];
+
+    const rows = timestamps.map((timestamp) => {
+      const values = seriesMaps.map((map) => {
+        const value = map.get(timestamp);
+        return typeof value === "number" && Number.isFinite(value) ? value : null;
+      });
+      return [
+        timestamp,
+        new Date(timestamp).toISOString(),
+        metricId,
+        metricLabel,
+        timeIntervalLabel,
+        scaleLabel,
+        unitLabel,
+        ...values,
+      ];
+    });
+
+    const csv = [
+      headers.map(escapeCsvCell).join(","),
+      ...rows.map((row) => row.map(escapeCsvCell).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `growthepie-${slugifyFilenamePart(metricId)}-${timeIntervalLabel}-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.URL.revokeObjectURL(url);
+  }, [
+    chartSeriesData,
+    effectiveBottomRightSelectedId,
+    contextTimeIntervalKey,
+    effectiveAggregation,
+    isPercentageMode,
+    useGweiFormatting,
+    metricValueUnitKey,
+    metricId,
+    metricLabel,
+  ]);
   const chartTooltipPosition = useCallback(
     (
       point: number | number[],
@@ -1290,11 +1428,118 @@ export default function GTPUniversalChart({
       }),
     [],
   );
+  // text-xxs (10px) — the font the fundamentals overlay renders regular x-axis
+  // labels in. textXxsTypography above is text-xs (12px) and is reused for bold
+  // (year) label measurement, matching GTPChart.
+  const overlayLabelTypography = useMemo(
+    () =>
+      readTailwindTypographyStyle("text-xxs", {
+        fontFamily: "var(--font-raleway), sans-serif",
+        fontSize: 10,
+        fontWeight: 500,
+        lineHeight: 16,
+        letterSpacing: "normal",
+      }),
+    [],
+  );
+
+  // --- Custom x-axis layout (ported from the fundamentals GTPChart) ---
+  // Single source of truth for the deterministic tick interval, snapped first/last
+  // tick, and visible axis bounds. Used both by the ECharts option (min/max) and the
+  // DOM label overlay (tick positions), so they can never drift apart.
+  const xAxisModel = useMemo(() => {
+    const allTimestamps = chartSeriesData.flatMap((series) =>
+      series.data
+        .map((point) => Number(point[0]))
+        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
+    );
+    const minTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : undefined;
+    const maxTimestamp = allTimestamps.length > 0 ? Math.max(...allTimestamps) : undefined;
+    const xAxisLayout =
+      minTimestamp !== undefined && maxTimestamp !== undefined
+        ? buildTimeXAxisLayout({
+            timestamps: allTimestamps,
+            barSeriesData: [],
+            xAxisMin: minTimestamp,
+            xAxisMax: maxTimestamp,
+            grid: CHART_GRID,
+            snapToCleanBoundary: false,
+          })
+        : undefined;
+    return { minTimestamp, maxTimestamp, xAxisLayout };
+  }, [chartSeriesData]);
+
+  // Maps a timestamp to a pixel X within the chart host, matching the ECharts grid
+  // (left = CHART_GRID.left, right = CHART_GRID.right) so overlay marks line up with
+  // the rendered plot.
+  const axisPixelMap = useMemo(() => {
+    const aMin = Number(xAxisModel.xAxisLayout?.min ?? xAxisModel.minTimestamp);
+    const aMax = Number(xAxisModel.xAxisLayout?.max ?? xAxisModel.maxTimestamp);
+    if (!Number.isFinite(aMin) || !Number.isFinite(aMax) || aMax <= aMin) return null;
+
+    const plotLeft = CHART_GRID.left;
+    const plotWidth = Math.round(chartHostWidth) - CHART_GRID.left - CHART_GRID.right;
+    if (plotWidth <= 0) return null;
+
+    const axisRange = aMax - aMin;
+    return {
+      aMin,
+      aMax,
+      plotLeft,
+      plotWidth,
+      timestampToPixel: (ts: number): number => plotLeft + ((ts - aMin) / axisRange) * plotWidth,
+    };
+  }, [xAxisModel, chartHostWidth]);
+
+  const overlayLabels = useMemo<VisibleLabel[]>(() => {
+    const layout = xAxisModel.xAxisLayout;
+    if (!layout || !axisPixelMap) return [];
+    const { firstTick, lastTick, minInterval, rangeDays } = layout;
+    if (firstTick === undefined || lastTick === undefined) return [];
+
+    const ticks = enumerateTickPositions(firstTick, lastTick, minInterval, axisPixelMap.aMax);
+    const formatter = createPlainLabelFormatter(rangeDays);
+
+    const measureText = (text: string, isBold: boolean): number => {
+      const ctx = getMeasureCtx();
+      if (ctx) {
+        ctx.font = isBold
+          ? `bold ${textXxsTypography.fontSize}px ${textXxsTypography.fontFamily}`
+          : `${overlayLabelTypography.fontWeight} ${overlayLabelTypography.fontSize}px ${overlayLabelTypography.fontFamily}`;
+        return ctx.measureText(text).width + 2;
+      }
+      return text.length * (isBold ? 7.5 : 5.5) + 4;
+    };
+
+    return computeVisibleXAxisLabels({
+      ticks,
+      containerWidth: chartHostWidth,
+      labelFormatter: formatter,
+      measureText,
+      timestampToPixel: axisPixelMap.timestampToPixel,
+      minGap: 16,
+    });
+  }, [xAxisModel, axisPixelMap, chartHostWidth, textXxsTypography, overlayLabelTypography]);
+
+  const subtickPixels = useMemo<number[]>(() => {
+    const layout = xAxisModel.xAxisLayout;
+    if (!layout || !axisPixelMap || overlayLabels.length === 0) return [];
+
+    const labeledTimestamps = new Set(overlayLabels.map((label) => label.timestamp));
+    return computeSubtickPixelPositions({
+      mainIntervalMs: layout.minInterval,
+      axisMin: axisPixelMap.aMin,
+      axisMax: axisPixelMap.aMax,
+      plotLeft: axisPixelMap.plotLeft,
+      plotWidth: axisPixelMap.plotWidth,
+      labeledTimestamps,
+      timestampToPixel: axisPixelMap.timestampToPixel,
+    });
+  }, [xAxisModel, axisPixelMap, overlayLabels]);
 
   const chartOption = useMemo<EChartsOption>(() => {
     const textPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
     const textSecondary = getCssVarAsRgb("--text-secondary", "rgb(121, 139, 137)");
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
     const splitCount = clamp(Math.round((contentHeight || 512) / 88), 3, 7);
     const shouldStackSeries = isStackedMode || isPercentageMode;
@@ -1332,74 +1577,10 @@ export default function GTPUniversalChart({
     const yAxisMax = isPercentageMode
       ? 100
       : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
-    const allTimestamps = chartSeriesData.flatMap((series) =>
-      series.data
-        .map((point) => Number(point[0]))
-        .filter((timestamp): timestamp is number => Number.isFinite(timestamp)),
-    );
-    const minTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : undefined;
-    const maxTimestamp = allTimestamps.length > 0 ? Math.max(...allTimestamps) : undefined;
-    const xAxisRangeMs =
-      minTimestamp !== undefined && maxTimestamp !== undefined ? maxTimestamp - minTimestamp : undefined;
-    const isLongerThan7Days = typeof xAxisRangeMs === "number" && xAxisRangeMs > sevenDaysMs;
-
-    const xAxisLayout =
-      minTimestamp !== undefined && maxTimestamp !== undefined
-        ? buildTimeXAxisLayout({
-            timestamps: allTimestamps,
-            barSeriesData: [],
-            xAxisMin: minTimestamp,
-            xAxisMax: maxTimestamp,
-            grid: { left: 52, right: 0, top: 4, bottom: 22 },
-            snapToCleanBoundary: false,
-          })
-        : undefined;
-    const xAxisTickValues =
-      xAxisLayout?.firstTick !== undefined &&
-      xAxisLayout?.lastTick !== undefined &&
-      xAxisLayout?.max !== undefined &&
-      xAxisLayout?.minInterval
-        ? enumerateTickPositions(
-            xAxisLayout.firstTick,
-            xAxisLayout.lastTick,
-            xAxisLayout.minInterval,
-            xAxisLayout.max,
-          ).map((t) => t.timestamp)
-        : undefined;
-
-    const formatXAxisTick = (value: number | string) => {
-      const numValue = typeof value === "string" ? Number(value) : value;
-      if (!Number.isFinite(numValue)) {
-        return String(value);
-      }
-
-      const date = new Date(numValue);
-      const isJanFirst = date.getUTCMonth() === 0 && date.getUTCDate() === 1;
-      const isMonthFirst = date.getUTCDate() === 1;
-
-      if (isLongerThan7Days && isJanFirst) {
-        const yearLabel = new Intl.DateTimeFormat("en-GB", {
-          year: "numeric",
-          timeZone: "UTC",
-        }).format(numValue);
-        return `{yearBold|${yearLabel}}`;
-      }
-
-      if (isMonthFirst) {
-        return new Intl.DateTimeFormat("en-GB", {
-          month: "short",
-          year: "numeric",
-          timeZone: "UTC",
-        }).format(numValue);
-      }
-
-      return new Intl.DateTimeFormat("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(numValue);
-    };
+    // x-axis tick positions and visible bounds come from the shared xAxisModel; the
+    // labels themselves are rendered by the DOM overlay (see overlayLabels), matching
+    // the fundamentals chart. The native axis only draws its baseline here.
+    const { minTimestamp, maxTimestamp, xAxisLayout } = xAxisModel;
 
     return {
       animation: false,
@@ -1421,10 +1602,7 @@ export default function GTPUniversalChart({
             ]
           : undefined,
       grid: {
-        left: 52,
-        right: 0,
-        top: 4,
-        bottom: 22,
+        ...CHART_GRID,
       },
       xAxis: {
         type: "time",
@@ -1437,29 +1615,13 @@ export default function GTPUniversalChart({
             color: withOpacity(textPrimary, 0.45),
           },
         },
+        // Native ticks and labels are hidden; the DOM overlay renders them with the
+        // same spacing/formatting as the fundamentals chart.
         axisTick: {
           show: false,
         },
         axisLabel: {
-          color: textPrimary,
-          fontSize: textXxsTypography.fontSize,
-          fontFamily: textXxsTypography.fontFamily,
-          fontWeight: textXxsTypography.fontWeight,
-          hideOverlap: true,
-          margin: 8,
-          formatter: (value: number) => formatXAxisTick(value),
-          ...(xAxisTickValues && xAxisTickValues.length > 0
-            ? { customValues: xAxisTickValues }
-            : {}),
-          rich: {
-            yearBold: {
-              color: textPrimary,
-              fontSize: textXxsTypography.fontSize,
-              fontFamily: textXxsTypography.fontFamily,
-              fontWeight: 700,
-              lineHeight: textXxsTypography.lineHeight,
-            },
-          },
+          show: false,
         },
         splitLine: {
           show: false,
@@ -1615,7 +1777,7 @@ export default function GTPUniversalChart({
           `;
         },
       },
-      series: sortedSeries.map((series, index) => ({
+      series: sortedSeries.map((series) => ({
         name: series.row.label,
         type: "line" as const,
         data: series.data,
@@ -1634,19 +1796,6 @@ export default function GTPUniversalChart({
               ]),
             }
           : undefined,
-        markLine:
-          index === 0
-            ? {
-                silent: true,
-                symbol: "none",
-                label: { show: false },
-                lineStyle: {
-                  color: withOpacity(textPrimary, 0.35),
-                  width: 1,
-                },
-                data: [{ yAxis: 0 }],
-              }
-            : undefined,
       })),
     };
   }, [
@@ -1662,6 +1811,7 @@ export default function GTPUniversalChart({
     reversePerformer,
     showStackedTotalInTooltip,
     textXxsTypography,
+    xAxisModel,
   ]);
 
   useLayoutEffect(() => {
@@ -1694,6 +1844,80 @@ export default function GTPUniversalChart({
       observer.disconnect();
     };
   }, []);
+
+  // Track the ECharts host width so the custom x-axis overlay can map timestamps to
+  // pixels against the same plot geometry, and keep the chart canvas resized to it
+  // (echarts-for-react only auto-resizes on window resize, not on container reflow
+  // such as the split-pane divider drag).
+  useLayoutEffect(() => {
+    const hostElement = chartTooltipHostRef.current;
+    if (!hostElement) {
+      return;
+    }
+
+    const syncHostWidth = () => {
+      setChartHostWidth(hostElement.getBoundingClientRect().width);
+      (
+        echartsRef.current?.getEchartsInstance?.() as { resize?: () => void } | undefined
+      )?.resize?.();
+    };
+
+    syncHostWidth();
+    const frame = window.requestAnimationFrame(syncHostWidth);
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+      setChartHostWidth(entry.contentRect.width);
+      (
+        echartsRef.current?.getEchartsInstance?.() as { resize?: () => void } | undefined
+      )?.resize?.();
+    });
+
+    observer.observe(hostElement);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, []);
+
+  // Measure the off-screen labelled replica of the left controls. The absolutely
+  // positioned wrapper shrinks to its content, so its width is the exact width the
+  // expanded left row would need. ResizeObserver re-measures on font load and whenever
+  // the table button's label changes (icon ↔ "Open Table").
+  useLayoutEffect(() => {
+    const measureElement = bottomLeftMeasureRef.current;
+    if (!measureElement) {
+      return;
+    }
+    const sync = () => {
+      const setElement = measureElement.firstElementChild;
+      const buttons = setElement ? Array.from(setElement.children) : [];
+      if (buttons.length === 0) {
+        setBottomLeftLabelledWidth(0);
+        return;
+      }
+      const widths = buttons.map((button) => (button as HTMLElement).getBoundingClientRect().width);
+      // The first button (table toggle) takes a fixed 40px when the table is shown (icon),
+      // but its full natural width when the table is hidden ("Open Table" is shown in full
+      // and never shrinks). The rest are equal width and must each be at least as wide as
+      // the widest of them. Add the inter-button gaps (gap-[2px]) and padding (px-[2px]).
+      const tableWidth = isTableCollapsed ? (widths[0] ?? 0) : 40;
+      const otherWidths = widths.slice(1);
+      const widestOther = otherWidths.length > 0 ? Math.max(...otherWidths) : 0;
+      setBottomLeftLabelledWidth(tableWidth + widestOther * otherWidths.length + (buttons.length - 1) * 2 + 4);
+    };
+    sync();
+    const frame = window.requestAnimationFrame(sync);
+    const observer = new ResizeObserver(sync);
+    observer.observe(measureElement);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [tabSize, isTableCollapsed]);
 
   useLayoutEffect(() => {
     if (!tablePaneRef.current) {
@@ -1979,17 +2203,20 @@ export default function GTPUniversalChart({
   const isTableSortKeyActive = (key: TableSortKey) => tableSort.key === key;
   const showTablePane = !isTableCollapsed;
   const showChartLegend = isTableCollapsed;
+  // Populated independently of showChartLegend (falls back to the live selection) so the
+  // legend content stays mounted while its show/hide height transition plays out.
   const legendItems = useMemo(() => {
-    if (!showChartLegend || !legendChainKeys) return [];
+    const keys = legendChainKeys ?? selectedChains;
+    if (keys.length === 0) return [];
     const rowByChain = new Map(displayRows.map((row) => [row.chain, row]));
-    return legendChainKeys
+    return keys
       .map((chainKey) => {
         const row = rowByChain.get(chainKey);
         if (!row) return null;
         return { chain: chainKey, label: row.label, color: row.accentColor };
       })
       .filter((item): item is { chain: string; label: string; color: string } => Boolean(item));
-  }, [showChartLegend, legendChainKeys, displayRows]);
+  }, [legendChainKeys, selectedChains, displayRows]);
 
   const availableWidth = isMobileLayout
     ? Math.max(contentWidth, 0)
@@ -2050,12 +2277,20 @@ export default function GTPUniversalChart({
     columns.push(`${TABLE_CHECK_COLUMN_WIDTH}px`);
     return columns.join(" ");
   }, [show1yColumn, show24hColumn, show30dColumn]);
+  // Match the fundamentals chart height on small screens: a fixed pixel height that is
+  // taller on the content-stacked band (viewport ≥ 967, so the table is below the chart
+  // but the bottom bar is still one row) than on a narrow viewport — mirroring
+  // MetricChart's `(containerMobile ? 300 : 440) + 30`.
+  const mobileChartHeightPx = (isNarrowViewport ? 300 : 440) + 30;
+  // When stacked under the chart the table sizes to its content (rows + the
+  // "NOT SHOWING IN CHART" divider) so there's no excess empty space, but its scroll
+  // list is capped at this height and scrolls beyond it — like the fundamentals table.
+  const mobileTableScrollMaxPx = 256;
   const chartRenderHeight = isMobileLayout
-    ? `${Math.max(Math.floor((contentHeight || 420) * 0.46), 210)}px`
+    ? `${mobileChartHeightPx}px`
     : showTablePane && tablePaneHeight > 0
       ? `${Math.floor(tablePaneHeight)}px`
       : "100%";
-  const tableWatermarkOverlayClassName = "pointer-events-none absolute inset-0 z-[40] flex items-center justify-center";
   const chartWatermarkOverlayClassName = isMobileLayout
     ? "pointer-events-none absolute inset-0 z-[40] flex items-center justify-center"
     : "pointer-events-none absolute inset-y-0 left-[52px] right-0 z-[40] flex items-center justify-center";
@@ -2068,64 +2303,101 @@ export default function GTPUniversalChart({
         marginRight: "calc(50% - 50vw)",
       }
     : undefined;
-  const hasBottomLeftControls = true;
-  const hasBottomTabBar = hasBottomLeftControls || bottomRightItems.length > 0;
-  const bottomLeftControls = hasBottomLeftControls ? (
-    <GTPTabButtonSet size={tabSize}>
-      <div title={showTablePane ? "Close table" : "Show table"}>
+  // Bottom bar built from the same GTPButtonContainer / GTPButtonRow primitives the
+  // fundamentals chart uses, so its breakpoint behaviour matches exactly: a single
+  // justify-between row on wide layouts, flex-wrapping to two rows when it no longer
+  // fits, and fully stacked full-width rows once the layout is mobile (isMobileLayout
+  // — the same content-width signal that stacks the table below the chart).
+  const hasBottomTabBar = true;
+  // When the bottom bar is stacked into two rows (narrow viewport, so the left row
+  // spans the full width) show the Share / Screenshot / Download buttons in their
+  // expanded (labelled) form — but only when the measured labelled width actually fits
+  // the available row width, so the rightmost button is never cut off. contentWidth
+  // slightly under-states the true row width (which spans the bottom bar plus its
+  // negative margins), so comparing against it is conservative.
+  const showBottomLeftLabels =
+    isNarrowViewport && bottomLeftLabelledWidth > 0 && contentWidth >= bottomLeftLabelledWidth + 8;
+  const bottomLeftLabelDisplay = showBottomLeftLabels ? "always" : "hover";
+  // When the table is hidden on a small screen, the "Open Table" button is the priority:
+  // it always shows its full label (shrink-0, never capped/clipped). The other buttons
+  // split the leftover room — and the measurement above reserves the table's full width
+  // when collapsed, so they only keep their labels if they still fit, otherwise icons.
+  const tableHiddenOnSmall = isNarrowViewport && !showTablePane;
+  // When shown + expanded, the table toggle stays compact (40px icon); the remaining
+  // buttons are equal width and split the leftover room with their content centred.
+  const bottomLeftTableExpandClassName = tableHiddenOnSmall
+    ? "shrink-0"
+    : showBottomLeftLabels
+      ? "w-[40px] overflow-hidden"
+      : undefined;
+  const bottomLeftExpandClassName = showBottomLeftLabels ? "flex-1 justify-center" : undefined;
+  const bottomLeftInnerButtonClassName = showBottomLeftLabels ? "w-full justify-center" : undefined;
+  const bottomLeftExpandInnerStyle = showBottomLeftLabels ? ({ width: "100%" } as const) : undefined;
+  const bottomLeftTableExpandInnerStyle = tableHiddenOnSmall ? undefined : bottomLeftExpandInnerStyle;
+  const bottomBar = (
+    <GTPButtonContainer className="gap-x-[5px]">
+      <GTPButtonRow style={{ width: isNarrowViewport ? "100%" : "auto" }}>
         <GTPButton
           label={showTablePane ? undefined : "Open Table"}
           leftIcon={showTablePane ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
           size={tabSize}
           variant={showTablePane ? "no-background" : "highlight"}
           visualState="default"
+          className={bottomLeftTableExpandClassName}
+          innerStyle={bottomLeftTableExpandInnerStyle}
           clickHandler={() => {
             setIsTableCollapsed((current) => !current);
             setIsSharePopoverOpen(false);
           }}
         />
-      </div>
-      <div title="Share">
         <GTPButtonDropdown
           openDirection="top"
-          matchTriggerWidthToDropdown
+          matchTriggerWidthToDropdown={!showBottomLeftLabels}
+          className={bottomLeftExpandClassName}
           buttonProps={{
             label: "Share",
-            labelDisplay: "active",
+            labelDisplay: bottomLeftLabelDisplay,
             leftIcon: "gtp-share-monochrome",
             size: tabSize,
             variant: "no-background",
+            className: bottomLeftInnerButtonClassName,
+            innerStyle: bottomLeftExpandInnerStyle,
           }}
           isOpen={isSharePopoverOpen}
           onOpenChange={setIsSharePopoverOpen}
           dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
         />
-      </div>
-      <div title="Download image">
         <GTPButton
-          leftIcon="gtp-download-monochrome"
+          leftIcon="gtp-png-monochrome"
+          label="Take Screenshot"
+          labelDisplay={bottomLeftLabelDisplay}
           size={tabSize}
           variant="no-background"
+          className={bottomLeftExpandClassName}
+          innerStyle={bottomLeftExpandInnerStyle}
           visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
           disabled={isDownloadingChartSnapshot}
           clickHandler={handleDownloadChartSnapshot}
         />
-      </div>
-    </GTPTabButtonSet>
-  ) : null;
-  const bottomTabBar = hasBottomTabBar ? (
-    <GTPTabBar
-      mobileVariant="inline"
-      leftClassName="!flex-none shrink-0"
-      rightClassName={isMobileLayout ? "min-w-0 flex-1" : undefined}
-      className="border-[0.5px] border-color-bg-default bg-color-bg-default/95 backdrop-blur-[2px] text-xs"
-      left={bottomLeftControls}
-      right={(
-        bottomRightItems.length > 0 ? (
-          <GTPTabButtonSet
-            size={tabSize}
-            fill={isMobileLayout ? "full" : "none"}
-          >
+        <GTPButton
+          leftIcon="gtp-download-monochrome"
+          label="Download Data"
+          labelDisplay={bottomLeftLabelDisplay}
+          size={tabSize}
+          variant="no-background"
+          className={bottomLeftExpandClassName}
+          innerStyle={bottomLeftExpandInnerStyle}
+          visualState={chartSeriesData.length === 0 ? "disabled" : "default"}
+          disabled={chartSeriesData.length === 0}
+          clickHandler={handleDownloadChartData}
+        />
+      </GTPButtonRow>
+      {bottomRightItems.length > 0 ? (
+        <div
+          className="flex items-center gap-x-[8px] h-full justify-end"
+          style={{ width: isNarrowViewport ? "100%" : "auto" }}
+        >
+          <GTPButtonRow style={{ width: isNarrowViewport ? "100%" : "auto" }}>
             {bottomRightItems.map((item) => {
               const isSelected = item.id === effectiveBottomRightSelectedId;
               return (
@@ -2135,12 +2407,11 @@ export default function GTPUniversalChart({
                   leftIcon={item.leftIcon}
                   rightIcon={item.rightIcon}
                   size={tabSize}
-                  fill={isMobileLayout ? "full" : "none"}
-                  className={isMobileLayout ? "flex-1" : undefined}
-                  innerStyle={isMobileLayout ? { width: "100%" } : undefined}
                   variant="primary"
                   isSelected={isSelected}
                   disabled={item.disabled}
+                  innerStyle={{ width: "100%" }}
+                  className="w-full justify-center"
                   clickHandler={() => {
                     item.onClick?.();
                     if (bottomRightConfig?.selectedId === undefined) {
@@ -2160,14 +2431,34 @@ export default function GTPUniversalChart({
                 />
               );
             })}
-          </GTPTabButtonSet>
-        ) : null
-      )}
-    />
-  ) : null;
+          </GTPButtonRow>
+        </div>
+      ) : null}
+    </GTPButtonContainer>
+  );
 
   return (
     <div className={`${wrapperClassName} ${className ?? ""}`} style={wrapperStyle}>
+      {/* Off-screen, always-labelled replica of the bottom-bar left controls, used only
+          to measure the width the expanded row needs (see showBottomLeftLabels). */}
+      <div
+        ref={bottomLeftMeasureRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute top-0 left-0 -z-50"
+      >
+        <GTPButtonRow>
+          <GTPButton
+            label={showTablePane ? undefined : "Open Table"}
+            leftIcon={showTablePane ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
+            size={tabSize}
+            variant={showTablePane ? "no-background" : "highlight"}
+            labelDisplay="always"
+          />
+          <GTPButton label="Share" leftIcon="gtp-share-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
+          <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
+          <GTPButton label="Download Data" leftIcon="gtp-download-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
+        </GTPButtonRow>
+      </div>
       <div
         ref={cardRef}
         className="w-full rounded-[18px] bg-color-bg-default flex flex-col overflow-hidden"
@@ -2236,7 +2527,10 @@ export default function GTPUniversalChart({
           }
         />
 
-        <div className="relative px-[5px] pb-0 h-[538px] overflow-hidden">
+        <div
+          className="relative px-[5px] pb-0 overflow-hidden"
+          style={isMobileLayout ? undefined : { height: 538 }}
+        >
           <div
             className="flex h-full flex-col gap-[5px]"
             style={{
@@ -2248,7 +2542,7 @@ export default function GTPUniversalChart({
             <div className="flex items-center justify-between gap-x-[8px] pt-[4px] pr-[10px] pl-[6px] pb-[4px]">
               <div className="flex items-center gap-x-[6px]">
                 <GTPIcon
-                  icon={metricIcon}
+                  icon={metricIconMonochrome}
                   className="!w-[12px] !h-[12px] text-color-text-primary"
                   containerClassName="!w-[12px] !h-[12px]"
                 />
@@ -2269,20 +2563,22 @@ export default function GTPUniversalChart({
               ref={contentRef}
               className={`flex items-stretch flex-1 min-h-0 gap-[5px] ${isMobileLayout ? "flex-col" : ""}`}
             >
-            {showTablePane ? (
-              <div
-                className={`flex min-w-0 h-full min-h-0 ${isMobileLayout ? "order-3 flex-1" : ""}`}
-                style={{
-                  width: tablePaneWidth,
-                }}
-              >
+            <div
+              className={
+                isMobileLayout
+                  ? `grid min-w-0 overflow-hidden order-3 transition-[grid-template-rows] duration-300 ease-in-out ${
+                      showTablePane ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`
+                  : `flex min-w-0 min-h-0 h-full overflow-hidden ${
+                      !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+                    }`
+              }
+              style={{ width: isMobileLayout ? "100%" : tablePaneWidth }}
+            >
               <div
                 ref={tablePaneRef}
-                className="relative h-full min-h-0 w-full min-w-[160px] rounded-[14px] overflow-hidden"
+                className={`relative w-full min-w-[160px] rounded-[14px] overflow-hidden ${isMobileLayout ? "" : "h-full min-h-0"}`}
               >
-                <div className={tableWatermarkOverlayClassName}>
-                  <ChartWatermarkWithMetricName metricName={metricLabel} className={UNIVERSAL_CHART_WATERMARK_CLASS} />
-                </div>
                 <div className="relative z-[1] h-[37px] px-[6px] py-[4px]">
                   <div
                     className="relative grid h-full items-center gap-x-[6px] text-[12px] font-semibold text-color-text-primary"
@@ -2370,12 +2666,15 @@ export default function GTPUniversalChart({
                     </div>
                   </div>
                 </div>
-                <div className="relative h-[calc(100%-37px)]">
+                <div className={`relative ${isMobileLayout ? "" : "h-[calc(100%-37px)]"}`}>
                   <div
                     ref={tableScrollRef}
                     onScroll={scheduleTableScrollMetricsSync}
-                    className="relative z-[1] h-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px]"
-                    style={{ paddingBottom: `${tableBottomScrollPadding}px` }}
+                    className={`relative z-[1] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6px] pt-[1px] space-y-[2px] ${isMobileLayout ? "" : "h-full"}`}
+                    style={{
+                      paddingBottom: `${tableBottomScrollPadding}px`,
+                      ...(isMobileLayout ? { maxHeight: `${mobileTableScrollMaxPx}px` } : {}),
+                    }}
                   >
                     {selectedTableRows.map((row) => (
                       <ChainMetricTableRow
@@ -2460,10 +2759,14 @@ export default function GTPUniversalChart({
                 </div>
               </div>
               </div>
-            ) : null}
 
-            {!isMobileLayout && showTablePane ? (
-              <div className="relative z-[35] w-[18px] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none">
+            {!isMobileLayout ? (
+              <div
+                className={`relative z-[35] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none overflow-hidden ${
+                  showTablePane ? "" : "pointer-events-none"
+                } ${!dragging ? "transition-[width] duration-300 ease-in-out" : ""}`}
+                style={{ width: showTablePane ? 18 : 0 }}
+              >
                 <div className="cursor-col-resize mt-[1px]" onPointerDown={handleDividerPointerDown}>
                   <GTPButton size="xs" variant="primary" leftIcon="gtp-move-side-monochrome" />
                 </div>
@@ -2490,16 +2793,23 @@ export default function GTPUniversalChart({
             ) : null}
 
             <div
-              className={`flex min-w-0 ${isMobileLayout ? "order-1 w-full shrink-0" : "h-full"}`}
+              className={`flex min-w-0 ${isMobileLayout ? "order-1 w-full shrink-0" : "h-full"} ${
+                !isMobileLayout && !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+              }`}
               style={{
                 width: chartPaneWidth,
               }}
             >
-              <div className={`min-w-0 flex-1 min-h-0 flex flex-col ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}>
+              <div
+                className={`min-w-0 flex-1 min-h-0 flex flex-col ${isMobileLayout ? "pl-0" : showTablePane ? "h-full pl-[5px]" : "h-full"}`}
+                // On mobile the chart column is a fixed height, so the canvas (host) flexes
+                // as the legend shows/hides — keeping the bottom bar below it still, like
+                // the fundamentals chart, instead of the legend pushing the layout down.
+                style={{ height: isMobileLayout ? chartRenderHeight : undefined }}
+              >
                 <div
                   ref={chartTooltipHostRef}
-                  className={`relative w-full overflow-hidden ${isMobileLayout ? "" : "flex-1 min-h-0"}`}
-                  style={{ height: isMobileLayout ? chartRenderHeight : undefined }}
+                  className="relative w-full overflow-hidden flex-1 min-h-0"
                 >
                   <ReactEChartsCore
                     ref={echartsRef}
@@ -2512,9 +2822,73 @@ export default function GTPUniversalChart({
                   <div className={chartWatermarkOverlayClassName}>
                     <ChartWatermarkWithMetricName metricName={metricLabel} className={UNIVERSAL_CHART_WATERMARK_CLASS} />
                   </div>
+                  {/* Custom x-axis label overlay — ported from the fundamentals GTPChart so
+                      tick spacing, subticks, and year/month/day formatting match. The native
+                      ECharts axis only draws its baseline (axisLabel/axisTick hidden above). */}
+                  {overlayLabels.length > 0 ? (
+                    (() => {
+                      const overlayTextPrimary = getCssVarAsRgb("--text-primary", "rgb(205, 216, 211)");
+                      return (
+                        <div
+                          className="pointer-events-none absolute left-0 right-0 bottom-0"
+                          style={{ height: CHART_GRID.bottom }}
+                        >
+                          {subtickPixels.map((px) => (
+                            <div
+                              key={`uc-sub-${px}`}
+                              className="absolute top-0"
+                              style={{
+                                left: px,
+                                width: 1,
+                                height: 3,
+                                backgroundColor: withOpacity(overlayTextPrimary, 0.3),
+                              }}
+                            />
+                          ))}
+                          {overlayLabels.map((label) => (
+                            <div
+                              key={`uc-tick-${label.timestamp}`}
+                              className="absolute top-0"
+                              style={{
+                                left: Math.round(label.pixelX),
+                                width: 1,
+                                height: 8,
+                                backgroundColor: withOpacity(overlayTextPrimary, 0.3),
+                              }}
+                            />
+                          ))}
+                          {overlayLabels.map((label) => (
+                            <span
+                              key={`uc-label-${label.timestamp}`}
+                              className={`absolute whitespace-nowrap ${label.isBold ? "text-xxs !font-bold" : "text-xxs"} ${label.align === "left" ? "text-left translate-x-0" : label.align === "right" ? "text-right -translate-x-full" : "text-center -translate-x-1/2"}`}
+                              style={{
+                                left: Math.round(label.pixelX),
+                                top: 14,
+                                color: overlayTextPrimary,
+                              }}
+                            >
+                              {label.text}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()
+                  ) : null}
                 </div>
-                {showChartLegend && legendItems.length > 0 ? (
-                  <div className="relative flex shrink-0 flex-wrap items-center justify-center gap-x-[5px] gap-y-[5px] pt-[8px]">
+                {legendItems.length > 0 ? (
+                  // Height is animated via grid-template-rows (0fr ↔ 1fr) so the chart
+                  // area grows/shrinks smoothly as the legend hides/shows, with a fade.
+                  <div
+                    className={`grid shrink-0 transition-[grid-template-rows] duration-300 ease-in-out ${
+                      showChartLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                  >
+                  <div className="overflow-hidden">
+                  <div
+                    className={`relative flex flex-wrap items-center justify-center gap-x-[5px] gap-y-[5px] pt-[8px] transition-opacity duration-300 ${
+                      showChartLegend ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
                     {legendItems.map((item) => {
                       const isInactive = !selectedChainSet.has(item.chain);
                       return (
@@ -2550,6 +2924,8 @@ export default function GTPUniversalChart({
                       );
                     })}
                   </div>
+                  </div>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -2558,14 +2934,14 @@ export default function GTPUniversalChart({
                 className="order-2 -mx-[5px] w-[calc(100%+10px)]"
                 style={{ marginTop: `${Math.max(CHART_TO_BOTTOM_TAB_GAP - 5, 0)}px` }}
               >
-                {bottomTabBar}
+                {bottomBar}
               </div>
             ) : null}
             </div>
           </div>
           {!isMobileLayout && hasBottomTabBar ? (
             <div className="absolute inset-x-0 bottom-0 z-[30]">
-              {bottomTabBar}
+              {bottomBar}
             </div>
           ) : null}
         </div>
