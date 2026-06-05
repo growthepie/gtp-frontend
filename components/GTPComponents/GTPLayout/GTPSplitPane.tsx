@@ -38,7 +38,7 @@ function DividerSlot({
   return (
     <div
       className={`md:pb-[30px] shrink-0 overflow-hidden ${widthPx === 0 ? "pointer-events-none" : ""} ${
-        animate ? "transition-[width] duration-300 ease-in-out" : ""
+        animate ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
       }`}
       style={{ width: `${widthPx}px` }}
     >
@@ -246,7 +246,7 @@ export default function GTPSplitPane({
         // vertically. Animate its height via grid-template-rows (0fr ↔ 1fr) and keep it
         // mounted so the card grows/shrinks smoothly instead of the table popping.
         <div
-          className={`grid min-w-0 self-stretch overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${
+          className={`grid min-w-0 self-stretch overflow-hidden transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
             showLeft ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           } ${leftClassName ?? ""}`}
           style={{ width: "100%", order: mobileLeftOrder }}
@@ -257,7 +257,7 @@ export default function GTPSplitPane({
         // Desktop: the table sits beside the chart, so it collapses horizontally.
         <div
           className={`flex min-w-0 min-h-0 self-stretch overflow-hidden ${
-            !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+            !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
           } ${leftClassName ?? ""}`}
           style={{ width: leftPaneWidth }}
         >
@@ -284,7 +284,7 @@ export default function GTPSplitPane({
       ) : null}
       <div
         className={`flex min-w-0 pb-0 min-h-0 self-stretch ${isMobile ? "flex-1 w-full" : "shrink-0"} ${
-          !isMobile && !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+          !isMobile && !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
         } ${rightClassName ?? ""}`}
         style={{
           width: rightPaneWidth,

@@ -2578,11 +2578,11 @@ export default function GTPUniversalChart({
             <div
               className={
                 isMobileLayout
-                  ? `grid min-w-0 overflow-hidden order-3 transition-[grid-template-rows] duration-300 ease-in-out ${
+                  ? `grid min-w-0 overflow-hidden order-3 transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                       showTablePane ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                     }`
                   : `flex min-w-0 min-h-0 h-full overflow-hidden ${
-                      !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+                      !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
                     }`
               }
               style={{ width: isMobileLayout ? "100%" : tablePaneWidth }}
@@ -2776,7 +2776,7 @@ export default function GTPUniversalChart({
               <div
                 className={`relative z-[35] h-full flex flex-col items-center gap-[5px] pt-[7px] pb-[10px] select-none touch-none overflow-hidden ${
                   showTablePane ? "" : "pointer-events-none"
-                } ${!dragging ? "transition-[width] duration-300 ease-in-out" : ""}`}
+                } ${!dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""}`}
                 style={{ width: showTablePane ? 18 : 0 }}
               >
                 <div className="cursor-col-resize mt-[1px]" onPointerDown={handleDividerPointerDown}>
@@ -2806,7 +2806,7 @@ export default function GTPUniversalChart({
 
             <div
               className={`flex min-w-0 ${isMobileLayout ? "order-1 w-full shrink-0" : "h-full"} ${
-                !isMobileLayout && !dragging ? "transition-[width] duration-300 ease-in-out" : ""
+                !isMobileLayout && !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
               }`}
               style={{
                 width: chartPaneWidth,
@@ -2891,13 +2891,13 @@ export default function GTPUniversalChart({
                   // Height is animated via grid-template-rows (0fr ↔ 1fr) so the chart
                   // area grows/shrinks smoothly as the legend hides/shows, with a fade.
                   <div
-                    className={`grid shrink-0 transition-[grid-template-rows] duration-300 ease-in-out ${
+                    className={`grid shrink-0 transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                       showChartLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                     }`}
                   >
                   <div className="overflow-hidden">
                   <div
-                    className={`relative flex flex-wrap items-center justify-center gap-x-[5px] gap-y-[5px] pt-[8px] transition-opacity duration-300 ${
+                    className={`relative flex flex-wrap items-center justify-center gap-x-[5px] gap-y-[5px] pt-[8px] transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                       showChartLegend ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
                   >

@@ -636,6 +636,10 @@ export default function GTPChart({
       if (entry) {
         setContainerHeight(entry.contentRect.height);
         setContainerWidth(entry.contentRect.width);
+        // Resize synchronously here (not just via the state-driven effect) so the chart
+        // tracks the container frame-for-frame during width/height transitions, instead
+        // of lagging behind React's batched re-renders and "stepping".
+        (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
       }
     });
 
@@ -2781,14 +2785,14 @@ export default function GTPChart({
       // The legend's height is animated via grid-template-rows (0fr → 1fr) so the chart
       // canvas grows/shrinks smoothly as the legend hides/shows, instead of jumping.
       <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+        className={`grid transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           showLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         } ${legendLift ? "relative bottom-[30px]" : ""}`}
       >
       <div className="overflow-hidden">
       <div
         ref={legendRef}
-        className={`flex flex-wrap justify-center gap-x-[5px] gap-y-[1px] transition-opacity duration-300 ${
+        className={`flex flex-wrap justify-center gap-x-[5px] gap-y-[1px] transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           showLegend ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
