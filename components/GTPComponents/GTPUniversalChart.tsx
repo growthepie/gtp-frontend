@@ -24,6 +24,7 @@ import GTPTabBar from "./GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "./GTPTabButtonSet";
 import { downloadElementAsImage, prewarmSnapshotFonts } from "./chartSnapshotHelpers";
 import LoadingSpinnerIcon from "./LoadingSpinnerIcon";
+import { useIsSafari } from "@/hooks/useIsSafari";
 import {
   buildTimeXAxisLayout,
   enumerateTickPositions,
@@ -561,6 +562,9 @@ export default function GTPUniversalChart({
   const [tableScrollbarTrackHeight, setTableScrollbarTrackHeight] = useState(0);
   const tableScrollSyncRafRef = useRef<number | null>(null);
   const isMobileLayout = contentWidth > 0 && contentWidth < MOBILE_LAYOUT_BREAKPOINT;
+  // The chart screenshot doesn't render correctly on Safari/iOS WebKit, so hide the Take
+  // Screenshot button there (not rendered, so the row closes up — no gap).
+  const isSafari = useIsSafari();
   // Viewport-based (not content-based) breakpoint for the bottom bar's full-width
   // stacking, mirroring fundamentals. The table stacks on content width
   // (isMobileLayout), but the bottom bar only forces its controls onto a second
@@ -2372,6 +2376,7 @@ export default function GTPUniversalChart({
           onOpenChange={setIsSharePopoverOpen}
           dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
         />
+        {!isSafari && (
         <GTPButton
           leftIcon="gtp-png-monochrome"
           leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
@@ -2385,6 +2390,7 @@ export default function GTPUniversalChart({
           disabled={isDownloadingChartSnapshot}
           clickHandler={handleDownloadChartSnapshot}
         />
+        )}
         <GTPButton
           leftIcon="gtp-download-monochrome"
           label="Download Data"
@@ -2461,7 +2467,7 @@ export default function GTPUniversalChart({
             labelDisplay="always"
           />
           <GTPButton label="Share" leftIcon="gtp-share-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
-          <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
+          {!isSafari && <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />}
           <GTPButton label="Download Data" leftIcon="gtp-download-monochrome" size={tabSize} variant="no-background" labelDisplay="always" />
         </GTPButtonRow>
       </div>

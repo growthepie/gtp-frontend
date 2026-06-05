@@ -23,6 +23,7 @@ import GTPResizeDivider from "../GTPComponents/GTPLayout/GTPResizeDivider";
 import { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
 import { downloadElementAsImage, prewarmSnapshotFonts } from "../GTPComponents/chartSnapshotHelpers";
 import LoadingSpinnerIcon from "../GTPComponents/LoadingSpinnerIcon";
+import { useIsSafari } from "@/hooks/useIsSafari";
 import { GTPIcon } from "../layout/GTPIcon";
 import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -46,6 +47,9 @@ const slugifyFilenamePart = (value: string | undefined) =>
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 967px)");
     const splitRows = useMediaQuery("(max-width: 967px)");
+    // The chart screenshot doesn't render correctly on Safari/iOS WebKit, so hide the
+    // Take Screenshot button there (it's simply not rendered, so the row closes up — no gap).
+    const isSafari = useIsSafari();
     const [collapseTable, setCollapseTable] = useState(false);
     // Tracks the split pane's *actual* stacked layout (content-width based), so the
     // chart's reserved legend footer is dropped whenever the bottom bar sits in-flow
@@ -426,7 +430,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                     labelDisplay="always"
                 />
                 <GTPButton label="Share" leftIcon="gtp-share-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />
-                <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />
+                {!isSafari && <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />}
                 <GTPButton label="Download Data" leftIcon="gtp-download-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />
             </GTPButtonRow>
         </div>
@@ -697,6 +701,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                         />
 
+                        {!isSafari && (
                         <GTPButton
                             leftIcon="gtp-png-monochrome"
                             leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
@@ -710,6 +715,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             disabled={isDownloadingChartSnapshot}
                             clickHandler={handleDownloadChartSnapshot}
                         />
+                        )}
                         <GTPButton
                             leftIcon="gtp-download-monochrome"
                             label="Download Data"
