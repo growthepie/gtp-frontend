@@ -221,6 +221,10 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
       .map((chainKey) => metadataByKey?.[chainKey]?.name ?? chainKey);
   }, [collapseTable, legendChainKeys, selectedChains, metric_type, master?.chains, master?.da_layers]);
 
+  const yAxisLabelFormatter = useCallback((value: number) => {
+    return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${selectedScale === "percentage" ? "%" : suffix ?? ""}`;
+  }, [selectedScale, prefix, decimals, suffix]);
+
   const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
   const visibleSelectedChains = selectedChains.slice(0, 9);
   const hiddenSelectedChainsCount = Math.max(selectedChains.length - visibleSelectedChains.length, 0);
@@ -258,9 +262,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
           dragSelectIcon={"feather:zoom-in" as GTPIconName}
           minDragSelectPoints={2}
-          yAxisLabelFormatter={(value) => {
-            return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
-          }}
+          yAxisLabelFormatter={yAxisLabelFormatter}
           showTooltipTimestamp={timeIntervalKey === "hourly"}
           showTotal={selectedScale === "stacked"}
           reverseTooltipOrder={reversePerformer}
