@@ -300,8 +300,8 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
     ? applicationsDataContext?.getIsLoading?.() ?? false
     : false;
 
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
