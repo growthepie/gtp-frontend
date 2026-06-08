@@ -26,12 +26,25 @@ function DividerSlot({
   render,
   onDragStart,
   isMobile,
+  widthPx,
+  animate,
 }: {
   render: (props: GTPSplitPaneDividerProps) => ReactNode;
   onDragStart: (event: ReactPointerEvent) => void;
   isMobile: boolean;
+  widthPx: number;
+  animate: boolean;
 }) {
-  return <div className="md:pb-[30px]">{render({ onDragStart, isMobile })}</div>;
+  return (
+    <div
+      className={`md:pb-[30px] shrink-0 overflow-hidden ${widthPx === 0 ? "pointer-events-none" : ""} ${
+        animate ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
+      }`}
+      style={{ width: `${widthPx}px` }}
+    >
+      {render({ onDragStart, isMobile })}
+    </div>
+  );
 }
 
 export interface GTPSplitPaneProps {
@@ -228,19 +241,37 @@ export default function GTPSplitPane({
       ref={contentRef}
       className={`flex items-stretch h-full flex-1 min-h-0 self-stretch gap-[5px] ${isMobile ? "flex-col" : ""} ${className ?? ""}`}
     >
-      {showLeft ? (
+      {isMobile ? (
+        // Mobile (stacked): the table sits below the chart/bottom-bar, so it collapses
+        // vertically. Animate its height via grid-template-rows (0fr ↔ 1fr) and keep it
+        // mounted so the card grows/shrinks smoothly instead of the table popping.
         <div
-          className={`flex min-w-0 min-h-0 self-stretch ${isMobile ? `flex-1` : ""} ${leftClassName ?? ""}`}
-          style={{
-            width: leftPaneWidth,
-            ...(isMobile ? { order: mobileLeftOrder } : {}),
-          }}
+          className={`grid min-w-0 self-stretch overflow-hidden transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+            showLeft ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          } ${leftClassName ?? ""}`}
+          style={{ width: "100%", order: mobileLeftOrder }}
+        >
+          <div className="min-h-0 overflow-hidden flex">{left}</div>
+        </div>
+      ) : (
+        // Desktop: the table sits beside the chart, so it collapses horizontally.
+        <div
+          className={`flex min-w-0 min-h-0 self-stretch overflow-hidden ${
+            !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
+          } ${leftClassName ?? ""}`}
+          style={{ width: leftPaneWidth }}
         >
           {left}
         </div>
-      ) : null}
-      {!isMobile && showLeft && divider ? (
-        <DividerSlot render={divider} onDragStart={handleDividerPointerDown} isMobile={isMobile} />
+      )}
+      {!isMobile && divider ? (
+        <DividerSlot
+          render={divider}
+          onDragStart={handleDividerPointerDown}
+          isMobile={isMobile}
+          widthPx={showLeft ? dividerWidth : 0}
+          animate={!dragging}
+        />
       ) : null}
       {/* Mobile bottom bar injected from parent GTPCardLayout context: renders between right and left panes */}
       {isMobile && mobileBottomBar ? (
@@ -252,7 +283,9 @@ export default function GTPSplitPane({
         </div>
       ) : null}
       <div
-        className={`flex min-w-0 pb-0 min-h-0 self-stretch ${isMobile ? "flex-1 w-full" : "shrink-0"} ${rightClassName ?? ""}`}
+        className={`flex min-w-0 pb-0 min-h-0 self-stretch ${isMobile ? "flex-1 w-full" : "shrink-0"} ${
+          !isMobile && !dragging ? "transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]" : ""
+        } ${rightClassName ?? ""}`}
         style={{
           width: rightPaneWidth,
           ...(isMobile ? { order: mobileRightOrder } : {}),

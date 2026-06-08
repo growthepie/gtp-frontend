@@ -318,6 +318,49 @@ async function buildFontEmbedCSS(): Promise<string> {
   return css;
 }
 
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
+/**
+ * Warms the font-embed cache (the expensive part of a screenshot — fetching and
+ * base64-encoding every @font-face file) ahead of time so the first "Take Screenshot"
+ * click is fast.
+ *
+ * Scheduled with requestIdleCallback so it only runs once the main thread is idle (after
+ * the page is interactive) — keeping it out of the critical load path / Core Web Vitals.
+ * Falls back to a delayed setTimeout on browsers without requestIdleCallback (e.g. Safari).
+ * The font files are already in the browser cache from rendering the UI, so this is mostly
+ * CPU (encoding) and does no extra meaningful network work.
+ *
+ * Returns a cleanup function that cancels the scheduled work (call it on unmount).
+ */
+export function prewarmSnapshotFonts(): () => void {
+  if (typeof window === "undefined") return () => {};
+  const idleWindow = window as IdleWindow;
+
+  let cancelled = false;
+  const run = () => {
+    if (cancelled) return;
+    void buildFontEmbedCSS().catch(() => {});
+  };
+
+  if (typeof idleWindow.requestIdleCallback === "function") {
+    const handle = idleWindow.requestIdleCallback(run, { timeout: 2000 });
+    return () => {
+      cancelled = true;
+      idleWindow.cancelIdleCallback?.(handle);
+    };
+  }
+
+  const handle = window.setTimeout(run, 1500);
+  return () => {
+    cancelled = true;
+    window.clearTimeout(handle);
+  };
+}
+
 /**
  * Downloads the given DOM element as a PNG image.
  *

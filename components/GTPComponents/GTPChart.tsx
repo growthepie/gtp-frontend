@@ -344,6 +344,10 @@ export interface GTPChartProps {
   syncId?: string;
   /** When true, renders an interactive series legend overlaid at the bottom of the chart. */
   showLegend?: boolean;
+  /** When true (default), the legend is lifted 30px up into the chart's reserved footer
+   *  space. Set false to let the legend sit flush at the bottom (e.g. on stacked mobile
+   *  layouts where the reserved footer would otherwise leave dead space above the next element). */
+  legendLift?: boolean;
   /** Optional display name overrides for legend items (key = series.name). Falls back to series.name. */
   legendLabels?: Record<string, string>;
   /** Called when the user toggles a series in the legend. Receives the series name and whether it is now active (true) or inactive (false). */
@@ -462,6 +466,7 @@ export default function GTPChart({
   decimalPercentage = false,
   syncId,
   showLegend = false,
+  legendLift = true,
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
@@ -631,6 +636,10 @@ export default function GTPChart({
       if (entry) {
         setContainerHeight(entry.contentRect.height);
         setContainerWidth(entry.contentRect.width);
+        // Resize synchronously here (not just via the state-driven effect) so the chart
+        // tracks the container frame-for-frame during width/height transitions, instead
+        // of lagging behind React's batched re-renders and "stepping".
+        (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
       }
     });
 
@@ -641,11 +650,14 @@ export default function GTPChart({
     };
   }, []);
 
-  // Resize when container height settles — fixes charts that mount before their container has a final height.
+  // Resize when the container size settles — fixes charts that mount before their
+  // container has its final dimensions. Width is included because some browsers (notably
+  // Safari) resolve the container's width after its height; without this the canvas keeps
+  // its initial narrow width and only the y-axis strip renders (no plot area / series).
   useEffect(() => {
-    if (containerHeight <= 0) return;
+    if (containerHeight <= 0 || containerWidth <= 0) return;
     (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
-  }, [containerHeight, minHeight, maxHeight]);
+  }, [containerHeight, containerWidth, minHeight, maxHeight]);
 
   // Typography
   const textXxsTypography = useMemo(
@@ -2769,8 +2781,21 @@ export default function GTPChart({
         )
       ) : null}
     </div>
-    {showLegend && series.length > 0 && (
-      <div ref={legendRef} className="relative flex flex-wrap justify-center  bottom-[30px] gap-x-[5px] gap-y-[1px]">
+    {series.length > 0 && (
+      // The legend's height is animated via grid-template-rows (0fr → 1fr) so the chart
+      // canvas grows/shrinks smoothly as the legend hides/shows, instead of jumping.
+      <div
+        className={`grid transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          showLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        } ${legendLift ? "relative bottom-[30px]" : ""}`}
+      >
+      <div className="overflow-hidden">
+      <div
+        ref={legendRef}
+        className={`flex flex-wrap justify-center gap-x-[5px] gap-y-[1px] transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          showLegend ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         {series.map((s, index) => {
           const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
           const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
@@ -2807,6 +2832,8 @@ export default function GTPChart({
             </div>
           );
         })}
+      </div>
+      </div>
       </div>
     )}
     </div>
