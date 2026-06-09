@@ -40,7 +40,7 @@ const QuickBitesSection: React.FC = () => {
 
       <div className="text-md px-[20px] lg:px-[50px]">
         <p className="mb-2">
-          Short data-driven articles on specific topics or trends in the Ethereum ecosystem.
+          Short data-driven articles and research on trending topics in the Ethereum ecosystem.
         </p>
       </div>
 
