@@ -11,6 +11,8 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { renderToStaticMarkup } from "react-dom/server";
+import { GTPTooltipChart } from "@/components/GTPComponents/GTPTooltip";
 import {
   clamp,
   withOpacity,
@@ -2318,7 +2320,7 @@ export default function GTPChart({
           },
         ];
       }
-
+      const total = dedupedSortedPoints.reduce((sum, p) => sum + p.numericValue, 0);
       const maxTooltipValue = Math.max(...displayPoints.map((p) => Math.abs(p.numericValue)), 0);
 
       if (tooltipFormatter) {
@@ -2369,23 +2371,29 @@ export default function GTPChart({
           </div>
         `;
       })();
+      
+      return renderToStaticMarkup(
+        
+        <GTPTooltipChart
+    
+          width={230}
+          metricName={tooltipTitle ?? ""}
+          dateLabel={dateLabel}
+          dataRows={displayPoints.map((p) => {
+            const meta = normalizedSeries.find((s) => s.name === p.seriesName);
+            const [color] = resolveSeriesColors(meta?.color, p.color ?? textPrimary);
+            const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(p.numericValue) / maxTooltipValue) * 100, 0, 100) : 0;
+            return {
+              name: p.seriesName,
+              value: formatTooltipValue(p.numericValue, 0),
+              color: color ?? "",
+              barWidth,
+            };
+          })}
+          totalRow={showTotal ? formatTooltipValue(total, 0) : undefined}
+        />
+      );
 
-      return `
-        <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
-          <div class="flex-1 flex ${showTooltipTimestamp ? "items-start" : "items-center"}  justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
-
-            <div class="">
-              <div>${dateLabel}</div>
-              <div class="text-xs font-medium text-color-text-primary ${showTooltipTimestamp ? "block" : "hidden"}">${timeLabel} UTC</div>
-            </div>
-            <span class="text-xs font-medium text-color-text-primary">${tooltipTitle ?? ""}</span>
-          </div>
-          <div class="flex flex-col w-full">
-            ${rows}
-            ${totalRow}
-          </div>
-        </div>
-      `;
     };
     const baseOption: EChartsOption = {
       animation,
