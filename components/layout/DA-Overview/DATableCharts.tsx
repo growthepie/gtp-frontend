@@ -355,8 +355,8 @@ const DATableChartsComponent = ({
                         hoverChain={hoverChain}
                         setHoverChain={setHoverChain}
                     />
-                    <div className="min-w-[254px] flex items-center justify-center relative">
-                        <div className="absolute left-[32%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%] pointer-events-none z-10">
+                    <div className="w-[254px] flex items-center justify-center relative">
+                        <div className="absolute left-[30%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%] pointer-events-none z-10">
                             {"% OF TOTAL USAGE"}
                         </div>
                         <GTPChart
