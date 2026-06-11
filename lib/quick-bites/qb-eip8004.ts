@@ -542,7 +542,7 @@ const Agents: QuickBiteData = createQuickBite({
       icon: "optimism-logo-monochrome",
       color: "rgb(var(--chains-op-mainnet))",
       name: "OP Mainnet",
-      url: "/chains/op-mainnet"
+      url: "/chains/optimism"
     },
     {
       icon: "polygon-pos-logo-monochrome",
