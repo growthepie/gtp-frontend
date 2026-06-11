@@ -16,13 +16,13 @@ import { chart } from "highcharts";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";
 import DynamicIcon from "../DynamicIcon";
-import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { first } from "lodash";
 import { Badge } from "@/app/(labels)/labels/Search";
 import Link from "next/link";
 import { getIcon, listIcons } from "@iconify/react";
 import { TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { GTPIcon } from "../GTPIcon";
 import { useTheme } from "next-themes";
 
@@ -833,7 +833,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                         trigger={
                           createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)
                         }
-                        containerClass="flex flex-col gap-y-[10px] !pr-[5px]"
+                        unstyled
                         positionOffset={{ mainAxis: 5, crossAxis: 0 }}
                       >
                         <DaConsumersTooltip item={item} selectedTimespan={selectedTimespan} breakdown_data={breakdown_data} AllChainsByKeys={AllChainsByKeys} master={master} />
@@ -936,11 +936,8 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
 const DaConsumersTooltip = ({ item, selectedTimespan, breakdown_data, AllChainsByKeys, master }) => {
   const { theme } = useTheme();
   return (
-    <>
-    <TooltipHeader title="DA Consumers (Chains)" />
-    <TooltipBody className="pl-[20px]">      
-      <VerticalScrollContainer height={154 - 60} className="w-full" scrollThumbColor="#1F2726" scrollTrackColor="#151A19">
-        <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit">
+    <GTPTooltipGeneral width={245} headerText="DA Consumers (Chains)" scrollHeight={154 - 60}>
+      <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit pl-[20px] pt-[10px]">
           {Object.keys(breakdown_data[item.key][selectedTimespan].da_consumers.chains.values).map((chain, index) => {
             const types = breakdown_data[item.key][selectedTimespan].da_consumers.chains.types
 
@@ -975,10 +972,8 @@ const DaConsumersTooltip = ({ item, selectedTimespan, breakdown_data, AllChainsB
               />
             );
           })}
-        </div>
-      </VerticalScrollContainer>
-    </TooltipBody>
-    </>
+      </div>
+    </GTPTooltipGeneral>
   )
 }
 

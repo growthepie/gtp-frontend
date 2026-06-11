@@ -71,9 +71,11 @@ export function GTPTooltipGeneral({ width = 230, headerText, headerIcon, scrollH
 
       </div>
       {scrollHeight ? (
-        <VerticalScrollContainer height={scrollHeight} scrollThumbColor="rgb(var(--text-primary) / 0.2)" scrollTrackColor="rgb(var(--ui-shadow) / 0.2)">
-          {children}
-        </VerticalScrollContainer>
+        <div className="-mr-[10px]">
+          <VerticalScrollContainer height={scrollHeight} scrollThumbColor="rgb(var(--text-primary) / 0.2)" scrollTrackColor="rgb(var(--ui-shadow) / 0.2)">
+            {children}
+          </VerticalScrollContainer>
+        </div>
       ) : (
         <div>
           {children}
