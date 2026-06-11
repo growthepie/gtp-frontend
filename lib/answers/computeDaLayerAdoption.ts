@@ -6,11 +6,12 @@
 // Data sources:
 //   - master.json: `da_layer` string per chain (e.g. "Ethereum (blobs)",
 //     "Celestia", "EigenDA"). Grouped under the L2 universe filter.
-//   - da_overview.json: daily USD fees paid per DA (`da_ethereum_blobs`,
-//     `da_celestia`, `da_eigenda`). Summed into 30d / 90d / all-time.
-//   - da_metrics/fees_per_mbyte.json: per-MB cost for Celestia and EigenDA
-//     only as of 2026 — we surface it where it exists and read 'unavailable'
-//     elsewhere rather than fabricating values.
+//   - da_overview.json `data.da_breakdown.{provider}.{window}`: both the USD
+//     fees paid per DA (`fees`) and the per-MB cost (`fees_per_mb`) for
+//     `da_ethereum_blobs`, `da_celestia`, `da_eigenda`, pre-aggregated per
+//     window. This single endpoint replaced the dead da_metrics/fees_per_mbyte
+//     endpoint (now 403) and the stale daily-series fee shape. Avail isn't in
+//     the payload, so it reads 'unavailable' rather than fabricating a value.
 
 import { cache } from 'react';
 import { MasterURL } from '@/lib/urls';
@@ -23,8 +24,6 @@ const NON_L2_KEYS = new Set([
 ]);
 
 const DA_OVERVIEW_URL = 'https://api.growthepie.com/v1/da_overview.json';
-const DA_FEES_PER_MB_URL =
-  'https://api.growthepie.com/v1/da_metrics/fees_per_mbyte.json';
 
 // Canonical DA buckets the page ranks by. Raw `da_layer` strings from
 // master.json get normalised into these via `normaliseDaLayer` below so
@@ -76,8 +75,8 @@ export type DaBucketEntry = {
   feesUsdLast30d: number | null;
   feesUsdLast90d: number | null;
   feesUsdAllTime: number | null;
-  // 30d-average $/MB. Only Celestia and EigenDA are exposed by the
-  // fees_per_mbyte endpoint today.
+  // 30d-average $/MB from da_overview's da_breakdown.fees_per_mb. Ethereum
+  // blobs / Celestia / EigenDA are exposed; Avail reads null.
   costPerMbUsd30dAvg: number | null;
 };
 
@@ -106,90 +105,44 @@ const fetchJson = async (url: string): Promise<any> => {
   return res.json();
 };
 
-// Sum the USD column of a daily series over a [start, end) slice.
-const sumUsd = (
-  daily: any,
-  sliceStart: number,
-  sliceEnd: number,
+// Read a USD scalar from a da_breakdown window block's metric — `fees`
+// (window total USD) or `fees_per_mb` (window-average $/MB) — both shaped
+// `{ types: ["usd","eth"], total: [usdValue, ethValue] }`. Resolves the USD
+// column by name so an upstream column reorder can't silently misread.
+const readBreakdownUsd = (
+  windowBlock: any,
+  metric: 'fees' | 'fees_per_mb',
 ): number | null => {
-  const types: any[] | undefined = daily?.types;
-  const data: any[] | undefined = daily?.data;
-  if (!Array.isArray(types) || !Array.isArray(data)) return null;
+  const m = windowBlock?.[metric];
+  const types: any[] | undefined = m?.types;
+  const total: any[] | undefined = m?.total;
+  if (!Array.isArray(types) || !Array.isArray(total)) return null;
   const usdIdx = types.findIndex((t) => String(t).toLowerCase() === 'usd');
   if (usdIdx < 0) return null;
-  const slice = data.slice(sliceStart, sliceEnd);
-  if (slice.length === 0) return null;
-  let s = 0;
-  let any = false;
-  for (const row of slice) {
-    if (!Array.isArray(row) || row.length <= usdIdx) continue;
-    const v = row[usdIdx];
-    if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
-      s += v;
-      any = true;
-    }
-  }
-  return any ? s : null;
-};
-
-const lastUsd = (daily: any): number | null => {
-  const types: any[] | undefined = daily?.types;
-  const data: any[] | undefined = daily?.data;
-  if (!Array.isArray(types) || !Array.isArray(data) || data.length === 0)
-    return null;
-  const usdIdx = types.findIndex((t) => String(t).toLowerCase() === 'usd');
-  if (usdIdx < 0) return null;
-  const row = data[data.length - 1];
-  if (!Array.isArray(row) || row.length <= usdIdx) return null;
-  const v = row[usdIdx];
+  const v = total[usdIdx];
   return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null;
 };
 
-// Read DA-overview fees for one provider block (e.g. data.chains.da_celestia
-// or data.da_celestia depending on payload shape — we tolerate both).
+// Read DA-overview fees for one provider's da_breakdown entry. The windows are
+// pre-aggregated upstream, so we map them directly (max == all-time).
 const readOverviewFees = (
-  block: any,
+  layerBreakdown: any,
 ): {
   daily: number | null;
   last30d: number | null;
   last90d: number | null;
   allTime: number | null;
-} => {
-  const ts =
-    block?.fees_paid?.daily ?? block?.daily ?? block?.metrics?.fees_paid?.daily;
-  if (!ts) return { daily: null, last30d: null, last90d: null, allTime: null };
-  const data: any[] | undefined = ts?.data;
-  const len = Array.isArray(data) ? data.length : 0;
-  return {
-    daily: lastUsd(ts),
-    last30d: sumUsd(ts, Math.max(0, len - 30), len),
-    last90d: sumUsd(ts, Math.max(0, len - 90), len),
-    allTime: sumUsd(ts, 0, len),
-  };
-};
+} => ({
+  daily: readBreakdownUsd(layerBreakdown?.['1d'], 'fees'),
+  last30d: readBreakdownUsd(layerBreakdown?.['30d'], 'fees'),
+  last90d: readBreakdownUsd(layerBreakdown?.['90d'], 'fees'),
+  allTime: readBreakdownUsd(layerBreakdown?.['max'], 'fees'),
+});
 
-// Read 30-day-average $/MB for a provider from fees_per_mbyte.json. Returns
-// null for providers the endpoint doesn't cover (Ethereum blobs, Avail).
-const readCostPerMb30dAvg = (block: any): number | null => {
-  const types: any[] | undefined = block?.daily?.types;
-  const data: any[] | undefined = block?.daily?.data;
-  if (!Array.isArray(types) || !Array.isArray(data) || data.length === 0)
-    return null;
-  const usdIdx = types.findIndex((t) => String(t).toLowerCase() === 'usd');
-  if (usdIdx < 0) return null;
-  const slice = data.slice(Math.max(0, data.length - 30));
-  let s = 0;
-  let n = 0;
-  for (const row of slice) {
-    if (!Array.isArray(row) || row.length <= usdIdx) continue;
-    const v = row[usdIdx];
-    if (typeof v === 'number' && Number.isFinite(v)) {
-      s += v;
-      n += 1;
-    }
-  }
-  return n > 0 ? s / n : null;
-};
+// Read the 30-day-average $/MB for a provider from its da_breakdown entry.
+// Returns null for providers the payload doesn't cover (e.g. Avail).
+const readCostPerMb30dAvg = (layerBreakdown: any): number | null =>
+  readBreakdownUsd(layerBreakdown?.['30d'], 'fees_per_mb');
 
 export const getDaLayerAdoption = cache(
   async (): Promise<DaLayerAdoption | null> => {
@@ -238,33 +191,24 @@ export const getDaLayerAdoption = cache(
       buckets[bucket].l2Names.push(nameFor(key));
     }
 
-    // Pull DA-overview fees + per-MB costs in parallel. Failures fall
-    // through to nulls so the page can still render the L2-count ranking.
-    const [overview, perMb] = await Promise.all([
-      fetchJson(DA_OVERVIEW_URL).catch((err) => {
-        console.error('getDaLayerAdoption: da_overview fetch failed', err);
-        return null;
-      }),
-      fetchJson(DA_FEES_PER_MB_URL).catch((err) => {
-        console.error(
-          'getDaLayerAdoption: fees_per_mbyte fetch failed',
-          err,
-        );
-        return null;
-      }),
-    ]);
+    // Pull the DA overview (fees + per-MB cost both live in da_breakdown).
+    // Failure falls through to nulls so the page can still render the
+    // L2-count ranking.
+    const overview = await fetchJson(DA_OVERVIEW_URL).catch((err) => {
+      console.error('getDaLayerAdoption: da_overview fetch failed', err);
+      return null;
+    });
 
-    // Both endpoints nest provider blocks under `data.chains` in practice.
-    const overviewChains: Record<string, any> =
-      overview?.data?.chains ?? overview?.chains ?? overview?.data ?? {};
-    const perMbChains: Record<string, any> =
-      perMb?.data?.chains ?? perMb?.chains ?? perMb?.data ?? {};
+    // da_overview.json keys provider blocks under data.da_breakdown by `da_*`
+    // keys (da_celestia, da_eigenda, da_ethereum_blobs); Avail is absent and
+    // resolves to null below.
+    const breakdown: Record<string, any> = overview?.data?.da_breakdown ?? {};
 
     const applyFees = (
       bucketKey: DaBucketKey,
-      overviewKey: string,
+      daKey: string,
     ): void => {
-      const f = readOverviewFees(overviewChains?.[overviewKey]);
+      const f = readOverviewFees(breakdown?.[daKey]);
       buckets[bucketKey].feesUsdDaily = f.daily;
       buckets[bucketKey].feesUsdLast30d = f.last30d;
       buckets[bucketKey].feesUsdLast90d = f.last90d;
@@ -274,9 +218,9 @@ export const getDaLayerAdoption = cache(
     applyFees('celestia', 'da_celestia');
     applyFees('eigenda', 'da_eigenda');
 
-    const applyCost = (bucketKey: DaBucketKey, perMbKey: string): void => {
+    const applyCost = (bucketKey: DaBucketKey, daKey: string): void => {
       buckets[bucketKey].costPerMbUsd30dAvg = readCostPerMb30dAvg(
-        perMbChains?.[perMbKey],
+        breakdown?.[daKey],
       );
     };
     applyCost('ethereum_blobs', 'da_ethereum_blobs');
@@ -515,7 +459,7 @@ export const buildAdoptionAnswerTables = (
   };
   const cost: AnswerTable = {
     title: 'Cost per MB posted ($/MB, 30-day average)',
-    caption: `Live per-megabyte fees from growthepie's fees_per_mbyte endpoint. "unavailable" means growthepie doesn't currently track per-MB cost for that DA layer in this endpoint. Data: ${dataDate} UTC.`,
+    caption: `Live per-megabyte fees from growthepie's da_overview endpoint (data.da_breakdown.fees_per_mb). "unavailable" means growthepie doesn't currently track per-MB cost for that DA layer. Data: ${dataDate} UTC.`,
     headers: ['DA layer', '$/MB (30d avg)'],
     rows: (['ethereum_blobs', 'celestia', 'eigenda', 'avail'] as DaBucketKey[]).map(
       (k) => {

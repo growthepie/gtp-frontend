@@ -73,6 +73,46 @@ const fetchJson = async (url: string): Promise<any> => {
   return res.json();
 };
 
+// `category_comparison.json` is ~57MB — far over Next's 2MB fetch-cache
+// ceiling, so Next refuses to cache it and would otherwise re-download and
+// re-parse the whole payload on every render. /answers processes every answer
+// on the server, so that turned the hub into a multi-minute (effectively
+// hanging) render. The stablecoin txcount/gas-spent subcategory isn't exposed
+// by any lighter endpoint, so instead of swapping sources we memoise just the
+// slice we need in-process with a TTL: the giant payload is fetched and parsed
+// at most once per window per server instance, and only the small stablecoin
+// block is retained.
+//
+// We keep `next: { revalidate }` (NOT `cache: 'no-store'`) so the fetch stays
+// "cacheable" from Next's perspective and the /answers route can still be
+// statically rendered + ISR'd. Next will log a harmless "items over 2MB can not
+// be cached" warning each time it re-fetches — that's expected and does not
+// force the route dynamic; our in-process memo is what actually prevents the
+// repeated 57MB download/parse.
+const STABLE_BLOCK_TTL_MS = 60 * 60 * 1000; // 1h, matches the revalidate window.
+let stableBlockMemo: { at: number; value: any } | null = null;
+
+const getStablecoinBlock = async (): Promise<any> => {
+  const now = Date.now();
+  if (stableBlockMemo && now - stableBlockMemo.at < STABLE_BLOCK_TTL_MS) {
+    return stableBlockMemo.value;
+  }
+  const res = await fetch(BlockspaceURLs['category-comparison'], {
+    next: { revalidate: 3600 },
+    headers: { 'User-Agent': 'growthepie/answers-stables-leaderboard' },
+  });
+  if (!res.ok) {
+    throw new Error(
+      `Fetch category_comparison failed: ${res.status} ${res.statusText}`,
+    );
+  }
+  const json = await res.json();
+  const stableBlock =
+    json?.data?.token_transfers?.subcategories?.stablecoin ?? null;
+  stableBlockMemo = { at: now, value: stableBlock };
+  return stableBlock;
+};
+
 // Per-chain stables_mcap timeseries shape: details.timeseries.{period}.{types,data}.
 // Types is typically ['unix', 'eth', 'usd']. We resolve USD by name rather
 // than index in case the column order changes upstream.
@@ -168,12 +208,12 @@ const readStablesFromBlockspace = (
 export const getL2StablesLeaderboard = cache(
   async (): Promise<L2StablesLeaderboard | null> => {
     let master: any;
-    let blockspace: any;
+    let stableBlock: any;
 
     try {
-      [master, blockspace] = await Promise.all([
+      [master, stableBlock] = await Promise.all([
         fetchJson(MasterURL),
-        fetchJson(BlockspaceURLs['category-comparison']),
+        getStablecoinBlock(),
       ]);
     } catch (err) {
       console.error('getL2StablesLeaderboard: upstream fetch failed', err);
@@ -181,8 +221,6 @@ export const getL2StablesLeaderboard = cache(
     }
 
     const chains: Record<string, any> = master?.chains ?? {};
-    const stableBlock: any =
-      blockspace?.data?.token_transfers?.subcategories?.stablecoin ?? null;
 
     const isL2 = (key: string): boolean => {
       const c = chains[key];

@@ -125,6 +125,19 @@ const parseFinanceRow = (
 // fees/table.json. The block columns are `[normalized, unix, value_eth,
 // value_usd]`; we resolve `value_usd` by name. Returns null if the chain or
 // the block isn't present.
+// Live hourly values are only meaningful if recent. Reject any row whose
+// `unix` timestamp (ms) is more than 30 hours old, so a chain that has stopped
+// reporting doesn't surface a stale value as if it were live. Rows without a
+// readable timestamp are left as-is — we only drop data we can prove is stale.
+const MAX_HOURLY_AGE_MS = 30 * 60 * 60 * 1000;
+const isHourlyRowFresh = (types: any[], row: any[]): boolean => {
+  const unixIdx = types.findIndex((t) => String(t).toLowerCase() === 'unix');
+  if (unixIdx < 0) return true;
+  const ts = row[unixIdx];
+  if (typeof ts !== 'number' || !Number.isFinite(ts)) return true;
+  return Date.now() - ts <= MAX_HOURLY_AGE_MS;
+};
+
 const latestSwapFeeUsd = (
   chainData: any,
   chainKey: string,
@@ -138,6 +151,7 @@ const latestSwapFeeUsd = (
   if (idx < 0) return null;
   const last = data[data.length - 1];
   if (!Array.isArray(last) || last.length <= idx) return null;
+  if (!isHourlyRowFresh(types, last)) return null;
   const v = last[idx];
   return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null;
 };
