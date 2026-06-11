@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import { escapeHtml } from "@/lib/echarts-utils";
 import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import VerticalScrollContainer from "../VerticalScrollContainer";
 
 
 export type DataRows = {
@@ -55,11 +56,11 @@ export function GTPTooltipChart({ width = 230, metricName, dateLabel, dataRows, 
   );
 }
 
-export function GTPTooltipGeneral({ width = 230, headerText, headerIcon }: { width?: number, headerText: string, headerIcon?: GTPIconName}) {
+export function GTPTooltipGeneral({ width = 230, headerText, headerIcon, scrollHeight, children }: { width?: number, headerText: string, headerIcon?: GTPIconName, scrollHeight?: number, children: React.ReactNode}) {
   return (
     <div
       className="flex flex-col py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default"
-      style={{ 
+      style={{
         boxShadow: "var(--bp-xs, 0) var(--bp-xs, 0) 27px 0 var(--color-ui-shadow, #151A19)",
         width: `${width}px`,
       }}
@@ -67,8 +68,17 @@ export function GTPTooltipGeneral({ width = 230, headerText, headerIcon }: { wid
       <div className="flex w-full justify-between items-center text-center pl-[20px] " >
         {headerIcon && <>{<GTPIcon icon={headerIcon} size='md' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))" }} />}</>}
         <div className="heading-large-xs pb-[1px]" style={{fontWeight: 700}}>{headerText}</div>
-       
+
       </div>
+      {scrollHeight ? (
+        <VerticalScrollContainer height={scrollHeight} scrollThumbColor="rgb(var(--text-primary) / 0.2)" scrollTrackColor="rgb(var(--ui-shadow) / 0.2)">
+          {children}
+        </VerticalScrollContainer>
+      ) : (
+        <div>
+          {children}
+        </div>
+      )}
 
     </div>
   );
