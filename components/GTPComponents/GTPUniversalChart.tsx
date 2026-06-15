@@ -1581,11 +1581,24 @@ export default function GTPUniversalChart({
     const normalizedStep = rawStep / Math.max(magnitude, 1);
     const niceStepBase = normalizedStep > 5 ? 10 : normalizedStep > 2 ? 5 : normalizedStep > 1 ? 2 : 1;
     const absoluteStep = niceStepBase * Math.max(magnitude, 1);
-    const yAxisStep = isPercentageMode ? 25 : absoluteStep;
+    let yAxisStep = isPercentageMode ? 25 : absoluteStep;
     const yAxisMin = 0;
-    const yAxisMax = isPercentageMode
+    let yAxisMax = isPercentageMode
       ? 100
       : Math.max(yAxisStep, Math.ceil((Math.max(maxSeriesValue, 1) * 1.06) / yAxisStep) * yAxisStep);
+    // Cap the y-axis at 10 ticks (labels and guide lines, one per tick). Widen the
+    // step to the next nice value and re-snap the max so both stay in lockstep.
+    const MAX_Y_AXIS_TICKS = 10;
+    let yAxisTickGuard = 0;
+    while ((yAxisMax - yAxisMin) / yAxisStep > MAX_Y_AXIS_TICKS - 1 && yAxisTickGuard < 100) {
+      const nextMagnitude = Math.pow(10, Math.floor(Math.log10(yAxisStep)));
+      const nextNormalized = (yAxisStep * 1.5) / Math.max(nextMagnitude, 1);
+      const nextBase = nextNormalized > 5 ? 10 : nextNormalized > 2 ? 5 : nextNormalized > 1 ? 2 : 1;
+      const widenedStep = nextBase * Math.max(nextMagnitude, 1);
+      yAxisStep = widenedStep > yAxisStep ? widenedStep : yAxisStep * 2;
+      yAxisMax = Math.ceil(yAxisMax / yAxisStep) * yAxisStep;
+      yAxisTickGuard += 1;
+    }
     // x-axis tick positions and visible bounds come from the shared xAxisModel; the
     // labels themselves are rendered by the DOM overlay (see overlayLabels), matching
     // the fundamentals chart. The native axis only draws its baseline here.

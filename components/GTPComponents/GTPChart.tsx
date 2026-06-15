@@ -59,6 +59,10 @@ const getMeasureCtx = () => {
 const Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO = 1.15;
 const Y_AXIS_PADDING_MULTIPLIER = 1.03;
 
+// Hard cap on y-axis ticks (labels AND guide lines, which are drawn one per tick).
+// Both derive from {min, max, step}, so widening the step keeps them in lockstep.
+const MAX_Y_AXIS_TICKS = 10;
+
 function getNiceStep(raw: number): number {
   const safeRaw = Math.max(raw, Number.EPSILON);
   const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
@@ -68,6 +72,41 @@ function getNiceStep(raw: number): number {
   if (normalized <= 3.75) return 2.5 * magnitude;
   if (normalized <= 7.5) return 5 * magnitude;
   return 10 * magnitude;
+}
+
+// Smallest nice step strictly larger than `step` (1 → 2 → 2.5 → 5 → 10 → …).
+function getNextNiceStep(step: number): number {
+  const candidate = getNiceStep(step * 1.5);
+  return candidate > step ? candidate : getNiceStep(step * 2);
+}
+
+// Guarantee the axis never renders more than MAX_Y_AXIS_TICKS gridlines/labels by
+// widening the step to the next nice value and re-snapping the bounds outward so
+// both endpoints still land on a tick.
+function enforceMaxYAxisTicks(
+  min: number,
+  max: number,
+  step: number,
+): { computedYAxisMin: number; computedYAxisMax: number; yAxisStep: number } {
+  if (!(step > 0) || !Number.isFinite(min) || !Number.isFinite(max) || max <= min) {
+    return { computedYAxisMin: min, computedYAxisMax: max, yAxisStep: step };
+  }
+  // tick count = intervals + 1, so cap intervals at MAX_Y_AXIS_TICKS - 1.
+  const maxIntervals = Math.max(1, MAX_Y_AXIS_TICKS - 1);
+  let newStep = step;
+  let guard = 0;
+  while (Math.round((max - min) / newStep) > maxIntervals && guard < 100) {
+    newStep = getNextNiceStep(newStep);
+    guard += 1;
+  }
+  if (newStep === step) {
+    return { computedYAxisMin: min, computedYAxisMax: max, yAxisStep: step };
+  }
+  return {
+    computedYAxisMin: Math.floor(min / newStep) * newStep,
+    computedYAxisMax: Math.ceil(max / newStep) * newStep,
+    yAxisStep: newStep,
+  };
 }
 
 function tightenPositiveHeadroom({
@@ -180,7 +219,7 @@ function computeYAxisTicks({
       computedYAxisMax = computedYAxisMin + totalSteps * step;
     }
 
-    return { computedYAxisMin, computedYAxisMax, yAxisStep: step, splitCount };
+    return { ...enforceMaxYAxisTicks(computedYAxisMin, computedYAxisMax, step), splitCount };
   }
 
   const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
@@ -228,7 +267,7 @@ function computeYAxisTicks({
             })();
   }
 
-  return { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount };
+  return { ...enforceMaxYAxisTicks(computedYAxisMin, computedYAxisMax, yAxisStep), splitCount };
 }
 
 // --- Public types ---
