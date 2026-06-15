@@ -275,6 +275,18 @@ const ApplicationsTable = memo(() => {
     });
   }, [applicationDataAggregatedAndFiltered, selectedMetricKeys]);
   const { selectedTimespan } = useTimespan();
+
+  // Per-column flag: does any displayed app have a real change for this metric?
+  // change_pct is Infinity when an app has no prior-period value (too new to have
+  // a change in the selected timeframe). If none qualify, hide the Change sort button.
+  const metricHasChangeData = useMemo(() => {
+    return selectedMetricKeys.map((metricKey) =>
+      applicationDataAggregatedAndFiltered.some((application) =>
+        Number.isFinite(application[`${metricKey}_change_pct`])
+      )
+    );
+  }, [applicationDataAggregatedAndFiltered, selectedMetricKeys]);
+
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
     const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
@@ -381,7 +393,7 @@ const ApplicationsTable = memo(() => {
                 extraRight={
                   <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
                     <div
-                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
+                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" || !metricHasChangeData[index] ? "hidden" : "flex"}`}
                       onClick={() => {
                         setSort({
                           metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
