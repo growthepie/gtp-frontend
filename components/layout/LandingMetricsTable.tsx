@@ -24,6 +24,7 @@ import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -448,13 +449,17 @@ export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityK
           <GTPMaturityIcon maturityKey={maturityKey} size={size} />
           </div>
         }
-        containerClass="flex flex-col gap-y-[10px]"
+        unstyled
         positionOffset={{ mainAxis: 0, crossAxis: 10 }}
       >
-        <TooltipHeader title={maturityName} icon={<GTPMaturityIcon maturityKey={maturityKey} size="sm" />} />
-        <TooltipBody className="pl-[20px]">
-          {maturityDescription}
-        </TooltipBody>
+        <GTPTooltipGeneral width={460}>
+          <div className="flex flex-col gap-y-[10px]">
+            <TooltipHeader title={maturityName} icon={<GTPMaturityIcon maturityKey={maturityKey} size="sm" />} />
+            <TooltipBody className="pl-[20px]">
+              {maturityDescription}
+            </TooltipBody>
+          </div>
+        </GTPTooltipGeneral>
       </GTPTooltipNew>
 
     </>
