@@ -56,24 +56,28 @@ export function GTPTooltipChart({ width = 230, metricName, dateLabel, dataRows, 
   );
 }
 
-export function GTPTooltipGeneral({ width = 230, headerText, headerIcon, scrollHeight, children }: { width?: number, headerText: string, headerIcon?: GTPIconName, scrollHeight?: number, children: React.ReactNode}) {
+export function GTPTooltipGeneral({ width = 230, headerText, headerIcon, scrollHeight, children }: { width?: number, headerText?: string, headerIcon?: GTPIconName, scrollHeight?: number, children: React.ReactNode}) {
   return (
     <div
-      className="flex flex-col py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default"
+      className="flex flex-col py-[15px] pr-[15px] rounded-[15px] bg-color-bg-default text-color-text-primary text-xs"
       style={{
         boxShadow: "var(--bp-xs, 0) var(--bp-xs, 0) 27px 0 var(--color-ui-shadow, #151A19)",
         width: `${width}px`,
+        maxWidth: "calc(100vw - 30px)",
       }}
     >
-      <div className="flex w-full justify-between items-center text-center pl-[20px] " >
-        {headerIcon && <>{<GTPIcon icon={headerIcon} size='md' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))" }} />}</>}
-        <div className="heading-large-xs pb-[1px]" style={{fontWeight: 700}}>{headerText}</div>
-
-      </div>
+      {(headerText || headerIcon) && (
+        <div className="flex w-full justify-between items-center text-center pl-[20px] " >
+          {headerIcon && <>{<GTPIcon icon={headerIcon} size='md' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))" }} />}</>}
+          <div className="heading-large-xs pb-[1px]" style={{fontWeight: 700}}>{headerText}</div>
+        </div>
+      )}
       {scrollHeight ? (
-        <VerticalScrollContainer height={scrollHeight} scrollThumbColor="rgb(var(--text-primary) / 0.2)" scrollTrackColor="rgb(var(--ui-shadow) / 0.2)">
-          {children}
-        </VerticalScrollContainer>
+        <div className="-mr-[10px]">
+          <VerticalScrollContainer height={scrollHeight} scrollThumbColor="rgb(var(--text-primary) / 0.2)" scrollTrackColor="rgb(var(--ui-shadow) / 0.2)">
+            {children}
+          </VerticalScrollContainer>
+        </div>
       ) : (
         <div>
           {children}
