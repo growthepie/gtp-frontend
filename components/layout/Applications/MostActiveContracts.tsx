@@ -20,19 +20,15 @@ import { useTheme } from "next-themes";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import { getExplorerAddressUrl, IS_PRODUCTION } from "@/lib/helpers";
+import { getExplorerAddressUrl } from "@/lib/helpers";
 import { track } from "@/lib/tracking";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 const CONTRACT_GRID_COLS = "grid-cols-[minmax(220px,1fr),130px,160px,105px,105px,100px]";
 
-// Dev/preview-only: the timespan selector + the reworked header/subtitle live behind this
-// flag. On production the component renders its original (pre-selector) layout untouched.
-const SHOW_DEV_CONTRACTS_UI = !IS_PRODUCTION;
-
-// Visual-only timespan options for the contracts table. Selection does not yet
-// affect the displayed data — wiring that up is a follow-up.
+// Timespan options for the contracts table. The selected key indexes into
+// data.contracts_table (see activeContractsTable below) to drive the displayed rows.
 const CONTRACT_TIMESPANS: { key: string; label: string; shortLabel: string; subtitle: string }[] = [
   { key: "1d", label: "Yesterday", shortLabel: "1d", subtitle: "yesterday" },
   { key: "7d", label: "7 days", shortLabel: "7d", subtitle: "in the last 7 days" },
@@ -53,23 +49,15 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
   const { data: master, AllChainsByKeys } = useMaster();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
-  // Prod uses the original 530px breakpoint for the bottom "Contract missing?" CTA; the dev
-  // layout moves it (and the inline buttons) at the 767px breakpoint instead.
-  const oliHide = useMediaQuery("(max-width: 530px)");
-  const ctaCompact = SHOW_DEV_CONTRACTS_UI ? isMobile : oliHide;
 
   const [headingRowRef, { width: headingRowWidth }] = useElementSizeObserver<HTMLDivElement>();
   const [titleRef, { width: titleWidth }] = useElementSizeObserver<HTMLDivElement>();
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [mobileDownloadRef, { height: mobileDownloadHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [bottomCtaRef, { height: bottomCtaHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [devBottomRef, { height: devBottomHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [bottomButtonsRef, { height: bottomButtonsHeight }] = useElementSizeObserver<HTMLDivElement>();
 
   // Outer card has py-[15px] (30px) plus one gap between the intro and table (10px).
-  const VERTICAL_OVERHEAD = 40 + (SHOW_DEV_CONTRACTS_UI
-    ? (devBottomHeight > 0 ? devBottomHeight + 10 : 0)
-    : (isMobile ? mobileDownloadHeight + 10 : 0) + (ctaCompact ? bottomCtaHeight + 10 : 0));
+  const VERTICAL_OVERHEAD = 40 + (bottomButtonsHeight > 0 ? bottomButtonsHeight + 10 : 0);
   const scrollAreaHeight = containerHeight && containerHeight > 0
     ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - VERTICAL_OVERHEAD)
     : 350;
@@ -266,84 +254,31 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     >
       {/* Header + Description (measured together as fixed top block) */}
       <div ref={topPartsRef} className="flex flex-col gap-y-[10px]">
-        {SHOW_DEV_CONTRACTS_UI ? (
-          <>
-            <div ref={headingRowRef} className="relative flex items-center gap-x-[10px]">
-                <div ref={titleRef} className="flex items-center gap-x-[5px]">
-                <GTPIcon
-                  icon="gtp-labeled"
-                  className="!size-[16px]"
-                  containerClassName="!size-[16px] flex items-center justify-center"
-                />
-                <div className="heading-large-md text-nowrap text-color-text-primary">
-                  Most Active Contracts
-                </div>
-              </div>
-              {/* Timespan selector — sits inline (absolute, right of the heading) while there's
-                  room beside the title. When too narrow (stackSelector) it drops to its own row
-                  below the heading and the subheading is hidden. */}
-              {!stackSelector && (
-                <div className="absolute right-0 top-[calc(50%-3px)] -translate-y-1/2">
-                  {timespanSelector}
-                </div>
-              )}
+        <div ref={headingRowRef} className="relative flex items-center gap-x-[10px]">
+            <div ref={titleRef} className="flex items-center gap-x-[5px]">
+            <GTPIcon
+              icon="gtp-labeled"
+              className="!size-[16px]"
+              containerClassName="!size-[16px] flex items-center justify-center"
+            />
+            <div className="heading-large-md text-nowrap text-color-text-primary">
+              Most Active Contracts
             </div>
-            {stackSelector && <div className="flex">{timespanSelector}</div>}
-            {!stackSelector && (
-              <div className="text-xs text-color-text-primary">
-                See the most active contracts for this application {activeTimespanSubtitle}.
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* PROD: original layout (before the timespan-selector work) */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-x-[5px]">
-                <GTPIcon
-                  icon="gtp-labeled"
-                  className="!size-[16px]"
-                  containerClassName="!size-[16px] flex items-center justify-center"
-                />
-                <div className="heading-large-md text-nowrap text-color-text-primary">
-                  Most Active Contracts
-                </div>
-              </div>
-              <div className="relative w-full flex items-center justify-end">
-                {!oliHide && (
-                  <>
-                    <GTPButton
-                      label="Contract missing? Label here."
-                      leftIcon={"oli-open-labels-initiative" as GTPIconName}
-                      size="xs"
-                      rightIcon={"in-button-right-monochrome" as GTPIconName}
-                      className="z-30"
-                      clickHandler={handleContractMissingClick}
-                    />
-                    <div
-                      className="absolute -top-[0.5px] h-[22px] rounded-full w-[184px]"
-                      style={{
-                        background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-                      }}
-                    />
-                  </>
-                )}
-              </div>
+          </div>
+          {/* Timespan selector — sits inline (absolute, right of the heading) while there's
+              room beside the title. When too narrow (stackSelector) it drops to its own row
+              below the heading and the subheading is hidden. */}
+          {!stackSelector && (
+            <div className="absolute right-0 top-[calc(50%-3px)] -translate-y-1/2">
+              {timespanSelector}
             </div>
-            <div className="flex items-center justify-between gap-x-[10px]">
-              <div className="text-xs text-color-text-primary">
-                See the most active contracts for this application in the last 7 days.
-              </div>
-              <div className="hidden md:block">
-                <GTPButton
-                  leftIcon={"gtp-download" as GTPIconName}
-                  label="Download Contracts"
-                  size="xs"
-                  clickHandler={handleDownloadContracts}
-                />
-              </div>
-            </div>
-          </>
+          )}
+        </div>
+        {stackSelector && <div className="flex">{timespanSelector}</div>}
+        {!stackSelector && (
+          <div className="text-xs text-color-text-primary">
+            See the most active contracts for this application {activeTimespanSubtitle}.
+          </div>
         )}
       </div>
 
@@ -518,68 +453,35 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
-        {SHOW_DEV_CONTRACTS_UI ? (
-          // Dev: both buttons sit together under the table — side by side, or stacked
-          // (Download below Contract missing) when there isn't room for one row.
-          <div
-            ref={devBottomRef}
-            className={`flex justify-start ${stackBottomButtons ? "flex-col items-start gap-y-[5px]" : "flex-row items-center gap-x-[10px]"}`}
-          >
-            <div className="relative flex items-center">
-              <GTPButton
-                label={compactBottomContractButton ? "Contract missing?" : "Contract missing? Label here."}
-                leftIcon={"oli-open-labels-initiative" as GTPIconName}
-                size="xs"
-                rightIcon={"in-button-right-monochrome" as GTPIconName}
-                className="z-30"
-                clickHandler={handleContractMissingClick}
-              />
-              <div
-                className="absolute -inset-[0.5px] rounded-full"
-                style={{
-                  background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-                }}
-              />
-            </div>
+        {/* Both buttons sit together under the table — side by side, or stacked
+            (Download below Contract missing) when there isn't room for one row. */}
+        <div
+          ref={bottomButtonsRef}
+          className={`flex justify-start ${stackBottomButtons ? "flex-col items-start gap-y-[5px]" : "flex-row items-center gap-x-[10px]"}`}
+        >
+          <div className="relative flex items-center">
             <GTPButton
-              leftIcon={"gtp-download" as GTPIconName}
-              label="Download Contracts"
+              label={compactBottomContractButton ? "Contract missing?" : "Contract missing? Label here."}
+              leftIcon={"oli-open-labels-initiative" as GTPIconName}
               size="xs"
-              clickHandler={handleDownloadContracts}
+              rightIcon={"in-button-right-monochrome" as GTPIconName}
+              className="z-30"
+              clickHandler={handleContractMissingClick}
+            />
+            <div
+              className="absolute -inset-[0.5px] rounded-full"
+              style={{
+                background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+              }}
             />
           </div>
-        ) : (
-          <>
-            <div ref={mobileDownloadRef} className="flex md:hidden items-center justify-start">
-              <GTPButton
-                leftIcon={"gtp-download" as GTPIconName}
-                label="Download Contracts"
-                size="xs"
-                clickHandler={handleDownloadContracts}
-              />
-            </div>
-            {ctaCompact && (
-              <div ref={bottomCtaRef} className="relative flex items-center justify-start mt-[5px]">
-                    <GTPButton
-                      label="Contract missing? Label here."
-                      leftIcon={"oli-open-labels-initiative" as GTPIconName}
-                      size="xs"
-                      rightIcon={"in-button-right-monochrome" as GTPIconName}
-                      className="z-30"
-                      clickHandler={handleContractMissingClick}
-                    />
-                    <div
-                      className="absolute -top-[0.5px] h-[22px] rounded-full w-[183px]"
-                      style={{
-                        background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-                      }}
-                    />
-              </div>
-            )}
-          </>
-        )}
-
-      {/* Footer CTA */}
+          <GTPButton
+            leftIcon={"gtp-download" as GTPIconName}
+            label="Download Contracts"
+            size="xs"
+            clickHandler={handleDownloadContracts}
+          />
+        </div>
 
     </div>
   );
