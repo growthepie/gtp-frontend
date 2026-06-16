@@ -20,7 +20,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllAnswers } from '@/lib/answers';
-import { processAnswer } from '@/lib/answers/articleProcessor';
 import { serializeJsonLd } from '@/utils/json-ld';
 
 const SITE_URL = 'https://www.growthepie.com';
@@ -78,29 +77,24 @@ const countQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
 const countSubQuestions = (a: { faq?: { q: string; a: string }[] }): number =>
   a.faq?.length ?? 0;
 
-export default async function AnswersHubPage() {
-  const rawAnswers = getAllAnswers().sort((a, b) =>
+export default function AnswersHubPage() {
+  const answers = getAllAnswers().sort((a, b) =>
     // Newest first — when there are many answers, AI engines crawl the top of
     // the list more aggressively, so put the most recent (most likely to be
     // re-quoted) at the top.
     new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  // Run each answer through the same processor the deep page uses so the
-  // visible/JSON-LD `acceptedAnswer` is the live-data-derived string (e.g.
-  // "Base has the lowest median fee at $0.003 …") rather than the editor-
-  // pinned "Data currently unavailable" fallback stub. processAnswer is
-  // React-cached, and so are the underlying leaderboard fetchers, so each
-  // leaderboard kind is fetched at most once per request even though many
-  // answers share the same upstream.
-  const processed = await Promise.all(
-    rawAnswers.map((a) => processAnswer(a.slug)),
-  );
-  const answers = rawAnswers.map((a, i) => ({
-    ...a,
-    acceptedAnswer: processed[i]?.acceptedAnswer ?? a.acceptedAnswer,
-  }));
-
+  // The hub is a discovery/index page: it lists each question with its
+  // evergreen one-line summary and links to the canonical answer page, where
+  // the live, citable data + QAPage schema live. We deliberately do NOT run
+  // the per-answer leaderboard computation here. Doing so for all ~20 answers
+  // fanned out into hundreds of upstream fetches (~15s render) which overran
+  // the RSC stream and crashed the page client-side ("Connection closed").
+  // Questions + summaries + links are sufficient for GEO — AI engines follow
+  // the links and cite the deep pages — so the snippet/answer text below uses
+  // each answer's static `summary` (never the "Data currently unavailable"
+  // acceptedAnswer stub).
   const coreCount = answers.length;
   const subCount = answers.reduce((sum, a) => sum + countSubQuestions(a), 0);
 
@@ -141,7 +135,7 @@ export default async function AnswersHubPage() {
             answerCount: 1,
             acceptedAnswer: {
               '@type': 'Answer',
-              text: a.acceptedAnswer || a.summary || a.subtitle,
+              text: a.summary || a.subtitle,
               url: `${SITE_URL}${SECTION_PATH}/${a.slug}`,
             },
           },
@@ -228,7 +222,7 @@ export default async function AnswersHubPage() {
                         <span itemProp="name">{a.title}</span>
                       </Link>
                     </h2>
-                    {a.acceptedAnswer && (
+                    {snippet && (
                       <div
                         itemProp="acceptedAnswer"
                         itemScope
@@ -238,19 +232,11 @@ export default async function AnswersHubPage() {
                           itemProp="text"
                           className="text-md text-color-text-primary mb-[8px]"
                         >
-                          {a.acceptedAnswer}
+                          {snippet}
                         </p>
                       </div>
                     )}
                   </div>
-                  {snippet && (
-                    <p
-                      itemProp="description"
-                      className="text-sm text-color-text-secondary"
-                    >
-                      {snippet}
-                    </p>
-                  )}
                   <p className="text-xs text-color-text-secondary mt-[6px]">
                     {qCount} question{qCount === 1 ? '' : 's'} answered
                   </p>
