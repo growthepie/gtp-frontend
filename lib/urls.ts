@@ -82,6 +82,16 @@ export const BlockspaceURLs = {
   "tree-map": "https://api.growthepie.com/v1/blockspace/tree_map.json",
 };
 
+// Precomputed answer endpoints. The backend runs the same calculations the
+// /answers pages used to do client-side and publishes the small result daily,
+// so we no longer fetch the heavy blockspace files (category_comparison.json
+// ~43MB, overview.json ~2MB) just to derive a handful of leaderboard rows.
+export const AnswersURLs = {
+  "stablecoin-activity":
+    "https://api.growthepie.com/v1/answers/stablecoin-activity.json",
+  "defi-l1-vs-l2": "https://api.growthepie.com/v1/answers/defi-l1-vs-l2.json",
+};
+
 export const DAOverviewURL = "https://api.growthepie.com/v1/da_overview.json";
 export const DATimeseriesURL =
   "https://api.growthepie.com/v1/da_timeseries.json";

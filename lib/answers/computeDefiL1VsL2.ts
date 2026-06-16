@@ -2,13 +2,12 @@
 // ecosystem. Uses small, cacheable endpoints so SSR stays fast.
 //
 // Data sources:
-//   1. **L1 vs L2 DeFi activity per window** — `/v1/blockspace/overview.json`
-//      at `data.chains.{chain}.overview[window].finance.data`. The "finance"
-//      category here is growthepie's umbrella label for DeFi-style activity
-//      (the same data set's previous name was `defi`). Each per-chain
-//      overview row carries the aggregated tx count + USD gas paid for the
-//      chosen window. Both `ethereum` and `all_l2s` are present, plus
-//      per-L2 chains for the contributor breakdown.
+//   1. **L1 vs L2 DeFi activity per window + per-L2 contributors** — from the
+//      precomputed answer endpoint (`/v1/answers/defi-l1-vs-l2.json`). The
+//      backend runs the same finance-category L1-vs-L2 calculation daily
+//      (previously read here from `overview.json`'s per-chain
+//      `overview[window].finance` rows) and publishes the small result, so we
+//      no longer download a blockspace file from SSR.
 //   2. **L1 vs L2 stablecoin supply** — per-chain `stables_mcap.json`
 //      endpoints (`ethereum` and `all_l2s`, with a per-chain sum fallback).
 //      Stablecoins are the single biggest pool of DeFi capital, so this is
@@ -18,13 +17,12 @@
 //      hourly `txcosts_swap` (USD column), same source as
 //      /answers/lowest-fee-ethereum-l2.
 //
-// We deliberately **do not** read from `category_comparison.json` here —
-// that file is ~55MB which exceeds Next.js's 2MB SSR fetch-cache ceiling
-// and causes multi-minute renders. `overview.json` carries the same
-// aggregated rows we need at a fraction of the size.
+// The per-window split and per-L2 contributor breakdown are now precomputed
+// on the backend, so this helper only does the small per-chain stables_mcap
+// and hourly-fees fetches itself.
 
 import { cache } from 'react';
-import { BlockspaceURLs, MasterURL, FeesURLs } from '@/lib/urls';
+import { AnswersURLs, MasterURL, FeesURLs } from '@/lib/urls';
 
 // L2 universe membership check — matches every other answer-page helper so
 // "cheapest L2 swap fee" is computed over the same chain set.
@@ -35,7 +33,7 @@ const NON_L2_KEYS = new Set([
   'multiple',
 ]);
 
-// Windows exposed by /v1/blockspace/overview.json `chains.{chain}.overview`.
+// Windows exposed by the precomputed answer file's `byWindow` map.
 export const DEFI_WINDOWS = ['7d', '30d', '90d', '180d', '365d', 'max'] as const;
 export type DefiWindow = (typeof DEFI_WINDOWS)[number];
 
@@ -92,33 +90,65 @@ const fetchJson = async (url: string): Promise<any> => {
   return res.json();
 };
 
-// Read the `.finance.data` row for a chain in the blockspace overview. The
-// `overview.types` array describes the column order — typically
-// ['gas_fees_eth_absolute', 'gas_fees_usd_absolute', 'txcount_absolute',
-// 'gas_fees_share_eth', 'gas_fees_share_usd', 'txcount_share']. Returns
-// txcount + USD-gas as a pair, null if the row is missing.
-type FinanceRow = {
-  txcount: number | null;
-  gasFeesUsd: number | null;
+// Shape of the precomputed `/v1/answers/defi-l1-vs-l2.json` payload. Only the
+// blockspace-derived parts are published here — `byWindow` (L1 vs L2 finance
+// activity per window) and `topL2Contributors30d` map 1:1 onto our public
+// types. The stablecoin-supply and swap-fee comparisons are still computed
+// below from their own lighter endpoints.
+type DefiAnswerFile = {
+  byWindow?: Partial<Record<DefiWindow, Partial<DefiSplit>>>;
+  topL2Contributors30d?: {
+    chainKey: string;
+    chainName: string;
+    txcount: number;
+    gasFeesUsd: number;
+    shareOfL2Txs: number;
+  }[];
 };
-const parseFinanceRow = (
-  chainOverview: any,
-  window: DefiWindow,
-): FinanceRow => {
-  const types: any[] | undefined = chainOverview?.types;
-  const data: any[] | undefined = chainOverview?.[window]?.finance?.data;
-  if (!Array.isArray(types) || !Array.isArray(data)) {
-    return { txcount: null, gasFeesUsd: null };
+
+// Fetch the precomputed defi byWindow + contributor breakdown. Returns null on
+// any failure so the stablecoin-supply and swap-fee sections can still render.
+const fetchDefiAnswer = async (): Promise<DefiAnswerFile | null> => {
+  try {
+    const res = await fetch(AnswersURLs['defi-l1-vs-l2'], {
+      next: { revalidate: 3600 },
+      headers: { 'User-Agent': 'growthepie/answers-defi-l1-vs-l2' },
+    });
+    if (!res.ok) {
+      throw new Error(
+        `Fetch defi-l1-vs-l2 failed: ${res.status} ${res.statusText}`,
+      );
+    }
+    return (await res.json()) as DefiAnswerFile;
+  } catch (err) {
+    console.error('getDefiL1VsL2: answer fetch failed', err);
+    return null;
   }
-  const txIdx = types.indexOf('txcount_absolute');
-  const gasIdx = types.indexOf('gas_fees_usd_absolute');
-  const tx = txIdx >= 0 && typeof data[txIdx] === 'number' && Number.isFinite(data[txIdx])
-    ? (data[txIdx] as number)
-    : null;
-  const gas = gasIdx >= 0 && typeof data[gasIdx] === 'number' && Number.isFinite(data[gasIdx])
-    ? (data[gasIdx] as number)
-    : null;
-  return { txcount: tx, gasFeesUsd: gas };
+};
+
+const EMPTY_SPLIT: DefiSplit = {
+  l1Txcount: null,
+  l1GasFeesUsd: null,
+  l2Txcount: null,
+  l2GasFeesUsd: null,
+  l2ShareTxcount: null,
+  l2ShareGasFeesUsd: null,
+};
+
+// Coerce a single window's payload into a fully-populated DefiSplit, defaulting
+// any missing field to null so downstream formatters stay happy.
+const normalizeSplit = (raw: Partial<DefiSplit> | undefined): DefiSplit => {
+  const num = (v: unknown): number | null =>
+    typeof v === 'number' && Number.isFinite(v) ? v : null;
+  if (!raw) return { ...EMPTY_SPLIT };
+  return {
+    l1Txcount: num(raw.l1Txcount),
+    l1GasFeesUsd: num(raw.l1GasFeesUsd),
+    l2Txcount: num(raw.l2Txcount),
+    l2GasFeesUsd: num(raw.l2GasFeesUsd),
+    l2ShareTxcount: num(raw.l2ShareTxcount),
+    l2ShareGasFeesUsd: num(raw.l2ShareGasFeesUsd),
+  };
 };
 
 // Read the latest hourly USD value of `txcosts_swap` for one chain in
@@ -158,75 +188,19 @@ const latestSwapFeeUsd = (
 
 export const getDefiL1VsL2 = cache(
   async (): Promise<DefiL1VsL2 | null> => {
-    // --- L1 vs L2 finance activity per window ---------------------------
-    // `chains.{chain}.overview.{window}.finance.data` is the per-chain
-    // aggregated row for the finance category (DeFi). Read for both
-    // `ethereum` and `all_l2s`, plus every other chain we find for the
-    // 30d contributor breakdown.
+    // --- L1 vs L2 finance activity per window + per-L2 contributors -----
+    // Both come straight from the precomputed answer file (the backend runs
+    // the same finance-category calculation daily). On failure we fall back
+    // to empty splits / no contributors so the rest of the page still renders.
+    const defiAnswer = await fetchDefiAnswer();
     const byWindow = {} as Record<DefiWindow, DefiSplit>;
-    const contribsRaw: {
-      chainKey: string;
-      chainName: string;
-      txcount: number;
-      gasFeesUsd: number;
-    }[] = [];
-    try {
-      const overviewJson: any = await fetchJson(BlockspaceURLs['chain-overview']);
-      const chains = overviewJson?.data?.chains ?? {};
-      const ethOverview = chains.ethereum?.overview;
-      const l2Overview = chains.all_l2s?.overview;
-      for (const w of DEFI_WINDOWS) {
-        const l1 = ethOverview ? parseFinanceRow(ethOverview, w) : { txcount: null, gasFeesUsd: null };
-        const l2 = l2Overview ? parseFinanceRow(l2Overview, w) : { txcount: null, gasFeesUsd: null };
-        const totalTx = (l1.txcount ?? 0) + (l2.txcount ?? 0);
-        const totalGas = (l1.gasFeesUsd ?? 0) + (l2.gasFeesUsd ?? 0);
-        byWindow[w] = {
-          l1Txcount: l1.txcount,
-          l1GasFeesUsd: l1.gasFeesUsd,
-          l2Txcount: l2.txcount,
-          l2GasFeesUsd: l2.gasFeesUsd,
-          l2ShareTxcount:
-            l2.txcount != null && totalTx > 0 ? l2.txcount / totalTx : null,
-          l2ShareGasFeesUsd:
-            l2.gasFeesUsd != null && totalGas > 0 ? l2.gasFeesUsd / totalGas : null,
-        };
-      }
-      // Per-chain contributors for 30d. Skip ethereum, all_l2s, and any
-      // sidechains; include every other per-chain entry.
-      for (const [key, chain] of Object.entries(chains)) {
-        if (key === 'ethereum' || key === 'all_l2s' || key === 'multiple' || key === 'polygon_pos') continue;
-        const overview = (chain as any)?.overview;
-        if (!overview) continue;
-        const row = parseFinanceRow(overview, '30d');
-        if (row.txcount == null || row.txcount <= 0) continue;
-        const chainName = (chain as any)?.chain_name ?? key;
-        contribsRaw.push({
-          chainKey: key,
-          chainName,
-          txcount: row.txcount,
-          gasFeesUsd: row.gasFeesUsd ?? 0,
-        });
-      }
-    } catch (err) {
-      console.error('getDefiL1VsL2: blockspace overview fetch failed', err);
-      for (const w of DEFI_WINDOWS) {
-        byWindow[w] = {
-          l1Txcount: null,
-          l1GasFeesUsd: null,
-          l2Txcount: null,
-          l2GasFeesUsd: null,
-          l2ShareTxcount: null,
-          l2ShareGasFeesUsd: null,
-        };
-      }
+    for (const w of DEFI_WINDOWS) {
+      byWindow[w] = normalizeSplit(defiAnswer?.byWindow?.[w]);
     }
-    const contribsTotal = contribsRaw.reduce((s, c) => s + c.txcount, 0);
-    const topL2Contributors30d = contribsRaw
-      .map((c) => ({
-        ...c,
-        shareOfL2Txs: contribsTotal > 0 ? c.txcount / contribsTotal : 0,
-      }))
-      .sort((a, b) => b.txcount - a.txcount)
+    const topL2Contributors30d = (defiAnswer?.topL2Contributors30d ?? [])
+      .filter(
+        (c) => c && typeof c.txcount === 'number' && c.txcount > 0,
+      )
       .slice(0, 10);
 
     // --- Live swap-fee comparison ----------------------------------------
@@ -516,7 +490,7 @@ export const buildDefiAnswerTables = (data: DefiL1VsL2): AnswerTable[] => {
   // L1 vs L2 DeFi (finance category) activity per window.
   tables.push({
     title: 'DeFi (finance category) activity — Ethereum L1 vs L2 ecosystem',
-    caption: `Transactions and USD gas fees paid in the "finance" category (DeFi) per window. Source: \`/v1/blockspace/overview.json\` \`chains.{chain}.overview[window].finance\`. Data: ${dataDate} UTC.`,
+    caption: `Transactions and USD gas fees paid in the "finance" category (DeFi) per window. Source: \`/v1/answers/defi-l1-vs-l2.json\` (precomputed daily from the blockspace finance-category L1-vs-L2 rollups). Data: ${dataDate} UTC.`,
     headers: [
       'Window',
       'L2 DeFi txs',
@@ -543,7 +517,7 @@ export const buildDefiAnswerTables = (data: DefiL1VsL2): AnswerTable[] => {
   if (data.topL2Contributors30d.length > 0) {
     tables.push({
       title: 'Top 10 L2s by DeFi transactions (last 30 days)',
-      caption: `Per-L2 contribution to L2 DeFi transaction count over the last 30 days, with share of the L2 DeFi total. Source: blockspace overview per-chain finance rows. Data: ${dataDate} UTC.`,
+      caption: `Per-L2 contribution to L2 DeFi transaction count over the last 30 days, with share of the L2 DeFi total. Source: \`/v1/answers/defi-l1-vs-l2.json\` \`topL2Contributors30d\` (precomputed daily from blockspace finance-category rows). Data: ${dataDate} UTC.`,
       headers: ['Rank', 'Chain', 'DeFi txs (30d)', 'DeFi gas (30d)', 'Share of L2 DeFi'],
       rows: data.topL2Contributors30d.slice(0, 10).map((e, i) => [
         String(i + 1),
