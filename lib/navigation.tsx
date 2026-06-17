@@ -221,7 +221,7 @@ const quickBitesGroup: NavigationItem = {
   name: "Quick Bites",
   label: "Quick Bites",
   icon: "gtp-quick-bites",
-  newChild: true,
+  newChild: false,
   options: [
     {
       label: "All Quick Bites",
@@ -249,7 +249,7 @@ const quickBitesGroup: NavigationItem = {
         urlKey: slug,
         url: `/quick-bites/${slug}`,
         group: "latest",
-        showNew: index === 0 ? true : false,
+        // showNew: index === 0,
       })),
     {
       label: "Octant",
@@ -634,7 +634,7 @@ export const navigationItems: NavigationItem[] = [
         url: "/blockspace/treemap",
         //hide: IS_PRODUCTION,
         //excludeFromSitemap: IS_PRODUCTION,
-        showNew: true,
+        showNew: false,
       },
       {
         label: "Category Comparison",
@@ -680,7 +680,7 @@ export const navigationItems: NavigationItem[] = [
         url: "https://labels.growthepie.com/",
       },
     ],
-    newChild: true,
+    newChild: false,
     // href: "",
   },
   ...[dataAvailabilityGroup],
