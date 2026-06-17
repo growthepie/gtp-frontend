@@ -4,7 +4,8 @@ import { ChartWatermarkWithMetricName } from '../ChartWatermark';
 import { useLocalStorage, useMediaQuery } from 'usehooks-ts';
 import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
-import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipGeneral } from '@/components/GTPComponents/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -351,18 +352,17 @@ export function AggChart({
           )}
           <GTPTooltipNew
             placement="top-start"
+            unstyled
             trigger={
               <div className='hover:cursor-pointer'>
                 <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))" }} />
               </div>
             }
-            containerClass="flex flex-col gap-y-[10px]"
             positionOffset={{ mainAxis: 0, crossAxis: 0 }}
-            size='md'
           >
-            <TooltipBody>
+            <GTPTooltipGeneral width={350}>
               <div className="pl-[20px]">{tooltipContent}</div>
-            </TooltipBody>
+            </GTPTooltipGeneral>
           </GTPTooltipNew>
         </div>
         <div className='flex flex-col h-full items-end pt-[5px]'>

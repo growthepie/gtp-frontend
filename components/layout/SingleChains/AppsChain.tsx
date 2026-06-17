@@ -630,7 +630,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           <GTPTooltipNew
             placement="bottom-start"
             allowInteract={true}
-            size="md"
+            unstyled
             hoverOpenDelay={300}
             trigger={
               <div className="min-w-0 h-[32px] flex items-center">
@@ -639,7 +639,6 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
                 </div>
               </div>
             }
-            containerClass="flex flex-col gap-y-[10px]"
             positionOffset={{ mainAxis: 0, crossAxis: 20 }}
           >
             <ApplicationTooltip application={application} />
@@ -650,6 +649,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             placement="bottom-start"
             allowInteract={true}
             size="md"
+            unstyled
             hoverOpenDelay={300}
             trigger={
               <div className="flex-1 min-w-0 h-[32px] flex items-center">
@@ -661,7 +661,6 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
                 </div>
               </div>
             }
-            containerClass="flex flex-col gap-y-[10px] !w-[230px]"
             positionOffset={{ mainAxis: 0, crossAxis: 78 }}
           >
             <CategoryTooltipContent application={application} />

@@ -14,7 +14,8 @@ import { formatUptime, getGradientColor } from './helpers';
 import { EthereumEvents } from '@/types/api/MasterResponse';
 import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
-import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipGeneral } from '@/components/GTPComponents/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import useSWR from 'swr';
 import { ChainMetrics, HistoryData, HistoryItem } from './types';
@@ -151,7 +152,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           <div className='w-[15px] h-fit z-30'>
             <GTPTooltipNew
               placement="top-start"
-              size="md"
+              unstyled
               allowInteract={true}
               trigger={
                 <div
@@ -161,15 +162,13 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
                   <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
                 </div>
               }
-              containerClass="flex flex-col gap-y-[10px]"
               positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-
             >
-              <div>
-                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+              <GTPTooltipGeneral width={350}>
+                <div className='flex flex-col gap-y-[10px] pl-[20px]'>
                   {infoSlot}
-                </TooltipBody>
-              </div>
+                </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
         )}

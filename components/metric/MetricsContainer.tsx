@@ -29,6 +29,7 @@ import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems } from "@/lib/metrics";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
@@ -467,7 +468,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         <GTPTooltipNew
                             placement="left"
                             allowInteract={true}
-                            
+                            unstyled
                             containerClass="z-[99]"
                             trigger={
                             <div className="size-[12px]">
@@ -475,9 +476,11 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             </div>
                             }
                         >
-                            <div className="text-xxs flex items-center gap-x-[5px] relative text-color-text-primary pl-[15px] w-[100px]  group   transition-opacity ">
-                              Sources: <span className="text-color-text-primary">{SourcesDisplay}</span>
-                            </div>
+                            <GTPTooltipGeneral width={245}>
+                              <div className="flex items-center gap-x-[5px] pl-[20px] pt-[5px] text-xxs text-color-text-primary">
+                                Sources: <span className="text-color-text-primary">{SourcesDisplay}</span>
+                              </div>
+                            </GTPTooltipGeneral>
                         </GTPTooltipNew>
                         
                       </div>

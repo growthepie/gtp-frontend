@@ -7,11 +7,8 @@ import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChartWatermarkWithMetricName } from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/layout/Tooltip";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { useTheme } from "next-themes";
 import GTPChart, { GTPChartSeries, GTPChartTooltipParams } from "@/components/GTPComponents/GTPChart";
 
@@ -477,22 +474,20 @@ const YAxisScaleControls = ({
                             <div className="heading-small-xxs text-color-text-primary">Stacked</div>
                             <div className="heading-small-xxs text-color-text-primary">Percentage</div>
                             <div className="absolute top-[6px] z-20 right-[5px]">
-                                <Tooltip placement="bottom">
-                                    <TooltipTrigger>
+                                <GTPTooltipNew
+                                    placement="bottom"
+                                    unstyled
+                                    trigger={
                                         <Icon icon="feather:info" className="text-color-text-primary w-[15px] h-[15px]" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <div className="flex flex-col items-center">
-                                            <div className="p-[15px] text-sm bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                                                <div className="heading-small-xs">Stacked/Percentage</div>
-                                                <div className="text-xxs text-wrap">
-                                                    Toggle between "Stacked" view, which shows the total values by all DA consumers or
-                                                    "Percentage" view which shows relative values.
-                                                </div>
-                                            </div>
+                                    }
+                                >
+                                    <GTPTooltipGeneral width={245} headerText="Stacked/Percentage">
+                                        <div className="pl-[20px] text-xxs text-wrap">
+                                            Toggle between "Stacked" view, which shows the total values by all DA consumers or
+                                            "Percentage" view which shows relative values.
                                         </div>
-                                    </TooltipContent>
-                                </Tooltip>
+                                    </GTPTooltipGeneral>
+                                </GTPTooltipNew>
                             </div>
                         </div>
                         <div

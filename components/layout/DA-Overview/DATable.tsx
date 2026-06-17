@@ -512,15 +512,11 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               containerClass="z-50"
               trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
             >
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                  <div className="flex flex-col gap-y-[5px] items-center">
-                    <div className="flex items-center gap-x-[5px] text-xxs">
-                      The amount of data that was submitted to the DA layer.
-                    </div>
-                  </div>
+              <GTPTooltipGeneral width={245}>
+                <div className="pl-[20px] text-xxs">
+                  The amount of data that was submitted to the DA layer.
                 </div>
-              </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
           <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
@@ -554,15 +550,11 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               containerClass="z-50"
               trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
             >
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                  <div className="flex flex-col gap-y-[5px] items-center">
-                    <div className="flex items-center gap-x-[5px] text-xxs">
-                      The fees collected by the DA layer for processing and storing data.
-                    </div>
-                  </div>
+              <GTPTooltipGeneral width={245}>
+                <div className="pl-[20px] text-xxs">
+                  The fees collected by the DA layer for processing and storing data.
                 </div>
-              </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
           <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
@@ -596,15 +588,11 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               containerClass="z-50"
               trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
             >
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                  <div className="flex flex-col gap-y-[5px] items-center">
-                    <div className="flex items-center gap-x-[5px] text-xxs">
-                      The average cost that a Layer 2 pays per Megabyte of data submitted.
-                    </div>
-                  </div>
+              <GTPTooltipGeneral width={245}>
+                <div className="pl-[20px] text-xxs">
+                  The average cost that a Layer 2 pays per Megabyte of data submitted.
                 </div>
-              </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
           <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
@@ -638,15 +626,11 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               containerClass="z-50"
               trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
             >
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                  <div className="flex flex-col gap-y-[5px] items-center">
-                    <div className="flex items-center gap-x-[5px] text-xxs">
-                      The Layer 2 networks that have submitted at least 100MB worth of data to the DA layer.
-                    </div>
-                  </div>
+              <GTPTooltipGeneral width={245}>
+                <div className="pl-[20px] text-xxs">
+                  The Layer 2 networks that have submitted at least 100MB worth of data to the DA layer.
                 </div>
-              </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
           {/* <div className="w-full flex justify-center items-center heading-small-xxs font-bold pr-0.5 ">

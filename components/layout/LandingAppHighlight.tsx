@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
-import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 export default function LandingAppHighlight() {
 
@@ -83,7 +82,6 @@ export default function LandingAppHighlight() {
                     unstyled
                     positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                 >
-                    <GTPTooltipGeneral width={350}>
                         <ApplicationTooltip application={{
                             owner_project: randomProjects[0][filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
                             origin_keys: randomProjects[0][filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
@@ -104,7 +102,6 @@ export default function LandingAppHighlight() {
                             rank_txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
                             rank_daa: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
                         }} />
-                    </GTPTooltipGeneral>
                 </GTPTooltipNew>
 
             {/* Right 2×2 grid — same height, width = height (square overall) */}
@@ -112,7 +109,6 @@ export default function LandingAppHighlight() {
                 {randomProjects.slice(1, is2xl ? 7 : isXL ? 5 : 3).map((project, index) => (
                     <GTPTooltipNew
                         key={index + project[filteredProjectsData?.types?.indexOf("display_name") ?? 0]}
-                        size="md"
                         placement="bottom-start"
                         allowInteract={true}
                         hoverOpenDelay={200}
@@ -134,7 +130,6 @@ export default function LandingAppHighlight() {
                         }
                         unstyled
                     >
-                        <GTPTooltipGeneral width={350}>
                             <ApplicationTooltip application={{
                                 owner_project: project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
                                 origin_keys: project[filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
@@ -155,7 +150,6 @@ export default function LandingAppHighlight() {
                                 rank_txcount: project[filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
                                 rank_daa: project[filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
                             }} />
-                        </GTPTooltipGeneral>
                     </GTPTooltipNew>
                 ))}
             </div>

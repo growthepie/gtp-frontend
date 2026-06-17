@@ -67,7 +67,7 @@ export function GTPTooltipGeneral({ width = 230, headerText, headerIcon, scrollH
       }}
     >
       {(headerText || headerIcon) && (
-        <div className="flex w-full justify-between items-center text-center pl-[20px] " >
+        <div className="flex w-full gap-x-[10px] items-center pl-[20px] " >
           {headerIcon && <>{<GTPIcon icon={headerIcon} size='md' className='pointer-events-auto' style={{ color: "rgb(var(--text-secondary))" }} />}</>}
           <div className="heading-large-xs pb-[1px]" style={{fontWeight: 700}}>{headerText}</div>
         </div>
