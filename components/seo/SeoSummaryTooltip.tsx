@@ -2,12 +2,8 @@
 
 import useSWR from "swr";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import {
-  GTPTooltipNew,
-  TooltipBody,
-  TooltipFooter,
-  TooltipHeader,
-} from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 type SeoSummaryFamily = "chains" | "apps";
@@ -83,23 +79,25 @@ export default function SeoSummaryTooltip({
       }
       containerClass="flex flex-col gap-y-[10px] max-w-[420px]"
       positionOffset={{ mainAxis: 8, crossAxis: 0 }}
+      unstyled
     >
-      <TooltipHeader title="AI-readable summary" />
-      <TooltipBody className="gap-y-[10px] pl-[20px] text-xs leading-[1.45]">
-        <p>{entry.summary}</p>
-        {facts.length > 0 && (
-          <ul className="list-disc space-y-[4px] pl-[16px]">
-            {facts.map((fact) => (
-              <li key={fact}>{fact}</li>
-            ))}
-          </ul>
-        )}
-      </TooltipBody>
-      {lastUpdated && (
-        <TooltipFooter className="pl-[20px] text-[10px] text-color-text-secondary">
-          Updated {lastUpdated}
-        </TooltipFooter>
-      )}
+      <GTPTooltipGeneral headerText="AI-readable summary" width={420}>
+        <div className="flex flex-col gap-y-[10px] pl-[20px] text-xs leading-[1.45]">
+          <p>{entry.summary}</p>
+          {facts.length > 0 && (
+            <ul className="list-disc space-y-[4px] pl-[16px]">
+              {facts.map((fact) => (
+                <li key={fact}>{fact}</li>
+              ))}
+            </ul>
+          )}
+          {lastUpdated && (
+            <div className="text-[10px] text-color-text-secondary">
+              Updated {lastUpdated}
+            </div>
+          )}
+        </div>
+      </GTPTooltipGeneral>
     </GTPTooltipNew>
   );
 }

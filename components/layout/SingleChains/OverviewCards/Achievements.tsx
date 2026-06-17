@@ -8,6 +8,7 @@ import { GTPIcon } from "../../GTPIcon";
 import { useLocalStorage } from "usehooks-ts";
 import * as d3 from "d3";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { useMediaQuery } from "usehooks-ts";
 import { StreaksData } from "@/types/api/ChainOverviewResponse";
 import { useState, useEffect } from "react";
@@ -229,19 +230,22 @@ export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { da
                                 }
                                 containerClass="flex flex-col gap-y-[10px] min-w-[250px]"
                                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                                unstyled
                             >
-                                <TooltipBody className="flex flex-col gap-y-[10px] px-[15px]">
-                                    <div>
-                                    Today, {master.chains[chainKey].name} processed {formatNumber(chainValue, 2)} <span className="font-bold">{keyData[key].name}</span> (as of {minutesPassed} minutes ago).
-                                    <br />
-                                    <br />
-                                    {yesterdayValue - chainValue < 0 ? <>
-                                    {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(yesterdayValue - chainValue), 2)} <span className="font-bold">{keyData[key].name}</span>.
-                                    </> : <>
-                                    {master.chains[chainKey].name} needs {formatNumber(yesterdayValue - chainValue, 2)} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
-                                    </>}
+                                <GTPTooltipGeneral width={250}>
+                                    <div className="flex flex-col gap-y-[10px] pl-[15px]">
+                                        <div>
+                                        Today, {master.chains[chainKey].name} processed {formatNumber(chainValue, 2)} <span className="font-bold">{keyData[key].name}</span> (as of {minutesPassed} minutes ago).
+                                        <br />
+                                        <br />
+                                        {yesterdayValue - chainValue < 0 ? <>
+                                        {master.chains[chainKey].name} has surpassed the streak by {formatNumber(Math.abs(yesterdayValue - chainValue), 2)} <span className="font-bold">{keyData[key].name}</span>.
+                                        </> : <>
+                                        {master.chains[chainKey].name} needs {formatNumber(yesterdayValue - chainValue, 2)} more <span className="font-bold">{keyData[key].name}</span> to continue the streak.
+                                        </>}
+                                        </div>
                                     </div>
-                                </TooltipBody>
+                                </GTPTooltipGeneral>
 
                             </GTPTooltipNew>
                         </div>
