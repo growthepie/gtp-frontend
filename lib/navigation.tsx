@@ -252,16 +252,6 @@ const quickBitesGroup: NavigationItem = {
         showNew: index === 0 ? true : false,
       })),
     {
-      label: "Octant",
-      icon: "octant-monochrome",
-      category: "public-goods-funding",
-      key: "octant",
-      rootKey: "octant",
-      urlKey: "octant",
-      url: "/trackers/octant",
-      // showNew: false,
-    },
-    {
       label: "Glo Dollar",
       icon: "glo-dollar-monochrome",
       category: "public-goods-funding",
