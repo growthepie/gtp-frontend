@@ -25,8 +25,7 @@ async function fetchData() {
     const jsonResponse = await response.json();
 
     if (!jsonResponse.records) {
-      const text = await response.text();
-      console.error("Error fetching donations:", text, jsonResponse);
+      console.error("Error fetching donations:", jsonResponse);
       return [];
     }
 

@@ -15,11 +15,10 @@ import {
 import Address, { AddressIcon } from "@/components/layout/Address";
 import dayjs from "@/lib/dayjs";
 import Container from "@/components/layout/Container";
-import {
-  TopRowChild,
-  TopRowContainer,
-  TopRowParent,
-} from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { track } from "@/lib/tracking";
@@ -118,6 +117,8 @@ const formatNumberMemo = (() => {
 
 export default function Page() {
   const isMobile = useMediaQuery("(max-width: 1024px)");
+  const [isCommunityBarWrapping, setIsCommunityBarWrapping] = useState(false);
+  const [isFundingBarWrapping, setIsFundingBarWrapping] = useState(false);
   const { data: master } = useSWR<MasterResponse>(MasterURL);
   const {
     summaryData,
@@ -969,88 +970,60 @@ VirtualizedList.displayName = 'VirtualizedList';
           This is all about the owners of GLM and who have locked their funds in
           Octant. Either donating/allocating or not.
         </div>
-        <TopRowContainer
-          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-color-bg-default md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
+        <GTPButtonContainer
+          className="mb-[15px]"
+          isWrapping={isCommunityBarWrapping}
+          setIsWrapping={setIsCommunityBarWrapping}
         >
-          <TopRowParent>
-            <TopRowChild
+          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+            <GTPButton
+              label={`${UserTypes.All.label} (${communityData?.filter(
+                (user) => user.lockeds[Epochs[communityEpoch].epoch] !== undefined,
+              ).length ?? 0})`}
+              variant="primary"
+              size="sm"
               isSelected={communityUserSelection === "All"}
-              onClick={() => {
-                handleCommunityUserSelection("All");
-              }}
-              style={{}}
-              className={`text-[16px] leading-[150%] lg:!px-[15px] lg:!py-[10px]`}
-            >
-              <span className="hidden sm:block">
-                {UserTypes.All.label} (
-                {communityData &&
-                  communityData.filter(
-                    (user) =>
-                      user.lockeds[Epochs[communityEpoch].epoch] !== undefined,
-                  ).length}
-                )
-              </span>
-              <span className="block text-xs sm:hidden">
-                {UserTypes.All.label}
-              </span>
-            </TopRowChild>
-            <TopRowChild
+              innerStyle={{ width: "100%" }}
+              className="w-full justify-center"
+              clickHandler={() => handleCommunityUserSelection("All")}
+            />
+            <GTPButton
+              label={`${UserTypes.Donating.label} (${communityData?.filter(
+                (user) =>
+                  user.allocation_amounts[Epochs[communityEpoch].epoch] !== undefined &&
+                  user.allocation_amounts[Epochs[communityEpoch].epoch] > 0,
+              ).length ?? 0})`}
+              variant="primary"
+              size="sm"
               isSelected={communityUserSelection === "Donating"}
-              onClick={() => {
-                handleCommunityUserSelection("Donating");
-              }}
-              style={{}}
-              className={`text-[16px] leading-[150%] lg:!px-[15px] lg:!py-[10px]`}
-            >
-              <span className="hidden sm:block">
-                {UserTypes.Donating.label} (
-                {communityData &&
-                  communityData.filter(
-                    (user) =>
-                      user.allocation_amounts[Epochs[communityEpoch].epoch] !==
-                        undefined &&
-                      user.allocation_amounts[Epochs[communityEpoch].epoch] > 0,
-                  ).length}
-                )
-              </span>
-              <span className="block text-xs sm:hidden">
-                {UserTypes.Donating.label}
-              </span>
-            </TopRowChild>
-          </TopRowParent>
-          <div className="relative -my-[1px] flex h-full w-full flex-col lg:h-[44px] lg:w-[271px]">
+              innerStyle={{ width: "100%" }}
+              className="w-full justify-center"
+              clickHandler={() => handleCommunityUserSelection("Donating")}
+            />
+          </GTPButtonRow>
+          <div
+            className="relative flex self-stretch rounded-full p-[3px] bg-color-bg-medium ring-[0.5px] ring-inset ring-color-bg-default shrink-0"
+            style={{ width: isMobile ? "100%" : "271px" }}
+          >
             <div
-              className={`relative flex h-full w-full rounded-full p-[5px] lg:z-30 ${
-                isMobile ? "w-full" : "w-[271px]"
-              }`}
-              style={{
-                backgroundColor: "rgb(var(--ui-active))",
-              }}
+              className="rounded-[40px] w-[44px] h-full bg-color-bg-default flex items-center justify-center cursor-pointer shrink-0"
+              onClick={handlePrevCommunityEpoch}
             >
-              <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
-                onClick={handlePrevCommunityEpoch}
-              >
-                <Icon icon="feather:arrow-left" className="h-6 w-6" />
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-y-[1px] justify-self-center">
-                <div
-                  className={`flex h-full w-[123px] items-center justify-center gap-x-[5px]`}
-                >
-                  <div className="truncate overflow-ellipsis whitespace-nowrap text-sm">
-                    {Epochs[communityEpoch].label}
-                  </div>
-                </div>
-              </div>
-              <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-color-bg-default"
-                onClick={handleNextCommunityEpoch}
-              >
-                <Icon icon="feather:arrow-right" className="h-6 w-6" />
+              <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="rotate-180" />
+            </div>
+            <div className="flex flex-1 items-center justify-center min-w-0 px-[5px]">
+              <div className="text-sm font-[550] truncate whitespace-nowrap">
+                {Epochs[communityEpoch].label}
               </div>
             </div>
+            <div
+              className="rounded-full w-[44px] h-full bg-color-bg-default flex items-center justify-center cursor-pointer shrink-0"
+              onClick={handleNextCommunityEpoch}
+            >
+              <GTPIcon icon="gtp-chevronright-monochrome" size="sm" />
+            </div>
           </div>
-        </TopRowContainer>
+        </GTPButtonContainer>
 
         <div className="-mr-[32px] hidden flex-col @[960px]:mr-0 @[960px]:flex-row @[960px]:flex-wrap md:flex">
           <div className="w-full @[960px]:w-1/2">
@@ -2076,52 +2049,40 @@ VirtualizedList.displayName = 'VirtualizedList';
           of Octant. There are a maximum of 30 projects voted in for this Epoch.
         </div>
 
-        <TopRowContainer
-          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-color-bg-default md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
+        <GTPButtonContainer
+          className="mb-[15px]"
+          isWrapping={isFundingBarWrapping}
+          setIsWrapping={setIsFundingBarWrapping}
         >
-          <TopRowParent className="flex !w-full flex-col !items-center px-[15px] py-[5px] leading-[120%] md:!w-fit md:!items-start">
-            {/* <div className="text-[9px]">Next Epoch starts in</div>
-            <div className="font-bold text-[16px]">{dayjs("2024-10-13T16:00:00Z").diff(dayjs(), "days")} days</div> */}
+          <div className="flex w-full flex-col items-center px-[15px] py-[5px] leading-[120%] md:w-fit md:items-start">
             {EpochStatus}
             <div className="text-[16px] font-bold">
-              {/* {countdownTimeFormatted}
-               */}
               <CountdownTimer time={countdownTime} />
             </div>
-          </TopRowParent>
-          <div className="relative -my-[1px] flex h-full w-full flex-col lg:h-[44px] lg:w-[271px]">
+          </div>
+          <div
+            className="relative flex self-stretch rounded-full p-[3px] bg-color-bg-medium ring-[0.5px] ring-inset ring-color-bg-default shrink-0"
+            style={{ width: isMobile ? "100%" : "271px" }}
+          >
             <div
-              className={`relative flex h-full w-full rounded-full p-[5px] lg:z-30 ${
-                isMobile ? "w-full" : "w-[271px]"
-              }`}
-              style={{
-                backgroundColor: "rgb(var(--ui-active))",
-              }}
+              className="rounded-[40px] w-[44px] h-full bg-color-bg-default flex items-center justify-center cursor-pointer shrink-0"
+              onClick={handlePrevFundingEpoch}
             >
-              <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-color-bg-default hover:cursor-pointer"
-                onClick={handlePrevFundingEpoch}
-              >
-                <Icon icon="feather:arrow-left" className="h-6 w-6" />
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-y-[1px] justify-self-center">
-                <div
-                  className={`flex h-full w-[123px] items-center justify-center gap-x-[5px]`}
-                >
-                  <div className="truncate overflow-ellipsis whitespace-nowrap text-sm">
-                    {Epochs[fundingEpoch].label}
-                  </div>
-                </div>
-              </div>
-              <div
-                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-color-bg-default hover:cursor-pointer"
-                onClick={handleNextFundingEpoch}
-              >
-                <Icon icon="feather:arrow-right" className="h-6 w-6" />
+              <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="rotate-180" />
+            </div>
+            <div className="flex flex-1 items-center justify-center min-w-0 px-[5px]">
+              <div className="text-sm font-[550] truncate whitespace-nowrap">
+                {Epochs[fundingEpoch].label}
               </div>
             </div>
+            <div
+              className="rounded-full w-[44px] h-full bg-color-bg-default flex items-center justify-center cursor-pointer shrink-0"
+              onClick={handleNextFundingEpoch}
+            >
+              <GTPIcon icon="gtp-chevronright-monochrome" size="sm" />
+            </div>
           </div>
-        </TopRowContainer>
+        </GTPButtonContainer>
         <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-color-bg-default pr-[10px]">
           <div
             className={`relative flex items-center justify-center pl-[10px]`}

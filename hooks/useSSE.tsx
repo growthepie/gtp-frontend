@@ -21,8 +21,8 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen, enabled
   const [readyState, setReadyState] = useState<ReadyState>(0); // Starts as CONNECTING
   const eventSourceRef = useRef<EventSource | null>(null);
   
-  // NEW: State to track if the page is visible. Initialize based on the current state.
-  const [isPageVisible, setIsPageVisible] = useState(!document.hidden);
+  // Default to true (page assumed visible); corrected on mount via useEffect below.
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
   // NEW: Effect to listen for page visibility changes.
   useEffect(() => {

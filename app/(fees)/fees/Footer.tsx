@@ -69,7 +69,7 @@ export default function Footer({
       <FeesContainer className="max-w-[650px] md:min-w-[650px] md:max-w-[750px] flex justify-center md:justify-start z-20">
         <div className="w-full flex flex-col md:flex-row justify-center items-center md:justify-start gap-y-[10px] md:gap-x-[15px] px-[15px] pb-[2px] md:pb-[20px]">
           <div
-            className={`flex items-center md:h-[50px] text-[12px] text-color-text-primary dark:text-color-text-primary gap-x-[5px] md:gap-x-[15px]`}
+            className={`flex flex-wrap justify-center items-center md:h-[50px] text-[12px] text-color-text-primary dark:text-color-text-primary gap-x-[5px] gap-y-[6px] md:gap-x-[15px]`}
           >
             <Link
               href="/privacy-policy"
@@ -83,6 +83,19 @@ export default function Footer({
               }
             >
               Privacy Policy
+            </Link>
+            <Link
+              href="/data-terms"
+              className="underline"
+              passHref
+              target="_blank"
+              rel="noopener"
+              aria-label="Data Terms"
+              onClick={() =>
+                track("click", { location: "footer", link: "data-terms" })
+              }
+            >
+              Data Terms
             </Link>
             <Link
               href="/imprint"

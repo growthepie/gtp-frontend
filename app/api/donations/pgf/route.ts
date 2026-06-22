@@ -29,6 +29,11 @@ async function fetchData() {
 
     const jsonResponse = await response.json();
 
+    if (!jsonResponse.records) {
+      console.error("Error fetching donations:", jsonResponse);
+      return [];
+    }
+
     const now = dayjs();
 
     return jsonResponse.records

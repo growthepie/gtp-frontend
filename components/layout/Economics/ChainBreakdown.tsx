@@ -21,11 +21,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 import Container from "../Container";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/layout/Tooltip";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
@@ -665,23 +662,21 @@ export default function ChainBreakdown({
                         } `}
                     />
                   </div>
-                  <Tooltip key={"revenue"} placement="right">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                          <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-xxs">
-                              The sum of fees that were paid by users of the
-                              chain in gas fees.
-                            </div>
-                          </div>
-                        </div>
+                  <GTPTooltipNew
+                    key={"revenue"}
+                    placement="right"
+                    allowInteract={false}
+                    hoverOpenDelay={100}
+                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                    unstyled
+                  >
+                    <GTPTooltipGeneral width={260}>
+                      <div className="pl-[20px]">
+                        The sum of fees that were paid by users of the chain in gas fees.
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    </GTPTooltipGeneral>
+                  </GTPTooltipNew>
                 </div>
               </div>
               <div className="flex items-center justify-end pr-[5px] gap-x-[5px]">
@@ -715,26 +710,24 @@ export default function ChainBreakdown({
                         } `}
                     />
                   </div>
-                  <Tooltip key={"costs"} placement="right">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                          <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-xs ">
-                              The chains onchain expenses. L1 costs are gas fees
-                              paid to Ethereum for posting proofs, states, and
-                              pointing to Blobs. Blob costs are fees paid for
-                              data storage in Blobs (i.e. EIP4844 or Celestia
-                              Blobs).
-                            </div>
-                          </div>
-                        </div>
+                  <GTPTooltipNew
+                    key={"costs"}
+                    placement="right"
+                    allowInteract={false}
+                    hoverOpenDelay={100}
+                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                    unstyled
+                  >
+                    <GTPTooltipGeneral width={260}>
+                      <div className="pl-[20px]">
+                        The chains onchain expenses. L1 costs are gas fees paid to
+                        Ethereum for posting proofs, states, and pointing to Blobs.
+                        Blob costs are fees paid for data storage in Blobs (i.e.
+                        EIP4844 or Celestia Blobs).
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    </GTPTooltipGeneral>
+                  </GTPTooltipNew>
                 </div>
                 <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
                   <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
@@ -828,22 +821,21 @@ export default function ChainBreakdown({
                         } `}
                     />
                   </div>
-                  <Tooltip key={"profit"} placement="right">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                          <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-xs ">
-                              The chains total revenue minus its costs.
-                            </div>
-                          </div>
-                        </div>
+                  <GTPTooltipNew
+                    key={"profit"}
+                    placement="right"
+                    allowInteract={false}
+                    hoverOpenDelay={100}
+                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                    unstyled
+                  >
+                    <GTPTooltipGeneral width={260}>
+                      <div className="pl-[20px]">
+                        The chains total revenue minus its costs.
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    </GTPTooltipGeneral>
+                  </GTPTooltipNew>
                 </div>
               </div>
               <div
@@ -877,23 +869,22 @@ export default function ChainBreakdown({
                         } `}
                     />
                   </div>
-                  <Tooltip key={"profit"} placement="right">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                          <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-xxs ">
-                              The profit margin of the chain calculated as
-                              (Revenue - Costs) / Revenue
-                            </div>
-                          </div>
-                        </div>
+                  <GTPTooltipNew
+                    key={"margin"}
+                    placement="right"
+                    allowInteract={false}
+                    hoverOpenDelay={100}
+                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                    unstyled
+                  >
+                    <GTPTooltipGeneral width={260}>
+                      <div className="pl-[20px]">
+                        The profit margin of the chain calculated as (Revenue -
+                        Costs) / Revenue
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    </GTPTooltipGeneral>
+                  </GTPTooltipNew>
                 </div>
               </div>
               <div
@@ -925,22 +916,21 @@ export default function ChainBreakdown({
                       } `}
                   />
                 </div>
-                <Tooltip key={"margin"} placement="right">
-                  <TooltipTrigger>
-                    <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                        <div className="flex flex-col gap-y-[5px] items-center">
-                          <div className="flex items-center gap-x-[5px] text-xxs ">
-                            The total amount of data that is stored in Blobs.
-                          </div>
-                        </div>
-                      </div>
+                <GTPTooltipNew
+                  key={"size"}
+                  placement="right"
+                  allowInteract={false}
+                  hoverOpenDelay={100}
+                  trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                  positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+                  unstyled
+                >
+                  <GTPTooltipGeneral width={260}>
+                    <div className="pl-[20px]">
+                      The total amount of data that is stored in Blobs.
                     </div>
-                  </TooltipContent>
-                </Tooltip>
+                  </GTPTooltipGeneral>
+                </GTPTooltipNew>
               </div>
               {/*END TOP ROW */}
               {/*END TOP ROW */}

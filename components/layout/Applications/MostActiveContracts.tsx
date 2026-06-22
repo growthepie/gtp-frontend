@@ -6,6 +6,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import {
   GridTableHeader,
   GridTableHeaderCellButton,
@@ -19,34 +21,78 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { getExplorerAddressUrl } from "@/lib/helpers";
+import { track } from "@/lib/tracking";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 const CONTRACT_GRID_COLS = "grid-cols-[minmax(220px,1fr),130px,160px,105px,105px,100px]";
+
+// Timespan options for the contracts table. The selected key indexes into
+// data.contracts_table (see activeContractsTable below) to drive the displayed rows.
+const CONTRACT_TIMESPANS: { key: string; label: string; shortLabel: string; subtitle: string }[] = [
+  { key: "1d", label: "Yesterday", shortLabel: "1d", subtitle: "yesterday" },
+  { key: "7d", label: "7 days", shortLabel: "7d", subtitle: "in the last 7 days" },
+  { key: "30d", label: "30 days", shortLabel: "30d", subtitle: "in the last 30 days" },
+  { key: "180d", label: "180 days", shortLabel: "180d", subtitle: "in the last 180 days" },
+  { key: "max", label: "Max", shortLabel: "Max", subtitle: "across all time" },
+];
 
 const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: ApplicationDetailsData; containerHeight?: number; owner_project: string }) => {
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
     metric: "txcount",
     sortOrder: "desc",
   });
+  const [selectedTableTimespan, setSelectedTableTimespan] = useState<string>("7d");
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [justCopied, setJustCopied] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { data: master, AllChainsByKeys } = useMaster();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const oliHide = useMediaQuery("(max-width: 530px)");
 
+  const [headingRowRef, { width: headingRowWidth }] = useElementSizeObserver<HTMLDivElement>();
+  const [titleRef, { width: titleWidth }] = useElementSizeObserver<HTMLDivElement>();
   const [topPartsRef, { height: topPartsHeight }] = useElementSizeObserver<HTMLDivElement>();
   const [tableHeaderRef, { height: tableHeaderHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [mobileDownloadRef, { height: mobileDownloadHeight }] = useElementSizeObserver<HTMLDivElement>();
-  const [bottomCtaRef, { height: bottomCtaHeight }] = useElementSizeObserver<HTMLDivElement>();
+  const [bottomButtonsRef, { height: bottomButtonsHeight }] = useElementSizeObserver<HTMLDivElement>();
 
   // Outer card has py-[15px] (30px) plus one gap between the intro and table (10px).
-  const VERTICAL_OVERHEAD = 40 + (isMobile ? mobileDownloadHeight + 10 : 0) + (oliHide ? bottomCtaHeight + 10 : 0);
+  const VERTICAL_OVERHEAD = 40 + (bottomButtonsHeight > 0 ? bottomButtonsHeight + 10 : 0);
   const scrollAreaHeight = containerHeight && containerHeight > 0
     ? Math.max(100, containerHeight - topPartsHeight - tableHeaderHeight - VERTICAL_OVERHEAD)
     : 350;
+
+  // The timespan selector is always the small (xs) size and absolutely positioned (so it
+  // never shifts the title), which means it can overlap the title on narrow columns. Show
+  // the long labels while there's room and switch to the short labels once there isn't.
+  // ~305px ≈ xs selector w/ long labels + gap (Yesterday / 7 days / 30 days / 180 days / Max).
+  const LONG_LABEL_RESERVE = 305;
+  // ~220px ≈ short-label (xs) selector + gap. Below this even the short labels won't fit
+  // beside the title, so the selector drops to its own row under the heading and we hide
+  // the subheading to save vertical space.
+  const SHORT_LABEL_RESERVE = 220;
+  // When stacked, the selector gets its own full-width row, so it can show the long labels
+  // again as long as they fit. ~300px ≈ xs selector with long labels.
+  const STACKED_LONG_LABEL_WIDTH = 300;
+  const roomBesideTitle = headingRowWidth > 0 ? headingRowWidth - titleWidth : Infinity;
+  const stackSelector = roomBesideTitle < SHORT_LABEL_RESERVE;
+  // compactSelector = use short labels. Inline: based on the space beside the title.
+  // Stacked: based on the full row width (long labels if they fit, otherwise short).
+  const compactSelector = stackSelector
+    ? headingRowWidth > 0 && headingRowWidth < STACKED_LONG_LABEL_WIDTH
+    : isMobile || roomBesideTitle < LONG_LABEL_RESERVE;
+
+  // The bottom button row spans the full content width (same as the heading row). On narrow
+  // screens the full "Contract missing? Label here." button pushes Download outside the row,
+  // so drop its trailing text to keep both buttons inside. ~360px ≈ both full-label buttons.
+  const BOTTOM_BUTTONS_COMPACT_BELOW = 360;
+  const compactBottomContractButton =
+    headingRowWidth > 0 && headingRowWidth < BOTTOM_BUTTONS_COMPACT_BELOW;
+  // When even the short button + Download won't fit on one line, stack them so Download
+  // drops below Contract missing. ~280px ≈ short Contract missing + Download on one row.
+  const BOTTOM_BUTTONS_STACK_BELOW = 280;
+  const stackBottomButtons =
+    headingRowWidth > 0 && headingRowWidth < BOTTOM_BUTTONS_STACK_BELOW;
 
   const iconNames = {
     "finance": "gtp-defi",
@@ -58,8 +104,17 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     "cross_chain": "gtp-crosschain",
   };
 
+  // Contracts data for the currently selected timespan (1d / 7d / 180d / max).
+  // Falls back to undefined if that timespan has no table, in which case the list is empty.
+  const activeContractsTable = data.contracts_table?.[selectedTableTimespan];
+
+  // Subtitle phrase that matches the selected timespan (e.g. "in the last 30 days").
+  const activeTimespanSubtitle =
+    CONTRACT_TIMESPANS.find((t) => t.key === selectedTableTimespan)?.subtitle ?? "in the last 7 days";
+
   const sortedContracts = useMemo(() => {
-    const types = data.contracts_table["7d"].types;
+    if (!activeContractsTable) return [];
+    const types = activeContractsTable.types;
 
     const metricToTypeKey: Record<string, string> = {
       name: "name",
@@ -76,7 +131,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     const colIdx = types.indexOf(typeKey);
     const dir = sort.sortOrder === "asc" ? 1 : -1;
 
-    return [...Object.values(data.contracts_table["7d"].data)].sort((a, b) => {
+    return [...Object.values(activeContractsTable.data)].sort((a, b) => {
       const aVal = a[colIdx];
       const bVal = b[colIdx];
       if (stringMetrics.has(sort.metric)) {
@@ -84,7 +139,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
       }
       return dir * ((aVal as number ?? 0) - (bVal as number ?? 0));
     });
-  }, [data.contracts_table, sort, showUsd]);
+  }, [activeContractsTable, sort, showUsd]);
 
   const handleCopy = (address: string, chainKey: string) => {
     const key = `${address}:${chainKey}`;
@@ -97,8 +152,36 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     }, 1000);
   };
 
+  const TRACKING_LOCATION = "application page - most active contracts";
+
+  const handleTimespanChange = (key: string) => {
+    track("changed Contracts Timespan", {
+      location: TRACKING_LOCATION,
+      page: window.location.pathname,
+      owner_project,
+      timespan: key,
+    });
+    setSelectedTableTimespan(key);
+  };
+
+  const handleContractMissingClick = () => {
+    track("clicked Contract Missing Label", {
+      location: TRACKING_LOCATION,
+      page: window.location.pathname,
+      owner_project,
+    });
+    window.location.href = `https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`;
+  };
+
   const handleDownloadContracts = () => {
-    const types = data.contracts_table["7d"].types;
+    if (!activeContractsTable) return;
+    track("clicked Download Contracts", {
+      location: TRACKING_LOCATION,
+      page: window.location.pathname,
+      owner_project,
+      timespan: selectedTableTimespan,
+    });
+    const types = activeContractsTable.types;
     const headers = ["Address", "Name", "Chain", "Category", "Subcategory", "Transaction Count", "Active Addresses", "Fees Paid"];
     const rows = sortedContracts.map((contract) => {
       const contractMap = {
@@ -143,6 +226,26 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     window.URL.revokeObjectURL(url);
   };
 
+  // Inline (beside the heading) the selector hugs its content. When stacked below the
+  // heading it spans the full width of the card and the buttons stretch to fill it equally.
+  const timespanSelector = (
+    <GTPButtonContainer className={stackSelector ? "w-full flex" : "!w-fit"}>
+      <GTPButtonRow wrap={false} className="flex-nowrap" style={{ width: stackSelector ? "100%" : "auto" }}>
+        {CONTRACT_TIMESPANS.map((timespan) => (
+          <GTPButton
+            key={timespan.key}
+            className={stackSelector ? "w-full justify-center" : "justify-center"}
+            innerStyle={stackSelector ? { width: "100%" } : undefined}
+            label={compactSelector ? timespan.shortLabel : timespan.label}
+            size="xs"
+            variant="primary"
+            isSelected={selectedTableTimespan === timespan.key}
+            clickHandler={() => handleTimespanChange(timespan.key)}
+          />
+        ))}
+      </GTPButtonRow>
+    </GTPButtonContainer>
+  );
 
   return (
     <div
@@ -151,8 +254,8 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     >
       {/* Header + Description (measured together as fixed top block) */}
       <div ref={topPartsRef} className="flex flex-col gap-y-[10px]">
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-x-[5px]">
+        <div ref={headingRowRef} className="relative flex items-center gap-x-[10px]">
+            <div ref={titleRef} className="flex items-center gap-x-[5px]">
             <GTPIcon
               icon="gtp-labeled"
               className="!size-[16px]"
@@ -162,42 +265,21 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
               Most Active Contracts
             </div>
           </div>
-          <div className="relative w-full flex items-center justify-end">
-            {!oliHide && (
-              <>
-                <GTPButton
-                  label="Contract missing? Label here."
-                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
-                  size="xs"
-                  rightIcon={"in-button-right-monochrome" as GTPIconName}
-                  className="z-30"
-                  clickHandler={() => {
-                    window.location.href = `https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`;
-                  }}
-                />
-                <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[184px]"
-                  style={{
-                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-                  }}
-                />
-              </>
-            )}
-          </div>
+          {/* Timespan selector — sits inline (absolute, right of the heading) while there's
+              room beside the title. When too narrow (stackSelector) it drops to its own row
+              below the heading and the subheading is hidden. */}
+          {!stackSelector && (
+            <div className="absolute right-0 top-[calc(50%-3px)] -translate-y-1/2">
+              {timespanSelector}
+            </div>
+          )}
         </div>
-        <div className="flex items-center justify-between gap-x-[10px]">
+        {stackSelector && <div className="flex">{timespanSelector}</div>}
+        {!stackSelector && (
           <div className="text-xs text-color-text-primary">
-            See the most active contracts for this application in the last 7 days.
+            See the most active contracts for this application {activeTimespanSubtitle}.
           </div>
-          <div className="hidden md:block">
-            <GTPButton
-              leftIcon={"gtp-download" as GTPIconName}
-              label="Download Contracts"
-              size="xs"
-              clickHandler={handleDownloadContracts}
-            />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Scrollable table */}
@@ -227,7 +309,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           >
             <div className="flex flex-col gap-y-[3px] pt-[5px]">
               {sortedContracts.map((contract, index) => {
-                const types = data.contracts_table["7d"].types;
+                const types = activeContractsTable?.types ?? [];
 
                 const contractMap = {
                   address: contract[types.indexOf("address")],
@@ -371,7 +453,28 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
           </VerticalScrollContainer>
           
         </HorizontalScrollContainer>
-        <div ref={mobileDownloadRef} className="flex md:hidden items-center justify-start">
+        {/* Both buttons sit together under the table — side by side, or stacked
+            (Download below Contract missing) when there isn't room for one row. */}
+        <div
+          ref={bottomButtonsRef}
+          className={`flex justify-start ${stackBottomButtons ? "flex-col items-start gap-y-[5px]" : "flex-row items-center gap-x-[10px]"}`}
+        >
+          <div className="relative flex items-center">
+            <GTPButton
+              label={compactBottomContractButton ? "Contract missing?" : "Contract missing? Label here."}
+              leftIcon={"oli-open-labels-initiative" as GTPIconName}
+              size="xs"
+              rightIcon={"in-button-right-monochrome" as GTPIconName}
+              className="z-30"
+              clickHandler={handleContractMissingClick}
+            />
+            <div
+              className="absolute -inset-[0.5px] rounded-full"
+              style={{
+                background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
+              }}
+            />
+          </div>
           <GTPButton
             leftIcon={"gtp-download" as GTPIconName}
             label="Download Contracts"
@@ -379,28 +482,6 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
             clickHandler={handleDownloadContracts}
           />
         </div>
-        {oliHide && (
-          <div ref={bottomCtaRef} className="relative flex items-center justify-start mt-[5px]">
-                <GTPButton
-                  label="Contract missing? Label here."
-                  leftIcon={"oli-open-labels-initiative" as GTPIconName}
-                  size="xs"
-                  rightIcon={"in-button-right-monochrome" as GTPIconName}
-                  className="z-30"
-                  clickHandler={() => {
-                    window.location.href = `https://www.growthepie.com/applications/edit?source=application-page&project=${owner_project}&focus=contracts&start=contracts`;
-                  }}
-                />
-                <div
-                  className="absolute -top-[0.5px] h-[22px] rounded-full w-[183px]"
-                  style={{
-                    background: "linear-gradient(33deg, #5C44C2 -14.22%, #69ADDA 42.82%, #FF1684 93.72%)",
-                  }}
-                />
-          </div>
-        )}
-
-      {/* Footer CTA */}
 
     </div>
   );

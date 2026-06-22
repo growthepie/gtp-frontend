@@ -17,6 +17,7 @@ import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/
 import { ChainOverview } from "@/lib/chains";
 import { LifetimeAchievments, StreaksAchievments } from "./OverviewCards/Achievements";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip"
 import { useMediaQuery } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
@@ -645,7 +646,7 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
               placement="top"
               size="md"
               allowInteract={true}
-              containerClass="max-w-fit pl-[15px]"
+              containerClass="max-w-fit"
               key={index + chain.urlKey}
               trigger={
                 <div>
@@ -658,8 +659,11 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
                   </Link>
                 </div>
               }
+              unstyled
             >
-              <div className="text-sm">{chain.label}</div>
+              <GTPTooltipGeneral width={160}>
+                <div className="text-sm pl-[15px]">{chain.label}</div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           )
         })}

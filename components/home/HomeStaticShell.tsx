@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import { HOME_FAQ } from "@/lib/home/homeFaq";
 
 export default async function HomeStaticShell() {
   const h = await headers();
@@ -70,76 +71,17 @@ export default async function HomeStaticShell() {
           </p>
         </section>
 
-        <section aria-label="Frequently Asked Questions" itemScope itemType="https://schema.org/FAQPage">
+        {/* Visible (sr-only) FAQ prose for AI crawlers. The machine-readable
+            FAQPage is now emitted as JSON-LD by HomeRouteSchemas (both driven
+            by lib/home/homeFaq.ts), so no schema.org microdata is needed here. */}
+        <section aria-label="Frequently Asked Questions">
           <h2>Frequently Asked Questions</h2>
-
-          <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-            <h3 itemProp="name">What&apos;s growthepie?</h3>
-            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-              <p itemProp="text">
-                growthepie is the open analytics platform for the Ethereum
-                ecosystem — empowering builders with actionable insights to grow
-                the pie. From Mainnet to Layer 2s and onchain applications,
-                explore open data on usage, growth, and adoption.
-              </p>
+          {HOME_FAQ.map((item) => (
+            <div key={item.question}>
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
             </div>
-          </div>
-
-          <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-            <h3 itemProp="name">What&apos;s up with the name &quot;growthepie&quot;?</h3>
-            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-              <p itemProp="text">
-                We view Ethereum&apos;s different scaling solutions as
-                complementary technologies for the ecosystem that enable more
-                use cases, rather than competitors vying for market share. We
-                believe the space is a positive-sum game where each unique
-                flavor of Layer 2 technology brings its own benefits, and
-                together they are &quot;growing the pie&quot; for everyone. Our
-                brand name is always one word and lowercase: growthepie.
-              </p>
-            </div>
-          </div>
-
-          <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-            <h3 itemProp="name">
-              What&apos;s the difference between Ethereum Mainnet and the
-              Ethereum ecosystem?
-            </h3>
-            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-              <p itemProp="text">
-                Ethereum Mainnet, also called Ethereum L1, is the Ethereum
-                blockchain that launched in 2015. The Ethereum ecosystem
-                includes many blockchains built on top of Ethereum Mainnet
-                (Layer 2s). These blockchains settle to Ethereum Mainnet and
-                benefit from some of its security guarantees. Not all of these
-                chains run the EVM — Layer 2s can also use other VMs (CairoVM,
-                SVM, FuelVM, etc.). Settling to Ethereum Mainnet defines the
-                ecosystem, not the VM.
-              </p>
-            </div>
-          </div>
-
-          <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-            <h3 itemProp="name">What are Quick Bites?</h3>
-            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-              <p itemProp="text">
-                Quick Bites are short, data-driven articles on specific topics
-                or trends in the Ethereum ecosystem. You can browse all of them
-                on the Quick Bites page at growthepie.com/quick-bites.
-              </p>
-            </div>
-          </div>
-
-          <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-            <h3 itemProp="name">Are the dates on this website my regional timezone or UTC?</h3>
-            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
-              <p itemProp="text">
-                All dates on our website use UTC time. This makes it easier to
-                aggregate data and avoid confusion when people in different
-                timezones share charts.
-              </p>
-            </div>
-          </div>
+          ))}
         </section>
       </article>
     </div>

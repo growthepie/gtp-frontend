@@ -19,11 +19,7 @@ import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
 import BlockspaceTreemapSection from "./BlockspaceTreeMap/BlockspaceTreemapSection";
-import {
-  TopRowContainer,
-  TopRowChild,
-  TopRowParent,
-} from "@/components/layout/TopRow";
+
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";

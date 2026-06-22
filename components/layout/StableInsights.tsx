@@ -3,11 +3,9 @@ import Icon from "@/components/layout/Icon";
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  TopRowContainer,
-  TopRowParent,
-  TopRowChild,
-} from "@/components/layout/TopRow";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import {
   Tooltip as InfoToolTip,
   TooltipTrigger,
@@ -77,6 +75,7 @@ export default function StableInsights({ }: {}) {
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
+  const [isWrapping, setIsWrapping] = useState(false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const handleClick = () => {
     setClicked(!clicked);
@@ -526,31 +525,32 @@ export default function StableInsights({ }: {}) {
                 </div>
               </a>
             </div>
-            <TopRowContainer>
-              <TopRowParent>
-                <TopRowChild isSelected={true}>By Holder</TopRowChild>
-              </TopRowParent>
-              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-              </div>
-              <TopRowParent className="">
-                {Object.keys(timespans).map((timespan) => {
-                  return (
-                    <TopRowChild
-                      isSelected={selectedTimespan === timespan}
-                      onClick={() => {
-                        setSelectedTimespan(timespan);
-                      }}
-                      key={timespan}
-                    >
-                      {isMobile
-                        ? timespans[timespan].shortLabel
-                        : timespans[timespan].label}
-                    </TopRowChild>
-                  );
-                })}
-              </TopRowParent>
-            </TopRowContainer>
+            <GTPButtonContainer isWrapping={isWrapping} setIsWrapping={setIsWrapping}>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+                <GTPButton
+                  label="By Holder"
+                  variant="primary"
+                  size="sm"
+                  isSelected={true}
+                  innerStyle={{ width: "100%" }}
+                  className="w-full justify-center"
+                />
+              </GTPButtonRow>
+              <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+                {Object.keys(timespans).map((timespan) => (
+                  <GTPButton
+                    key={timespan}
+                    label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                    variant="primary"
+                    size="sm"
+                    isSelected={selectedTimespan === timespan}
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    clickHandler={() => setSelectedTimespan(timespan)}
+                  />
+                ))}
+              </GTPButtonRow>
+            </GTPButtonContainer>
 
             <div className="flex flex-col-reverse lg:flex-row w-full gap-x-[10px] gap-y-[5px]">
               <div className="w-full lg:flex-1 lg:pt-[10px] relative">

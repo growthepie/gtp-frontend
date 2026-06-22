@@ -11,6 +11,8 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { renderToStaticMarkup } from "react-dom/server";
+import { GTPTooltipChart } from "@/components/GTPComponents/GTPTooltip";
 import {
   clamp,
   withOpacity,
@@ -57,6 +59,10 @@ const getMeasureCtx = () => {
 const Y_AXIS_MAX_POSITIVE_OVERSHOOT_RATIO = 1.15;
 const Y_AXIS_PADDING_MULTIPLIER = 1.03;
 
+// Hard cap on y-axis ticks (labels AND guide lines, which are drawn one per tick).
+// Both derive from {min, max, step}, so widening the step keeps them in lockstep.
+const MAX_Y_AXIS_TICKS = 10;
+
 function getNiceStep(raw: number): number {
   const safeRaw = Math.max(raw, Number.EPSILON);
   const magnitude = Math.pow(10, Math.floor(Math.log10(safeRaw)));
@@ -66,6 +72,41 @@ function getNiceStep(raw: number): number {
   if (normalized <= 3.75) return 2.5 * magnitude;
   if (normalized <= 7.5) return 5 * magnitude;
   return 10 * magnitude;
+}
+
+// Smallest nice step strictly larger than `step` (1 → 2 → 2.5 → 5 → 10 → …).
+function getNextNiceStep(step: number): number {
+  const candidate = getNiceStep(step * 1.5);
+  return candidate > step ? candidate : getNiceStep(step * 2);
+}
+
+// Guarantee the axis never renders more than MAX_Y_AXIS_TICKS gridlines/labels by
+// widening the step to the next nice value and re-snapping the bounds outward so
+// both endpoints still land on a tick.
+function enforceMaxYAxisTicks(
+  min: number,
+  max: number,
+  step: number,
+): { computedYAxisMin: number; computedYAxisMax: number; yAxisStep: number } {
+  if (!(step > 0) || !Number.isFinite(min) || !Number.isFinite(max) || max <= min) {
+    return { computedYAxisMin: min, computedYAxisMax: max, yAxisStep: step };
+  }
+  // tick count = intervals + 1, so cap intervals at MAX_Y_AXIS_TICKS - 1.
+  const maxIntervals = Math.max(1, MAX_Y_AXIS_TICKS - 1);
+  let newStep = step;
+  let guard = 0;
+  while (Math.round((max - min) / newStep) > maxIntervals && guard < 100) {
+    newStep = getNextNiceStep(newStep);
+    guard += 1;
+  }
+  if (newStep === step) {
+    return { computedYAxisMin: min, computedYAxisMax: max, yAxisStep: step };
+  }
+  return {
+    computedYAxisMin: Math.floor(min / newStep) * newStep,
+    computedYAxisMax: Math.ceil(max / newStep) * newStep,
+    yAxisStep: newStep,
+  };
 }
 
 function tightenPositiveHeadroom({
@@ -178,7 +219,7 @@ function computeYAxisTicks({
       computedYAxisMax = computedYAxisMin + totalSteps * step;
     }
 
-    return { computedYAxisMin, computedYAxisMax, yAxisStep: step, splitCount };
+    return { ...enforceMaxYAxisTicks(computedYAxisMin, computedYAxisMax, step), splitCount };
   }
 
   const rawStep = Math.max(maxSeriesValue, Number.EPSILON) / splitCount;
@@ -226,12 +267,12 @@ function computeYAxisTicks({
             })();
   }
 
-  return { computedYAxisMin, computedYAxisMax, yAxisStep, splitCount };
+  return { ...enforceMaxYAxisTicks(computedYAxisMin, computedYAxisMax, yAxisStep), splitCount };
 }
 
 // --- Public types ---
 
-export type GTPChartSeriesType = "line" | "area" | "bar";
+export type GTPChartSeriesType = "line" | "area" | "bar" | "pie";
 
 export interface GTPChartSeries {
   name: string;
@@ -337,9 +378,6 @@ export interface GTPChartProps {
   compactXAxis?: boolean;
   /** Overrides the auto-computed split count for y-axis ticks. Controls how many intervals the y-axis is divided into. */
   ySplitNumber?: number;
-  /** Overrides the auto-computed y-axis interval (step between ticks). When combined with yAxisMax,
-   *  forces exactly (yAxisMax - yAxisMin) / yAxisInterval intervals. */
-  yAxisInterval?: number;
   /** When true, treats series data as 0–1 decimals and displays as 0%–100%. Caps y-axis at 100%, formats labels and tooltips as percentages. */
   decimalPercentage?: boolean;
   /** When set, all charts sharing the same syncId will display a synchronised axis pointer line on hover.
@@ -347,6 +385,10 @@ export interface GTPChartProps {
   syncId?: string;
   /** When true, renders an interactive series legend overlaid at the bottom of the chart. */
   showLegend?: boolean;
+  /** When true (default), the legend is lifted 30px up into the chart's reserved footer
+   *  space. Set false to let the legend sit flush at the bottom (e.g. on stacked mobile
+   *  layouts where the reserved footer would otherwise leave dead space above the next element). */
+  legendLift?: boolean;
   /** Optional display name overrides for legend items (key = series.name). Falls back to series.name. */
   legendLabels?: Record<string, string>;
   /** Called when the user toggles a series in the legend. Receives the series name and whether it is now active (true) or inactive (false). */
@@ -355,10 +397,10 @@ export interface GTPChartProps {
   legendInactiveSeries?: string[];
   /** When true, the watermark will overlap with the legend. */
   watermarkOverlap?: boolean;
-  /** Pass false to let ECharts merge option updates instead of fully rebuilding. Defaults to true.
-   *  Set to false during high-frequency series updates (e.g. replay) so ECharts diffs data instead
-   *  of tearing down and recreating series each frame. */
-  notMerge?: boolean;
+  /** Replay reveal: 0..1 progress. When set, an opaque overlay covers the plot area
+   *  (skipping y-axis labels, x-axis labels, and legend) and shrinks left-to-right
+   *  to reveal the data. Animation is pure CSS clip-path (compositor-only). */
+  revealProgress?: number | null;
   /**
    * Called with the pixel coordinates {pixelX, pixelY} of the rightmost visible data point.
    * For stacked series, pixelY reflects the top of the positive stack at that timestamp.
@@ -366,6 +408,16 @@ export interface GTPChartProps {
    * Only supported when xAxisType="time". Returns null when coordinates cannot be resolved.
    */
   onLastDataPointCoords?: (coords: { pixelX: number; pixelY: number } | null) => void;
+  /** Inner radius for pie/donut charts. Use e.g. "50%" for a donut. Defaults to 0 (filled pie). */
+  pieInnerRadius?: string | number;
+  /** Outer radius for pie/donut charts. Defaults to "75%". */
+  pieOuterRadius?: string | number;
+  /** When true, renders name + percentage labels on each pie slice. */
+  showPieLabels?: boolean;
+  /** Custom HTML formatter for pie chart tooltips. Overrides the default formatter. */
+  pieTooltipFormatter?: (params: { name: string; value: number; color: string; percent: number }) => string;
+  /** Opacity of non-hovered pie slices when another slice is hovered (0–1). Defaults to 1 (no dimming). */
+  pieBlurOpacity?: number;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -453,15 +505,20 @@ export default function GTPChart({
   compactXAxis = false,
   ySplitNumber,
   decimalPercentage = false,
-  yAxisInterval,
   syncId,
   showLegend = false,
+  legendLift = true,
   legendLabels,
   onLegendToggle,
   legendInactiveSeries: legendInactiveSeriesProp,
   watermarkOverlap = false,
-  notMerge = true,
+  revealProgress = null,
   onLastDataPointCoords,
+  pieInnerRadius = 0,
+  pieOuterRadius = "75%",
+  showPieLabels = false,
+  pieTooltipFormatter,
+  pieBlurOpacity = 1,
 }: GTPChartProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -497,6 +554,23 @@ export default function GTPChart({
   const [internalInactiveSeries, setInternalInactiveSeries] = useState<Set<string>>(new Set());
   const [hoverLegendSeries, setHoverLegendSeries] = useState<string | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
+
+  // Prune stale entries when the parent changes the series list: without this, a
+  // chain re-added by an external control (e.g. the table) would still be hidden
+  // because its name lingers in the internal inactive set.
+  useEffect(() => {
+    setInternalInactiveSeries((prev) => {
+      if (prev.size === 0) return prev;
+      const validNames = new Set(series.map((s) => s.name));
+      let changed = false;
+      const next = new Set<string>();
+      prev.forEach((name) => {
+        if (validNames.has(name)) next.add(name);
+        else changed = true;
+      });
+      return changed ? next : prev;
+    });
+  }, [series]);
 
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
   const inactiveLegendSeries = useMemo(
@@ -603,6 +677,10 @@ export default function GTPChart({
       if (entry) {
         setContainerHeight(entry.contentRect.height);
         setContainerWidth(entry.contentRect.width);
+        // Resize synchronously here (not just via the state-driven effect) so the chart
+        // tracks the container frame-for-frame during width/height transitions, instead
+        // of lagging behind React's batched re-renders and "stepping".
+        (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
       }
     });
 
@@ -613,11 +691,14 @@ export default function GTPChart({
     };
   }, []);
 
-  // Resize when container height settles — fixes charts that mount before their container has a final height.
+  // Resize when the container size settles — fixes charts that mount before their
+  // container has its final dimensions. Width is included because some browsers (notably
+  // Safari) resolve the container's width after its height; without this the canvas keeps
+  // its initial narrow width and only the y-axis strip renders (no plot area / series).
   useEffect(() => {
-    if (containerHeight <= 0) return;
+    if (containerHeight <= 0 || containerWidth <= 0) return;
     (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)?.resize();
-  }, [containerHeight, minHeight, maxHeight]);
+  }, [containerHeight, containerWidth, minHeight, maxHeight]);
 
   // Typography
   const textXxsTypography = useMemo(
@@ -1277,8 +1358,8 @@ export default function GTPChart({
 
   // --- Y-axis tick layout (shared by dynamicGridLeft and chartOption) ---
   const primaryYAxisLayout = useMemo(
-    () => {
-      const layout = computeYAxisTicks({
+    () =>
+      computeYAxisTicks({
         pairedSeries: primaryAxisSeries.length > 0 ? primaryAxisSeries : pairedSeries,
         xAxisMin: effectiveXBounds.min,
         xAxisMax: effectiveXBounds.max,
@@ -1288,14 +1369,7 @@ export default function GTPChart({
         yAxisMin,
         yAxisMaxOverride,
         ySplitNumber,
-      });
-      if (yAxisInterval === undefined || yAxisInterval <= 0) return layout;
-      // Caller is forcing a fixed tick step (e.g. replay mode). Re-derive splitCount so the
-      // gutter measurement and the echarts axis agree on tick positions.
-      const range = layout.computedYAxisMax - layout.computedYAxisMin;
-      const splitCount = Math.max(1, Math.round(range / yAxisInterval));
-      return { ...layout, yAxisStep: yAxisInterval, splitCount };
-    },
+      }),
     [
       primaryAxisSeries,
       pairedSeries,
@@ -1306,7 +1380,6 @@ export default function GTPChart({
       yAxisMin,
       yAxisMaxOverride,
       ySplitNumber,
-      yAxisInterval,
     ],
   );
 
@@ -1499,18 +1572,27 @@ export default function GTPChart({
   // --- Emit last visible data point pixel coordinates ---
   const onLastDataPointCoordsRef = useRef(onLastDataPointCoords);
   useEffect(() => { onLastDataPointCoordsRef.current = onLastDataPointCoords; }, [onLastDataPointCoords]);
+  // Guard: only call the callback when the emitted value actually changes so callers using
+  // useState as the handler don't re-render (and invalidate series memos) unnecessarily.
+  const lastEmittedCoordsRef = useRef<{ pixelX: number; pixelY: number } | null | undefined>(undefined);
 
   useEffect(() => {
+    const emitNull = () => {
+      if (lastEmittedCoordsRef.current === null) return;
+      lastEmittedCoordsRef.current = null;
+      onLastDataPointCoordsRef.current?.(null);
+    };
+
     if (!onLastDataPointCoords) return;
     if (xAxisType !== "time") {
-      onLastDataPointCoordsRef.current?.(null);
+      emitNull();
       return;
     }
 
     const timer = setTimeout(() => {
       const instance = echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined;
       if (!instance || chartNormalizedSeries.length === 0) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
@@ -1529,7 +1611,7 @@ export default function GTPChart({
       });
 
       if (lastTs === null) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
@@ -1554,11 +1636,16 @@ export default function GTPChart({
 
       const pixelCoords = instance.convertToPixel("grid", [lastTs, stackedValue]);
       if (!pixelCoords || !Number.isFinite(pixelCoords[0]) || !Number.isFinite(pixelCoords[1])) {
-        onLastDataPointCoordsRef.current?.(null);
+        emitNull();
         return;
       }
 
-      onLastDataPointCoordsRef.current?.({ pixelX: pixelCoords[0], pixelY: pixelCoords[1] });
+      const newX = Math.round(pixelCoords[0]);
+      const newY = Math.round(pixelCoords[1]);
+      const prev = lastEmittedCoordsRef.current;
+      if (prev !== null && prev !== undefined && prev.pixelX === newX && prev.pixelY === newY) return;
+      lastEmittedCoordsRef.current = { pixelX: newX, pixelY: newY };
+      onLastDataPointCoordsRef.current?.({ pixelX: newX, pixelY: newY });
     }, 80);
 
     return () => clearTimeout(timer);
@@ -1684,6 +1771,101 @@ export default function GTPChart({
 
       return `${resolvedPrefix}${formatCompactNumber(value, axisDecimals)}${resolvedSuffix}`;
     };
+
+    // --- Pie chart ---
+    const isPieChart = pairedSeries.some(s => s.seriesType === "pie");
+    if (isPieChart) {
+      const pieSlices = pairedSeries
+        .map((s, index) => {
+          const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+          const [primary] = resolveSeriesColors(s.color, fallbackColor);
+          const lastVal = [...s.pairedData].reverse().find(
+            d => typeof d[1] === "number" && d[1] !== null
+          )?.[1] ?? null;
+          return { name: s.name, value: lastVal, color: primary };
+        })
+        .filter((s): s is { name: string; value: number; color: string } => s.value !== null);
+
+      const pieSeries = pieSlices.map(s => ({
+        name: s.name,
+        value: s.value,
+        itemStyle: { color: s.color },
+      }));
+
+      const pieOption: EChartsOption = {
+        animation,
+        backgroundColor: "transparent",
+        tooltip: {
+          trigger: "item",
+          renderMode: "html",
+          appendToBody: true,
+          confine: false,
+          backgroundColor: "transparent",
+          borderWidth: 0,
+          padding: 0,
+          extraCssText: "box-shadow:none; border:none; z-index:2147483647; pointer-events:none;",
+          textStyle: {
+            color: textPrimary,
+            fontFamily: "var(--font-raleway), sans-serif",
+            fontSize: 12,
+          },
+          formatter: (param: unknown) => {
+            const p = param as { name: string; value: number; color: string; percent: number };
+            if (pieTooltipFormatter) return pieTooltipFormatter(p);
+            const formattedValue = formatTooltipValue(p.value, 0);
+            return `
+              <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
+                <div class="flex w-full space-x-1.5 items-center leading-tight">
+                  <div class="w-[10px] h-[10px] rounded-full flex-shrink-0" style="background-color:${escapeHtml(p.color)}"></div>
+                  <div class="flex-1 numbers-xxs">${escapeHtml(p.name)}</div>
+                  <div class="ml-4 numbers-xs">${formattedValue}</div>
+                  <div class="ml-2 numbers-xs">${p.percent.toFixed(1)}%</div>
+                </div>
+              </div>
+            `;
+          },
+        },
+        series: [
+          {
+            type: "pie",
+            radius: [pieInnerRadius, pieOuterRadius],
+            center: ["50%", "50%"],
+            data: pieSeries,
+            label: {
+              show: showPieLabels,
+              color: textPrimary,
+              fontFamily: numbersXxsTypography.fontFamily,
+              fontSize: numbersXxsTypography.fontSize,
+              fontWeight: numbersXxsTypography.fontWeight as any,
+              formatter: "{b}: {d}%",
+            },
+            emphasis: {
+              focus: "self",
+              itemStyle: {
+                shadowBlur: 10,
+                shadowColor: "rgba(0,0,0,0.3)",
+              },
+            },
+            blur: {
+              itemStyle: {
+                opacity: pieBlurOpacity,
+              },
+            },
+            itemStyle: {
+              borderRadius: 4,
+              borderColor: "transparent",
+              borderWidth: 2,
+            },
+          },
+        ],
+      };
+
+      if (optionOverrides) {
+        return { ...pieOption, ...optionOverrides } as EChartsOption;
+      }
+      return pieOption;
+    }
+
     const measureAthLabelWidth = (labelText: string) => {
       const ctx = getMeasureCtx();
       if (ctx) {
@@ -2177,7 +2359,7 @@ export default function GTPChart({
           },
         ];
       }
-
+      const total = dedupedSortedPoints.reduce((sum, p) => sum + p.numericValue, 0);
       const maxTooltipValue = Math.max(...displayPoints.map((p) => Math.abs(p.numericValue)), 0);
 
       if (tooltipFormatter) {
@@ -2228,23 +2410,29 @@ export default function GTPChart({
           </div>
         `;
       })();
+      
+      return renderToStaticMarkup(
+        
+        <GTPTooltipChart
+    
+          width={230}
+          metricName={tooltipTitle ?? ""}
+          dateLabel={dateLabel}
+          dataRows={displayPoints.map((p) => {
+            const meta = normalizedSeries.find((s) => s.name === p.seriesName);
+            const [color] = resolveSeriesColors(meta?.color, p.color ?? textPrimary);
+            const barWidth = maxTooltipValue > 0 ? clamp((Math.abs(p.numericValue) / maxTooltipValue) * 100, 0, 100) : 0;
+            return {
+              name: p.seriesName,
+              value: formatTooltipValue(p.numericValue, 0),
+              color: color ?? "",
+              barWidth,
+            };
+          })}
+          totalRow={showTotal ? formatTooltipValue(total, 0) : undefined}
+        />
+      );
 
-      return `
-        <div class="${DEFAULT_TOOLTIP_CONTAINER_CLASS}">
-          <div class="flex-1 flex ${showTooltipTimestamp ? "items-start" : "items-center"}  justify-between font-bold text-[13px] md:text-[1rem] ml-[18px] mb-1">
-
-            <div class="">
-              <div>${dateLabel}</div>
-              <div class="text-xs font-medium text-color-text-primary ${showTooltipTimestamp ? "block" : "hidden"}">${timeLabel} UTC</div>
-            </div>
-            <span class="text-xs font-medium text-color-text-primary">${tooltipTitle ?? ""}</span>
-          </div>
-          <div class="flex flex-col w-full">
-            ${rows}
-            ${totalRow}
-          </div>
-        </div>
-      `;
     };
     const baseOption: EChartsOption = {
       animation,
@@ -2443,6 +2631,11 @@ export default function GTPChart({
     formatValueForAxis,
     secondaryYAxisLayout,
     decimalPercentage,
+    pieInnerRadius,
+    pieOuterRadius,
+    showPieLabels,
+    pieTooltipFormatter,
+    pieBlurOpacity,
   ]);
 
   const watermarkOverlayClassName =
@@ -2459,12 +2652,82 @@ export default function GTPChart({
           ref={echartsRef}
           echarts={echarts}
           option={chartOption}
-          notMerge={notMerge}
+          notMerge
           lazyUpdate
           style={{ width: "100%", height: minHeight ? `${minHeight}px` : maxHeight ? `${maxHeight}px` : "100%" }}
           opts={{ devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio : 2 }}
         />
       </div>
+      {/* Replay reveal overlay: covers only the plot grid (so y-axis labels, x-axis
+          labels, watermark, and legend stay visible) and clips itself right-to-left
+          via clip-path. z-[3] sits above the canvas but below the watermark (z-[40])
+          and x-axis label DOM (DOM-order).
+          Horizontal grid lines are re-drawn inside the overlay so they stay
+          continuous across the reveal seam — color/opacity matches the ECharts
+          splitLine style above (withOpacity(textPrimary, 0.11)). */}
+      {revealProgress !== null && revealProgress !== undefined && revealProgress < 1 && (() => {
+        // Match ECharts' splitLine count exactly: it draws one line per tick from
+        // computedYAxisMin to computedYAxisMax stepping by yAxisStep, so the interval
+        // count is (max-min)/step rather than the requested splitCount (e.g. percentage
+        // mode forces step=25 with range 0-100 → 4 intervals, 5 lines).
+        const { computedYAxisMin, computedYAxisMax, yAxisStep } = primaryYAxisLayout;
+        const intervals = yAxisStep > 0
+          ? Math.max(1, Math.round((computedYAxisMax - computedYAxisMin) / yAxisStep))
+          : 1;
+        const lineColor = withOpacity(textPrimary, 0.11);
+        // ECharts line stroke (lineWidth ~2) and end-point symbols (symbolSize 8) extend
+        // a few pixels past the grid rectangle. Without these extensions the rightmost
+        // end-symbol and any line touching y≈0 peek out past the overlay during replay.
+        // Left extension stays small — there's only an 8px gap between the y-axis
+        // labels and the plot edge (see dynamicGridLeft), so 2px is the safe budget.
+        const EXTEND_TOP = 3;
+        const EXTEND_RIGHT = 6;
+        const EXTEND_BOTTOM = 3;
+        const EXTEND_LEFT = 2;
+        return (
+          <div
+            className="pointer-events-none absolute overflow-hidden bg-color-bg-default z-[3]"
+            style={{
+              top: Math.max(0, effectiveGrid.top - EXTEND_TOP),
+              left: Math.max(0, effectiveGrid.left - EXTEND_LEFT),
+              right: Math.max(0, effectiveGrid.right - EXTEND_RIGHT),
+              bottom: Math.max(0, effectiveGrid.bottom - EXTEND_BOTTOM),
+              clipPath: `inset(0 0 0 ${revealProgress * 100}%)`,
+            }}
+          >
+            {/* Inner box anchored to the actual plot bounds (insets undo the EXTEND_*
+                values) so the horizontal grid lines line up pixel-for-pixel with the
+                ECharts splitLines underneath. */}
+            {!hidePrimaryAxis && (
+              <div
+                className="absolute"
+                style={{
+                  top: EXTEND_TOP,
+                  left: EXTEND_LEFT,
+                  right: EXTEND_RIGHT,
+                  bottom: EXTEND_BOTTOM,
+                }}
+              >
+                {Array.from({ length: intervals + 1 }).map((_, i) => {
+                  // Top edge pinned with top:0, bottom edge with bottom:0, interior
+                  // lines pixel-centered on their fractional Y — same convention as
+                  // ECharts' splitLine rendering.
+                  const isTop = i === 0;
+                  const isBottom = i === intervals;
+                  const style: React.CSSProperties = {
+                    height: 1,
+                    backgroundColor: lineColor,
+                  };
+                  if (isTop) style.top = 0;
+                  else if (isBottom) style.bottom = 0;
+                  else style.top = `calc(${(i / intervals) * 100}% - 0.5px)`;
+                  return <div key={i} className="absolute left-0 right-0" style={style} />;
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {/* External crosshair overlay — shown by peer charts in the same syncId group.
           Updated imperatively (no React state) to avoid re-renders on every mouse move.
           Uses repeating-linear-gradient with the exact zrender dash formula:
@@ -2565,8 +2828,21 @@ export default function GTPChart({
         )
       ) : null}
     </div>
-    {showLegend && series.length > 0 && (
-      <div ref={legendRef} className="relative flex flex-wrap justify-center  bottom-[30px] gap-x-[5px] gap-y-[1px]">
+    {series.length > 0 && (
+      // The legend's height is animated via grid-template-rows (0fr → 1fr) so the chart
+      // canvas grows/shrinks smoothly as the legend hides/shows, instead of jumping.
+      <div
+        className={`grid transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          showLegend ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        } ${legendLift ? "relative bottom-[30px]" : ""}`}
+      >
+      <div className="overflow-hidden">
+      <div
+        ref={legendRef}
+        className={`flex flex-wrap justify-center gap-x-[5px] gap-y-[1px] transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          showLegend ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         {series.map((s, index) => {
           const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
           const [dotColor] = resolveSeriesColors(s.color, fallbackColor);
@@ -2603,6 +2879,8 @@ export default function GTPChart({
             </div>
           );
         })}
+      </div>
+      </div>
       </div>
     )}
     </div>

@@ -256,7 +256,7 @@ const StablecoinChain: QuickBiteData = {
       icon: "optimism-logo-monochrome",
       color: "rgb(var(--chains-op-mainnet))",
       name: "OP Mainnet",
-      url: "/chains/op-mainnet"
+      url: "/chains/optimism"
     },
     {
       icon: "worldchain-logo-monochrome",
@@ -347,6 +347,18 @@ const StablecoinChain: QuickBiteData = {
       color: "rgb(var(--chains-metis))",
       name: "Metis",
       url: "/chains/metis"
+    },
+    {
+      icon: "zksync-era-logo-monochrome",
+      color: "rgb(var(--chains-zksync-era))",
+      name: "ZKsync Era",
+      url: "/chains/zksync-era"
+    },
+    {
+      // Icon and color auto-resolve from chain master data (no local
+      // ronin-logo-monochrome icon / --chains-ronin color var exist yet).
+      name: "Ronin",
+      url: "/chains/ronin"
     },
   ],
   icon: "",

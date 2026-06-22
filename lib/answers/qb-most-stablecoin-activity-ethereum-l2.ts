@@ -43,11 +43,11 @@ export const faqItems: FaqItem[] = [
   // ----- Stablecoin transactions -----
   {
     q: 'Which L2 processed the most stablecoin transactions today?',
-    a: "On {{l2_stables_data_date}} UTC, the top three Ethereum L2s by daily stablecoin transactions are {{l2_stables_txcount_daily_top3}}. Counts come from the blockspace category endpoint (`token_transfers.subcategories.stablecoin`).",
+    a: "On {{l2_stables_data_date}} UTC, the top three Ethereum L2s by daily stablecoin transactions are {{l2_stables_txcount_daily_top3}}. Counts are precomputed daily on growthepie's backend from the blockspace stablecoin subcategory (`token_transfers.subcategories.stablecoin`) and published at `/v1/answers/stablecoin-activity.json`.",
   },
   {
     q: 'Which L2 processed the most stablecoin transactions this week?',
-    a: "Over the most recent 7-day window (data {{l2_stables_data_date}} UTC), the top three Ethereum L2s by stablecoin transactions are {{l2_stables_txcount_weekly_top3}}. Weekly is a 7-day rolling sum from the blockspace endpoint.",
+    a: "Over the most recent 7-day window (data {{l2_stables_data_date}} UTC), the top three Ethereum L2s by stablecoin transactions are {{l2_stables_txcount_weekly_top3}}. Weekly is a 7-day rolling sum, precomputed daily on the backend from the blockspace stablecoin subcategory.",
   },
   {
     q: 'Which L2 processed the most stablecoin transactions this month?',
@@ -86,11 +86,11 @@ export const faqItems: FaqItem[] = [
   },
   {
     q: 'Where does this answer come from?',
-    a: 'Supply comes from growthepie\'s per-chain stables_mcap timeseries (`/v1/metrics/chains/{chain}/stables_mcap.json`), USD column. Transactions and gas spent come from the blockspace category endpoint (`/v1/blockspace/category_comparison.json`, path `data.token_transfers.subcategories.stablecoin`) — daily uses the latest day of `.daily[chain]`, weekly uses `.aggregated["7d"]`, monthly uses `.aggregated["30d"]`. Variety comes from the stablecoins-by-chain quick-bite table (`/v1/quick-bites/stablecoins/chains/table_{chain}.json`) — the row count is the number of distinct stablecoins on the chain. L2 membership comes from `master.json` (chains where `bucket !== "Layer 1"` and `chain_type` indicates an Ethereum rollup or validium). Sidechain exclusions on {{l2_stables_data_date}} UTC: {{l2_stables_excluded_sidechains}}. No editorial overrides.',
+    a: 'Supply comes from growthepie\'s per-chain stables_mcap timeseries (`/v1/metrics/chains/{chain}/stables_mcap.json`), USD column. Transactions and gas spent come from the precomputed answer endpoint (`/v1/answers/stablecoin-activity.json`), which the backend recomputes daily from the blockspace stablecoin subcategory (`data.token_transfers.subcategories.stablecoin`) — daily = latest day, weekly = 7-day rolling sum, monthly = 30-day rolling sum, for `txcount` and `gas_spent`. Variety comes from the stablecoins-by-chain quick-bite table (`/v1/quick-bites/stablecoins/chains/table_{chain}.json`) — the row count is the number of distinct stablecoins on the chain. L2 membership comes from `master.json` (chains where `bucket !== "Layer 1"` and `chain_type` indicates an Ethereum rollup or validium). Sidechain exclusions on {{l2_stables_data_date}} UTC: {{l2_stables_excluded_sidechains}}. No editorial overrides.',
   },
   {
     q: 'Why are weekly and monthly transaction counts called 7d and 30d sums?',
-    a: 'Because the blockspace endpoint reports stablecoin transactions as rolling-window aggregations rather than calendar weeks or months. "Weekly" on this page = total stablecoin transactions over the most recent 7 days; "monthly" = total over the most recent 30 days. This is different from how the most-used-L2 answer page treats weekly DAA (which uses a calendar-week unique-address count). For supply, weekly and monthly use the per-chain timeseries\' native period buckets — those are calendar-aligned.',
+    a: 'Because the underlying blockspace data reports stablecoin transactions as rolling-window aggregations rather than calendar weeks or months. "Weekly" on this page = total stablecoin transactions over the most recent 7 days; "monthly" = total over the most recent 30 days. This is different from how the most-used-L2 answer page treats weekly DAA (which uses a calendar-week unique-address count). For supply, weekly and monthly use the per-chain timeseries\' native period buckets — those are calendar-aligned.',
   },
   {
     q: 'Where can I see live L2 stablecoin data?',
@@ -191,9 +191,9 @@ export const jsonLdDatasets = [
       {
         '@type': 'DataDownload',
         encodingFormat: 'application/json',
-        contentUrl: 'https://api.growthepie.com/v1/blockspace/category_comparison.json',
+        contentUrl: 'https://api.growthepie.com/v1/answers/stablecoin-activity.json',
         description:
-          'All categories per chain; this page reads `data.token_transfers.subcategories.stablecoin`.',
+          'Precomputed daily on the backend from the blockspace stablecoin subcategory (`data.token_transfers.subcategories.stablecoin`); exposes per-period top L2s by transaction count and gas spent.',
       },
     ],
   },
@@ -272,14 +272,14 @@ const mostStablecoinActivityEthereumL2: QuickBiteData = createQuickBite({
     '**How the answer is derived (transparent methodology):**',
     "1. Pull the [master chain catalogue](https://api.growthepie.com/v1/master.json) and filter to chains where `bucket !== \"Layer 1\"`, `deployment === \"PROD\"`, and the chain key is not on the explicit non-L2 list below.",
     "2. For **stablecoin supply**, pull the per-chain endpoint (`/v1/metrics/chains/{chain}/stables_mcap.json`) — daily / weekly / monthly aggregations exposed natively, USD column.",
-    "3. For **stablecoin transactions and gas spent**, pull the blockspace category endpoint (`/v1/blockspace/category_comparison.json`) and read `data.token_transfers.subcategories.stablecoin`. Daily = latest row of the `.daily[chain]` series. Weekly = `.aggregated[\"7d\"].data[chain]`. Monthly = `.aggregated[\"30d\"].data[chain]`. Fields: `txcount_absolute` for transactions, `gas_fees_absolute_usd` for gas spent.",
+    "3. For **stablecoin transactions and gas spent**, pull the precomputed answer endpoint (`/v1/answers/stablecoin-activity.json`). The backend recomputes it daily from the blockspace stablecoin subcategory (`data.token_transfers.subcategories.stablecoin`): daily = latest day, weekly = 7-day rolling sum, monthly = 30-day rolling sum — using `txcount_absolute` for transactions and `gas_fees_absolute_usd` for gas spent. (This replaces directly downloading the ~43MB `category_comparison.json` from the page.)",
     "4. For **stablecoin variety**, pull the quick-bite table (`/v1/quick-bites/stablecoins/chains/table_{chain}.json`) and count the rows.",
     "5. Sort the chains by raw value for each ranking and take the top 3.",
 
     "All rankings on this page pull live from growthepie's public API and refresh daily; the values shown above were generated on {{l2_stables_data_date}} UTC:",
     '- Master chain list (with bucket / chain_type classification): `https://api.growthepie.com/v1/master.json`',
     '- Per-chain stablecoin supply (daily / weekly / monthly): `https://api.growthepie.com/v1/metrics/chains/{chain}/stables_mcap.json`',
-    '- Blockspace category comparison (stablecoin txs + gas spent): `https://api.growthepie.com/v1/blockspace/category_comparison.json`',
+    '- Precomputed stablecoin activity (txs + gas spent, recomputed daily from the blockspace stablecoin subcategory): `https://api.growthepie.com/v1/answers/stablecoin-activity.json`',
     '- Per-chain stablecoin table (variety / distinct token count): `https://api.growthepie.com/v1/quick-bites/stablecoins/chains/table_{chain}.json`',
     'Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).',
     '',

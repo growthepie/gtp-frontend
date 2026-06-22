@@ -25,6 +25,11 @@ async function fetchData() {
 
     const jsonResponse = await response.json();
 
+    if (!jsonResponse.records) {
+      console.error("Error fetching donations:", jsonResponse);
+      return [];
+    }
+
     return jsonResponse.records
       .filter((record: any) => Object.keys(record.fields).length > 0)
       .sort((a: any, b: any) =>

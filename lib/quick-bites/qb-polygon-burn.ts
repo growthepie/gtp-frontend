@@ -145,7 +145,7 @@ const polygonBurn: QuickBiteData = {
     },
     {
       name: "Polygon",
-      url: "/chains/polygon",
+      url: "/chains/polygon-pos",
     },
     {
       icon: "gtp-categories",

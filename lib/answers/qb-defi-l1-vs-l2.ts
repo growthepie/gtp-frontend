@@ -26,7 +26,7 @@ export const faqItems: FaqItem[] = [
   // ----- Per period -----
   {
     q: 'How much L2 DeFi activity is there across different time windows?',
-    a: 'We don\'t surface live per-window L2 DeFi transaction counts on this page because growthepie\'s blockspace category data file (`/v1/blockspace/category_comparison.json`) is ~55MB — beyond Next.js\'s 2MB fetch-cache ceiling, so reading it from SSR would re-download the file every render (multi-minute page loads). For per-app DeFi rankings on L2s with live transaction counts, see [growthepie.com/applications](https://www.growthepie.com/applications) — the same data, queried client-side where the cache size limit doesn\'t apply.',
+    a: 'The per-window L1 vs L2 DeFi split (7d / 30d / 90d / 180d / 365d / max — transactions, gas fees, and L2 share) is shown in the first table on this page. It\'s precomputed daily on growthepie\'s backend and published at `/v1/answers/defi-l1-vs-l2.json`, so the page no longer needs to download a large blockspace file at render time. For per-app DeFi rankings on L2s with live transaction counts, see [growthepie.com/applications](https://www.growthepie.com/applications).',
   },
   // ----- Per-L2 contributors -----
   {
@@ -41,7 +41,7 @@ export const faqItems: FaqItem[] = [
   // ----- Methodology -----
   {
     q: 'How is this calculated?',
-    a: 'growthepie\'s [blockspace overview endpoint](https://api.growthepie.com/v1/blockspace/overview.json) exposes per-chain per-category activity rollups at multiple window lengths (7d / 30d / 90d / 365d / max). For Ethereum L1 we read `chains.ethereum.overview[window].defi.data`; for L2 ecosystem we read `chains.all_l2s.overview[window].defi.data`. Each `.defi.data` row carries transactions and USD gas-fees-paid in the DeFi category. We compute L1+L2 totals and the L2 share from those two rows.',
+    a: 'The L1 vs L2 finance-category (DeFi) split per window is precomputed daily on growthepie\'s backend and published at [`/v1/answers/defi-l1-vs-l2.json`](https://api.growthepie.com/v1/answers/defi-l1-vs-l2.json). The backend reads growthepie\'s blockspace finance-category rollups (transactions and USD gas-fees-paid) for Ethereum L1 and the `all_l2s` aggregate at each window length (7d / 30d / 90d / 180d / 365d / max), and computes the L1+L2 totals and L2 share. The same file carries the per-L2 contributor breakdown for the 30-day window.',
   },
   {
     q: 'Why does this use the `all_l2s` aggregate?',
@@ -103,16 +103,9 @@ export const jsonLdDatasets = [
       {
         '@type': 'DataDownload',
         encodingFormat: 'application/json',
-        contentUrl: 'https://api.growthepie.com/v1/blockspace/overview.json',
+        contentUrl: 'https://api.growthepie.com/v1/answers/defi-l1-vs-l2.json',
         description:
-          'Blockspace overview, `chains.all_l2s` aggregate. Read `overview[window].defi.data` for L2 DeFi activity per window.',
-      },
-      {
-        '@type': 'DataDownload',
-        encodingFormat: 'application/json',
-        contentUrl: 'https://api.growthepie.com/v1/blockspace/category_comparison.json',
-        description:
-          'Per-L2 DeFi contributor breakdown. Read `data.defi.aggregated["30d"].data` keyed by chain.',
+          'Precomputed daily on the backend from the blockspace finance-category rollups. Carries the L1 vs L2 DeFi split per window (`byWindow`) and the per-L2 contributor breakdown for 30d (`topL2Contributors30d`).',
       },
       {
         '@type': 'DataDownload',
@@ -146,7 +139,7 @@ const defiL1VsL2: QuickBiteData = createQuickBite({
   content: [
     "**Short answer (data {{l2_defi_data_date}} UTC):** Most DeFi activity happens on L2s, but DeFi capital still concentrates on L1. Over the last 30 days, L2s processed **{{l2_defi_l2_txs_30d}}** DeFi transactions vs **{{l2_defi_l1_txs_30d}}** on Ethereum L1 — L2 share **{{l2_defi_l2_share_txs_30d}}** by transactions, **{{l2_defi_l2_share_gas_30d}}** by gas fees paid. By stablecoin liquidity, L1 holds **{{l2_defi_stables_l1}}** vs **{{l2_defi_stables_l2}}** across L2s (L2 share **{{l2_defi_stables_l2_share}}**). Top L2 DeFi contributors: **{{l2_defi_top_l2s_30d}}**.",
 
-    "> Sourced from `/v1/blockspace/overview.json` `chains.{chain}.overview[window].finance` for the per-chain DeFi (finance-category) activity, plus per-chain stables_mcap endpoints for the capital comparison and the live fees table for the swap-fee comparison.",
+    "> Sourced from the precomputed `/v1/answers/defi-l1-vs-l2.json` (recomputed daily on the backend from the blockspace finance-category L1-vs-L2 rollups) for the per-window DeFi activity and per-L2 contributors, plus per-chain stables_mcap endpoints for the capital comparison and the live fees table for the swap-fee comparison.",
 
     '# L1 vs L2 DeFi at a glance',
     '{{l2_defi_dense}}',
@@ -172,7 +165,7 @@ const defiL1VsL2: QuickBiteData = createQuickBite({
     '',
     '**2. Live swap-fee comparison** — `/v1/fees/table.json`, path `chain_data[chain].hourly.txcosts_swap` (USD column). Picks Ethereum L1\'s value and the minimum across the L2 universe.',
     '',
-    "**Why no per-window L1 vs L2 DeFi transaction count on this page?** growthepie's blockspace category endpoint (`/v1/blockspace/category_comparison.json`) does have per-L2 DeFi transactions, but the file is ~55MB — above Next.js's 2MB SSR fetch-cache ceiling, so it would re-download on every render (multi-minute page loads). Per-app DeFi rankings (which use the same data, queried client-side) live at [growthepie.com/applications](https://www.growthepie.com/applications). For L1 DeFi specifically, [DefiLlama](https://defillama.com/protocols) is the best source — growthepie doesn't break Ethereum L1 transactions into DeFi/non-DeFi categories.",
+    '**3. L1 vs L2 DeFi activity per window + per-L2 contributors** — the precomputed answer endpoint `/v1/answers/defi-l1-vs-l2.json`. The backend recomputes it daily from growthepie\'s blockspace finance-category rollups (Ethereum L1 vs the `all_l2s` aggregate, plus the per-L2 breakdown for 30d), so the page no longer downloads a large blockspace file at render time. For per-app DeFi rankings see [growthepie.com/applications](https://www.growthepie.com/applications). For L1 DeFi protocol-level data, [DefiLlama](https://defillama.com/protocols) breaks Ethereum L1 TVL down by protocol.',
     '',
     "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Numbers on this page are computed mechanically from public API data. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
     '',

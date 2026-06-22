@@ -10,7 +10,8 @@ import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/Proje
 import { ApplicationsDataContext, AggregatedDataRow } from '@/app/(layout)/applications/_contexts/ApplicationsDataContext';
 import { ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import Link from 'next/link';
-import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipNew } from '@/components/tooltip/GTPTooltip';
+import { GTPTooltipGeneral } from '@/components/GTPComponents/GTPTooltip';
 import { GTPIcon } from '../../GTPIcon';
 import { motion, AnimatePresence, LayoutGroup, MotionConfig } from 'framer-motion';
 import type { Variants, Transition } from 'framer-motion';
@@ -300,8 +301,8 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
     ? applicationsDataContext?.getIsLoading?.() ?? false
     : false;
 
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -1233,13 +1234,13 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
               }
               containerClass="flex flex-col gap-y-[10px]"
               positionOffset={{ mainAxis: 10, crossAxis: 0 }}
-
+              unstyled
             >
-              <div>
-                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+              <GTPTooltipGeneral width={350}>
+                <div className="flex flex-col gap-y-[10px] pl-[20px]">
                   {"This ecosystem map visualizes applications built on this chain. Applications are ordered by transactions in the last week, and are categorized by their primary function. Click on a category to explore its subcategories and the applications within them."}
-                </TooltipBody>
-              </div>
+                </div>
+              </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
         )}
@@ -1475,8 +1476,11 @@ const AppTile = ({ app, tile, index }: AppTileProps) => {
         }
         containerClass="flex flex-col gap-y-[10px]"
         positionOffset={{ mainAxis: -25, crossAxis: 50 }}
+        unstyled
       >
-        <ApplicationTooltipAlt owner_project={app.ownerProject} key={index} />
+        <GTPTooltipGeneral width={350}>
+          <ApplicationTooltipAlt owner_project={app.ownerProject} key={index} />
+        </GTPTooltipGeneral>
       </GTPTooltipNew>
     </motion.div>
   );

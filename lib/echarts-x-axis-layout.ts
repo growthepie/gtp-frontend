@@ -527,19 +527,38 @@ export const buildTimeXAxisLayout = ({
       : getTickInterval(rangeDays);
   const snapTicksToCleanBoundary = tickAlignToCleanBoundary ?? snapToCleanBoundaryEnabled;
 
-  // Snap axis min to a clean boundary so ticks land on round values.
-  const snappedMin =
-    effectiveMin !== undefined && snapToCleanBoundaryEnabled
-      ? snapToCleanBoundary(effectiveMin, interval)
-      : effectiveMin;
-  const snappedTickStart =
+  // Snap the first tick position to a clean UTC boundary (midnight, 1st of
+  // month, etc.) so labels land on round values — but keep the axis bounds at
+  // the explicit xAxisMin/xAxisMax so the visible range matches the selected
+  // timespan exactly (a 90d preset shows 90 days, not 90 days rounded back to
+  // the 1st of the previous month).
+  let snappedTickStart =
     effectiveMin !== undefined && snapTicksToCleanBoundary
       ? snapToCleanBoundary(effectiveMin, interval)
       : effectiveMin;
 
+  // snapToCleanBoundary rounds DOWN, so the snapped value can sit before the
+  // visible axis min — that would put the first tick label to the left of the
+  // y-axis. Advance to the next clean boundary inside the plot area when that
+  // happens.
+  if (
+    effectiveMin !== undefined &&
+    snappedTickStart !== undefined &&
+    snappedTickStart < effectiveMin
+  ) {
+    if (interval >= 30 * DAY_MS) {
+      const monthStep = Math.max(1, Math.round(interval / (30 * DAY_MS)));
+      const d = new Date(snappedTickStart);
+      d.setUTCMonth(d.getUTCMonth() + monthStep);
+      snappedTickStart = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+    } else {
+      snappedTickStart = snappedTickStart + interval;
+    }
+  }
+
   const bounds = getBarBoundsWithPadding({
     barSeriesData,
-    xAxisMin: snappedMin ?? xAxisMin,
+    xAxisMin: effectiveMin ?? xAxisMin,
     xAxisMax,
     xAxisRangeMs,
     edgePaddingRatio: barEdgePaddingRatio,
@@ -554,7 +573,7 @@ export const buildTimeXAxisLayout = ({
 
   return {
     grid,
-    min: bounds.min ?? snappedMin,
+    min: bounds.min ?? effectiveMin,
     max: resolvedMax,
     minInterval: interval,
     firstTick,

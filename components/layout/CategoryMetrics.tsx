@@ -26,11 +26,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import CategoryBar from "@/components/layout/CategoryBar";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
-import {
-  TopRowContainer,
-  TopRowChild,
-  TopRowParent,
-} from "@/components/layout/TopRow";
+
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";

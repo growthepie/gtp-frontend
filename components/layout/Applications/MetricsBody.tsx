@@ -257,81 +257,20 @@ function computeMetricSeriesData(params: {
 }
 
 // ─── Replay feature ──────────────────────────────────────────────────────────
-// Everything between this banner and the matching "End replay feature" banner
-// below is for the per-chart replay/play button. To remove the feature:
-//   1. Delete this block (snappedXMin + niceStep + niceStepCeil helpers)
-//   2. Delete the matching "End replay feature" block at the bottom of this file
-//   3. In AppMetricChart, remove every `// replay:` tagged line and the
-//      <div pointerEvents=...> wrapper around <GTPChart>
-//   4. In components/GTPComponents/GTPChart.tsx, remove the `yAxisInterval`
-//      prop, destructure, and the override branch inside primaryYAxisLayout
-// The button itself is gated behind REPLAY_BUTTON_ENABLED — same !IS_PRODUCTION
-// pattern that ChainTabs uses for the User Insights tab (lib/helpers.ts). True on
-// local `next dev` and on the dev / preview Vercel deploys, false on prod.
+// Per-chart Play/Stop button that "replays" the chart by revealing it left-to-right.
+// The chart itself renders the FULL final data with no per-frame data slicing —
+// playback is purely a CSS `clip-path: inset(...)` animation on the chart wrapper,
+// so React and ECharts do zero work during the reveal (compositor-only).
+//
+// To remove the feature:
+//   1. Delete this banner + REPLAY_BUTTON_ENABLED line
+//   2. In AppMetricChart, remove every `// replay:` tagged line and the
+//      <div> wrapper with clip-path style around <GTPChart>
+//
+// Gated behind REPLAY_BUTTON_ENABLED — same !IS_PRODUCTION pattern as ChainTabs'
+// User Insights tab. True on local `next dev` and dev/preview Vercel deploys.
 
 const REPLAY_BUTTON_ENABLED = !IS_PRODUCTION;
-
-// Mirrors GTPChart / buildTimeXAxisLayout's snap behavior so the replay can use the same
-// padded lower-bound the chart actually renders (e.g. 90d view snaps Feb 24 → Feb 1).
-// Keep this in sync with lib/echarts-x-axis-layout.ts (TICK_INTERVALS + snapToCleanBoundary).
-function snappedXMin(xMin: number, xMax: number): number {
-    const DAY = 86400 * 1000;
-    const rangeDays = (xMax - xMin) / DAY;
-    let intervalMs: number;
-    if (rangeDays <= 1 / 24) intervalMs = 10 * 60 * 1000;
-    else if (rangeDays <= 3 / 24) intervalMs = 30 * 60 * 1000;
-    else if (rangeDays <= 6 / 24) intervalMs = 60 * 60 * 1000;
-    else if (rangeDays <= 12 / 24) intervalMs = 2 * 60 * 60 * 1000;
-    else if (rangeDays <= 1) intervalMs = 4 * 60 * 60 * 1000;
-    else if (rangeDays <= 7) intervalMs = DAY;
-    else if (rangeDays <= 30) intervalMs = 7 * DAY;
-    else if (rangeDays <= 90) intervalMs = 30 * DAY;
-    else if (rangeDays <= 365) intervalMs = 60 * DAY;
-    else if (rangeDays <= 730) intervalMs = 90 * DAY;
-    else if (rangeDays <= 1460) intervalMs = 180 * DAY;
-    else intervalMs = 360 * DAY;
-
-    const d = new Date(xMin);
-    if (intervalMs >= 30 * DAY) {
-        const monthStep = Math.max(1, Math.round(intervalMs / (30 * DAY)));
-        const alignedMonth = Math.floor(d.getUTCMonth() / monthStep) * monthStep;
-        return Date.UTC(d.getUTCFullYear(), alignedMonth, 1);
-    }
-    if (intervalMs >= DAY) {
-        return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-    }
-    const midnight = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-    const msSinceMidnight = xMin - midnight;
-    return midnight + Math.floor(msSinceMidnight / intervalMs) * intervalMs;
-}
-
-// Mirrors GTPChart's internal getNiceStep so the replay can pre-snap y-axis steps to the same
-// 1 / 2 / 2.5 / 5 / 10 nice-number cadence the chart uses naturally.
-function niceStep(raw: number): number {
-    const safe = Math.max(raw, Number.EPSILON);
-    const magnitude = Math.pow(10, Math.floor(Math.log10(safe)));
-    const normalized = safe / magnitude;
-    if (normalized <= 1.5) return 1 * magnitude;
-    if (normalized <= 2.25) return 2 * magnitude;
-    if (normalized <= 3.75) return 2.5 * magnitude;
-    if (normalized <= 7.5) return 5 * magnitude;
-    return 10 * magnitude;
-}
-
-// Smallest nice step that is >= raw. Replay locks its interval count, so the step must round
-// UP to guarantee step * intervals >= padded max — otherwise tall points get clipped early on.
-function niceStepCeil(raw: number): number {
-    const safe = Math.max(raw, Number.EPSILON);
-    const magnitude = Math.pow(10, Math.floor(Math.log10(safe)));
-    const normalized = safe / magnitude;
-    if (normalized <= 1) return 1 * magnitude;
-    if (normalized <= 2) return 2 * magnitude;
-    if (normalized <= 2.5) return 2.5 * magnitude;
-    if (normalized <= 5) return 5 * magnitude;
-    if (normalized <= 10) return 10 * magnitude;
-    return 10 * magnitude;
-}
-// ─── End replay-helpers section ─────────────────────────────────────────────
 
 // Returns the timestamp of the first data point with a real (non-null, non-zero) value.
 // The API pads series from a global start date with null or 0 before the app was active —
@@ -998,26 +937,10 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
     const inactiveSeriesNames = useMemo(() => new Set(deselectedChains), [deselectedChains]);
     const [hoverSeriesName, setHoverSeriesName] = useState<string | null>(null);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
-    // Replay walks an "end timestamp" cutoff across the visible window. Series points past
-    // the cutoff are sliced out; xAxisMin/xAxisMax stay fixed so only y-axis re-scales.
-    const [replayEndTs, setReplayEndTs] = useState<number | null>(null);
+    // replay: 0..1 reveal progress, or null when not replaying. Drives a clip-path
+    // inset on the chart wrapper — the chart itself renders unchanged with final data.
+    const [replayProgress, setReplayProgress] = useState<number | null>(null);
     const replayFrameRef = useRef<number | null>(null);
-    // Locked tick count for the current replay (captured at start, kept for the whole run).
-    const replayTickIntervalsRef = useRef<number>(2);
-    // Monotonic nice-step for the y-axis during replay — never shrinks so labels grow cleanly.
-    const replayStepRef = useRef<number>(0);
-    // Snapped lower bound captured at start of replay so the chart-render filter knows where
-    // data drawing begins (matches the chart's snapToCleanBoundary padding).
-    const replayLowerBoundRef = useRef<number>(0);
-    // Pre-trimmed series captured at replay start. The raw API series can carry 1000+ historical
-    // points; trimming to [visualXMin, xMax] means ECharts only redraws ~90 points per frame
-    // (for a 90d view) instead of ~1000, which removes the perceived lag during playback.
-    const replayTrimmedSeriesRef = useRef<typeof visibleSeries>([]);
-    // DEBUG: instrumentation refs for measuring lag
-    const replayLastFrameTsRef = useRef<number>(0);
-    const replayLastSetTsRef = useRef<number>(0);
-    const replayFrameCountRef = useRef<number>(0);
-    const replayJankCountRef = useRef<number>(0);
     const cardRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -1156,136 +1079,52 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         return days > 0 ? xMax - days * 24 * 60 * 60 * 1000 : undefined;
     }, [xMinProp, timespans, selectedTimespan, xMax]);
 
-    const isReplaying = replayEndTs !== null;
+    const isReplaying = replayProgress !== null;
 
     const stopReplay = useCallback(() => {
         if (replayFrameRef.current !== null) {
             cancelAnimationFrame(replayFrameRef.current);
             replayFrameRef.current = null;
         }
-        setReplayEndTs(null);
+        setReplayProgress(null);
     }, []);
 
     const startReplay = useCallback(() => {
         if (typeof xMin !== "number" || typeof xMax !== "number" || xMax <= xMin) return;
         if (replayFrameRef.current !== null) cancelAnimationFrame(replayFrameRef.current);
-        // Use the same snapped lower bound the chart actually renders, so the tick count
-        // and pace are derived from every point that will be visible during replay (not just
-        // points after raw xMin).
-        const visualXMinForStats = xMinProp === undefined ? snappedXMin(xMin, xMax) : xMin;
-        // Pace the replay by data density — wider timespans hold more points and should
-        // take proportionally longer. Use the densest visible series so chains with sparse
-        // data don't shrink the duration unfairly. Hourly points cover less real time per
-        // dot than daily, so they tick by faster per-point with a lower floor.
+
+        // Pace by data density — wider timespans take longer. Use the densest visible series
+        // so sparse chains don't shrink the duration. Hourly ticks faster than daily.
         let pointCount = 0;
-        // Also collect the eventual full-data max so we can lock the tick count up front.
-        let fullDataMax = 0;
-        const stacked = selectedScale === "stacked";
-        const stackSumByTs = stacked ? new Map<number, number>() : null;
         for (const s of visibleSeries) {
             let n = 0;
-            for (const [ts, val] of s.data) {
-                if (ts < visualXMinForStats || ts > xMax) continue;
+            for (const [ts] of s.data) {
+                if (ts < xMin || ts > xMax) continue;
                 n++;
-                if (typeof val !== "number" || !Number.isFinite(val)) continue;
-                if (stacked && stackSumByTs) {
-                    if (val > 0) stackSumByTs.set(ts, (stackSumByTs.get(ts) ?? 0) + val);
-                } else if (val > fullDataMax) {
-                    fullDataMax = val;
-                }
             }
             if (n > pointCount) pointCount = n;
-        }
-        if (stacked && stackSumByTs) {
-            for (const v of stackSumByTs.values()) if (v > fullDataMax) fullDataMax = v;
         }
         const isHourly = timeInterval === "hourly";
         const msPerPoint = isHourly ? 50 : 100;
         const minMs = isHourly ? 3000 : 5000;
         const duration = Math.max(minMs, Math.min(30000, pointCount * msPerPoint));
 
-        // Lock the tick interval count for the entire replay. Replicates the chart's clean-step
-        // path (niceStep → ceil(padded / step)) so the count matches what the chart would
-        // naturally settle on for the final data.
-        const baseSplit = 2; // matches ySplitNumber={2} below
-        if (fullDataMax > 0) {
-            const padded = fullDataMax * 1.03;
-            const finalStep = niceStep(padded / baseSplit);
-            replayTickIntervalsRef.current = Math.max(1, Math.ceil(padded / finalStep));
-        } else {
-            replayTickIntervalsRef.current = baseSplit;
-        }
-        replayStepRef.current = 0;
-
-        // Seed the starting cutoff at one interval past the chart's actual visual left edge.
-        // The chart snaps xMin back to a clean tick boundary (e.g. 90d view snaps Feb 24 → Feb 1),
-        // so animating from raw xMin makes the replay skip the visible padded region the user
-        // sees pre-replay. Use the snapped boundary so the animation matches the chart's frame.
-        const intervalMs = timeInterval === "hourly" ? 3600 * 1000 : 86400 * 1000;
-        const initialEndTs = Math.min(visualXMinForStats + intervalMs, xMax);
-        replayLowerBoundRef.current = visualXMinForStats;
-        // Pre-trim each series to the visible window so ECharts redraws only the points it
-        // would actually paint. The raw `s.data` can hold years of history before xMin; nulling
-        // them per-frame still leaves ECharts iterating the full array, which is what makes
-        // the playback feel laggy on dense charts.
-        const trimT0 = performance.now();
-        replayTrimmedSeriesRef.current = visibleSeries.map((s) => ({
-            ...s,
-            data: s.data.filter(([ts]) => ts >= visualXMinForStats && ts <= xMax),
-        }));
-        const trimT1 = performance.now();
-        const totalPointsBefore = visibleSeries.reduce((sum, s) => sum + s.data.length, 0);
-        const totalPointsAfter = replayTrimmedSeriesRef.current.reduce((sum, s) => sum + s.data.length, 0);
-        replayLastFrameTsRef.current = 0;
-        replayLastSetTsRef.current = 0;
-        replayFrameCountRef.current = 0;
-        replayJankCountRef.current = 0;
-        // eslint-disable-next-line no-console
-        console.log(
-            `[replay/perf] ${metric} trim=${(trimT1 - trimT0).toFixed(1)}ms points=${totalPointsBefore}→${totalPointsAfter} seriesCount=${visibleSeries.length} duration=${duration}ms intervals=${replayTickIntervalsRef.current}`,
-        );
-
-        setReplayEndTs(initialEndTs);
-
-        // Single rAF — start the animation immediately so the 2-point initial state isn't
-        // held for an extra frame before the loop kicks in. The trimmed-series optimization
-        // (replayTrimmedSeriesRef) keeps the per-frame redraw cheap enough that the initial
-        // state still paints without needing the double-rAF defensive wait.
+        setReplayProgress(0);
         const startWall = performance.now();
         const step = (now: number) => {
-            if (replayFrameRef.current === null) return; // canceled
-            // DEBUG: track frame gap and jank
-            const lastFrame = replayLastFrameTsRef.current;
-            if (lastFrame > 0) {
-                const gap = now - lastFrame;
-                // anything >25ms means we dropped from 60fps → flag as jank
-                if (gap > 25) replayJankCountRef.current++;
-            }
-            replayLastFrameTsRef.current = now;
-            replayFrameCountRef.current++;
-
-            // rAF's `now` can sit a few ms before startWall, producing a negative t. Clamp
-            // so replayEndTs never moves backwards (which would drop visible points).
+            if (replayFrameRef.current === null) return;
             const t = Math.max(0, Math.min((now - startWall) / duration, 1));
-            // ease-in-out cubic — relaxed pace at the edges, steady through the middle
-            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-            replayLastSetTsRef.current = performance.now();
-            setReplayEndTs(initialEndTs + (xMax - initialEndTs) * eased);
+            setReplayProgress(t);
             if (t < 1) {
                 replayFrameRef.current = requestAnimationFrame(step);
             } else {
                 replayFrameRef.current = null;
-                // DEBUG: summary at end of replay
-                // eslint-disable-next-line no-console
-                console.log(
-                    `[replay/perf] ${metric} DONE frames=${replayFrameCountRef.current} janky=${replayJankCountRef.current} (${((replayJankCountRef.current / Math.max(replayFrameCountRef.current, 1)) * 100).toFixed(0)}%) targetFps=${Math.round(replayFrameCountRef.current / (duration / 1000))}`,
-                );
-                // brief hold on the full chart, then release the cutoff
-                setTimeout(() => setReplayEndTs(null), 500);
+                // brief hold on the full chart, then release
+                setTimeout(() => setReplayProgress(null), 500);
             }
         };
         replayFrameRef.current = requestAnimationFrame(step);
-    }, [xMin, xMax, xMinProp, visibleSeries, timeInterval, selectedScale]);
+    }, [xMin, xMax, visibleSeries, timeInterval]);
 
     // Cancel any in-flight replay when the viewing window or data shape changes
     useEffect(() => {
@@ -1293,75 +1132,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             cancelAnimationFrame(replayFrameRef.current);
             replayFrameRef.current = null;
         }
-        setReplayEndTs(null);
+        setReplayProgress(null);
     }, [xMin, xMax, timeInterval, selectedTotal, deselectedChains, compareApps.length]);
 
     useEffect(() => () => {
         if (replayFrameRef.current !== null) cancelAnimationFrame(replayFrameRef.current);
     }, []);
-
-    // DEBUG: measure how long React takes to commit a replayEndTs update
-    useEffect(() => {
-        if (replayEndTs === null || replayLastSetTsRef.current === 0) return;
-        const commitMs = performance.now() - replayLastSetTsRef.current;
-        if (commitMs > 16) {
-            // eslint-disable-next-line no-console
-            console.warn(`[replay/perf] ${metric} slow commit ${commitMs.toFixed(1)}ms`);
-        }
-    }, [replayEndTs, metric]);
-
-    // While replaying, force the y-axis to (intervals × step) where `intervals` was captured
-    // at replay start (so the tick count stays constant) and `step` only grows (so labels never
-    // shrink). Lookahead lets the axis grow ahead of incoming spikes — set to 0 to scale exactly
-    // when each point appears (useful for A/B comparison).
-    // Skip for percentage mode (axis is locked 0–100) and success_rate (decimal-percentage view).
-    const REPLAY_Y_LOOKAHEAD_FRACTION = 0; // was 0.15
-    const replayYAxis = useMemo<{ max: number; interval: number } | null>(() => {
-        if (replayEndTs === null) return null;
-        if (typeof xMin !== "number" || typeof xMax !== "number") return null;
-        if (selectedScale === "percentage" || isSuccessRateMetric) return null;
-        const lookahead = (xMax - xMin) * REPLAY_Y_LOOKAHEAD_FRACTION;
-        const horizon = replayEndTs + lookahead;
-        // Use the same lower bound the chart-render filter uses (the snapped visual left edge).
-        // Otherwise tall points in the snap-padded region [visualXMin, xMin) are rendered but
-        // not counted toward yAxisMax, and they get clipped above the top of the chart.
-        const lowerBound = replayLowerBoundRef.current;
-        const intervals = Math.max(1, replayTickIntervalsRef.current);
-        const stacked = selectedScale === "stacked";
-        let lookaheadMax = 0;
-        if (stacked) {
-            const posSumByTs = new Map<number, number>();
-            for (const s of visibleSeries) {
-                for (const [ts, val] of s.data) {
-                    if (ts < lowerBound) continue;
-                    if (ts > horizon) break;
-                    if (typeof val === "number" && Number.isFinite(val) && val > 0) {
-                        posSumByTs.set(ts, (posSumByTs.get(ts) ?? 0) + val);
-                    }
-                }
-            }
-            for (const v of posSumByTs.values()) if (v > lookaheadMax) lookaheadMax = v;
-        } else {
-            for (const s of visibleSeries) {
-                for (const [ts, val] of s.data) {
-                    if (ts < lowerBound) continue;
-                    if (ts > horizon) break;
-                    if (typeof val === "number" && Number.isFinite(val) && val > lookaheadMax) lookaheadMax = val;
-                }
-            }
-        }
-        if (lookaheadMax <= 0) return null;
-        // Match the chart's natural Y_AXIS_PADDING_MULTIPLIER (1.03) so the locked tick count
-        // we captured at start agrees with the step we pick here.
-        const padded = lookaheadMax * 1.03;
-        // Ceiling variant — guarantees step >= padded / intervals so step * intervals >= padded
-        // and no points get clipped above the y-axis.
-        const candidateStep = niceStepCeil(padded / intervals);
-        // Step is monotonic — never shrinks mid-replay, so tick labels only grow.
-        if (candidateStep > replayStepRef.current) replayStepRef.current = candidateStep;
-        const step = replayStepRef.current;
-        return { max: step * intervals, interval: step };
-    }, [replayEndTs, visibleSeries, xMin, xMax, selectedScale, isSuccessRateMetric]);
 
     if (!metricData) return null;
 
@@ -1603,55 +1379,21 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                  }
 
                 >
-                    {/* Block pointer events on the chart while replaying. setOption with notMerge
-                        rebuilds ECharts' internal series indices every frame; a mousemove/out
-                        dispatched against the previous render's seriesData crashes inside
-                        getDataParams ("Cannot read properties of undefined (reading 'getRawIndex')").
-                        Suppressing DOM hover for the few seconds of playback dodges the race entirely. */}
+                    {/* replay: the chart renders unchanged with the FULL final data.
+                        GTPChart paints an opaque plot-area overlay driven by revealProgress
+                        — animation is pure GPU clip-path on that overlay, no React/ECharts
+                        work per frame. Y-axis, x-axis, legend, and watermark stay visible
+                        throughout. pointerEvents disabled during reveal so tooltips don't
+                        fire on not-yet-visible regions. */}
                     <div style={{ pointerEvents: isReplaying ? "none" : undefined }}>
                     <GTPChart
                         height={280}
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
-                        preserveStackOrder={selectedScale === "percentage"}
-                        series={(() => {
-                            // replay: use the pre-trimmed series (only points in the visible window)
-                            // to keep ECharts' per-frame redraw cheap. Outside replay, use the full
-                            // series so the chart renders exactly as before.
-                            const sourceSeries = replayEndTs !== null
-                                ? replayTrimmedSeriesRef.current
-                                : visibleSeries;
-                            // replay: pre-sort percentage-mode series by full-data last value so
-                            // GTPChart's internal re-sort (which uses truncated data during replay)
-                            // doesn't swap stack positions mid-animation. Paired with preserveStackOrder.
-                            return (selectedScale === "percentage" && sourceSeries.length > 1
-                                ? [...sourceSeries].sort((a, b) => {
-                                    const aLast = [...a.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
-                                    const bLast = [...b.data].reverse().find((p) => typeof p[1] === "number")?.[1] ?? 0;
-                                    return (aLast as number) - (bLast as number);
-                                })
-                                : sourceSeries
-                            );
-                        })().map((s: { name: string; data: [number, number | null][] }) => {
+                        series={visibleSeries.map((s: { name: string; data: [number, number | null][] }) => {
                             const { displayName, color } = resolveSeriesInfo(s.name);
-                            // replay: slice s.data up to the first point past replayEndTs so ECharts
-                            // renders a growing array instead of a same-size array with most values nulled.
-                            // Allocating 1040 [ts, null] tuples per frame was the dominant per-frame cost;
-                            // a binary-search slice does one allocation and ECharts has fewer points to paint.
-                            const data = replayEndTs !== null
-                                ? (() => {
-                                    let lo = 0, hi = s.data.length;
-                                    while (lo < hi) {
-                                        const mid = (lo + hi) >>> 1;
-                                        if (s.data[mid][0] <= replayEndTs) lo = mid + 1;
-                                        else hi = mid;
-                                    }
-                                    return s.data.slice(0, lo);
-                                })()
-                                : s.data;
                             return {
                                 ...s,
-                                data,
                                 seriesType: selectedScale === "percentage" || selectedScale === "stacked" ? "area" as const : "line" as const,
                                 name: displayName,
                                 color: color as [string, string],
@@ -1659,9 +1401,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         })}
                         xAxisMin={xMin}
                         xAxisMax={xMax}
-                        yAxisMax={replayYAxis?.max}
-                        yAxisInterval={replayYAxis?.interval}
-                        snapToCleanBoundary={xMinProp === undefined}
+                        snapToCleanBoundary={false}
                         showTooltipTimestamp={timeInterval === "hourly"}
                         compactXAxis
                         ySplitNumber={2}
@@ -1675,7 +1415,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         syncId={syncId}
                         showLegend={true}
                         watermarkOverlap={mediumBreakpoint ? index === 0 : index === 1}
-                        notMerge={!isReplaying}
+                        revealProgress={replayProgress}
                     />
                     </div>
 

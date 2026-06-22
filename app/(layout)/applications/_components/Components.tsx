@@ -25,6 +25,7 @@ import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponent
 import { OLIContractTooltip, TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { Badge } from "@/app/(labels)/labels/Search";
 import { Chain } from "@/lib/chains";
 import useSWR from "swr";
@@ -661,7 +662,7 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
         <ApplicationIcon owner_project={application.owner_project} size="md" />
         
           <GTPTooltipNew
-            size="md"
+            unstyled
             placement="bottom-start"
             allowInteract={true}
             hoverOpenDelay={300}
@@ -670,7 +671,6 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
                 <ApplicationDisplayName owner_project={application.owner_project} />
               </div>
             }
-            containerClass="flex flex-col gap-y-[10px]"
             positionOffset={{ mainAxis: 0, crossAxis: 20 }}
           >
             <ApplicationTooltip application={application} />
@@ -715,16 +715,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
   if (!application || !ownerProjectToProjectData) return null;
 
   return (
-    // <div
-    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-color-bg-default rounded-[15px] transition-opacity duration-300"
-    //   style={{
-    //     boxShadow: "0px 0px 30px #000000",
-    //     // left: `${mouseOffsetX}px`,
-    //   }}
-    //   onClick={(e) => {
-    //     e.stopPropagation();
-    //   }}
-    // >
+    <GTPTooltipGeneral width={350}>
     <TooltipBody className="pl-[15px]">
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
         <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }} onClick={(e)=> e.stopPropagation}>
@@ -756,7 +747,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
         <Links owner_project={application.owner_project} showUrl={true} />
       </div>
       </TooltipBody>
-    // </div>
+    </GTPTooltipGeneral>
   )
 };
 
@@ -1243,11 +1234,6 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   }
 }
 
-const UnknownCategoryIcon = () => {
-  return (
-    <div className="!size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
-  )
-}
 
 export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -1259,12 +1245,11 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
 
   const isMissingCategory = !ownerProjectToProjectData[application.owner_project] || ownerProjectToProjectData[application.owner_project]?.main_category === undefined;
 
-  const Icon = isMissingCategory ? UnknownCategoryIcon : <GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />;
+  const categoryIcon = !isMissingCategory ? getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") : "";
 
   return (
-    <>
-      <TooltipHeader title={`Category`} icon={Icon as React.ReactNode} />
-      <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
+    <GTPTooltipGeneral width={230} headerText="Category" headerIcon={categoryIcon || undefined}>
+      <div className="flex flex-col gap-[5px] pl-[20px] pt-[5px]">
       {isMissingCategory ? <div className="text-xs text-color-ui-hover">This application has not been categorized yet.</div> : (
         <>
         <div className="heading-small-xs">Subcategories</div>
@@ -1277,8 +1262,8 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
         </div>
         </>
       )}
-      </TooltipBody>
-    </>
+      </div>
+    </GTPTooltipGeneral>
   )
 }
 

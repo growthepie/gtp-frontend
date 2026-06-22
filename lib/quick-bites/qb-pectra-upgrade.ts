@@ -160,7 +160,7 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
     icon: "optimism-logo-monochrome",
     color: "rgb(var(--chains-op-mainnet))",
     name: "OP Mainnet",
-    url: "/chains/op-mainnet"
+    url: "/chains/optimism"
   },
   {
     icon: "unichain-logo-monochrome",

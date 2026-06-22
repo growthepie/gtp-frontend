@@ -79,6 +79,19 @@ const fetchJson = async (url: string): Promise<any> => {
 // `types` is [normalized, unix, value_eth, value_usd]; we want value_usd, but
 // resolve it via the `types` array rather than hard-coding index 3 so a future
 // column reorder doesn't silently break the answer page.
+// Live hourly values are only meaningful if recent. Reject any row whose
+// `unix` timestamp (ms) is more than 30 hours old, so a chain that has stopped
+// reporting doesn't surface a stale value as if it were live. Rows without a
+// readable timestamp are left as-is — we only drop data we can prove is stale.
+const MAX_HOURLY_AGE_MS = 30 * 60 * 60 * 1000;
+const isHourlyRowFresh = (types: any[], row: any[]): boolean => {
+  const unixIdx = types.findIndex((t) => String(t).toLowerCase() === 'unix');
+  if (unixIdx < 0) return true;
+  const ts = row[unixIdx];
+  if (typeof ts !== 'number' || !Number.isFinite(ts)) return true;
+  return Date.now() - ts <= MAX_HOURLY_AGE_MS;
+};
+
 const latestUsdFromHourly = (block: any): number | null => {
   const types: any[] | undefined = block?.types;
   const data: any[] | undefined = block?.data;
@@ -88,6 +101,7 @@ const latestUsdFromHourly = (block: any): number | null => {
   if (usdIdx < 0) return null;
   const last = data[data.length - 1];
   if (!Array.isArray(last) || last.length <= usdIdx) return null;
+  if (!isHourlyRowFresh(types, last)) return null;
   const v = last[usdIdx];
   return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null;
 };

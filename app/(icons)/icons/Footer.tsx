@@ -44,9 +44,12 @@ export default function Footer() {
           {/* Left Side Links */}
           <div className="flex justify-center md:justify-start px-[15px] w-full">
             <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
-              <div className="flex gap-x-[15px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
+              <div className="flex flex-wrap justify-center gap-x-[15px] gap-y-[6px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
                 <Link href="/privacy-policy" className="underline" passHref target="_blank" rel="noopener" aria-label="Privacy Policy" onClick={() => track("click", { location: "footer", link: "privacy-policy" })}>
                   Privacy Policy
+                </Link>
+                <Link href="/data-terms" className="underline" passHref target="_blank" rel="noopener" aria-label="Data Terms" onClick={() => track("click", { location: "footer", link: "data-terms" })}>
+                  Data Terms
                 </Link>
                 <Link href="/imprint" className="underline" passHref target="_blank" rel="noopener" aria-label="Imprint" onClick={() => track("click", { location: "footer", link: "imprint" })}>
                   Imprint

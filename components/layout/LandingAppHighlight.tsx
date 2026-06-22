@@ -1,13 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { GTPIcon } from "./GTPIcon";
-import Heading from "./Heading";
 import Image from "next/image";
 import Link from "next/link";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
-import { ApplicationDisplayName, ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
+import { ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 export default function LandingAppHighlight() {
 
     const { filteredProjectsData } = useProjectsMetadata();
@@ -81,29 +79,29 @@ export default function LandingAppHighlight() {
                     </Link>
         
                     }
-                    containerClass="flex flex-col gap-y-[10px]"
+                    unstyled
                     positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                 >
-                    <ApplicationTooltip application={{
-                        owner_project: randomProjects[0][filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
-                        origin_keys: randomProjects[0][filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
-                        num_contracts: randomProjects[0][filteredProjectsData?.types?.indexOf("num_contracts") ?? 0],
-                        gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_eth") ?? 0],
-                        gas_fees_usd: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_usd") ?? 0],
-                        prev_gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_gas_fees_eth") ?? 0],
-                        txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("txcount") ?? 0],
-                        prev_txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_txcount") ?? 0],
-                        daa: randomProjects[0][filteredProjectsData?.types?.indexOf("daa") ?? 0],
-                        prev_daa: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_daa") ?? 0],
-                        gas_fees_eth_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_eth_change_pct") ?? 0],
-                        gas_fees_usd_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_usd_change_pct") ?? 0],
-                        txcount_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("txcount_change_pct") ?? 0],
-                        daa_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("daa_change_pct") ?? 0],
-                        rank_gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_gas_fees_eth") ?? 0],
-                        rank_gas_fees_usd: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_gas_fees_usd") ?? 0],
-                        rank_txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
-                        rank_daa: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
-                    }} />
+                        <ApplicationTooltip application={{
+                            owner_project: randomProjects[0][filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
+                            origin_keys: randomProjects[0][filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
+                            num_contracts: randomProjects[0][filteredProjectsData?.types?.indexOf("num_contracts") ?? 0],
+                            gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_eth") ?? 0],
+                            gas_fees_usd: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_usd") ?? 0],
+                            prev_gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_gas_fees_eth") ?? 0],
+                            txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("txcount") ?? 0],
+                            prev_txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_txcount") ?? 0],
+                            daa: randomProjects[0][filteredProjectsData?.types?.indexOf("daa") ?? 0],
+                            prev_daa: randomProjects[0][filteredProjectsData?.types?.indexOf("prev_daa") ?? 0],
+                            gas_fees_eth_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_eth_change_pct") ?? 0],
+                            gas_fees_usd_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("gas_fees_usd_change_pct") ?? 0],
+                            txcount_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("txcount_change_pct") ?? 0],
+                            daa_change_pct: randomProjects[0][filteredProjectsData?.types?.indexOf("daa_change_pct") ?? 0],
+                            rank_gas_fees_eth: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_gas_fees_eth") ?? 0],
+                            rank_gas_fees_usd: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_gas_fees_usd") ?? 0],
+                            rank_txcount: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
+                            rank_daa: randomProjects[0][filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
+                        }} />
                 </GTPTooltipNew>
 
             {/* Right 2×2 grid — same height, width = height (square overall) */}
@@ -111,7 +109,6 @@ export default function LandingAppHighlight() {
                 {randomProjects.slice(1, is2xl ? 7 : isXL ? 5 : 3).map((project, index) => (
                     <GTPTooltipNew
                         key={index + project[filteredProjectsData?.types?.indexOf("display_name") ?? 0]}
-                        size="md"
                         placement="bottom-start"
                         allowInteract={true}
                         hoverOpenDelay={200}
@@ -131,27 +128,28 @@ export default function LandingAppHighlight() {
                                 </div>
                             </Link>
                         }
+                        unstyled
                     >
-                        <ApplicationTooltip application={{
-                            owner_project: project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
-                            origin_keys: project[filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
-                            num_contracts: project[filteredProjectsData?.types?.indexOf("num_contracts") ?? 0],
-                            gas_fees_eth: project[filteredProjectsData?.types?.indexOf("gas_fees_eth") ?? 0],
-                            gas_fees_usd: project[filteredProjectsData?.types?.indexOf("gas_fees_usd") ?? 0],
-                            prev_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("prev_gas_fees_eth") ?? 0],
-                            txcount: project[filteredProjectsData?.types?.indexOf("txcount") ?? 0],
-                            prev_txcount: project[filteredProjectsData?.types?.indexOf("prev_txcount") ?? 0],
-                            daa: project[filteredProjectsData?.types?.indexOf("daa") ?? 0],
-                            prev_daa: project[filteredProjectsData?.types?.indexOf("prev_daa") ?? 0],
-                            gas_fees_eth_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_eth_change_pct") ?? 0],
-                            gas_fees_usd_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_usd_change_pct") ?? 0],
-                            txcount_change_pct: project[filteredProjectsData?.types?.indexOf("txcount_change_pct") ?? 0],
-                            daa_change_pct: project[filteredProjectsData?.types?.indexOf("daa_change_pct") ?? 0],
-                            rank_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_eth") ?? 0],
-                            rank_gas_fees_usd: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_usd") ?? 0],
-                            rank_txcount: project[filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
-                            rank_daa: project[filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
-                        }} />
+                            <ApplicationTooltip application={{
+                                owner_project: project[filteredProjectsData?.types?.indexOf("owner_project") ?? 0],
+                                origin_keys: project[filteredProjectsData?.types?.indexOf("origin_keys") ?? 0],
+                                num_contracts: project[filteredProjectsData?.types?.indexOf("num_contracts") ?? 0],
+                                gas_fees_eth: project[filteredProjectsData?.types?.indexOf("gas_fees_eth") ?? 0],
+                                gas_fees_usd: project[filteredProjectsData?.types?.indexOf("gas_fees_usd") ?? 0],
+                                prev_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("prev_gas_fees_eth") ?? 0],
+                                txcount: project[filteredProjectsData?.types?.indexOf("txcount") ?? 0],
+                                prev_txcount: project[filteredProjectsData?.types?.indexOf("prev_txcount") ?? 0],
+                                daa: project[filteredProjectsData?.types?.indexOf("daa") ?? 0],
+                                prev_daa: project[filteredProjectsData?.types?.indexOf("prev_daa") ?? 0],
+                                gas_fees_eth_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_eth_change_pct") ?? 0],
+                                gas_fees_usd_change_pct: project[filteredProjectsData?.types?.indexOf("gas_fees_usd_change_pct") ?? 0],
+                                txcount_change_pct: project[filteredProjectsData?.types?.indexOf("txcount_change_pct") ?? 0],
+                                daa_change_pct: project[filteredProjectsData?.types?.indexOf("daa_change_pct") ?? 0],
+                                rank_gas_fees_eth: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_eth") ?? 0],
+                                rank_gas_fees_usd: project[filteredProjectsData?.types?.indexOf("rank_gas_fees_usd") ?? 0],
+                                rank_txcount: project[filteredProjectsData?.types?.indexOf("rank_txcount") ?? 0],
+                                rank_daa: project[filteredProjectsData?.types?.indexOf("rank_daa") ?? 0],
+                            }} />
                     </GTPTooltipNew>
                 ))}
             </div>

@@ -93,7 +93,7 @@ export default function Home() {
       {data && landing && master && (
         <>
           <Container className="flex-1">
-            <LandingChart
+            
               data={Object.keys(data.chains)
                 .filter((chain) => selectedChains.includes(chain))
                 .map((chain) => {

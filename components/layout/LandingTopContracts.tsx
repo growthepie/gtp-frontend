@@ -186,7 +186,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
         <GTPTooltipNew
-          size="md"
+          unstyled
           placement="bottom-start"
           allowInteract={true}
           trigger={
@@ -194,7 +194,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             <ApplicationDisplayName owner_project={application.owner_project} />
             </div>
           }
-          containerClass="flex flex-col gap-y-[10px]"
           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
         >
           <ApplicationTooltip application={application} />

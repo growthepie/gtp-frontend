@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { useMaster } from "@/contexts/MasterContext";
@@ -27,6 +27,12 @@ type MetricChartProps = {
   type?: string;
   selectedRange: [number, number] | null;
   setSelectedRange: (range: [number, number] | null) => void;
+  /** True when the chart pane is stacked above the table (split pane in its mobile
+   *  layout, bottom bar in-flow directly below the chart). Driven by the split pane's
+   *  actual content width — not the viewport — so the reserved legend footer is dropped
+   *  whenever the bottom bar sits under the chart, even when a wide viewport is narrowed
+   *  by the sidebar. */
+  isStacked?: boolean;
 };
 
 const getSeriesType = (
@@ -38,7 +44,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false }: MetricChartProps) {
   const { data: master } = useMaster();
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [showUsd] = useLocalStorage("showUsd", true);
@@ -79,6 +85,48 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     ] as const;
   }, [metric_id, metric_type]);
 
+  const seriesNameToChainKey = useMemo(() => {
+    const metadataByKey =
+      metric_type === "fundamentals" ? master?.chains : master?.da_layers;
+    const map = new Map<string, string>();
+    chainKeys.forEach((chainKey) => {
+      const name = metadataByKey?.[chainKey]?.name ?? chainKey;
+      map.set(name, chainKey);
+    });
+    return map;
+  }, [chainKeys, master?.chains, master?.da_layers, metric_type]);
+
+  // Snapshot the selected chains at the moment the table is collapsed: that
+  // freezes the legend's chain list so toggling a chain off in the legend
+  // dims it instead of making it disappear. The snapshot is cleared whenever
+  // the table is reopened so the next close captures a fresh set. We adjust
+  // this during render (tracking the previous collapse state) rather than in
+  // an effect, which avoids the extra commit/cascading render.
+  const [legendChainKeys, setLegendChainKeys] = useState<string[] | null>(null);
+  const [wasTableCollapsed, setWasTableCollapsed] = useState(collapseTable);
+
+  if (collapseTable !== wasTableCollapsed) {
+    setWasTableCollapsed(collapseTable);
+    setLegendChainKeys(collapseTable ? [...selectedChains] : null);
+  }
+
+  const handleLegendToggle = useCallback(
+    (seriesName: string, isActive: boolean) => {
+      const chainKey = seriesNameToChainKey.get(seriesName);
+      if (!chainKey) return;
+      if (isActive) {
+        if (!selectedChains.includes(chainKey)) {
+          setSelectedChains([...selectedChains, chainKey]);
+        }
+      } else {
+        // Enforce a minimum of one active chain so the chart never goes blank.
+        if (selectedChains.length <= 1) return;
+        setSelectedChains(selectedChains.filter((c) => c !== chainKey));
+      }
+    },
+    [seriesNameToChainKey, selectedChains, setSelectedChains],
+  );
+
   const chartSeries = useMemo<GTPChartSeries[]>(() => {
     if (!data) return [];
 
@@ -86,8 +134,17 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
       metric_type === "fundamentals" ? master?.chains : master?.da_layers;
     const seriesType = getSeriesType(selectedScale, timeIntervalKey);
 
-    return chainKeys
-      .filter((chainKey) => selectedChains.includes(chainKey))
+    // When the table is hidden, the legend universe is frozen to whatever
+    // chains were selected at close time — so the chart needs to include all
+    // of them as series (deselected ones get dimmed/hidden via the legend's
+    // inactive set). When the table is open there is no legend, so filter to
+    // selectedChains directly.
+    const legendUniverse = legendChainKeys ?? selectedChains;
+    const candidateKeys = collapseTable
+      ? chainKeys.filter((chainKey) => legendUniverse.includes(chainKey))
+      : chainKeys.filter((chainKey) => selectedChains.includes(chainKey));
+
+    return candidateKeys
       .filter((chainKey) => {
         if (chainKey !== "ethereum") return true;
         if (!focusEnabled) return true;
@@ -139,8 +196,10 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   }, [
     theme,
     chainKeys,
+    collapseTable,
     data,
     focusEnabled,
+    legendChainKeys,
     master?.chains,
     master?.da_layers,
     metric_type,
@@ -151,6 +210,20 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     showUsd,
     timeIntervalKey,
   ]);
+
+  const legendInactiveSeriesNames = useMemo(() => {
+    if (!collapseTable) return undefined;
+    const metadataByKey =
+      metric_type === "fundamentals" ? master?.chains : master?.da_layers;
+    const universe = legendChainKeys ?? selectedChains;
+    return universe
+      .filter((chainKey) => !selectedChains.includes(chainKey))
+      .map((chainKey) => metadataByKey?.[chainKey]?.name ?? chainKey);
+  }, [collapseTable, legendChainKeys, selectedChains, metric_type, master?.chains, master?.da_layers]);
+
+  const yAxisLabelFormatter = useCallback((value: number) => {
+    return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${selectedScale === "percentage" ? "%" : suffix ?? ""}`;
+  }, [selectedScale, prefix, decimals, suffix]);
 
   const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
   const visibleSelectedChains = selectedChains.slice(0, 9);
@@ -164,6 +237,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           percentageMode={selectedScale === "percentage"}
           
           xAxisType="time"
+          snapToCleanBoundary={false}
           xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
           xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
           suffix={suffix}
@@ -173,8 +247,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           limitTooltipRows={10}
           watermarkMetricName={metricMeta?.name ?? null}
           showWatermark
-          className="mb-[30px]"
-          height={(containerMobile ? 300 : 440) + (collapseTable ? 30 : 0)}
+          className={isStacked ? undefined : "mb-[30px]"}
+          height={(containerMobile ? 300 : 440) + 30}
 
           emptyStateMessage="Select chains to show their historic data"
           onDragSelect={(xStart, xEnd) => {
@@ -188,13 +262,14 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           dragSelectOverlayColor="rgb(var(--text-secondary) / 50%)"
           dragSelectIcon={"feather:zoom-in" as GTPIconName}
           minDragSelectPoints={2}
-          yAxisLabelFormatter={(value) => {
-            return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${`${selectedScale === "percentage" ? "%" : suffix ?? ""}`}`;
-          }}
+          yAxisLabelFormatter={yAxisLabelFormatter}
           showTooltipTimestamp={timeIntervalKey === "hourly"}
           showTotal={selectedScale === "stacked"}
           reverseTooltipOrder={reversePerformer}
           showLegend={collapseTable}
+          legendLift={!isStacked}
+          legendInactiveSeries={legendInactiveSeriesNames}
+          onLegendToggle={handleLegendToggle}
         />
   </div>
 

@@ -159,7 +159,7 @@ export const metricItems: MetricItem[] = [
             Chain Revenue
           </a>
           {" "}or{" "}
-          <a href="/fundamentals/stablecoin-supply" className="text-forest-500 underline">
+          <a href="/fundamentals/stablecoin-market-cap" className="text-forest-500 underline">
             Stablecoin Supply
           </a> to get a full picture of a chain's health.
         </>
@@ -424,6 +424,21 @@ export const daMetricItems: MetricItem[] = [
     urlKey: "fees-paid-per-megabyte",
   },
 ];
+
+// Canonical, single source of truth for per-metric page content (titles,
+// descriptions, tooltips, icons). Keyed by metric `key`. Other surfaces — most
+// importantly the sidebar/menu defined in `lib/navigation.tsx` — should pull
+// their `page` content from here instead of re-declaring it, so the copy never
+// drifts out of sync between the single-chain tabs and the pages they reference.
+export const metricPagesByKey: { [key: string]: MetricItem["page"] } = [
+  ...metricItems,
+  ...daMetricItems,
+].reduce((acc, item) => {
+  if (item.key) {
+    acc[item.key] = item.page;
+  }
+  return acc;
+}, {} as { [key: string]: MetricItem["page"] });
 
 export const getFundamentalsByKey = (() => {
   const fundamentalsByKey = {};

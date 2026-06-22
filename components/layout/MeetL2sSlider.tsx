@@ -7,6 +7,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Carousel } from "@/components/Carousel";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { ApplicationIcon, ApplicationTooltipAlt } from "@/app/(layout)/applications/_components/Components";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -121,10 +122,12 @@ export const MeetL2sCard = React.memo(({ chainKey, l2Data, projectData, showUsd,
                     <ApplicationIcon owner_project={project.owner_project} size="sm" />
                   </Link>
                 }
-                containerClass="flex flex-col gap-y-[10px]"
+                unstyled
                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}
               >
-                <ApplicationTooltipAlt owner_project={project.owner_project} />
+                <GTPTooltipGeneral width={350}>
+                  <ApplicationTooltipAlt owner_project={project.owner_project} />
+                </GTPTooltipGeneral>
               </GTPTooltipNew>
             ))
           )}

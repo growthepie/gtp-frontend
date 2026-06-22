@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, ReactNode, useRef, useCallback } from "react";
+import { useMemo, ReactNode, useRef, useCallback, useEffect } from "react";
 import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
@@ -21,12 +21,15 @@ import ShareDropdownContent from "../layout/FloatingBar/ShareDropdownContent";
 import GTPButtonDropdown from "../GTPComponents/ButtonComponents/GTPButtonDropdown";
 import GTPResizeDivider from "../GTPComponents/GTPLayout/GTPResizeDivider";
 import { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
-import { downloadElementAsImage } from "../GTPComponents/chartSnapshotHelpers";
+import { downloadElementAsImage, prewarmSnapshotFonts } from "../GTPComponents/chartSnapshotHelpers";
+import LoadingSpinnerIcon from "../GTPComponents/LoadingSpinnerIcon";
+import { useIsSafari } from "@/hooks/useIsSafari";
 import { GTPIcon } from "../layout/GTPIcon";
 import { findMetricConfig } from "@/lib/fundamentals/seo";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems } from "@/lib/metrics";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
@@ -45,15 +48,73 @@ const slugifyFilenamePart = (value: string | undefined) =>
 export default function MetricsContainer({ metric }: { metric: string }) {
     const isMobile = useMediaQuery("(max-width: 967px)");
     const splitRows = useMediaQuery("(max-width: 967px)");
+    // The chart screenshot doesn't render correctly on Safari/iOS WebKit, so hide the
+    // Take Screenshot button there (it's simply not rendered, so the row closes up — no gap).
+    const isSafari = useIsSafari();
     const [collapseTable, setCollapseTable] = useState(false);
+    // Tracks the split pane's *actual* stacked layout (content-width based), so the
+    // chart's reserved legend footer is dropped whenever the bottom bar sits in-flow
+    // below the chart — including the band where a wide viewport is narrowed by the
+    // sidebar enough to stack, but the viewport media query still reads "desktop".
+    const [isChartStacked, setIsChartStacked] = useState(false);
     const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
     const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
     const cardRef = useRef<HTMLDivElement | null>(null);
     const scrollRef = useRef<HTMLDivElement | null>(null);
+    // Card width (≈ the stacked bottom bar width on mobile), used to decide whether the
+    // two-row bottom bar has room to show the left controls' labels instead of icons.
+    const [cardWidth, setCardWidth] = useState(0);
+    // Off-screen always-labelled replica of the left controls, measured so labels only
+    // show when they actually fit (accounting for the button text containers' padding).
+    const bottomLeftMeasureRef = useRef<HTMLDivElement | null>(null);
+    const [bottomLeftLabelledWidth, setBottomLeftLabelledWidth] = useState(0);
     const [scrollMetrics, setScrollMetrics] = useState<GTPScrollPaneScrollMetrics | undefined>();
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const [show7dRollingText, setShow7dRollingText] = useState(false);
     const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
+
+    // Warm the screenshot font-embed cache during idle time so the first "Take Screenshot"
+    // click is fast, without competing with page load.
+    useEffect(() => prewarmSnapshotFonts(), []);
+
+    useEffect(() => {
+        const cardElement = cardRef.current;
+        if (!cardElement) return;
+        const sync = () => setCardWidth(cardElement.getBoundingClientRect().width);
+        sync();
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (entry) setCardWidth(entry.contentRect.width);
+        });
+        observer.observe(cardElement);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        const measureElement = bottomLeftMeasureRef.current;
+        if (!measureElement) return;
+        const sync = () => {
+            const setElement = measureElement.firstElementChild;
+            const buttons = setElement ? Array.from(setElement.children) : [];
+            if (buttons.length === 0) {
+                setBottomLeftLabelledWidth(0);
+                return;
+            }
+            const widths = buttons.map((button) => (button as HTMLElement).getBoundingClientRect().width);
+            // The first button (table toggle) takes a fixed 40px when the table is shown
+            // (icon), but its full natural width when hidden ("Open Table" is shown in full
+            // and never shrinks). The rest are equal width and must each be at least as wide
+            // as the widest of them. Add the inter-button gaps (gap-[2px]) and padding.
+            const tableWidth = collapseTable ? (widths[0] ?? 0) : 40;
+            const otherWidths = widths.slice(1);
+            const widestOther = otherWidths.length > 0 ? Math.max(...otherWidths) : 0;
+            setBottomLeftLabelledWidth(tableWidth + widestOther * otherWidths.length + (buttons.length - 1) * 2 + 4);
+        };
+        sync();
+        const observer = new ResizeObserver(sync);
+        observer.observe(measureElement);
+        return () => observer.disconnect();
+    }, [collapseTable]);
     const {
         timespans,
         timeIntervals,
@@ -92,6 +153,31 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const [topIsWrapping, setTopIsWrapping] = useState(false);
     const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
     const metricConfig = findMetricConfig(metric);
+
+    // When the bottom bar is stacked into two rows on mobile (so the left controls row
+    // spans the full width) show the Share / Screenshot / Download buttons expanded — but
+    // only when the measured labelled width actually fits, so the rightmost button is
+    // never cut off. cardWidth slightly over-states the bottom bar width, hence the
+    // small buffer.
+    const showBottomLeftLabels =
+        isMobile && bottomLeftLabelledWidth > 0 && cardWidth >= bottomLeftLabelledWidth + 16;
+    const bottomLeftLabelDisplay = showBottomLeftLabels ? "always" : "hover";
+    // When the table is hidden on a small screen, the "Open Table" button is the priority:
+    // it always shows its full label (shrink-0, never capped/clipped). The other buttons
+    // split the leftover room — and the measurement reserves the table's full width when
+    // collapsed, so they only keep their labels if they still fit, otherwise icons.
+    const tableHiddenOnSmall = isMobile && collapseTable;
+    // When shown + expanded, the table toggle stays compact (40px icon); the remaining
+    // buttons are equal width and split the leftover room with their content centred.
+    const bottomLeftTableExpandClassName = tableHiddenOnSmall
+        ? "shrink-0"
+        : showBottomLeftLabels
+            ? "w-[40px] overflow-hidden"
+            : undefined;
+    const bottomLeftExpandClassName = showBottomLeftLabels ? "flex-1 justify-center" : undefined;
+    const bottomLeftInnerButtonClassName = showBottomLeftLabels ? "w-full justify-center" : undefined;
+    const bottomLeftExpandInnerStyle = showBottomLeftLabels ? ({ width: "100%" } as const) : undefined;
+    const bottomLeftTableExpandInnerStyle = tableHiddenOnSmall ? undefined : bottomLeftExpandInnerStyle;
 
 
     const pageData = metricConfig?.page ?? {
@@ -328,6 +414,27 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
 
     return (
+        <>
+        {/* Off-screen, always-labelled replica of the bottom-bar left controls, used only
+            to measure the width the expanded row needs (see showBottomLeftLabels). */}
+        <div
+            ref={bottomLeftMeasureRef}
+            aria-hidden
+            className="pointer-events-none invisible absolute top-0 left-0 -z-50"
+        >
+            <GTPButtonRow>
+                <GTPButton
+                    label={!collapseTable ? undefined : "Open Table"}
+                    leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
+                    size={"sm"}
+                    variant={!collapseTable ? "no-background" : "highlight"}
+                    labelDisplay="always"
+                />
+                <GTPButton label="Share" leftIcon="gtp-share-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />
+                {!isSafari && <GTPButton label="Take Screenshot" leftIcon="gtp-png-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />}
+                <GTPButton label="Download Data" leftIcon="gtp-download-monochrome" size={"sm"} variant="no-background" labelDisplay="always" />
+            </GTPButtonRow>
+        </div>
         <GTPCardLayout
             fullBleed={false}
             contentHeight={538}
@@ -361,7 +468,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                         <GTPTooltipNew
                             placement="left"
                             allowInteract={true}
-                            
+                            unstyled
                             containerClass="z-[99]"
                             trigger={
                             <div className="size-[12px]">
@@ -369,9 +476,11 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                             </div>
                             }
                         >
-                            <div className="text-xxs flex items-center gap-x-[5px] relative text-color-text-primary pl-[15px] w-[100px]  group   transition-opacity ">
-                              Sources: <span className="text-color-text-primary">{SourcesDisplay}</span>
-                            </div>
+                            <GTPTooltipGeneral width={245}>
+                              <div className="flex items-center gap-x-[5px] pl-[20px] pt-[5px] text-xxs text-color-text-primary">
+                                Sources: <span className="text-color-text-primary">{SourcesDisplay}</span>
+                              </div>
+                            </GTPTooltipGeneral>
                         </GTPTooltipNew>
                         
                       </div>
@@ -565,47 +674,59 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 <GTPButtonContainer className="gap-x-[5px] " isWrapping={bottomIsWrapping} setIsWrapping={setBottomIsWrapping}>
                     
                     <GTPButtonRow style={{ width: isMobile ? "100%" : "auto"}}>
-                     
+
                         <GTPButton
                             label={!collapseTable ? undefined : "Open Table"}
                             leftIcon={!collapseTable ? "gtp-side-close-monochrome" : "gtp-side-open-monochrome"}
                             size={"sm"}
                             variant={!collapseTable ? "no-background" : "highlight"}
                             visualState="default"
+                            className={bottomLeftTableExpandClassName}
+                            innerStyle={bottomLeftTableExpandInnerStyle}
                             clickHandler={() => setCollapseTable(!collapseTable)}
                         />
-                     
+
                         <GTPButtonDropdown
                             openDirection="top"
-                            matchTriggerWidthToDropdown
+                            matchTriggerWidthToDropdown={!showBottomLeftLabels}
+                            className={bottomLeftExpandClassName}
                             buttonProps={{
                                 label: "Share",
-                                labelDisplay: "hover",
+                                labelDisplay: bottomLeftLabelDisplay,
                                 leftIcon: "gtp-share-monochrome",
                                 size: "sm",
                                 variant: "no-background",
+                                className: bottomLeftInnerButtonClassName,
+                                innerStyle: bottomLeftExpandInnerStyle,
                             }}
                             isOpen={isSharePopoverOpen}
                             onOpenChange={setIsSharePopoverOpen}
                             dropdownContent={<ShareDropdownContent onClose={() => setIsSharePopoverOpen(false)} />}
                         />
-                      
+
+                        {!isSafari && (
                         <GTPButton
                             leftIcon="gtp-png-monochrome"
+                            leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
                             label="Take Screenshot"
-                            labelDisplay="hover"
+                            labelDisplay={bottomLeftLabelDisplay}
                             size={"sm"}
                             variant="no-background"
+                            className={bottomLeftExpandClassName}
+                            innerStyle={bottomLeftExpandInnerStyle}
                             visualState={isDownloadingChartSnapshot ? "disabled" : "default"}
                             disabled={isDownloadingChartSnapshot}
                             clickHandler={handleDownloadChartSnapshot}
                         />
+                        )}
                         <GTPButton
                             leftIcon="gtp-download-monochrome"
                             label="Download Data"
-                            labelDisplay="hover"
+                            labelDisplay={bottomLeftLabelDisplay}
                             size={"sm"}
                             variant="no-background"
+                            className={bottomLeftExpandClassName}
+                            innerStyle={bottomLeftExpandInnerStyle}
                             visualState={!metricData ? "disabled" : "default"}
                             disabled={!metricData}
                             clickHandler={handleDownloadSelectedChartData}
@@ -659,8 +780,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 leftCollapsed={collapseTable}
                 maxLeftPanePercent={50}
                 mobileBreakpoint={967}
+                onLayoutChange={setIsChartStacked}
                 divider={({ onDragStart, isMobile: isMobileLayout }) =>
-                    !isMobile && !collapseTable ? (
+                    !isMobile ? (
                       <GTPResizeDivider
                         onDragStart={onDragStart}
                         showScrollbar
@@ -672,7 +794,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
 
                 leftClassName="!pb-0 "
                 left={
-                    <div className={`relative h-full min-h-0 w-full min-w-[160px]  rounded-[14px] overflow-hidden ${collapseTable ? "hidden" : "block"}`}>
+                    <div className="relative h-full min-h-0 w-full min-w-[160px]  rounded-[14px] overflow-hidden block">
                         <MetricTable
                             metric_type="fundamentals"
                             scrollRef={scrollRef}
@@ -682,10 +804,11 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart collapseTable={collapseTable} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
+                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
                     </div>
                 }
             />
         </GTPCardLayout>
+        </>
     );
 }

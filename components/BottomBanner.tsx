@@ -63,9 +63,12 @@ export default function BottomBanner() {
               revenue-share program. For more, please check the following links:
             </div>
           </div>
-          <div className="w-[230.87px] md:w-[362px] flex justify-between text-xs leading-[1.5]">
+          <div className="flex w-full max-w-[430px] flex-wrap justify-between gap-x-[15px] gap-y-[8px] text-xs leading-[1.5]">
             <Link href="/privacy-policy" className="md:underline">
               Privacy Policy
+            </Link>
+            <Link href="/data-terms" className="md:underline">
+              Data Terms
             </Link>
             <Link href="/imprint" className="md:underline">
               Imprint

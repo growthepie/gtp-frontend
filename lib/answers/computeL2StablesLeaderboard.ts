@@ -6,11 +6,13 @@
 //      timeseries (`/v1/metrics/chains/{key}/stables_mcap.json`), USD col.
 //      Daily / weekly / monthly snapshots (a "weekly" supply means "supply
 //      at the end of the last completed week", since supply is a stock).
-//   2. Stablecoin TRANSACTIONS + GAS SPENT per chain — from blockspace
-//      category data (`/v1/blockspace/category_comparison.json`,
-//      `data.token_transfers.subcategories.stablecoin`). Daily uses the
-//      latest day of `.daily[chain]`; weekly uses `.aggregated["7d"]`;
-//      monthly uses `.aggregated["30d"]`.
+//   2. Stablecoin TRANSACTIONS + GAS SPENT per chain — from the precomputed
+//      answer endpoint (`/v1/answers/stablecoin-activity.json`). The backend
+//      runs the same calculation daily (over blockspace's
+//      `token_transfers.subcategories.stablecoin` data — daily = latest day,
+//      weekly = 7d rolling, monthly = 30d rolling) and publishes the small,
+//      already-ranked top lists, so we no longer download the ~43MB
+//      `category_comparison.json` from SSR.
 //   3. Stablecoin VARIETY (distinct stablecoins deployed) per chain — from
 //      the quick-bite stablecoins-by-chain table endpoint
 //      (`/v1/quick-bites/stablecoins/chains/table_{key}.json`), row count.
@@ -19,7 +21,7 @@
 // can never disagree about which chains they cover.
 
 import { cache } from 'react';
-import { MasterURL, BlockspaceURLs } from '@/lib/urls';
+import { MasterURL, AnswersURLs } from '@/lib/urls';
 
 const NON_L2_KEYS = new Set([
   'ethereum',
@@ -71,6 +73,39 @@ const fetchJson = async (url: string): Promise<any> => {
     throw new Error(`Fetch ${url} failed: ${res.status} ${res.statusText}`);
   }
   return res.json();
+};
+
+// Shape of the precomputed `/v1/answers/stablecoin-activity.json` payload.
+// Only `txcount` and `gas_spent` are published here — supply and variety
+// still come from their own lighter per-chain endpoints below. Each period
+// list is already sorted descending and trimmed to the top entries by the
+// backend; we just attach display metadata (name / colour / url) from master.
+type StablesAnswerEntry = { key: string; value: number };
+type StablesAnswerFile = {
+  byMetricByPeriod?: {
+    txcount?: Partial<Record<StablesPeriod, StablesAnswerEntry[]>>;
+    gas_spent?: Partial<Record<StablesPeriod, StablesAnswerEntry[]>>;
+  };
+};
+
+// Fetch the precomputed stablecoin txcount/gas-spent answer file. Returns null
+// on any failure so supply + variety can still render on their own.
+const fetchStablecoinAnswer = async (): Promise<StablesAnswerFile | null> => {
+  try {
+    const res = await fetch(AnswersURLs['stablecoin-activity'], {
+      next: { revalidate: 3600 },
+      headers: { 'User-Agent': 'growthepie/answers-stables-leaderboard' },
+    });
+    if (!res.ok) {
+      throw new Error(
+        `Fetch stablecoin-activity failed: ${res.status} ${res.statusText}`,
+      );
+    }
+    return (await res.json()) as StablesAnswerFile;
+  } catch (err) {
+    console.error('getL2StablesLeaderboard: answer fetch failed', err);
+    return null;
+  }
 };
 
 // Per-chain stables_mcap timeseries shape: details.timeseries.{period}.{types,data}.
@@ -126,54 +161,15 @@ const fetchChainStablesVariety = async (
   }
 };
 
-// Pull a single value from blockspace's stablecoin subcategory by period.
-// Period mapping:
-//   daily   → latest row of `daily[chain]`
-//   weekly  → aggregated.7d.data[chain]
-//   monthly → aggregated.30d.data[chain]
-// Field is either 'txcount_absolute' or 'gas_fees_absolute_usd'.
-const readStablesFromBlockspace = (
-  stableBlock: any,
-  chainKey: string,
-  period: StablesPeriod,
-  field: 'txcount_absolute' | 'gas_fees_absolute_usd',
-): number | null => {
-  if (!stableBlock) return null;
-
-  if (period === 'daily') {
-    const dailyTypes: any[] | undefined = stableBlock?.daily?.types;
-    const dailyRows: any[] | undefined = stableBlock?.daily?.[chainKey];
-    if (!Array.isArray(dailyTypes) || !Array.isArray(dailyRows) || dailyRows.length === 0)
-      return null;
-    const idx = dailyTypes.indexOf(field);
-    if (idx < 0) return null;
-    const last = dailyRows[dailyRows.length - 1];
-    if (!Array.isArray(last) || last.length <= idx) return null;
-    const v = last[idx];
-    return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null;
-  }
-
-  const aggKey = period === 'weekly' ? '7d' : '30d';
-  const agg = stableBlock?.aggregated?.[aggKey]?.data;
-  if (!agg) return null;
-  const types: any[] | undefined = agg?.types;
-  const row: any[] | undefined = agg?.[chainKey];
-  if (!Array.isArray(types) || !Array.isArray(row)) return null;
-  const idx = types.indexOf(field);
-  if (idx < 0) return null;
-  const v = row[idx];
-  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null;
-};
-
 export const getL2StablesLeaderboard = cache(
   async (): Promise<L2StablesLeaderboard | null> => {
     let master: any;
-    let blockspace: any;
+    let stablesAnswer: StablesAnswerFile | null;
 
     try {
-      [master, blockspace] = await Promise.all([
+      [master, stablesAnswer] = await Promise.all([
         fetchJson(MasterURL),
-        fetchJson(BlockspaceURLs['category-comparison']),
+        fetchStablecoinAnswer(),
       ]);
     } catch (err) {
       console.error('getL2StablesLeaderboard: upstream fetch failed', err);
@@ -181,8 +177,6 @@ export const getL2StablesLeaderboard = cache(
     }
 
     const chains: Record<string, any> = master?.chains ?? {};
-    const stableBlock: any =
-      blockspace?.data?.token_transfers?.subcategories?.stablecoin ?? null;
 
     const isL2 = (key: string): boolean => {
       const c = chains[key];
@@ -237,31 +231,26 @@ export const getL2StablesLeaderboard = cache(
     }
 
     // --- Stablecoin tx count + gas spent rankings (per period) -------------
+    // These come straight from the precomputed answer file — already sorted
+    // and trimmed by the backend, so we only attach display metadata. We keep
+    // the top-5 slice here in case the file ever ships more entries.
+    const mapAnswerEntries = (
+      entries: StablesAnswerEntry[] | undefined,
+    ): StablesEntry[] =>
+      (entries ?? [])
+        .filter((e) => e && typeof e.value === 'number' && e.value > 0)
+        .map((e) => mkEntry(e.key, e.value))
+        .slice(0, 5);
+
     const txcountByPeriod = {} as Record<StablesPeriod, StablesEntry[]>;
     const gasByPeriod = {} as Record<StablesPeriod, StablesEntry[]>;
     for (const period of STABLES_PERIODS) {
-      const txEntries: StablesEntry[] = [];
-      const gasEntries: StablesEntry[] = [];
-      for (const key of universeKeys) {
-        const tx = readStablesFromBlockspace(
-          stableBlock,
-          key,
-          period,
-          'txcount_absolute',
-        );
-        if (tx != null && tx > 0) txEntries.push(mkEntry(key, tx));
-        const gas = readStablesFromBlockspace(
-          stableBlock,
-          key,
-          period,
-          'gas_fees_absolute_usd',
-        );
-        if (gas != null && gas > 0) gasEntries.push(mkEntry(key, gas));
-      }
-      txEntries.sort((a, b) => b.value - a.value);
-      gasEntries.sort((a, b) => b.value - a.value);
-      txcountByPeriod[period] = txEntries.slice(0, 5);
-      gasByPeriod[period] = gasEntries.slice(0, 5);
+      txcountByPeriod[period] = mapAnswerEntries(
+        stablesAnswer?.byMetricByPeriod?.txcount?.[period],
+      );
+      gasByPeriod[period] = mapAnswerEntries(
+        stablesAnswer?.byMetricByPeriod?.gas_spent?.[period],
+      );
     }
 
     // --- Stablecoin variety ranking ----------------------------------------

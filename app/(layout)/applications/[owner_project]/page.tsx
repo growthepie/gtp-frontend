@@ -627,7 +627,7 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
           return (
 
           <GTPTooltipNew
-            size="md"
+            unstyled
             key={project.name ?? index + "_RandomAppsSection"}
             placement="bottom-start"
             allowInteract={true}
@@ -646,7 +646,6 @@ const SimilarAppsSection = memo(({ owner_project, projectMetadata }: { owner_pro
               </Link>
 
             }
-            containerClass="flex flex-col gap-y-[10px]"
             positionOffset={{ mainAxis: 0, crossAxis: 20 }}
         >
           <ApplicationTooltip application={{
