@@ -1046,8 +1046,8 @@ export default function CategoryMetrics({
             </HorizontalScrollContainer>
 
             <Container>
-              <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
-                <div className="flex w-full flex-col justify-between lg:w-[44%] -mt-[25px]">
+              <div className="relative mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
+                <div className="relative flex w-full flex-col justify-between lg:w-[44%] -mt-[25px]">
                   <div>
                     <div className="relative pr-[0px] lg:pr-[45px]">
                       <GridTableHeader
@@ -1201,22 +1201,11 @@ export default function CategoryMetrics({
                       ref={chainAnimationsContainer}
                       className="relative overflow-hidden"
                       style={{
-                        height: isSelectedLoaded ? height : undefined,
-                        minHeight: isMobile
-                          ? isSelectedLoaded
-                            ? undefined
-                            : "320px"
-                          : "500px",
+                        height: height,
+                        minHeight: isMobile ? undefined : "500px",
                       }}
                     >
-                      {!isSelectedLoaded ? (
-                        <div className="flex h-full min-h-[320px] w-full items-center justify-center">
-                          <div className="scale-75">
-                            <LoadingAnimation />
-                          </div>
-                        </div>
-                      ) : (
-                      sortedChainValues &&
+                      {sortedChainValues &&
                         sortedChainValuesWithPlaceholder &&
                         master &&
                         transitions((style, item) => (
@@ -1260,9 +1249,20 @@ export default function CategoryMetrics({
                               </div>
                             )}
                           </AnimatedDiv>
-                        )))}
+                        ))}
                     </div>
                   </VerticalScrollContainer>
+                  {/* Loading animation for the chain-list pane on stacked
+                      (mobile) layouts only. On wide screens a single shared
+                      loader is centered over the whole row instead, so the two
+                      panes can't end up vertically misaligned. */}
+                  {!isSelectedLoaded && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:hidden">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="relative bottom-2 mb-[30px] mt-1 h-[320px] w-full lg:mt-0 lg:h-auto lg:w-[56%]">
                   {chartSeries && isSelectedLoaded ? (
@@ -1290,8 +1290,11 @@ export default function CategoryMetrics({
                       decimals={selectedMode === "txcount_" ? 0 : 2}
                     />
                   ) : (
+                    // Keeps the chart area's height during load; the animation
+                    // itself only shows on stacked (mobile) layouts — on wide
+                    // screens a single shared loader is centered over the row.
                     <div className="flex h-full min-h-[320px] w-full items-center justify-center">
-                      <div className="scale-75">
+                      <div className="scale-75 lg:hidden">
                         <LoadingAnimation />
                       </div>
                     </div>
@@ -1314,6 +1317,27 @@ export default function CategoryMetrics({
                       ),
                     )}
                 </div>
+                {/* Wide (side-by-side) layouts: both loaders live in ONE
+                    overlay that spans the row. Each sits in a region whose
+                    width mirrors its pane (44% / 56%) and is vertically
+                    centered within the shared overlay height — so the two
+                    animations share the same vertical center and are aligned
+                    by construction, no matter how tall either pane is. Hidden
+                    on stacked layouts, where each pane shows its own loader. */}
+                {!isSelectedLoaded && (
+                  <div className="pointer-events-none absolute inset-0 hidden lg:flex">
+                    <div className="flex w-[44%] items-center justify-center">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                    <div className="flex w-[56%] items-center justify-center">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 {" "}
