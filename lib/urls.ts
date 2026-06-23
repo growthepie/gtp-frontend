@@ -82,6 +82,19 @@ export const BlockspaceURLs = {
   "tree-map": "https://api.growthepie.com/v1/blockspace/tree_map.json",
 };
 
+// Category-comparison split files. The combined `category_comparison.json`
+// (~tens of MB) is still published unchanged; these per-category files are
+// drop-in subsets so a view can fetch only the category it needs. `index.json`
+// lists every main category with its subcategory list (enough to build the
+// menu without downloading any timeseries). See the blockspace-splits brief.
+export const CategoryComparisonSplitURLs = {
+  index:
+    "https://api.growthepie.com/v1/blockspace/category_comparison/index.json",
+  // One main category, e.g. .../category_comparison/defi.json
+  category: (mainCategory: string) =>
+    `https://api.growthepie.com/v1/blockspace/category_comparison/${mainCategory}.json`,
+};
+
 // Precomputed answer endpoints. The backend runs the same calculations the
 // /answers pages used to do client-side and publishes the small result daily,
 // so we no longer fetch the heavy blockspace files (category_comparison.json
