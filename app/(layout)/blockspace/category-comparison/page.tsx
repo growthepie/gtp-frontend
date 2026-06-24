@@ -3,9 +3,9 @@ import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import { useSessionStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
-import { BlockspaceURLs, MasterURL } from "@/lib/urls";
+import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
-import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
+import { useCategoryComparisonIndex } from "@/hooks/useCategoryComparisonData";
 import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
@@ -16,12 +16,10 @@ import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { Title } from "@/components/layout/TextHeadingComponents";
 
 const CategoryComparison = () => {
-  const {
-    data: usageData,
-    error: usageError,
-    isLoading: usageLoading,
-    isValidating: usageValidating,
-  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
+  // Loads the lightweight split index (categories + subcategory lists).
+  // Per-category timeseries are fetched on demand inside CategoryMetrics for
+  // the selected category only.
+  const categoryIndex = useCategoryComparisonIndex();
 
   const {
     data: master,
@@ -42,8 +40,8 @@ const CategoryComparison = () => {
   return (
     <>
       <ShowLoading
-        dataLoading={[usageLoading]}
-        dataValidating={[usageValidating]}
+        dataLoading={[!categoryIndex.ready]}
+        dataValidating={[categoryIndex.isValidating]}
       />
       <Container
         className="flex flex-col w-full pt-[45px] md:pt-[30px]"
@@ -70,15 +68,15 @@ const CategoryComparison = () => {
         </div>
       </Container>
 
-      {usageData && master && (
+      {categoryIndex.ready && master && (
         <CategoryMetrics
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
-          data={usageData.data}
+          index={categoryIndex}
           master={master}
         />
       )}
-      {usageData && (
+      {categoryIndex.ready && (
         <Container className="flex flex-col space-y-[15px] mt-[45px]">
           <QuestionAnswer
             question={`What should you know about the Category Comparison page?`}

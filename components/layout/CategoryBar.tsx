@@ -106,7 +106,7 @@ const CategoryBar = ({
 
               minWidth:
                 selectedCategory === category && openSub
-                  ? Object.keys(data[category].subcategories.list).length > 7
+                  ? (data[category]?.subcategories?.list?.length ?? 0) > 7
                     ? "650px"
                     : "500px"
                   : selectedCategory === category &&
@@ -161,7 +161,7 @@ const CategoryBar = ({
                 </div>
               ) : null}
               {category !== "unlabeled" && category !== "native_transfers" ? (
-                data[category].subcategories.list.map((subcategory) => (
+                (data[category]?.subcategories?.list ?? []).map((subcategory) => (
                   <button
                     key={subcategory}
                     className={`flex border-color-ui-hover rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-color-ui-hover z-10 ${checkSubcategory(category, subcategory)

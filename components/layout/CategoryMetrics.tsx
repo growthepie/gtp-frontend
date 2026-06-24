@@ -14,6 +14,10 @@ import { useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
+import {
+  CategoryComparisonIndex,
+  useCategoryComparisonCategory,
+} from "@/hooks/useCategoryComparisonData";
 import { animated, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -24,6 +28,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
 import CategoryBar from "@/components/layout/CategoryBar";
+import LoadingAnimation from "@/components/layout/LoadingAnimation";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 
@@ -45,12 +50,12 @@ import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/
 const AnimatedDiv = animated.div as any;
 
 export default function CategoryMetrics({
-  data,
+  index,
   master,
   selectedTimespan,
   setSelectedTimespan,
 }: {
-  data: CategoryComparisonResponseData;
+  index: CategoryComparisonIndex;
   master: MasterResponse;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
@@ -92,9 +97,56 @@ export default function CategoryMetrics({
 
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [selectedMode, setSelectedMode] = useState("txcount_");
-  const [selectedCategory, setSelectedCategory] = useState(() =>
-    queryCategory && data[queryCategory] ? queryCategory : "finance",
+
+  const categoryExists = useCallback(
+    (cat: string | null | undefined): boolean =>
+      Boolean(cat && index.subcategoryLists[cat] !== undefined),
+    [index.subcategoryLists],
   );
+
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    if (queryCategory && categoryExists(queryCategory)) return queryCategory;
+    if (categoryExists("finance")) return "finance";
+    return index.categoryList[0] ?? "finance";
+  });
+
+  // Lazy-load the heavy timeseries for the *selected* category only (in
+  // combined-fallback mode this slices the already-loaded payload). The
+  // returned node has `daily_7d_rolling` recomputed from `daily` when the
+  // backend has dropped it.
+  const { node: selectedNode } = useCategoryComparisonCategory(
+    selectedCategory,
+    index,
+  );
+
+  // Reconstruct the `data` object the rest of this component expects: a
+  // skeleton (subcategory lists for every category — enough for the menu and
+  // layout sizing) overlaid with the fully-loaded selected category. Only the
+  // selected category is ever read for timeseries, so this is sufficient.
+  const data = useMemo<CategoryComparisonResponseData>(() => {
+    const merged: Record<string, any> = {};
+    const cats = new Set<string>(index.categoryList);
+    const masterCats = master?.blockspace_categories?.main_categories;
+    if (masterCats) {
+      for (const k of Object.keys(masterCats)) cats.add(k);
+    }
+    for (const cat of cats) {
+      const list = index.subcategoryLists[cat] ?? [];
+      const subObj: Record<string, any> = { list };
+      // Placeholder per subcategory so Object.keys(subcategories).length
+      // matches the real node (used for layout sizing in categorySizes).
+      for (const s of list) subObj[s] = {};
+      merged[cat] = { type: "main_category", subcategories: subObj };
+    }
+    if (selectedCategory && selectedNode) {
+      merged[selectedCategory] = selectedNode;
+    }
+    return merged as CategoryComparisonResponseData;
+  }, [index.categoryList, index.subcategoryLists, master, selectedCategory, selectedNode]);
+
+  // True once the selected category's timeseries have actually arrived (the
+  // skeleton entry has no `daily`). Heavy chart/table memos guard on this.
+  const isSelectedLoaded = Boolean((selectedNode as any)?.daily);
 
   const [animationFinished, setAnimationFinished] = useState(true);
   const [exitAnimation, setExitAnimation] = useState(false);
@@ -353,7 +405,7 @@ export default function CategoryMetrics({
         querySubcategories &&
         querySubcategories.length > 0
       ) {
-        const intersection = data[category].subcategories.list.filter(
+        const intersection = (data[category]?.subcategories?.list ?? []).filter(
           (subcategory) => {
             return querySubcategories.includes(subcategory);
           },
@@ -409,6 +461,8 @@ export default function CategoryMetrics({
     const chainArray: ChainData[] = [];
 
     if (!selectedSubcategories) return [];
+    // Selected category's timeseries not loaded yet — nothing to chart.
+    if (!isSelectedLoaded || !data[selectedCategory]?.[dailyKey]) return [];
 
     // get list of selectedSubcategories for the selected category
     const selectedSubcategoriesList = selectedSubcategories[selectedCategory];
@@ -624,6 +678,9 @@ export default function CategoryMetrics({
     let updatedChainValues: [string, number][] | null = null;
     setChainValues(null);
 
+    // Wait for the selected category's timeseries before aggregating.
+    if (!isSelectedLoaded || !data[selectedCategory]) return;
+
     if (selectedSubcategories[selectedCategory]) {
       Object.keys(selectedSubcategories[selectedCategory])?.forEach(
         (subcategory) => {
@@ -632,7 +689,8 @@ export default function CategoryMetrics({
               selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
-            subcategoryData.aggregated[selectedTimespan].data;
+            subcategoryData?.aggregated?.[selectedTimespan]?.data;
+          if (!subcategoryChains) return;
           const index = subcategoryChains["types"].indexOf(selectedType);
 
           Object.keys(subcategoryChains).forEach((chain) => {
@@ -988,8 +1046,8 @@ export default function CategoryMetrics({
             </HorizontalScrollContainer>
 
             <Container>
-              <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
-                <div className="flex w-full flex-col justify-between lg:w-[44%] -mt-[25px]">
+              <div className="relative mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
+                <div className="relative flex w-full flex-col justify-between lg:w-[44%] -mt-[25px]">
                   <div>
                     <div className="relative pr-[0px] lg:pr-[45px]">
                       <GridTableHeader
@@ -1194,9 +1252,20 @@ export default function CategoryMetrics({
                         ))}
                     </div>
                   </VerticalScrollContainer>
+                  {/* Loading animation for the chain-list pane on stacked
+                      (mobile) layouts only. On wide screens a single shared
+                      loader is centered over the whole row instead, so the two
+                      panes can't end up vertically misaligned. */}
+                  {!isSelectedLoaded && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center lg:hidden">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="relative bottom-2 mb-[30px] mt-1 h-[320px] w-full lg:mt-0 lg:h-auto lg:w-[56%]">
-                  {chartSeries && (
+                  {chartSeries && isSelectedLoaded ? (
                     <Chart
                       chartType={
                         selectedChartType === "absolute" ? "line" : "area"
@@ -1220,6 +1289,15 @@ export default function CategoryMetrics({
                       chartWidth="100%"
                       decimals={selectedMode === "txcount_" ? 0 : 2}
                     />
+                  ) : (
+                    // Keeps the chart area's height during load; the animation
+                    // itself only shows on stacked (mobile) layouts — on wide
+                    // screens a single shared loader is centered over the row.
+                    <div className="flex h-full min-h-[320px] w-full items-center justify-center">
+                      <div className="scale-75 lg:hidden">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
                   )}
                 </div>
                 <div className="mt-8 flex w-[100%] flex-wrap items-center gap-y-2 lg:hidden">
@@ -1239,6 +1317,27 @@ export default function CategoryMetrics({
                       ),
                     )}
                 </div>
+                {/* Wide (side-by-side) layouts: both loaders live in ONE
+                    overlay that spans the row. Each sits in a region whose
+                    width mirrors its pane (44% / 56%) and is vertically
+                    centered within the shared overlay height — so the two
+                    animations share the same vertical center and are aligned
+                    by construction, no matter how tall either pane is. Hidden
+                    on stacked layouts, where each pane shows its own loader. */}
+                {!isSelectedLoaded && (
+                  <div className="pointer-events-none absolute inset-0 hidden lg:flex">
+                    <div className="flex w-[44%] items-center justify-center">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                    <div className="flex w-[56%] items-center justify-center">
+                      <div className="scale-75">
+                        <LoadingAnimation />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 {" "}
