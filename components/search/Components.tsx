@@ -1567,15 +1567,76 @@ export const useSearchBuckets = () => {
   }
 }
 
+const ADD_MANUALLY_DELAY_SECONDS = 3;
+
+// "Add manually" is gated behind a short countdown when partial matches exist, so
+// the user pauses to review them before creating a possible duplicate. With no
+// matches at all (delaySeconds <= 0) it's immediately clickable.
+const AddManuallyButton = ({ onAdd, delaySeconds = ADD_MANUALLY_DELAY_SECONDS }: { onAdd: () => void; delaySeconds?: number }) => {
+  const [remaining, setRemaining] = useState(delaySeconds);
+
+  useEffect(() => {
+    if (delaySeconds <= 0) {
+      setRemaining(0);
+      return;
+    }
+    setRemaining(delaySeconds);
+    const interval = setInterval(() => {
+      setRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [delaySeconds]);
+
+  const ready = remaining <= 0;
+
+  return (
+    <button
+      type="button"
+      disabled={!ready}
+      aria-disabled={!ready}
+      title={ready ? undefined : `Review the matches above first — enabled in ${remaining}s`}
+      className={`flex items-center gap-x-[6px] bg-color-bg-medium px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors ${
+        ready ? "hover:bg-color-ui-hover cursor-pointer" : "opacity-60 cursor-not-allowed"
+      }`}
+      onClick={() => {
+        if (ready) onAdd();
+      }}
+    >
+      {ready ? (
+        <Icon icon="feather:edit-2" className="size-[12px] text-color-text-secondary" />
+      ) : (
+        <span className="flex items-center justify-center size-[14px] rounded-full border border-current text-[9px] font-medium leading-none text-current tabular-nums">
+          {remaining}
+        </span>
+      )}
+      Add manually
+    </button>
+  );
+};
+
 const OpacityUnmatchedText = ({
   text,
   query,
   inheritParentColor = false,
+  literal = false,
 }: {
   text: string;
   query: string;
   /** When true (e.g. stack subheads under ui-hover), before/after use 35% opacity on inherited color instead of text-secondary / text-primary. */
   inheritParentColor?: boolean;
+  /**
+   * When true, match by plain case-insensitive substring instead of `normalizeString`
+   * (no whitespace/punctuation stripping). Use when the caller already derived the
+   * exact term that appears verbatim in `text` (e.g. per-field match tokens whose
+   * fields normalize differently from global search).
+   */
+  literal?: boolean;
 }) => {
   const spanRef = useRef<HTMLSpanElement>(null);      // Parent span (visible)
   const matchRef = useRef<HTMLSpanElement>(null);     // Match span
@@ -1602,9 +1663,13 @@ const OpacityUnmatchedText = ({
 
   if (!query) return <>{text}</>;
 
+  // In literal mode no characters are stripped, so normalization is a plain
+  // lowercase and the index mapping below is 1:1.
+  const charIgnored = (ch: string) => (literal ? false : isIgnoredChar(ch));
+
   // Normalize for matching
-  const normalizedText = normalizeString(text);
-  const normalizedQuery = normalizeString(query);
+  const normalizedText = literal ? text.toLowerCase() : normalizeString(text);
+  const normalizedQuery = literal ? query.toLowerCase() : normalizeString(query);
 
   const matchIndex = normalizedText.indexOf(normalizedQuery);
 
@@ -1616,13 +1681,13 @@ const OpacityUnmatchedText = ({
   // Map normalized match index back to original string indices
   let origStart = 0, normCount = 0;
   while (origStart < text.length && normCount < matchIndex) {
-    if (!isIgnoredChar(text[origStart])) normCount++;
+    if (!charIgnored(text[origStart])) normCount++;
     origStart++;
   }
 
   let origEnd = origStart, normMatchCount = 0;
   while (origEnd < text.length && normMatchCount < normalizedQuery.length) {
-    if (!isIgnoredChar(text[origEnd])) normMatchCount++;
+    if (!charIgnored(text[origEnd])) normMatchCount++;
     origEnd++;
   }
 
@@ -1647,7 +1712,7 @@ const OpacityUnmatchedText = ({
     const segments: { text: string; ignored: boolean }[] = [];
     for (let i = 0; i < matchText.length; i++) {
       const char = matchText[i];
-      const ignored = isIgnoredChar(char);
+      const ignored = charIgnored(char);
       const last = segments[segments.length - 1];
       if (last && last.ignored === ignored) {
         last.text += char;
@@ -2452,11 +2517,27 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
     type Entry = { owner_project: string; display_name: string | null; main_github: string | null; twitter: string | null; website: string | null; logo_path: string | null };
 
-    const matchProject = (p: Entry): boolean => {
-      if (
-        p.owner_project.toLowerCase().includes(qRaw) ||
-        (p.display_name || "").toLowerCase().includes(qRaw)
-      ) return true;
+    // Returns whether the project matched, the full value of the field that hit
+    // (so the UI can show "Display Name - <matching string>" and explain an
+    // otherwise-opaque match), and whether that match was exact (query equals the
+    // field's value, not just a substring) so we can decide whether to still offer
+    // "Add manually".
+    // `term` is the actual matched token to highlight inside `hint` — for URL
+    // queries this is the org/handle/domain that hit, not the raw query (which
+    // includes "https://github.com/…" and would never appear in the hint).
+    type MatchResult = { matched: boolean; hint: string | null; exact: boolean; term?: string };
+    const noMatch: MatchResult = { matched: false, hint: null, exact: false };
+    const matchProject = (p: Entry): MatchResult => {
+      // display_name match → hint with the display name so the suffix can show the highlighted term,
+      // except on an exact match where the label alone already says everything (no redundant suffix)
+      if ((p.display_name || "").toLowerCase().includes(qRaw)) {
+        const isExact = normalizeString(p.display_name || "") === normalizeString(qRaw);
+        return { matched: true, hint: isExact ? null : p.display_name, exact: isExact };
+      }
+      // owner_project key match
+      if (p.owner_project.toLowerCase().includes(qRaw)) {
+        return { matched: true, hint: p.owner_project, exact: p.owner_project.toLowerCase() === qRaw };
+      }
 
       if (isUrlQuery && qNorm) {
         if (qNorm.includes("/")) {
@@ -2464,7 +2545,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           // main_github can be a bare org name ("growthepie") or a full URL
           if (/^(github|gitlab|bitbucket)\./.test(qHost) && qPathFirst) {
             const ghVal = (p.main_github || "").toLowerCase();
-            return new RegExp(`(^|/)${qPathFirst}(/|$)`).test(ghVal);
+            return new RegExp(`(^|/)${qPathFirst}(/|$)`).test(ghVal)
+              ? { matched: true, hint: p.main_github, exact: true, term: qPathFirst }
+              : noMatch;
           }
 
           // X / Twitter: match handle against twitter field
@@ -2474,22 +2557,25 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
               .replace(/^@/, "")
               .replace(/\/.*$/, "");
-            return twVal === qPathFirst;
+            return twVal === qPathFirst
+              ? { matched: true, hint: p.twitter, exact: true, term: qPathFirst }
+              : noMatch;
           }
 
           // Other URL with path: prefix-match against website
           const websiteNorm = normalizeForMatch(p.website || "");
-          return !!websiteNorm && websiteNorm.startsWith(qNorm);
+          return !!websiteNorm && websiteNorm.startsWith(qNorm)
+            ? { matched: true, hint: p.website, exact: websiteNorm === qNorm, term: qNorm }
+            : noMatch;
         }
 
         // Domain-only: SLD matching for cross-TLD / subdomain flexibility
-        if (!qSLD) return false;
+        if (!qSLD) return noMatch;
         const websiteNorm = normalizeForMatch(p.website || "");
         const githubNorm = normalizeForMatch(p.main_github || "");
-        return (
-          (!!websiteNorm && extractSLD(websiteNorm) === qSLD) ||
-          (!!githubNorm && extractSLD(githubNorm) === qSLD)
-        );
+        if (!!websiteNorm && extractSLD(websiteNorm) === qSLD) return { matched: true, hint: p.website, exact: websiteNorm === qNorm, term: qSLD };
+        if (!!githubNorm && extractSLD(githubNorm) === qSLD) return { matched: true, hint: p.main_github, exact: githubNorm === qNorm, term: qSLD };
+        return noMatch;
       }
 
       // Plain text: also search website, github org, and twitter handle
@@ -2498,20 +2584,28 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "")
         .replace(/^@/, "")
         .replace(/\/.*$/, "");
-      return (
-        (p.website || "").toLowerCase().includes(qRaw) ||
-        (p.main_github || "").toLowerCase().includes(qRaw) ||
-        twHandle.includes(qRaw) ||
-        twRaw.includes(qRaw)
-      );
+      if ((p.website || "").toLowerCase().includes(qRaw)) return { matched: true, hint: p.website, exact: false };
+      if ((p.main_github || "").toLowerCase().includes(qRaw)) return { matched: true, hint: p.main_github, exact: false };
+      if (twHandle.includes(qRaw) || twRaw.includes(qRaw)) return { matched: true, hint: p.twitter, exact: twHandle === qRaw };
+      return noMatch;
+    };
+
+    // Collect matches, attaching the matching-field hint, the term to highlight,
+    // and exactness to each result. `term` defaults to the raw query.
+    const collectMatches = (entries: Entry[], exclude?: Set<string>) => {
+      const out: (Entry & { matchHint: string | null; matchTerm: string; isExact: boolean })[] = [];
+      for (const p of entries) {
+        if (exclude?.has(p.owner_project.toLowerCase())) continue;
+        const result = matchProject(p);
+        if (result.matched) out.push({ ...p, matchHint: result.hint, matchTerm: result.term ?? qRaw, isExact: result.exact });
+      }
+      return out;
     };
 
     // Search apps dataset first, then OSS directory for projects not already found
-    const appsResults = Object.values(ownerProjectToProjectData).filter(matchProject) as Entry[];
+    const appsResults = collectMatches(Object.values(ownerProjectToProjectData) as Entry[]);
     const appsKeys = new Set(appsResults.map((p) => p.owner_project.toLowerCase()));
-    const ossResults = ossProjects.filter(
-      (p) => !appsKeys.has(p.owner_project.toLowerCase()) && matchProject(p),
-    );
+    const ossResults = collectMatches(ossProjects, appsKeys);
 
     return [...appsResults, ...ossResults].slice(0, 20);
   }, [projectEditMode, memoizedQuery, query, ownerProjectToProjectData, ossProjects]);
@@ -2594,7 +2688,12 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                             containerClassName="!size-[14px] shrink-0 flex items-center justify-center"
                           />
                         )}
-                        <span>{p.display_name || p.owner_project}</span>
+                        <span>
+                          {p.display_name || p.owner_project}
+                          {p.matchHint && !(!p.display_name && p.matchHint === p.owner_project) && (
+                            <span className="text-color-text-secondary"> -&nbsp;<OpacityUnmatchedText text={p.matchHint ?? ""} query={p.matchTerm} literal /></span>
+                          )}
+                        </span>
                       </button>
                       {singleEditMatchOwnerProject === p.owner_project && (
                         <button
@@ -2622,8 +2721,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             // Use raw query value (not memoizedQuery) to avoid normalizeString stripping hyphens from URLs
             const rawValue = query || memoizedQuery;
 
-            // If editMatches already found this project, tell the user instead of offering to add it
-            if (editMatches.length > 0) {
+            // Only block adding when an *exact* match exists (the project genuinely
+            // already exists). Partial/fuzzy matches still let the user add manually.
+            const hasExactMatch = editMatches.some((p) => p.isExact);
+            if (hasExactMatch) {
               return (
                 <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
                   <div className="flex gap-x-[10px] items-center shrink-0">
@@ -2662,18 +2763,15 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                       AI Profile
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="flex items-center gap-x-[6px] bg-color-bg-medium hover:bg-color-ui-hover px-[12px] h-[26px] rounded-[20px] text-xs whitespace-nowrap transition-colors cursor-pointer"
-                    onClick={() => {
+                  <AddManuallyButton
+                    key={memoizedQuery}
+                    delaySeconds={editMatches.length > 0 ? ADD_MANUALLY_DELAY_SECONDS : 0}
+                    onAdd={() => {
                       closeProjectEditSearch();
                       window.dispatchEvent(new CustomEvent("projectEditAddManually", { detail: { field, value: rawValue } }));
                       window.dispatchEvent(new CustomEvent("clearSearchOrClose"));
                     }}
-                  >
-                    <Icon icon="feather:edit-2" className="size-[12px] text-color-text-secondary" />
-                    Add manually
-                  </button>
+                  />
                 </div>
               </div>
             );

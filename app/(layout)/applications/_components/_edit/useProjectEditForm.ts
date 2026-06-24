@@ -13,6 +13,7 @@ import type {
   ProjectFormState,
   ProjectMode,
 } from "./types";
+import { normalizeString } from "@/lib/searchNormalize";
 import { EMPTY_FORM, OWNER_PROJECT_PATTERN } from "./constants";
 import {
   areStringArraysEqual,
@@ -346,39 +347,37 @@ export function useProjectEditForm({
   }, [form, logoUpload, ownerProjectToProjectData]);
 
   const ownerProjectSuggestions = useMemo(() => {
-    const val = form.owner_project.trim().toLowerCase();
+    const val = normalizeString(form.owner_project);
     if (!val) return [];
     const matchScore = (p: ProjectRecord): number => {
-      const owner = asString(p.owner_project).toLowerCase();
-      const name = asString(p.display_name).toLowerCase();
+      const owner = normalizeString(asString(p.owner_project));
+      const name = normalizeString(asString(p.display_name));
       if (owner === val || name === val) return 0;
-      if (owner.startsWith(val) || name.startsWith(val)) return 1;
-      return 2;
+      return 1;
     };
     return normalizedProjects
       .filter((p) => {
-        const owner = asString(p.owner_project).toLowerCase();
-        const name = asString(p.display_name).toLowerCase();
-        return owner.includes(val) || name.includes(val);
+        const owner = normalizeString(asString(p.owner_project));
+        const name = normalizeString(asString(p.display_name));
+        return owner.startsWith(val) || name.startsWith(val);
       })
       .sort((a, b) => matchScore(a) - matchScore(b))
       .slice(0, 6);
   }, [form.owner_project, normalizedProjects]);
 
   const displayNameSuggestions = useMemo(() => {
-    const val = form.display_name.trim().toLowerCase();
+    const val = normalizeString(form.display_name);
     if (!val) return [];
     const matchScore = (p: ProjectRecord): number => {
-      const owner = asString(p.owner_project).toLowerCase();
-      const name = asString(p.display_name).toLowerCase();
+      const owner = normalizeString(asString(p.owner_project));
+      const name = normalizeString(asString(p.display_name));
       if (name === val || owner === val) return 0;
-      if (name.startsWith(val) || owner.startsWith(val)) return 1;
-      return 2;
+      return 1;
     };
     return normalizedProjects
       .filter((p) =>
-        asString(p.display_name).toLowerCase().includes(val) ||
-        asString(p.owner_project).toLowerCase().includes(val),
+        normalizeString(asString(p.display_name)).startsWith(val) ||
+        normalizeString(asString(p.owner_project)).startsWith(val),
       )
       .sort((a, b) => matchScore(a) - matchScore(b))
       .slice(0, 6);
