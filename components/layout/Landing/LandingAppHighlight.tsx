@@ -4,7 +4,7 @@ import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/Proje
 import Image from "next/image";
 import Link from "next/link";
 import { useMediaQuery } from "@react-hook/media-query";
-import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { GTPTooltipNew } from "../../tooltip/GTPTooltip";
 import { ApplicationTooltip } from "@/app/(layout)/applications/_components/Components";
 export default function LandingAppHighlight() {
 

@@ -16,25 +16,25 @@ import {
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { merge } from "lodash";
-import { Switch } from "../Switch";
+import { Switch } from "../../Switch";
 import { Icon } from "@iconify/react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../Tooltip";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import ChartWatermark from "./ChartWatermark";
+import ChartWatermark from "../ChartWatermark";
 import { BASE_URL, IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
-import { GTPIcon } from "./GTPIcon";
+import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
-import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
-import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
-import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
+import GTPButtonContainer from "../../GTPComponents/ButtonComponents/GTPButtonContainer";
+import GTPButtonRow from "../../GTPComponents/ButtonComponents/GTPButtonRow";
+import { GTPButton } from "../../GTPComponents/ButtonComponents/GTPButton";
 
 
 const COLORS = {

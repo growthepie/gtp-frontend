@@ -1,7 +1,6 @@
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Subheading from "@/components/layout/Subheading";
 import { Metadata } from "next";
@@ -14,7 +13,7 @@ import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import t
 import { LinkButton } from "@/components/layout/LinkButton";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import dynamic from "next/dynamic";
-const LandingSwiperItems = dynamic(() => import("@/components/layout/LandingSwiperItems"), { ssr: true });
+const LandingSwiperItems = dynamic(() => import("@/components/layout/Landing/LandingSwiperItems"), { ssr: true });
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(

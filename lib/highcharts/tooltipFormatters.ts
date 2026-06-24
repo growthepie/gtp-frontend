@@ -1,7 +1,7 @@
 // src/lib/charts/tooltipFormatters.ts
 import * as d3 from 'd3';
 import Highcharts from 'highcharts';
-import { BACKEND_SIMULATION_CONFIG, type BACKEND_SIMULATION_CONFIG as BACKEND_SIMULATION_CONFIG_TYPE, GradientConfig, PatternConfig } from '@/components/layout/LandingChart';
+import { BACKEND_SIMULATION_CONFIG, type BACKEND_SIMULATION_CONFIG as BACKEND_SIMULATION_CONFIG_TYPE, GradientConfig, PatternConfig } from '@/components/layout/Landing/LandingChart';
 import { PatternRegistry } from '../highcharts/svgPatterns';
 import { filter } from 'lodash';
 

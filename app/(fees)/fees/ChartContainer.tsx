@@ -2,7 +2,7 @@
 import Icon from "@/components/layout/Icon";
 import { track } from "@/lib/tracking";
 import { useEffect, useState, useMemo, useRef } from "react";
-import SwiperItem from "@/components/layout/LandingSwiperItems";
+import SwiperItem from "@/components/layout/Landing/LandingSwiperItems";
 import useSWR from "swr";
 import { LandingURL } from "@/lib/urls";
 import FeesChart from "./FeesChart";

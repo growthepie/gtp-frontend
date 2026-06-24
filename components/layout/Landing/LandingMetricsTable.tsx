@@ -14,16 +14,16 @@ import { Icon } from "@iconify/react";
 import { useTransition, animated, useSpring } from "@react-spring/web";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
-import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
+import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "../GridTable";
 import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { metricItems } from "@/lib/metrics";
-import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
+import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "../GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
-import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
+import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 
 function formatNumber(number: number, decimals?: number): string {

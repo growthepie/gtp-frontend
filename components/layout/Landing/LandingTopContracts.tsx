@@ -10,7 +10,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
-import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { GTPTooltipNew } from "../../tooltip/GTPTooltip";
 import { useTheme } from "next-themes";
 
 export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {

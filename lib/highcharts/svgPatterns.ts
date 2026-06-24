@@ -1,4 +1,4 @@
-import { BACKEND_SIMULATION_CONFIG, GradientConfig, PatternConfig, MaskConfig } from "@/components/layout/LandingChart";
+import { BACKEND_SIMULATION_CONFIG, GradientConfig, PatternConfig, MaskConfig } from "@/components/layout/Landing/LandingChart";
 
 
 // Pattern configuration
