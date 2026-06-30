@@ -1161,7 +1161,26 @@ const ChainComponent = function ChainComponent({
         z: 11,
       },
     ];
-  }, [filteredData, data.chain_id, theme, AllChainsByKeys, isMobile, containerWidth, containerHeight]);
+  }, [filteredData, data.chain_id, theme, AllChainsByKeys, isMobile, containerWidth, containerHeight, focusEnabled, category]);
+
+  // Reposition the dashed marker line after ECharts applies new axis extents.
+  // getGraphicElements() relies on convertToPixel(), which reads the chart's
+  // *current* y-axis scale. The inline `graphic` in the option prop is computed
+  // during React's render phase, i.e. before echarts-for-react applies the new
+  // data, so on an ETH/USD toggle it converts against the stale (pre-toggle)
+  // scale and the line no longer lines up with the data point. Running it here,
+  // after the child has committed its setOption, guarantees the latest scale.
+  useEffect(() => {
+    if (isTransitioning) return;
+    if (!chartRef.current) return;
+    const chartInstance = chartRef.current.getEchartsInstance();
+    if (!chartInstance) return;
+
+    const raf = requestAnimationFrame(() => {
+      chartInstance.setOption({ graphic: getGraphicElements() });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [getGraphicElements, isTransitioning]);
 
   // const resituateChart = debounce(() => {
   //   if (chartRef.current && !zoomed) {
@@ -1267,19 +1286,6 @@ const ChainComponent = function ChainComponent({
             }}
             onEvents={{
               dataZoom: onDataZoom,
-              render: (params: any) => {
-                // Chart render finished, update graphic elements
-                if (chartRef.current) {
-                  const chartInstance = chartRef.current.getEchartsInstance();
-                  if (chartInstance) {
-                    setTimeout(() => {
-                    chartInstance.setOption({
-                      graphic: getGraphicElements(),
-                    });
-                    }, 100);
-                  }
-                }
-              },
             }}
             className='rounded-b-[15px] overflow-hidden'
             // notMerge={false} 
