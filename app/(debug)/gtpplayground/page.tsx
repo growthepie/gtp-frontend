@@ -5,14 +5,12 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import GTPDropdown, { type GTPDropdownContentSize, type GTPDropdownOption } from "@/components/GTPComponents/GTPDropdown";
 import GTPTabBar from "@/components/GTPComponents/GTPTabBar";
 import GTPTabButtonSet, { GTPTabButtonSetItem } from "@/components/GTPComponents/GTPTabButtonSet";
-import GTPUniversalChart, { GTPUniversalChartTabSetsConfig } from "@/components/GTPComponents/GTPUniversalChart";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPSplitPane from "@/components/GTPComponents/GTPLayout/GTPSplitPane";
 import GTPResizeDivider from "@/components/GTPComponents/GTPLayout/GTPResizeDivider";
 import GTPScrollPane, { type GTPScrollPaneScrollMetrics } from "@/components/GTPComponents/GTPLayout/GTPScrollPane";
-import { MetricContextWrapper } from "@/components/metric/MetricContextWrapper";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 
 type ButtonVariant = "primary" | "highlight" | "no-background";
@@ -105,28 +103,6 @@ const TAB_SET_RIGHT_ITEMS: GTPTabButtonSetItem[] = [
   { id: "absolute", label: "Absolute" },
   { id: "percentage", label: "Percentage" },
 ];
-
-const UNIVERSAL_CHART_TAB_SETS: GTPUniversalChartTabSetsConfig = {
-  topLeft: {
-    items: [
-      { id: "daily", label: "Daily" },
-      { id: "weekly", label: "Weekly" },
-      { id: "monthly", label: "Monthly" },
-    ],
-    defaultSelectedId: "daily",
-  },
-  topRight: {
-    defaultSelectedId: "max",
-  },
-  bottomRight: {
-    items: [
-      { id: "absolute", label: "Absolute" },
-      { id: "percentage", label: "Percentage" },
-      { id: "stacked", label: "Stacked" },
-    ],
-    defaultSelectedId: "absolute",
-  },
-};
 
 const SPLIT_PANE_DEMO_ITEMS = [
   { id: "ethereum", label: "Ethereum", color: "#1C1CFF", value: 42500 },
@@ -704,32 +680,10 @@ export default function GTPButtonShowcasePage() {
         </ShowcaseSection>
 
         <ShowcaseSection
-          title="Universal Chart Component"
-          description={
-            <>
-              Figma node <code>3415:106567</code>. Includes the draggable table/chart splitter and a working
-              ECharts plot fed by growthepie fundamentals data (<code>daily-active-addresses</code>).
-            </>
-          }
-        >
-          <div className="mx-auto w-full max-w-[1280px]">
-            <MetricContextWrapper
-              metric="daily-active-addresses"
-              metric_type="fundamentals"
-              defaultTimeInterval="daily"
-              defaultTimespan="365d"
-              defaultScale="absolute"
-            >
-              <GTPUniversalChart fullBleed={false} tabSets={UNIVERSAL_CHART_TAB_SETS} />
-            </MetricContextWrapper>
-          </div>
-        </ShowcaseSection>
-
-        <ShowcaseSection
           title="Generalized Layout Components"
           description={
             <>
-              Composable layout primitives extracted from <code>GTPUniversalChart</code>: <code>GTPCardLayout</code>,{" "}
+              Composable layout primitives: <code>GTPCardLayout</code>,{" "}
               <code>GTPSplitPane</code>, <code>GTPResizeDivider</code>, and <code>GTPScrollPane</code>. Drag the
               divider handle to resize. The scrollbar in the divider tracks the left pane scroll position.
             </>

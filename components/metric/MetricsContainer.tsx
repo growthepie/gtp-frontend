@@ -30,7 +30,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
-import { metricItems } from "@/lib/metrics";
+import { metricItems, daMetricItems } from "@/lib/metrics";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -45,7 +45,13 @@ const slugifyFilenamePart = (value: string | undefined) =>
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "") || "metric";
 
-export default function MetricsContainer({ metric }: { metric: string }) {
+export default function MetricsContainer({
+    metric,
+    metric_type = "fundamentals",
+}: {
+    metric: string;
+    metric_type?: "fundamentals" | "data-availability";
+}) {
     const isMobile = useMediaQuery("(max-width: 967px)");
     const splitRows = useMediaQuery("(max-width: 967px)");
     // The chart screenshot doesn't render correctly on Safari/iOS WebKit, so hide the
@@ -139,10 +145,12 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     } = useMetricChartControls();
 
     const { data: master } = useMaster();
-    const metricUnits = master?.metrics?.[metric_id]?.units ?? {};
+    const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
+    const catalogItems = metric_type === "fundamentals" ? metricItems : daMetricItems;
+    const metricUnits = metricsDict?.[metric_id]?.units ?? {};
     const valueKey = Object.keys(metricUnits).find(key => key !== "usd" && key !== "eth");
     const hasCurrencyUnits = "usd" in metricUnits || "eth" in metricUnits;
-    const showGwei = Boolean(metricItems.find((item) => item.key === metric_id)?.page?.showGwei);
+    const showGwei = Boolean(catalogItems.find((item) => item.key === metric_id)?.page?.showGwei);
     
 
     const suffix = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.suffix;
@@ -152,7 +160,9 @@ export default function MetricsContainer({ metric }: { metric: string }) {
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const [topIsWrapping, setTopIsWrapping] = useState(false);
     const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
-    const metricConfig = findMetricConfig(metric);
+    const metricConfig = metric_type === "fundamentals"
+        ? findMetricConfig(metric)
+        : daMetricItems.find((item) => item.urlKey === metric);
 
     // When the bottom bar is stacked into two rows on mobile (so the left controls row
     // spans the full width) show the Share / Screenshot / Download buttons expanded — but
@@ -796,7 +806,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 left={
                     <div className="relative h-full min-h-0 w-full min-w-[160px]  rounded-[14px] overflow-hidden block">
                         <MetricTable
-                            metric_type="fundamentals"
+                            metric_type={metric_type}
                             scrollRef={scrollRef}
                             onScrollMetricsChange={setScrollMetrics}
                         />
@@ -804,7 +814,7 @@ export default function MetricsContainer({ metric }: { metric: string }) {
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type="fundamentals" suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
+                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type={metric_type} suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
                     </div>
                 }
             />

@@ -1,4 +1,4 @@
-// Shared ECharts utilities — extracted from GTPChart and GTPUniversalChart
+// Shared ECharts utilities — extracted from GTPChart
 // to eliminate duplication across chart components.
 
 export const clamp = (value: number, min: number, max: number) =>
