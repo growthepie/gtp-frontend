@@ -274,6 +274,13 @@ export const ApplicationDetailsDataProvider = ({
         }),
       );
     }
+
+    // Filter out unsupported chains from chains_by_size (drives the metrics tab chain selector)
+    if (filteredData.chains_by_size) {
+      filteredData.chains_by_size = filteredData.chains_by_size.filter(
+        (chain) => supportedChainKeys.includes(chain),
+      );
+    }
   
     if (focusEnabled) {
       // Filter out Ethereum from metrics

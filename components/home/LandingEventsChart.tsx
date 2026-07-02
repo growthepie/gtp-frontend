@@ -562,7 +562,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { data: master, AllChainsByKeys } = useMaster();
+  const { data: master, AllChainsByKeys, SupportedChainKeys } = useMaster();
 
   const { theme } = useTheme();
 
@@ -669,6 +669,10 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
         {resolvedCards.map((card, index) => {
           const projectData = projectDataMap[card.owner_project];
           const metadata = ownerProjectToProjectData[card.owner_project];
+          // Only show chains that are supported on the current deployment (hides e.g. zircuit on prod)
+          const activeOnChains = Object.keys(metadata?.active_on ?? {}).filter(
+            (chain) => SupportedChainKeys.includes(chain),
+          );
           const isGasFees = card.metric === "gas_fees";
           const metricData = isGasFees ? projectData?.metrics[`gas_fees_${showUsd ? "usd" : "eth"}`] : projectData?.metrics[card.metric];
           const positiveChangeColor = metricData?.change_pct && metricData.change_pct > 0
@@ -772,23 +776,23 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
                   <GTPIcon icon={`gtp-${master?.app_metrics[card.metric]?.icon}` as GTPIconName} className={`${isMobile ? "!size-[10px]" : "!size-[16px]"}`} containerClassName="!size-[16px] flex items-center justify-center" />
                 </div>
                 <div className={`flex items-center ${isMobile ? "gap-x-[3px]" : "gap-x-[5px]"} overflow-hidden pr-[5px]`}>
-                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).slice(0, showIcons).map((chain) => (
+                  {activeOnChains.slice(0, showIcons).map((chain) => (
                     <div key={chain + "event-card-icon"} className="flex items-center">
-                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={` ${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName={` flex items-center justify-center ${isMobile ? "!size-[10px]" : "!size-[16px]"}`} 
+                      <GTPIcon icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome` as GTPIconName} className={` ${isMobile ? "!size-[10px]" : "!size[16px]"}`} containerClassName={` flex items-center justify-center ${isMobile ? "!size-[10px]" : "!size-[16px]"}`}
                       style={{
                         color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
                       }}
                       />
-                      
+
                     </div>
                   ))}
-                  {Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length > showIcons && (
+                  {activeOnChains.length > showIcons && (
                     <div className={`items-center justify-center bg-color-bg-medium rounded-full px-[3px] py-[3px] text-xxxs group-hover:bg-color-ui-hover ${finalShrink ? "hidden" : "flex"}`}
                     style={{
                       fontSize: isMobile ? "7px" : "8px",
                     }}
                     >
-                      +{Object.keys(ownerProjectToProjectData[card.owner_project]?.active_on ?? {}).length - showIcons} More
+                      +{activeOnChains.length - showIcons} More
                     </div>
                   )}
                 </div>

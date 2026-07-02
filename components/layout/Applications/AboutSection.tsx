@@ -159,7 +159,6 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
             {projectMetadata.active_on && projectMetadata.txcount && (
               <ActiveOnSection
                 active_on={projectMetadata.active_on}
-                txcount={projectMetadata.txcount}
               />
             )}
   
@@ -218,8 +217,8 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
   export default AboutApp;
 
 
-  const ActiveOnSection = ({ active_on, txcount }: { active_on: { [chainKey: string]: number }; txcount: number }) => {
-    const { AllChainsByKeys } = useMaster();
+  const ActiveOnSection = ({ active_on }: { active_on: { [chainKey: string]: number } }) => {
+    const { AllChainsByKeys, SupportedChainKeys } = useMaster();
     const { resolvedTheme } = useTheme();
     const chainColorTheme = resolvedTheme === "light" ? "light" : "dark";
     const [hoveredChain, setHoveredChain] = useState<string | null>(null);
@@ -240,8 +239,11 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
       
   
     const sorted = useMemo(
-      () => Object.entries(active_on).sort((a, b) => b[1] - a[1]),
-      [active_on],
+      () =>
+        Object.entries(active_on)
+          .filter(([chain]) => SupportedChainKeys.includes(chain))
+          .sort((a, b) => b[1] - a[1]),
+      [active_on, SupportedChainKeys],
     );
   
     const totalCount = useMemo(
@@ -276,7 +278,7 @@ const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = tru
   
     const hoveredEntry = hoveredChain ? filtered.find(([c]) => c === hoveredChain) : null;
     const hoveredCount = hoveredEntry?.[1] ?? 0;
-    const hoveredPct = txcount > 0 ? ((hoveredCount / txcount) * 100).toFixed(1) : "0";
+    const hoveredPct = totalCount > 0 ? ((hoveredCount / totalCount) * 100).toFixed(1) : "0";
     const hoveredColor = AllChainsByKeys[hoveredChain ?? ""]?.colors[chainColorTheme][0];
     const hoveredLabel = AllChainsByKeys[hoveredChain ?? ""]?.name_short ?? hoveredChain;
     const hoveredUrlKey = AllChainsByKeys[hoveredChain ?? ""]?.urlKey;
