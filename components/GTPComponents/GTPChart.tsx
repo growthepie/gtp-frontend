@@ -322,8 +322,9 @@ export interface GTPChartProps {
   timeAxisTickIntervalMs?: number;
   timeAxisTickAlignToCleanBoundary?: boolean;
   timeAxisBarEdgePaddingRatio?: number;
-  xAxisType?: "time" | "category";
+  xAxisType?: "time" | "category" | "value";
   xAxisLabelFormatter?: (value: number | string) => string;
+  xAxisTooltipLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
   secondaryYAxisLabelFormatter?: (value: number) => string;
   xAxisMin?: number;
@@ -462,6 +463,7 @@ export default function GTPChart({
   xAxisMin,
   xAxisMax,
   xAxisLabelFormatter,
+  xAxisTooltipLabelFormatter,
   yAxisLabelFormatter,
   secondaryYAxisLabelFormatter,
   yAxisMin = 0,
@@ -559,17 +561,20 @@ export default function GTPChart({
   // chain re-added by an external control (e.g. the table) would still be hidden
   // because its name lingers in the internal inactive set.
   useEffect(() => {
-    setInternalInactiveSeries((prev) => {
-      if (prev.size === 0) return prev;
-      const validNames = new Set(series.map((s) => s.name));
-      let changed = false;
-      const next = new Set<string>();
-      prev.forEach((name) => {
-        if (validNames.has(name)) next.add(name);
-        else changed = true;
+    const frame = requestAnimationFrame(() => {
+      setInternalInactiveSeries((prev) => {
+        if (prev.size === 0) return prev;
+        const validNames = new Set(series.map((s) => s.name));
+        let changed = false;
+        const next = new Set<string>();
+        prev.forEach((name) => {
+          if (validNames.has(name)) next.add(name);
+          else changed = true;
+        });
+        return changed ? next : prev;
       });
-      return changed ? next : prev;
     });
+    return () => cancelAnimationFrame(frame);
   }, [series]);
 
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
@@ -2297,12 +2302,14 @@ export default function GTPChart({
       if (validPoints.length === 0) return "";
 
       const timestamp = validPoints[0].value[0];
-      const dateLabel = new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(timestamp);
+      const dateLabel = xAxisTooltipLabelFormatter
+        ? xAxisTooltipLabelFormatter(timestamp)
+        : new Intl.DateTimeFormat("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            timeZone: "UTC",
+          }).format(timestamp);
 
       const timeLabel = new Intl.DateTimeFormat("en-GB", {
         hour: "2-digit",
@@ -2445,10 +2452,19 @@ export default function GTPChart({
         show: true,
         min: effectiveXMin,
         max: effectiveXMax,
-        boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
+        boundaryGap: hasBarSeries ? (xAxisType === "category" ? true : [0, 0]) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
         axisTick: { show: xAxisType !== "time" },
-        axisLabel: { show: xAxisType !== "time" },
+        axisLabel: {
+          show: xAxisType !== "time",
+          color: textPrimary,
+          fontSize: numbersXxsTypography.fontSize,
+          fontFamily: numbersXxsTypography.fontFamily,
+          fontWeight: numbersXxsTypography.fontWeight,
+          formatter: xAxisLabelFormatter
+            ? (value: number | string) => xAxisLabelFormatter(value)
+            : undefined,
+        },
         splitLine: { show: false },
       } as any,
       yAxis: hasSecondaryAxis
@@ -2621,11 +2637,12 @@ export default function GTPChart({
     stack,
     tooltipFormatter,
     tooltipTitle,
-    showTooltipTimestamp,
+    xAxisTooltipLabelFormatter,
     showTotal,
     reverseTooltipOrder,
     limitTooltipRows,
     xAxisType,
+    xAxisLabelFormatter,
     yAxisLabelFormatter,
     secondaryYAxisLabelFormatter,
     formatValueForAxis,

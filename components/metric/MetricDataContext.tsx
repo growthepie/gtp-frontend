@@ -3,6 +3,7 @@ import { Chain } from "@/lib/chains";
 import { MetricData } from "@/types/api/MetricsResponse";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
+import { getLaunchTimestamp, getRelativeLaunchDay, SINCE_LAUNCH_MAX_DAYS } from "./launchDate";
 
 type Timespans = {
   [key: string]: {
@@ -211,6 +212,17 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     const [hourlybuffer, dailybuffer, weeklybuffer, monthlybuffer] = [0, 0, 0, 0];
     const minUnix = minUnixByTimeInterval[selectedTimeInterval];
     const maxUnix = maxUnixByTimeInterval[selectedTimeInterval];
+    const sinceLaunchXMax = Object.keys(data.chains).reduce((maxDays, chainKey) => {
+      const rows = data.chains[chainKey]?.daily?.data;
+      if (!Array.isArray(rows) || rows.length === 0) return maxDays;
+      if (selectedChains.length > 0 && !selectedChains.includes(chainKey)) return maxDays;
+      const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? rows[0]?.[0];
+      const lastTimestamp = rows[rows.length - 1]?.[0];
+      if (!Number.isFinite(launchTimestamp) || !Number.isFinite(lastTimestamp)) {
+        return maxDays;
+      }
+      return Math.max(maxDays, getRelativeLaunchDay(lastTimestamp, launchTimestamp));
+    }, 0);
 
     const ts = {
       "24h": {
@@ -268,6 +280,13 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         value: 365,
         xMin: maxUnix - 365 * 24 * 60 * 60 * 1000 - dailybuffer,
         xMax: maxUnix + dailybuffer,
+      },
+      sinceLaunch: {
+        label: "Since launch",
+        shortLabel: "Launch",
+        value: 0,
+        xMin: 0,
+        xMax: Math.min(sinceLaunchXMax, SINCE_LAUNCH_MAX_DAYS),
       },
       "12w": {
         label: "3 months",
@@ -329,7 +348,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
 
     return ts;
 
-  }, [data, minUnixByTimeInterval, maxUnixByTimeInterval, selectedTimeInterval]);
+  }, [data, master?.chains, minUnixByTimeInterval, maxUnixByTimeInterval, selectedChains, selectedTimeInterval]);
 
   const metric_id = data?.metric_id || "";
 

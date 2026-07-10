@@ -31,6 +31,7 @@ import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems, daMetricItems } from "@/lib/metrics";
+import { getLaunchTimestamp, getRelativeLaunchDay } from "./launchDate";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -143,6 +144,7 @@ export default function MetricsContainer({
         setZoomed,
         timeIntervalKey,
     } = useMetricChartControls();
+    const isSinceLaunch = selectedTimeInterval === "daily" && selectedTimespan === "sinceLaunch";
 
     const { data: master } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
@@ -273,16 +275,20 @@ export default function MetricsContainer({
                 }
 
                 const multiplier = !showUsd && showGwei && ethIdx !== -1 ? 1_000_000_000 : 1;
-                const valuesByTimestamp = new Map<number, number | null>();
+                const valuesByX = new Map<number, number | null>();
+                const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? intervalData.data?.[0]?.[0];
 
                 (intervalData.data ?? []).forEach((row) => {
                     const timestamp = row[0];
-                    if (typeof xMin === "number" && timestamp < xMin) return;
-                    if (typeof xMax === "number" && timestamp > xMax) return;
+                    const xValue = isSinceLaunch && Number.isFinite(launchTimestamp)
+                        ? getRelativeLaunchDay(timestamp, launchTimestamp)
+                        : timestamp;
+                    if (typeof xMin === "number" && xValue < xMin) return;
+                    if (typeof xMax === "number" && xValue > xMax) return;
 
                     const rawValue = row[valueIndex];
-                    valuesByTimestamp.set(
-                        timestamp,
+                    valuesByX.set(
+                        xValue,
                         typeof rawValue === "number" && Number.isFinite(rawValue)
                             ? rawValue * multiplier
                             : null,
@@ -292,22 +298,22 @@ export default function MetricsContainer({
                 return {
                     chainKey,
                     chainName: master?.chains?.[chainKey]?.name ?? metricData.chains[chainKey]?.chain_name ?? chainKey,
-                    valuesByTimestamp,
+                    valuesByX,
                 };
             })
             .filter((item): item is {
                 chainKey: string;
                 chainName: string;
-                valuesByTimestamp: Map<number, number | null>;
+                valuesByX: Map<number, number | null>;
             } => Boolean(item));
 
         if (seriesRows.length === 0) return;
 
-        const timestamps = Array.from(
-            new Set(seriesRows.flatMap((series) => Array.from(series.valuesByTimestamp.keys()))),
+        const xValues = Array.from(
+            new Set(seriesRows.flatMap((series) => Array.from(series.valuesByX.keys()))),
         ).sort((a, b) => a - b);
 
-        if (timestamps.length === 0) return;
+        if (xValues.length === 0) return;
 
         const unitLabel = selectedScale === "percentage"
             ? "percent"
@@ -318,8 +324,8 @@ export default function MetricsContainer({
               : valueKey ?? "eth";
 
         const headers = [
-            "timestamp",
-            "datetime_utc",
+            isSinceLaunch ? "day_since_launch" : "timestamp",
+            ...(isSinceLaunch ? [] : ["datetime_utc"]),
             "metric_id",
             "metric_name",
             "time_interval",
@@ -328,8 +334,8 @@ export default function MetricsContainer({
             ...seriesRows.map((series) => series.chainName),
         ];
 
-        const rows = timestamps.map((timestamp) => {
-            const values = seriesRows.map((series) => series.valuesByTimestamp.get(timestamp) ?? null);
+        const rows = xValues.map((xValue) => {
+            const values = seriesRows.map((series) => series.valuesByX.get(xValue) ?? null);
             const displayedValues = selectedScale === "percentage"
                 ? values.map((value) => {
                     if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -342,8 +348,8 @@ export default function MetricsContainer({
                 : values;
 
             return [
-                timestamp,
-                new Date(timestamp).toISOString(),
+                xValue,
+                ...(isSinceLaunch ? [] : [new Date(xValue).toISOString()]),
                 metricData.metric_id,
                 metricData.metric_name,
                 timeIntervalKey,
@@ -376,6 +382,7 @@ export default function MetricsContainer({
         selectedRange,
         selectedScale,
         selectedTimespan,
+        isSinceLaunch,
         showEthereumMainnet,
         showGwei,
         showUsd,
@@ -607,6 +614,7 @@ export default function MetricsContainer({
                                 }
                                 setSelectedTimeInterval(interval);
                                 setZoomed(false);
+                                setSelectedRange(null);
                             }}
                             isSelected={selectedTimeInterval === interval}
                         />
@@ -615,16 +623,15 @@ export default function MetricsContainer({
                     <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                         
                         {!selectedRange ? (
-                            Object.keys(timespans)
-                                .filter((timespan) =>
-                                    selectedTimeInterval === "hourly"
-                                        ? ["24h", "3d", "7d"].includes(timespan)
-                                        : selectedTimeInterval === "daily"
-                                          ? ["90d", "180d", "365d", "max"].includes(timespan)
-                                          : selectedTimeInterval === "weekly"
-                                            ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                                            : ["6m", "12m", "maxM"].includes(timespan),
-                                )
+                            (selectedTimeInterval === "hourly"
+                                ? ["24h", "3d", "7d"]
+                                : selectedTimeInterval === "daily"
+                                  ? ["90d", "180d", "365d", "max", "sinceLaunch"]
+                                  : selectedTimeInterval === "weekly"
+                                    ? ["12w", "24w", "52w", "maxW"]
+                                    : ["6m", "12m", "maxM"]
+                            )
+                                .filter((timespan) => timespans[timespan])
                                 .map((timespan) => (
                                     <GTPButton
                                         key={timespan}
@@ -636,6 +643,7 @@ export default function MetricsContainer({
                                         clickHandler={() => {
                                             setSelectedTimespan(timespan);
                                             setZoomed(false);
+                                            setSelectedRange(null);
                                         }}
                                         isSelected={selectedTimespan === timespan}
                                     />
@@ -654,6 +662,9 @@ export default function MetricsContainer({
                             />
                             <GTPButton
                                 label={(() => {
+                                    if (isSinceLaunch) {
+                                        return ` Day ${Math.floor(selectedRange[0])} - Day ${Math.floor(selectedRange[1])}`;
+                                    }
                                     const dateLabel = new Intl.DateTimeFormat("en-GB", {
                                         day: "2-digit",
                                         month: "short",

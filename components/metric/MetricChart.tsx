@@ -14,6 +14,7 @@ import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import colors from "tailwindcss/colors";
 import { useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";
+import { getLaunchTimestamp, getRelativeLaunchDay } from "./launchDate";
 type MetricChartProps = {
   collapseTable: boolean;
   suffix?: string;
@@ -57,11 +58,13 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const {
     selectedScale,
     selectedTimespan,
+    selectedTimeInterval,
     timeIntervalKey,
     selectedChains,
     setSelectedChains,
     showEthereumMainnet,
   } = useMetricChartControls();
+  const isSinceLaunch = selectedTimeInterval === "daily" && selectedTimespan === "sinceLaunch";
 
   // Keep MetricDataContext chain selection aligned with controls so timespans/x-axis bounds stay correct.
   useSyncSelectedChainsToDataContext(selectedChains);
@@ -165,12 +168,16 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         }
 
         const multiplier = !showUsd && showGwei && ethIdx !== -1 ? 1_000_000_000 : 1;
+        const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? chainData.data?.[0]?.[0];
         const points: [number, number | null][] = (chainData.data ?? []).map((row) => {
           const rawValue = row[valueIndex];
+          const xValue = isSinceLaunch && Number.isFinite(launchTimestamp)
+            ? getRelativeLaunchDay(row[0], launchTimestamp)
+            : row[0];
           if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
-            return [row[0], null];
+            return [xValue, null];
           }
-          return [row[0], rawValue * multiplier];
+          return [xValue, rawValue * multiplier];
         });
 
         const chainMeta = metadataByKey?.[chainKey];
@@ -208,6 +215,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     showEthereumMainnet,
     showGwei,
     showUsd,
+    isSinceLaunch,
     timeIntervalKey,
   ]);
 
@@ -236,7 +244,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           stack={selectedScale === "stacked"}
           percentageMode={selectedScale === "percentage"}
           
-          xAxisType="time"
+          xAxisType={isSinceLaunch ? "value" : "time"}
+          xAxisLabelFormatter={isSinceLaunch ? (value) => `Day ${Math.round(Number(value))}` : undefined}
+          xAxisTooltipLabelFormatter={isSinceLaunch ? (value) => `Day ${Math.round(Number(value))} since launch` : undefined}
           snapToCleanBoundary={false}
           xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
           xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
