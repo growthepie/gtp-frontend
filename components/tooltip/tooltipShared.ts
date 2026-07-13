@@ -64,8 +64,21 @@ export const getViewportAwareTooltipLocalPosition = ({
     // during a horizontal scrub, which feels janky. Anchoring vertically to the
     // chart turns the tooltip into a stable readout band — only the values
     // inside change as the finger moves — matching iOS Stocks / Robinhood etc.
+    //
+    // Both axes are clamped to the chart host, not just the viewport: on large
+    // touch screens (e.g. iPad) charts sit in a multi-column grid, and a
+    // viewport-only clamp lets the tooltip spill over neighboring charts —
+    // reading as if it belonged to the wrong chart. Viewport clamping is the
+    // fallback when the host is too small to contain the tooltip.
+    const hostRightAbs = hostRect ? hostRect.right : viewportWidth;
+    const hostBottomAbs = hostRect ? hostRect.bottom : viewportHeight;
+
     let xAbs = anchorAbsX - contentWidth / 2;
-    xAbs = clamp(xAbs, viewportPadding, maxX);
+    const minXAbs = Math.max(hostLeft, viewportPadding);
+    const maxXAbs = Math.min(hostRightAbs - contentWidth, maxX);
+    xAbs = maxXAbs >= minXAbs
+      ? clamp(xAbs, minXAbs, maxXAbs)
+      : clamp(xAbs, viewportPadding, maxX);
 
     const STABLE_TOP_PADDING = 8;
     const stableTopAbs = Math.max(hostTop + STABLE_TOP_PADDING, viewportPadding);
@@ -78,12 +91,15 @@ export const getViewportAwareTooltipLocalPosition = ({
     if (anchorAbsY >= stableTopFingerClearanceY) {
       yAbs = stableTopAbs;
     } else {
+      // Finger near the top of the chart: place the tooltip below the finger,
+      // but keep it inside the touched chart rather than over the charts below.
+      // When the host can't fit it below the finger, overlapping the finger at
+      // the stable top beats detaching the tooltip from its chart.
       const belowYAbs = anchorAbsY + touchOffset;
-      if (belowYAbs + contentHeight <= viewportHeight - viewportPadding) {
-        yAbs = belowYAbs;
-      } else {
-        yAbs = viewportPadding;
-      }
+      const maxYInHostAbs = Math.min(hostBottomAbs - contentHeight, maxY);
+      yAbs = maxYInHostAbs >= stableTopAbs
+        ? clamp(belowYAbs, stableTopAbs, maxYInHostAbs)
+        : stableTopAbs;
     }
     yAbs = clamp(yAbs, viewportPadding, maxY);
     return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
