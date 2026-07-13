@@ -460,6 +460,18 @@ const syncRegistry = new Map<string, Set<SyncEntry>>();
 // Mouse-only usage never fires TouchEvents, so hover behavior is untouched.
 const TOUCH_SESSION_LINGER_MS = 800;
 const TOUCH_CHART_CONTAINER_ATTR = "data-gtp-chart-container";
+
+// Touch-primary devices get an instant tooltip (transitionDuration: 0). The
+// ECharts default of 0.4s does two things that break touch containment: the
+// tooltip element eases toward each new position over 400ms, and ECharts
+// throttles position recomputation to 50ms while a transition is configured
+// (TooltipView couples the two). During a touch scroll the chart moves every
+// frame, so the rendered tooltip trails its (correctly clamped) computed
+// position and visibly floats outside the chart, snapping into place only
+// after the scroll settles. Mouse-primary devices keep the ECharts default so
+// desktop hover feel is unchanged.
+const isTouchPrimaryDevice =
+  typeof window !== "undefined" && !!window.matchMedia?.("(hover: none)").matches;
 let lastTouchEventAt = 0;
 let activeTouchChartEl: Element | null = null;
 
@@ -578,6 +590,13 @@ export default function GTPChart({
   // Chart-local coords of the last tooltip show — the re-anchor point used to
   // keep a touch-shown tooltip glued to the chart while the page scrolls.
   const lastTooltipShowPosRef = useRef<{ x: number; y: number } | null>(null);
+  // Actual tooltip visibility, tracked via ECharts' own showtip/hidetip events.
+  // Every hide — including ECharts-internal ones (finger lift, globalout) —
+  // dispatches the hideTip action, so this never drifts from what's rendered.
+  // The scroll re-anchor must gate on this, not on the auto-hide timer: the
+  // timer outliving an internal hide would resurrect a dismissed tooltip, and
+  // re-anchoring a hidden tooltip could strand it outside its chart.
+  const tooltipVisibleRef = useRef(false);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -1177,10 +1196,16 @@ export default function GTPChart({
   useEffect(() => {
     let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
     let onMoveHandler: ((e: { offsetX?: number; offsetY?: number }) => void) | null = null;
+    let subscribedInstance: EChartsInstance | null = null;
+    const onShowTip = () => { tooltipVisibleRef.current = true; };
+    const onHideTip = () => { tooltipVisibleRef.current = false; };
 
     const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
+      subscribedInstance = instance as unknown as EChartsInstance;
+      subscribedInstance.on("showtip", onShowTip);
+      subscribedInstance.on("hidetip", onHideTip);
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
       onMoveHandler = (e) => {
@@ -1218,13 +1243,18 @@ export default function GTPChart({
     // and mouse interactions never enter a touch session.
     let scrollRepositionFrame: number | null = null;
     const onDocumentScroll = () => {
+      if (!tooltipVisibleRef.current) return;
       if (tooltipHideTimerRef.current === null) return;
       if (!(isTouchInteractionRef.current || isTouchSession())) return;
       if (activeTouchChartEl !== containerRef.current) return;
-      const pos = lastTooltipShowPosRef.current;
-      if (!pos || scrollRepositionFrame !== null) return;
+      if (scrollRepositionFrame !== null) return;
       scrollRepositionFrame = requestAnimationFrame(() => {
         scrollRepositionFrame = null;
+        // Re-check inside the frame: a hide can land between scheduling and
+        // executing, and re-showing a just-hidden tooltip would resurrect it.
+        if (!tooltipVisibleRef.current) return;
+        const pos = lastTooltipShowPosRef.current;
+        if (!pos) return;
         (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
           ?.dispatchAction({ type: "showTip", x: pos.x, y: pos.y });
       });
@@ -1251,6 +1281,10 @@ export default function GTPChart({
       clearTooltipHideTimer();
       document.removeEventListener("touchstart", handleOutsideTap);
       document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+      if (subscribedInstance) {
+        subscribedInstance.off("showtip", onShowTip);
+        subscribedInstance.off("hidetip", onHideTip);
+      }
       if (zr && onMoveHandler) {
         zr.off("mousemove", onMoveHandler);
         zr.off("click", onMoveHandler);
@@ -1883,6 +1917,7 @@ export default function GTPChart({
           renderMode: "html",
           appendToBody: true,
           confine: false,
+          transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
           backgroundColor: "transparent",
           borderWidth: 0,
           padding: 0,
@@ -2641,6 +2676,7 @@ export default function GTPChart({
         renderMode: "html",
         appendToBody: true,
         confine: false,
+        transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
         position: chartTooltipPosition,
         axisPointer: {
           type: "line",
