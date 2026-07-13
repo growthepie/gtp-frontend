@@ -575,6 +575,9 @@ export default function GTPChart({
   // the touch-tap path so a tap-shown tooltip gets the same fade-out window as
   // a hovered one.
   const tooltipHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Chart-local coords of the last tooltip show — the re-anchor point used to
+  // keep a touch-shown tooltip glued to the chart while the page scrolls.
+  const lastTooltipShowPosRef = useRef<{ x: number; y: number } | null>(null);
   const [dragOverlay, setDragOverlay] = useState<{ left: number; width: number } | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -587,20 +590,19 @@ export default function GTPChart({
 
   // Prune stale entries when the parent changes the series list: without this, a
   // chain re-added by an external control (e.g. the table) would still be hidden
-  // because its name lingers in the internal inactive set.
-  useEffect(() => {
-    setInternalInactiveSeries((prev) => {
-      if (prev.size === 0) return prev;
-      const validNames = new Set(series.map((s) => s.name));
-      let changed = false;
-      const next = new Set<string>();
-      prev.forEach((name) => {
-        if (validNames.has(name)) next.add(name);
-        else changed = true;
-      });
-      return changed ? next : prev;
-    });
-  }, [series]);
+  // because its name lingers in the internal inactive set. Render-phase state
+  // adjustment (guarded so it only fires when something was actually pruned)
+  // rather than an effect — React then restarts the render with the new state
+  // immediately instead of committing a stale frame first.
+  if (internalInactiveSeries.size > 0) {
+    const validNames = new Set(series.map((s) => s.name));
+    const pruned = new Set(
+      Array.from(internalInactiveSeries).filter((name) => validNames.has(name)),
+    );
+    if (pruned.size !== internalInactiveSeries.size) {
+      setInternalInactiveSeries(pruned);
+    }
+  }
 
   // Resolved inactive set: controlled (prop) or uncontrolled (internal state)
   const inactiveLegendSeries = useMemo(
@@ -1147,10 +1149,14 @@ export default function GTPChart({
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
       const rect = el.getBoundingClientRect();
-      instance.dispatchAction({
-        type: "showTip",
+      lastTooltipShowPosRef.current = {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
+      };
+      instance.dispatchAction({
+        type: "showTip",
+        x: lastTooltipShowPosRef.current.x,
+        y: lastTooltipShowPosRef.current.y,
       });
       scheduleTooltipHide();
     };
@@ -1170,14 +1176,14 @@ export default function GTPChart({
   // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
   useEffect(() => {
     let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
-    let onMoveHandler: (() => void) | null = null;
+    let onMoveHandler: ((e: { offsetX?: number; offsetY?: number }) => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
       const instance = echartsRef.current?.getEchartsInstance?.();
       if (!instance) return;
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
-      onMoveHandler = () => {
+      onMoveHandler = (e) => {
         // During a touch session only the chart the touch started on may show
         // a tooltip. Synthesized mouse events (iPadOS fires them after taps and
         // scroll gestures, at whatever now sits under the lift-off point) would
@@ -1188,6 +1194,9 @@ export default function GTPChart({
             ?.dispatchAction({ type: "hideTip" });
           return;
         }
+        if (typeof e?.offsetX === "number" && typeof e?.offsetY === "number") {
+          lastTooltipShowPosRef.current = { x: e.offsetX, y: e.offsetY };
+        }
         scheduleTooltipHide();
       };
       zr.on("mousemove", onMoveHandler);
@@ -1196,6 +1205,31 @@ export default function GTPChart({
       // right after the mousemove guard hid it.
       zr.on("click", onMoveHandler);
     });
+
+    // Live containment while the page scrolls under a touch-shown tooltip.
+    // The tooltip element lives on document.body, so it does not move with the
+    // chart when a scroll container scrolls; and once Safari claims a touch
+    // drag as a scroll gesture it stops delivering touch events, so ECharts
+    // never re-runs the positioner on its own. Re-anchoring the tooltip at its
+    // last chart-local position every scrolled frame re-runs the positioner
+    // against the chart's current on-screen rect, keeping the tooltip inside
+    // the chart while it moves instead of snapping there after the scroll.
+    // Touch-only: a pending auto-hide timer is the "tooltip is showing" signal,
+    // and mouse interactions never enter a touch session.
+    let scrollRepositionFrame: number | null = null;
+    const onDocumentScroll = () => {
+      if (tooltipHideTimerRef.current === null) return;
+      if (!(isTouchInteractionRef.current || isTouchSession())) return;
+      if (activeTouchChartEl !== containerRef.current) return;
+      const pos = lastTooltipShowPosRef.current;
+      if (!pos || scrollRepositionFrame !== null) return;
+      scrollRepositionFrame = requestAnimationFrame(() => {
+        scrollRepositionFrame = null;
+        (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
+          ?.dispatchAction({ type: "showTip", x: pos.x, y: pos.y });
+      });
+    };
+    document.addEventListener("scroll", onDocumentScroll, { capture: true, passive: true });
 
     const handleOutsideTap = (e: TouchEvent) => {
       if (!containerRef.current) return;
@@ -1213,8 +1247,10 @@ export default function GTPChart({
 
     return () => {
       cancelAnimationFrame(frame);
+      if (scrollRepositionFrame !== null) cancelAnimationFrame(scrollRepositionFrame);
       clearTooltipHideTimer();
       document.removeEventListener("touchstart", handleOutsideTap);
+      document.removeEventListener("scroll", onDocumentScroll, { capture: true });
       if (zr && onMoveHandler) {
         zr.off("mousemove", onMoveHandler);
         zr.off("click", onMoveHandler);
