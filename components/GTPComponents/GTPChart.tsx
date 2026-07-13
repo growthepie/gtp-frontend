@@ -447,6 +447,36 @@ type SyncEntry = {
 };
 const syncRegistry = new Map<string, Set<SyncEntry>>();
 
+// --- Touch-session tracking (module-level, shared by all GTPChart instances) ---
+// TouchEvents can only originate from a real touch screen, so they are a reliable
+// "a finger is (or just was) on the page" signal even on devices that synthesize
+// mouse/pointer events from touches after the fact (iPadOS does this for taps and
+// at the end of scroll gestures). Two things derive from it:
+//  • isTouchSession(): forces the tooltip positioner down the touch-placement path
+//    even when the triggering event was a synthesized one with pointerType "mouse".
+//  • activeTouchChartEl: the chart container the current touch started on — the
+//    only chart allowed to show a tooltip while the session is active, so a
+//    synthesized event can never pop a tooltip on a chart the user never touched.
+// Mouse-only usage never fires TouchEvents, so hover behavior is untouched.
+const TOUCH_SESSION_LINGER_MS = 800;
+const TOUCH_CHART_CONTAINER_ATTR = "data-gtp-chart-container";
+let lastTouchEventAt = 0;
+let activeTouchChartEl: Element | null = null;
+
+const isTouchSession = () => Date.now() - lastTouchEventAt < TOUCH_SESSION_LINGER_MS;
+
+if (typeof document !== "undefined") {
+  document.addEventListener("touchstart", (e) => {
+    lastTouchEventAt = Date.now();
+    activeTouchChartEl = e.target instanceof Element
+      ? e.target.closest(`[${TOUCH_CHART_CONTAINER_ATTR}]`)
+      : null;
+  }, { capture: true, passive: true });
+  const bumpTouchSession = () => { lastTouchEventAt = Date.now(); };
+  document.addEventListener("touchmove", bumpTouchSession, { capture: true, passive: true });
+  document.addEventListener("touchend", bumpTouchSession, { capture: true, passive: true });
+}
+
 // --- Component ---
 
 export default function GTPChart({
@@ -756,7 +786,7 @@ export default function GTPChart({
         contentWidth,
         contentHeight,
         hostRect: tooltipHostRef.current?.getBoundingClientRect(),
-        isTouch: isTouchInteractionRef.current,
+        isTouch: isTouchInteractionRef.current || isTouchSession(),
       });
     },
     [],
@@ -1147,8 +1177,24 @@ export default function GTPChart({
       if (!instance) return;
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
-      onMoveHandler = scheduleTooltipHide;
+      onMoveHandler = () => {
+        // During a touch session only the chart the touch started on may show
+        // a tooltip. Synthesized mouse events (iPadOS fires them after taps and
+        // scroll gestures, at whatever now sits under the lift-off point) would
+        // otherwise raise a tooltip on a chart the user never touched.
+        if (isTouchSession() && activeTouchChartEl !== containerRef.current) {
+          clearTooltipHideTimer();
+          (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
+            ?.dispatchAction({ type: "hideTip" });
+          return;
+        }
+        scheduleTooltipHide();
+      };
       zr.on("mousemove", onMoveHandler);
+      // The tooltip's default triggerOn includes click, and iPadOS's synthesized
+      // event burst ends with a click — guard it too or it re-shows the tooltip
+      // right after the mousemove guard hid it.
+      zr.on("click", onMoveHandler);
     });
 
     const handleOutsideTap = (e: TouchEvent) => {
@@ -1171,6 +1217,7 @@ export default function GTPChart({
       document.removeEventListener("touchstart", handleOutsideTap);
       if (zr && onMoveHandler) {
         zr.off("mousemove", onMoveHandler);
+        zr.off("click", onMoveHandler);
       }
     };
   }, [scheduleTooltipHide, clearTooltipHideTimer]);
@@ -2645,6 +2692,7 @@ export default function GTPChart({
     <div className="flex flex-col w-full" style={{ height: typeof height === "number" ? `${height}px` : height }}>
     <div
       ref={containerRef}
+      {...{ [TOUCH_CHART_CONTAINER_ATTR]: "" }}
       className={`relative w-full flex-1 min-h-0 overflow-hidden ${onDragSelect ? "cursor-crosshair" : ""} ${className ?? ""}`}
     >
       <div ref={tooltipHostRef} className="relative w-full h-full">

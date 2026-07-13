@@ -65,43 +65,52 @@ export const getViewportAwareTooltipLocalPosition = ({
     // chart turns the tooltip into a stable readout band — only the values
     // inside change as the finger moves — matching iOS Stocks / Robinhood etc.
     //
-    // Both axes are clamped to the chart host, not just the viewport: on large
-    // touch screens (e.g. iPad) charts sit in a multi-column grid, and a
-    // viewport-only clamp lets the tooltip spill over neighboring charts —
-    // reading as if it belonged to the wrong chart. Viewport clamping is the
-    // fallback when the host is too small to contain the tooltip.
+    // Strict containment: on touch the tooltip must never leave the touched
+    // chart's host — in multi-chart grids anything that spills over a neighbor
+    // reads as a tooltip on the wrong chart. Within the host, bias toward the
+    // visible viewport; when host and viewport conflict, the host wins.
     const hostRightAbs = hostRect ? hostRect.right : viewportWidth;
     const hostBottomAbs = hostRect ? hostRect.bottom : viewportHeight;
 
+    // X: hard host clamp, viewport-biased within it. Only when the tooltip is
+    // wider than the host itself (narrow single-column charts, where there is
+    // no horizontal neighbor to spill onto) fall back to viewport clamping.
     let xAbs = anchorAbsX - contentWidth / 2;
-    const minXAbs = Math.max(hostLeft, viewportPadding);
-    const maxXAbs = Math.min(hostRightAbs - contentWidth, maxX);
-    xAbs = maxXAbs >= minXAbs
-      ? clamp(xAbs, minXAbs, maxXAbs)
-      : clamp(xAbs, viewportPadding, maxX);
-
-    const STABLE_TOP_PADDING = 8;
-    const stableTopAbs = Math.max(hostTop + STABLE_TOP_PADDING, viewportPadding);
-    // Only abandon the stable top position when the finger is so close to the
-    // top of the chart that the tooltip would visually overlap it. Once that
-    // happens, drop the tooltip below the finger instead.
-    const stableTopFingerClearanceY = stableTopAbs + contentHeight + touchOffset;
-
-    let yAbs: number;
-    if (anchorAbsY >= stableTopFingerClearanceY) {
-      yAbs = stableTopAbs;
+    const hostMaxX = hostRightAbs - contentWidth;
+    if (hostMaxX >= hostLeft) {
+      const biasedMinX = Math.max(hostLeft, viewportPadding);
+      const biasedMaxX = Math.min(hostMaxX, maxX);
+      xAbs = biasedMaxX >= biasedMinX
+        ? clamp(xAbs, biasedMinX, biasedMaxX)
+        : clamp(xAbs, hostLeft, hostMaxX);
     } else {
-      // Finger near the top of the chart: place the tooltip below the finger,
-      // but keep it inside the touched chart rather than over the charts below.
-      // When the host can't fit it below the finger, overlapping the finger at
-      // the stable top beats detaching the tooltip from its chart.
-      const belowYAbs = anchorAbsY + touchOffset;
-      const maxYInHostAbs = Math.min(hostBottomAbs - contentHeight, maxY);
-      yAbs = maxYInHostAbs >= stableTopAbs
-        ? clamp(belowYAbs, stableTopAbs, maxYInHostAbs)
-        : stableTopAbs;
+      xAbs = clamp(xAbs, viewportPadding, maxX);
     }
-    yAbs = clamp(yAbs, viewportPadding, maxY);
+
+    // Y: same strict host clamp. When the tooltip is taller than the host, pin
+    // it to the host top — overflow is then unavoidable, but never trade host
+    // containment for viewport containment: that detaches the tooltip from its
+    // chart and lands it on the charts above/below.
+    const STABLE_TOP_PADDING = 8;
+    const hostMinY = hostTop + STABLE_TOP_PADDING;
+    const hostMaxY = hostBottomAbs - contentHeight;
+    let yAbs: number;
+    if (hostMaxY >= hostMinY) {
+      const biasedMinY = Math.max(hostMinY, viewportPadding);
+      const biasedMaxY = Math.min(hostMaxY, maxY);
+      const [minYAbs, maxYAbs] = biasedMaxY >= biasedMinY
+        ? [biasedMinY, biasedMaxY]
+        : [hostMinY, hostMaxY];
+      // Stable top band unless the finger is so close to the top of the chart
+      // that the tooltip would cover it — then drop below the finger, still
+      // clamped inside the host.
+      yAbs = anchorAbsY >= minYAbs + contentHeight + touchOffset
+        ? minYAbs
+        : clamp(anchorAbsY + touchOffset, minYAbs, maxYAbs);
+    } else {
+      yAbs = hostMinY;
+    }
+
     return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
   }
 
