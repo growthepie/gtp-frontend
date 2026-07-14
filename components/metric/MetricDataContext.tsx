@@ -3,7 +3,12 @@ import { Chain } from "@/lib/chains";
 import { MetricData } from "@/types/api/MetricsResponse";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useChainMetrics } from "@/hooks/useChainMetrics";
-import { getLaunchTimestamp, getRelativeLaunchDay, SINCE_LAUNCH_MAX_DAYS } from "./launchDate";
+import {
+  getLaunchTimestamp,
+  getRelativeLaunchIndex,
+  isSinceLaunchInterval,
+  SINCE_LAUNCH_MAX_BY_INTERVAL,
+} from "./launchDate";
 
 type Timespans = {
   [key: string]: {
@@ -212,16 +217,22 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
     const [hourlybuffer, dailybuffer, weeklybuffer, monthlybuffer] = [0, 0, 0, 0];
     const minUnix = minUnixByTimeInterval[selectedTimeInterval];
     const maxUnix = maxUnixByTimeInterval[selectedTimeInterval];
-    const sinceLaunchXMax = Object.keys(data.chains).reduce((maxDays, chainKey) => {
-      const rows = data.chains[chainKey]?.daily?.data;
-      if (!Array.isArray(rows) || rows.length === 0) return maxDays;
-      if (selectedChains.length > 0 && !selectedChains.includes(chainKey)) return maxDays;
+    const sinceLaunchInterval = isSinceLaunchInterval(selectedTimeInterval)
+      ? selectedTimeInterval
+      : "daily";
+    const sinceLaunchXMax = Object.keys(data.chains).reduce((maxPeriods, chainKey) => {
+      const rows = data.chains[chainKey]?.[sinceLaunchInterval]?.data;
+      if (!Array.isArray(rows) || rows.length === 0) return maxPeriods;
+      if (selectedChains.length > 0 && !selectedChains.includes(chainKey)) return maxPeriods;
       const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? rows[0]?.[0];
       const lastTimestamp = rows[rows.length - 1]?.[0];
       if (!Number.isFinite(launchTimestamp) || !Number.isFinite(lastTimestamp)) {
-        return maxDays;
+        return maxPeriods;
       }
-      return Math.max(maxDays, getRelativeLaunchDay(lastTimestamp, launchTimestamp));
+      return Math.max(
+        maxPeriods,
+        getRelativeLaunchIndex(lastTimestamp, launchTimestamp, sinceLaunchInterval),
+      );
     }, 0);
 
     const ts = {
@@ -286,7 +297,7 @@ export const MetricDataProvider = ({ children, metric, metric_type, selectedTime
         shortLabel: "Launch",
         value: 0,
         xMin: 0,
-        xMax: Math.min(sinceLaunchXMax, SINCE_LAUNCH_MAX_DAYS),
+        xMax: Math.min(sinceLaunchXMax, SINCE_LAUNCH_MAX_BY_INTERVAL[sinceLaunchInterval]),
       },
       "12w": {
         label: "3 months",

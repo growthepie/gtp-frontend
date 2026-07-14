@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, ReactNode, useRef, useCallback, useEffect } from "react";
+import { useMemo, ReactNode, useRef, useCallback, useEffect, Fragment } from "react";
 import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
@@ -31,7 +31,13 @@ import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems, daMetricItems } from "@/lib/metrics";
-import { getLaunchTimestamp, getRelativeLaunchDay } from "./launchDate";
+import {
+    getLaunchTimestamp,
+    getRelativeLaunchIndex,
+    isSinceLaunchInterval,
+    SINCE_LAUNCH_TOOLTIP_BY_INTERVAL,
+    SINCE_LAUNCH_UNIT_BY_INTERVAL,
+} from "./launchDate";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -144,7 +150,13 @@ export default function MetricsContainer({
         setZoomed,
         timeIntervalKey,
     } = useMetricChartControls();
-    const isSinceLaunch = selectedTimeInterval === "daily" && selectedTimespan === "sinceLaunch";
+    const sinceLaunchInterval = isSinceLaunchInterval(selectedTimeInterval)
+        ? selectedTimeInterval
+        : "daily";
+    const isSinceLaunch = selectedTimespan === "sinceLaunch" && isSinceLaunchInterval(selectedTimeInterval);
+    const sinceLaunchUnit = SINCE_LAUNCH_UNIT_BY_INTERVAL[sinceLaunchInterval];
+    const sinceLaunchUnitLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
+    const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
 
     const { data: master } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
@@ -281,7 +293,7 @@ export default function MetricsContainer({
                 (intervalData.data ?? []).forEach((row) => {
                     const timestamp = row[0];
                     const xValue = isSinceLaunch && Number.isFinite(launchTimestamp)
-                        ? getRelativeLaunchDay(timestamp, launchTimestamp)
+                        ? getRelativeLaunchIndex(timestamp, launchTimestamp, sinceLaunchInterval)
                         : timestamp;
                     if (typeof xMin === "number" && xValue < xMin) return;
                     if (typeof xMax === "number" && xValue > xMax) return;
@@ -315,7 +327,7 @@ export default function MetricsContainer({
 
         if (xValues.length === 0) return;
 
-        const unitLabel = selectedScale === "percentage"
+        const unitLabel = effectiveSelectedScale === "percentage"
             ? "percent"
             : showUsd
             ? "usd"
@@ -324,7 +336,7 @@ export default function MetricsContainer({
               : valueKey ?? "eth";
 
         const headers = [
-            isSinceLaunch ? "day_since_launch" : "timestamp",
+            isSinceLaunch ? `${sinceLaunchUnit}_since_launch` : "timestamp",
             ...(isSinceLaunch ? [] : ["datetime_utc"]),
             "metric_id",
             "metric_name",
@@ -336,7 +348,7 @@ export default function MetricsContainer({
 
         const rows = xValues.map((xValue) => {
             const values = seriesRows.map((series) => series.valuesByX.get(xValue) ?? null);
-            const displayedValues = selectedScale === "percentage"
+            const displayedValues = effectiveSelectedScale === "percentage"
                 ? values.map((value) => {
                     if (typeof value !== "number" || !Number.isFinite(value)) return null;
                     const total = values.reduce<number>(
@@ -353,7 +365,7 @@ export default function MetricsContainer({
                 metricData.metric_id,
                 metricData.metric_name,
                 timeIntervalKey,
-                selectedScale,
+                effectiveSelectedScale,
                 ...(hasCurrencyUnits ? [unitLabel] : []),
                 ...displayedValues,
             ];
@@ -380,9 +392,11 @@ export default function MetricsContainer({
         metricData,
         selectedChains,
         selectedRange,
-        selectedScale,
+        effectiveSelectedScale,
         selectedTimespan,
         isSinceLaunch,
+        sinceLaunchInterval,
+        sinceLaunchUnit,
         showEthereumMainnet,
         showGwei,
         showUsd,
@@ -523,6 +537,8 @@ export default function MetricsContainer({
                                 if (selectedTimeInterval === interval) return;
                                 if (interval === "hourly") {
                                     setSelectedTimespan("7d");
+                                } else if (selectedTimespan === "sinceLaunch") {
+                                    setSelectedTimespan("sinceLaunch");
                                 } else if (interval === "daily") {
                                     if (["24h", "3d", "7d"].includes(selectedTimespan)) {
                                         setSelectedTimespan("90d");
@@ -628,26 +644,47 @@ export default function MetricsContainer({
                                 : selectedTimeInterval === "daily"
                                   ? ["90d", "180d", "365d", "max", "sinceLaunch"]
                                   : selectedTimeInterval === "weekly"
-                                    ? ["12w", "24w", "52w", "maxW"]
-                                    : ["6m", "12m", "maxM"]
+                                    ? ["12w", "24w", "52w", "maxW", "sinceLaunch"]
+                                    : ["6m", "12m", "maxM", "sinceLaunch"]
                             )
                                 .filter((timespan) => timespans[timespan])
-                                .map((timespan) => (
-                                    <GTPButton
-                                        key={timespan}
-                                        label={timespans[timespan].label}
-                                        innerStyle={{ width: "100%" }}
-                                        className="w-full justify-center"
-                                        variant="primary"
-                                        size={"sm"}
-                                        clickHandler={() => {
-                                            setSelectedTimespan(timespan);
-                                            setZoomed(false);
-                                            setSelectedRange(null);
-                                        }}
-                                        isSelected={selectedTimespan === timespan}
-                                    />
-                                ))
+                                .map((timespan) => {
+                                    const button = (
+                                        <GTPButton
+                                            label={timespans[timespan].label}
+                                            innerStyle={{ width: "100%" }}
+                                            className="w-full justify-center"
+                                            variant="primary"
+                                            size={"sm"}
+                                            clickHandler={() => {
+                                                setSelectedTimespan(timespan);
+                                                setZoomed(false);
+                                                setSelectedRange(null);
+                                            }}
+                                            isSelected={selectedTimespan === timespan}
+                                        />
+                                    );
+
+                                    if (timespan !== "sinceLaunch") {
+                                        return <Fragment key={timespan}>{button}</Fragment>;
+                                    }
+
+                                    return (
+                                        <GTPTooltipNew
+                                            key={timespan}
+                                            placement="top"
+                                            trigger={<div className="w-full">{button}</div>}
+                                            containerClass="z-[99]"
+                                            unstyled
+                                        >
+                                            <GTPTooltipGeneral width={285}>
+                                                <div className="pl-[20px] text-xs text-color-text-primary">
+                                                    {SINCE_LAUNCH_TOOLTIP_BY_INTERVAL[sinceLaunchInterval]}
+                                                </div>
+                                            </GTPTooltipGeneral>
+                                        </GTPTooltipNew>
+                                    );
+                                })
                         ) : (
                             <div className="flex items-center gap-x-[8px]">
                             <GTPButton
@@ -663,7 +700,7 @@ export default function MetricsContainer({
                             <GTPButton
                                 label={(() => {
                                     if (isSinceLaunch) {
-                                        return ` Day ${Math.floor(selectedRange[0])} - Day ${Math.floor(selectedRange[1])}`;
+                                        return ` ${sinceLaunchUnitLabel} ${Math.floor(selectedRange[0])} - ${sinceLaunchUnitLabel} ${Math.floor(selectedRange[1])}`;
                                     }
                                     const dateLabel = new Intl.DateTimeFormat("en-GB", {
                                         day: "2-digit",
@@ -761,7 +798,7 @@ export default function MetricsContainer({
                             label="Absolute"
                             variant="primary"
                             size={"sm"}
-                            isSelected={selectedScale === "absolute"}
+                            isSelected={effectiveSelectedScale === "absolute"}
                             clickHandler={() => setSelectedScale("absolute")}
                             innerStyle={{ width: "100%" }}
                             className="w-full justify-center"
@@ -772,9 +809,13 @@ export default function MetricsContainer({
                                     label="Stacked"
                                     variant="primary"
                                     size={"sm"}
-                                    isSelected={selectedScale === "stacked"}
-                                    disabled={metric_id === "txcosts"}
-                                    clickHandler={() => setSelectedScale("stacked")}
+                                    isSelected={effectiveSelectedScale === "stacked"}
+                                    disabled={metric_id === "txcosts" || isSinceLaunch}
+                                    visualState={metric_id === "txcosts" || isSinceLaunch ? "disabled" : "default"}
+                                    clickHandler={() => {
+                                        if (isSinceLaunch) return;
+                                        setSelectedScale("stacked");
+                                    }}
                                     innerStyle={{ width: "100%", }}
                                     className="w-full justify-center"
                                 />
@@ -782,8 +823,13 @@ export default function MetricsContainer({
                                     label="Percentage"
                                     variant="primary"
                                     size={"sm"}
-                                    isSelected={selectedScale === "percentage"}
-                                    clickHandler={() => setSelectedScale("percentage")}
+                                    isSelected={effectiveSelectedScale === "percentage"}
+                                    disabled={isSinceLaunch}
+                                    visualState={isSinceLaunch ? "disabled" : "default"}
+                                    clickHandler={() => {
+                                        if (isSinceLaunch) return;
+                                        setSelectedScale("percentage");
+                                    }}
                                     innerStyle={{ width: "100%" }}
                                     className="w-full justify-center"
                                 />
