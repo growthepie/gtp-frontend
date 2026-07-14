@@ -23,6 +23,13 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import Heading from "@/components/layout/Heading";
 import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { ChainMetricResponse, MetricDetails } from "@/types/api/ChainMetricResponse";
+import { getViewportAwareTooltipLocalPosition } from "@/components/tooltip/tooltipShared";
+import {
+  TOUCH_CHART_CONTAINER_ATTR,
+  getActiveTouchChartEl,
+  isTouchPrimaryDevice,
+  isTouchSession,
+} from "@/components/tooltip/touchSession";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -293,6 +300,7 @@ const MetricChart = memo(
     const chartRef = useRef<ReactEChartsCore>(null);
     const isMobile = useMediaQuery("(max-width: 767px)");
     const isHovered = useRef(false);
+    const touchHostRef = useRef<HTMLDivElement | null>(null);
     const lastGraphicElements = useRef<any[]>([]);
     const lastXPos = useRef<number | null>(null);
     const lastYPositions = useRef<{ [chainId: string]: number }>({});
@@ -861,10 +869,32 @@ const MetricChart = memo(
             },
             handle: { show: false },
           },
-          // Let ECharts handle tooltip positioning naturally
+          // Touch: contain the tooltip inside the touched chart — the
+          // fundamentals grid stacks charts directly above/below each other,
+          // and the ECharts default follow-pointer placement drifts over
+          // neighbors. Mouse keeps the ECharts default: returning undefined
+          // falls through to it (TooltipView._updatePosition).
+          position: ((point: number[], _params: unknown, _el: unknown, _rect: unknown, size?: { contentSize?: number[] }) => {
+            if (!(isTouchPrimaryDevice || isTouchSession())) return undefined;
+            return getViewportAwareTooltipLocalPosition({
+              anchorLocalX: Number(point?.[0] ?? 0),
+              anchorLocalY: Number(point?.[1] ?? 0),
+              contentWidth: Number(size?.contentSize?.[0] ?? 0),
+              contentHeight: Number(size?.contentSize?.[1] ?? 0),
+              hostRect: touchHostRef.current?.getBoundingClientRect(),
+              isTouch: true,
+            });
+          }) as any,
           formatter: (params: any) => {
-            // Only show tooltip if this chart is being directly hovered
-            if (!isHovered.current) return "";
+            // Only the chart the touch started on may render a tooltip:
+            // echarts.connect forwards triggers to every chart in the group,
+            // and mouseenter/mouseleave (which drive isHovered) do not fire
+            // for touches — leaving isHovered false on the touched chart and
+            // stale-true on the last-tapped one, so touches showed no tooltip
+            // or the previous chart's tooltip. Mouse keeps the isHovered gate.
+            if (isTouchPrimaryDevice || isTouchSession()) {
+              if (getActiveTouchChartEl() !== touchHostRef.current) return "";
+            } else if (!isHovered.current) return "";
             if (!params || params.length === 0) return "";
 
             const date = new Date(params[0].value[0]);
@@ -1365,6 +1395,21 @@ const MetricChart = memo(
       };
     }, [drawLastPointLines, lineType]);
 
+    // On touch devices, hide this chart's tooltip as soon as the page scrolls:
+    // the body-appended tooltip does not travel with the chart, and once
+    // Safari claims a drag as a scroll gesture it stops delivering touch
+    // events, so the tooltip would strand over neighboring charts. Capture
+    // phase catches inner scroll containers too; mouse-primary devices are
+    // untouched.
+    useEffect(() => {
+      if (!isTouchPrimaryDevice) return;
+      const onDocumentScroll = () => {
+        chartRef.current?.getEchartsInstance()?.dispatchAction({ type: "hideTip" });
+      };
+      document.addEventListener("scroll", onDocumentScroll, { capture: true, passive: true });
+      return () => document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+    }, []);
+
     // Handle zoom events
     const onEvents = useMemo(
       () => ({
@@ -1522,6 +1567,8 @@ const MetricChart = memo(
 
         {/* Chart */}
         <div
+          ref={touchHostRef}
+          {...{ [TOUCH_CHART_CONTAINER_ATTR]: "" }}
           style={{ height: "100%", width: "100%", borderRadius: "0 0 15px 15px", overflow: "hidden" }}
           onMouseEnter={() => { isHovered.current = true; }}
           onMouseLeave={() => { isHovered.current = false; }}

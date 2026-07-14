@@ -5,6 +5,12 @@ import { echarts } from "@/lib/echarts-setup";
 import type { EChartsOption } from "echarts";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getGTPTooltipContainerClass, getViewportAwareTooltipLocalPosition } from "../tooltip/tooltipShared";
+import {
+  TOUCH_CHART_CONTAINER_ATTR,
+  getActiveTouchChartEl,
+  isTouchPrimaryDevice,
+  isTouchSession,
+} from "../tooltip/touchSession";
 import { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 import { useTheme } from "next-themes";
 import ChartWatermark from "@/components/layout/ChartWatermark";
@@ -447,47 +453,19 @@ type SyncEntry = {
 };
 const syncRegistry = new Map<string, Set<SyncEntry>>();
 
-// --- Touch-session tracking (module-level, shared by all GTPChart instances) ---
-// TouchEvents can only originate from a real touch screen, so they are a reliable
-// "a finger is (or just was) on the page" signal even on devices that synthesize
-// mouse/pointer events from touches after the fact (iPadOS does this for taps and
-// at the end of scroll gestures). Two things derive from it:
-//  • isTouchSession(): forces the tooltip positioner down the touch-placement path
-//    even when the triggering event was a synthesized one with pointerType "mouse".
-//  • activeTouchChartEl: the chart container the current touch started on — the
-//    only chart allowed to show a tooltip while the session is active, so a
-//    synthesized event can never pop a tooltip on a chart the user never touched.
-// Mouse-only usage never fires TouchEvents, so hover behavior is untouched.
-const TOUCH_SESSION_LINGER_MS = 800;
-const TOUCH_CHART_CONTAINER_ATTR = "data-gtp-chart-container";
-
-// Touch-primary devices get an instant tooltip (transitionDuration: 0). The
-// ECharts default of 0.4s does two things that break touch containment: the
-// tooltip element eases toward each new position over 400ms, and ECharts
-// throttles position recomputation to 50ms while a transition is configured
-// (TooltipView couples the two). During a touch scroll the chart moves every
-// frame, so the rendered tooltip trails its (correctly clamped) computed
-// position and visibly floats outside the chart, snapping into place only
-// after the scroll settles. Mouse-primary devices keep the ECharts default so
-// desktop hover feel is unchanged.
-const isTouchPrimaryDevice =
-  typeof window !== "undefined" && !!window.matchMedia?.("(hover: none)").matches;
-let lastTouchEventAt = 0;
-let activeTouchChartEl: Element | null = null;
-
-const isTouchSession = () => Date.now() - lastTouchEventAt < TOUCH_SESSION_LINGER_MS;
-
-if (typeof document !== "undefined") {
-  document.addEventListener("touchstart", (e) => {
-    lastTouchEventAt = Date.now();
-    activeTouchChartEl = e.target instanceof Element
-      ? e.target.closest(`[${TOUCH_CHART_CONTAINER_ATTR}]`)
-      : null;
-  }, { capture: true, passive: true });
-  const bumpTouchSession = () => { lastTouchEventAt = Date.now(); };
-  document.addEventListener("touchmove", bumpTouchSession, { capture: true, passive: true });
-  document.addEventListener("touchend", bumpTouchSession, { capture: true, passive: true });
-}
+// Touch-session tracking lives in ../tooltip/touchSession — shared with other
+// chart components (e.g. ChainChartECharts) so "only the touched chart shows a
+// tooltip" is enforced consistently across chart implementations.
+//
+// Note on isTouchPrimaryDevice → transitionDuration 0: the ECharts default of
+// 0.4s does two things that break touch containment — the tooltip element
+// eases toward each new position over 400ms, and ECharts throttles position
+// recomputation to 50ms while a transition is configured (TooltipView couples
+// the two). During a touch scroll the chart moves every frame, so the rendered
+// tooltip trails its (correctly clamped) computed position and visibly floats
+// outside the chart, snapping into place only after the scroll settles.
+// Mouse-primary devices keep the ECharts default so desktop hover feel is
+// unchanged.
 
 // --- Component ---
 
@@ -807,7 +785,12 @@ export default function GTPChart({
         contentWidth,
         contentHeight,
         hostRect: tooltipHostRef.current?.getBoundingClientRect(),
-        isTouch: isTouchInteractionRef.current || isTouchSession(),
+        // On a touch-primary device every pointer is a finger, so always use
+        // touch placement there: synthesized mouse events can arrive after the
+        // touch session lingers out (late iOS compat bursts, hover emulation
+        // after momentum scroll), and the mouse branch would place the tooltip
+        // above/below the anchor — visually over a neighboring chart.
+        isTouch: isTouchPrimaryDevice || isTouchInteractionRef.current || isTouchSession(),
       });
     },
     [],
@@ -1209,11 +1192,14 @@ export default function GTPChart({
       zr = instance.getZr() as unknown as ReturnType<EChartsInstance["getZr"]>;
       if (!zr) return;
       onMoveHandler = (e) => {
-        // During a touch session only the chart the touch started on may show
-        // a tooltip. Synthesized mouse events (iPadOS fires them after taps and
-        // scroll gestures, at whatever now sits under the lift-off point) would
-        // otherwise raise a tooltip on a chart the user never touched.
-        if (isTouchSession() && activeTouchChartEl !== containerRef.current) {
+        // Only the chart the touch started on may show a tooltip. Synthesized
+        // mouse events (iPadOS fires them after taps and scroll gestures, at
+        // whatever now sits under the lift-off point) would otherwise raise a
+        // tooltip on a chart the user never touched. On touch-primary devices
+        // this is gated permanently, not just during the session linger: every
+        // mouse event there is synthesized from a touch, and late arrivals
+        // (post-momentum hover emulation) outlive the session window.
+        if ((isTouchPrimaryDevice || isTouchSession()) && getActiveTouchChartEl() !== containerRef.current) {
           clearTooltipHideTimer();
           (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
             ?.dispatchAction({ type: "hideTip" });
@@ -1245,8 +1231,8 @@ export default function GTPChart({
     const onDocumentScroll = () => {
       if (!tooltipVisibleRef.current) return;
       if (tooltipHideTimerRef.current === null) return;
-      if (!(isTouchInteractionRef.current || isTouchSession())) return;
-      if (activeTouchChartEl !== containerRef.current) return;
+      if (!(isTouchPrimaryDevice || isTouchInteractionRef.current || isTouchSession())) return;
+      if (getActiveTouchChartEl() !== containerRef.current) return;
       if (scrollRepositionFrame !== null) return;
       scrollRepositionFrame = requestAnimationFrame(() => {
         scrollRepositionFrame = null;

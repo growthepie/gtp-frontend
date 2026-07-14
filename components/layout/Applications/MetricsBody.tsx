@@ -15,6 +15,7 @@ import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from
 import { MetricInfo } from "@/types/api/MasterResponse";
 import GTPCardLayout from "@/components/GTPComponents/GTPLayout/GTPCardLayout";
 import GTPChart from "@/components/GTPComponents/GTPChart";
+import { isTouchPrimaryDevice } from "@/components/tooltip/touchSession";
 import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPButtonDropdown";
 import ShareDropdownContent from "@/components/layout/FloatingBar/ShareDropdownContent";
 import { useLocalStorage } from "usehooks-ts";
@@ -1403,6 +1404,12 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                         xAxisMax={xMax}
                         snapToCleanBoundary={false}
                         showTooltipTimestamp={timeInterval === "hourly"}
+                        // Touch containment can't beat geometry: an unbounded
+                        // tooltip grows taller than the 280px chart and must
+                        // overflow onto the chart below. Cap rows (with the
+                        // built-in "Others" overflow row) on touch devices so
+                        // the tooltip always fits; desktop hover is unchanged.
+                        limitTooltipRows={isTouchPrimaryDevice ? 8 : undefined}
                         compactXAxis
                         ySplitNumber={2}
                         showTotal={selectedScale === "stacked" && !isSuccessRateMetric}
