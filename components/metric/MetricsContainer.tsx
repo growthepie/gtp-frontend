@@ -32,9 +32,11 @@ import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems, daMetricItems } from "@/lib/metrics";
 import { track } from "@/lib/tracking";
+import { IS_PRODUCTION } from "@/lib/helpers";
 import {
     getLaunchTimestamp,
     getRelativeLaunchIndex,
+    isExcludedFromSinceLaunch,
     isSinceLaunchInterval,
     SINCE_LAUNCH_TOOLTIP_BY_INTERVAL,
     SINCE_LAUNCH_UNIT_BY_INTERVAL,
@@ -62,6 +64,11 @@ export default function MetricsContainer({
 }) {
     const isMobile = useMediaQuery("(max-width: 967px)");
     const splitRows = useMediaQuery("(max-width: 967px)");
+    // On production, since-launch isn't offered on narrow viewports (≤1023px) — the
+    // timespan button is hidden and any active since-launch selection falls back to Max
+    // (see effect below). On dev/preview it stays available at all widths for testing.
+    const isNarrowViewport = useMediaQuery("(max-width: 1023px)");
+    const hideSinceLaunch = IS_PRODUCTION && isNarrowViewport;
     // The chart screenshot doesn't render correctly on Safari/iOS WebKit, so hide the
     // Take Screenshot button there (it's simply not rendered, so the row closes up — no gap).
     const isSafari = useIsSafari();
@@ -158,6 +165,17 @@ export default function MetricsContainer({
     const sinceLaunchUnit = SINCE_LAUNCH_UNIT_BY_INTERVAL[sinceLaunchInterval];
     const sinceLaunchUnitLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
     const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
+
+    // On narrow viewports the since-launch option is hidden, so don't leave the chart
+    // stuck in since-launch mode with no button to exit it — fall back to Max.
+    useEffect(() => {
+        if (!hideSinceLaunch || selectedTimespan !== "sinceLaunch") return;
+        const maxKeyByInterval: Record<string, string> = { daily: "max", weekly: "maxW", monthly: "maxM" };
+        const fallback = maxKeyByInterval[selectedTimeInterval] ?? "max";
+        setSelectedTimespan(timespans[fallback] ? fallback : "max");
+        setZoomed(false);
+        setSelectedRange(null);
+    }, [hideSinceLaunch, selectedTimespan, selectedTimeInterval, timespans, setSelectedTimespan, setZoomed]);
 
     const { data: master } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
@@ -268,6 +286,9 @@ export default function MetricsContainer({
 
         const visibleChainKeys = chainKeys.filter((chainKey) => {
             if (!selectedChains.includes(chainKey)) return false;
+            // These chains have no data back to their launch, so they can't be rebased
+            // to a "since launch" index — drop them from the since-launch view.
+            if (isSinceLaunch && isExcludedFromSinceLaunch(chainKey, metric_id)) return false;
             if (chainKey !== "ethereum") return true;
             if (!focusEnabled) return true;
             return showEthereumMainnet;
@@ -649,6 +670,7 @@ export default function MetricsContainer({
                                     : ["6m", "12m", "maxM", "sinceLaunch"]
                             )
                                 .filter((timespan) => timespans[timespan])
+                                .filter((timespan) => !(hideSinceLaunch && timespan === "sinceLaunch"))
                                 .map((timespan) => {
                                     const button = (
                                         <GTPButton

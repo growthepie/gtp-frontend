@@ -2,6 +2,32 @@ import { Chains } from "@/types/api/MasterResponse";
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Chains whose data — for every metric — doesn't reach back to their launch date,
+// so they can't be rebased onto a "since launch" index. Hidden from the
+// since-launch view regardless of which metric is shown.
+export const SINCE_LAUNCH_EXCLUDED_CHAINS = new Set(["ethereum", "ronin", "starknet"]);
+
+// Chains hidden from the since-launch view only for specific metrics, where that
+// metric's data for the chain doesn't reach back to the chain's launch. Keyed by
+// metric_id (see master.json `metrics`). Extend this as more chain/metric gaps surface.
+export const SINCE_LAUNCH_EXCLUDED_CHAINS_BY_METRIC: Record<string, Set<string>> = {
+  tvl: new Set(["celo"]), // total-value-secured
+  txcosts: new Set(["celo"]), // transaction-costs
+  // Economics menu (excluding overview):
+  app_revenue: new Set(["celo", "polygon_pos"]),
+  fees: new Set(["celo"]), // chain revenue
+  rent_paid: new Set(["celo", "polygon_pos"]),
+  profit: new Set(["celo", "polygon_pos"]),
+  fdv: new Set(["celo"]),
+  market_cap: new Set(["celo"]),
+};
+
+export const isExcludedFromSinceLaunch = (chainKey: string, metricId?: string) =>
+  SINCE_LAUNCH_EXCLUDED_CHAINS.has(chainKey) ||
+  (metricId
+    ? Boolean(SINCE_LAUNCH_EXCLUDED_CHAINS_BY_METRIC[metricId]?.has(chainKey))
+    : false);
+
 export type SinceLaunchInterval = "daily" | "weekly" | "monthly";
 
 export const SINCE_LAUNCH_MAX_BY_INTERVAL: Record<SinceLaunchInterval, number> = {

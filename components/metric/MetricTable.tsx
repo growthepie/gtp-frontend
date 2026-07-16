@@ -15,6 +15,7 @@ import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import GTPScrollPane, { GTPScrollPaneScrollMetrics } from "../GTPComponents/GTPLayout/GTPScrollPane";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
+import { isExcludedFromSinceLaunch, isSinceLaunchInterval } from "./launchDate";
 import ChartWatermark, { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
 
 const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
@@ -90,10 +91,18 @@ const MetricTable = ({
     showEthereumMainnet,
     setShowEthereumMainnet,
     timeIntervalKey,
+    selectedTimespan,
+    selectedTimeInterval,
   } = useMetricChartControls();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
+
+  // Some chains have no data back to their launch, so they can't be rebased to a
+  // "since launch" index — they're hidden as selectable chains in that view
+  // (see SINCE_LAUNCH_EXCLUDED_CHAINS).
+  const isSinceLaunch =
+    selectedTimespan === "sinceLaunch" && isSinceLaunchInterval(selectedTimeInterval);
 
   // Preserve scroll position across selection-driven list reorders.
   // We save scrollTop right before a selection change and restore it after
@@ -113,14 +122,14 @@ const MetricTable = ({
     if (!data) return chainKeys;
     return chainKeys.filter(
       (chain) =>
-        (chain !== "ethereum" ? true : !focusEnabled) &&
+        (!(isSinceLaunch && isExcludedFromSinceLaunch(chain, metric_id)) && (chain !== "ethereum" ? true : !focusEnabled)) &&
         Object.keys(allChainsByKeys).includes(chain) &&
         allChainsByKeys[chain] &&
         (timeIntervalKey !== "hourly" ||
           (Array.isArray(data.chains[chain]?.hourly?.data) &&
             data.chains[chain].hourly!.data.length > 0)),
     );
-  }, [chainKeys, data, timeIntervalKey, allChainsByKeys, focusEnabled]);
+  }, [chainKeys, data, timeIntervalKey, allChainsByKeys, focusEnabled, isSinceLaunch, metric_id]);
 
   const chainSelectToggleState = useMemo(() => {
     if (
@@ -277,7 +286,7 @@ const MetricTable = ({
     if (!data) return null;
 
     return chainKeys
-      .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
+      .filter((chain) => (!(isSinceLaunch && isExcludedFromSinceLaunch(chain, metric_id)) && (chain !== "ethereum" ? true : !focusEnabled)))
       .reduce((acc, chain) => {
         const summaryKey = timeIntervalSummaryKeys[lastValueTimeIntervalKey];
         const summary = data.chains[chain]?.summary?.[summaryKey];
@@ -328,7 +337,7 @@ const MetricTable = ({
           [chain]: lastVal,
         };
       }, {});
-  }, [chainKeys, data, lastValueTimeIntervalKey, showUsd, focusEnabled]);
+  }, [chainKeys, data, lastValueTimeIntervalKey, showUsd, focusEnabled, isSinceLaunch, metric_id]);
 
   const rows = useCallback(() => {
     if (!data || lastValues === null) return [];
@@ -341,7 +350,7 @@ const MetricTable = ({
     return chainKeys
       .filter(
         (chain) =>
-          (chain !== "ethereum" ? true : !focusEnabled) &&
+          (!(isSinceLaunch && isExcludedFromSinceLaunch(chain, metric_id)) && (chain !== "ethereum" ? true : !focusEnabled)) &&
           Object.keys(allChainsByKeys).includes(chain) &&
           allChainsByKeys[chain] &&
           (timeIntervalKey !== "hourly" ||
@@ -399,6 +408,8 @@ const MetricTable = ({
     reversePerformer,
     selectedChains,
     focusEnabled,
+    isSinceLaunch,
+    metric_id,
     timeIntervalKey,
   ]);
 

@@ -17,6 +17,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import {
   getLaunchTimestamp,
   getRelativeLaunchIndex,
+  isExcludedFromSinceLaunch,
   isSinceLaunchInterval,
   SINCE_LAUNCH_UNIT_BY_INTERVAL,
 } from "./launchDate";
@@ -160,6 +161,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
 
     return candidateKeys
       .filter((chainKey) => {
+        // These chains have no data back to their launch, so they can't be rebased
+        // to a "since launch" index — drop them from the since-launch view.
+        if (isSinceLaunch && isExcludedFromSinceLaunch(chainKey, metric_id)) return false;
         if (chainKey !== "ethereum") return true;
         if (!focusEnabled) return true;
         return showEthereumMainnet;
@@ -220,6 +224,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     legendChainKeys,
     master?.chains,
     master?.da_layers,
+    metric_id,
     metric_type,
     selectedChains,
     effectiveSelectedScale,
