@@ -31,6 +31,7 @@ import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems, daMetricItems } from "@/lib/metrics";
+import { track } from "@/lib/tracking";
 import {
     getLaunchTimestamp,
     getRelativeLaunchIndex,
@@ -657,6 +658,14 @@ export default function MetricsContainer({
                                             variant="primary"
                                             size={"sm"}
                                             clickHandler={() => {
+                                                if (timespan === "sinceLaunch") {
+                                                    track("clicked Since Launch timespan", {
+                                                        metric_id,
+                                                        metric_type,
+                                                        interval: selectedTimeInterval,
+                                                        page: window.location.pathname,
+                                                    });
+                                                }
                                                 setSelectedTimespan(timespan);
                                                 setZoomed(false);
                                                 setSelectedRange(null);
@@ -811,7 +820,7 @@ export default function MetricsContainer({
                                     size={"sm"}
                                     isSelected={effectiveSelectedScale === "stacked"}
                                     disabled={metric_id === "txcosts" || isSinceLaunch}
-                                    visualState={metric_id === "txcosts" || isSinceLaunch ? "disabled" : "default"}
+                                    visualState={metric_id === "txcosts" || isSinceLaunch ? "disabled" : undefined}
                                     clickHandler={() => {
                                         if (isSinceLaunch) return;
                                         setSelectedScale("stacked");
@@ -825,7 +834,7 @@ export default function MetricsContainer({
                                     size={"sm"}
                                     isSelected={effectiveSelectedScale === "percentage"}
                                     disabled={isSinceLaunch}
-                                    visualState={isSinceLaunch ? "disabled" : "default"}
+                                    visualState={isSinceLaunch ? "disabled" : undefined}
                                     clickHandler={() => {
                                         if (isSinceLaunch) return;
                                         setSelectedScale("percentage");
