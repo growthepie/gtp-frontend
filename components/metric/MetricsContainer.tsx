@@ -8,6 +8,7 @@ import GTPSplitPane from "../GTPComponents/GTPLayout/GTPSplitPane";
 import { useMediaQuery } from "@react-hook/media-query";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
+import { useFundamentalsUrlSync } from "./useFundamentalsUrlSync";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
@@ -145,6 +146,7 @@ export default function MetricsContainer({
         showEthereumMainnet,
         setShowEthereumMainnet,
         selectedChains,
+        setSelectedChains,
         selectedTimeInterval,
         setSelectedTimeInterval,
         selectedTimespan,
@@ -160,7 +162,7 @@ export default function MetricsContainer({
     const sinceLaunchUnitLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
     const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
 
-    const { data: master } = useMaster();
+    const { data: master, DefaultChainSelection } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
     const catalogItems = metric_type === "fundamentals" ? metricItems : daMetricItems;
     const metricUnits = metricsDict?.[metric_id]?.units ?? {};
@@ -173,6 +175,32 @@ export default function MetricsContainer({
     const prefix = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
     const decimals = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
     const gweiOverrides = decimals && decimals > 6;
+
+    // Opt-in URL params: only writes to the URL if the page loaded with a recognized
+    // param present, otherwise a no-op (see useFundamentalsUrlSync).
+    useFundamentalsUrlSync({
+        enabled: metric_type === "fundamentals",
+        selectedTimespan,
+        setSelectedTimespan,
+        selectedTimeInterval,
+        setSelectedTimeInterval,
+        selectedScale,
+        setSelectedScale,
+        selectedChains,
+        setSelectedChains,
+        selectedRange,
+        setSelectedRange,
+        setZoomed,
+        showUsd,
+        setShowUsd,
+        collapseTable,
+        setCollapseTable,
+        availableTimespans: Object.keys(timespans),
+        availableIntervals: timeIntervals,
+        availableChains: chainKeys,
+        defaultChains: DefaultChainSelection.filter((chain: string) => chainKeys.includes(chain)),
+    });
+
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const [topIsWrapping, setTopIsWrapping] = useState(false);
     const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
