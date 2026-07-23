@@ -1100,14 +1100,29 @@ export default function GTPChart({
     }
   }, []);
 
+  // Hide the tooltip AND clear the axis-pointer line. On touch, dispatchAction
+  // "hideTip" alone can leave the vertical axis-pointer drawn — there is no
+  // mouse-leave to clear it — so an explicit "leave" is dispatched alongside.
+  // Without this, dismissing a chart (auto-hide, or switching to another chart)
+  // strands its vertical guideline on screen.
+  const hideTooltipAndPointer = useCallback(() => {
+    const instance = echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined;
+    instance?.dispatchAction({ type: "hideTip" });
+    instance?.dispatchAction({ type: "updateAxisPointer", currTrigger: "leave" });
+  }, []);
+
   const scheduleTooltipHide = useCallback(() => {
     clearTooltipHideTimer();
     tooltipHideTimerRef.current = setTimeout(() => {
-      const instance = echartsRef.current?.getEchartsInstance?.();
-      instance?.dispatchAction({ type: "hideTip" });
+      hideTooltipAndPointer();
+      // Clear the synced cross-chart crosshair overlays too. This runs only on the
+      // genuine "interaction ended" auto-hide — switching to another chart cancels
+      // this timer (clearTooltipHideTimer), so a switch never clears the overlays
+      // and the new chart keeps them shared across the group.
+      if (syncId) syncRegistry.get(syncId)?.forEach((entry) => entry.setExternalCrosshairX(null));
       tooltipHideTimerRef.current = null;
     }, TOOLTIP_AUTO_HIDE_MS);
-  }, [clearTooltipHideTimer]);
+  }, [clearTooltipHideTimer, syncId, hideTooltipAndPointer]);
 
   // Pointer tracking on the chart container:
   //  • Sets the touch flag used by the tooltip positioner so the tooltip is
@@ -1204,15 +1219,14 @@ export default function GTPChart({
       if (getActiveTouchChartEl() === containerRef.current) return;
       event.stopImmediatePropagation();
       clearTooltipHideTimer();
-      (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
-        ?.dispatchAction({ type: "hideTip" });
+      hideTooltipAndPointer();
     };
     const types = ["mouseover", "mousemove", "mousedown", "click"] as const;
     types.forEach((t) => el.addEventListener(t, suppressWhenInactive, { capture: true }));
     return () => {
       types.forEach((t) => el.removeEventListener(t, suppressWhenInactive, { capture: true }));
     };
-  }, [clearTooltipHideTimer]);
+  }, [clearTooltipHideTimer, hideTooltipAndPointer]);
 
   // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
   useEffect(() => {
@@ -1240,8 +1254,7 @@ export default function GTPChart({
         // (post-momentum hover emulation) outlive the session window.
         if ((isTouchPrimaryDevice || isTouchSession()) && getActiveTouchChartEl() !== containerRef.current) {
           clearTooltipHideTimer();
-          (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
-            ?.dispatchAction({ type: "hideTip" });
+          hideTooltipAndPointer();
           return;
         }
         if (typeof e?.offsetX === "number" && typeof e?.offsetY === "number") {
@@ -1293,8 +1306,7 @@ export default function GTPChart({
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       if (!containerRef.current.contains(target)) {
         clearTooltipHideTimer();
-        const instance = echartsRef.current?.getEchartsInstance?.();
-        instance?.dispatchAction({ type: "hideTip" });
+        hideTooltipAndPointer();
       }
     };
 
@@ -1315,7 +1327,7 @@ export default function GTPChart({
         zr.off("click", onMoveHandler);
       }
     };
-  }, [scheduleTooltipHide, clearTooltipHideTimer]);
+  }, [scheduleTooltipHide, clearTooltipHideTimer, hideTooltipAndPointer]);
 
   // Cross-chart axis pointer sync — no echarts.connect, no tooltip pipeline involvement.
   //
@@ -1357,6 +1369,7 @@ export default function GTPChart({
     let subscribedInstance: EChartsInstance | null = null;
     let onMouseMoveHandler: (() => void) | null = null;
     let onGlobalOutHandler: (() => void) | null = null;
+    let onHideTipHandler: (() => void) | null = null;
     let updateAxisPointerHandler: ((params: AxisPointerPayload) => void) | null = null;
 
     const frame = requestAnimationFrame(() => {
@@ -1391,9 +1404,20 @@ export default function GTPChart({
         });
       };
 
+      // On touch, dragging the finger off the plot hides this chart's own tooltip
+      // and axis-pointer but fires no globalout, so the peer crosshairs would
+      // strand. hidetip catches it — but ONLY clear when this chart is still the
+      // active touch chart. If a DIFFERENT chart is now active (a switch), its
+      // hidetip must not wipe the crosshairs the new chart is driving.
+      onHideTipHandler = () => {
+        if (getActiveTouchChartEl() !== containerRef.current) return;
+        syncRegistry.get(syncId)?.forEach((entry) => entry.setExternalCrosshairX(null));
+      };
+
       zr.on("mousemove", onMouseMoveHandler);
       instance.on("updateAxisPointer", updateAxisPointerHandler);
       instance.on("globalout", onGlobalOutHandler);
+      instance.on("hidetip", onHideTipHandler);
     });
 
     return () => {
@@ -1404,6 +1428,7 @@ export default function GTPChart({
       if (subscribedInstance) {
         if (updateAxisPointerHandler) subscribedInstance.off("updateAxisPointer", updateAxisPointerHandler);
         if (onGlobalOutHandler) subscribedInstance.off("globalout", onGlobalOutHandler);
+        if (onHideTipHandler) subscribedInstance.off("hidetip", onHideTipHandler);
       }
       // Clear any residual crosshair on peers when this chart unmounts.
       syncRegistry.get(syncId)?.forEach((entry) => entry.setExternalCrosshairX(null));

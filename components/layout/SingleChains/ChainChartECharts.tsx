@@ -844,11 +844,12 @@ const MetricChart = memo(
           trigger: "axis",
           triggerOn: "mousemove",
           showDelay: 0,
-          // Touch has no continuous hover to keep the tooltip alive: a tap fires
-          // one synthesized move, then nothing — so a 50ms hideDelay makes the
-          // tooltip vanish almost immediately. Give touch a ~3s readout window
-          // (matching the GTPChart metric charts) so a tapped value persists;
-          // mouse keeps the snappy 50ms hide.
+          // Touch: a synthesized mouse-leave does not reliably fire, so a small
+          // hideDelay would make a tapped readout vanish immediately while a large
+          // one makes it linger forever. Keep it high for a ~3s persistence window;
+          // the explicit auto-hide timer effect below drives the actual hide (and
+          // momentarily drops hideDelay so the tooltip clears in lockstep with the
+          // shared axis-pointer line). Mouse keeps the snappy 50ms hide.
           hideDelay: isTouchPrimaryDevice ? 3000 : 50,
           enterable: false, // Don't need to enter tooltip, improves responsiveness
           transitionDuration: 0, // Disable animation for snappier feel
@@ -1418,6 +1419,74 @@ const MetricChart = memo(
       };
       document.addEventListener("scroll", onDocumentScroll, { capture: true, passive: true });
       return () => document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+    }, []);
+
+    // Touch: reliably auto-hide the tooltip AND the connect-shared axis-pointer
+    // line ~3s after the last interaction. ECharts' hideDelay counts from a
+    // synthesized mouse-leave that does not reliably fire on touch, so the
+    // tooltip and the shared line could otherwise linger indefinitely. We reset
+    // the timer on every showtip (so a scrub keeps it visible) and, when it
+    // fires, dispatch hideTip — which echarts.connect broadcasts to the whole
+    // group — plus an explicit axis-pointer leave to clear the line.
+    useEffect(() => {
+      if (!isTouchPrimaryDevice) return;
+      const HIDE_DELAY_MS = 3000;
+      let hideTimer: ReturnType<typeof setTimeout> | null = null;
+      let lineTimer: ReturnType<typeof setTimeout> | null = null;
+      let instance: ReturnType<NonNullable<typeof chartRef.current>["getEchartsInstance"]> | null = null;
+      let zr: ReturnType<NonNullable<typeof instance>["getZr"]> | null = null;
+      let onShowTip: (() => void) | null = null;
+      let onZrClick: ((e: { offsetX?: number; offsetY?: number }) => void) | null = null;
+      const clearTimers = () => {
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        if (lineTimer) { clearTimeout(lineTimer); lineTimer = null; }
+      };
+      const frame = requestAnimationFrame(() => {
+        instance = chartRef.current?.getEchartsInstance() ?? null;
+        if (!instance) return;
+        // ECharts captures hideDelay when the tooltip is SHOWN, so it can't be
+        // changed at hide time. Instead we lean on it: a short timer (reset on
+        // every showtip, so a scrub keeps the readout alive) fires hideTip once the
+        // finger settles/lifts; hideTip's own hideDelay then supplies the ~3s
+        // window. hideTip does NOT clear the connect-shared axis-pointer line and
+        // dispatching a leave synchronously re-fires hidetip (which recurses), so
+        // we clear the line with a second timer scheduled hideDelay later — i.e.
+        // when the tooltip actually vanishes — so the two disappear together.
+        onShowTip = () => {
+          clearTimers();
+          hideTimer = setTimeout(() => {
+            instance?.dispatchAction({ type: "hideTip" });
+            lineTimer = setTimeout(() => {
+              instance?.dispatchAction({ type: "updateAxisPointer", currTrigger: "leave" });
+            }, HIDE_DELAY_MS);
+          }, 300);
+        };
+        instance.on("showtip", onShowTip);
+
+        // Tapping directly ON the shared axis-pointer line makes ECharts clear it
+        // (the tooltip still moves, but the line is wiped). Re-assert the tooltip +
+        // line at the tap position on the next tick — after ECharts' own click
+        // handling — so a tap that lands on the line keeps it, moved to that spot.
+        // connect broadcasts the showTip to every chart in the group.
+        zr = instance.getZr();
+        onZrClick = (e) => {
+          const x = e.offsetX;
+          const y = e.offsetY;
+          if (typeof x !== "number" || typeof y !== "number") return;
+          setTimeout(() => {
+            if (instance && !instance.isDisposed?.()) {
+              instance.dispatchAction({ type: "showTip", x, y });
+            }
+          }, 0);
+        };
+        zr.on("click", onZrClick);
+      });
+      return () => {
+        cancelAnimationFrame(frame);
+        clearTimers();
+        if (instance && onShowTip) instance.off("showtip", onShowTip);
+        if (zr && onZrClick) zr.off("click", onZrClick);
+      };
     }, []);
 
     // Handle zoom events
