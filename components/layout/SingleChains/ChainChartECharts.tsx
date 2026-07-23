@@ -852,13 +852,12 @@ const MetricChart = memo(
           hideDelay: isTouchPrimaryDevice ? 3000 : 50,
           enterable: false, // Don't need to enter tooltip, improves responsiveness
           transitionDuration: 0, // Disable animation for snappier feel
-          // On touch, render the tooltip INSIDE the chart (appendToBody:false +
-          // confine) so it rides the chart's scroll container instead of drifting
-          // in page space during a scroll — the "tooltip on the wrong chart /
-          // above-below" bug on the stacked fundamentals grid. Desktop keeps
-          // appendToBody (rendered outside, follow-pointer placement) unchanged.
-          appendToBody: !isTouchPrimaryDevice,
-          confine: isTouchPrimaryDevice,
+          // Render the tooltip INSIDE the chart (not on document.body) and confine
+          // it to the chart bounds — on touch it rides the chart's scroll container
+          // instead of drifting in page space onto a neighbor; on desktop it stays
+          // clamped inside the plot rather than following the cursor past the edges.
+          appendToBody: false,
+          confine: true,
           backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
           borderWidth: 0,
           borderRadius: 17,

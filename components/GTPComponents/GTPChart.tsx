@@ -424,11 +424,12 @@ export interface GTPChartProps {
   pieTooltipFormatter?: (params: { name: string; value: number; color: string; percent: number }) => string;
   /** Opacity of non-hovered pie slices when another slice is hovered (0–1). Defaults to 1 (no dimming). */
   pieBlurOpacity?: number;
-  /** When true, on touch devices the tooltip is rendered inside the chart
-   *  (appendToBody:false + confine:true) instead of on document.body. This keeps
-   *  it riding the chart's own scroll container so it cannot drift in page space
-   *  during a scroll (the mobile "tooltip on the wrong chart / below" bug).
-   *  Desktop is unchanged (still appendToBody with the repositioning positioner). */
+  /** Controls where the tooltip is rendered. Defaults to true: the tooltip is
+   *  rendered inside the chart (appendToBody:false + confine:true) so it rides the
+   *  chart's scroll container — never drifting in page space onto a neighbor — and
+   *  stays clamped inside the plot on desktop instead of following the cursor past
+   *  the edges. Set false to fall back to the old behavior (appendToBody on
+   *  document.body, unconfined) for a chart that needs the tooltip to overflow. */
   confineTooltipToChart?: boolean;
 }
 
@@ -532,7 +533,7 @@ export default function GTPChart({
   ySplitNumber,
   decimalPercentage = false,
   syncId,
-  confineTooltipToChart = false,
+  confineTooltipToChart = true,
   showLegend = false,
   legendLift = true,
   legendLabels,
@@ -1939,8 +1940,8 @@ export default function GTPChart({
         tooltip: {
           trigger: "item",
           renderMode: "html",
-          appendToBody: !(confineTooltipToChart && isTouchPrimaryDevice),
-          confine: confineTooltipToChart && isTouchPrimaryDevice,
+          appendToBody: !confineTooltipToChart,
+          confine: confineTooltipToChart,
           transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
           backgroundColor: "transparent",
           borderWidth: 0,
@@ -2698,11 +2699,12 @@ export default function GTPChart({
       tooltip: {
         trigger: "axis",
         renderMode: "html",
-        // On touch, render inside the chart so the tooltip rides the chart's
-        // scroll container (no page-space drift); confine keeps it in-bounds.
-        // Desktop keeps appendToBody + the repositioning positioner unchanged.
-        appendToBody: !(confineTooltipToChart && isTouchPrimaryDevice),
-        confine: confineTooltipToChart && isTouchPrimaryDevice,
+        // Default (confineTooltipToChart): render inside the chart + confine to
+        // its bounds, so the tooltip rides the chart's scroll container (never
+        // drifts in page space onto a neighbor) and stays clamped inside the plot
+        // on desktop. Set the prop false to restore the old appendToBody behavior.
+        appendToBody: !confineTooltipToChart,
+        confine: confineTooltipToChart,
         transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
         position: chartTooltipPosition,
         axisPointer: {

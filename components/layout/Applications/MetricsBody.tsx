@@ -1389,10 +1389,6 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
                     <div style={{ pointerEvents: isReplaying ? "none" : undefined }}>
                     <GTPChart
                         height={280}
-                        // Phase 2: keep the touch tooltip inside the chart (rides the
-                        // scroll container, no page-space drift) for the applications
-                        // metrics grid. Desktop behavior is unchanged.
-                        confineTooltipToChart
                         stack={selectedScale === "stacked"}
                         percentageMode={selectedScale === "percentage"}
                         series={visibleSeries.map((s: { name: string; data: [number, number | null][] }) => {
