@@ -1433,8 +1433,9 @@ const MetricChart = memo(
       const HIDE_DELAY_MS = 3000;
       let hideTimer: ReturnType<typeof setTimeout> | null = null;
       let lineTimer: ReturnType<typeof setTimeout> | null = null;
-      let instance: ReturnType<NonNullable<typeof chartRef.current>["getEchartsInstance"]> | null = null;
-      let zr: ReturnType<NonNullable<typeof instance>["getZr"]> | null = null;
+      type EChartsInstance = ReturnType<NonNullable<typeof chartRef.current>["getEchartsInstance"]>;
+      let instance: EChartsInstance | null = null;
+      let zr: ReturnType<EChartsInstance["getZr"]> | null = null;
       let onShowTip: (() => void) | null = null;
       let onZrClick: ((e: { offsetX?: number; offsetY?: number }) => void) | null = null;
       const clearTimers = () => {
