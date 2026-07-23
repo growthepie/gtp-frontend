@@ -2465,17 +2465,14 @@ export default function GTPChart({
       if (validPoints.length === 0) return "";
 
       const timestamp = validPoints[0].value[0];
+      // Hourly (showTooltipTimestamp): swap the year for the time — "22 Jul, 14:00".
+      // Otherwise keep the date with year — "22 Jul 2026".
       const dateLabel = new Intl.DateTimeFormat("en-GB", {
         day: "2-digit",
         month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(timestamp);
-
-      const timeLabel = new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        ...(showTooltipTimestamp
+          ? { hour: "2-digit" as const, minute: "2-digit" as const, hour12: false }
+          : { year: "numeric" as const }),
         timeZone: "UTC",
       }).format(timestamp);
 

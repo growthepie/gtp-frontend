@@ -912,11 +912,11 @@ const MetricChart = memo(
             let dateString: string;
 
             if (selectedTimeInterval === "hourly") {
+              // Hourly: drop the year in favor of the time — "22 Jul, 14:00".
               dateString = date.toLocaleString("en-GB", {
                 timeZone: "UTC",
                 month: "short",
                 day: "numeric",
-                year: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
