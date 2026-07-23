@@ -844,10 +844,21 @@ const MetricChart = memo(
           trigger: "axis",
           triggerOn: "mousemove",
           showDelay: 0,
-          hideDelay: 50,
+          // Touch has no continuous hover to keep the tooltip alive: a tap fires
+          // one synthesized move, then nothing — so a 50ms hideDelay makes the
+          // tooltip vanish almost immediately. Give touch a ~3s readout window
+          // (matching the GTPChart metric charts) so a tapped value persists;
+          // mouse keeps the snappy 50ms hide.
+          hideDelay: isTouchPrimaryDevice ? 3000 : 50,
           enterable: false, // Don't need to enter tooltip, improves responsiveness
           transitionDuration: 0, // Disable animation for snappier feel
-          appendToBody: true, // Render outside chart for better performance
+          // On touch, render the tooltip INSIDE the chart (appendToBody:false +
+          // confine) so it rides the chart's scroll container instead of drifting
+          // in page space during a scroll — the "tooltip on the wrong chart /
+          // above-below" bug on the stacked fundamentals grid. Desktop keeps
+          // appendToBody (rendered outside, follow-pointer placement) unchanged.
+          appendToBody: !isTouchPrimaryDevice,
+          confine: isTouchPrimaryDevice,
           backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
           borderWidth: 0,
           borderRadius: 17,

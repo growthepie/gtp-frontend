@@ -424,6 +424,12 @@ export interface GTPChartProps {
   pieTooltipFormatter?: (params: { name: string; value: number; color: string; percent: number }) => string;
   /** Opacity of non-hovered pie slices when another slice is hovered (0–1). Defaults to 1 (no dimming). */
   pieBlurOpacity?: number;
+  /** When true, on touch devices the tooltip is rendered inside the chart
+   *  (appendToBody:false + confine:true) instead of on document.body. This keeps
+   *  it riding the chart's own scroll container so it cannot drift in page space
+   *  during a scroll (the mobile "tooltip on the wrong chart / below" bug).
+   *  Desktop is unchanged (still appendToBody with the repositioning positioner). */
+  confineTooltipToChart?: boolean;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -526,6 +532,7 @@ export default function GTPChart({
   ySplitNumber,
   decimalPercentage = false,
   syncId,
+  confineTooltipToChart = false,
   showLegend = false,
   legendLift = true,
   legendLabels,
@@ -1174,6 +1181,37 @@ export default function GTPChart({
       el.removeEventListener("pointercancel", onPointerUp);
     };
   }, [scheduleTooltipHide]);
+
+  // Block synthesized mouse events on charts the user isn't touching.
+  //
+  // When a touch gesture ends, iOS/Android emit a burst of compatibility mouse
+  // events (mouseover/mousemove/mousedown/click) at the lift-off point. If that
+  // lands on a chart the user is no longer touching, zrender processes them and
+  // ECharts re-shows that chart's tooltip. hideTip cannot win this race (the
+  // guard and ECharts' handler both hang off zr "mousemove", ECharts runs last,
+  // and dispatchAction("hideTip") only applies next frame) — so a tooltip ends
+  // up stranded on a neighboring chart. A capture-phase listener on this chart's
+  // container runs before zrender's canvas-level listeners; stopImmediatePropagation
+  // keeps the synthesized event from ever reaching zrender. Gated to touch
+  // sessions and to charts that are NOT the active touch chart, so desktop hover
+  // and the actively-touched chart are untouched. Only mouse events are blocked.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const suppressWhenInactive = (event: Event) => {
+      if (!(isTouchPrimaryDevice || isTouchSession())) return;
+      if (getActiveTouchChartEl() === containerRef.current) return;
+      event.stopImmediatePropagation();
+      clearTooltipHideTimer();
+      (echartsRef.current?.getEchartsInstance?.() as EChartsInstance | undefined)
+        ?.dispatchAction({ type: "hideTip" });
+    };
+    const types = ["mouseover", "mousemove", "mousedown", "click"] as const;
+    types.forEach((t) => el.addEventListener(t, suppressWhenInactive, { capture: true }));
+    return () => {
+      types.forEach((t) => el.removeEventListener(t, suppressWhenInactive, { capture: true }));
+    };
+  }, [clearTooltipHideTimer]);
 
   // Tooltip auto-hide after inactivity and mobile outside-tap dismissal
   useEffect(() => {
@@ -1901,8 +1939,8 @@ export default function GTPChart({
         tooltip: {
           trigger: "item",
           renderMode: "html",
-          appendToBody: true,
-          confine: false,
+          appendToBody: !(confineTooltipToChart && isTouchPrimaryDevice),
+          confine: confineTooltipToChart && isTouchPrimaryDevice,
           transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
           backgroundColor: "transparent",
           borderWidth: 0,
@@ -2660,8 +2698,11 @@ export default function GTPChart({
       tooltip: {
         trigger: "axis",
         renderMode: "html",
-        appendToBody: true,
-        confine: false,
+        // On touch, render inside the chart so the tooltip rides the chart's
+        // scroll container (no page-space drift); confine keeps it in-bounds.
+        // Desktop keeps appendToBody + the repositioning positioner unchanged.
+        appendToBody: !(confineTooltipToChart && isTouchPrimaryDevice),
+        confine: confineTooltipToChart && isTouchPrimaryDevice,
         transitionDuration: isTouchPrimaryDevice ? 0 : 0.4,
         position: chartTooltipPosition,
         axisPointer: {
@@ -2699,6 +2740,7 @@ export default function GTPChart({
     axisPixelMap,
     barMaxWidth,
     chartTooltipPosition,
+    confineTooltipToChart,
     decimals,
     effectiveGrid,
     effectiveXMin,

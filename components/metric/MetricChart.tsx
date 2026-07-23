@@ -235,7 +235,10 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           series={chartSeries}
           stack={selectedScale === "stacked"}
           percentageMode={selectedScale === "percentage"}
-          
+          // Phase 1: keep the touch tooltip inside the chart (rides the scroll
+          // container, no page-space drift) for the fundamentals / data-availability
+          // metric charts. Desktop behavior is unchanged.
+          confineTooltipToChart
           xAxisType="time"
           snapToCleanBoundary={false}
           xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
