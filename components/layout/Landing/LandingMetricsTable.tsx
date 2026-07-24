@@ -210,20 +210,22 @@ export default memo(function LandingMetricsTable({
   const monthsSinceLaunch = useMemo(() => {
     return Object.keys(master.chains).reduce((acc, chain) => {
       const diff = dayjs.duration(dayjs().diff(dayjs(master.chains[chain].launch_date)));
-      acc[chain] = [diff.years(), diff.months()];
+      acc[chain] = [diff.years(), diff.months(), diff.days()];
       return acc;
     }, {});
   }, [master]);
 
   const formatAge = useCallback((chain: string) => {
     // example: 2 years 11 months
-    const [years, months] = monthsSinceLaunch[chain];
+    const [years, months, days] = monthsSinceLaunch[chain];
     if (years > 0 && months > 0) {
       return `${years} years ${months} months`;
     } else if (years > 0) {
       return `${years} years`;
     } else if (months > 0) {
       return `${months} months`;
+    } else if (days > 0) {
+      return `${days} ${days === 1 ? "day" : "days"}`;
     }
     return "NA";
   }, [monthsSinceLaunch]);
