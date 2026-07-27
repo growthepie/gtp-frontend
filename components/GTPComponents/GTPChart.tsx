@@ -328,8 +328,9 @@ export interface GTPChartProps {
   timeAxisTickIntervalMs?: number;
   timeAxisTickAlignToCleanBoundary?: boolean;
   timeAxisBarEdgePaddingRatio?: number;
-  xAxisType?: "time" | "category";
+  xAxisType?: "time" | "category" | "value";
   xAxisLabelFormatter?: (value: number | string) => string;
+  xAxisTooltipLabelFormatter?: (value: number | string) => string;
   yAxisLabelFormatter?: (value: number) => string;
   secondaryYAxisLabelFormatter?: (value: number) => string;
   xAxisMin?: number;
@@ -489,6 +490,7 @@ export default function GTPChart({
   xAxisMin,
   xAxisMax,
   xAxisLabelFormatter,
+  xAxisTooltipLabelFormatter,
   yAxisLabelFormatter,
   secondaryYAxisLabelFormatter,
   yAxisMin = 0,
@@ -2465,16 +2467,19 @@ export default function GTPChart({
       if (validPoints.length === 0) return "";
 
       const timestamp = validPoints[0].value[0];
-      // Hourly (showTooltipTimestamp): swap the year for the time — "22 Jul, 14:00".
-      // Otherwise keep the date with year — "22 Jul 2026".
-      const dateLabel = new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "short",
-        ...(showTooltipTimestamp
-          ? { hour: "2-digit" as const, minute: "2-digit" as const, hour12: false }
-          : { year: "numeric" as const }),
-        timeZone: "UTC",
-      }).format(timestamp);
+      // A custom axis formatter (e.g. Since Launch's "Day 42") wins outright.
+      // Otherwise: hourly (showTooltipTimestamp) swaps the year for the time —
+      // "22 Jul, 14:00" — and anything else keeps the year, "22 Jul 2026".
+      const dateLabel = xAxisTooltipLabelFormatter
+        ? xAxisTooltipLabelFormatter(timestamp)
+        : new Intl.DateTimeFormat("en-GB", {
+            day: "2-digit",
+            month: "short",
+            ...(showTooltipTimestamp
+              ? { hour: "2-digit" as const, minute: "2-digit" as const, hour12: false }
+              : { year: "numeric" as const }),
+            timeZone: "UTC",
+          }).format(timestamp);
 
       const sortedPoints = validPoints
         .map((p) => ({ ...p, numericValue: Number(p.value[1]) }))
@@ -2610,10 +2615,19 @@ export default function GTPChart({
         show: true,
         min: effectiveXMin,
         max: effectiveXMax,
-        boundaryGap: hasBarSeries ? (xAxisType === "time" ? [0, 0] : true) : false,
+        boundaryGap: hasBarSeries ? (xAxisType === "category" ? true : [0, 0]) : false,
         axisLine: { lineStyle: { color: withOpacity(textPrimary, 0.45) } },
         axisTick: { show: xAxisType !== "time" },
-        axisLabel: { show: xAxisType !== "time" },
+        axisLabel: {
+          show: xAxisType !== "time",
+          color: textPrimary,
+          fontSize: numbersXxsTypography.fontSize,
+          fontFamily: numbersXxsTypography.fontFamily,
+          fontWeight: numbersXxsTypography.fontWeight,
+          formatter: xAxisLabelFormatter
+            ? (value: number | string) => xAxisLabelFormatter(value)
+            : undefined,
+        },
         splitLine: { show: false },
       } as any,
       yAxis: hasSecondaryAxis
@@ -2792,11 +2806,12 @@ export default function GTPChart({
     stack,
     tooltipFormatter,
     tooltipTitle,
-    showTooltipTimestamp,
+    xAxisTooltipLabelFormatter,
     showTotal,
     reverseTooltipOrder,
     limitTooltipRows,
     xAxisType,
+    xAxisLabelFormatter,
     yAxisLabelFormatter,
     secondaryYAxisLabelFormatter,
     formatValueForAxis,

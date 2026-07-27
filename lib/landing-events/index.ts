@@ -14,15 +14,15 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-polygon-pos-stablecoin-supply": {
-    title: "All-Time High: Stablecoin Supply for Polygon PoS",
-    description: "Daily stablecoin supply on Polygon PoS, highlighting its all-time high.",
-    question: "Which chain has recently reached a new high in stablecoin supply?",
-    image: "gtp-metrics-stablecoinmarketcap",
-    link: "/fundamentals/stablecoin-market-cap",
+  "ath-ink-throughput": {
+    title: "All-Time High: Throughput for Ink",
+    description: "Daily throughput on Ink, highlighting its all-time high.",
+    question: "Which chain has recently reached a new high in throughput?",
+    image: "gtp-metrics-throughput",
+    link: "/fundamentals/throughput",
     allTimeHigh: {
-      chainKey: "polygon_pos",
-      metricKey: "stables_mcap",
+      chainKey: "ink",
+      metricKey: "throughput",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,

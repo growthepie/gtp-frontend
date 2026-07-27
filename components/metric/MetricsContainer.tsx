@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, ReactNode, useRef, useCallback, useEffect } from "react";
+import { useMemo, ReactNode, useRef, useCallback, useEffect, Fragment } from "react";
 import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonContainer from "../GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "../GTPComponents/ButtonComponents/GTPButtonRow";
@@ -8,6 +8,7 @@ import GTPSplitPane from "../GTPComponents/GTPLayout/GTPSplitPane";
 import { useMediaQuery } from "@react-hook/media-query";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
+import { useFundamentalsUrlSync } from "./useFundamentalsUrlSync";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
@@ -31,6 +32,15 @@ import { Icon } from "@iconify/react";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "../GTPComponents/GTPTooltip";
 import { metricItems, daMetricItems } from "@/lib/metrics";
+import { track } from "@/lib/tracking";
+import {
+    getLaunchTimestamp,
+    getRelativeLaunchIndex,
+    isExcludedFromSinceLaunch,
+    isSinceLaunchInterval,
+    SINCE_LAUNCH_TOOLTIP_BY_INTERVAL,
+    SINCE_LAUNCH_UNIT_BY_INTERVAL,
+} from "./launchDate";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -136,15 +146,25 @@ export default function MetricsContainer({
         showEthereumMainnet,
         setShowEthereumMainnet,
         selectedChains,
+        setSelectedChains,
         selectedTimeInterval,
         setSelectedTimeInterval,
         selectedTimespan,
         setSelectedTimespan,
         setZoomed,
         timeIntervalKey,
+        showRollingAverage,
+        setShowRollingAverage,
     } = useMetricChartControls();
+    const sinceLaunchInterval = isSinceLaunchInterval(selectedTimeInterval)
+        ? selectedTimeInterval
+        : "daily";
+    const isSinceLaunch = selectedTimespan === "sinceLaunch" && isSinceLaunchInterval(selectedTimeInterval);
+    const sinceLaunchUnit = SINCE_LAUNCH_UNIT_BY_INTERVAL[sinceLaunchInterval];
+    const sinceLaunchUnitLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
+    const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
 
-    const { data: master } = useMaster();
+    const { data: master, DefaultChainSelection } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
     const catalogItems = metric_type === "fundamentals" ? metricItems : daMetricItems;
     const metricUnits = metricsDict?.[metric_id]?.units ?? {};
@@ -157,6 +177,34 @@ export default function MetricsContainer({
     const prefix = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.prefix;
     const decimals = metricUnits?.[valueKey ? "value" : showUsd ? "usd" : "eth"]?.decimals_tooltip;
     const gweiOverrides = decimals && decimals > 6;
+
+    // Opt-in URL params: only writes to the URL if the page loaded with a recognized
+    // param present, otherwise a no-op (see useFundamentalsUrlSync).
+    useFundamentalsUrlSync({
+        enabled: metric_type === "fundamentals",
+        selectedTimespan,
+        setSelectedTimespan,
+        selectedTimeInterval,
+        setSelectedTimeInterval,
+        selectedScale,
+        setSelectedScale,
+        selectedChains,
+        setSelectedChains,
+        selectedRange,
+        setSelectedRange,
+        setZoomed,
+        showUsd,
+        setShowUsd,
+        collapseTable,
+        setCollapseTable,
+        showRollingAverage,
+        setShowRollingAverage,
+        availableTimespans: Object.keys(timespans),
+        availableIntervals: timeIntervals,
+        availableChains: chainKeys,
+        defaultChains: DefaultChainSelection.filter((chain: string) => chainKeys.includes(chain)),
+    });
+
     const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const [topIsWrapping, setTopIsWrapping] = useState(false);
     const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
@@ -253,6 +301,9 @@ export default function MetricsContainer({
 
         const visibleChainKeys = chainKeys.filter((chainKey) => {
             if (!selectedChains.includes(chainKey)) return false;
+            // These chains have no data back to their launch, so they can't be rebased
+            // to a "since launch" index — drop them from the since-launch view.
+            if (isSinceLaunch && isExcludedFromSinceLaunch(chainKey, metric_id)) return false;
             if (chainKey !== "ethereum") return true;
             if (!focusEnabled) return true;
             return showEthereumMainnet;
@@ -273,16 +324,20 @@ export default function MetricsContainer({
                 }
 
                 const multiplier = !showUsd && showGwei && ethIdx !== -1 ? 1_000_000_000 : 1;
-                const valuesByTimestamp = new Map<number, number | null>();
+                const valuesByX = new Map<number, number | null>();
+                const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? intervalData.data?.[0]?.[0];
 
                 (intervalData.data ?? []).forEach((row) => {
                     const timestamp = row[0];
-                    if (typeof xMin === "number" && timestamp < xMin) return;
-                    if (typeof xMax === "number" && timestamp > xMax) return;
+                    const xValue = isSinceLaunch && Number.isFinite(launchTimestamp)
+                        ? getRelativeLaunchIndex(timestamp, launchTimestamp, sinceLaunchInterval)
+                        : timestamp;
+                    if (typeof xMin === "number" && xValue < xMin) return;
+                    if (typeof xMax === "number" && xValue > xMax) return;
 
                     const rawValue = row[valueIndex];
-                    valuesByTimestamp.set(
-                        timestamp,
+                    valuesByX.set(
+                        xValue,
                         typeof rawValue === "number" && Number.isFinite(rawValue)
                             ? rawValue * multiplier
                             : null,
@@ -292,24 +347,24 @@ export default function MetricsContainer({
                 return {
                     chainKey,
                     chainName: master?.chains?.[chainKey]?.name ?? metricData.chains[chainKey]?.chain_name ?? chainKey,
-                    valuesByTimestamp,
+                    valuesByX,
                 };
             })
             .filter((item): item is {
                 chainKey: string;
                 chainName: string;
-                valuesByTimestamp: Map<number, number | null>;
+                valuesByX: Map<number, number | null>;
             } => Boolean(item));
 
         if (seriesRows.length === 0) return;
 
-        const timestamps = Array.from(
-            new Set(seriesRows.flatMap((series) => Array.from(series.valuesByTimestamp.keys()))),
+        const xValues = Array.from(
+            new Set(seriesRows.flatMap((series) => Array.from(series.valuesByX.keys()))),
         ).sort((a, b) => a - b);
 
-        if (timestamps.length === 0) return;
+        if (xValues.length === 0) return;
 
-        const unitLabel = selectedScale === "percentage"
+        const unitLabel = effectiveSelectedScale === "percentage"
             ? "percent"
             : showUsd
             ? "usd"
@@ -318,8 +373,8 @@ export default function MetricsContainer({
               : valueKey ?? "eth";
 
         const headers = [
-            "timestamp",
-            "datetime_utc",
+            isSinceLaunch ? `${sinceLaunchUnit}_since_launch` : "timestamp",
+            ...(isSinceLaunch ? [] : ["datetime_utc"]),
             "metric_id",
             "metric_name",
             "time_interval",
@@ -328,9 +383,9 @@ export default function MetricsContainer({
             ...seriesRows.map((series) => series.chainName),
         ];
 
-        const rows = timestamps.map((timestamp) => {
-            const values = seriesRows.map((series) => series.valuesByTimestamp.get(timestamp) ?? null);
-            const displayedValues = selectedScale === "percentage"
+        const rows = xValues.map((xValue) => {
+            const values = seriesRows.map((series) => series.valuesByX.get(xValue) ?? null);
+            const displayedValues = effectiveSelectedScale === "percentage"
                 ? values.map((value) => {
                     if (typeof value !== "number" || !Number.isFinite(value)) return null;
                     const total = values.reduce<number>(
@@ -342,12 +397,12 @@ export default function MetricsContainer({
                 : values;
 
             return [
-                timestamp,
-                new Date(timestamp).toISOString(),
+                xValue,
+                ...(isSinceLaunch ? [] : [new Date(xValue).toISOString()]),
                 metricData.metric_id,
                 metricData.metric_name,
                 timeIntervalKey,
-                selectedScale,
+                effectiveSelectedScale,
                 ...(hasCurrencyUnits ? [unitLabel] : []),
                 ...displayedValues,
             ];
@@ -374,8 +429,11 @@ export default function MetricsContainer({
         metricData,
         selectedChains,
         selectedRange,
-        selectedScale,
+        effectiveSelectedScale,
         selectedTimespan,
+        isSinceLaunch,
+        sinceLaunchInterval,
+        sinceLaunchUnit,
         showEthereumMainnet,
         showGwei,
         showUsd,
@@ -501,7 +559,7 @@ export default function MetricsContainer({
 
             
             topBar={
-                <GTPButtonContainer className=" " isWrapping={topIsWrapping} setIsWrapping={setTopIsWrapping}>
+                <GTPButtonContainer className=" " isWrapping={topIsWrapping} setIsWrapping={setTopIsWrapping} style={topIsWrapping ? { borderRadius: "15px" } : undefined}>
                     <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                     {timeIntervals.map((interval) => (
                         <GTPButton
@@ -516,6 +574,8 @@ export default function MetricsContainer({
                                 if (selectedTimeInterval === interval) return;
                                 if (interval === "hourly") {
                                     setSelectedTimespan("7d");
+                                } else if (selectedTimespan === "sinceLaunch") {
+                                    setSelectedTimespan("sinceLaunch");
                                 } else if (interval === "daily") {
                                     if (["24h", "3d", "7d"].includes(selectedTimespan)) {
                                         setSelectedTimespan("90d");
@@ -607,6 +667,7 @@ export default function MetricsContainer({
                                 }
                                 setSelectedTimeInterval(interval);
                                 setZoomed(false);
+                                setSelectedRange(null);
                             }}
                             isSelected={selectedTimeInterval === interval}
                         />
@@ -615,31 +676,63 @@ export default function MetricsContainer({
                     <GTPButtonRow style={{width: isMobile ? "100%" : "auto"}}>
                         
                         {!selectedRange ? (
-                            Object.keys(timespans)
-                                .filter((timespan) =>
-                                    selectedTimeInterval === "hourly"
-                                        ? ["24h", "3d", "7d"].includes(timespan)
-                                        : selectedTimeInterval === "daily"
-                                          ? ["90d", "180d", "365d", "max"].includes(timespan)
-                                          : selectedTimeInterval === "weekly"
-                                            ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                                            : ["6m", "12m", "maxM"].includes(timespan),
-                                )
-                                .map((timespan) => (
-                                    <GTPButton
-                                        key={timespan}
-                                        label={timespans[timespan].label}
-                                        innerStyle={{ width: "100%" }}
-                                        className="w-full justify-center"
-                                        variant="primary"
-                                        size={"sm"}
-                                        clickHandler={() => {
-                                            setSelectedTimespan(timespan);
-                                            setZoomed(false);
-                                        }}
-                                        isSelected={selectedTimespan === timespan}
-                                    />
-                                ))
+                            (selectedTimeInterval === "hourly"
+                                ? ["24h", "3d", "7d"]
+                                : selectedTimeInterval === "daily"
+                                  ? ["90d", "180d", "365d", "max", "sinceLaunch"]
+                                  : selectedTimeInterval === "weekly"
+                                    ? ["12w", "24w", "52w", "maxW", "sinceLaunch"]
+                                    : ["6m", "12m", "maxM", "sinceLaunch"]
+                            )
+                                .filter((timespan) => timespans[timespan])
+                                .map((timespan) => {
+                                    const button = (
+                                        <GTPButton
+                                            label={isMobile ? timespans[timespan].shortLabel : timespans[timespan].label}
+                                            // On mobile use short labels and trim the horizontal padding so all
+                                            // timespans (incl. "Since launch") share the full-width row equally
+                                            // without overflowing the container, while staying wide enough to tap.
+                                            innerStyle={isMobile ? { width: "100%", minWidth: 0, padding: "5px 8px" } : { width: "100%" }}
+                                            className="w-full min-w-0 justify-center"
+                                            variant="primary"
+                                            size={"sm"}
+                                            clickHandler={() => {
+                                                if (timespan === "sinceLaunch") {
+                                                    track("clicked Since Launch timespan", {
+                                                        metric_id,
+                                                        metric_type,
+                                                        interval: selectedTimeInterval,
+                                                        page: window.location.pathname,
+                                                    });
+                                                }
+                                                setSelectedTimespan(timespan);
+                                                setZoomed(false);
+                                                setSelectedRange(null);
+                                            }}
+                                            isSelected={selectedTimespan === timespan}
+                                        />
+                                    );
+
+                                    if (timespan !== "sinceLaunch") {
+                                        return <Fragment key={timespan}>{button}</Fragment>;
+                                    }
+
+                                    return (
+                                        <GTPTooltipNew
+                                            key={timespan}
+                                            placement="top"
+                                            trigger={<div className="w-full">{button}</div>}
+                                            containerClass="z-[99]"
+                                            unstyled
+                                        >
+                                            <GTPTooltipGeneral width={285}>
+                                                <div className="pl-[20px] text-xs text-color-text-primary">
+                                                    {SINCE_LAUNCH_TOOLTIP_BY_INTERVAL[sinceLaunchInterval]}
+                                                </div>
+                                            </GTPTooltipGeneral>
+                                        </GTPTooltipNew>
+                                    );
+                                })
                         ) : (
                             <div className="flex items-center gap-x-[8px]">
                             <GTPButton
@@ -654,6 +747,9 @@ export default function MetricsContainer({
                             />
                             <GTPButton
                                 label={(() => {
+                                    if (isSinceLaunch) {
+                                        return ` ${sinceLaunchUnitLabel} ${Math.floor(selectedRange[0])} - ${sinceLaunchUnitLabel} ${Math.floor(selectedRange[1])}`;
+                                    }
                                     const dateLabel = new Intl.DateTimeFormat("en-GB", {
                                         day: "2-digit",
                                         month: "short",
@@ -681,7 +777,7 @@ export default function MetricsContainer({
                 </GTPButtonContainer>
             }
             bottomBar={
-                <GTPButtonContainer className="gap-x-[5px] " isWrapping={bottomIsWrapping} setIsWrapping={setBottomIsWrapping}>
+                <GTPButtonContainer className="gap-x-[5px] " isWrapping={bottomIsWrapping} setIsWrapping={setBottomIsWrapping} style={bottomIsWrapping ? { borderRadius: "15px" } : undefined}>
                     
                     <GTPButtonRow style={{ width: isMobile ? "100%" : "auto"}}>
 
@@ -750,7 +846,7 @@ export default function MetricsContainer({
                             label="Absolute"
                             variant="primary"
                             size={"sm"}
-                            isSelected={selectedScale === "absolute"}
+                            isSelected={effectiveSelectedScale === "absolute"}
                             clickHandler={() => setSelectedScale("absolute")}
                             innerStyle={{ width: "100%" }}
                             className="w-full justify-center"
@@ -761,9 +857,13 @@ export default function MetricsContainer({
                                     label="Stacked"
                                     variant="primary"
                                     size={"sm"}
-                                    isSelected={selectedScale === "stacked"}
-                                    disabled={metric_id === "txcosts"}
-                                    clickHandler={() => setSelectedScale("stacked")}
+                                    isSelected={effectiveSelectedScale === "stacked"}
+                                    disabled={metric_id === "txcosts" || isSinceLaunch}
+                                    visualState={metric_id === "txcosts" || isSinceLaunch ? "disabled" : undefined}
+                                    clickHandler={() => {
+                                        if (isSinceLaunch) return;
+                                        setSelectedScale("stacked");
+                                    }}
                                     innerStyle={{ width: "100%", }}
                                     className="w-full justify-center"
                                 />
@@ -771,8 +871,13 @@ export default function MetricsContainer({
                                     label="Percentage"
                                     variant="primary"
                                     size={"sm"}
-                                    isSelected={selectedScale === "percentage"}
-                                    clickHandler={() => setSelectedScale("percentage")}
+                                    isSelected={effectiveSelectedScale === "percentage"}
+                                    disabled={isSinceLaunch}
+                                    visualState={isSinceLaunch ? "disabled" : undefined}
+                                    clickHandler={() => {
+                                        if (isSinceLaunch) return;
+                                        setSelectedScale("percentage");
+                                    }}
                                     innerStyle={{ width: "100%" }}
                                     className="w-full justify-center"
                                 />

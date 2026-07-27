@@ -14,6 +14,13 @@ import { GTPButton } from "../GTPComponents/ButtonComponents/GTPButton";
 import colors from "tailwindcss/colors";
 import { useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";
+import {
+  getLaunchTimestamp,
+  getRelativeLaunchIndex,
+  isExcludedFromSinceLaunch,
+  isSinceLaunchInterval,
+  SINCE_LAUNCH_UNIT_BY_INTERVAL,
+} from "./launchDate";
 type MetricChartProps = {
   collapseTable: boolean;
   suffix?: string;
@@ -57,11 +64,19 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   const {
     selectedScale,
     selectedTimespan,
+    selectedTimeInterval,
     timeIntervalKey,
     selectedChains,
     setSelectedChains,
     showEthereumMainnet,
   } = useMetricChartControls();
+  const sinceLaunchInterval = isSinceLaunchInterval(selectedTimeInterval)
+    ? selectedTimeInterval
+    : "daily";
+  const isSinceLaunch = selectedTimespan === "sinceLaunch" && isSinceLaunchInterval(selectedTimeInterval);
+  const sinceLaunchUnit = SINCE_LAUNCH_UNIT_BY_INTERVAL[sinceLaunchInterval];
+  const sinceLaunchLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
+  const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
 
   // Keep MetricDataContext chain selection aligned with controls so timespans/x-axis bounds stay correct.
   useSyncSelectedChainsToDataContext(selectedChains);
@@ -132,7 +147,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
 
     const metadataByKey =
       metric_type === "fundamentals" ? master?.chains : master?.da_layers;
-    const seriesType = getSeriesType(selectedScale, timeIntervalKey);
+    const seriesType = getSeriesType(effectiveSelectedScale, timeIntervalKey);
 
     // When the table is hidden, the legend universe is frozen to whatever
     // chains were selected at close time — so the chart needs to include all
@@ -146,6 +161,9 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
 
     return candidateKeys
       .filter((chainKey) => {
+        // These chains have no data back to their launch, so they can't be rebased
+        // to a "since launch" index — drop them from the since-launch view.
+        if (isSinceLaunch && isExcludedFromSinceLaunch(chainKey, metric_id)) return false;
         if (chainKey !== "ethereum") return true;
         if (!focusEnabled) return true;
         return showEthereumMainnet;
@@ -165,12 +183,16 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
         }
 
         const multiplier = !showUsd && showGwei && ethIdx !== -1 ? 1_000_000_000 : 1;
+        const launchTimestamp = getLaunchTimestamp(master?.chains, chainKey) ?? chainData.data?.[0]?.[0];
         const points: [number, number | null][] = (chainData.data ?? []).map((row) => {
           const rawValue = row[valueIndex];
+          const xValue = isSinceLaunch && Number.isFinite(launchTimestamp)
+            ? getRelativeLaunchIndex(row[0], launchTimestamp, sinceLaunchInterval)
+            : row[0];
           if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
-            return [row[0], null];
+            return [xValue, null];
           }
-          return [row[0], rawValue * multiplier];
+          return [xValue, rawValue * multiplier];
         });
 
         const chainMeta = metadataByKey?.[chainKey];
@@ -183,7 +205,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           color: colors ? [colors[0], colors[1]] : undefined,
           pattern: "dashed",
           dashedLastSegment:
-            selectedScale === "absolute" && (timeIntervalKey === "monthly" || timeIntervalKey === "weekly"),
+            effectiveSelectedScale === "absolute" && (timeIntervalKey === "monthly" || timeIntervalKey === "weekly"),
         };
         return series;
       })
@@ -202,12 +224,15 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     legendChainKeys,
     master?.chains,
     master?.da_layers,
+    metric_id,
     metric_type,
     selectedChains,
-    selectedScale,
+    effectiveSelectedScale,
     showEthereumMainnet,
     showGwei,
     showUsd,
+    isSinceLaunch,
+    sinceLaunchInterval,
     timeIntervalKey,
   ]);
 
@@ -222,8 +247,8 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
   }, [collapseTable, legendChainKeys, selectedChains, metric_type, master?.chains, master?.da_layers]);
 
   const yAxisLabelFormatter = useCallback((value: number) => {
-    return `${selectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${selectedScale === "percentage" ? "%" : suffix ?? ""}`;
-  }, [selectedScale, prefix, decimals, suffix]);
+    return `${effectiveSelectedScale === "percentage" ? "" : prefix ?? ""}${formatCompactNumber(value, decimals)}${effectiveSelectedScale === "percentage" ? "%" : suffix ?? ""}`;
+  }, [effectiveSelectedScale, prefix, decimals, suffix]);
 
   const activeTimespan = timespans[selectedTimespan] ?? timespans?.["max"] ?? undefined;
   const visibleSelectedChains = selectedChains.slice(0, 9);
@@ -233,9 +258,13 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     <div className="">
         <GTPChart
           series={chartSeries}
-          stack={selectedScale === "stacked"}
-          percentageMode={selectedScale === "percentage"}
-          xAxisType="time"
+          stack={effectiveSelectedScale === "stacked"}
+          percentageMode={effectiveSelectedScale === "percentage"}
+          
+          xAxisType={isSinceLaunch ? "value" : "time"}
+          xAxisLabelFormatter={isSinceLaunch ? (value) => `${sinceLaunchLabel} ${Math.round(Number(value))}` : undefined}
+          xAxisTooltipLabelFormatter={isSinceLaunch ? (value) => `${sinceLaunchLabel} ${Math.round(Number(value))}` : undefined}
+          grid={isSinceLaunch ? { right: 25 } : undefined}
           snapToCleanBoundary={false}
           xAxisMin={selectedRange ? selectedRange[0] : activeTimespan?.xMin}
           xAxisMax={selectedRange ? selectedRange[1] : activeTimespan?.xMax}
@@ -263,7 +292,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           minDragSelectPoints={2}
           yAxisLabelFormatter={yAxisLabelFormatter}
           showTooltipTimestamp={timeIntervalKey === "hourly"}
-          showTotal={selectedScale === "stacked"}
+          showTotal={effectiveSelectedScale === "stacked"}
           reverseTooltipOrder={reversePerformer}
           showLegend={collapseTable}
           legendLift={!isStacked}
