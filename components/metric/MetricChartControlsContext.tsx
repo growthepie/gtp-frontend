@@ -241,17 +241,25 @@ export const MetricChartControlsProvider = ({
   );
 
   // Keep selected chains deduplicated and constrained to chains available for this metric.
+  // Runs off the updater form (which reads the freshly persisted value) rather than the
+  // `selectedChains` captured in this render: useFundamentalsUrlSync hydrates the URL's
+  // chain selection from a child effect, so on a cold load this parent effect would
+  // otherwise fire with the pre-hydration default still in hand and write it straight back
+  // over the URL's selection. `selectedChains` is deliberately not a dependency — the only
+  // thing that can invalidate a selection is chainKeys changing, and re-running per
+  // selection change would reintroduce the stale write.
   useEffect(() => {
     if (chainKeys.length === 0) return;
 
-    const normalized = Array.from(
-      new Set(selectedChains.filter((chain) => chainKeys.includes(chain))),
-    );
+    setSelectedChains((current) => {
+      const normalized = Array.from(
+        new Set(current.filter((chain) => chainKeys.includes(chain))),
+      );
 
-    if (normalized.length !== selectedChains.length) {
-      setSelectedChains(normalized);
-    }
-  }, [chainKeys, selectedChains, setSelectedChains]);
+      return normalized.length !== current.length ? normalized : current;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chainKeys]);
 
   // When hourly is selected, keep only chains that actually have hourly datapoints.
   // This can intentionally result in no selected chains.
