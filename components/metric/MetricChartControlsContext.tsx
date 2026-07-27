@@ -67,6 +67,7 @@ type MetricChartControlsContextType = {
   setChartComponent: (chart: RefObject<Highcharts.Chart>) => void;
   setIntervalShown: (interval: { min: number; max: number; num: number; label: string } | null) => void;
   showRollingAverage: boolean;
+  setShowRollingAverage: (v: boolean) => void;
   metric_type: "fundamentals" | "data-availability";
 };
 
@@ -107,6 +108,7 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
   intervalShown: null,
   setIntervalShown: () => { },
   showRollingAverage: true,
+  setShowRollingAverage: () => { },
   metric_type: "fundamentals",
 });
 
@@ -131,7 +133,7 @@ export const MetricChartControlsProvider = ({
   embed_end_timestamp = undefined,
   selectedTimeInterval: providedSelectedTimeInterval,
   selectedTimespan: providedSelectedTimespan,
-  showRollingAverage = true,
+  showRollingAverage: providedShowRollingAverage = true,
   setSelectedTimeInterval: providedSetSelectedTimeInterval,
   defaultScale: providedDefaultScale,
 }: MetricChartControlsProviderProps) => {
@@ -223,6 +225,12 @@ export const MetricChartControlsProvider = ({
   }, [timeIntervals]);
 
   const [selectedYAxisScale, setSelectedYAxisScale] = useState(log_default ? "logarithmic" : "linear");
+
+  // Deliberately plain state rather than useSessionStorage: unlike timespan/scale/chains
+  // this is not meant to follow you from one chart to the next. The provider remounts per
+  // metric route, so useState alone resets it — no explicit reset effect, which would run
+  // after the URL hydrate in MetricsContainer (a child) and clobber it.
+  const [showRollingAverage, setShowRollingAverage] = useState(providedShowRollingAverage);
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     storageKeys["chains"],
@@ -398,6 +406,7 @@ export const MetricChartControlsProvider = ({
         intervalShown: intervalShown,
         setIntervalShown: setIntervalShown,
         showRollingAverage: showRollingAverage,
+        setShowRollingAverage,
         metric_type: metric_type,
       }}
     >

@@ -26,6 +26,7 @@ const RECOGNIZED_PARAMS = [
   "zoom",
   "showUsd",
   "hideTable",
+  "showRollingAvg",
 ] as const;
 
 const SCALE_VALUES = ["absolute", "stacked", "percentage"];
@@ -36,6 +37,7 @@ const DEFAULT_INTERVAL = "daily";
 const DEFAULT_SCALE = "absolute";
 const DEFAULT_SHOW_USD = true;
 const DEFAULT_HIDE_TABLE = false;
+const DEFAULT_SHOW_ROLLING_AVG = true;
 
 const WRITE_DEBOUNCE_MS = 300;
 
@@ -58,6 +60,8 @@ type FundamentalsUrlSyncArgs = {
   setShowUsd: (v: boolean) => void;
   collapseTable: boolean;
   setCollapseTable: (v: boolean) => void;
+  showRollingAverage: boolean;
+  setShowRollingAverage: (v: boolean) => void;
 
   /** Reference data for validating hydrated values / omitting defaults. */
   availableTimespans: string[];
@@ -143,6 +147,9 @@ export function useFundamentalsUrlSync(args: FundamentalsUrlSyncArgs) {
     const hideTable = searchParams.get("hideTable");
     if (hideTable !== null) args.setCollapseTable(hideTable === "true");
 
+    const showRollingAvg = searchParams.get("showRollingAvg");
+    if (showRollingAvg !== null) args.setShowRollingAverage(showRollingAvg === "true");
+
     const zoom = searchParams.get("zoom");
     if (zoom) {
       const [a, b] = zoom.split("_").map(Number);
@@ -168,6 +175,12 @@ export function useFundamentalsUrlSync(args: FundamentalsUrlSyncArgs) {
       setOrDelete(params, "scale", a.selectedScale, DEFAULT_SCALE);
       setOrDelete(params, "showUsd", String(a.showUsd), String(DEFAULT_SHOW_USD));
       setOrDelete(params, "hideTable", String(a.collapseTable), String(DEFAULT_HIDE_TABLE));
+      setOrDelete(
+        params,
+        "showRollingAvg",
+        String(a.showRollingAverage),
+        String(DEFAULT_SHOW_ROLLING_AVG),
+      );
 
       if (sameSet(a.selectedChains, a.defaultChains)) {
         params.delete("chains");
@@ -200,6 +213,7 @@ export function useFundamentalsUrlSync(args: FundamentalsUrlSyncArgs) {
     args.selectedRange,
     args.showUsd,
     args.collapseTable,
+    args.showRollingAverage,
     pathname,
     router,
   ]);

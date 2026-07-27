@@ -153,6 +153,8 @@ export default function MetricsContainer({
         setSelectedTimespan,
         setZoomed,
         timeIntervalKey,
+        showRollingAverage,
+        setShowRollingAverage,
     } = useMetricChartControls();
     const sinceLaunchInterval = isSinceLaunchInterval(selectedTimeInterval)
         ? selectedTimeInterval
@@ -195,6 +197,8 @@ export default function MetricsContainer({
         setShowUsd,
         collapseTable,
         setCollapseTable,
+        showRollingAverage,
+        setShowRollingAverage,
         availableTimespans: Object.keys(timespans),
         availableIntervals: timeIntervals,
         availableChains: chainKeys,
