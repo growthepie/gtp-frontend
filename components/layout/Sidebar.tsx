@@ -230,20 +230,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     <Icon icon="cib:github" className="h-[19px] w-[19px]" />
                   </Link>
                   <Link
-                    href="https://discord.gg/fxjJFe7QyN"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Discord link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
                     href="https://twitter.com/growthepie_eth"
                     target="_blank"
                     rel="noopener"
@@ -256,40 +242,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   >
                     <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
                   </Link>
-                  <Link
-                    href="https://share.lens.xyz/u/growthepie.lens"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Lens link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
-                  </Link>
-
-                  <Link
-                    href="https://warpcast.com/growthepie"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Warpcast link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon
-                      icon="gtp:farcaster-monochrome"
-                      className="h-[19px] w-[19px]"
-                    />
-                  </Link>
-
-
                 </div>
                 {/* <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2"></div> */}
                 <button

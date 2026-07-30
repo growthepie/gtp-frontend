@@ -2,10 +2,7 @@
 import Link from "next/link";
 import Icon from "./Icon";
 import { track } from "@/lib/tracking";
-import DiscordIcon from "@/icons/footer/Discord.svg";
 import XIcon from "@/icons/footer/X.svg";
-import LensIcon from "@/icons/footer/Lens.svg";
-import FarcasterIcon from "@/icons/footer/Farcaster.svg";
 import DonateIcon from "@/icons/footer/GTP-Donate.svg";
 import BlogIcon from "@/icons/footer/GTP-Blog.svg";
 import KnowledgeIcon from "@/icons/footer/GTP-Book-Open.svg";
@@ -20,7 +17,7 @@ export default function Footer() {
   return (
     <div className="relative bottom-0 bg-color-bg-default px-[20px] pt-[50px] pb-[150px] md:p-[50px] md:pb-[100px]">
       <div className="flex flex-col md:flex-row md:justify-between">
-        <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
+        <div className="flex flex-col md:justify-start md:gap-y-[25px] md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
           <div className="flex flex-col w-[176px]">
             <FooterSectionHeader>
               MORE CONTENT
@@ -79,21 +76,6 @@ export default function Footer() {
               leftIcon={<GTPIcon icon="x-monochrome" size="md" className="text-color-text-primary" />}
               label="X"
               href="https://x.com/growthepie_eth"
-            />
-            <FooterLink
-              leftIcon={<GTPIcon icon="farcaster-monochrome" size="md" className="!text-color-text-primary" />}
-              label="Farcaster"
-              href="https://warpcast.com/growthepie"
-            />
-            <FooterLink
-              leftIcon={<GTPIcon icon="lens-monochrome" size="md" className="text-color-text-primary" />}
-              label="Lens"
-              href="https://share.lens.xyz/u/growthepie.lens"
-            />
-            <FooterLink
-              leftIcon={<GTPIcon icon="discord-monochrome" size="md" className="text-color-text-primary" />}
-              label="Discord"
-              href="https://discord.gg/fxjJFe7QyN"
             />
           </div>
         </div>

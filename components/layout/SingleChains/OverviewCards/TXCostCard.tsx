@@ -9,6 +9,8 @@ import { getGradientColor } from "../../EthAgg/helpers";
 import { GetRankingColor } from "@/lib/chains";
 import { formatNumber } from "@/lib/utils/formatters";
 import { useTheme } from "next-themes";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import MetricRankingIcon from "./MetricRankingIcon";
 export interface ChainData {
     chain_name:                 string;
     display_name:               string;
@@ -65,9 +67,15 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
     }, [recentCostHistory.length]);
 
     // Get ranking color for transaction costs if overview data is available
-    const rankingColor = overviewData?.data?.ranking?.txcosts
-        ? GetRankingColor(overviewData.data.ranking.txcosts.color_scale * 100, false, (resolvedTheme as "dark" | "light") ?? "dark")
+    const txCostRanking = overviewData?.data?.ranking?.txcosts;
+    const rankingColor = txCostRanking
+        ? GetRankingColor(txCostRanking.color_scale * 100, false, (resolvedTheme as "dark" | "light") ?? "dark")
         : master.chains[chainKey].colors[resolvedTheme ?? "dark"][0];
+
+    const txCostMetricData = master.metrics?.["txcosts"];
+    const txCostRankingIcon = (txCostMetricData?.icon
+        ? `gtp-${txCostMetricData.icon.replace(/^(metrics-)(.*)/, (_m: string, p: string, rest: string) => p + rest.replace(/-/g, ""))}-monochrome`
+        : "gtp-metrics-transactioncost-monochrome") as GTPIconName;
 
     const activeIndex = txCostHoverIndex ?? txCostSelectedIndex ?? (recentCostHistory.length ? recentCostHistory.length - 1 : null);
     const lastCostData = activeIndex !== null ? recentCostHistory[activeIndex] : undefined;
@@ -88,12 +96,26 @@ export default function TXCostCard({ chainKey, chainData, master, overviewData, 
             {/* <div className="text-[0.6rem]">{JSON.stringify(lastCostData)}</div> */}
             <div className="flex justify-between items-center">
                 <div className="flex xs:gap-x-[10px] gap-x-[2px] h-[28px] relative items-center">
-                    <div className="!size-[28px] relative flex items-center justify-center">
-                        <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
-                            <GTPIcon icon={"gtp-metrics-throughput-monochrome"} color={rankingColor} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />
-                            <div className="absolute numbers-xxxs -left-[6px] top-[35%] " style={{ color: rankingColor }}>12</div>
+                    {txCostRanking && txCostRanking.rank > 0 ? (
+                        <MetricRankingIcon
+                            icon={txCostRankingIcon}
+                            rank={txCostRanking.rank}
+                            rankingColor={rankingColor}
+                            chainName={master.chains[chainKey].name}
+                            metricName={txCostMetricData?.name ?? "Transaction Costs"}
+                        />
+                    ) : (
+                        <div className="!size-[14px] xs:!size-[28px] relative flex items-center justify-center">
+                            <div className="w-[12px] h-[12px] xs:w-[24px] xs:h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
+                                <GTPIcon
+                                    icon={txCostRankingIcon}
+                                    color={rankingColor}
+                                    className="!w-[12px] !h-[12px] xs:!w-[15px] xs:!h-[15px]"
+                                    containerClassName="relative flex items-center justify-center left-[0.5px] top-[0.5px] w-[12px] h-[12px]"
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="heading-large-xs ">Transaction Cost</div>
                 </div>
