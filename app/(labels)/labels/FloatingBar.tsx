@@ -174,18 +174,16 @@ export default function FloatingBar({
           {(labelsNumberFiltered === 0 || labelsNumberFiltered >= 200) && (
             <TooltipContent className="p-[11px] text-xs bg-color-ui-active text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-[51]">
               <div>To use the export functionality, please filter down to 200 records or less.</div>
-              <div className="">If you need access to more labels, reach out via our <Link
-                rel="noopener"
-                target="_blank"
-                href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+              <div className="">If you need access to more labels, reach out via <Link
+                href="mailto:contact@growthepie.com"
                 onClick={() => {
-                  track("clicked Discord link (tooltip)", {
+                  track("clicked Feedback link (tooltip)", {
                     location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
                     page: window.location.pathname,
                   });
                 }}
                 className="md:underline"
-              >Discord
+              >email
               </Link> for direct API access.</div>
             </TooltipContent>
           )}

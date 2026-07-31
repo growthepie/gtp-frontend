@@ -282,9 +282,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   <Link href="/data-terms">Data Terms</Link>
                   <Link href="/imprint">Imprint</Link>
                   <Link
-                    rel="noopener"
-                    target="_blank"
-                    href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                    href="mailto:contact@growthepie.com"
                     onClick={() => {
                       track("clicked feedback link", {
                         location: "mobile sidebar",

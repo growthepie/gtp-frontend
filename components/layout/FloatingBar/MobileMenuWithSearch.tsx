@@ -339,14 +339,6 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       icon: "feather:linkedin" as GTPIconName
     },
     {
-      id: "discord",
-      label: "Join our Discord",
-      href: "https://discord.gg/fxjJFe7QyN",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      icon: "discord-monochrome" as GTPIconName
-    },
-    {
       id: "email",
       label: "Send an email",
       href: "mailto:contact@growthepie.com",
@@ -1266,6 +1258,15 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           onClick={() => track("clicked Twitter link", { location: "mobile sidebar", page: pathname })}
         >
           <GTPIcon icon="twitter" size="md" />
+        </Link>
+        <Link
+          href="https://www.linkedin.com/company/growthepie/"
+          target="_blank"
+          rel="noopener"
+          className="text-color-text-primary"
+          onClick={() => track("clicked LinkedIn link", { location: "mobile sidebar", page: pathname })}
+        >
+          <GTPIcon icon={"feather:linkedin" as GTPIconName} size="md" />
         </Link>
       </div>
     </div>

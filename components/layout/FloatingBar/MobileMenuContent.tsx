@@ -164,17 +164,8 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
               <Link href="https://www.github.com/growthepie" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Github link", { location: "mobile menu", page: pathname }); onClose(); }}>
                 <Icon icon="cib:github" className="h-[19px] w-[19px]" />
               </Link>
-              <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Discord link", { location: "mobile menu", page: pathname }); onClose(); }}>
-                <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-              </Link>
               <Link href="https://twitter.com/growthepie_eth" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Twitter link", { location: "mobile menu", page: pathname }); onClose(); }}>
                 <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
-              </Link>
-              <Link href="https://share.lens.xyz/u/growthepie.lens" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Lens link", { location: "mobile menu", page: pathname }); onClose(); }}>
-                <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
-              </Link>
-              <Link href="https://warpcast.com/growthepie" target="_blank" rel="noopener" className="text-forest-200" onClick={() => { track("clicked Warpcast link", { location: "mobile menu", page: pathname }); onClose(); }}>
-                <Icon icon="gtp:farcaster-monochrome" className="h-[19px] w-[19px]" />
               </Link>
               {/* Close Button */}
               <button className="flex h-full items-center" onClick={onClose}>
@@ -226,9 +217,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
               <Link href="/privacy-policy" onClick={onClose} className="hover:text-forest-200/80">Privacy Policy</Link>
               <Link href="/imprint" onClick={onClose} className="hover:text-forest-200/80">Imprint</Link>
               <Link
-                rel="noopener"
-                target="_blank"
-                href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                href="mailto:contact@growthepie.com"
                 className="hover:text-forest-200/80"
                 onClick={() => {
                   track("clicked feedback link", { location: "mobile menu", page: pathname });
@@ -261,21 +250,6 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
           <GTPIcon icon={"github" as GTPIconName} size="md" />
         </Link>
         <Link
-          href="https://discord.gg/fxjJFe7QyN"
-          target="_blank"
-          rel="noopener"
-          className=" dark:text-forest-200 text-forest-900"
-          onClick={() => {
-            track("clicked Discord link", {
-              location: "mobile sidebar",
-              page: window.location.pathname,
-            });
-          }}
-        >
-          {/* <Icon icon="cib:discord" className="h-[19px] w-[19px]" /> */}
-          <GTPIcon icon={"discord" as GTPIconName} size="md" />
-        </Link>
-        <Link
           href="https://twitter.com/growthepie_eth"
           target="_blank"
           rel="noopener"
@@ -288,36 +262,6 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
         >
           {/* <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" /> */}
           <GTPIcon icon="twitter" size="md" />
-        </Link>
-        <Link
-          href="https://share.lens.xyz/u/growthepie.lens"
-          target="_blank"
-          rel="noopener"
-          className=" dark:text-forest-200 text-forest-900"
-          onClick={() => {
-            track("clicked Lens link", {
-              location: "mobile sidebar",
-              page: window.location.pathname,
-            });
-          }}
-        >
-          {/* <Icon icon="gtp:lens" className="h-[19px] w-[24px]" /> */}
-          <GTPIcon icon="lens" size="md" />
-        </Link>
-
-        <Link
-          href="https://warpcast.com/growthepie"
-          target="_blank"
-          rel="noopener"
-          className=" dark:text-forest-200 text-forest-900"
-          onClick={() => {
-            track("clicked Warpcast link", {
-              location: "mobile sidebar",
-              page: window.location.pathname,
-            });
-          }}
-        >
-          <GTPIcon icon="farcaster-monochrome" size="md" />
         </Link>
       </div>
     </div>

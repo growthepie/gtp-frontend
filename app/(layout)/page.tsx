@@ -219,8 +219,14 @@ export default async function Page() {
                 We, as growthepie, consume labels from the OLI Label Pool and
                 we apply our own verification step before we add them to our platform.
                 Usually, this step takes 1 to 3 days and you should see your application
-                being listed very soon. In case you have issues, please reach out via
-                Discord.
+                being listed very soon. In case you have issues, please reach out via{" "}
+                <Link
+                  href="mailto:contact@growthepie.com"
+                  className="underline"
+                >
+                  email
+                </Link>
+                .
               </>
             }
           />
@@ -259,23 +265,12 @@ export default async function Page() {
                 >
                   X
                 </Link>
-                ,{" "}
+                {" "}or{" "}
                 <Link
                   href="mailto:contact@growthepie.com"
                   className="underline"
-                  rel="noopener noreferrer"
-                  target="_blank"
                 >
                   email
-                </Link>
-                , or join our{" "}
-                <Link
-                  href="https://discord.gg/fxjJFe7QyN"
-                  className="underline"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Discord
                 </Link>
                 .
                 </>

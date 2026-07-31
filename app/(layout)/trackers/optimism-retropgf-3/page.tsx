@@ -1350,12 +1350,10 @@ export default function Page() {
                         </Link>
                         {" or "}
                         <Link
-                          href="https://discord.gg/fxjJFe7QyN"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href="mailto:contact@growthepie.com"
                           className="underline"
                         >
-                          Discord
+                          email
                         </Link>
                         .
                       </div>
@@ -1474,12 +1472,10 @@ export default function Page() {
                     </Link>
                     {" or "}
                     <Link
-                      href="https://discord.gg/fxjJFe7QyN"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href="mailto:contact@growthepie.com"
                       className="underline"
                     >
-                      Discord
+                      email
                     </Link>
                     .
                   </div>
@@ -2148,7 +2144,14 @@ export default function Page() {
                 the community. Sources are mainly @ZachXBT, DefiLlama, and
                 projects that approched us during the voting period. If you have
                 any feedback or suggestions, please don&apos;t hesitate to
-                contact us on X Twitter or Discord
+                contact us on X Twitter or via{" "}
+                <Link
+                  href="mailto:contact@growthepie.com"
+                  className="underline"
+                >
+                  email
+                </Link>
+                .
               </div>
             </div>
           }

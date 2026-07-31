@@ -426,7 +426,7 @@ export const faqItems: FaqItem[] = [
   },
   {
     q: "What about other chains?",
-    a: "Calculating these numbers is quite resource intensive. If you'd like to see this analysis extended to other chains, reach out to us on X or Discord, we're happy to have a conversation.",
+    a: "Calculating these numbers is quite resource intensive. If you'd like to see this analysis extended to other chains, reach out to us on X or via [email](mailto:contact@growthepie.com), we're happy to have a conversation.",
   },
 ];
 

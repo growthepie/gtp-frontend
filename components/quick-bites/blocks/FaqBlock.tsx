@@ -13,13 +13,16 @@ interface FaqBlockProps {
 const parseMarkdownLinksToHtml = (text: string): string => {
   if (!text) return '';
 
-  const standardLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  const standardLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g;
   const reverseLinkRegex = /\(([^)]+)\)\[(https?:\/\/[^\]]+)\]/g;
   const doubleBracketLinkRegex = /\[\(([^)]+)\)\[(https?:\/\/[^\]]+)\]\]/g;
 
   let result = text.replace(
     standardLinkRegex,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline">$1</a>'
+    (_match, label: string, url: string) =>
+      url.startsWith('mailto:')
+        ? `<a href="${url}" class="underline">${label}</a>`
+        : `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline">${label}</a>`
   );
 
   result = result.replace(

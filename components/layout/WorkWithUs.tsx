@@ -30,14 +30,6 @@ export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps
       icon: <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
     },
     {
-      id: "discord",
-      label: "Join our Discord",
-      href: "https://discord.gg/fxjJFe7QyN",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      icon: <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
-    },
-    {
       id: "email",
       label: "Send an email",
       href: "mailto:contact@growthepie.com",

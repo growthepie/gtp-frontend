@@ -1119,7 +1119,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                     Unfortunately, this chain has not yet added application metrics to growthepie.
                     You can explore this feature on <Link href="/chains/ethereum?tab=apps" className="underline">Ethereum Mainnets</Link> page.
                     <br /><br />
-                    Interested? Let us know <Link href="https://discord.gg/fxjJFe7QyN" target="_blank" className="underline">here</Link>.
+                    Interested? Let us know <Link href="mailto:contact@growthepie.com" className="underline">here</Link>.
                   </>
                 )}
               </div>

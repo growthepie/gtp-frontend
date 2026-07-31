@@ -12,12 +12,13 @@ import ContributorsIcon from "@/icons/footer/GTP-Compass.svg";
 import FeedbackIcon from "@/icons/footer/GTP-Donate-1.svg";
 import Image from "next/image";
 import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export default function Footer() {
   return (
     <div className="relative bottom-0 bg-color-bg-default px-[20px] pt-[50px] pb-[150px] md:p-[50px] md:pb-[100px]">
       <div className="flex flex-col md:flex-row md:justify-between">
-        <div className="flex flex-col md:justify-start md:gap-y-[25px] md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
+        <div className="flex flex-col md:justify-start md:gap-y-[25px] md:flex-wrap min-[1270px]:h-[350px] min-[1270px]:gap-y-[14px] md:basis-[176px] min-[1270px]:basis-[361px]">
           <div className="flex flex-col w-[176px]">
             <FooterSectionHeader>
               MORE CONTENT
@@ -68,19 +69,12 @@ export default function Footer() {
               href="https://www.github.com/growthepie"
             />
           </div>
-          <div className="flex flex-col w-[176px]">
-            <FooterSectionHeader>
-              COMMUNITY
-            </FooterSectionHeader>
-            <FooterLink
-              leftIcon={<GTPIcon icon="x-monochrome" size="md" className="text-color-text-primary" />}
-              label="X"
-              href="https://x.com/growthepie_eth"
-            />
-          </div>
+          {/* single column (<md) and 3 column (>=1270px) layouts: Community sits with the other link sections */}
+          <CommunitySection className="flex w-[176px] md:hidden min-[1270px]:flex" />
         </div>
-        <div className="flex flex-col md:flex-row gap-y-[25px] md:gap-x-[30px]">
-          <div className="flex flex-col md:w-[170px]">
+        {/* 2 column layout (md to 1270px): grow and pad-left so the auto margins below can centre the About column between More Content and the text block */}
+        <div className="flex flex-col md:flex-row gap-y-[25px] md:gap-x-[30px] md:flex-1 md:pl-[30px] min-[1270px]:flex-initial min-[1270px]:pl-0">
+          <div className="flex flex-col md:w-[170px] md:mx-auto min-[1270px]:mx-0">
             <FooterSectionHeader>
               ABOUT
             </FooterSectionHeader>
@@ -97,13 +91,15 @@ export default function Footer() {
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-feedback" size="md" />}
               label="Feedback"
-              href="https://discord.gg/fxjJFe7QyN"
+              href="mailto:contact@growthepie.com"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-growthepie-logo" size="md" />}
               label="Brand Guide"
               href="https://api.growthepie.com/brand/growthepie_brand_guide.zip"
             />
+            {/* 2 column layout (md to 1270px): Community moves under About */}
+            <CommunitySection className="hidden md:flex md:w-full md:mt-[69px] min-[1270px]:hidden" />
           </div>
           <div className="md:pt-[35px] flex flex-col gap-y-[15px] justify-between md:max-w-[400px]">
             <div className="flex flex-col gap-y-[15px]">
@@ -161,6 +157,26 @@ export default function Footer() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+const CommunitySection = ({ className }: { className?: string }) => {
+  return (
+    <div className={`flex-col ${className || ""}`}>
+      <FooterSectionHeader>
+        COMMUNITY
+      </FooterSectionHeader>
+      <FooterLink
+        leftIcon={<GTPIcon icon="x-monochrome" size="md" className="text-color-text-primary" />}
+        label="X"
+        href="https://x.com/growthepie_eth"
+      />
+      <FooterLink
+        leftIcon={<GTPIcon icon={"feather:linkedin" as GTPIconName} size="md" className="text-color-text-primary" />}
+        label="LinkedIn"
+        href="https://www.linkedin.com/company/growthepie/"
+      />
     </div>
   );
 }

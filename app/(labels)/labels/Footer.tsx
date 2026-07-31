@@ -50,7 +50,7 @@ export default function Footer({
                 <Link href="/imprint" className="underline" passHref target="_blank" rel="noopener" aria-label="Imprint" onClick={() => track("click", { location: "footer", link: "imprint" })}>
                   Imprint
                 </Link>
-                <Link href="https://discord.com/channels/1070991734139531294/1095735245678067753" className="underline" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })}>
+                <Link href="mailto:contact@growthepie.com" className="underline" passHref aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })}>
                   Feedback
                 </Link>
               </div>

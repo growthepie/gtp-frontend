@@ -74,9 +74,7 @@ export default function BottomBanner() {
               Imprint
             </Link>
             <Link
-              rel="noopener"
-              target="_blank"
-              href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+              href="mailto:contact@growthepie.com"
               onClick={() => {
                 track("clicked Feedback link", {
                   location: "desktop sidebar",
