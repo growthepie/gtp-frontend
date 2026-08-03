@@ -104,6 +104,25 @@ const formatNumber = (value: number, decimals: number = 1): string => {
 };
 
 
+// A just-reached level comes back at ~0% progress towards the next one, which snaps the ring from
+// full to empty. Hold it full until there is at least 1% of real progress: the level badge still
+// shows the level just reached and the row reads "100% lv 13" instead of "0% to 14".
+// Level 0 is the starting level, so it is never treated as complete.
+const getDisplayLevel = (entry: { level: number, percent_to_next_level: number }) => {
+    const isComplete = entry.percent_to_next_level < 1 && entry.level > 0;
+
+    return {
+        percent: isComplete ? 100 : entry.percent_to_next_level,
+        // 100% is reserved for a level that is actually complete, so the number next to it always
+        // matches the badge. Progress that would round up to it (99.6%) is capped at 99% instead.
+        percentLabel: isComplete ? 100 : Math.min(99, Math.round(entry.percent_to_next_level)),
+        // Normally counts towards the next level; while held it points back at the completed one.
+        targetLevel: isComplete ? entry.level : entry.level + 1,
+        isComplete,
+    };
+};
+
+
 export const StreaksAchievments = ({ data, master, streaksData, chainKey }: { data: AchievmentsData, master: MasterResponse, streaksData: StreaksData, chainKey: string }) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -523,7 +542,9 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     const valueType = Object.keys(master.metrics[key].units).includes("usd") ? showUsd ? "usd" : "eth" : "value";
                     const prefix = master.metrics[key].units[valueType].prefix;
                     const suffix = master.metrics[key].units[valueType].suffix;
-                    const formattedValue = `${prefix || ""}${formatNumber(data.lifetime[key][valueType].total_value, 2)}${suffix || ""}`;
+                    const entry = data.lifetime[key][valueType];
+                    const { percent: displayPercent, percentLabel, targetLevel, isComplete } = getDisplayLevel(entry);
+                    const formattedValue = `${prefix || ""}${formatNumber(entry.total_value, 2)}${suffix || ""}`;
                     const tooltipText = buildLifetimeTooltipText(key, master.chains[chainKey].name, master.metrics[key].name, formattedValue);
 
                     return (
@@ -536,29 +557,29 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                             >
                                 <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                     <ReactECharts
-                                        option={getChartOptions(data.lifetime[key][valueType].percent_to_next_level, 80)}
+                                        option={getChartOptions(displayPercent, 80)}
                                         style={{ width: '80px', height: '80px', overflow: 'visible' }}
                                     />
 
                                 </div>
                                 <div className="absolute w-full h-full flex items-center justify-center bottom-[0.5px] right-[0.5px] z-10">
                                     <ReactECharts
-                                        option={transparentChartOptions(data.lifetime[key][valueType].percent_to_next_level, 68)}
+                                        option={transparentChartOptions(displayPercent, 68)}
                                         style={{ width: '68px', height: '68px', }}
                                     />
                                 </div>
                                 <div className="absolute -top-[3px] -left-[7px] w-[34px] h-[34px] flex flex-col -gap-y-[2px] justify-center items-center bg-color-bg-medium rounded-full z-30">
                                     <div className="text-xxxs">Level&nbsp;</div>
-                                    <div className="numbers-xs -mb-[2px]">{data.lifetime[key][valueType].level}</div>
+                                    <div className="numbers-xs -mb-[2px]">{entry.level}</div>
 
                                 </div>
                                 <div className="absolute flex flex-col  gap-y-[2px] justify-center items-center right-0 left-0 top-[37%] z-[10]">
-                                    <div className="numbers-xs">{prefix}{formatNumber(data.lifetime[key][valueType].total_value)}{suffix}</div>
+                                    <div className="numbers-xs">{prefix}{formatNumber(entry.total_value)}{suffix}</div>
                                     <div className="flex gap-x-[1px] h-fit items-center text-color-text-secondary">
-                                        <div className="numbers-xxxs">{Math.round(data.lifetime[key][valueType].percent_to_next_level)}%</div>
-                                        <div className="text-xxxs">to</div>
+                                        <div className="numbers-xxxs">{percentLabel}%</div>
+                                        <div className="text-xxxs">{isComplete ? "lv" : "to"}</div>
                                         <div className="flex items-center justify-center w-[15px] h-[15px] rounded-full bg-color-bg-medium numbers-xxxs text-color-text-primary">
-                                            {data.lifetime[key][valueType].level + 1}
+                                            {targetLevel}
                                         </div>
                                     </div>
                                 </div>
@@ -603,6 +624,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     const prefix = master.metrics[key].units[valueType].prefix;
                     const suffix = master.metrics[key].units[valueType].suffix;
                     const entry = data.lifetime[key][valueType];
+                    const { percent: displayPercent, percentLabel, targetLevel, isComplete } = getDisplayLevel(entry);
                     const formattedValue = `${prefix || ""}${formatNumber(entry.total_value, 2)}${suffix || ""}`;
                     const tooltipText = buildLifetimeTooltipText(key, master.chains[chainKey].name, master.metrics[key].name, formattedValue);
                     const chartSize = 280;
@@ -624,13 +646,13 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                                     <div className="relative flex items-center justify-center overflow-visible" style={{ width: chartSize, height: chartSize }}>
                                         <div className="absolute inset-0 flex items-center justify-center z-20 overflow-visible">
                                             <ReactECharts
-                                                option={getChartOptions(entry.percent_to_next_level, chartSize)}
+                                                option={getChartOptions(displayPercent, chartSize)}
                                                 style={{ width: chartSize, height: chartSize, overflow: 'visible' }}
                                             />
                                         </div>
                                         <div className="absolute inset-0 flex items-center justify-center z-10">
                                             <ReactECharts
-                                                option={transparentChartOptions(entry.percent_to_next_level, innerSize)}
+                                                option={transparentChartOptions(displayPercent, innerSize)}
                                                 style={{ width: innerSize, height: innerSize }}
                                             />
                                         </div>
@@ -641,10 +663,10 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                                         <div className="absolute flex flex-col gap-y-[6px] justify-center items-center right-0 left-0 top-[38%] z-[10]">
                                             <div className="numbers-2xl">{prefix}{formatNumber(entry.total_value)}{suffix}</div>
                                             <div className="flex gap-x-[4px] h-fit items-center text-color-text-secondary">
-                                                <div className="numbers-md">{Math.round(entry.percent_to_next_level)}%</div>
-                                                <div className="text-xs">to</div>
+                                                <div className="numbers-md">{percentLabel}%</div>
+                                                <div className="text-xs">{isComplete ? "lv" : "to"}</div>
                                                 <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full bg-color-bg-medium numbers-md text-color-text-primary">
-                                                    {entry.level + 1}
+                                                    {targetLevel}
                                                 </div>
                                             </div>
                                         </div>
