@@ -39,15 +39,23 @@ export default function RowChildren({
     hoverCategory,
   } = useRowContext() as RowChildrenInterface;
 
+  // the categories currently rendered as columns — categories that were removed
+  // (e.g. "unlabeled") are excluded so the remaining shares re-normalize to 100%
+  const visibleCategoryKeys = useMemo(
+    () => Object.keys(categories),
+    [categories],
+  );
+
   const sumChainValue = useMemo(() => {
     const chainValues = {};
 
     Object.keys(data).forEach((chainKey) => {
       let sumValue = 0;
 
-      // Iterate over each category for the current chain
-      Object.keys(data[chainKey].overview[selectedTimespan]).forEach(
-        (category) => {
+      // Iterate over each visible category for the current chain
+      Object.keys(data[chainKey].overview[selectedTimespan])
+        .filter((category) => visibleCategoryKeys.includes(category))
+        .forEach((category) => {
           const categoryData =
             data[chainKey].overview[selectedTimespan][category].data;
 
@@ -61,25 +69,20 @@ export default function RowChildren({
             const categoryValue = categoryData[dataIndex];
             sumValue += categoryValue; // Add to the sum
           }
-        },
-      );
+        });
 
       // Store the sum of values for the chain
       chainValues[chainKey] = sumValue;
     });
 
     return chainValues;
-  }, [data, selectedTimespan, selectedMode]);
+  }, [data, selectedTimespan, selectedMode, visibleCategoryKeys]);
 
   const isPrevCategoryHovered = useMemo(() => {
     if (categoryIndex === 0) return false;
 
-    const allCategoryKeys = Object.keys(
-      master.blockspace_categories.main_categories,
-    );
-
-    return isCategoryHovered(allCategoryKeys[categoryIndex - 1]);
-  }, [master, isCategoryHovered, categoryIndex, selectedCategory]);
+    return isCategoryHovered(visibleCategoryKeys[categoryIndex - 1]);
+  }, [visibleCategoryKeys, isCategoryHovered, categoryIndex, selectedCategory]);
 
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
@@ -139,11 +142,10 @@ export default function RowChildren({
       const categoryData =
         data[chainKey].overview[selectedTimespan][categoryKey]["data"];
 
-      const allCategoryKeys = Object.keys(
-        master.blockspace_categories.main_categories,
-      );
+      const allCategoryKeys = visibleCategoryKeys;
 
-      const isLastCategory = categoryKey === "unlabeled";
+      const isLastCategory =
+        categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
       const isNextCategoryHovered = isCategoryHovered(
@@ -171,7 +173,7 @@ export default function RowChildren({
           categoryData[dataTypes.indexOf(selectedMode)] /
           sumChainValue[chainKey];
 
-        if (isLastCategory && selectedCategory !== categoryKey) {
+        if (categoryKey === "unlabeled" && selectedCategory !== categoryKey) {
           style.background =
               "linear-gradient(-45deg, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)))";
           // style.background = undefined;
@@ -207,6 +209,7 @@ export default function RowChildren({
       relativePercentageByChain,
       isCategoryHovered,
       categories,
+      visibleCategoryKeys,
       selectedTimespan,
     ],
   );
@@ -220,7 +223,14 @@ export default function RowChildren({
       return (
         categoryData[dataTypes.indexOf(selectedMode)] / sumChainValue[chainKey]
       );
-  }, [data, chainKey, categoryKey, selectedMode, sumChainValue]);
+  }, [
+    data,
+    chainKey,
+    categoryKey,
+    selectedMode,
+    selectedTimespan,
+    sumChainValue,
+  ]);
 
   const subChildStyle = useCallback(
     (
@@ -233,12 +243,11 @@ export default function RowChildren({
         borderRadius: "0px",
       };
 
-      const allCategoryKeys = Object.keys(
-        master.blockspace_categories.main_categories,
-      );
+      const allCategoryKeys = visibleCategoryKeys;
       const dataTypes = data[chainKey].overview.types;
 
-      const isLastCategory = categoryKey === "unlabeled";
+      const isLastCategory =
+        categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
       const categoryData =
@@ -346,6 +355,7 @@ export default function RowChildren({
       relativePercentageByChain,
       isCategoryHovered,
       categories,
+      visibleCategoryKeys,
       selectedTimespan,
     ],
   );
@@ -445,12 +455,9 @@ export default function RowChildren({
               ? shareValue > 0.05 ||
                 selectedCategory === categoryKey ||
                 isCategoryHovered(categoryKey)
-                ? (
-                    data[chainKey].overview[selectedTimespan][categoryKey][
-                      "data"
-                    ][data[chainKey].overview.types.indexOf(selectedMode)] *
-                    100.0
-                  ).toFixed(2)
+                ? // relative to the sum of the visible categories, so removing a
+                  // column (e.g. "unlabeled") re-normalizes the remaining shares
+                  (shareValue * 100.0).toFixed(2)
                 : ""
               : shareValue > 0.05 ||
                 selectedCategory === categoryKey ||

@@ -61,6 +61,7 @@ export default function OverviewMetrics({
   );
 
   const [selectedValue, setSelectedValue] = useState("share");
+  const [showUnlabeled, setShowUnlabeled] = useState(true);
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
@@ -169,6 +170,24 @@ export default function OverviewMetrics({
 
     return {};
   }, [master]);
+
+  // "unlabeled" can be removed via the close button on its column header, which
+  // re-normalizes the shares of the remaining categories. The chart below the
+  // rows on the single chain view follows the same set.
+  const rowCategories: { [key: string]: string } = useMemo(() => {
+    if (showUnlabeled) return categories;
+
+    const { unlabeled, ...rest } = categories;
+    return rest;
+  }, [categories, showUnlabeled]);
+
+  // don't leave "unlabeled" selected once its column is gone
+  useEffect(() => {
+    if (showUnlabeled || selectedCategory !== "unlabeled") return;
+
+    const firstCategory = Object.keys(rowCategories)[0];
+    if (firstCategory) setSelectedCategory(firstCategory);
+  }, [showUnlabeled, selectedCategory, rowCategories]);
 
   const formatSubcategories = useCallback(
     (str: string) => {
@@ -340,8 +359,10 @@ export default function OverviewMetrics({
                 selectedChain,
                 selectedTimespan,
                 selectedValue,
-                categories,
+                categories: rowCategories,
                 allCats,
+                showUnlabeled,
+                setShowUnlabeled,
                 setSelectedChain,
                 setSelectedCategory,
                 setAllCats,
@@ -388,7 +409,7 @@ export default function OverviewMetrics({
                   selectedCategory={selectedCategory}
                   selectedChain={selectedChain}
                   forceSelectedChain={forceSelectedChain}
-                  categories={categories}
+                  categories={rowCategories}
                   hoveredCategories={hoveredCategories}
                   allCats={allCats}
                   setHoveredChartSeriesId={setHoveredChartSeriesId}
@@ -433,7 +454,31 @@ export default function OverviewMetrics({
           )}
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
-            <GTPButtonContainer className="mt-[8px] md:justify-end">
+            <GTPButtonContainer className="mt-[8px]">
+              {/*Show/hide the Unlabeled column — hiding it re-normalizes the
+                 shares of the remaining categories to 100%*/}
+              <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
+                <GTPButton
+                  isSelected={showUnlabeled}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setShowUnlabeled(true);
+                  }}
+                  label="Show Unlabeled"
+                />
+                <GTPButton
+                  isSelected={!showUnlabeled}
+                  className="w-full justify-center"
+                  innerStyle={{ width: "100%" }}
+                  size="sm"
+                  clickHandler={() => {
+                    setShowUnlabeled(false);
+                  }}
+                  label="Hide Unlabeled"
+                />
+              </GTPButtonRow>
               <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
                 <GTPButton
                   isSelected={selectedValue === "absolute"}

@@ -113,6 +113,74 @@ export default function OverviewChart({
     return "Ξ";
   }, [showUsd]);
 
+  // The categories shown as columns in the rows above the chart. "unlabeled" can
+  // be removed there, in which case it drops out of the chart too and the share
+  // values have to be re-normalized against the categories that are left.
+  const visibleCategoryKeys = useMemo(
+    () => Object.keys(categories),
+    [categories],
+  );
+
+  const needsShareRenormalization = useMemo(() => {
+    if (!selectedChain || !selectedMode.includes("share")) return false;
+
+    return Object.keys(master?.blockspace_categories.main_categories || {})
+      .filter((category) => category !== "types")
+      .some((category) => !visibleCategoryKeys.includes(category));
+  }, [master, visibleCategoryKeys, selectedChain, selectedMode]);
+
+  // per-day sum of the visible categories' shares, used to rescale each point so
+  // the stack still fills 100%
+  const dailyShareTotals = useMemo(() => {
+    if (!needsShareRenormalization || !selectedChain) return null;
+
+    const unixIndex = types.indexOf("unix");
+    const valueIndex = types.indexOf(selectedMode);
+    if (unixIndex === -1 || valueIndex === -1) return null;
+
+    const totals: { [unix: number]: number } = {};
+
+    visibleCategoryKeys.forEach((category) => {
+      const rows = data[selectedChain]?.daily[category]?.data || [];
+      rows.forEach((row) => {
+        totals[row[unixIndex]] = (totals[row[unixIndex]] || 0) + row[valueIndex];
+      });
+    });
+
+    return totals;
+  }, [
+    needsShareRenormalization,
+    selectedChain,
+    selectedMode,
+    types,
+    visibleCategoryKeys,
+    data,
+  ]);
+
+  // same idea for the timespan average line, which reads from `overview`
+  const overviewShareTotal = useMemo(() => {
+    if (!needsShareRenormalization || !selectedChain) return null;
+
+    const overviewIndex =
+      data[selectedChain].overview.types.indexOf(selectedMode);
+    if (overviewIndex === -1) return null;
+
+    const total = visibleCategoryKeys.reduce((sum, category) => {
+      const categoryData =
+        data[selectedChain].overview[selectedTimespan]?.[category]?.data;
+      return categoryData ? sum + categoryData[overviewIndex] : sum;
+    }, 0);
+
+    return total > 0 ? total : null;
+  }, [
+    needsShareRenormalization,
+    selectedChain,
+    selectedMode,
+    selectedTimespan,
+    visibleCategoryKeys,
+    data,
+  ]);
+
   // const categoryKeyToFillOpacity = {
   //   nft: 1 - 0,
   //   token_transfers: 1 - 0.196,
@@ -236,12 +304,18 @@ export default function OverviewChart({
     if (selectedChain) {
       let sum = 0;
       if (selectedMode.includes("share")) {
-        returnValue = data[selectedChain].overview[selectedTimespan][
+        const categoryShare = data[selectedChain].overview[selectedTimespan][
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
             .data[overviewIndex]
           : [];
+
+        // rescale against the visible categories when one has been removed
+        returnValue =
+          overviewShareTotal && typeof categoryShare === "number"
+            ? categoryShare / overviewShareTotal
+            : categoryShare;
       } else {
         for (
           let i = 0;
@@ -339,6 +413,7 @@ export default function OverviewChart({
     timespans,
     chainEcosystemFilter,
     chartStack,
+    overviewShareTotal,
   ]);
 
   const chartMax = useMemo(() => {
@@ -400,8 +475,9 @@ export default function OverviewChart({
   const categoriesList = useMemo(() => {
     return Object.keys(master?.blockspace_categories.main_categories || {})
       .filter((category) => category !== "types")
+      .filter((category) => visibleCategoryKeys.includes(category))
       .reverse();
-  }, [master]);
+  }, [master, visibleCategoryKeys]);
 
 
 
@@ -1072,7 +1148,14 @@ export default function OverviewChart({
                   return (
                     series && (
                       <AreaSeries
-                        key={index} // Add a key to each element in the list
+                        // Keyed on the visible set as well as the series id.
+                        // Keying on the index alone let React reuse the wrong
+                        // series when a category was removed (the unlabeled
+                        // pattern fill bled onto its neighbour); keying on the
+                        // id alone meant a re-added series got appended last by
+                        // Highcharts, scrambling the stack order. Changing the
+                        // prefix remounts every series in list order instead.
+                        key={`${visibleCategoryKeys.join("|")}::${series.id}`}
                         name={series.custom.tooltipLabel}
                         id={series.id}
                         color={
@@ -1111,10 +1194,13 @@ export default function OverviewChart({
                             ][0]
                         }
                         lineWidth={allCats ? 0 : 2}
-                        data={series.data.map((d: any) => [
-                          d[types.indexOf("unix")],
-                          d[types.indexOf(series.dataKey)],
-                        ])}
+                        data={series.data.map((d: any) => {
+                          const unix = d[types.indexOf("unix")];
+                          const value = d[types.indexOf(series.dataKey)];
+                          const dayTotal = dailyShareTotals?.[unix];
+
+                          return [unix, dayTotal ? value / dayTotal : value];
+                        })}
                         fillOpacity={
                           !isUnlabelled
                             ? series.fillOpacity

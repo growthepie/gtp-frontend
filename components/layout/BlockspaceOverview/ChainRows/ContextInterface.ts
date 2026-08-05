@@ -75,6 +75,7 @@ export interface AltRowParentInterface {
 
 export interface RowParentInterface {
   data: Chains;
+  master: MasterResponse;
   selectedMode: string;
   forceSelectedChain?: string;
   isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered

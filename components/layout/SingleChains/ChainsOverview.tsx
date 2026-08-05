@@ -20,6 +20,7 @@ import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip"
 import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip"
 import { useMediaQuery } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 import { useMaster } from "@/contexts/MasterContext";
 import { useTheme } from "next-themes";
 import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
@@ -195,6 +196,25 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
     return {};
   }, [master]);
 
+  const [showUnlabeled, setShowUnlabeled] = useState(true);
+
+  // the categories the usage breakdown renders as columns. Hiding "unlabeled"
+  // re-normalizes the shares of the remaining categories to 100%.
+  const rowCategories: { [key: string]: string } = useMemo(() => {
+    if (showUnlabeled) return categories;
+
+    const { unlabeled, ...rest } = categories;
+    return rest;
+  }, [categories, showUnlabeled]);
+
+  // don't leave "unlabeled" selected once its column is gone
+  useEffect(() => {
+    if (showUnlabeled || selectedCategory !== "unlabeled") return;
+
+    const firstCategory = Object.keys(rowCategories)[0];
+    if (firstCategory) setSelectedCategory(firstCategory);
+  }, [showUnlabeled, selectedCategory, rowCategories]);
+
   const achievementsData = chainDataOverview?.data?.achievements;
   const hasLifetimeAchievements = Boolean(
     achievementsData?.lifetime && Object.keys(achievementsData.lifetime).length > 0,
@@ -249,7 +269,22 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
               </div>
               {chainDataOverview.data.blockspace.data.length > 0 ? (
                   <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default py-[15px] h-[218px] relative`}>
-                    <div className="px-[30px] heading-large-md">Usage Breakdown</div>
+                    <div className="flex items-center justify-between gap-x-[15px] px-[30px]">
+                      <div className="heading-large-md">Usage Breakdown</div>
+                      <div className="flex items-center gap-x-[8px] whitespace-nowrap">
+                        <div className="heading-small-xxs">Unlabeled</div>
+                        <ToggleSwitch
+                          size="sm"
+                          values={[
+                            { value: "show", label: "Show" },
+                            { value: "hide", label: "Hide" },
+                          ]}
+                          value={showUnlabeled ? "show" : "hide"}
+                          onChange={(v) => setShowUnlabeled(v === "show")}
+                          ariaLabel="Toggle unlabeled category"
+                        />
+                      </div>
+                    </div>
                     <HorizontalScrollContainer enableDragScroll={true} hideScrollbar={true} paddingLeft={20} forcedMinWidth={954} paddingBottom={0} includeMargin={false}>
                       <div className="w-full min-w-[954px] pr-[20px]">
                         <RowProvider
@@ -263,7 +298,7 @@ const ChainsOverview = ({ chainKey, chainData, master, chainDataOverview }: { ch
                             selectedChain: chainKey,
                             selectedTimespan: "max",
                             selectedValue: "share",
-                            categories: categories,
+                            categories: rowCategories,
                             allCats: false,
                             setSelectedChain: () => { },
                             setSelectedCategory: setSelectedCategory,

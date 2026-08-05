@@ -39,25 +39,54 @@ export default function SingleAltRowChildren({
     hoverCategory,
   } = useRowContext() as AltRowChildrenInterface;
 
+  // the categories currently rendered as columns — a category that was toggled
+  // off (e.g. "unlabeled") is excluded so the rest re-normalize to 100%
+  const visibleCategoryKeys = useMemo(
+    () => Object.keys(categories),
+    [categories],
+  );
+
   const sumChainValue = useMemo(() => {
     let retValue = 0;
 
     // For BlockspaceCO structure, data is a flat array structure
     if (data && data.data && data.types) {
-      // Calculate sum for each chain by iterating through data rows
+      const mainCategoryIndex = data.types.indexOf("main_category_id");
+
+      // Calculate sum for each chain by iterating through visible data rows
       data.data.forEach((row) => {
-     
-       
-          const currentChainKey = row[categoryIndex] as string;
-          const value = (row[data.types.indexOf("txcount")] as number) || 0;
-          
-          retValue += value;
-        
+        if (
+          mainCategoryIndex !== -1 &&
+          !visibleCategoryKeys.includes(row[mainCategoryIndex] as string)
+        ) {
+          return;
+        }
+
+        const value = (row[data.types.indexOf("txcount")] as number) || 0;
+
+        retValue += value;
       });
     }
 
     return retValue;
-  }, [data, selectedMode]);
+  }, [data, selectedMode, visibleCategoryKeys]);
+
+  // pct_share comes from the API relative to every category, so rescale it
+  // against the ones still on screen
+  const visibleShareTotal = useMemo(() => {
+    if (!data || !data.data || !data.types) return 0;
+
+    const mainCategoryIndex = data.types.indexOf("main_category_id");
+    const shareIndex = data.types.indexOf("pct_share");
+    if (mainCategoryIndex === -1 || shareIndex === -1) return 0;
+
+    return data.data.reduce((sum, row) => {
+      if (!visibleCategoryKeys.includes(row[mainCategoryIndex] as string)) {
+        return sum;
+      }
+      return sum + ((row[shareIndex] as number) || 0);
+    }, 0);
+  }, [data, visibleCategoryKeys]);
 
 
   
@@ -65,12 +94,8 @@ export default function SingleAltRowChildren({
   const isPrevCategoryHovered = useMemo(() => {
     if (categoryIndex === 0) return false;
 
-    const allCategoryKeys = Object.keys(
-      master.blockspace_categories.main_categories,
-    );
-
-    return isCategoryHovered(allCategoryKeys[categoryIndex - 1]);
-  }, [master, isCategoryHovered, categoryIndex, selectedCategory]);
+    return isCategoryHovered(visibleCategoryKeys[categoryIndex - 1]);
+  }, [visibleCategoryKeys, isCategoryHovered, categoryIndex, selectedCategory]);
 
   const relativePercentageByChain = useMemo(() => {
     const chainPercentages: { [key: string]: number } = {};
@@ -157,11 +182,10 @@ export default function SingleAltRowChildren({
         }
       }
 
-      const allCategoryKeys = Object.keys(
-        master.blockspace_categories.main_categories,
-      );
+      const allCategoryKeys = visibleCategoryKeys;
 
-      const isLastCategory = categoryKey === "unlabeled";
+      const isLastCategory =
+        categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
       const isNextCategoryHovered = isCategoryHovered(
@@ -188,7 +212,7 @@ export default function SingleAltRowChildren({
       if (categoryData && categoryData.length > 0) {
         const widthPercentage = categoryData[0] / sumChainValue;
 
-        if (isLastCategory && selectedCategory !== categoryKey) {
+        if (categoryKey === "unlabeled" && selectedCategory !== categoryKey) {
           style.background =
             "linear-gradient(-45deg, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 25%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 50%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)) 75%, rgb(var(--bg-default)))";
           // style.background = undefined;
@@ -224,6 +248,7 @@ export default function SingleAltRowChildren({
       relativePercentageByChain,
       isCategoryHovered,
       categories,
+      visibleCategoryKeys,
       selectedTimespan,
       theme,
     ],
@@ -243,9 +268,17 @@ export default function SingleAltRowChildren({
     
     if (!matchingRow) return 0;
 
-    
-    return matchingRow[data.types.indexOf("pct_share")] / 100;
-  }, [data, chainKey, categoryKey, selectedMode, sumChainValue]);
+    if (!visibleShareTotal) return 0;
+
+    return matchingRow[data.types.indexOf("pct_share")] / visibleShareTotal;
+  }, [
+    data,
+    chainKey,
+    categoryKey,
+    selectedMode,
+    sumChainValue,
+    visibleShareTotal,
+  ]);
 
 
 
@@ -260,11 +293,10 @@ export default function SingleAltRowChildren({
         borderRadius: "0px",
       };
 
-      const allCategoryKeys = Object.keys(
-        master.blockspace_categories.main_categories,
-      );
+      const allCategoryKeys = visibleCategoryKeys;
 
-      const isLastCategory = categoryKey === "unlabeled";
+      const isLastCategory =
+        categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
       // Find category data for BlockspaceCO structure
@@ -399,6 +431,7 @@ export default function SingleAltRowChildren({
       relativePercentageByChain,
       isCategoryHovered,
       categories,
+      visibleCategoryKeys,
       selectedTimespan,
       theme,
     ],

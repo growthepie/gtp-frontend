@@ -19,6 +19,7 @@ export default function RowParent({ chainKey, index }) {
 
   const {
     data,
+    master,
     selectedMode,
     forceSelectedChain,
     isCategoryHovered,
@@ -44,6 +45,30 @@ export default function RowParent({ chainKey, index }) {
     }
     return retVal;
   }, [selectedChain, selectedMode]);
+
+  // The "All Categories" figure. `totals` from the API always covers every
+  // category, so once one is hidden (e.g. "unlabeled") it would overstate the
+  // row — sum the categories still on screen instead.
+  const chainTotal = useMemo(() => {
+    const totalsIndex = data[chainKey].totals.types.indexOf(displayMode);
+    const fullTotal = data[chainKey].totals[selectedTimespan].data[totalsIndex];
+
+    const visibleCategoryKeys = Object.keys(categories);
+    const hasHiddenCategory = Object.keys(
+      master.blockspace_categories.main_categories,
+    ).some((category) => !visibleCategoryKeys.includes(category));
+
+    if (!hasHiddenCategory) return fullTotal;
+
+    const overview = data[chainKey].overview;
+    const overviewIndex = overview.types.indexOf(displayMode);
+    if (overviewIndex === -1) return fullTotal;
+
+    return visibleCategoryKeys.reduce((sum, category) => {
+      const categoryData = overview[selectedTimespan]?.[category]?.data;
+      return categoryData ? sum + categoryData[overviewIndex] : sum;
+    }, 0);
+  }, [data, chainKey, master, categories, selectedTimespan, displayMode]);
 
   const DisabledStates: {
     [mode: string]: {
@@ -230,11 +255,7 @@ export default function RowParent({ chainKey, index }) {
                     notation: "compact",
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
-                  }).format(
-                    data[chainKey].totals[selectedTimespan].data[
-                    data[chainKey].totals.types.indexOf(displayMode)
-                    ],
-                  ).replace(/K/, "k")}
+                  }).format(chainTotal).replace(/K/, "k")}
               </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}

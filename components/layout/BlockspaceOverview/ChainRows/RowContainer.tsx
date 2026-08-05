@@ -63,7 +63,7 @@ export default function RowContainer() {
             </div>
             <div className="flex flex-1">
               {master &&
-                Object.keys(master.blockspace_categories.main_categories).map(
+                Object.keys(categories).map(
                   (category, i) => (
                     <div
                       key={category}
