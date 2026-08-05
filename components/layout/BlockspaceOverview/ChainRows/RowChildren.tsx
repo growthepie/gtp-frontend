@@ -250,6 +250,15 @@ export default function RowChildren({
         categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
+      // This overlay is absolutely positioned at w-full/h-full over the block
+      // below and inherits its background, so square corners here paint over
+      // the block's rounded right cap and flatten it. Carry the same cap. The
+      // branches below still override it for the no-data and selected/hovered
+      // states, as before.
+      if (isLastCategory) {
+        style.borderRadius = "0px 17.5px 17.5px 0px";
+      }
+
       const categoryData =
         data[chainKey].overview[selectedTimespan][categoryKey]["data"];
 

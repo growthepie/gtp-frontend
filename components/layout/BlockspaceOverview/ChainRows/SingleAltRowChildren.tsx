@@ -299,6 +299,12 @@ export default function SingleAltRowChildren({
         categoryKey === allCategoryKeys[allCategoryKeys.length - 1];
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
+      // Carry the block's rounded right cap — see the note in RowChildren: this
+      // overlay sits on top at w-full/h-full and would otherwise square it off.
+      if (isLastCategory) {
+        style.borderRadius = "0px 17.5px 17.5px 0px";
+      }
+
       // Find category data for BlockspaceCO structure
       let categoryData: number[] | null = null;
       if (data && data.data && data.types) {
