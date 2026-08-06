@@ -211,6 +211,9 @@ export default function RowChildren({
       categories,
       visibleCategoryKeys,
       selectedTimespan,
+      selectedValue,
+      sumChainValue,
+      theme,
     ],
   );
 
@@ -231,6 +234,19 @@ export default function RowChildren({
     selectedTimespan,
     sumChainValue,
   ]);
+
+  // Whether this cell shows its number rather than a bare "%". Segments under
+  // 5% are too narrow to fit one, so they only reveal it while this cell is the
+  // emphasised one. Mirrors the condition the wrapper uses to pick its type
+  // styling — in particular, once a chain is selected only that chain's row
+  // counts as emphasised, so the rest of the selected column falls back to the
+  // 5% rule instead of every chain expanding at once.
+  const showsValue =
+    shareValue > 0.05 ||
+    (selectedCategory === categoryKey &&
+      (selectedChain === chainKey || selectedChain === null) &&
+      !allCats) ||
+    isCategoryHovered(categoryKey);
 
   const subChildStyle = useCallback(
     (
@@ -461,16 +477,12 @@ export default function RowChildren({
                 : "Ξ"
               : ""}
             {selectedValue === "share"
-              ? shareValue > 0.05 ||
-                selectedCategory === categoryKey ||
-                isCategoryHovered(categoryKey)
+              ? showsValue
                 ? // relative to the sum of the visible categories, so removing a
                   // column (e.g. "unlabeled") re-normalizes the remaining shares
                   (shareValue * 100.0).toFixed(2)
                 : ""
-              : shareValue > 0.05 ||
-                selectedCategory === categoryKey ||
-                isCategoryHovered(categoryKey)
+              : showsValue
               ? formatNumber(
                   data[chainKey].overview[selectedTimespan][categoryKey][
                     "data"
