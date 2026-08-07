@@ -585,9 +585,14 @@ const MetricTable = ({
       let suffix = units[unitKey].suffix ? units[unitKey].suffix : "";
       const decimals = showGwei && !showUsd ? 2 : units[unitKey].decimals;
 
-      const intervalData = item.data?.[lastValueTimeIntervalKey];
-      let types = intervalData?.types ?? [];
-      let values = intervalData?.data?.[intervalData.data.length - 1] ?? [];
+      // Read the same summary block lastValues uses, so the number matches the column header
+      // (last_30d for monthly, last_7d for weekly). Taking the last timeseries bucket here instead
+      // showed the partial current calendar month — wildly low at the start of a month — for every
+      // metric with an eth unit, and disagreed with the sorting and bar widths, which use lastValues.
+      const summaryData =
+        item.data?.summary?.[timeIntervalSummaryKeys[lastValueTimeIntervalKey]];
+      let types = summaryData?.types ?? [];
+      let values = summaryData?.data ?? [];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
       //     item.data[lastValueTimeIntervalKey].data.length - 1
