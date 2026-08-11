@@ -14,15 +14,15 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-ink-throughput": {
-    title: "All-Time High: Throughput for Ink",
-    description: "Daily throughput on Ink, highlighting its all-time high.",
-    question: "Which chain has recently reached a new high in throughput?",
-    image: "gtp-metrics-throughput",
-    link: "/fundamentals/throughput",
+  "ath-robinhood-tvs": {
+    title: "All-Time High: Total Value Secured for Robinhood Chain",
+    description: "Daily Total Value Secured on Robinhood Chain, highlighting its all-time high.",
+    question: "Which chain has recently reached a new high in Total Value Secured?",
+    image: "gtp-metrics-totalvaluelocked",
+    link: "/fundamentals/total-value-secured",
     allTimeHigh: {
-      chainKey: "ink",
-      metricKey: "throughput",
+      chainKey: "robinhood",
+      metricKey: "total-value-secured",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,
