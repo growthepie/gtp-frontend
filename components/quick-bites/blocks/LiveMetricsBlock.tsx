@@ -11,6 +11,7 @@ import {
   LiveMetricsFeeDisplayRowConfig,
   LiveMetricConfig,
   LiveMetricFormat,
+  LiveMetricProjection,
 } from "@/lib/types/blockTypes";
 import LiveMetricsCard, {
   LiveMetricDisplay,
@@ -23,7 +24,15 @@ import { getGradientColor } from "@/components/layout/EthAgg/helpers";
 
 const getNestedValue = (obj: any, path?: string) => {
   if (!path) return obj;
-  return path.split(".").reduce((current, key) => (current && current[key] !== undefined ? current[key] : undefined), obj);
+  return path.split(".").reduce((current, key) => {
+    if (!current) return undefined;
+    // `last` / `-1` pick the final entry of an array, so timeseries payloads
+    // shaped as [[unix, value], ...] can be addressed without knowing length.
+    if (Array.isArray(current) && (key === "last" || key === "-1")) {
+      return current[current.length - 1];
+    }
+    return current[key] !== undefined ? current[key] : undefined;
+  }, obj);
 };
 
 const resolveUrl = (template: string | undefined, sharedState: Record<string, any>) => {
@@ -93,8 +102,79 @@ const formatMetricValue = (rawValue: any, format?: LiveMetricFormat) => {
   return String(rawValue);
 };
 
-const buildMetricDisplay = (metric: LiveMetricConfig, data: any): LiveMetricDisplay => {
-  const value = formatMetricValue(getNestedValue(data, metric.valuePath), metric.valueFormat);
+const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+
+const toTimestamp = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null;
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) return numeric;
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/**
+ * Projects a reading forward from the moment it was taken at a constant
+ * annualised rate. Returns the unmodified base whenever the rate or the base
+ * timestamp is missing, so a broken path degrades to the plain value.
+ */
+const resolveProjectedValue = (
+  projection: LiveMetricProjection,
+  data: any,
+  nowMs: number,
+  fallbackValuePath?: string,
+): number | null => {
+  const base = toNumber(getNestedValue(data, projection.basePath ?? fallbackValuePath));
+  if (base === null) return null;
+
+  const rawAnnualRate =
+    projection.annualRatePath !== undefined
+      ? toNumber(getNestedValue(data, projection.annualRatePath))
+      : projection.annualRate ?? null;
+  const baseTime = toTimestamp(getNestedValue(data, projection.baseTimePath));
+  if (rawAnnualRate === null || baseTime === null) return base;
+
+  // Optionally project at the same precision the rate is displayed at.
+  const annualRate =
+    typeof projection.ratePercentDecimals === "number"
+      ? (() => {
+          const factor = 100 * 10 ** projection.ratePercentDecimals!;
+          return Math.round(rawAnnualRate * factor) / factor;
+        })()
+      : rawAnnualRate;
+
+  const elapsedMs = nowMs - baseTime;
+  if (elapsedMs <= 0) return base;
+
+  return base + base * annualRate * (elapsedMs / MS_PER_YEAR);
+};
+
+/** Re-renders on an interval so a projected value visibly counts up. */
+const useNowTicker = (enabled: boolean, intervalMs: number) => {
+  // Starts null so server and first client render agree; the ticker only runs
+  // after mount, and projections fall back to the base value until then.
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      setNow(null);
+      return;
+    }
+
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), Math.max(intervalMs, 50));
+    return () => clearInterval(id);
+  }, [enabled, intervalMs]);
+
+  return now;
+};
+
+const buildMetricDisplay = (metric: LiveMetricConfig, data: any, overrideValue?: number | null): LiveMetricDisplay => {
+  const value = formatMetricValue(
+    overrideValue !== undefined && overrideValue !== null
+      ? overrideValue
+      : getNestedValue(data, metric.valuePath),
+    metric.valueFormat,
+  );
   const hoverValue = metric.hoverValuePath
     ? formatMetricValue(getNestedValue(data, metric.hoverValuePath), metric.hoverFormat)
     : undefined;
@@ -326,16 +406,23 @@ export const LiveMetricsCardRenderer: React.FC<{ config: LiveMetricsCardConfig }
     return config.metricsRight.map((metric) => buildMetricDisplay(metric, resolvedData));
   }, [config.metricsRight, resolvedData]);
 
+  const projection = config.liveMetric?.projection;
+  const projectionNow = useNowTicker(Boolean(projection && resolvedData), projection?.tickIntervalMs ?? 1000);
+
   const liveMetric = useMemo<LiveMetricHighlight | undefined>(() => {
     if (!config.liveMetric || !resolvedData) return undefined;
-    const display = buildMetricDisplay(config.liveMetric, resolvedData);
+    const projectedValue =
+      projection && projectionNow !== null
+        ? resolveProjectedValue(projection, resolvedData, projectionNow, config.liveMetric.valuePath)
+        : undefined;
+    const display = buildMetricDisplay(config.liveMetric, resolvedData, projectedValue);
     const accentColor = config.liveMetric.accentColor || chartConfig?.overrideColor?.[0];
     return {
       ...display,
       accentColor,
       liveIcon: config.liveMetric.liveIcon as GTPIconName | undefined,
     };
-  }, [config.liveMetric, resolvedData, chartConfig]);
+  }, [config.liveMetric, resolvedData, chartConfig, projection, projectionNow]);
 
   const chartNode = chartConfig && chartData.length > 0 ? (
     <LiveMetricsChart

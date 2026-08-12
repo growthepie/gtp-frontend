@@ -32,6 +32,9 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Link from "next/link";
 import { Title } from "@/components/layout/TextHeadingComponents";
+import { notFound } from "next/navigation";
+import { IS_PRODUCTION } from "@/lib/helpers";
+import EthAssetMetrics from "@/components/layout/EthAgg/EthAssetMetrics";
 // import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
@@ -40,7 +43,13 @@ const TABS = {
   "metrics": "Metrics",
   "ethereum-ecosystem": "Ethereum Ecosystem",
   "builders-and-apps": "Builders & Apps",
+  "eth-the-asset": "ETH the Asset",
 }
+
+// Tabs kept out of production. "ETH the Asset" shows a simulated price and a
+// projected supply, so it must not be reachable on growthepie.com — the route
+// 404s there. Dev and preview deployments render it normally.
+const DEV_ONLY_TABS = new Set(["eth-the-asset"]);
 
 const useCustomState = (defaultValue: string) => {
   const [state, setState] = useState<string>(defaultValue);
@@ -57,7 +66,13 @@ const useCustomState = (defaultValue: string) => {
 export default function EthAgg() {
   const params = useParams();
   const tab = params.tab as string;
+
+  if (IS_PRODUCTION && DEV_ONLY_TABS.has(tab)) {
+    notFound();
+  }
+
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useCustomState(TABS[tab as keyof typeof TABS]);
+  const isEthAssetTab = selectedBreakdownGroup === TABS["eth-the-asset"];
 
   // for loading the ecosystem data
   const { data: ecosystemData, error, isLoading: isEcosystemLoading, isValidating: isEcosystemValidating } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
@@ -97,11 +112,13 @@ const setFocusSwitchEnabled = useUIContext((state) => state.setFocusSwitchEnable
     Metrics: null,
 
     "Builders & Apps": "Ethereum is for Builders and Apps",
+    "ETH the Asset": "These numbers are simulated",
   };
   const Messages = {
     "Ethereum Ecosystem": "Ethereum today is a layered ecosystem: the proof‑of‑stake mainnet secures DeFi, NFT, DAO and other dApps, while over $42 billion (peak) now resides on Layer 2 rollups such as Optimism, Arbitrum, Base, ZKsync and Starknet. Since the community adopted a “rollup‑centric roadmap,” the protocol assumes most user activity migrates to these rollups, leaving Layer 1 to specialise in settlement, consensus and minimal data availability.",
     Metrics: null,
     "Builders & Apps": "Ethereum is for everyone. Every builder who explores different use cases, from payments, to art, to identity solutions. Explore here how much builder activity there is and which apps are already out there.",
+    "ETH the Asset": "A layout experiment, not a data page. The price is a random walk generated in your browser, anchored to the live ETH price but invented in its movement. Supply is the last daily reading carried forward at the current issuance rate, and ETH per person divides that by a world population projected forward from the World Bank's latest annual figure. None of it is a measurement, and this tab is not available in production.",
   };
 
   return (
@@ -140,8 +157,14 @@ const setFocusSwitchEnabled = useUIContext((state) => state.setFocusSwitchEnable
             </Container>
           </div>
         </div>
-        <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
-        <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
+        {isEthAssetTab ? (
+          <EthAssetMetrics />
+        ) : (
+          <>
+            <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+            <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
+          </>
+        )}
         <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
       </div>
     </>

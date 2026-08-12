@@ -23,6 +23,7 @@ import EigenDAMegaETH from './qb-eigenda-megaeth';
 import txCostsVsActivity from './qb-txcosts-vs-activity';
 import CompilerTvs from './qb-compiler-tvs';
 import CompilerFlow from './qb-compiler-flow';
+import ethTheAsset from './qb-eth-the-asset';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -48,6 +49,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "tx-costs-vs-activity": txCostsVsActivity,
   "compiler-tvs": CompilerTvs,
   "compiler-flow": CompilerFlow,
+  "eth-the-asset": ethTheAsset,
 };
 
 export default QUICK_BITES_DATA;

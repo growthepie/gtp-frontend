@@ -15,7 +15,9 @@ export interface GlobalMetrics {
   highest_l2_cost_usd?: number;
   eth_price_usd?: number;
   ethereum_tx_cost_usd?: number;
+  ethereum_tx_cost_eth?: number;
   layer2s_tx_cost_usd?: number;
+  layer2s_tx_cost_eth?: number;
   avg_tx_cost_usd?: number;
   total_tps_24h_high?: number;
   total_tps_ath?: number;

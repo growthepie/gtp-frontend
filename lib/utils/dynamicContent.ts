@@ -741,7 +741,7 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           });
 
           // Get the latest annual issuance rate (already in percentage form)
-          const annualIssuanceRate = (issuanceData[issuanceData.length - 1][1] * 100).toFixed(2);
+          const annualIssuanceRate = (issuanceData[issuanceData.length - 1][1] * 100).toFixed(4);
 
           // Replace all placeholders
           processedItem = processedItem
