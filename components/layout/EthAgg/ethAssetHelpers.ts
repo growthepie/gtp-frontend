@@ -42,6 +42,17 @@ const PRICE_VOLATILITY = 0.0006;
 const PRICE_MEAN_REVERSION = 0.02;
 const PRICE_HISTORY_LIMIT = 60;
 
+/** Compact formatter for the comparison rows (1.99B, 605.0M, 95.0k). */
+export const formatCompact = (value: number | null, decimals = 2): string => {
+  if (value === null || !Number.isFinite(value)) return "—";
+  const abs = Math.abs(value);
+  if (abs >= 1e12) return `${(value / 1e12).toFixed(decimals)}T`;
+  if (abs >= 1e9) return `${(value / 1e9).toFixed(decimals)}B`;
+  if (abs >= 1e6) return `${(value / 1e6).toFixed(decimals)}M`;
+  if (abs >= 1e3) return `${(value / 1e3).toFixed(decimals)}k`;
+  return value.toFixed(decimals);
+};
+
 /**
  * Extrapolates a reading forward from when it was taken at a constant
  * annualised rate. Returns the base unchanged when inputs are unusable.
@@ -198,3 +209,118 @@ export const useSimulatedPrice = (anchorPrice: number | null, tickMs = 1000) => 
 
   return { price, history };
 };
+
+// --- Comparison assets ---
+//
+// Everything below is invented. ETH's own figures come from real endpoints
+// (growthepie for supply and issuance, the fee stream for the price anchor),
+// but no such feed exists in this app for BTC, SOL or gold, so their anchors
+// are seeded constants and their movement is simulated the same way ETH's
+// price is. They exist to demonstrate the expanded card layout.
+//
+// Each asset is quoted, supplied and counted in a single unit so that
+// price x supply and supply / population stay internally consistent.
+
+export type SimulatedAsset = {
+  key: string;
+  name: string;
+  color: string;
+  unit: string; // Symbol shown after supply and per-person figures.
+  priceAnchor: number; // USD per unit.
+  priceVolatility: number; // Per-tick standard deviation, as a fraction.
+  supplyBase: number;
+  supplyBaseTime: number;
+  supplyAnnualRate: number;
+  supplyDecimals: number;
+  perPersonDecimals: number;
+  peoplePerUnitDecimals: number;
+};
+
+export const SIMULATED_ASSETS: SimulatedAsset[] = [
+  {
+    key: "btc",
+    name: "Bitcoin",
+    color: "#F7931A",
+    unit: "BTC",
+    priceAnchor: 95_000,
+    priceVolatility: 0.0007,
+    supplyBase: 19_950_000,
+    supplyBaseTime: Date.UTC(2026, 7, 1),
+    supplyAnnualRate: 0.0082, // 3.125 BTC/block after the 2024 halving
+    supplyDecimals: 2,
+    perPersonDecimals: 14,
+    peoplePerUnitDecimals: 10,
+  },
+  {
+    key: "sol",
+    name: "Solana",
+    color: "#9945FF",
+    unit: "SOL",
+    priceAnchor: 180,
+    priceVolatility: 0.0011,
+    supplyBase: 605_000_000,
+    supplyBaseTime: Date.UTC(2026, 7, 1),
+    supplyAnnualRate: 0.044, // net of the fee burn
+    supplyDecimals: 2,
+    perPersonDecimals: 12,
+    peoplePerUnitDecimals: 12,
+  },
+  {
+    key: "gold",
+    name: "Gold",
+    color: "#D4AF37",
+    unit: "oz",
+    priceAnchor: 3_300,
+    priceVolatility: 0.0004,
+    // ~220,000 tonnes of above-ground stock, expressed in troy ounces so the
+    // unit matches how gold is quoted.
+    supplyBase: 7_070_000_000,
+    supplyBaseTime: Date.UTC(2026, 7, 1),
+    supplyAnnualRate: 0.0165, // ~3,600 t/yr of mine production
+    supplyDecimals: 2,
+    perPersonDecimals: 12,
+    peoplePerUnitDecimals: 12,
+  },
+];
+
+/** Mean-reverting random walks for every comparison asset, in one interval. */
+export const useSimulatedAssetPrices = (tickMs = 1000) => {
+  // Seeded from the anchors so server and first client render agree.
+  const [prices, setPrices] = useState<Record<string, number>>(() =>
+    Object.fromEntries(SIMULATED_ASSETS.map((asset) => [asset.key, asset.priceAnchor])),
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPrices((prev) => {
+        const next: Record<string, number> = {};
+        for (const asset of SIMULATED_ASSETS) {
+          const current = prev[asset.key] ?? asset.priceAnchor;
+          const pull = PRICE_MEAN_REVERSION * (asset.priceAnchor - current);
+          const shock = asset.priceAnchor * asset.priceVolatility * gaussian();
+          next[asset.key] = Math.max(current + pull + shock, 0);
+        }
+        return next;
+      });
+    }, Math.max(tickMs, 50));
+
+    return () => clearInterval(id);
+  }, [tickMs]);
+
+  return prices;
+};
+
+/** Supply for every comparison asset, projected at its rounded issuance rate. */
+export const useSimulatedAssetSupplies = (nowMs: number | null) =>
+  useMemo(() => {
+    const supplies: Record<string, number | null> = {};
+    for (const asset of SIMULATED_ASSETS) {
+      supplies[asset.key] = projectForward(
+        asset.supplyBase,
+        asset.supplyBaseTime,
+        roundRate(asset.supplyAnnualRate),
+        nowMs,
+      );
+    }
+    return supplies;
+  }, [nowMs]);
