@@ -28,14 +28,23 @@ import { metricItems } from "@/lib/metrics";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { chain, size } from "lodash";
 import { useTheme } from "next-themes";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
-// How long a trending topic takes to arrive once it's opened. Shared so both body
-// types land together: chart topics wipe in over this window (see the reveal effect
-// in LandingEventsChartContent), app-tile topics stagger their tiles across it (see
-// LandingEventsCardContent).
+// How long a trending topic takes to arrive once it's opened. Both body types run
+// on the same window so they land together: chart topics wipe in over it (see the
+// reveal effect in LandingEventsChartContent), app-tile topics stagger their tiles
+// across it (see LandingEventsCardContent). The value below is the default; the
+// speed slider under the section overrides it within the MIN/MAX bounds below.
 const REVEAL_DURATION_MS = 2000;
+const REVEAL_DURATION_MIN_MS = 500;
+const REVEAL_DURATION_MAX_MS = 2000;
+const REVEAL_DURATION_STEP_MS = 100;
+// The slider is a tuning aid, not a shipped control — same !IS_PRODUCTION gate as
+// the app metrics replay button. Hidden in production, where the animation always
+// runs at REVEAL_DURATION_MS. True on local `next dev` and dev/preview deploys.
+const SPEED_SLIDER_ENABLED = !IS_PRODUCTION;
 // Duration of one tile's fade — must match the `fadeIn` animation in tailwind.config.js.
 const TILE_FADE_MS = 300;
 
@@ -560,7 +569,7 @@ function calcPctChange(current: number, previous: number): number {
 const METRIC_COLS = ["gas_fees_eth", "gas_fees_usd", "txcount", "daa"] as const;
 type MetricKey = typeof METRIC_COLS[number];
 
-const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExample }) => {
+const LandingEventsCardContent = ({ eventData, revealDurationMs }: { eventData: ResolvedEventExample; revealDurationMs: number }) => {
   const { data: appOverviewData } = useSWR<AppOverviewResponse>(
     ApplicationsURLs.overview.replace("{timespan}", "7d"),
   );
@@ -660,12 +669,12 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
   }, [reduceIcons]);
 
   // Tiles fade in one at a time in rank order (the grid is already rank-sorted),
-  // spread so the last one finishes at REVEAL_DURATION_MS — the same window a
-  // chart topic takes to wipe in. Pure CSS: the animation runs on mount, which is
-  // when the tiles first render, so no timers or per-frame state are involved.
+  // spread so the last one finishes at revealDurationMs — the same window a chart
+  // topic takes to wipe in. Pure CSS: the animation runs on mount, which is when
+  // the tiles first render, so no timers or per-frame state are involved.
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const tileStaggerMs = resolvedCards.length > 1
-    ? Math.max(0, REVEAL_DURATION_MS - TILE_FADE_MS) / (resolvedCards.length - 1)
+    ? Math.max(0, revealDurationMs - TILE_FADE_MS) / (resolvedCards.length - 1)
     : 0;
 
 
@@ -832,7 +841,7 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 // chart renders its full final data and an opaque plot-area overlay clips away,
 // so it's compositor-only), but auto-triggered on open instead of a Play button.
 
-const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
+const LandingEventsChartContent = ({ eventData, onInteract, revealDurationMs }: { eventData: ResolvedEventExample; onInteract: () => void; revealDurationMs: number }) => {
   const { metrics } = useMaster();
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
@@ -944,7 +953,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     let startWall: number | null = null;
     const step = (now: number) => {
       if (startWall === null) startWall = now;
-      const t = Math.min((now - startWall) / REVEAL_DURATION_MS, 1);
+      const t = Math.min((now - startWall) / revealDurationMs, 1);
       if (t < 1) {
         setRevealProgress(t);
         frame = requestAnimationFrame(step);
@@ -959,7 +968,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
       if (frame !== null) cancelAnimationFrame(frame);
       setRevealProgress(null);
     };
-  }, [hasSeriesData, activeOptionId, revealNonce]);
+  }, [hasSeriesData, activeOptionId, revealNonce, revealDurationMs]);
 
   const isRevealing = revealProgress !== null;
 
@@ -1270,6 +1279,11 @@ export default function LandingEventsChart() {
   // re-clicking the question that's open changes no state — the nonce makes that
   // click replay too.
   const [replayNonce, setReplayNonce] = useState(0);
+  // Slider position (updates live while dragging) and the value the bodies actually
+  // run on. Committing on a short debounce keeps a drag from remounting the chart
+  // on every 0.1s step — the commit is what replays the animation at the new speed.
+  const [sliderDurationMs, setSliderDurationMs] = useState(REVEAL_DURATION_MS);
+  const [revealDurationMs, setRevealDurationMs] = useState(REVEAL_DURATION_MS);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef = useRef(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1316,6 +1330,12 @@ export default function LandingEventsChart() {
     };
   }, []);
 
+  useEffect(() => {
+    if (sliderDurationMs === revealDurationMs) return;
+    const timer = setTimeout(() => setRevealDurationMs(sliderDurationMs), 200);
+    return () => clearTimeout(timer);
+  }, [sliderDurationMs, revealDurationMs]);
+
   // Auto-advance to the next event every 10 seconds until the user interacts
   useEffect(() => {
     if (hasInteracted) return;
@@ -1355,11 +1375,39 @@ export default function LandingEventsChart() {
             }}
           />
           {(selectedEventData.bodyType ?? "chart") === "chart" ? (
-            <LandingEventsChartContent key={`${selectedEvent}-${replayNonce}`} eventData={selectedEventData} onInteract={handleInteract} />
+            <LandingEventsChartContent key={`${selectedEvent}-${replayNonce}-${revealDurationMs}`} eventData={selectedEventData} onInteract={handleInteract} revealDurationMs={revealDurationMs} />
           ) : (
-            <LandingEventsCardContent key={`${selectedEvent}-${replayNonce}`} eventData={selectedEventData} />
+            <LandingEventsCardContent key={`${selectedEvent}-${replayNonce}-${revealDurationMs}`} eventData={selectedEventData} revealDurationMs={revealDurationMs} />
           )}
         </div>
+        {/* Animation speed — dev/preview only (SPEED_SLIDER_ENABLED). The committed
+            value is part of the body key above, so landing on a new value replays
+            the open animation at that speed. */}
+        {SPEED_SLIDER_ENABLED && (
+        <div className="flex items-center justify-end gap-x-[10px] px-[15px]">
+          <label htmlFor="trending-topics-speed" className="text-xs text-color-text-secondary whitespace-nowrap">
+            Animation speed
+          </label>
+          <input
+            id="trending-topics-speed"
+            type="range"
+            min={REVEAL_DURATION_MIN_MS}
+            max={REVEAL_DURATION_MAX_MS}
+            step={REVEAL_DURATION_STEP_MS}
+            value={sliderDurationMs}
+            onChange={(e) => {
+              handleInteract();
+              setSliderDurationMs(parseInt(e.target.value, 10));
+            }}
+            onDoubleClick={() => setSliderDurationMs(REVEAL_DURATION_MS)}
+            title="How long a trending topic takes to animate in. Double-click to reset."
+            className="max-w-[240px] flex-1 h-1.5 bg-color-bg-medium rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-forest-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-forest-500 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-forest-500 [&::-moz-range-thumb]:border-0"
+          />
+          <span className="numbers-xs text-color-text-primary tabular-nums w-[34px]">
+            {(sliderDurationMs / 1000).toFixed(1)}s
+          </span>
+        </div>
+        )}
       </div>
     </ProjectsMetadataProvider>
   );
