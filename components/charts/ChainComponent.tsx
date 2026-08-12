@@ -1182,6 +1182,24 @@ const ChainComponent = function ChainComponent({
     return () => cancelAnimationFrame(raf);
   }, [getGraphicElements, isTransitioning]);
 
+  // Keep the canvas in sync with the container. echarts-for-react swallows the first
+  // size-sensor event it receives (its `isInitialResize` guard), so when the chart
+  // mounts before its parent has settled on a final width — e.g. the landing carousel
+  // renders slides at the fallback minSlideWidth on a client-side navigation back to
+  // the home page, then measures and widens them — that one growth event is dropped
+  // and the canvas stays at the initial width. Our own observer sees every change.
+  useEffect(() => {
+    if (isTransitioning) return;
+    if (!containerWidth || !containerHeight) return;
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    if (!chartInstance) return;
+
+    const raf = requestAnimationFrame(() => {
+      chartInstance.resize();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [containerWidth, containerHeight, isTransitioning]);
+
   // const resituateChart = debounce(() => {
   //   if (chartRef.current && !zoomed) {
   //     const chartInstance = chartRef.current.getEchartsInstance();

@@ -21,6 +21,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { Carousel } from "@/components/Carousel";
 import { useUIContext } from "@/contexts/UIContext";
 import LandingAppHighlight from "./LandingAppHighlight";
+import LandingEcosystemTPSCard from "./LandingEcosystemTPSCard";
 import Container from "../Container";
 import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
@@ -79,7 +80,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds = ["celo-anniversary-report"];
+const quickBiteIds: string[] = [];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -167,6 +168,9 @@ export default function LandingSwiperItems() {
       desktopRightPadding
       bottomOffset={-28}
     >
+      <div className="group w-full">
+        <LandingEcosystemTPSCard />
+      </div>
       {quickBiteItems.map(({slug, quickBite}) => (
         <div key={slug} className="group w-full">
           <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
