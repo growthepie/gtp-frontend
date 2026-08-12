@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "../layout/Heading";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { GTPIcon, sizeClassMap } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -30,6 +30,14 @@ import { chain, size } from "lodash";
 import { useTheme } from "next-themes";
 
 const EMPTY_OPTIONS: EventOption[] = [];
+
+// How long a trending topic takes to arrive once it's opened. Shared so both body
+// types land together: chart topics wipe in over this window (see the reveal effect
+// in LandingEventsChartContent), app-tile topics stagger their tiles across it (see
+// LandingEventsCardContent).
+const REVEAL_DURATION_MS = 2000;
+// Duration of one tile's fade — must match the `fadeIn` animation in tailwind.config.js.
+const TILE_FADE_MS = 300;
 
 const CARD_COLLAPSED_H = 54;
 const CARD_GAP = 10;
@@ -651,6 +659,15 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     return reduceIcons ? 3 : 5;
   }, [reduceIcons]);
 
+  // Tiles fade in one at a time in rank order (the grid is already rank-sorted),
+  // spread so the last one finishes at REVEAL_DURATION_MS — the same window a
+  // chart topic takes to wipe in. Pure CSS: the animation runs on mount, which is
+  // when the tiles first render, so no timers or per-frame state are involved.
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const tileStaggerMs = resolvedCards.length > 1
+    ? Math.max(0, REVEAL_DURATION_MS - TILE_FADE_MS) / (resolvedCards.length - 1)
+    : 0;
+
 
 
 
@@ -694,7 +711,10 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
             <Link
               href={`/applications/${card.owner_project}`}
               key={card.owner_project + index}
-              className="px-[10px]  h-full pt-[5px] pb-[10px] bg-transparent group hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col"
+              className={`px-[10px]  h-full pt-[5px] pb-[10px] bg-transparent group hover:bg-color-ui-hover rounded-[15px] border-[0.5px] border-color-bg-medium flex flex-col${prefersReducedMotion ? "" : " animate-fadeIn"}`}
+              // backwards fill keeps the tile hidden through its delay instead of
+              // flashing in at full opacity before its turn.
+              style={prefersReducedMotion ? undefined : { animationDelay: `${Math.round(index * tileStaggerMs)}ms`, animationFillMode: "backwards" }}
             >
               <div className="flex w-full justify-between items-end">
                 <div className="">
@@ -805,6 +825,13 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
     </div>
   );
 };
+// ─── Open reveal ─────────────────────────────────────────────────────────────
+// When a trending topic is opened, its chart wipes in left-to-right — from the
+// first data point to the most recent — over REVEAL_DURATION_MS. Same mechanism
+// as the app metrics replay (GTPChart's `revealProgress` clip-path overlay: the
+// chart renders its full final data and an opaque plot-area overlay clips away,
+// so it's compositor-only), but auto-triggered on open instead of a Play button.
+
 const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
   const { metrics } = useMaster();
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
@@ -879,6 +906,62 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     if (effectiveInactiveSeriesNames.size === 0) return selectedSeries;
     return selectedSeries.filter((series) => !effectiveInactiveSeriesNames.has(series.name));
   }, [effectiveInactiveSeriesNames, selectedSeries]);
+
+  // reveal: 0..1 progress, or null when not revealing (chart fully visible).
+  const [revealProgress, setRevealProgress] = useState<number | null>(null);
+  // Bumped on every option-tab click so re-clicking the tab that's already active
+  // replays the reveal too — activeOptionId alone wouldn't change in that case.
+  const [revealNonce, setRevealNonce] = useState(0);
+  // Tracked on selectedSeries, not activeSeries, so hiding/showing series via the
+  // legend never re-triggers the reveal — this flips false→true once, when the
+  // event's data first lands.
+  const hasSeriesData = useMemo(
+    () => selectedSeries.some((series) => series.data.length > 0),
+    [selectedSeries],
+  );
+
+  // The component is remounted on every question click (its key carries both the
+  // event id and a replay nonce), so "on open" is "on mount" — but the data may
+  // still arrive later via SWR, so the reveal waits
+  // for the first series data. useLayoutEffect puts the overlay up before paint,
+  // otherwise the finished chart flashes for a frame when the fetch resolves.
+  // Switching option tabs re-runs it: when that tab's data is already cached the
+  // reveal starts on the click, otherwise hasSeriesData drops to false while SWR
+  // fetches and the reveal fires as soon as the new series lands.
+  // The frame is cancelled in this effect's own cleanup so a re-run (or
+  // StrictMode's dev remount) restarts the reveal instead of cancelling it and
+  // leaving the plot covered, and the cleanup clears progress so an interrupted
+  // reveal never strands the overlay.
+  useLayoutEffect(() => {
+    if (!hasSeriesData) return;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame: number | null = null;
+    setRevealProgress(0);
+    // Start the clock on the first frame rather than here: a background tab
+    // suspends rAF, and timing from effect-run would burn the whole 2s while
+    // hidden and snap straight to the finished chart when the tab is focused.
+    let startWall: number | null = null;
+    const step = (now: number) => {
+      if (startWall === null) startWall = now;
+      const t = Math.min((now - startWall) / REVEAL_DURATION_MS, 1);
+      if (t < 1) {
+        setRevealProgress(t);
+        frame = requestAnimationFrame(step);
+      } else {
+        frame = null;
+        setRevealProgress(null);
+      }
+    };
+    frame = requestAnimationFrame(step);
+
+    return () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+      setRevealProgress(null);
+    };
+  }, [hasSeriesData, activeOptionId, revealNonce]);
+
+  const isRevealing = revealProgress !== null;
 
   const legendItems = useMemo(() => {
     return selectedSeries.map((series, index) => {
@@ -1000,6 +1083,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                       clickHandler={() => {
                         setActiveOptionId(option.id);
                         setSelectedRange(null);
+                        setRevealNonce((n) => n + 1);
                       }}
                     />
                   );
@@ -1032,9 +1116,10 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
                     clickHandler={() => {
                       setActiveOptionId(resolvedDefaultOptionId);
                       setSelectedRange(null);
+                      setRevealNonce((n) => n + 1);
                     }}
                   />
-      
+
             </GTPButtonRow>
           <GTPButton
               label={!selectedRange ? undefined : ""}
@@ -1072,9 +1157,15 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
        }
       >
         <div className="flex flex-col h-full min-h-0">
-          <div className="flex-1 min-h-0 w-full pt-[15px] pb-[30px]  -overflow-hidden">
+          {/* reveal: pointer events are off during the wipe so tooltips and
+              drag-select don't fire on not-yet-revealed regions. */}
+          <div
+            className="flex-1 min-h-0 w-full pt-[15px] pb-[30px]  -overflow-hidden"
+            style={{ pointerEvents: isRevealing ? "none" : undefined }}
+          >
             <GTPChart
               series={activeSeries}
+              revealProgress={revealProgress}
               prefix={resolvedValueFormat?.prefix}
               suffix={resolvedValueFormat?.suffix}
               decimals={resolvedValueFormat?.decimals}
@@ -1174,6 +1265,11 @@ const EventDataPrefetcher = () => {
 export default function LandingEventsChart() {
   const { AllChainsByKeys } = useMaster();
   const [selectedEvent, setSelectedEvent] = useState<EventId>(FEATURED_EVENT_IDS_MAX[0]);
+  // Part of the body's key, bumped on every question click. Selecting a different
+  // question already remounts the body (and so replays its open animation), but
+  // re-clicking the question that's open changes no state — the nonce makes that
+  // click replay too.
+  const [replayNonce, setReplayNonce] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef = useRef(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1255,12 +1351,13 @@ export default function LandingEventsChart() {
             setSelectedEvent={(event) => {
               handleInteract();
               setSelectedEvent(event);
+              setReplayNonce((n) => n + 1);
             }}
           />
           {(selectedEventData.bodyType ?? "chart") === "chart" ? (
-            <LandingEventsChartContent key={selectedEvent} eventData={selectedEventData} onInteract={handleInteract} />
+            <LandingEventsChartContent key={`${selectedEvent}-${replayNonce}`} eventData={selectedEventData} onInteract={handleInteract} />
           ) : (
-            <LandingEventsCardContent key={selectedEvent} eventData={selectedEventData} />
+            <LandingEventsCardContent key={`${selectedEvent}-${replayNonce}`} eventData={selectedEventData} />
           )}
         </div>
       </div>

@@ -2867,15 +2867,32 @@ export default function GTPChart({
         // end-symbol and any line touching y≈0 peek out past the overlay during replay.
         // Left extension stays small — there's only an 8px gap between the y-axis
         // labels and the plot edge (see dynamicGridLeft), so 2px is the safe budget.
-        const EXTEND_TOP = 3;
+        // xAxisLines annotations (e.g. "Pectra") are markLine labels drawn at
+        // insideEndTop with a negative `distance` and an optional upward
+        // `annotationPositionY`, so they paint above the grid rectangle. The top
+        // extension has to clear the tallest of them, otherwise their tops stay
+        // visible before the wipe reaches their line.
+        const annotationOverhang = (xAxisLines ?? []).reduce((max, line) => {
+          if (!line.annotationText || !Number.isFinite(line.xValue)) return max;
+          const fontSize = line.textFontSize ?? 9;
+          // Label box is fontSize tall plus the 2px vertical padding, centred on a
+          // point lifted by the label's `distance: -8` and any upward offset.
+          const halfLabelHeight = fontSize / 2 + 2;
+          const lift = 8 + Math.max(0, -(line.annotationPositionY ?? 0));
+          return Math.max(max, lift + halfLabelHeight + 2);
+        }, 0);
+        const EXTEND_TOP = Math.max(3, Math.ceil(annotationOverhang));
         const EXTEND_RIGHT = 6;
         const EXTEND_BOTTOM = 3;
         const EXTEND_LEFT = 2;
+        // Clamp so the inner grid-line box stays aligned when the plot sits closer
+        // to the container top than the extension asks for.
+        const appliedTop = Math.min(EXTEND_TOP, Math.max(0, effectiveGrid.top));
         return (
           <div
             className="pointer-events-none absolute overflow-hidden bg-color-bg-default z-[3]"
             style={{
-              top: Math.max(0, effectiveGrid.top - EXTEND_TOP),
+              top: Math.max(0, effectiveGrid.top - appliedTop),
               left: Math.max(0, effectiveGrid.left - EXTEND_LEFT),
               right: Math.max(0, effectiveGrid.right - EXTEND_RIGHT),
               bottom: Math.max(0, effectiveGrid.bottom - EXTEND_BOTTOM),
@@ -2889,7 +2906,7 @@ export default function GTPChart({
               <div
                 className="absolute"
                 style={{
-                  top: EXTEND_TOP,
+                  top: appliedTop,
                   left: EXTEND_LEFT,
                   right: EXTEND_RIGHT,
                   bottom: EXTEND_BOTTOM,
