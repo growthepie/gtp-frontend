@@ -476,11 +476,15 @@ const SideEventsContainer = ({
   selectedEvent,
   hasInteracted,
   setSelectedEvent,
+  onQuestionClick,
   eventsById,
 }: {
   selectedEvent: EventId;
   hasInteracted: boolean;
+  /** Plain selection, used by the carousel. Re-selecting the open event is a no-op. */
   setSelectedEvent: (event: EventId) => void;
+  /** A deliberate tap on a question — always replays the body's open animation. */
+  onQuestionClick: (event: EventId) => void;
   eventsById: Record<EventId, ResolvedEventExample>;
 }) => {
   const isMobile = useMediaQuery("(max-width: 1024px)");
@@ -493,6 +497,9 @@ const SideEventsContainer = ({
     if (index !== -1) emblaApiRef.current?.scrollTo(index);
   }, [selectedEvent]);
 
+  // Carousel selections must not replay the body: the scrollTo above makes embla
+  // emit a select for the event that's already open, and treating that echo as a
+  // click would remount the body on a loop (see onQuestionClick vs setSelectedEvent).
   const handleSlideChange = (index: number) => {
     if (slideChangeTimerRef.current) clearTimeout(slideChangeTimerRef.current);
     slideChangeTimerRef.current = setTimeout(() => {
@@ -522,7 +529,7 @@ const SideEventsContainer = ({
                 eventData={eventsById[event]}
                 isSelected={selectedEvent === event}
                 hasInteracted={hasInteracted}
-                setSelectedEvent={setSelectedEvent}
+                setSelectedEvent={onQuestionClick}
               />
             </div>
           ))}
@@ -540,7 +547,7 @@ const SideEventsContainer = ({
           eventData={eventsById[event]}
           isSelected={selectedEvent === event}
           hasInteracted={hasInteracted}
-          setSelectedEvent={setSelectedEvent}
+          setSelectedEvent={onQuestionClick}
         />
       ))}
     </div>
@@ -1369,6 +1376,10 @@ export default function LandingEventsChart() {
             hasInteracted={hasInteracted}
             eventsById={resolvedEventsById}
             setSelectedEvent={(event) => {
+              handleInteract();
+              setSelectedEvent(event);
+            }}
+            onQuestionClick={(event) => {
               handleInteract();
               setSelectedEvent(event);
               setReplayNonce((n) => n + 1);
