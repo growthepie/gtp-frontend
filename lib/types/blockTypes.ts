@@ -349,25 +349,6 @@ export interface LiveMetricFormat {
   fallback?: string;
 }
 
-/**
- * Extrapolates a point-in-time reading forward at a known growth rate so a
- * slow-moving metric can be displayed as a live counter between data refreshes.
- * The displayed number is a projection, not a measurement — label it as such.
- * The base value is re-synced from the API on every `refreshInterval`.
- */
-export interface LiveMetricProjection {
-  basePath?: string; // Reading to project from. Defaults to the metric's valuePath.
-  baseTimePath?: string; // When that reading was taken (unix ms or ISO). Without it, no projection is applied.
-  annualRatePath?: string; // Annualised growth rate as a fraction (0.0087 = 0.87%/yr), read from the API.
-  annualRate?: number; // Literal annualised rate, used when annualRatePath is not set.
-  tickIntervalMs?: number; // How often to recompute. Defaults to 1000.
-  // Round the rate to this many decimal places of its percentage form before
-  // projecting (4 turns 0.008706638… into 0.0087066, i.e. 0.8707%). Set it to
-  // match the precision the rate is displayed at so the counter advances at
-  // exactly the rate shown. Omit to project at full precision.
-  ratePercentDecimals?: number;
-}
-
 export interface LiveMetricConfig {
   label: string;
   valuePath: string;
@@ -376,7 +357,6 @@ export interface LiveMetricConfig {
   hoverValuePath?: string;
   hoverFormat?: LiveMetricFormat;
   align?: 'left' | 'right';
-  projection?: LiveMetricProjection;
 }
 
 export interface LiveMetricsChartConfig {
