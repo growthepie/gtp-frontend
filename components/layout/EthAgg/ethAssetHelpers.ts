@@ -266,6 +266,22 @@ export const SIMULATED_ASSETS: SimulatedAsset[] = [
     peoplePerUnitDecimals: 12,
   },
   {
+    key: "usd",
+    name: "US Dollar",
+    color: "#85BB65",
+    unit: "USD",
+    // The unit of account, so its price is exactly 1 by definition and it is
+    // the one asset here that does not wander.
+    priceAnchor: 1,
+    priceVolatility: 0,
+    supplyBase: 22_000_000_000_000, // M2 money supply
+    supplyBaseTime: Date.UTC(2026, 7, 1),
+    supplyAnnualRate: 0.04,
+    supplyDecimals: 2,
+    perPersonDecimals: 6,
+    peoplePerUnitDecimals: 14,
+  },
+  {
     key: "gold",
     name: "Gold",
     color: "#D4AF37",
