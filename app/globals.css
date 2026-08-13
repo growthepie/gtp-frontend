@@ -724,3 +724,14 @@ input:focus-visible {
   from { width: 100%; }
   to   { width: 0%;   }
 }
+
+/* Inflation sweep for the ETH the Asset tab: a marker crossing its track once
+   per (1 / inflation %) seconds, so a faster-inflating asset sweeps faster.
+   Duration is set per row via inline animation-duration. */
+@keyframes inflation-sweep {
+  from { left: 0%; }
+  to   { left: calc(100% - 6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inflation-sweep-marker { animation: none !important; }
+}

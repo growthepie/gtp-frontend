@@ -243,7 +243,7 @@ export type SimulatedAsset = {
  */
 export const ETH_AS_ASSET: SimulatedAsset = {
   key: "eth",
-  name: "Ethereum",
+  name: "ETH",
   color: "#1cd3d3",
   unit: "ETH",
   priceAnchor: 0,
@@ -259,7 +259,7 @@ export const ETH_AS_ASSET: SimulatedAsset = {
 export const SIMULATED_ASSETS: SimulatedAsset[] = [
   {
     key: "btc",
-    name: "Bitcoin",
+    name: "BTC",
     color: "#F7931A",
     unit: "BTC",
     priceAnchor: 95_000,
@@ -273,21 +273,25 @@ export const SIMULATED_ASSETS: SimulatedAsset[] = [
   },
   {
     key: "sol",
-    name: "Solana",
+    name: "SOL",
     color: "#9945FF",
     unit: "SOL",
     priceAnchor: 180,
     priceVolatility: 0.0011,
     supplyBase: 605_000_000,
     supplyBaseTime: Date.UTC(2026, 7, 1),
-    supplyAnnualRate: 0.044, // net of the fee burn
+    // Seeded estimate, gross of the burn. Solana's emission schedule starts at
+    // 8% and disinflates 15% a year toward a 1.5% floor, which puts 2026 at
+    // roughly 3.5%. Half of each base fee is burned, so true net issuance is
+    // lower than this — unlike ETH's rate, nothing here derives it.
+    supplyAnnualRate: 0.035,
     supplyDecimals: 2,
     perPersonDecimals: 12,
     peoplePerUnitDecimals: 12,
   },
   {
     key: "usd",
-    name: "US Dollar",
+    name: "USD",
     color: "#85BB65",
     unit: "USD",
     // The unit of account, so its price is exactly 1 by definition and it is
@@ -360,3 +364,56 @@ export const useSimulatedAssetSupplies = (nowMs: number | null) =>
     }
     return supplies;
   }, [nowMs]);
+
+// --- Simulated EIP-1559 burn ---
+//
+// growthepie's supply endpoint publishes net issuance (issuance minus burn),
+// not the burn itself, so there is nothing here to read a real figure from.
+// Baseline and rate are seeded constants projected forward like the rest of
+// this file — the counter moves, but the number is invented.
+export const ETH_BURN_BASE = 5_000_000; // cumulative ETH burned since EIP-1559
+export const ETH_BURN_BASE_TIME = Date.UTC(2026, 7, 1);
+export const ETH_BURN_PER_DAY = 700;
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Cumulative ETH burned, projected forward at a constant daily rate. */
+export const useProjectedBurn = (nowMs: number | null): number => {
+  return useMemo(() => {
+    if (nowMs === null) return ETH_BURN_BASE;
+    const elapsedDays = (nowMs - ETH_BURN_BASE_TIME) / MS_PER_DAY;
+    return elapsedDays > 0 ? ETH_BURN_BASE + ETH_BURN_PER_DAY * elapsedDays : ETH_BURN_BASE;
+  }, [nowMs]);
+};
+
+export const ETH_MARKET_CAP_URL =
+  "https://api.growthepie.com/v1/metrics/chains/ethereum/market_cap.json";
+
+/**
+ * Real 24h ETH price change, unlike the per-step move beside it. The daily
+ * market cap series carries the value in both USD and ETH, and their ratio is
+ * the price per ETH, so the change between the last two days is a genuine
+ * figure rather than a simulated one.
+ */
+export const useEthPrice24hChange = (): number | null => {
+  const { data } = useSWR<any>(ETH_MARKET_CAP_URL);
+
+  return useMemo(() => {
+    const rows = data?.details?.timeseries?.daily?.data;
+    if (!Array.isArray(rows) || rows.length < 2) return null;
+
+    const priceAt = (row: unknown) => {
+      if (!Array.isArray(row)) return null;
+      const usd = Number(row[1]);
+      const eth = Number(row[2]);
+      if (!Number.isFinite(usd) || !Number.isFinite(eth) || eth === 0) return null;
+      return usd / eth;
+    };
+
+    const previous = priceAt(rows[rows.length - 2]);
+    const current = priceAt(rows[rows.length - 1]);
+    if (previous === null || current === null || previous === 0) return null;
+
+    return (current / previous - 1) * 100;
+  }, [data]);
+};

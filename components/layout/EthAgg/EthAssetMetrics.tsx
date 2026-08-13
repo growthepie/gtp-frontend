@@ -13,7 +13,6 @@
 
 import React, { useMemo, useState } from "react";
 import useSWR from "swr";
-import dayjs from "@/lib/dayjs";
 import Container from "@/components/layout/Container";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
@@ -26,10 +25,12 @@ import {
   ETH_AS_ASSET,
   formatCompact,
   formatRatePercent,
+  useEthPrice24hChange,
   projectForward,
   roundRate,
   SIMULATED_ASSETS,
   SimulatedAsset,
+  useProjectedBurn,
   useProjectedPopulation,
   useSimulatedAssetPrices,
   useSimulatedAssetSupplies,
@@ -41,6 +42,13 @@ const ETH_SUPPLY_URL = "https://api.growthepie.com/v1/eim/eth_supply.json";
 
 /** ETH leads the inflation list so its rate can be read against the others. */
 const INFLATION_ASSETS = [ETH_AS_ASSET, ...SIMULATED_ASSETS];
+
+/**
+ * Seconds for a 1%/yr asset's marker to cross its track. Every other rate is
+ * scaled off this, so changing it retimes the whole list without altering the
+ * assets' speeds relative to each other.
+ */
+const SWEEP_SECONDS_AT_ONE_PERCENT = 2;
 
 /**
  * Card chrome mirroring ExpandableCardContainer. Reimplemented here rather
@@ -113,14 +121,59 @@ const ASSET_LIST_COLLAPSED_HEIGHT = 52;
 const ASSET_ROW_HEIGHT = 22;
 const assetListExpandedHeight = (rowCount: number) => 24 + rowCount * ASSET_ROW_HEIGHT;
 
-/** One comparison asset: name on the left, its simulated value on the right. */
-const AssetRow = ({ asset, value }: { asset: SimulatedAsset; value: string }) => (
-  <div className="flex items-center justify-between h-[22px] gap-x-[10px]">
-    <div className="flex items-center gap-x-[6px] min-w-0">
+/**
+ * One comparison asset: name, then an optional sweep track, then its value.
+ *
+ * `sweepSeconds` animates a marker across the track once per that many
+ * seconds, so the rate is read as motion rather than as a second number.
+ */
+const AssetRow = ({
+  asset,
+  value,
+  sweepSeconds,
+}: {
+  asset: SimulatedAsset;
+  value: string;
+  sweepSeconds?: number | null;
+}) => (
+  <div className="flex items-center gap-x-[10px]" style={{ height: ASSET_ROW_HEIGHT }}>
+    {/* Fixed width on rows with a track, so every track starts and ends at the
+        same x — equal-length tracks are what keep the sweep speeds comparable.
+        Sized to the widest ticker (dot + gap + ~27px) so the tracks start as
+        far left as the labels allow. */}
+    <div
+      className={`flex items-center gap-x-[6px] min-w-0 shrink-0 ${
+        sweepSeconds === undefined ? "" : "w-[44px]"
+      }`}
+    >
       <div className="size-[8px] rounded-full shrink-0" style={{ backgroundColor: asset.color }} />
       <div className="heading-small-xxs truncate">{asset.name}</div>
     </div>
-    <div className="numbers-xs whitespace-nowrap text-color-text-secondary">{value}</div>
+
+    {sweepSeconds !== undefined && (
+      // Fixed rather than flexible, so the travel distance stays constant when
+      // the text beside it changes length. Allowed to shrink on narrow cards —
+      // the track gives way before the value does.
+      <div className="relative w-[190px] min-w-[30px] h-[6px]">
+        {sweepSeconds !== null && (
+          <div
+            className="inflation-sweep-marker absolute top-0 size-[6px] rounded-full"
+            style={{
+              backgroundColor: asset.color,
+              animation: `inflation-sweep ${sweepSeconds}s linear infinite`,
+            }}
+          />
+        )}
+      </div>
+    )}
+
+    <div
+      className={`numbers-xs whitespace-nowrap text-color-text-secondary ${
+        sweepSeconds === undefined ? "ml-auto" : "shrink-0 text-left"
+      }`}
+    >
+      {value}
+    </div>
   </div>
 );
 
@@ -130,12 +183,15 @@ const AssetList = ({
   isExpanded,
   formatValue,
   assets = SIMULATED_ASSETS,
+  sweepSeconds,
 }: {
   title: string;
   isExpanded: boolean;
   formatValue: (asset: SimulatedAsset) => string;
   /** Defaults to the comparison assets; pass a wider set to include ETH. */
   assets?: SimulatedAsset[];
+  /** Seconds for a marker to cross the row; omit for rows without a track. */
+  sweepSeconds?: (asset: SimulatedAsset) => number | null;
 }) => (
   <div className="relative flex flex-col gap-y-[5px] -mx-[15px] bg-color-bg-default rounded-b-[15px]">
     <div
@@ -150,17 +206,14 @@ const AssetList = ({
     >
       <div className="heading-small-xxxs text-color-text-secondary">{title}</div>
       {assets.map((asset) => (
-        <AssetRow key={asset.key} asset={asset} value={formatValue(asset)} />
+        <AssetRow
+          key={asset.key}
+          asset={asset}
+          value={formatValue(asset)}
+          sweepSeconds={sweepSeconds?.(asset)}
+        />
       ))}
     </div>
-  </div>
-);
-
-/** Small label above a secondary value, matching the metric cards. */
-const SubMetric = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="flex flex-col gap-y-[2px] overflow-hidden">
-    <div className="heading-small-xxxs text-color-text-secondary">{label}</div>
-    <div className="numbers-sm whitespace-nowrap">{value}</div>
   </div>
 );
 
@@ -197,8 +250,19 @@ const EthPriceCard = ({
     return null;
   }, [globalMetrics]);
 
+  // The anchor is no longer displayed, but it still sets the level the walk
+  // orbits and mean-reverts toward.
   const { price, history } = useSimulatedPrice(anchorPrice);
-  const drift = price !== null && anchorPrice !== null ? price - anchorPrice : null;
+  const change24h = useEthPrice24hChange();
+
+  // Percentage move between the last two steps of the walk.
+  const changePercent = useMemo(() => {
+    if (history.length < 2) return null;
+    const previous = history[history.length - 2].value;
+    const current = history[history.length - 1].value;
+    if (!previous || !Number.isFinite(previous)) return null;
+    return ((current - previous) / previous) * 100;
+  }, [history]);
 
   // The walk moves by a few dollars on a ~$1,800 level, so an axis anchored at
   // zero renders it as a flat line. Fit the axis to the data instead.
@@ -228,7 +292,7 @@ const EthPriceCard = ({
       isExpanded={isExpanded}
       onToggleExpand={onToggleExpand}
       infoSlot={
-        "This price is generated in the browser, not observed. A mean-reverting random walk is seeded from the live ETH price derived from the fee stream, then moved by random shocks each second. The comparison assets have no live feed at all — their anchors are seeded constants. Use this to demonstrate the layout, never as market data."
+        "This price is generated in the browser, not observed. A mean-reverting random walk is seeded from the live ETH price derived from the fee stream, then moved by random shocks each second, and the percentage beside it is the move between the last two steps of that walk. The 24h figure is the exception: it is real, taken from the change between the last two days of growthepie's ETH market cap series. The comparison assets have no live feed at all — their anchors are seeded constants."
       }
     >
       <div className="flex items-center gap-x-[8px] pb-[15px]">
@@ -239,33 +303,23 @@ const EthPriceCard = ({
       <div className="flex flex-col gap-y-[30px]">
         <div className="flex flex-col @[420px]:flex-row @[420px]:items-end @[420px]:justify-between gap-y-[15px] gap-x-[10px]">
           <div className="flex flex-col gap-y-[5px]">
-            <div className="numbers-2xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap">
-              {price !== null
-                ? `$${price.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : "—"}
+            <div className="flex items-baseline gap-x-[8px]">
+              <div className="numbers-2xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap">
+                {price !== null
+                  ? `$${price.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : "—"}
+              </div>
+              <div className="heading-small-xs text-color-text-secondary whitespace-nowrap">
+                {changePercent === null
+                  ? "—"
+                  : `${changePercent >= 0 ? "+" : "−"}${Math.abs(changePercent).toFixed(2)}%`}
+              </div>
             </div>
-            <div className="heading-small-xs text-color-text-secondary">random walk, 1s steps</div>
-          </div>
-          <div className="flex gap-x-[20px]">
-            <SubMetric
-              label="Live Anchor"
-              value={
-                anchorPrice !== null
-                  ? `$${anchorPrice.toLocaleString("en-GB", { maximumFractionDigits: 2 })}`
-                  : "—"
-              }
-            />
-            <SubMetric
-              label="Drift"
-              value={
-                drift !== null
-                  ? `${drift >= 0 ? "+" : "−"}$${Math.abs(drift).toLocaleString("en-GB", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`
-                  : "—"
-              }
-            />
+            <div className="heading-small-xs text-color-text-secondary whitespace-nowrap">
+              {change24h === null
+                ? "—"
+                : `24h ${change24h >= 0 ? "+" : "−"}${Math.abs(change24h).toFixed(2)}%`}
+            </div>
           </div>
         </div>
 
@@ -276,7 +330,11 @@ const EthPriceCard = ({
               xAxisType="category"
               animation={false}
               showWatermark={false}
-              grid={{ right: 0, top: 5, bottom: 0 }}
+              // The lowest y-label is centred on the grid's bottom edge, so a
+              // zero bottom inset clips its lower half. The TPS card gets away
+              // with bottom:0 because it suppresses its zero label; this axis
+              // is fitted to the data and always draws one.
+              grid={{ right: 0, top: 5, bottom: 8 }}
               ySplitNumber={2}
               yAxisMin={yAxisMin}
               yAxisMax={yAxisMax}
@@ -338,15 +396,33 @@ const EthSupplyCard = ({
   isExpanded: boolean;
   onToggleExpand: () => void;
 }) => {
-  const { supply, baseTime, annualRate } = useProjectedSupply(nowMs);
+  const { supply, annualRate } = useProjectedSupply(nowMs);
   const assetSupplies = useSimulatedAssetSupplies(nowMs);
+  const burned = useProjectedBurn(nowMs);
+
+  // ETH's rate is live from the API; the rest are seeded constants.
+  const inflationRate = (asset: SimulatedAsset) =>
+    asset.key === "eth" ? annualRate : roundRate(asset.supplyAnnualRate);
+
+  // 1% inflation crosses the track in two seconds, and the marker's speed
+  // scales with the rate — so 4% crosses four times as fast (0.5s).
+  const sweepSeconds = (asset: SimulatedAsset) => {
+    const ratePercent = (inflationRate(asset) ?? 0) * 100;
+    return ratePercent > 0 ? SWEEP_SECONDS_AT_ONE_PERCENT / ratePercent : null;
+  };
+
+  // Slowest sweep first, i.e. lowest inflation at the top. Sorted here rather
+  // than in the constant because ETH's rate is live and can move it.
+  const sortedInflationAssets = [...INFLATION_ASSETS].sort(
+    (a, b) => (inflationRate(a) ?? 0) - (inflationRate(b) ?? 0),
+  );
 
   return (
     <AssetCard
       isExpanded={isExpanded}
       onToggleExpand={onToggleExpand}
       infoSlot={
-        "Projected, not measured. The last daily supply reading from growthepie's ETH supply tracker is carried forward at the current annualised net issuance rate. Real issuance arrives per block and is offset by the EIP-1559 burn. The comparison assets have no feed here — their baselines and issuance rates are seeded constants."
+        "Projected, not measured. The last daily supply reading from growthepie's ETH supply tracker is carried forward at the current annualised net issuance rate. Real issuance arrives per block and is offset by the EIP-1559 burn. The burn total is itself simulated — the supply endpoint publishes net issuance rather than the burn, so its baseline and daily rate are seeded constants. The comparison assets have no feed here either."
       }
     >
       <div className="flex items-center gap-x-[8px] pb-[15px]">
@@ -362,30 +438,26 @@ const EthSupplyCard = ({
                 ? `Ξ${supply.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                 : "—"}
             </div>
-            <div className="heading-small-xs text-color-text-secondary">projected from last daily reading</div>
-          </div>
-          <div className="flex gap-x-[20px]">
-            <SubMetric
-              label="Issuance Rate"
-              value={formatRatePercent(annualRate) ? `${formatRatePercent(annualRate)} / yr` : "—"}
-            />
-            <SubMetric
-              label="Last Reading"
-              value={baseTime !== null ? dayjs.utc(baseTime).format("D MMM YYYY") : "—"}
-            />
+            <div className="heading-small-xs text-color-text-secondary whitespace-nowrap">
+              {`Ξ${burned.toLocaleString("en-GB", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })} burned since EIP-1559`}
+            </div>
           </div>
         </div>
 
         <AssetList
           title="Inflation"
           isExpanded={isExpanded}
-          assets={INFLATION_ASSETS}
+          assets={sortedInflationAssets}
           formatValue={(asset) => {
-            // ETH's rate is live from the API; the rest are seeded constants.
-            const rate = asset.key === "eth" ? annualRate : roundRate(asset.supplyAnnualRate);
-            const formatted = formatRatePercent(rate);
-            return formatted ? `${formatted} / yr` : "—";
+            const rate = inflationRate(asset);
+            const percent = formatRatePercent(rate === null ? null : Math.abs(rate));
+            if (percent === null || rate === null) return "—";
+            return `${rate >= 0 ? "+" : "−"}${percent}`;
           }}
+          sweepSeconds={sweepSeconds}
         />
       </div>
     </AssetCard>
@@ -466,9 +538,6 @@ const EthPerPersonCard = ({
                   }`
                 : "if ETH were shared equally"}
             </div>
-          </div>
-          <div className="flex gap-x-[20px]">
-            <SubMetric label="Population Source" value={baseYear ? `World Bank ${baseYear}` : "—"} />
           </div>
         </div>
 
