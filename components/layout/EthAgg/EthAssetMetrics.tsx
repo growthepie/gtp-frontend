@@ -23,6 +23,7 @@ import { useTheme } from "next-themes";
 import { useSSEMetrics } from "./useSSEMetrics";
 import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
 import {
+  ETH_AS_ASSET,
   formatCompact,
   formatRatePercent,
   projectForward,
@@ -37,6 +38,9 @@ import {
 } from "./ethAssetHelpers";
 
 const ETH_SUPPLY_URL = "https://api.growthepie.com/v1/eim/eth_supply.json";
+
+/** ETH leads the inflation list so its rate can be read against the others. */
+const INFLATION_ASSETS = [ETH_AS_ASSET, ...SIMULATED_ASSETS];
 
 /**
  * Card chrome mirroring ExpandableCardContainer. Reimplemented here rather
@@ -106,7 +110,8 @@ const AssetCard = ({
 );
 
 const ASSET_LIST_COLLAPSED_HEIGHT = 52;
-const ASSET_LIST_EXPANDED_HEIGHT = 24 + SIMULATED_ASSETS.length * 22;
+const ASSET_ROW_HEIGHT = 22;
+const assetListExpandedHeight = (rowCount: number) => 24 + rowCount * ASSET_ROW_HEIGHT;
 
 /** One comparison asset: name on the left, its simulated value on the right. */
 const AssetRow = ({ asset, value }: { asset: SimulatedAsset; value: string }) => (
@@ -124,10 +129,13 @@ const AssetList = ({
   title,
   isExpanded,
   formatValue,
+  assets = SIMULATED_ASSETS,
 }: {
   title: string;
   isExpanded: boolean;
   formatValue: (asset: SimulatedAsset) => string;
+  /** Defaults to the comparison assets; pass a wider set to include ETH. */
+  assets?: SimulatedAsset[];
 }) => (
   <div className="relative flex flex-col gap-y-[5px] -mx-[15px] bg-color-bg-default rounded-b-[15px]">
     <div
@@ -136,10 +144,12 @@ const AssetList = ({
           ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[30px] after:bg-gradient-to-t after:from-color-bg-default after:via-color-bg-default/80 after:to-color-bg-default/20 after:pointer-events-none'
           : ""
       }`}
-      style={{ height: isExpanded ? ASSET_LIST_EXPANDED_HEIGHT : ASSET_LIST_COLLAPSED_HEIGHT }}
+      style={{
+        height: isExpanded ? assetListExpandedHeight(assets.length) : ASSET_LIST_COLLAPSED_HEIGHT,
+      }}
     >
       <div className="heading-small-xxxs text-color-text-secondary">{title}</div>
-      {SIMULATED_ASSETS.map((asset) => (
+      {assets.map((asset) => (
         <AssetRow key={asset.key} asset={asset} value={formatValue(asset)} />
       ))}
     </div>
@@ -367,11 +377,15 @@ const EthSupplyCard = ({
         </div>
 
         <AssetList
-          title="Other Assets"
+          title="Inflation"
           isExpanded={isExpanded}
-          formatValue={(asset) =>
-            `${formatCompact(assetSupplies[asset.key] ?? null)} ${asset.unit}`
-          }
+          assets={INFLATION_ASSETS}
+          formatValue={(asset) => {
+            // ETH's rate is live from the API; the rest are seeded constants.
+            const rate = asset.key === "eth" ? annualRate : roundRate(asset.supplyAnnualRate);
+            const formatted = formatRatePercent(rate);
+            return formatted ? `${formatted} / yr` : "—";
+          }}
         />
       </div>
     </AssetCard>

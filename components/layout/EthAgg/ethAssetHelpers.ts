@@ -236,6 +236,26 @@ export type SimulatedAsset = {
   peoplePerUnitDecimals: number;
 };
 
+/**
+ * ETH as a list entry, so it can be compared in place against the others.
+ * Its supply fields are placeholders — the card supplies ETH's real figures
+ * from the API rather than reading them from here.
+ */
+export const ETH_AS_ASSET: SimulatedAsset = {
+  key: "eth",
+  name: "Ethereum",
+  color: "#1cd3d3",
+  unit: "ETH",
+  priceAnchor: 0,
+  priceVolatility: 0,
+  supplyBase: 0,
+  supplyBaseTime: 0,
+  supplyAnnualRate: 0,
+  supplyDecimals: 2,
+  perPersonDecimals: 14,
+  peoplePerUnitDecimals: 12,
+};
+
 export const SIMULATED_ASSETS: SimulatedAsset[] = [
   {
     key: "btc",
