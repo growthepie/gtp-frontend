@@ -4,12 +4,20 @@ import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 import type { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import GTPDropdown from "@/components/GTPComponents/GTPDropdown";
+import type { GTPIconName } from "@/icons/gtp-icon-names";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { useTheme } from "next-themes";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+function metricIconName(icon: string): GTPIconName {
+  // master.json icon format: "metrics-transaction-count"
+  // GTPIconName format: "gtp-metrics-transactioncount"
+  return `gtp-${icon.replace(/^(metrics-)(.*)/, (_m, p, rest) => p + rest.replace(/-/g, ""))}` as GTPIconName;
+}
 
 const CHART_TYPES = [
   { key: "line" as const, label: "Line" },
@@ -232,7 +240,7 @@ async function fetchGTPMetric(
 }
 
 type ChainOption = { key: string; name: string; dark: [string, string]; light: [string, string] };
-type MetricOption = { key: string; name: string };
+type MetricOption = { key: string; name: string; icon: string };
 type MasterData = { chains: ChainOption[]; metrics: MetricOption[] };
 
 async function fetchMasterData(): Promise<MasterData> {
@@ -248,25 +256,21 @@ async function fetchMasterData(): Promise<MasterData> {
       colors?: { dark?: [string, string]; light?: [string, string] };
     }> = json?.chains ?? {};
     const chains: ChainOption[] = Object.entries(rawChains)
-      .filter(([, c]) => c.deployment === "PROD" && c.name && c.colors?.dark && c.colors?.light)
+      .filter(([key, c]) => key !== "all_l2s" && c.deployment === "PROD" && c.name && c.colors?.dark && c.colors?.light)
       .map(([key, c]) => ({
         key,
         name: c.name!,
         dark: c.colors!.dark!,
         light: c.colors!.light!,
       }))
-      .sort((a, b) => {
-        if (a.key === "all_l2s") return -1;
-        if (b.key === "all_l2s") return 1;
-        return a.name.localeCompare(b.name);
-      });
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     // Metrics: fundamental === true, sorted by name
-    const rawMetrics: Record<string, { name?: string; fundamental?: boolean }> =
+    const rawMetrics: Record<string, { name?: string; fundamental?: boolean; icon?: string }> =
       json?.metrics ?? {};
     const metrics: MetricOption[] = Object.entries(rawMetrics)
       .filter(([, m]) => m.fundamental === true && m.name)
-      .map(([key, m]) => ({ key, name: m.name! }))
+      .map(([key, m]) => ({ key, name: m.name!, icon: m.icon ?? "" }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return { chains, metrics };
@@ -465,6 +469,104 @@ function ScaleToggle({ value, onChange }: { value: Scale; onChange: (s: Scale) =
 }
 
 // ---------------------------------------------------------------------------
+// ZoomSlider
+// ---------------------------------------------------------------------------
+
+function ZoomSlider({
+  dataMin,
+  dataMax,
+  start,
+  end,
+  onChange,
+}: {
+  dataMin: number;
+  dataMax: number;
+  start: number;
+  end: number;
+  onChange: (start: number, end: number) => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const range = dataMax - dataMin;
+  const startRef = useRef(start);
+  const endRef = useRef(end);
+  startRef.current = start;
+  endRef.current = end;
+
+  const leftPct = range > 0 ? ((start - dataMin) / range) * 100 : 0;
+  const rightPct = range > 0 ? ((end - dataMin) / range) * 100 : 100;
+
+  const getValueFromPointer = useCallback(
+    (clientX: number) => {
+      const rect = trackRef.current?.getBoundingClientRect();
+      if (!rect) return dataMin;
+      return dataMin + Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * range;
+    },
+    [dataMin, range],
+  );
+
+  const attachDrag = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>, type: "start" | "end") => {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.currentTarget;
+      el.setPointerCapture(e.pointerId);
+      const minGap = range * 0.005;
+      const onMove = (ev: PointerEvent) => {
+        const val = getValueFromPointer(ev.clientX);
+        if (type === "start") {
+          onChange(Math.max(dataMin, Math.min(val, endRef.current - minGap)), endRef.current);
+        } else {
+          onChange(startRef.current, Math.min(dataMax, Math.max(val, startRef.current + minGap)));
+        }
+      };
+      const onUp = () => {
+        el.removeEventListener("pointermove", onMove);
+        el.removeEventListener("pointerup", onUp);
+      };
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerup", onUp);
+    },
+    [dataMin, dataMax, range, onChange, getValueFromPointer],
+  );
+
+  const isFullRange = start <= dataMin && end >= dataMax;
+
+  return (
+    <div className="space-y-[6px]">
+      <div ref={trackRef} className="relative h-[20px] mx-[7px] select-none">
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[3px] bg-color-bg-medium rounded-full" />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 h-[3px] bg-color-text-primary/25 rounded-full pointer-events-none"
+          style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
+        />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-[14px] rounded-full bg-color-bg-default border-2 border-color-text-primary/50 cursor-ew-resize hover:border-color-text-primary transition-colors touch-none"
+          style={{ left: `${leftPct}%` }}
+          onPointerDown={(e) => attachDrag(e, "start")}
+        />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-[14px] rounded-full bg-color-bg-default border-2 border-color-text-primary/50 cursor-ew-resize hover:border-color-text-primary transition-colors touch-none"
+          style={{ left: `${rightPct}%` }}
+          onPointerDown={(e) => attachDrag(e, "end")}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-color-text-secondary">
+        <span>{fmtDate(start)}</span>
+        {!isFullRange && (
+          <button
+            onClick={() => onChange(dataMin, dataMax)}
+            className="hover:text-color-text-primary transition-colors"
+          >
+            Reset zoom
+          </button>
+        )}
+        <span>{fmtDate(end)}</span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -491,12 +593,31 @@ export default function ChartCreatorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // GTP loader
-  const [selectedChain, setSelectedChain] = useState("all_l2s");
+  const [selectedChain, setSelectedChain] = useState("ethereum");
   const [selectedMetric, setSelectedMetric] = useState("txcount");
   const [selectedGranularity, setSelectedGranularity] =
     useState<Granularity>("daily");
   const [gtpLoading, setGtpLoading] = useState(false);
   const [gtpError, setGtpError] = useState<string | null>(null);
+
+  const [zoomRange, setZoomRange] = useState<[number, number] | null>(null);
+
+  const dataMinMax = useMemo<[number, number] | null>(() => {
+    const allTs = series
+      .filter((s) => s.visible && s.data.length > 0)
+      .flatMap((s) => s.data.map((p) => p[0]));
+    if (allTs.length === 0) return null;
+    return [Math.min(...allTs), Math.max(...allTs)];
+  }, [series]);
+
+  useEffect(() => {
+    if (!dataMinMax) { setZoomRange(null); return; }
+    setZoomRange((prev) =>
+      prev
+        ? [Math.max(prev[0], dataMinMax[0]), Math.min(prev[1], dataMinMax[1])]
+        : [dataMinMax[0], dataMinMax[1]],
+    );
+  }, [dataMinMax]);
 
   const stack = scale === "stacked" || scale === "percentage";
   const percentageMode = scale === "percentage";
@@ -672,19 +793,32 @@ export default function ChartCreatorPage() {
             <div className="space-y-[10px]">
               <div>
                 <p className="text-xs text-color-text-secondary mb-1">Chain</p>
-                <NativeSelect value={selectedChain} onChange={setSelectedChain}>
-                  {masterData.chains.map((c) => (
-                    <option key={c.key} value={c.key}>{c.name}</option>
-                  ))}
-                </NativeSelect>
+                <GTPDropdown
+                  options={masterData.chains.map((c) => ({
+                    value: c.key,
+                    label: c.name,
+                    icon: `${c.key.replace(/_/g, "-")}-logo-monochrome` as GTPIconName,
+                    iconHighlightStyle: { color: theme === "light" ? c.light[0] : c.dark[0] },
+                  }))}
+                  value={selectedChain}
+                  onChange={(v) => setSelectedChain(v)}
+                  searchable
+                  size="sm"
+                />
               </div>
               <div>
                 <p className="text-xs text-color-text-secondary mb-1">Metric</p>
-                <NativeSelect value={selectedMetric} onChange={setSelectedMetric}>
-                  {masterData.metrics.map((m) => (
-                    <option key={m.key} value={m.key}>{m.name}</option>
-                  ))}
-                </NativeSelect>
+                <GTPDropdown
+                  options={masterData.metrics.map((m) => ({
+                    value: m.key,
+                    label: m.name,
+                    icon: m.icon ? metricIconName(m.icon) : undefined,
+                  }))}
+                  value={selectedMetric}
+                  onChange={(v) => setSelectedMetric(v)}
+                  searchable
+                  size="sm"
+                />
               </div>
               <div>
                 <p className="text-xs text-color-text-secondary mb-1">Granularity</p>
@@ -948,15 +1082,28 @@ export default function ChartCreatorPage() {
                   showTotal={stack && !percentageMode}
                   height={520}
                   className={showLegend ? "mb-[30px]" : "mb-[10px]"}
+                  xAxisMin={zoomRange?.[0]}
+                  xAxisMax={zoomRange?.[1]}
                 />
               </div>
 
-              {/* Scale toggle bar — matches fundamentals chart controls */}
-              <div className="flex items-center justify-between rounded-[18px] bg-color-bg-default px-[15px] py-[10px]">
-                <ScaleToggle value={scale} onChange={setScale} />
-                <p className="text-[10px] text-color-text-secondary">
-                  {chartSeries.length} series
-                </p>
+              {/* Zoom slider + scale toggle */}
+              <div className="rounded-[18px] bg-color-bg-default px-[20px] py-[14px] space-y-[10px]">
+                {dataMinMax && zoomRange && (
+                  <ZoomSlider
+                    dataMin={dataMinMax[0]}
+                    dataMax={dataMinMax[1]}
+                    start={zoomRange[0]}
+                    end={zoomRange[1]}
+                    onChange={(s, e) => setZoomRange([s, e])}
+                  />
+                )}
+                <div className="flex items-center justify-between">
+                  <ScaleToggle value={scale} onChange={setScale} />
+                  <p className="text-[10px] text-color-text-secondary">
+                    {chartSeries.length} series
+                  </p>
+                </div>
               </div>
 
               {/* Series summary table */}

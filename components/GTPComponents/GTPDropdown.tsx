@@ -115,6 +115,7 @@ export interface GTPDropdownOption {
   iconClassName?: string;
   iconContainerClassName?: string;
   iconStyle?: CSSProperties;
+  iconHighlightStyle?: CSSProperties;
 }
 
 export interface GTPDropdownProps {
@@ -323,7 +324,7 @@ export default function GTPDropdown({
       <GTPIcon
         icon={selectedOption.icon}
         size="sm"
-        style={selectedOption.iconStyle}
+        style={selectedOption.iconHighlightStyle ?? selectedOption.iconStyle}
         className={joinClassNames(selectedOption.iconClassName, triggerIconClassName)}
         containerClassName={joinClassNames(selectedOption.iconContainerClassName, "shrink-0", triggerIconClassName)}
       />
@@ -454,7 +455,7 @@ export default function GTPDropdown({
                             <GTPIcon
                               icon={option.icon}
                               size="sm"
-                              style={option.iconStyle}
+                              style={(isHighlighted || isSelected) && option.iconHighlightStyle ? option.iconHighlightStyle : option.iconStyle}
                               className={joinClassNames(optionSizeStyles.iconClassName, option.iconClassName)}
                               containerClassName={joinClassNames(
                                 optionSizeStyles.iconClassName,
