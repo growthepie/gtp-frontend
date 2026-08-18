@@ -947,7 +947,7 @@ export default function ChartCreatorPage() {
                   limitTooltipRows={10}
                   showTotal={stack && !percentageMode}
                   height={520}
-                  className={showLegend && !stack ? "mb-[30px]" : "mb-[10px]"}
+                  className={showLegend ? "mb-[30px]" : "mb-[10px]"}
                 />
               </div>
 
