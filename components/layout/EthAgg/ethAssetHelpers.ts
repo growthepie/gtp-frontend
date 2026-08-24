@@ -35,6 +35,13 @@ export const formatRatePercent = (rate: number | null | undefined): string | nul
 export const WORLD_BANK_POPULATION_URL =
   "https://api.worldbank.org/v2/country/WLD/indicator/SP.POP.TOTL?format=json&mrv=2";
 
+const SIMULATION_SWR_OPTIONS = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  refreshInterval: 0,
+  shouldRetryOnError: false,
+} as const;
+
 // Random-walk parameters for the simulated price. Volatility is per tick, and
 // mean reversion pulls the walk back toward the live anchor so it wanders
 // without drifting away from reality.
@@ -111,6 +118,7 @@ export const useProjectedPopulation = (nowMs: number | null) => {
   const { data } = useSWR<[unknown, WorldBankObservation[]]>(
     WORLD_BANK_POPULATION_URL,
     worldBankFetcher,
+    SIMULATION_SWR_OPTIONS,
   );
 
   const baseline = useMemo(() => {
@@ -256,6 +264,65 @@ export const ETH_AS_ASSET: SimulatedAsset = {
   peoplePerUnitDecimals: 12,
 };
 
+// --- Staked ETH ---
+//
+// Seeded constants. growthepie's supply endpoint publishes net issuance for the
+// whole network, not the staking reward, so the yield below is invented and the
+// staked balance is projected forward from a seeded baseline like everything
+// else on this tab.
+
+/**
+ * Simulated consensus- plus execution-layer reward, annualised, as a fraction
+ * of the amount staked.
+ */
+export const ETH_STAKING_YIELD = 0.029;
+
+export const STAKED_ETH_BASE = 36_000_000;
+export const STAKED_ETH_BASE_TIME = Date.UTC(2026, 7, 1);
+
+/**
+ * Staked ETH as a list entry. Its issuance is negative: a staker earns the
+ * yield while the supply they are measured against grows at the network's
+ * issuance rate, and the yield is by far the larger of the two — see
+ * stakedEthIssuanceRate. Price fields stay at zero because staked ETH is ETH
+ * and the card never quotes it separately.
+ */
+export const STAKED_ETH_AS_ASSET: SimulatedAsset = {
+  key: "steth",
+  name: "stETH",
+  color: "#627EEA",
+  unit: "ETH",
+  priceAnchor: 0,
+  priceVolatility: 0,
+  supplyBase: STAKED_ETH_BASE,
+  supplyBaseTime: STAKED_ETH_BASE_TIME,
+  supplyAnnualRate: ETH_STAKING_YIELD,
+  supplyDecimals: 2,
+  perPersonDecimals: 14,
+  peoplePerUnitDecimals: 12,
+};
+
+/**
+ * How fast a staked balance dilutes: the network's issuance rate minus the
+ * staking yield. Only a minority of the supply is staked, so the yield paid to
+ * stakers exceeds the issuance spread across every holder, and the result comes
+ * out negative — staked ETH gains on ETH rather than losing to it.
+ */
+export const stakedEthIssuanceRate = (ethIssuanceRate: number | null | undefined): number | null => {
+  if (ethIssuanceRate === null || ethIssuanceRate === undefined || !Number.isFinite(ethIssuanceRate)) {
+    return null;
+  }
+  return ethIssuanceRate - ETH_STAKING_YIELD;
+};
+
+/** Amount staked, projected forward at the simulated yield. */
+export const useProjectedStakedSupply = (nowMs: number | null): number | null =>
+  useMemo(
+    () =>
+      projectForward(STAKED_ETH_BASE, STAKED_ETH_BASE_TIME, roundRate(ETH_STAKING_YIELD), nowMs),
+    [nowMs],
+  );
+
 export const SIMULATED_ASSETS: SimulatedAsset[] = [
   {
     key: "btc",
@@ -278,13 +345,12 @@ export const SIMULATED_ASSETS: SimulatedAsset[] = [
     unit: "SOL",
     priceAnchor: 180,
     priceVolatility: 0.0011,
-    supplyBase: 605_000_000,
+    supplyBase: 627_527_435,
     supplyBaseTime: Date.UTC(2026, 7, 1),
-    // Seeded estimate, gross of the burn. Solana's emission schedule starts at
-    // 8% and disinflates 15% a year toward a 1.5% floor, which puts 2026 at
-    // roughly 3.5%. Half of each base fee is burned, so true net issuance is
-    // lower than this — unlike ETH's rate, nothing here derives it.
-    supplyAnnualRate: 0.035,
+    // June 2026 schedule estimate, gross of the burn. The large simulations
+    // taper this rate by 15% each year toward Solana's 1.5% terminal floor.
+    // Half of each base fee is burned, so true net issuance is slightly lower.
+    supplyAnnualRate: 0.0382,
     supplyDecimals: 2,
     perPersonDecimals: 12,
     peoplePerUnitDecimals: 12,
