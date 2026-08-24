@@ -489,8 +489,11 @@ function ZoomSlider({
   const range = dataMax - dataMin;
   const startRef = useRef(start);
   const endRef = useRef(end);
-  startRef.current = start;
-  endRef.current = end;
+
+  useEffect(() => {
+    startRef.current = start;
+    endRef.current = end;
+  }, [start, end]);
 
   const leftPct = range > 0 ? ((start - dataMin) / range) * 100 : 0;
   const rightPct = range > 0 ? ((end - dataMin) / range) * 100 : 100;
