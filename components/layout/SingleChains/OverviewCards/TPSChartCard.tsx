@@ -56,6 +56,16 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
     });
   };
 
+  const storedAth = chainData.ath;
+  const dailyHigh = chainData["24h_high"];
+  const useDailyHighAsAth =
+    typeof dailyHigh === "number" &&
+    (typeof storedAth !== "number" || dailyHigh > storedAth);
+  const displayedAth = useDailyHighAsAth ? dailyHigh : storedAth;
+  const displayedAthTimestamp = useDailyHighAsAth
+    ? chainData["24h_high_timestamp"]
+    : chainData.ath_timestamp;
+
 
   return (
     <div className="bg-color-bg-default xs:p-[10px] p-[15px] rounded-[15px] w-full flex flex-col gap-y-[10px] min-h-[146px]">
@@ -84,10 +94,10 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
                   </div>
             </div>
             <div className="flex flex-col gap-y-[2px] group md:mx-auto">
-                  <div className="heading-small-xs numbers-sm">{formatTps(chainData.ath)} TPS</div>
+                  <div className="heading-small-xs numbers-sm">{formatTps(displayedAth)} TPS</div>
                   <div className="relative min-w-[80px]">
                       <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">All-Time High</div>
-                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{dayjs.utc(chainData["ath_timestamp"]).format("D/M/YYYY HH:mm [UTC]")}</div>
+                      <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{dayjs.utc(displayedAthTimestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
                   </div>
             </div>
            </div>
