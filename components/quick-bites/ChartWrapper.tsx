@@ -40,6 +40,9 @@ import type { AxisLabelsFormatterContextObject } from 'highcharts';
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3"
 import { getCssVarAsRgb } from "@/lib/echarts-utils";
+import { IS_PRODUCTION } from "@/lib/helpers";
+import { useChartReplay } from "@/hooks/useChartReplay";
+import ChartReplayButton from "@/components/GTPComponents/ChartReplayButton";
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
@@ -971,6 +974,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     // Add other timespans as needed
   };
   const selectedTimespan = 'all';
+  const replayXMax = useMemo(() => {
+    let max: number | undefined;
+    gtpSeries.forEach((series) => {
+      series.data.forEach(([timestamp]) => {
+        const value = Number(timestamp);
+        if (Number.isFinite(value) && (max === undefined || value > max)) max = value;
+      });
+    });
+    return max;
+  }, [gtpSeries]);
+  const chartReplay = useChartReplay("max", gtpXAxisMin, replayXMax);
 
   // Initialize Highcharts modules
   useEffect(() => {
@@ -2101,6 +2115,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               reverseTooltipOrder={false}
               height="100%"
               showWatermark={false}
+              revealProgress={chartReplay.revealProgress}
             />
           </div>
         ) : renderWithScatterEChart ? (
@@ -2596,7 +2611,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </div>
           </div>
         )}
-        <div className="absolute bottom-[27.5%] md:bottom-[18.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  "
+        {/* Keep the watermark above GTPChart's z-3 area/bar replay mask so it remains
+            continuously visible during playback, while staying below chart controls. */}
+        <div className="absolute bottom-[27.5%] md:bottom-[18.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-[4] opacity-40  "
           style={{
             height: typeof height === "number" ? (height - 147) + "px" : "100%"
           }}
@@ -2685,6 +2702,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   disabled={isDownloadingChartSnapshot}
                   clickHandler={handleDownloadChartSnapshot}
                 />
+                {!IS_PRODUCTION && renderWithGTPChart && showXAsDate && (
+                  <ChartReplayButton
+                    isReplaying={chartReplay.isReplaying}
+                    disabled={typeof gtpXAxisMin !== "number" || typeof replayXMax !== "number"}
+                    onPlay={chartReplay.play}
+                    onStop={chartReplay.stop}
+                  />
+                )}
               </GTPButtonRow>
             </div>
           </GTPButtonContainer>

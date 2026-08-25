@@ -26,6 +26,7 @@ import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { normalizeString } from "@/lib/searchNormalize";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { getTimeseriesChartRevealDurationMs } from "@/lib/chart-animation";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -1094,27 +1095,22 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
         if (typeof xMin !== "number" || typeof xMax !== "number" || xMax <= xMin) return;
         if (replayFrameRef.current !== null) cancelAnimationFrame(replayFrameRef.current);
 
-        // Pace by data density — wider timespans take longer. Use the densest visible series
-        // so sparse chains don't shrink the duration. Hourly ticks faster than daily.
-        let pointCount = 0;
-        for (const s of visibleSeries) {
-            let n = 0;
-            for (const [ts] of s.data) {
-                if (ts < xMin || ts > xMax) continue;
-                n++;
-            }
-            if (n > pointCount) pointCount = n;
-        }
-        const isHourly = timeInterval === "hourly";
-        const msPerPoint = isHourly ? 50 : 100;
-        const minMs = isHourly ? 3000 : 5000;
-        const duration = Math.max(minMs, Math.min(30000, pointCount * msPerPoint));
+        const replayDurationMs = getTimeseriesChartRevealDurationMs(
+            selectedTimespan,
+            xMax - xMin,
+        );
 
         setReplayProgress(0);
         const startWall = performance.now();
         const step = (now: number) => {
             if (replayFrameRef.current === null) return;
-            const t = Math.max(0, Math.min((now - startWall) / duration, 1));
+            const t = Math.max(
+                0,
+                Math.min(
+                    (now - startWall) / replayDurationMs,
+                    1,
+                ),
+            );
             setReplayProgress(t);
             if (t < 1) {
                 replayFrameRef.current = requestAnimationFrame(step);
@@ -1125,7 +1121,7 @@ const AppMetricChart = ({ data, owner_project, projectMetadata, metric, metric_d
             }
         };
         replayFrameRef.current = requestAnimationFrame(step);
-    }, [xMin, xMax, visibleSeries, timeInterval]);
+    }, [xMin, xMax, selectedTimespan]);
 
     // Cancel any in-flight replay when the viewing window or data shape changes
     useEffect(() => {

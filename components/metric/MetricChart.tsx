@@ -40,6 +40,7 @@ type MetricChartProps = {
    *  whenever the bottom bar sits under the chart, even when a wide viewport is narrowed
    *  by the sidebar. */
   isStacked?: boolean;
+  revealProgress?: number | null;
 };
 
 const getSeriesType = (
@@ -51,7 +52,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false, revealProgress = null }: MetricChartProps) {
   const { data: master } = useMaster();
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [showUsd] = useLocalStorage("showUsd", true);
@@ -258,6 +259,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
     <div className="">
         <GTPChart
           series={chartSeries}
+          revealProgress={revealProgress}
           stack={effectiveSelectedScale === "stacked"}
           percentageMode={effectiveSelectedScale === "percentage"}
           

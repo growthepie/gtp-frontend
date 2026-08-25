@@ -2808,6 +2808,7 @@ export default function GTPChart({
     tooltipTitle,
     xAxisTooltipLabelFormatter,
     showTotal,
+    showTooltipTimestamp,
     reverseTooltipOrder,
     limitTooltipRows,
     xAxisType,

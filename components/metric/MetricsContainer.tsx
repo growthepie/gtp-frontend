@@ -41,6 +41,9 @@ import {
     SINCE_LAUNCH_TOOLTIP_BY_INTERVAL,
     SINCE_LAUNCH_UNIT_BY_INTERVAL,
 } from "./launchDate";
+import { IS_PRODUCTION } from "@/lib/helpers";
+import { useChartReplay } from "@/hooks/useChartReplay";
+import ChartReplayButton from "../GTPComponents/ChartReplayButton";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -163,6 +166,10 @@ export default function MetricsContainer({
     const sinceLaunchUnit = SINCE_LAUNCH_UNIT_BY_INTERVAL[sinceLaunchInterval];
     const sinceLaunchUnitLabel = sinceLaunchUnit.charAt(0).toUpperCase() + sinceLaunchUnit.slice(1);
     const effectiveSelectedScale = isSinceLaunch ? "absolute" : selectedScale;
+    const replayTimespan = timespans[selectedTimespan] ?? timespans.max;
+    const replayXMin = selectedRange?.[0] ?? replayTimespan?.xMin;
+    const replayXMax = selectedRange?.[1] ?? replayTimespan?.xMax;
+    const chartReplay = useChartReplay(selectedTimespan, replayXMin, replayXMax);
 
     const { data: master, DefaultChainSelection } = useMaster();
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
@@ -837,6 +844,14 @@ export default function MetricsContainer({
                             disabled={!metricData}
                             clickHandler={handleDownloadSelectedChartData}
                         />
+                        {!IS_PRODUCTION && (
+                            <ChartReplayButton
+                                isReplaying={chartReplay.isReplaying}
+                                disabled={typeof replayXMin !== "number" || typeof replayXMax !== "number"}
+                                onPlay={chartReplay.play}
+                                onStop={chartReplay.stop}
+                            />
+                        )}
                      
                     </GTPButtonRow>
                    
@@ -919,7 +934,7 @@ export default function MetricsContainer({
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type={metric_type} suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} />
+                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type={metric_type} suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} revealProgress={chartReplay.revealProgress} />
                     </div>
                 }
             />

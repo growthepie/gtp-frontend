@@ -28,6 +28,7 @@ import { metricItems } from "@/lib/metrics";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { chain, size } from "lodash";
 import { useTheme } from "next-themes";
+import { CHART_REVEAL_DURATION_MS } from "@/lib/chart-animation";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -36,7 +37,6 @@ const EMPTY_OPTIONS: EventOption[] = [];
 // the reveal effect in LandingEventsChartContent), while an app-tile topic staggers
 // its tiles across TILES_REVEAL_DURATION_MS (see LandingEventsCardContent) — the
 // tiles get the longer window because the stagger has to read as one tile at a time.
-const CHART_REVEAL_DURATION_MS = 500;
 const TILES_REVEAL_DURATION_MS = 1000;
 // Duration of one tile's fade — must match the `fadeIn` animation in tailwind.config.js.
 const TILE_FADE_MS = 300;
@@ -946,9 +946,11 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
     let frame: number | null = null;
+    // Must run before paint so the completed chart cannot flash before the reveal overlay appears.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRevealProgress(0);
     // Start the clock on the first frame rather than here: a background tab
-    // suspends rAF, and timing from effect-run would burn the whole 2s while
+    // suspends rAF, and timing from effect-run would burn the whole animation while
     // hidden and snap straight to the finished chart when the tab is focused.
     let startWall: number | null = null;
     const step = (now: number) => {
