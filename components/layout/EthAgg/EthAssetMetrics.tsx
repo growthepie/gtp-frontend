@@ -1401,6 +1401,348 @@ const DilutionSimulation = ({ nowMs }: { nowMs: number | null }) => {
   );
 };
 
+// --- Focused vertical dilution experiment ---
+
+const VERTICAL_DILUTION_KEYS = new Set(["eth", "gold", "usd"]);
+
+const VerticalDilutionSimulation = ({
+  nowMs,
+  mode = "columns",
+}: {
+  nowMs: number | null;
+  mode?: "columns" | "dots";
+}) => {
+  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const elapsedRef = useRef(0);
+  const {
+    supply: ethSupply,
+    annualRate: ethAnnualRate,
+    supplyHistory: ethSupplyHistory,
+  } = useProjectedSupply(nowMs);
+  const assetSupplies = useSimulatedAssetSupplies(nowMs);
+  const m2Growth = useM2Growth();
+  const simulationNow = nowMs ?? STAKED_ETH_BASE_TIME;
+
+  useEffect(() => {
+    let animationFrame = 0;
+    let previousTimestamp: number | null = null;
+
+    const animate = (timestamp: number) => {
+      if (previousTimestamp !== null && !isPaused) {
+        elapsedRef.current =
+          (elapsedRef.current + timestamp - previousTimestamp) % SIMULATION_LOOP_MS;
+        setProgress(Math.min(elapsedRef.current / SIMULATION_DURATION_MS, 1));
+      }
+      previousTimestamp = timestamp;
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isPaused]);
+
+  const setSimulationProgress = (nextProgress: number) => {
+    const clampedProgress = Math.min(Math.max(nextProgress, 0), 1);
+    elapsedRef.current = clampedProgress * SIMULATION_DURATION_MS;
+    setProgress(clampedProgress);
+  };
+
+  const seekSimulation = (event: React.MouseEvent<HTMLDivElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    setSimulationProgress((event.clientX - bounds.left) / bounds.width);
+  };
+
+  const simulatedYear = SIMULATION_START_YEAR + progress * SIMULATION_YEARS;
+  const calendarYear = toDecimalYear(simulationNow + simulatedYear * MS_PER_YEAR);
+  const goldAsset = SIMULATED_ASSETS.find((asset) => asset.key === "gold");
+  const usdAsset = SIMULATED_ASSETS.find((asset) => asset.key === "usd");
+
+  const columns = [ETH_AS_ASSET, goldAsset, usdAsset]
+    .filter((asset): asset is SimulatedAsset => Boolean(asset) && VERTICAL_DILUTION_KEYS.has(asset.key))
+    .map((asset) => {
+      const currentSupply =
+        asset.key === "eth"
+          ? ethSupply
+          : asset.key === "usd"
+            ? m2Growth?.supply ?? assetSupplies[asset.key]
+            : assetSupplies[asset.key];
+      const annualRate =
+        asset.key === "eth"
+          ? ethAnnualRate ?? 0
+          : asset.key === "usd"
+            ? m2Growth?.annualRate ?? asset.supplyAnnualRate
+            : asset.supplyAnnualRate;
+
+      const projectSupply = (years: number) => {
+        if (!currentSupply) return null;
+        const targetTime = simulationNow + years * MS_PER_YEAR;
+        if (years < 0 && asset.key === "eth") {
+          return valueAtTimestamp(ethSupplyHistory, targetTime);
+        }
+        if (years < 0 && asset.key === "gold") {
+          return interpolateHistoricalAnchor(
+            GOLD_HISTORY_START,
+            GOLD_2016_SUPPLY_OZ,
+            currentSupply,
+            targetTime,
+            simulationNow,
+          );
+        }
+        if (years < 0 && asset.key === "usd" && m2Growth?.history) {
+          return valueAtTimestamp(m2Growth.history, targetTime);
+        }
+        if (asset.key === "usd") return currentSupply * (1 + annualRate) ** years;
+        return currentSupply * (1 + annualRate * years);
+      };
+
+      const startSupply = projectSupply(SIMULATION_START_YEAR);
+      const projectedSupply = projectSupply(simulatedYear);
+      const endSupply = projectSupply(SIMULATION_END_YEAR);
+      const index = startSupply && projectedSupply ? (projectedSupply / startSupply) * 100 : null;
+      const endIndex = startSupply && endSupply ? (endSupply / startSupply) * 100 : null;
+
+      return { asset, index, endIndex };
+    });
+
+  const scaleMax = Math.max(120, ...columns.map(({ endIndex }) => endIndex ?? 100));
+  const scaleMin = Math.min(95, ...columns.map(({ endIndex }) => endIndex ?? 100));
+  const scaleRange = Math.max(scaleMax - scaleMin, 1);
+  const baselinePosition = ((100 - scaleMin) / scaleRange) * 100;
+  const usesDots = mode === "dots";
+
+  return (
+    <section className="col-span-3 min-h-[640px] rounded-[15px] bg-color-bg-default px-[20px] md:px-[30px] pt-[30px] pb-[24px] flex flex-col overflow-hidden relative">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-[15px]">
+        <div>
+          <div className="flex items-center gap-x-[8px]">
+            <h2 className="heading-large-lg">
+              {usesDots ? "Dilution, Dot by Dot" : "Dilution, Standing Up"}
+            </h2>
+            <SimulatedBadge />
+          </div>
+          <p className="text-sm text-color-text-secondary mt-[5px] max-w-[680px]">
+            {usesDots
+              ? "ETH, Gold, and USD begin at 100 five years ago. Every dot is one percentage point of cumulative supply change: dilution falls from the top into a spaced stack, while contraction rises."
+              : "ETH, Gold, and USD begin at the same index of 100 five years ago. Each column rises or falls with supply, making cumulative dilution comparable without mixing native units."}
+          </p>
+        </div>
+        <div className="flex items-baseline gap-x-[8px] md:text-right">
+          <div className="numbers-2xl tabular-nums">{calendarYear.toFixed(1)}</div>
+          <div className="heading-small-xs text-color-text-secondary">
+            {simulatedYear >= 0 ? "+" : ""}{simulatedYear.toFixed(1)} years from today
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-[390px] mt-[24px] flex">
+        <div
+          className={`w-[42px] md:w-[60px] shrink-0 relative ${
+            usesDots ? "mb-[88px]" : "mb-[54px]"
+          } heading-small-xxxs text-color-text-secondary tabular-nums`}
+        >
+          <span className="absolute right-[10px] top-0 translate-y-[-50%]">{scaleMax.toFixed(0)}</span>
+          <span
+            className="absolute right-[10px] translate-y-1/2"
+            style={{ bottom: `${baselinePosition}%` }}
+          >
+            100
+          </span>
+          <span className="absolute right-[10px] bottom-0 translate-y-1/2">{scaleMin.toFixed(0)}</span>
+        </div>
+
+        <div className={`relative flex-1 ${usesDots ? "mb-[88px]" : "mb-[54px]"}`}>
+          <div className="absolute inset-x-0 top-0 border-t border-dashed border-color-border" />
+          <div
+            className="absolute inset-x-0 border-t border-color-text-secondary/50"
+            style={{ bottom: `${baselinePosition}%` }}
+          />
+          <div className="absolute inset-x-0 bottom-0 border-t border-dashed border-color-border" />
+
+          <div className="absolute inset-0 grid grid-cols-3 gap-[16px] md:gap-[48px] px-[8px] md:px-[36px]">
+            {columns.map(({ asset, index }) => {
+              const normalizedIndex = index ?? 100;
+              const isAboveBaseline = normalizedIndex >= 100;
+              const change = normalizedIndex - 100;
+              const changeHeight = (Math.abs(change) / scaleRange) * 100;
+              const dotCount = Math.ceil(Math.abs(change));
+
+              return (
+                <div key={asset.key} className="relative h-full flex justify-center">
+                  {usesDots ? (
+                    <div className="absolute inset-0">
+                      {Array.from({ length: dotCount }, (_, dotIndex) => {
+                        const dotProgress = Math.min(
+                          Math.max(Math.abs(change) - dotIndex, 0),
+                          1,
+                        );
+                        const storageColumn = dotIndex % 5;
+                        const storageRow = Math.floor(dotIndex / 5);
+                        const crossLaneOffset = (storageColumn - 2) * 13;
+                        // Positive dilution behaves like weight: dots enter at
+                        // the top and settle into a non-overlapping grid at the
+                        // bottom. Contraction retains the inverse upward move.
+                        const startPosition = isAboveBaseline ? 96 : baselinePosition;
+                        const destination = isAboveBaseline ? 6 : 94;
+                        const storageOffset =
+                          (isAboveBaseline ? storageRow * 13 : -storageRow * 13) * dotProgress;
+                        const dotPosition =
+                          startPosition + (destination - startPosition) * dotProgress;
+
+                        return (
+                          <div
+                            key={dotIndex}
+                            className="absolute left-1/2 size-[9px] md:size-[11px] rounded-full border border-color-bg-default shadow-sm transition-[bottom,opacity,transform] duration-100 ease-linear"
+                            style={{
+                              backgroundColor: asset.color,
+                              bottom: `calc(${dotPosition}% + ${storageOffset}px)`,
+                              opacity: dotProgress > 0 ? 1 : 0,
+                              transform: `translate(calc(-50% + ${crossLaneOffset}px), 50%)`,
+                            }}
+                          />
+                        );
+                      })}
+                      {dotCount === 0 && (
+                        <div
+                          className="absolute left-1/2 size-[9px] md:size-[11px] rounded-full border border-color-bg-default shadow-sm"
+                          style={{
+                            backgroundColor: asset.color,
+                            bottom: `${baselinePosition}%`,
+                            transform: "translate(-50%, 50%)",
+                          }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className="absolute w-full max-w-[150px] rounded-t-[18px] md:rounded-t-[28px] overflow-hidden transition-[height,bottom] duration-100 ease-linear"
+                      style={{
+                        backgroundColor: asset.color,
+                        height: `${Math.max(changeHeight, 0.7)}%`,
+                        bottom: isAboveBaseline ? `${baselinePosition}%` : `${baselinePosition - changeHeight}%`,
+                        borderRadius: isAboveBaseline ? undefined : "0 0 28px 28px",
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-white/15 to-black/10" />
+                      <div className="absolute left-[12%] right-[12%] top-[8px] h-[8px] rounded-full bg-white/20" />
+                    </div>
+                  )}
+
+                  {!usesDots && (
+                    <div
+                      className="absolute flex flex-col items-center transition-[bottom] duration-100 ease-linear"
+                      style={{
+                        bottom: `${Math.min(
+                          Math.max(
+                            isAboveBaseline
+                              ? baselinePosition + changeHeight
+                              : baselinePosition - changeHeight,
+                            0,
+                          ),
+                          100,
+                        )}%`,
+                        transform: isAboveBaseline
+                          ? "translateY(-8px)"
+                          : "translateY(calc(100% + 8px))",
+                      }}
+                    >
+                      <div className="numbers-lg md:numbers-xl tabular-nums whitespace-nowrap">
+                        {normalizedIndex.toFixed(1)}
+                      </div>
+                      <div
+                        className={`heading-small-xxs tabular-nums whitespace-nowrap ${
+                          change > 0
+                            ? "text-color-negative"
+                            : change < 0
+                              ? "text-color-positive"
+                              : "text-color-text-secondary"
+                        }`}
+                      >
+                        {change >= 0 ? "+" : "−"}{formatSimulationChange(change)}%
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute top-full pt-[14px] flex flex-col items-center gap-y-[4px]">
+                    <div className="size-[10px] rounded-full" style={{ backgroundColor: asset.color }} />
+                    <div className="heading-small-xs">{asset.name}</div>
+                    {usesDots && (
+                      <>
+                        <div className="numbers-sm tabular-nums whitespace-nowrap">
+                          {normalizedIndex.toFixed(1)}
+                        </div>
+                        <div
+                          className={`heading-small-xxs tabular-nums whitespace-nowrap ${
+                            change > 0
+                              ? "text-color-negative"
+                              : change < 0
+                                ? "text-color-positive"
+                                : "text-color-text-secondary"
+                          }`}
+                        >
+                          {change >= 0 ? "+" : "−"}{formatSimulationChange(change)}%
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-[10px] flex items-end gap-x-[12px]">
+        <button
+          type="button"
+          onClick={() => setIsPaused((paused) => !paused)}
+          className="size-[30px] shrink-0 translate-y-[11px] rounded-full bg-color-bg-medium hover:bg-color-ui-hover transition-colors flex items-center justify-center"
+          aria-label={
+            isPaused
+              ? `Play vertical dilution ${mode} simulation`
+              : `Pause vertical dilution ${mode} simulation`
+          }
+        >
+          <GTPIcon
+            icon={(isPaused ? "feather:play" : "feather:pause") as Parameters<typeof GTPIcon>[0]["icon"]}
+            size="sm"
+          />
+        </button>
+        <div className="flex-1">
+          <div className="relative heading-small-xxs text-color-text-secondary mb-[8px] h-[14px]">
+            <span className="absolute left-0">5 years ago</span>
+            <span className="absolute left-1/3 -translate-x-1/2">Today</span>
+            <span className="absolute right-0">10 years ahead</span>
+          </div>
+          <div
+            className="relative h-[8px] rounded-full bg-color-bg-medium cursor-pointer overflow-visible"
+            onClick={seekSimulation}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                event.preventDefault();
+                setSimulationProgress(
+                  progress + (event.key === "ArrowRight" ? 1 / SIMULATION_YEARS : -1 / SIMULATION_YEARS),
+                );
+              }
+            }}
+            role="slider"
+            tabIndex={0}
+            aria-label={`Vertical dilution ${mode} simulation year`}
+            aria-valuemin={SIMULATION_START_YEAR}
+            aria-valuemax={SIMULATION_END_YEAR}
+            aria-valuenow={Math.round(simulatedYear)}
+          >
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-color-accent-petrol to-color-accent-turquoise pointer-events-none"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // --- Layout ---
 
 type CardKey = "price" | "supply" | "per-person";
@@ -1435,6 +1777,8 @@ const EthAssetMetrics = () => {
         </div>
         <AssetsPerPersonSimulation nowMs={nowMs} />
         <DilutionSimulation nowMs={nowMs} />
+        <VerticalDilutionSimulation nowMs={nowMs} />
+        <VerticalDilutionSimulation nowMs={nowMs} mode="dots" />
       </div>
     </Container>
   );
