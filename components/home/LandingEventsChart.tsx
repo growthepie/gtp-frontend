@@ -26,6 +26,7 @@ import { Carousel } from "@/components/Carousel";
 import { MasterProvider, useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import LoadingAnimation from "../layout/LoadingAnimation";
 import { chain, size } from "lodash";
 import { useTheme } from "next-themes";
 import { CHART_REVEAL_DURATION_MS } from "@/lib/chart-animation";
@@ -40,6 +41,10 @@ const EMPTY_OPTIONS: EventOption[] = [];
 const TILES_REVEAL_DURATION_MS = 1000;
 // Duration of one tile's fade — must match the `fadeIn` animation in tailwind.config.js.
 const TILE_FADE_MS = 300;
+// How long a topic's data may take to arrive before the loading animation shows.
+// Short enough to cover a slow connection, long enough that a fast one never
+// sees the loader at all.
+const LOADER_DELAY_MS = 200;
 
 const CARD_COLLAPSED_H = 54;
 const CARD_GAP = 10;
@@ -860,7 +865,22 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
     ? options.find((option) => option.id === activeOptionId) ?? options[0]
     : null;
   const activeDataSource = activeOption?.dataSource;
-  const { data: activeSourceData } = useSWR(activeDataSource?.url ?? null);
+  const { data: activeSourceData, isLoading: isLoadingChartData } = useSWR(
+    activeDataSource?.url ?? null,
+  );
+
+  // Hold the loader back for a beat so a fast connection — where the fetch
+  // resolves in well under this — goes straight to the chart instead of
+  // flashing the animation for a frame or two.
+  const [showChartLoader, setShowChartLoader] = useState(false);
+  useEffect(() => {
+    if (!isLoadingChartData) {
+      setShowChartLoader(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowChartLoader(true), LOADER_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isLoadingChartData]);
 
   const selectedSeries = useMemo(() => {
     if (activeOption?.series?.length) {
@@ -994,7 +1014,9 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
       ? activeSeries.length === 0
         ? "Select series to show data"
         : "No data available"
-      : "Loading chart data..."
+      : showChartLoader
+        ? "" // the loading animation stands in for the message
+        : "Loading chart data..."
     : selectedSeries.length === 0
       ? "No chart data available"
       : activeSeries.length === 0
@@ -1171,12 +1193,26 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
           {/* reveal: pointer events are off during the wipe so tooltips and
               drag-select don't fire on not-yet-revealed regions. */}
           <div
-            className="flex-1 min-h-0 w-full pt-[15px] pb-[30px]  -overflow-hidden"
+            className="relative flex-1 min-h-0 w-full pt-[15px] pb-[30px]  -overflow-hidden"
             style={{ pointerEvents: isRevealing ? "none" : undefined }}
           >
+            {/* A topic's series arrive over SWR. On a slow connection that left
+                the card looking empty — only a small "Loading chart data…" line
+                sat in the plot — so the growthepie loader stands in until the
+                first response lands, and the reveal wipe takes over from there. */}
+            {showChartLoader && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                <div className="scale-75">
+                  <LoadingAnimation />
+                </div>
+              </div>
+            )}
             <GTPChart
               series={activeSeries}
               revealProgress={revealProgress}
+              // The loader is the growthepie mark; the watermark is too, so
+              // showing both at once reads as a rendering glitch.
+              showWatermark={!showChartLoader}
               prefix={resolvedValueFormat?.prefix}
               suffix={resolvedValueFormat?.suffix}
               decimals={resolvedValueFormat?.decimals}
