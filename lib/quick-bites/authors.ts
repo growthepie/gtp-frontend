@@ -72,6 +72,26 @@ export function lookupAuthor(opts: { xUsername?: string; name?: string }): Autho
   return undefined;
 }
 
+// Canonical `url` for a Person node in structured data (JSON-LD + microdata).
+// Google's Article/QAPage validators want a `url` on every author, and prefer
+// a professional profile: an explicit `url` on the registry entry wins, then
+// LinkedIn, then the author's X profile (the byline link the site renders),
+// then any other known profile. Returns undefined when nothing is known.
+export function getAuthorUrl(opts: {
+  xUsername?: string;
+  name?: string;
+  profile?: AuthorProfile;
+}): string | undefined {
+  const profile =
+    opts.profile ?? lookupAuthor({ xUsername: opts.xUsername, name: opts.name });
+  if (profile?.url) return profile.url;
+  const linkedin = profile?.sameAs?.find((u) => u.includes("linkedin.com"));
+  if (linkedin) return linkedin;
+  const handle = opts.xUsername ?? profile?.xUsername;
+  if (handle) return `https://x.com/${handle}`;
+  return profile?.sameAs?.[0];
+}
+
 // Founders of growthepie (orbal GmbH). Derived from AUTHORS by filtering on
 // the "Co-founder" job title — single source of truth so adding/removing a
 // co-founder above flows automatically into Organization.founder[] in the

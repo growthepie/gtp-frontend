@@ -14,7 +14,8 @@ import { Fragment } from 'react';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { processAnswer } from '@/lib/answers/articleProcessor';
-import { lookupAuthor } from '@/lib/quick-bites/authors';
+import { getAuthorUrl, lookupAuthor } from '@/lib/quick-bites/authors';
+import { toIsoWithTZ } from '@/lib/quick-bites/seo_helper';
 
 const ANSWER_RE = /^\/answers\/([^/?#]+)\/?$/;
 
@@ -54,6 +55,10 @@ export default async function AnswerRouteStaticShell() {
   // signals across hits within the same day.
   const todayUtcDate = new Date().toISOString().slice(0, 10);
   const todayUtcIso = `${todayUtcDate}T00:00:00Z`;
+  // `qb.date` is authored as a bare YYYY-MM-DD. schema.org DateTime properties
+  // (datePublished / dateCreated) need a time and an explicit time zone —
+  // Search Console flags the bare form as "missing time zone" / invalid.
+  const publishedIso = toIsoWithTZ(qb.date);
 
   // Skip the first prose paragraph in the body section so the accepted answer
   // isn't duplicated immediately below the Question/Answer block.
@@ -87,7 +92,7 @@ export default async function AnswerRouteStaticShell() {
       <article itemScope itemType="https://schema.org/QAPage">
         {/* Page-level freshness — answer pages refresh daily from the API. */}
         <meta itemProp="dateModified" content={todayUtcIso} />
-        {qb.date && <meta itemProp="datePublished" content={qb.date} />}
+        {publishedIso && <meta itemProp="datePublished" content={publishedIso} />}
 
         <div
           itemProp="mainEntity"
@@ -97,7 +102,7 @@ export default async function AnswerRouteStaticShell() {
           <h1 itemProp="name">{qb.title}</h1>
           <meta itemProp="text" content={qb.title} />
           <meta itemProp="answerCount" content="1" />
-          {qb.date && <meta itemProp="dateCreated" content={qb.date} />}
+          {publishedIso && <meta itemProp="dateCreated" content={publishedIso} />}
           <meta itemProp="dateModified" content={todayUtcIso} />
           {qb.author && qb.author.length > 0 && (
             // Visible prose byline so AI extractors that read top-down (not
@@ -111,6 +116,8 @@ export default async function AnswerRouteStaticShell() {
                 const profile = lookupAuthor({ xUsername: a.xUsername, name: a.name });
                 const xUrl = a.xUsername ? `https://x.com/${a.xUsername}` : undefined;
                 const linkedinUrl = profile?.sameAs?.find((u) => u.includes('linkedin.com'));
+                // Person.url is required by Google's QAPage validator.
+                const authorUrl = getAuthorUrl({ xUsername: a.xUsername, name: a.name, profile });
                 const sep =
                   idx < arr.length - 2 ? ', ' : idx === arr.length - 2 ? ' and ' : '';
                 return (
@@ -127,6 +134,7 @@ export default async function AnswerRouteStaticShell() {
                           <span itemProp="jobTitle">{profile.jobTitle}</span>
                         </>
                       )}
+                      {authorUrl && <link itemProp="url" href={authorUrl} />}
                       {xUrl && <link itemProp="sameAs" href={xUrl} />}
                       {linkedinUrl && <link itemProp="sameAs" href={linkedinUrl} />}
                     </span>
@@ -158,13 +166,23 @@ export default async function AnswerRouteStaticShell() {
             >
               <p itemProp="text">{acceptedAnswer}</p>
               <link itemProp="url" href={canonical} />
-              {qb.date && <meta itemProp="dateCreated" content={qb.date} />}
+              {publishedIso && <meta itemProp="dateCreated" content={publishedIso} />}
               <meta itemProp="dateModified" content={todayUtcIso} />
-              {qb.author && qb.author.length > 0 && (
-                <div itemProp="author" itemScope itemType="https://schema.org/Person">
-                  <meta itemProp="name" content={qb.author.map((a) => a.name).join(', ')} />
-                </div>
-              )}
+              {qb.author &&
+                qb.author.map((a) => {
+                  const authorUrl = getAuthorUrl({ xUsername: a.xUsername, name: a.name });
+                  return (
+                    <div
+                      key={a.name}
+                      itemProp="author"
+                      itemScope
+                      itemType="https://schema.org/Person"
+                    >
+                      <meta itemProp="name" content={a.name} />
+                      {authorUrl && <link itemProp="url" href={authorUrl} />}
+                    </div>
+                  );
+                })}
             </div>
           )}
         </div>

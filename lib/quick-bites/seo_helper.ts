@@ -55,7 +55,7 @@ import {
   lookupEntity,
   detectEntitiesInText,
 } from "./registries";
-import { lookupAuthor } from "./authors";
+import { getAuthorUrl, lookupAuthor } from "./authors";
 
 export interface SEOData {
   metaTitle: string;
@@ -162,7 +162,7 @@ export interface GenerateSeoOptions {
 }
 
 // helper: normalize to ISO-8601 WITH timezone
-const toIsoWithTZ = (value?: string | Date): string | undefined => {
+export const toIsoWithTZ = (value?: string | Date): string | undefined => {
   if (!value) return undefined;
 
   // If it's already a Date
@@ -437,7 +437,10 @@ const toAuthors = (data: QuickBiteData): JsonLdAuthor[] =>
       if (profile?.description) node.description = profile.description;
       if (profile?.jobTitle) node.jobTitle = profile.jobTitle;
       if (profile?.image) node.image = profile.image;
-      if (profile?.url) node.url = profile.url;
+      // Google's QAPage/Article rich-result validator wants a `url` on every
+      // Person — resolved centrally (LinkedIn preferred, X as fallback).
+      const authorUrl = getAuthorUrl({ xUsername, name, profile });
+      if (authorUrl) node.url = authorUrl;
       if (sameAs) node.sameAs = sameAs;
       return node;
     })

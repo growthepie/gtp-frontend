@@ -7,10 +7,13 @@
 // Visible UI is still rendered by the React app inside <Providers>; this
 // shell is a parallel SEO surface, not a replacement.
 
+import { Fragment } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { processArticle } from "@/lib/quick-bites/articleProcessor";
 import { formatDate } from "@/lib/utils/formatters";
+import { getAuthorUrl } from "@/lib/quick-bites/authors";
+import { toIsoWithTZ } from "@/lib/quick-bites/seo_helper";
 
 const QUICK_BITE_RE = /^\/quick-bites\/([^/?#]+)\/?$/;
 
@@ -49,6 +52,9 @@ export default async function QuickBiteRouteStaticShell() {
   const { qb, prose, faq } = processed;
   const siteUrl = "https://www.growthepie.com";
   const canonical = `${siteUrl}/quick-bites/${slug}`;
+  // Bare YYYY-MM-DD has no time zone, which Google's structured-data checks
+  // reject for schema.org DateTime properties — normalise to midnight UTC.
+  const publishedIso = toIsoWithTZ(qb.date);
 
   return (
     <div
@@ -80,20 +86,30 @@ export default async function QuickBiteRouteStaticShell() {
           {qb.date && (
             <p>
               Published{" "}
-              <time dateTime={qb.date} itemProp="datePublished">
+              <time dateTime={publishedIso ?? qb.date} itemProp="datePublished">
                 {formatDate(qb.date)}
               </time>
               {qb.author && qb.author.length > 0 && (
                 <>
                   {" "}by{" "}
-                  <span itemProp="author">
-                    {qb.author.map((a, i) => (
-                      <span key={a.xUsername || a.name}>
+                  {qb.author.map((a, i) => {
+                    const xUrl = a.xUsername ? `https://x.com/${a.xUsername}` : undefined;
+                    const authorUrl = getAuthorUrl({ xUsername: a.xUsername, name: a.name });
+                    return (
+                      <Fragment key={a.xUsername || a.name}>
                         {i > 0 && ", "}
-                        {a.name}
-                      </span>
-                    ))}
-                  </span>
+                        <span
+                          itemProp="author"
+                          itemScope
+                          itemType="https://schema.org/Person"
+                        >
+                          <span itemProp="name">{a.name}</span>
+                          {authorUrl && <link itemProp="url" href={authorUrl} />}
+                          {xUrl && <link itemProp="sameAs" href={xUrl} />}
+                        </span>
+                      </Fragment>
+                    );
+                  })}
                 </>
               )}
             </p>
