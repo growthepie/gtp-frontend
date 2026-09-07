@@ -549,6 +549,12 @@ export const EthereumEcosystemTPSCard = React.memo(({
                   </div>
                 </div>`;
             }}
+            // The chart host is only 63px tall and clips its overflow, so a
+            // tooltip confined to it (~95px) gets cut off. Render to the body
+            // so it can leave the chart box, but keep it clamped to the card —
+            // which is tall enough to hold it, and taller still when expanded.
+            confineTooltipToChart={false}
+            tooltipBoundsSelector=".expandable-card-container"
             suffix=" TPS"
             decimals={1}
             height="100%"

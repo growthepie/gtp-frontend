@@ -33,6 +33,7 @@ export const getViewportAwareTooltipLocalPosition = ({
   contentWidth,
   contentHeight,
   hostRect,
+  boundsRect,
   viewportPadding = DEFAULT_TOOLTIP_VIEWPORT_PADDING,
   cursorOffset = DEFAULT_TOOLTIP_CURSOR_OFFSET,
   isTouch = false,
@@ -43,6 +44,11 @@ export const getViewportAwareTooltipLocalPosition = ({
   contentWidth: number;
   contentHeight: number;
   hostRect?: DOMRect | null;
+  /** Containment box the tooltip must stay inside, when it should not be the
+   *  chart host itself — e.g. a short chart sitting in a taller card, where the
+   *  host is too small to hold the tooltip but the card is not. Coordinates are
+   *  still returned relative to `hostRect`. */
+  boundsRect?: DOMRect | null;
   viewportPadding?: number;
   cursorOffset?: number;
   isTouch?: boolean;
@@ -50,6 +56,11 @@ export const getViewportAwareTooltipLocalPosition = ({
 }): [number, number] => {
   const hostLeft = hostRect?.left ?? 0;
   const hostTop = hostRect?.top ?? 0;
+  // The box the tooltip is kept inside: an explicit bounds element when given,
+  // otherwise the chart host.
+  const containRect = boundsRect ?? hostRect;
+  const containLeft = containRect?.left ?? hostLeft;
+  const containTop = containRect?.top ?? hostTop;
   const anchorAbsX = hostLeft + anchorLocalX;
   const anchorAbsY = hostTop + anchorLocalY;
   const viewportWidth = Math.max(typeof window !== "undefined" ? window.innerWidth : contentWidth, 1);
@@ -66,33 +77,34 @@ export const getViewportAwareTooltipLocalPosition = ({
     // inside change as the finger moves — matching iOS Stocks / Robinhood etc.
     //
     // Strict containment: on touch the tooltip must never leave the touched
-    // chart's host — in multi-chart grids anything that spills over a neighbor
-    // reads as a tooltip on the wrong chart. Within the host, bias toward the
-    // visible viewport; when host and viewport conflict, the host wins.
-    const hostRightAbs = hostRect ? hostRect.right : viewportWidth;
-    const hostBottomAbs = hostRect ? hostRect.bottom : viewportHeight;
+    // chart's containment box — in multi-chart grids anything that spills over
+    // a neighbor reads as a tooltip on the wrong chart. Within that box, bias
+    // toward the visible viewport; when box and viewport conflict, the box wins.
+    const hostRightAbs = containRect ? containRect.right : viewportWidth;
+    const hostBottomAbs = containRect ? containRect.bottom : viewportHeight;
 
-    // X: hard host clamp, viewport-biased within it. Only when the tooltip is
-    // wider than the host itself (narrow single-column charts, where there is
-    // no horizontal neighbor to spill onto) fall back to viewport clamping.
+    // X: hard containment clamp, viewport-biased within it. Only when the
+    // tooltip is wider than the box itself (narrow single-column charts, where
+    // there is no horizontal neighbor to spill onto) fall back to viewport
+    // clamping.
     let xAbs = anchorAbsX - contentWidth / 2;
     const hostMaxX = hostRightAbs - contentWidth;
-    if (hostMaxX >= hostLeft) {
-      const biasedMinX = Math.max(hostLeft, viewportPadding);
+    if (hostMaxX >= containLeft) {
+      const biasedMinX = Math.max(containLeft, viewportPadding);
       const biasedMaxX = Math.min(hostMaxX, maxX);
       xAbs = biasedMaxX >= biasedMinX
         ? clamp(xAbs, biasedMinX, biasedMaxX)
-        : clamp(xAbs, hostLeft, hostMaxX);
+        : clamp(xAbs, containLeft, hostMaxX);
     } else {
       xAbs = clamp(xAbs, viewportPadding, maxX);
     }
 
-    // Y: same strict host clamp. When the tooltip is taller than the host, pin
-    // it to the host top — overflow is then unavoidable, but never trade host
-    // containment for viewport containment: that detaches the tooltip from its
-    // chart and lands it on the charts above/below.
+    // Y: same strict clamp. When the tooltip is taller than the box, pin it to
+    // the top — overflow is then unavoidable, but never trade containment for
+    // viewport containment: that detaches the tooltip from its chart and lands
+    // it on the charts above/below.
     const STABLE_TOP_PADDING = 8;
-    const hostMinY = hostTop + STABLE_TOP_PADDING;
+    const hostMinY = containTop + STABLE_TOP_PADDING;
     const hostMaxY = hostBottomAbs - contentHeight;
     let yAbs: number;
     if (hostMaxY >= hostMinY) {
@@ -131,5 +143,22 @@ export const getViewportAwareTooltipLocalPosition = ({
   }
 
   yAbs = clamp(yAbs, viewportPadding, maxY);
+
+  if (boundsRect) {
+    // Keep the tooltip inside the element that owns the chart (e.g. the card a
+    // short sparkline sits in). Prefer flipping above the cursor when there is
+    // no room below inside the bounds — clamping alone would slide the tooltip
+    // up under the pointer. An axis where the tooltip is larger than the bounds
+    // is left to the viewport placement above: no position can satisfy it.
+    const boundsMaxX = boundsRect.right - contentWidth;
+    if (boundsMaxX >= boundsRect.left) xAbs = clamp(xAbs, boundsRect.left, boundsMaxX);
+    const boundsMaxY = boundsRect.bottom - contentHeight;
+    if (boundsMaxY >= boundsRect.top) {
+      const flippedY = anchorAbsY - contentHeight - cursorOffset;
+      if (yAbs > boundsMaxY && flippedY >= boundsRect.top) yAbs = flippedY;
+      yAbs = clamp(yAbs, boundsRect.top, boundsMaxY);
+    }
+  }
+
   return [Math.round(xAbs - hostLeft), Math.round(yAbs - hostTop)];
 };

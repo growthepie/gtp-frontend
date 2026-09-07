@@ -432,6 +432,12 @@ export interface GTPChartProps {
    *  the edges. Set false to fall back to the old behavior (appendToBody on
    *  document.body, unconfined) for a chart that needs the tooltip to overflow. */
   confineTooltipToChart?: boolean;
+  /** CSS selector for an ancestor that the tooltip must stay inside, used with
+   *  confineTooltipToChart={false}: the tooltip escapes the chart's own clipped
+   *  box (too short to hold it) but is still clamped to this element's bounds.
+   *  Resolved with closest() on every placement, so a container that grows —
+   *  an expanding card — is tracked at its current size. */
+  tooltipBoundsSelector?: string;
 }
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -536,6 +542,7 @@ export default function GTPChart({
   decimalPercentage = false,
   syncId,
   confineTooltipToChart = true,
+  tooltipBoundsSelector,
   showLegend = false,
   legendLift = true,
   legendLabels,
@@ -789,12 +796,16 @@ export default function GTPChart({
       const pointY = Array.isArray(point) ? Number(point[1] ?? 0) : 0;
       const contentWidth = Array.isArray(size?.contentSize) ? Number(size.contentSize[0] ?? 0) : 0;
       const contentHeight = Array.isArray(size?.contentSize) ? Number(size.contentSize[1] ?? 0) : 0;
+      const boundsEl = tooltipBoundsSelector
+        ? containerRef.current?.closest(tooltipBoundsSelector)
+        : null;
       return getViewportAwareTooltipLocalPosition({
         anchorLocalX: pointX,
         anchorLocalY: pointY,
         contentWidth,
         contentHeight,
         hostRect: tooltipHostRef.current?.getBoundingClientRect(),
+        boundsRect: boundsEl?.getBoundingClientRect(),
         // On a touch-primary device every pointer is a finger, so always use
         // touch placement there: synthesized mouse events can arrive after the
         // touch session lingers out (late iOS compat bursts, hover emulation
@@ -803,7 +814,7 @@ export default function GTPChart({
         isTouch: isTouchPrimaryDevice || isTouchInteractionRef.current || isTouchSession(),
       });
     },
-    [],
+    [tooltipBoundsSelector],
   );
 
   // Drag-select helpers
