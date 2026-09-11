@@ -21,6 +21,7 @@ import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { useTheme } from "next-themes";
 import { useSSEMetrics } from "./useSSEMetrics";
 import { ToggleSwitch } from "@/components/layout/ToggleSwitch";
+import SupplyDoubling from "./SupplyDoubling";
 import {
   ETH_AS_ASSET,
   ETH_STAKING_YIELD,
@@ -453,6 +454,9 @@ const useProjectedSupply = (nowMs: number | null) => {
       base,
       baseTime,
       annualRate,
+      rateDate: Array.isArray(lastRate) && Number.isFinite(Number(lastRate[0]))
+        ? new Date(Number(lastRate[0]) < 1e12 ? Number(lastRate[0]) * 1000 : Number(lastRate[0])).toISOString().slice(0, 10)
+        : null,
       supplyHistory,
     };
   }, [data, nowMs]);
@@ -1459,7 +1463,7 @@ const VerticalDilutionSimulation = ({
   const usdAsset = SIMULATED_ASSETS.find((asset) => asset.key === "usd");
 
   const columns = [ETH_AS_ASSET, goldAsset, usdAsset]
-    .filter((asset): asset is SimulatedAsset => Boolean(asset) && VERTICAL_DILUTION_KEYS.has(asset.key))
+    .filter((asset): asset is SimulatedAsset => asset !== undefined && VERTICAL_DILUTION_KEYS.has(asset.key))
     .map((asset) => {
       const currentSupply =
         asset.key === "eth"
@@ -1749,6 +1753,7 @@ type CardKey = "price" | "supply" | "per-person";
 
 const EthAssetMetrics = () => {
   const nowMs = useTicker(1000);
+  const { annualRate, rateDate } = useProjectedSupply(null);
   const [expanded, setExpanded] = useState<Record<CardKey, boolean>>({
     price: false,
     supply: false,
@@ -1775,6 +1780,7 @@ const EthAssetMetrics = () => {
             onToggleExpand={() => toggle("per-person")}
           />
         </div>
+        <SupplyDoubling annualRate={annualRate} rateDate={rateDate} />
         <AssetsPerPersonSimulation nowMs={nowMs} />
         <DilutionSimulation nowMs={nowMs} />
         <VerticalDilutionSimulation nowMs={nowMs} />
