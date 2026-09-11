@@ -40,7 +40,6 @@ import type { AxisLabelsFormatterContextObject } from 'highcharts';
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3"
 import { getCssVarAsRgb } from "@/lib/echarts-utils";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { useChartReplay } from "@/hooks/useChartReplay";
 import ChartReplayButton from "@/components/GTPComponents/ChartReplayButton";
 
@@ -2702,7 +2701,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   disabled={isDownloadingChartSnapshot}
                   clickHandler={handleDownloadChartSnapshot}
                 />
-                {!IS_PRODUCTION && renderWithGTPChart && showXAsDate && (
+                {renderWithGTPChart && showXAsDate && (
                   <ChartReplayButton
                     isReplaying={chartReplay.isReplaying}
                     disabled={typeof gtpXAxisMin !== "number" || typeof replayXMax !== "number"}

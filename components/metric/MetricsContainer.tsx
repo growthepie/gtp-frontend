@@ -41,7 +41,6 @@ import {
     SINCE_LAUNCH_TOOLTIP_BY_INTERVAL,
     SINCE_LAUNCH_UNIT_BY_INTERVAL,
 } from "./launchDate";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import { useChartReplay } from "@/hooks/useChartReplay";
 import ChartReplayButton from "../GTPComponents/ChartReplayButton";
 
@@ -844,14 +843,12 @@ export default function MetricsContainer({
                             disabled={!metricData}
                             clickHandler={handleDownloadSelectedChartData}
                         />
-                        {!IS_PRODUCTION && (
-                            <ChartReplayButton
-                                isReplaying={chartReplay.isReplaying}
-                                disabled={typeof replayXMin !== "number" || typeof replayXMax !== "number"}
-                                onPlay={chartReplay.play}
-                                onStop={chartReplay.stop}
-                            />
-                        )}
+                        <ChartReplayButton
+                            isReplaying={chartReplay.isReplaying}
+                            disabled={typeof replayXMin !== "number" || typeof replayXMax !== "number"}
+                            onPlay={chartReplay.play}
+                            onStop={chartReplay.stop}
+                        />
                      
                     </GTPButtonRow>
                    
