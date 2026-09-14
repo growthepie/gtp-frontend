@@ -1,5 +1,7 @@
 import { AccentColor, ACCENT_RGB } from "./colors";
 
+// Micro-trend for a stat tile: 2px line, ~10% area wash, no axes or chrome.
+// Section-level charts that need hover/crosshair use GTPChart instead.
 export default function Sparkline({
   points,
   color,
@@ -21,9 +23,9 @@ export default function Sparkline({
   const rgb = ACCENT_RGB[color];
 
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" style={{ width: "100%", height, display: "block" }}>
-      {fill && <path d={`${d} L${w},${height} L0,${height} Z`} fill={rgb} opacity={0.16} />}
-      <path d={d} fill="none" stroke={rgb} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+    <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" style={{ width: "100%", height, display: "block" }} aria-hidden="true">
+      {fill && <path d={`${d} L${w},${height} L0,${height} Z`} fill={rgb} opacity={0.1} />}
+      <path d={d} fill="none" stroke={rgb} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }

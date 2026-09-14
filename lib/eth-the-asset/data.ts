@@ -14,6 +14,10 @@ export interface EthSupplySnapshot {
   annualIssuanceRateFraction: number;
   /** Issued ETH per week implied by the current annualized rate, for the supply bathtub. */
   weeklyIssuanceEth: number;
+  /** Timestamps of the most recent daily points, for charts that need a real time axis. */
+  recentTimestamps: number[];
+  /** Total supply for those same daily points, for the hero tile's trend. */
+  recentSupply: number[];
 }
 
 // Mirrors the exact formulas already used in lib/utils/dynamicContent.ts for the
@@ -32,6 +36,7 @@ export function computeEthSupplySnapshot(json: any): EthSupplySnapshot | null {
   const annualIssuanceRateFraction = issuanceData[issuanceData.length - 1][1];
   const annualIssuanceRatePct = annualIssuanceRateFraction * 100;
   const weeklyIssuanceEth = (totalSupply * annualIssuanceRateFraction) / 52;
+  const recent: [number, number][] = supplyData.slice(-90);
 
   return {
     totalSupply,
@@ -39,5 +44,7 @@ export function computeEthSupplySnapshot(json: any): EthSupplySnapshot | null {
     annualIssuanceRatePct,
     annualIssuanceRateFraction,
     weeklyIssuanceEth,
+    recentTimestamps: recent.map((point) => point[0]),
+    recentSupply: recent.map((point) => point[1]),
   };
 }

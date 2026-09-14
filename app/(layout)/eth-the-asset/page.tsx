@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { useMemo } from "react";
 import { EthSupplyURL } from "@/lib/urls";
 import { computeEthSupplySnapshot } from "@/lib/eth-the-asset/data";
-import { PageContainer } from "@/components/layout/Container";
+import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import EthHero from "./EthHero";
 import SixThingsSection from "./SixThingsSection";
@@ -21,7 +21,7 @@ export default function EthTheAssetPage() {
   return (
     <>
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
-      <PageContainer gapSize="lg" paddingY="md">
+      <Container className="flex flex-col pt-[45px] md:pt-[30px] pb-[15px] gap-y-[60px]">
         <EthHero ethSnapshot={ethSnapshot} />
         <SixThingsSection ethSnapshot={ethSnapshot} />
         <ProductiveAssetSection />
@@ -29,7 +29,7 @@ export default function EthTheAssetPage() {
         <BasketSection />
         <RankingSection ethSnapshot={ethSnapshot} />
         <DailySection />
-      </PageContainer>
+      </Container>
     </>
   );
 }

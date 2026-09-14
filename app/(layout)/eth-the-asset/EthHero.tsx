@@ -1,62 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPIconName } from "@/icons/gtp-icon-names";
+import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
 import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
 import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
-import Sparkline from "./_components/Sparkline";
-import IllustrativeTag from "./_components/IllustrativeTag";
-import { AccentColor } from "./_components/colors";
+import { ACCENT_HEX, AccentColor } from "./_components/colors";
+import { IllustrativeNote } from "./_components/IllustrativeTag";
 
 const WORLD_POPULATION = 8.2e9;
 
-// Deterministic gentle up/down trend used for stat tiles that have no live
-// data source behind them yet — fixed (not random) so server/client markup
-// matches and the page doesn't flicker on hydration.
-const ILLUSTRATIVE_TREND = [0, 1, 0.4, 1.6, 1.1, 2.1, 1.6, 2.6, 2.1, 3.1, 2.6, 3.6];
+// Fixed (not random) so server and client markup match and nothing flickers on
+// hydration. These back the tiles that have no live source yet.
+const TREND_UP = [2.9, 3.0, 2.95, 3.05, 3.0, 3.08, 3.04, 3.1, 3.07, 3.12];
+const TREND_FLAT = [29.4, 29.6, 29.5, 29.9, 30.0, 29.8, 30.1, 30.2, 30.3, 30.4];
+const TREND_COLLATERAL = [44.1, 45.2, 44.8, 46.0, 45.6, 46.9, 47.2, 47.0, 47.9, 48.2];
+const TREND_BURN = [362, 388, 371, 402, 396, 418, 405, 397, 423, 412];
 
-function StatTile({
-  icon,
-  label,
-  value,
-  unit,
-  delta,
-  points,
-  color,
-  live = false,
-}: {
-  icon: GTPIconName;
-  label: string;
-  value: string;
-  unit?: string;
-  delta?: string;
-  points: number[];
-  color: AccentColor;
-  live?: boolean;
-}) {
-  const negative = delta?.startsWith("-") || delta?.startsWith("−");
-  return (
-    <div className="flex-1 min-w-[190px] rounded-[15px] bg-color-bg-default shadow-standard p-[15px] pb-0 flex flex-col gap-y-[8px] overflow-hidden">
-      <div className="flex items-center gap-x-[5px]">
-        <GTPIcon icon={icon} size="sm" />
-        <span className="heading-caps-xs text-color-text-secondary flex-1">{label}</span>
-        {!live && <IllustrativeTag />}
-      </div>
-      <div className="flex items-baseline gap-x-[8px]">
-        <span className="numbers-2xl">{value}</span>
-        {unit && <span className="numbers-xs text-color-text-secondary">{unit}</span>}
-        {delta && (
-          <span className={`numbers-xs ml-auto ${negative ? "text-color-negative" : "text-color-positive"}`}>{delta}</span>
-        )}
-      </div>
-      <Sparkline points={points} color={color} height={38} />
-    </div>
-  );
-}
-
-// Pointer-reactive diamond built from plain CSS/SVG (no three.js). A slow
-// autorotate loop plus a pointer-driven tilt combine into one 3D transform.
+// Pointer-reactive diamond built from plain CSS/SVG (no 3D library). A slow
+// autorotate loop plus a pointer-driven tilt combine into one transform.
 function EtherDiamond({ height = 380 }: { height?: number }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [autoAngle, setAutoAngle] = useState(0);
@@ -80,13 +43,11 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
     setTilt({ x: py * -30, y: px * 40 });
   };
 
-  const onLeave = () => setTilt({ x: 0, y: 0 });
-
   return (
     <div
       ref={wrapperRef}
       onPointerMove={onMove}
-      onPointerLeave={onLeave}
+      onPointerLeave={() => setTilt({ x: 0, y: 0 })}
       className="relative w-full flex items-center justify-center cursor-grab select-none"
       style={{ height, perspective: 900 }}
     >
@@ -107,15 +68,15 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
           transform: `rotateX(${tilt.x}deg) rotateY(${autoAngle + tilt.y}deg)`,
         }}
       >
-        <svg viewBox="0 0 100 154" width="100%" height="100%" style={{ overflow: "visible" }}>
+        <svg viewBox="0 0 100 154" width="100%" height="100%" style={{ overflow: "visible" }} aria-hidden="true">
           <defs>
             <linearGradient id="eth-face-1" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="rgb(var(--accent-turquoise))" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#1F2726" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="rgb(var(--bg-default))" stopOpacity="0.9" />
             </linearGradient>
             <linearGradient id="eth-face-2" x1="1" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="rgb(var(--accent-yellow))" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#1F2726" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="rgb(var(--bg-default))" stopOpacity="0.9" />
             </linearGradient>
           </defs>
           <polygon points="50,0 95,77 50,60" fill="url(#eth-face-1)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" />
@@ -124,35 +85,42 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
           <polygon points="50,60 5,77 50,154" fill="url(#eth-face-1)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" />
         </svg>
       </div>
-      <div className="absolute bottom-0 right-[15px] text-xxs text-color-text-secondary">drag to spin</div>
+      <div className="absolute bottom-0 right-[15px] text-xs text-color-text-primary/70">drag to spin</div>
     </div>
   );
 }
 
 export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
   const { globalMetrics } = useSSEMetrics();
+  const { resolvedTheme } = useTheme();
+  const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
   const price = globalMetrics.eth_price_usd;
 
-  const supplyTrend = ethSnapshot ? [ethSnapshot.totalSupply * 0.9995, ethSnapshot.totalSupply] : ILLUSTRATIVE_TREND;
+  const tile = (color: AccentColor) => hex[color];
 
   return (
     <div className="flex flex-col gap-y-[30px]">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px] items-center">
         <div className="flex flex-col gap-y-[15px]">
-          <div className="heading-caps-sm text-color-accent-turquoise">ETH — the asset</div>
+          <div className="heading-small-xs text-color-accent-turquoise">ETH — the asset</div>
           <h1 className="heading-large-xl md:heading-large-2xl">An asset that pays you for holding it.</h1>
-          <div className="text-lg text-color-text-secondary max-w-[560px]">
+          <div className="text-md lg:text-lg">
             ETH secures Ethereum, earns a yield, and backs loans. Here is what it did today.
           </div>
           <div className="flex items-baseline gap-x-[12px] flex-wrap">
             {price ? (
               <span className="numbers-5xl">
-                {price.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {price.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
             ) : (
-              <span className="numbers-5xl text-color-text-secondary">—</span>
+              <span className="numbers-5xl text-color-text-primary/40">—</span>
             )}
-            <span className="heading-caps-xs text-color-text-secondary flex items-center gap-x-[5px]">
+            <span className="heading-small-xs flex items-center gap-x-[5px]">
               <span className="relative flex h-[6px] w-[6px]">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
                 <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
@@ -162,8 +130,8 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
           </div>
           {ethSnapshot && (
             <div className="flex items-center gap-x-[8px] h-[36px] px-[15px] rounded-full bg-color-bg-medium w-fit">
-              <GTPIcon icon="gtp-users" size="sm" className="!text-color-accent-yellow" />
-              <span className="heading-caps-xs text-color-text-secondary">ETH per person on earth</span>
+              <GTPIcon icon="gtp-users-monochrome" size="sm" className="text-color-accent-yellow" />
+              <span className="heading-small-xs">ETH per person on earth</span>
               <span className="numbers-sm">{(ethSnapshot.totalSupply / WORLD_POPULATION).toFixed(6)}</span>
             </div>
           )}
@@ -171,25 +139,64 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
         <EtherDiamond height={380} />
       </div>
 
-      <div className="flex gap-[15px] flex-wrap">
-        {ethSnapshot ? (
-          <StatTile
-            icon="gtp-realtime"
-            label="Supply"
-            value={`${(ethSnapshot.totalSupply / 1e6).toFixed(1)}M`}
-            unit="ETH"
-            delta={`${ethSnapshot.netIssuance30d >= 0 ? "+" : "−"}${Math.abs(ethSnapshot.netIssuance30d).toLocaleString(undefined, { maximumFractionDigits: 0 })} / 30d`}
-            points={supplyTrend}
-            color="yellow"
-            live
+      <div className="flex flex-col gap-y-[10px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]">
+          {ethSnapshot && (
+            <GTPMetricCard
+              label="Supply"
+              icon="gtp-realtime"
+              value={ethSnapshot.totalSupply}
+              // The 30-day change is ~0.004% of supply and rounds to "0.0%", so the
+              // delta carries the annualised issuance rate instead — the same figure
+              // the Scarce card and the bathtub use.
+              wowChange={ethSnapshot.annualIssuanceRatePct}
+              suffix=" ETH"
+              sparkline={ethSnapshot.recentSupply}
+              timestamps={ethSnapshot.recentTimestamps.map((ts) => new Date(ts).toISOString().slice(0, 10))}
+              color={tile("yellow")}
+            />
+          )}
+          <GTPMetricCard
+            label="Staking yield"
+            icon="gtp-metrics-fdv"
+            value={3.12}
+            wowChange={0.08}
+            suffix="% APR"
+            sparkline={TREND_UP}
+            color={tile("turquoise")}
           />
-        ) : (
-          <StatTile icon="gtp-realtime" label="Supply" value="—" points={ILLUSTRATIVE_TREND} color="yellow" />
-        )}
-        <StatTile icon="gtp-metrics-fdv" label="Staking yield" value="3.12" unit="% APR" delta="+0.08" points={ILLUSTRATIVE_TREND} color="turquoise" />
-        <StatTile icon="gtp-lock" label="Staked" value="30.4" unit="% of supply" delta="+0.6" points={ILLUSTRATIVE_TREND} color="petrol" />
-        <StatTile icon="gtp-metrics-totalvaluelocked" label="Used as collateral" value="$48.2B" delta="+3.1%" points={ILLUSTRATIVE_TREND} color="red" />
-        <StatTile icon="gtp-metrics-feespaidbyusers" label="Fees burned 24h" value="412" unit="ETH" delta="+11%" points={ILLUSTRATIVE_TREND} color="red" />
+          <GTPMetricCard
+            label="Staked"
+            icon="gtp-lock"
+            value={30.4}
+            wowChange={0.6}
+            suffix="% of supply"
+            sparkline={TREND_FLAT}
+            color={tile("turquoise")}
+          />
+          <GTPMetricCard
+            label="Used as collateral"
+            icon="gtp-metrics-totalvaluelocked"
+            value={48.2e9}
+            wowChange={3.1}
+            prefix="$"
+            sparkline={TREND_COLLATERAL}
+            color={tile("red")}
+          />
+          <GTPMetricCard
+            label="Fees burned 24h"
+            icon="gtp-metrics-feespaidbyusers"
+            value={412}
+            wowChange={11}
+            suffix=" ETH"
+            sparkline={TREND_BURN}
+            color={tile("red")}
+          />
+        </div>
+        <IllustrativeNote>
+          Supply is live from growthepie data, with the annualised issuance rate as its change. Staking yield, staked
+          share, collateral and burn are illustrative — we don&apos;t track those yet.
+        </IllustrativeNote>
       </div>
     </div>
   );

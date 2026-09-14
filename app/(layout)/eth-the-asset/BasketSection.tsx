@@ -1,179 +1,122 @@
 "use client";
 
 import { useState } from "react";
-import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
-import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
-import SectionHeader from "./_components/SectionHeader";
+import Pictogram from "./_components/Pictogram";
+import Dumbbell from "./_components/Dumbbell";
+import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, HOME, GOLD_BAR } from "./_components/BasketIcons";
 import IllustrativeTag from "./_components/IllustrativeTag";
-import { ACCENT_BG, ACCENT_RGB } from "./_components/colors";
 
 // Illustrative retail prices — no live source for consumer-goods pricing exists
-// in this repo. ETH price is a fixed illustrative anchor for the same reason.
+// in this repo, and the ETH price anchor is fixed for the same reason.
 const PRICE_NOW = 4182;
 const PRICE_YR_AGO = 3030;
 
-const BASKET: [string, string, number, number][] = [
-  ["Dozen eggs", "dozen", 4.1, 3.98],
-  ["Loaf of bread", "loaves", 3.2, 3.11],
-  ["Cup of coffee", "cups", 4.8, 4.6],
-  ["Tank of fuel", "tanks", 62, 64],
-  ["Month of rent", "months", 1510, 1455],
-  ["Gram of gold", "grams", 84, 71],
+type BasketItem = {
+  label: string;
+  unit: string;
+  glyph: BasketGlyph;
+  priceNow: number;
+  priceAgo: number;
+};
+
+const BASKET: BasketItem[] = [
+  { label: "Eggs", unit: "dozen", glyph: EGG, priceNow: 4.1, priceAgo: 3.98 },
+  { label: "Bread", unit: "loaves", glyph: BREAD, priceNow: 3.2, priceAgo: 3.11 },
+  { label: "Coffee", unit: "cups", glyph: COFFEE, priceNow: 4.8, priceAgo: 4.6 },
+  { label: "Fuel", unit: "tanks", glyph: FUEL, priceNow: 62, priceAgo: 64 },
+  { label: "Rent", unit: "months", glyph: HOME, priceNow: 1510, priceAgo: 1455 },
+  { label: "Gold", unit: "grams", glyph: GOLD_BAR, priceNow: 84, priceAgo: 71 },
 ];
 
 const fmt = (n: number) => (n >= 100 ? Math.round(n).toLocaleString() : n >= 10 ? n.toFixed(1) : n.toFixed(2));
-const signed = (n: number) => (n < 0 ? "−" : "+") + fmt(Math.abs(n));
 
-function Quantity({ count, unit }: { count: number; unit: string }) {
-  const filled = Math.max(1, Math.min(60, count > 60 ? 48 : Math.round(count)));
-  const per = count / filled;
-  return (
-    <div className="flex flex-col gap-y-[6px]">
-      <div className="grid grid-cols-[repeat(20,1fr)] gap-[2.5px] w-full">
-        {Array.from({ length: 60 }, (_, i) => (
-          <div
-            key={i}
-            className="aspect-square rounded-[1.5px]"
-            style={{ background: i < filled ? ACCENT_RGB.yellow : "rgb(var(--bg-medium))", opacity: i < filled ? 0.3 + (i / filled) * 0.7 : 1 }}
-          />
-        ))}
-      </div>
-      <span className="heading-caps-xxs text-color-text-secondary">each block ≈ {per >= 10 ? Math.round(per) : per.toFixed(1)} {unit}</span>
-    </div>
-  );
-}
-
-function ForceBar({ title, note, delta, unit, pct, width, positive }: { title: string; note: string; delta: number; unit: string; pct: string; width: number; positive: boolean }) {
-  return (
-    <div className="flex flex-col gap-y-[4px]">
-      <div className="flex justify-between items-baseline gap-x-[10px]">
-        <span className="text-sm">{title}</span>
-        <span className={`numbers-sm whitespace-nowrap ${positive ? "text-color-positive" : "text-color-negative"}`}>
-          {signed(delta)} {unit}
-        </span>
-      </div>
-      <div className="h-[10px] rounded-full bg-color-bg-medium overflow-hidden">
-        <div className={`h-full rounded-full ${positive ? ACCENT_BG.yellow : "bg-color-negative"}`} style={{ width: `${Math.max(1.5, width)}%` }} />
-      </div>
-      <span className="heading-caps-xxs text-color-text-secondary">{pct} · {note}</span>
-    </div>
-  );
+function unitsFor(item: BasketItem) {
+  const now = PRICE_NOW / item.priceNow;
+  const ago = PRICE_YR_AGO / item.priceAgo;
+  const ethOnly = PRICE_NOW / item.priceAgo; // ETH moved, shop price held
+  return {
+    now,
+    ago,
+    ethDelta: ethOnly - ago,
+    shopDelta: now - ethOnly,
+    changePct: (now / ago - 1) * 100,
+  };
 }
 
 export default function BasketSection() {
-  const [item, setItem] = useState("Dozen eggs");
-  const [force, setForce] = useState<"Both" | "ETH price only" | "Shop price only">("Both");
-  const [label, unit, pNow, pAgo] = BASKET.find((b) => b[0] === item)!;
-
-  const agoUnits = PRICE_YR_AGO / pAgo;
-  const nowUnits = PRICE_NOW / pNow;
-  const ethOnly = PRICE_NOW / pAgo;
-  const shopOnly = PRICE_YR_AGO / pNow;
-  const ethDelta = ethOnly - agoUnits;
-  const shopDelta = nowUnits - ethOnly;
-  const totalDelta = nowUnits - agoUnits;
-  const scale = Math.max(Math.abs(ethDelta), Math.abs(shopDelta));
-
-  const shown = force === "Both" ? nowUnits : force === "ETH price only" ? ethOnly : shopOnly;
-  const ethPct = (PRICE_NOW / PRICE_YR_AGO - 1) * 100;
-  const shopPct = (pNow / pAgo - 1) * 100;
+  const [selectedKey, setSelectedKey] = useState(BASKET[0].label);
+  const item = BASKET.find((b) => b.label === selectedKey)!;
+  const { now, ago, ethDelta, shopDelta, changePct } = unitsFor(item);
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <SectionHeader
-        icon="gtp-users"
-        title="The shopping basket — what it actually buys"
-        description="Supply only matters if it changes what one ETH gets you. Two things move that number, and neither of them is the burn."
-      >
-        <GTPButtonRow>
-          {BASKET.map(([l]) => (
-            <GTPButton key={l} label={l} isSelected={item === l} clickHandler={() => setItem(l)} size="sm" />
-          ))}
-        </GTPButtonRow>
-      </SectionHeader>
+      <SectionTitle icon="gtp-package" title="What one ETH actually buys" titleSize="md" as="h2" />
+      <SectionDescription>
+        Supply and burn only matter if they change what ETH gets you. Two things move that number — and neither of them
+        is the burn.
+      </SectionDescription>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px]">
+      {/* Small multiples: every item, drawn — and the selector for the detail below */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[10px]">
+        {BASKET.map((b) => {
+          const stats = unitsFor(b);
+          const active = b.label === selectedKey;
+          return (
+            <button
+              key={b.label}
+              type="button"
+              onClick={() => setSelectedKey(b.label)}
+              className={`flex flex-col items-center gap-y-[5px] p-[10px] rounded-[15px] transition-colors duration-200 ${
+                active ? "bg-color-ui-hover" : "bg-color-bg-default hover:bg-color-ui-hover"
+              }`}
+            >
+              <BasketIcon glyph={b.glyph} size={40} />
+              <span className="numbers-sm">{fmt(stats.now)}</span>
+              <span className="heading-small-xxxs text-color-text-primary/70">{b.label}</span>
+              <span className={`numbers-xs ${stats.changePct < 0 ? "text-color-negative" : "text-color-positive"}`}>
+                {stats.changePct < 0 ? "−" : "+"}
+                {Math.abs(stats.changePct).toFixed(0)}%
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] items-start">
+        {/* The answer, drawn */}
         <Card>
-          <span className="heading-caps-xs text-color-text-secondary">
-            {force === "Both" ? "1 ETH buys today" : force === "ETH price only" ? "1 ETH buys — ETH price change only" : "1 ETH buys — shop price change only"}
-          </span>
-          <div className="flex items-baseline gap-x-[8px]">
-            <span className="numbers-4xl text-color-accent-yellow">{fmt(shown)}</span>
-            <span className="heading-caps-sm text-color-text-secondary">{unit}</span>
+          <div className="flex items-center gap-x-[15px]">
+            <BasketIcon glyph={item.glyph} size={64} className="flex-shrink-0" />
+            <div className="flex flex-col gap-y-[2px]">
+              <span className="heading-small-xxxs text-color-text-primary/70">1 ETH buys today</span>
+              <div className="flex items-baseline gap-x-[8px]">
+                <span className="numbers-3xl">{fmt(now)}</span>
+                <span className="heading-small-xs">{item.unit}</span>
+              </div>
+            </div>
           </div>
-          <Quantity count={shown} unit={unit} />
-          <GTPButtonRow>
-            {(["Both", "ETH price only", "Shop price only"] as const).map((f) => (
-              <GTPButton key={f} label={f} isSelected={force === f} clickHandler={() => setForce(f)} size="xs" />
-            ))}
-          </GTPButtonRow>
-          <span className="text-xs text-color-text-secondary">
-            {force === "Both"
-              ? `At $${PRICE_NOW.toLocaleString()} per ETH and $${pNow.toFixed(2)} per ${unit.replace(/s$/, "")}. A year ago: ${fmt(agoUnits)}.`
-              : force === "ETH price only"
-                ? `Shop price held at last year's $${pAgo.toFixed(2)} — only ETH moved.`
-                : `ETH held at last year's $${PRICE_YR_AGO.toLocaleString()} — only the shop price moved.`}
-          </span>
+          <Pictogram glyph={item.glyph} count={now} unitLabel={item.unit} />
           <IllustrativeTag />
         </Card>
 
+        {/* What moved it, drawn */}
         <Card>
-          <span className="heading-caps-xs text-color-text-secondary">What changed the basket in a year</span>
-          <ForceBar
-            title="ETH price — the market"
-            note="no rules, large numbers"
-            delta={ethDelta}
-            unit={unit}
-            pct={(ethPct > 0 ? "+" : "−") + Math.abs(ethPct).toFixed(0) + "% ETH price"}
-            width={(Math.abs(ethDelta) / scale) * 100}
-            positive
+          <span className="heading-small-xs">What changed it in a year</span>
+          <Dumbbell
+            before={{ label: "a year ago", value: ago }}
+            after={{ label: "today", value: now }}
+            steps={[
+              { label: "ETH price — the market", delta: ethDelta, color: "yellow" },
+              { label: "Shop price — inflation", delta: shopDelta, color: "red" },
+            ]}
+            format={fmt}
+            unit={item.unit}
           />
-          <ForceBar
-            title="Shop prices — inflation"
-            note="what the goods themselves cost"
-            delta={shopDelta}
-            unit={unit}
-            pct={(shopPct > 0 ? "+" : "−") + Math.abs(shopPct).toFixed(1) + "% shelf price"}
-            width={(Math.abs(shopDelta) / scale) * 100}
-            positive={shopDelta >= 0}
-          />
-          <div className="flex justify-between items-baseline pt-[4px] border-t border-color-bg-medium">
-            <span className="heading-caps-xs text-color-text-secondary">Net change</span>
-            <span className={`numbers-lg ${totalDelta < 0 ? "text-color-negative" : "text-color-positive"}`}>
-              {signed(totalDelta)} {unit}
-            </span>
+          <div className="text-xs md:text-sm">
+            Supply is not on this list: net issuance changes your share of the network, not what ETH buys.
           </div>
-          <div className="flex gap-x-[8px] px-[12px] py-[10px] rounded-[8px] bg-color-bg-medium">
-            <GTPIcon icon="gtp-info" size="sm" className="!text-color-accent-turquoise flex-shrink-0 mt-[2px]" />
-            <span className="text-xs text-color-text-primary">
-              Supply is not on this list. Net supply growth moves your <em>share of the network</em> — not what ETH buys. The market decides what that share is worth.
-            </span>
-          </div>
-        </Card>
-
-        <Card>
-          <span className="heading-caps-xs text-color-text-secondary">The full basket — units per 1 ETH, vs a year ago</span>
-          {BASKET.map(([l, u, pn, pa]) => {
-            const n = PRICE_NOW / pn;
-            const a = PRICE_YR_AGO / pa;
-            const ch = (n / a - 1) * 100;
-            return (
-              <div key={l} className="grid grid-cols-[118px_1fr_74px_58px] gap-x-[8px] items-center">
-                <span className="text-xs text-color-text-secondary whitespace-nowrap">{l}</span>
-                <div className="h-[8px] rounded-full bg-color-bg-medium overflow-hidden">
-                  <div className="h-full bg-color-accent-yellow" style={{ width: `${Math.min(100, (ch / 45) * 100)}%` }} />
-                </div>
-                <span className="numbers-xs text-right">{fmt(n)}</span>
-                <span className={`numbers-xs text-right ${ch < 0 ? "text-color-negative" : "text-color-positive"}`}>
-                  {ch < 0 ? "−" : "+"}
-                  {Math.abs(ch).toFixed(0)}%
-                </span>
-              </div>
-            );
-          })}
-          <span className="text-xxs text-color-text-secondary">Gold rose too, so ETH gained less against it than against bread. Illustrative retail prices.</span>
         </Card>
       </div>
     </div>
