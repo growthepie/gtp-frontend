@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@download/blockies": "^1.0.3",
-    "@dsnp/parquetjs": "^1.7.0",
     "@floating-ui/react": "^0.27.6",
     "@openlabels/oli-sdk": "0.2.4",
     "@react-hook/media-query": "^1.1.1",
@@ -27,7 +26,6 @@
     "@tanstack/react-virtual": "^3.10.8",
     "@types/react-transition-group": "^4.4.12",
     "@vercel/analytics": "^1.1.1",
-    "concurrently": "^8.2.1",
     "cookies-next": "^2.1.1",
     "critters": "^0.0.25",
     "crossoriginworker": "^1.1.0",
