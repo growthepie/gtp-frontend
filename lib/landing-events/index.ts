@@ -14,15 +14,15 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-robinhood-tvs": {
-    title: "All-Time High: Total Value Secured for Robinhood Chain",
-    description: "Daily Total Value Secured on Robinhood Chain, highlighting its all-time high.",
-    question: "Which chain has recently reached a new high in Total Value Secured?",
-    image: "gtp-metrics-totalvaluelocked",
-    link: "/fundamentals/total-value-secured",
+  "ath-robinhood-stablecoins": {
+    title: "All-Time High: Stablecoin Supply for Robinhood Chain",
+    description: "Daily Stablecoin Supply on Robinhood Chain, highlighting its all-time high.",
+    question: "Which chain has recently reached a new high in Stablecoin Supply?",
+    image: "gtp-metrics-stablecoinmarketcap",
+    link: "/fundamentals/stablecoin-market-cap",
     allTimeHigh: {
       chainKey: "robinhood",
-      metricKey: "total-value-secured",
+      metricKey: "stablecoin-market-cap",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,
