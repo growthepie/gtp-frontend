@@ -5,6 +5,7 @@ export function useChartReplay(
   timespan: string,
   xMin: number | undefined,
   xMax: number | undefined,
+  durationMultiplier = 1,
 ) {
   const [revealProgress, setRevealProgress] = useState<number | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -23,7 +24,7 @@ export function useChartReplay(
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     if (releaseTimerRef.current !== null) clearTimeout(releaseTimerRef.current);
 
-    const duration = getTimeseriesChartRevealDurationMs(timespan, xMax - xMin);
+    const duration = getTimeseriesChartRevealDurationMs(timespan, xMax - xMin) * durationMultiplier;
     setRevealProgress(0);
     let startedAt: number | null = null;
 
@@ -43,9 +44,9 @@ export function useChartReplay(
     };
 
     frameRef.current = requestAnimationFrame(step);
-  }, [timespan, xMin, xMax]);
+  }, [timespan, xMin, xMax, durationMultiplier]);
 
-  useEffect(() => stop, [timespan, xMin, xMax, stop]);
+  useEffect(() => stop, [timespan, xMin, xMax, durationMultiplier, stop]);
 
   return {
     revealProgress,

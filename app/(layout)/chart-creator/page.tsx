@@ -8,6 +8,9 @@ import GTPDropdown from "@/components/GTPComponents/GTPDropdown";
 import type { GTPIconName } from "@/icons/gtp-icon-names";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
 import { useTheme } from "next-themes";
+import { useChartReplay } from "@/hooks/useChartReplay";
+import ChartReplayButton from "@/components/GTPComponents/ChartReplayButton";
+import { downloadElementAsImage, prewarmSnapshotFonts } from "@/components/GTPComponents/chartSnapshotHelpers";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -579,6 +582,24 @@ export default function ChartCreatorPage() {
   const [scale, setScale] = useState<Scale>("absolute");
   const [chartTitle, setChartTitle] = useState("");
   const [chartSubtitle, setChartSubtitle] = useState("");
+  const chartCardRef = useRef<HTMLDivElement>(null);
+  const [isTakingScreenshot, setIsTakingScreenshot] = useState(false);
+  const [screenshotError, setScreenshotError] = useState<string | null>(null);
+
+  useEffect(() => prewarmSnapshotFonts(), []);
+
+  const handleScreenshot = useCallback(async () => {
+    if (!chartCardRef.current || isTakingScreenshot) return;
+    setIsTakingScreenshot(true);
+    setScreenshotError(null);
+    try {
+      await downloadElementAsImage(chartCardRef.current, chartTitle || "chart-creator");
+    } catch {
+      setScreenshotError("Could not create the screenshot. Please try again.");
+    } finally {
+      setIsTakingScreenshot(false);
+    }
+  }, [chartTitle, isTakingScreenshot]);
 
   // Chains + metrics from master
   const [masterData, setMasterData] = useState<MasterData>({ chains: [], metrics: [] });
@@ -604,6 +625,13 @@ export default function ChartCreatorPage() {
   const [gtpError, setGtpError] = useState<string | null>(null);
 
   const [zoomRange, setZoomRange] = useState<[number, number] | null>(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const chartReplay = useChartReplay("max", zoomRange?.[0], zoomRange?.[1], 1 / playbackSpeed);
+  const stopReplay = chartReplay.stop;
+
+  useEffect(() => {
+    stopReplay();
+  }, [series, scale, stopReplay]);
 
   const dataMinMax = useMemo<[number, number] | null>(() => {
     const allTs = series
@@ -1058,21 +1086,30 @@ export default function ChartCreatorPage() {
           ) : (
             <>
               {/* Chart card — matches GTPCardLayout look */}
-              <div className="rounded-[18px] bg-color-bg-default">
+              <div ref={chartCardRef} className="rounded-[18px] bg-color-bg-default overflow-hidden">
                 {/* Title + subtitle inputs */}
                 <div className="px-[20px] pt-[16px] pb-[4px] space-y-[6px]">
-                  <input
-                    className="w-full bg-transparent text-[18px] font-bold text-color-text-primary placeholder:text-color-text-secondary/40 outline-none border-b border-transparent focus:border-color-ui-hover/40 transition-colors pb-1"
-                    placeholder="Add a chart title…"
-                    value={chartTitle}
-                    onChange={(e) => setChartTitle(e.target.value)}
-                  />
-                  <input
-                    className="w-full bg-transparent text-sm text-color-text-secondary placeholder:text-color-text-secondary/40 outline-none border-b border-transparent focus:border-color-ui-hover/40 transition-colors pb-1"
-                    placeholder="Add a subtitle…"
-                    value={chartSubtitle}
-                    onChange={(e) => setChartSubtitle(e.target.value)}
-                  />
+                  {isTakingScreenshot ? (
+                    <>
+                      {chartTitle && <p className="text-[18px] font-bold text-color-text-primary pb-1 break-words">{chartTitle}</p>}
+                      {chartSubtitle && <p className="text-sm text-color-text-secondary pb-1 break-words">{chartSubtitle}</p>}
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        className="w-full bg-transparent text-[18px] font-bold text-color-text-primary placeholder:text-color-text-secondary/40 outline-none border-b border-transparent focus:border-color-ui-hover/40 transition-colors pb-1"
+                        placeholder="Add a chart title…"
+                        value={chartTitle}
+                        onChange={(e) => setChartTitle(e.target.value)}
+                      />
+                      <input
+                        className="w-full bg-transparent text-sm text-color-text-secondary placeholder:text-color-text-secondary/40 outline-none border-b border-transparent focus:border-color-ui-hover/40 transition-colors pb-1"
+                        placeholder="Add a subtitle…"
+                        value={chartSubtitle}
+                        onChange={(e) => setChartSubtitle(e.target.value)}
+                      />
+                    </>
+                  )}
                 </div>
                 <GTPChart
                   series={chartSeries}
@@ -1087,7 +1124,55 @@ export default function ChartCreatorPage() {
                   className={showLegend ? "mb-[30px]" : "mb-[10px]"}
                   xAxisMin={zoomRange?.[0]}
                   xAxisMax={zoomRange?.[1]}
+                  revealProgress={chartReplay.revealProgress}
                 />
+              </div>
+
+              <div className="rounded-[18px] bg-color-bg-default px-[20px] py-[14px] space-y-[10px]">
+                <SectionLabel>Export & playback</SectionLabel>
+                <p className="text-xs text-color-text-secondary">
+                  Save the current chart as a PNG, or choose a playback speed and press Play.
+                </p>
+                <div className="max-w-[320px] space-y-[6px]">
+                  <label htmlFor="chart-playback-speed" className="flex items-center justify-between text-xs text-color-text-secondary">
+                    <span>Playback speed</span>
+                    <span className="tabular-nums">{playbackSpeed}×</span>
+                  </label>
+                  <input
+                    id="chart-playback-speed"
+                    type="range"
+                    min={0.25}
+                    max={2}
+                    step={0.25}
+                    value={playbackSpeed}
+                    aria-valuetext={`${playbackSpeed} times normal speed`}
+                    onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+                    disabled={chartReplay.isReplaying || isTakingScreenshot}
+                    className="w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  <div className="flex justify-between text-[10px] text-color-text-secondary">
+                    <span>0.25× · Slower</span>
+                    <span>2× · Faster</span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-[10px]">
+                  <GTPButton
+                    label={isTakingScreenshot ? "Creating PNG…" : "Take Screenshot"}
+                    leftIcon="gtp-png-monochrome"
+                    size="sm"
+                    labelDisplay="always"
+                    disabled={isTakingScreenshot || chartReplay.isReplaying}
+                    visualState={isTakingScreenshot || chartReplay.isReplaying ? "disabled" : "default"}
+                    clickHandler={handleScreenshot}
+                  />
+                  <ChartReplayButton
+                    isReplaying={chartReplay.isReplaying}
+                    disabled={isTakingScreenshot || !zoomRange || zoomRange[1] <= zoomRange[0]}
+                    onPlay={chartReplay.play}
+                    onStop={chartReplay.stop}
+                  />
+                </div>
+                {screenshotError && <ErrorMsg msg={screenshotError} />}
               </div>
 
               {/* Zoom slider + scale toggle */}
