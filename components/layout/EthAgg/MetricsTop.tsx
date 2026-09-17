@@ -466,7 +466,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
       </div>
 
       <div className='relative flex flex-col gap-y-[30px] mb-[20px]'>
-        <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[1fr,1fr,1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
+        <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[minmax(0,1fr),minmax(0,1fr),max-content] gap-x-[10px] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
           {/* All-Time High */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
             <div className='heading-small-xxxs text-color-text-secondary'>
@@ -474,7 +474,10 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
             {globalMetrics.total_tps_24h_high && globalMetrics.total_tps_ath && (
-              <div className='numbers-sm'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+              <div className='numbers-sm flex flex-wrap gap-x-1 h-[14px] overflow-hidden'>
+                <span className='shrink-0'>{ globalMetrics.total_tps_24h_high > globalMetrics.total_tps_ath ? globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0}</span>
+                <span className='shrink-0'>TPS</span>
+              </div>
             )}
           </div>
           {/* 24h Peak */}
@@ -483,7 +486,10 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div className='group-hover:hidden'>24h Peak</div>
               <div className='hidden group-hover:block'>{dayjs.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/YYYY HH:mm [UTC]")}</div>
             </div>
-            <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+            <div className='numbers-sm flex flex-wrap gap-x-1 h-[14px] overflow-hidden'>
+              <span className='shrink-0'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0}</span>
+              <span className='shrink-0'>TPS</span>
+            </div>
           </div>
           {/* Live TPS */}
           <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
