@@ -63,7 +63,7 @@ export function FeeDisplayRow({
       </div>
 
 
-      <div className={`flex ${hideValue ? "hidden" : "flex"} bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-2xl`}>
+      <div className={`flex ${hideValue ? "hidden" : "flex"} bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-xl`}>
         {(() => {
           const value = showUsd
             ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(costValue || 0)

@@ -318,7 +318,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         <EventsCard totalHeight={EXPANDED_LIST_HEIGHT } topCard={true} isHidden={isHidden} tooltipContent={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."} customTitleArea={    
           <>
             <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
-            <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
+            <div className='numbers-xl pb-[30px] h-[73px] overflow-visible'>
               <div className={`flex flex-col gap-y-[5px] ${isCompact ? 'pt-[20px]' : 'pt-0'} transition-all duration-500`}>
                 <div className='bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent'>
                   {uptimeData.heading}
@@ -487,7 +487,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
           {/* Live TPS */}
           <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
-            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap'>
+            <div className='flex flex-1 gap-x-1 numbers-xl bg-gradient-to-b from-color-accent-petrol to-color-accent-turquoise bg-clip-text text-transparent whitespace-nowrap'>
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(globalMetrics.total_tps || 0)}</div>
               <div>TPS</div>
             </div>
