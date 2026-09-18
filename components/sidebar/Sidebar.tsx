@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef, Fragment } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef } from 'react';
 import { useMaster } from '@/contexts/MasterContext';
 import { IS_PRODUCTION } from '@/lib/helpers';
 
@@ -170,22 +170,33 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     return items;
   }, [sidebarNavigation]);
 
+  // Everything from the first `spacerBefore` item onwards sits below the spacer.
+  const spacerIndex = sidebarNavigation.findIndex((item) => item.spacerBefore);
+  const itemsAboveSpacer = spacerIndex === -1 ? sidebarNavigation : sidebarNavigation.slice(0, spacerIndex);
+  const itemsBelowSpacer = spacerIndex === -1 ? [] : sidebarNavigation.slice(spacerIndex);
+
   return (
     <div className={`select-none flex flex-col md:flex-1 md:min-h-0 bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
+      {/* nav is the flex column so the spacer between the two lists can absorb
+          leftover height. The lists themselves stay block-level, because making
+          the items flex items stops their margins collapsing and doubles the
+          gap between menu entries. */}
       <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:flex md:flex-col md:flex-1 md:min-h-0 md:max-h-screen md:pb-[15px] w-full overflow-y-auto overflow-x-clip scrollbar-none">
-        {/* grow fills leftover height so the spacer can push trailing items down;
-            shrink-0 keeps the list at its natural height so nav scrolls instead. */}
-        <div className="flex flex-col md:grow md:shrink-0 md:space-y-[10px]">
-          {sidebarNavigation.map((item, index) => {
-
-            return (
-              <Fragment key={index}>
-                {item.spacerBefore && <SidebarSpacer />}
-                <SidebarItem item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
-              </Fragment>
-            );
-          })}
+        <div className="w-full md:shrink-0 md:space-y-[10px]">
+          {itemsAboveSpacer.map((item, index) => (
+            <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+          ))}
         </div>
+        {itemsBelowSpacer.length > 0 && (
+          <>
+            <div className="md:grow md:shrink-0" />
+            <div className="w-full md:shrink-0 md:space-y-[10px]">
+              {itemsBelowSpacer.map((item, index) => (
+                <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+              ))}
+            </div>
+          </>
+        )}
       </nav>
 
       {/* Debug panel for isNew items */}
@@ -224,10 +235,3 @@ const SidebarWithProvider = (props: SidebarProps) => (
 );
 
 export default SidebarWithProvider;
-
-/**
- * Absorbs whatever height is left over, pushing the items after it to the
- * bottom of the sidebar. When the nav has to scroll there is nothing left to
- * take, so it collapses and those items just follow the list.
- */
-const SidebarSpacer = () => <div className="md:grow shrink-0" />;
