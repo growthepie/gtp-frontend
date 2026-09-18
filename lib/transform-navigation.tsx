@@ -12,6 +12,7 @@ export type SidebarLink = {
   href: string;
   isNew?: boolean;
   key?: string; // optional for normal links
+  separatorBefore?: boolean; // only meaningful on top-level items
 };
 
 // Section title within a group
@@ -38,6 +39,7 @@ export type SidebarMenuGroup = {
   label: string;
   icon: GTPIconName;
   isNew?: boolean;
+  separatorBefore?: boolean; // only meaningful on top-level items
   children: (SidebarLink | SidebarChainLink | SidebarSectionTitle)[];
 };
 
@@ -61,6 +63,7 @@ export const transformNavigationToSidebar = (
         href: item.href,
         isNew: item.newChild || false,
         key: item.key,
+        separatorBefore: item.separatorBefore,
       } as SidebarLink;
     }
 
@@ -168,6 +171,7 @@ export const transformNavigationToSidebar = (
       label: item.label,
       icon: item.icon,
       isNew: item.newChild || false,
+      separatorBefore: item.separatorBefore,
       children,
     } as SidebarMenuGroup;
   });

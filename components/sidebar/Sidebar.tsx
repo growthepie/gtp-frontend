@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef, Fragment } from 'react';
 import { useMaster } from '@/contexts/MasterContext';
 import { IS_PRODUCTION } from '@/lib/helpers';
 
@@ -175,7 +175,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
         {sidebarNavigation.map((item, index) => {
 
-          return <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+          return (
+            <Fragment key={index}>
+              {item.separatorBefore && <SidebarSeparator isOpen={isOpen} />}
+              <SidebarItem item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+            </Fragment>
+          );
         })}
       </nav>
 
@@ -215,3 +220,18 @@ const SidebarWithProvider = (props: SidebarProps) => (
 );
 
 export default SidebarWithProvider;
+
+/**
+ * Divider between the data sections and the items below them (currently
+ * "Work with us"). Collapses to the width of the icon column so it still
+ * reads as a divider in the narrow sidebar.
+ */
+const SidebarSeparator = ({ isOpen }: { isOpen: boolean }) => (
+  <div className="px-[5px] py-[5px]">
+    <div
+      className={`h-[1px] rounded-full bg-color-bg-medium transition-all duration-300 ${
+        isOpen ? 'w-full md:w-[212px]' : 'w-[38px]'
+      }`}
+    />
+  </div>
+);
