@@ -171,17 +171,21 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   }, [sidebarNavigation]);
 
   return (
-    <div className={`select-none flex flex-col bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
-      <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
-        {sidebarNavigation.map((item, index) => {
+    <div className={`select-none flex flex-col md:flex-1 md:min-h-0 bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
+      <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:flex md:flex-col md:flex-1 md:min-h-0 md:max-h-screen md:pb-[100px] w-full overflow-y-auto overflow-x-clip scrollbar-none">
+        {/* grow fills leftover height so the spacer can push trailing items down;
+            shrink-0 keeps the list at its natural height so nav scrolls instead. */}
+        <div className="flex flex-col md:grow md:shrink-0 md:space-y-[10px]">
+          {sidebarNavigation.map((item, index) => {
 
-          return (
-            <Fragment key={index}>
-              {item.separatorBefore && <SidebarSeparator isOpen={isOpen} />}
-              <SidebarItem item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
-            </Fragment>
-          );
-        })}
+            return (
+              <Fragment key={index}>
+                {item.separatorBefore && <SidebarSeparator isOpen={isOpen} />}
+                <SidebarItem item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+              </Fragment>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Debug panel for isNew items */}
@@ -227,7 +231,7 @@ export default SidebarWithProvider;
  * reads as a divider in the narrow sidebar.
  */
 const SidebarSeparator = ({ isOpen }: { isOpen: boolean }) => (
-  <div className="px-[5px] py-[5px]">
+  <div className="md:grow shrink-0 flex flex-col justify-end px-[5px] py-[5px]">
     <div
       className={`h-[1px] rounded-full bg-color-bg-medium transition-all duration-300 ${
         isOpen ? 'w-full md:w-[212px]' : 'w-[38px]'
