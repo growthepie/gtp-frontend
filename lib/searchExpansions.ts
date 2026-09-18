@@ -99,6 +99,16 @@ export function getBucketLabelForShortQuery(normalizedQuery: string): string | n
 const NORMAL_SEARCH_EXPANSIONS: Record<string, string[]> = {
   tvs: ["totalvaluesecured"],
   tvl: ["totalvaluesecured"],
+  // Commercial intent: none of these words appear in the /sales option labels,
+  // so map them onto the labels a prospect is actually looking for.
+  pricing: ["datatiers"],
+  price: ["datatiers"],
+  tier: ["datatiers"],
+  listing: ["datatiers"],
+  sales: ["workwithus"],
+  partner: ["workwithus"],
+  partnership: ["workwithus"],
+  contact: ["workwithus"],
 };
 
 /**
