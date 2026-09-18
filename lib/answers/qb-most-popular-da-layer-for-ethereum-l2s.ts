@@ -214,7 +214,7 @@ const mostPopularDaLayer: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_da_adopt_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains using specific DA layers. The ranking on this page is computed mechanically from `master.json` — chains and DA layers do not influence inclusion or placement, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains using specific DA layers. The ranking on this page is computed mechanically from `master.json` — chains and DA layers do not influence inclusion or placement, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent DA-layer data sources you can compare against include [L2BEAT's DA risk view](https://l2beat.com) (per-chain DA classification and risk profile), the DA layers' own dashboards ([celestia.org](https://celestia.org), [eigenda.xyz](https://eigenda.xyz), [availproject.org](https://www.availproject.org)), and the published EIPs themselves (EIP-4844 for blobs, EIP-7594 for PeerDAS).",
     '',

@@ -268,7 +268,7 @@ const mostUsedEthereumL2: QuickBiteData = createQuickBite({
     '- Daily active addresses time series: `https://api.growthepie.com/v1/metrics/chains/{chain}/daa.json`',
     'Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains that appear in the rankings above. Rankings are computed mechanically from public API data — chains do not pay for inclusion or placement, and supporters do not receive ranking adjustments or preferential treatment. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains that appear in the rankings above. Rankings are computed mechanically from public API data — chains do not pay for inclusion or placement, and supporters do not receive ranking adjustments or preferential treatment. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent L2 data sources you can compare against include [L2BEAT](https://l2beat.com) (activity, stage classification, risk analysis), and [DeFiLlama](https://defillama.com/chains) (TVL across chains). Methodologies and chain inclusion lists differ between providers — when rankings disagree, comparing the underlying definitions is usually more informative than the ranks themselves.",
     '',

@@ -19,21 +19,17 @@ export default function BottomBanner() {
             /> */}
             <Icon icon="gtp:logo" className="w-[24px] h-[24px]" />
             <div className="text-sm leading-[1.5]">
-              We are a public goods funded analytics platform.
+              We are the analytics platform for the Ethereum ecosystem.
             </div>
           </div>
           {/*desktop text*/}
           <div className="hidden md:block text-[10px] w-full leading-[1.5]">
             <div>
-              If you would like to donate, please visit our{" "}
-              <a
-                href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
-                target="_blank"
-                className="underline cursor-pointer"
-              >
-                Giveth
-              </a>{" "}
-              project page.
+              Want to work with us? See our data tiers on the{" "}
+              <Link href="/sales" className="underline cursor-pointer">
+                Work with us
+              </Link>{" "}
+              page.
             </div>
             <div>
               Individual links contain affiliate links, like the “Bridge”
@@ -47,15 +43,11 @@ export default function BottomBanner() {
           {/*mobile text*/}
           <div className="block md:hidden text-[10px] w-full leading-[1.5]">
             <div>
-              If you would like to donate, please visit our{" "}
-              <a
-                href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
-                target="_blank"
-                className="underline cursor-pointer"
-              >
-                Giveth
-              </a>{" "}
-              project page.
+              Want to work with us? See our data tiers on the{" "}
+              <Link href="/sales" className="underline cursor-pointer">
+                Work with us
+              </Link>{" "}
+              page.
             </div>
             <div>
               Individual links contain affiliate links, like the “Bridge”

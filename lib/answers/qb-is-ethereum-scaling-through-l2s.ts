@@ -251,7 +251,7 @@ const isEthereumScalingThroughL2s: QuickBiteData = createQuickBite({
     '- L2 ecosystem aggregate throughput: `https://api.growthepie.com/v1/metrics/chains/all_l2s/throughput.json`',
     'Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate L2 chains, but ratios on this page are computed mechanically from public API data — no supporter receives any preferential treatment. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate L2 chains, but ratios on this page are computed mechanically from public API data — no supporter receives any preferential treatment. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent sources for the L2-vs-mainnet comparison include [L2BEAT](https://l2beat.com) (TVL + stage classification + chain inclusion list), [Etherscan](https://etherscan.io) (mainnet-only metrics), and the chains' own block explorers (per-L2 metrics). Methodologies differ — L2BEAT tracks TVL primarily; growthepie tracks usage (txs, throughput). When ratios disagree it's usually because the underlying chain inclusion lists differ.",
     '',

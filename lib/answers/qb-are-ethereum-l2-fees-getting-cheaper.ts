@@ -215,7 +215,7 @@ const areEthereumL2FeesGettingCheaper: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_trend_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The trend on this page is computed mechanically from public API data — chains and upgrades do not influence the median, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The trend on this page is computed mechanically from public API data — chains and upgrades do not influence the median, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Compare the direction and the per-upgrade step-down magnitudes against [L2BEAT](https://l2beat.com), [DefiLlama's fees view](https://defillama.com/fees), and Etherscan's gas tracker for the L1 comparison. Absolute numbers will differ across providers (median vs average, all-tx vs swap-only, USD definitions), but the direction agrees.",
     '',

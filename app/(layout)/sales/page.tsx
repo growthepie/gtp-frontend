@@ -12,6 +12,8 @@ import { ExpandableCardContainer } from "@/components/layout/EthAgg/MetricsTop";
 import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import ImpactSection from "@/components/layout/Sales/ImpactSection";
+import PlatformUpdatesSection from "@/components/layout/Sales/PlatformUpdatesSection";
 
 const partners = [
   {
@@ -133,9 +135,9 @@ const faqs = [
       "Strategic partners gain access to our 'Ask an Analyst' service, quarterly insight calls, and dedicated alerts-as-a-service to stay informed on the latest ecosystem trends.",
   },
   {
-    question: "Why should we support growthepie as a Public Good?",
+    question: "Why should we work with growthepie?",
     answer:
-      "We are built 'by builders, for builders.' Supporting us ensures that transparent, high-quality Ethereum analytics remain open and accessible to the entire community rather than being locked behind private paywalls.",
+      "We are built 'by builders, for builders.' Working with us puts your chain or application in front of the people who make ecosystem decisions, on a platform that keeps transparent, high-quality Ethereum analytics open and accessible rather than locked behind private paywalls.",
   },
 ];
 
@@ -241,9 +243,10 @@ export default function SalesPage() {
           </div>
         </div>
         <Subheading className="text-md leading-normal w-full text-color-text-primary">
-          growthepie.com started with an initial grant from the Ethereum Foundation back in February 2023. We decided
-          to build the platform as a public good, because we want everyone to have free access to transparent data and
-          visualizations that everyone understands, not just the few.
+          growthepie.com started with an initial grant from the Ethereum Foundation back in February 2023. Since then we
+          have grown into the analytics platform for the Ethereum ecosystem, because we want everyone to have access to
+          transparent data and visualizations that everyone understands, not just the few. Chains, applications and
+          teams work with us to get their data indexed, labeled and in front of the right audience.
         </Subheading>
       </section>
 
@@ -466,6 +469,10 @@ export default function SalesPage() {
           </div>
         </div>
       </section>
+
+      <ImpactSection />
+
+      <PlatformUpdatesSection />
 
       <section className="flex flex-col gap-y-[15px] mb-[20px]">
         <SectionTitle icon="gtp-faq" title="Frequently Asked Questions" as="h2" iconSize="md"  />

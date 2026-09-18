@@ -151,7 +151,7 @@ const mostProfitableEthereumL2: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_profit_data_date}} UTC.",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Profit values are computed mechanically from public API data — chains don't influence the ranking. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Profit values are computed mechanically from public API data — chains don't influence the ranking. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent L2 economics sources include [L2BEAT's costs view](https://l2beat.com) and growthepie's own [economics dashboard](https://www.growthepie.com/economics) which breaks down revenue vs cost vs profit per chain with charts.",
     '',

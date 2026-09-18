@@ -232,7 +232,7 @@ const whatFusakaUpgradeChanged: QuickBiteData = createQuickBite({
     "2. **Ethereum's published EIP repository and upgrade announcement** — for upgrade dates, EIP numbers, and parameter values (60M gas limit, 14 blob target, etc.).",
     'No editorial interpretation: every claim on this page is verifiable against the tracker or the EIP text.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Fusaka is an Ethereum mainnet upgrade — no L2 chain operator (whether or not a growthepie supporter) influences the upgrade or how it's described here. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Fusaka is an Ethereum mainnet upgrade — no L2 chain operator (whether or not a growthepie supporter) influences the upgrade or how it's described here. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** For the canonical Ethereum-side documentation see [ethereum.org's Fusaka page](https://ethereum.org/en/roadmap/fusaka/), the [EIP index](https://eips.ethereum.org/) for individual EIP text, and the [ethereum/EIPs GitHub repo](https://github.com/ethereum/EIPs) for the discussion threads behind each change. The growthepie Fusaka tracker linked above quantifies the upgrade's *impact* on the chain in the days and weeks after activation.",
 

@@ -213,7 +213,7 @@ const baseVsArbitrum: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_h2h_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The comparison on this page is computed mechanically from public API data — Base, Arbitrum, and their respective ecosystems do not influence the ranking, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The comparison on this page is computed mechanically from public API data — Base, Arbitrum, and their respective ecosystems do not influence the ranking, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [L2BEAT](https://l2beat.com) tracks both chains with its own metric methodology and adds stage / risk classifications. [DeFiLlama](https://defillama.com/chains) tracks TVL with separate protocol coverage. Differences across providers usually trace to chain-inclusion or definitional differences, not data quality.",
 

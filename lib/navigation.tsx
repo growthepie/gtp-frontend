@@ -9,6 +9,8 @@ export type NavigationItem = {
   name: string;
   label: string;
   newChild?: boolean;
+  /** Pushes this item to the bottom of the sidebar when there is spare height. */
+  spacerBefore?: boolean;
   page?: {
     title: string;
     description: string;
@@ -514,6 +516,55 @@ export const navigationItems: NavigationItem[] = [
     // href: "",
   },
   ...[dataAvailabilityGroup],
+  {
+    name: "Work with us",
+    label: "Work with us",
+    icon: "gtp-socials",
+    spacerBefore: true,
+    // `href` makes the sidebar render this as a single link, so `options` never
+    // show up in the menu. They exist so the sections of /sales are reachable
+    // from search; `/sales` itself is listed via next-sitemap's additionalPaths,
+    // so none of them belong in the server sitemap.
+    options: [
+      {
+        label: "Work with us",
+        icon: "gtp-socials",
+        key: "sales",
+        rootKey: "sales",
+        urlKey: "sales",
+        url: "/sales",
+        excludeFromSitemap: true,
+      },
+      {
+        label: "Data Tiers",
+        icon: "gtp-categories",
+        key: "data-tiers",
+        rootKey: "sales",
+        urlKey: "sales",
+        url: "/sales#data-tiers",
+        excludeFromSitemap: true,
+      },
+      {
+        label: "Impact",
+        icon: "gtp-megaphone",
+        key: "sales-impact",
+        rootKey: "sales",
+        urlKey: "sales",
+        url: "/sales",
+        excludeFromSitemap: true,
+      },
+      {
+        label: "Platform Updates",
+        icon: "gtp-calendar-clean",
+        key: "sales-platform-updates",
+        rootKey: "sales",
+        urlKey: "sales",
+        url: "/sales",
+        excludeFromSitemap: true,
+      },
+    ],
+    href: "/sales",
+  },
 
 
   // // put navigation items that we want to hide in production here

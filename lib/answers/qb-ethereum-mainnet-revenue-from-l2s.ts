@@ -173,7 +173,7 @@ const ethereumMainnetRevenueFromL2s: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_rent_data_date}} UTC.",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Rent values are computed mechanically from public API data — chains don't influence the ranking. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Rent values are computed mechanically from public API data — chains don't influence the ranking. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [ultrasound.money](https://ultrasound.money/) tracks total ETH burn (which includes L2 base-fee burn). [L2BEAT's costs view](https://l2beat.com) tracks per-L2 data-posting costs. growthepie's [economics dashboard](https://www.growthepie.com/economics) shows the full revenue/cost/profit breakdown per chain.",
     '',

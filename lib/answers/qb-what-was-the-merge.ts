@@ -201,7 +201,7 @@ const whatWasTheMerge: QuickBiteData = createQuickBite({
     '# Methodology and data sources',
     "Historical facts (Merge activation date, 87% issuance reduction, 99.95% energy reduction) come from the Ethereum Foundation's post-Merge analysis and publicly verifiable on-chain data. Live numbers — total supply, current annualised issuance rate, net 30-day change — come from growthepie's [ETH supply tracker](/quick-bites/eth-supply) (`/v1/eim/eth_supply.json`), updated daily. For per-block burn detail and a live cumulative-burn counter, see [ultrasound.money](https://ultrasound.money/).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The Merge is an Ethereum protocol event — supporter relationships don't affect the description. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The Merge is an Ethereum protocol event — supporter relationships don't affect the description. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [ethereum.org's Merge page](https://ethereum.org/en/roadmap/merge/) is the canonical Ethereum Foundation reference. [ultrasound.money](https://ultrasound.money/) tracks live post-Merge supply dynamics. [Etherscan](https://etherscan.io/) and [Beaconcha.in](https://beaconcha.in/) show live validator and staking data.",
 

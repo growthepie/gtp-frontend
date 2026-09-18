@@ -3,13 +3,11 @@ import Link from "next/link";
 import Icon from "./Icon";
 import { track } from "@/lib/tracking";
 import XIcon from "@/icons/footer/X.svg";
-import DonateIcon from "@/icons/footer/GTP-Donate.svg";
 import BlogIcon from "@/icons/footer/GTP-Blog.svg";
 import KnowledgeIcon from "@/icons/footer/GTP-Book-Open.svg";
 import APIIcon from "@/icons/footer/GTP-File-Text.svg";
 import GithubIcon from "@/icons/footer/Github.svg";
 import ContributorsIcon from "@/icons/footer/GTP-Compass.svg";
-import FeedbackIcon from "@/icons/footer/GTP-Donate-1.svg";
 import Image from "next/image";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -84,9 +82,9 @@ export default function Footer() {
               href="/contributors"
             />
             <FooterLink
-              leftIcon={<GTPIcon icon="gtp-donate" size="md" />}
-              label="Donate"
-              href="/donate"
+              leftIcon={<GTPIcon icon="gtp-socials" size="md" />}
+              label="Work with us"
+              href="/sales"
             />
             <FooterLink
               leftIcon={<GTPIcon icon="gtp-feedback" size="md" />}
@@ -106,17 +104,17 @@ export default function Footer() {
               <div className="flex items-center gap-x-[10px] text-[14px]">
                 <Icon icon="gtp:logo" className="w-[26px] h-[26px]" />
                 <div className="text-sm leading-[1.5]">
-                  We are a public goods funded analytics platform.
+                  We are the analytics platform for the Ethereum ecosystem.
                 </div>
               </div>
               {/*desktop text*/}
               <div className="text-xs">
-              As a public good, we rely on grants and funding rounds like Gitcoin, Octant, and Giveth. Support us during active rounds—or donate anytime via Giveth. More info on our <Link href="/donate" className="underline" onClick={() => {
-                track("clicked Donate Footer link", {
+              Chains, applications and teams partner with us to get their data indexed, labeled and in front of the right audience. See our data tiers on the <Link href="/sales" className="underline" onClick={() => {
+                track("clicked Work with us Footer link", {
                   location: "desktop footer",
                   page: window.location.pathname,
                 });
-              }}>donate page</Link>.
+              }}>Work with us page</Link>.
               </div>
               <div className="text-xs">
               Some links on our platform are affiliate links and may generate a commission for us.

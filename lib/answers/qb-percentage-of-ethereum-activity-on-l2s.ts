@@ -211,7 +211,7 @@ const percentageOfEthereumActivityOnL2s: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_share_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The share split on this page is computed mechanically from public API data — chains and Layer 1/2 classifications do not influence numbers, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The share split on this page is computed mechanically from public API data — chains and Layer 1/2 classifications do not influence numbers, and supporters do not receive any adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [L2BEAT](https://l2beat.com) tracks per-L2 activity using its own chain-inclusion list — useful for confirming the direction even when absolute numbers differ slightly. [Etherscan](https://etherscan.io) provides Ethereum mainnet's standalone transaction count for verifying the L1 side. Variances across providers usually reduce to chain-inclusion differences, not different math.",
     '',

@@ -171,9 +171,9 @@ const hardcodedMetadataArray: RawMetadataRecord[] = [
     "Status": "Published"
   },
   {
-    "Path": "/donate",
-    "Title Template": "Support growthepie | Fund Open Ethereum Analytics",
-    "Description Template": "Help growthepie remain open and independent. Your support funds transparent analytics for the Ethereum community.",
+    "Path": "/sales",
+    "Title Template": "Work with us | growthepie",
+    "Description Template": "Partner with growthepie: get your chain or application indexed, labeled and visible across the Ethereum ecosystem. See our data tiers and get in touch.",
     "Status": "Published"
   },
   {
