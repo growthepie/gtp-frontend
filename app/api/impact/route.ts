@@ -25,7 +25,7 @@ async function fetchData() {
     const jsonResponse = await response.json();
 
     if (!jsonResponse.records) {
-      console.error("Error fetching donations:", jsonResponse);
+      console.error("Error fetching impact rows:", jsonResponse);
       return [];
     }
 
@@ -43,12 +43,12 @@ async function fetchData() {
         }))
     );
   } catch (error) {
-    console.error("Error fetching donations:", error);
+    console.error("Error fetching impact rows:", error);
     return [];
   }
 }
 
-export type DonationImpactRow = {
+export type ImpactRow = {
   name: string;
   url: string;
   date: string;

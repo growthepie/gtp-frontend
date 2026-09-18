@@ -206,7 +206,7 @@ const whatIsDataAvailability: QuickBiteData = createQuickBite({
     '# Methodology and data sources',
     "Conceptual material on this page is drawn from the published EIPs (EIP-4844 for blobs, EIP-7594 for PeerDAS), the Celestia / EigenDA / Avail whitepapers, and L2BEAT's DA risk framework. Live per-DA-layer metrics come from growthepie's DA endpoints (`/v1/da_overview.json`, `/v1/da_timeseries.json`, and the per-DA `/v1/da_metrics/*` endpoints).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters are DA providers or chains using specific DA providers. This page presents technical facts — provider descriptions follow the providers' own published material and L2BEAT's risk classifications. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters are DA providers or chains using specific DA providers. This page presents technical facts — provider descriptions follow the providers' own published material and L2BEAT's risk classifications. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [L2BEAT](https://l2beat.com) has detailed DA risk analysis per L2. [ethereum.org's roadmap](https://ethereum.org/en/roadmap/) covers Ethereum's own DA approach. The DA providers' websites — [celestia.org](https://celestia.org), [eigenda.xyz](https://eigenda.xyz), [availproject.org](https://www.availproject.org) — have their own whitepapers and live dashboards.",
 

@@ -148,7 +148,7 @@ const mostSmartAccountActivityEthereumL2: QuickBiteData = createQuickBite({
     '',
     'Currently growthepie\'s Pectra tracker publishes per-chain Type 4 counts for Ethereum L1, Base, OP Mainnet, Unichain, and Arbitrum — the chains where adoption has been most measurable. Coverage expands as more chains accumulate meaningful Type 4 activity.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Type 4 counts are computed mechanically from on-chain data — chains don't influence the ranking. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Type 4 counts are computed mechanically from on-chain data — chains don't influence the ranking. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [Etherscan](https://etherscan.io/) lets you filter transactions by type — search Type 4 transactions per chain to verify counts. Per-chain block explorers (Basescan, Arbiscan, etc.) expose the same filter. growthepie's [Pectra tracker](/quick-bites/pectra-upgrade) has the live charts.",
     '',

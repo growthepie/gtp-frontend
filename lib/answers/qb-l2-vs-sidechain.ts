@@ -163,7 +163,7 @@ const l2VsSidechain: QuickBiteData = createQuickBite({
     '',
     "We follow L2BEAT's classification conventions — they're the canonical independent resource for L2 architecture. If a chain disputes its classification, that's a conversation with L2BEAT and the chain team, not editorial judgement on our side.",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters are L2 chains. Sidechain classifications on this page follow L2BEAT and master.json — no editorial bias toward or against any chain. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters are L2 chains. Sidechain classifications on this page follow L2BEAT and master.json — no editorial bias toward or against any chain. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [L2BEAT](https://l2beat.com) is the most-cited independent classifier of L2s vs sidechains — they explicitly publish a stage and bucket for every project. [ethereum.org's Layer 2 page](https://ethereum.org/en/layer-2/) has the EF's overview of what constitutes an L2. Both should agree with growthepie's classification.",
 

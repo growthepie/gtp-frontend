@@ -207,7 +207,7 @@ const highestMarketCapL2Token: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_token_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains whose tokens appear in the ranking. Rankings are computed mechanically from public market-data feeds — chains and tokens do not pay for inclusion or placement, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Some supporters operate chains whose tokens appear in the ranking. Rankings are computed mechanically from public market-data feeds — chains and tokens do not pay for inclusion or placement, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Token market caps shown here should agree closely with [CoinGecko](https://www.coingecko.com) and [CoinMarketCap](https://coinmarketcap.com) for the same tokens. Small differences come from snapshot timing and circulating-supply definitions. What this page adds vs general crypto trackers: **the universe is restricted to Ethereum L2 native tokens**, using growthepie's own L2 classification so the ranking is internally consistent with the rest of this site.",
     '',

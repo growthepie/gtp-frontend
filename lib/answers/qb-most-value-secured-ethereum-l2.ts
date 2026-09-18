@@ -158,7 +158,7 @@ const mostValueSecuredEthereumL2: QuickBiteData = createQuickBite({
     '',
     "All values shown above were generated on {{l2_tvs_data_date}} UTC. Data licensed CC BY-NC 4.0.",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters operate L2 chains that appear in the rankings above. Ranks are computed mechanically from public API data — chains don't pay for inclusion or placement. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Several supporters operate L2 chains that appear in the rankings above. Ranks are computed mechanically from public API data — chains don't pay for inclusion or placement. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent TVS / TVL data sources for Ethereum L2s include [DefiLlama's chains page](https://defillama.com/chains) and [L2BEAT](https://l2beat.com). Methodologies differ slightly between providers — what counts as \"secured\" (native ETH? bridged ETH only? LSTs? RWAs?) and the price feed used can produce 5–10% differences in absolute USD value. Rank order and direction of movement should agree.",
     '',

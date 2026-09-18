@@ -7,7 +7,6 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import { useMediaQuery } from "usehooks-ts";
 import { useLocalStorage } from 'usehooks-ts';
 import Banner from "@/components/Banner";
-import SupportUsBanner from "./SupportUsBanner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "./HeaderLinks";
 import { track } from "@/lib/tracking";

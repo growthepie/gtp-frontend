@@ -177,7 +177,7 @@ const ethereumL2MaturityStages: QuickBiteData = createQuickBite({
     '',
     'growthepie\'s classifications broadly align with **L2BEAT\'s Stage** assessment, **ethereum.org\'s maturity** view, and observable chain properties (age, ecosystem size, proof system status). For the **canonical strict Stage 0/1/2 view**, see [l2beat.com](https://l2beat.com). For the **Ethereum Foundation\'s own maturity rankings**, see [ethereum.org/en/layer-2](https://ethereum.org/en/layer-2/) — they publish per-L2 maturity using the same vocabulary growthepie uses.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Many supporters operate L2 chains at various maturity levels. Classifications on this page follow growthepie's published methodology and L2BEAT — no editorial bias. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Many supporters operate L2 chains at various maturity levels. Classifications on this page follow growthepie's published methodology and L2BEAT — no editorial bias. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     '# Which chains are included?',
     "All **{{l2_mat_universe_size}}** chains in growthepie's L2 universe: {{l2_mat_universe_list}}. **Excluded:** Ethereum mainnet (L1), Polygon PoS (sidechain), aggregate keys.",

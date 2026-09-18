@@ -179,7 +179,7 @@ const zkVsOptimisticRollup: QuickBiteData = createQuickBite({
     '',
     "For the most rigorous per-chain analysis (proof system, fraud-proof status, security council composition, withdrawal mechanics), see [L2BEAT](https://l2beat.com) — they're the canonical resource for L2 architecture and risk classification.",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Many supporters operate L2 chains (both ZK and Optimistic). This page presents architectural facts only — chain classifications come from master.json and L2BEAT, not from editorial judgement. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Many supporters operate L2 chains (both ZK and Optimistic). This page presents architectural facts only — chain classifications come from master.json and L2BEAT, not from editorial judgement. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [L2BEAT](https://l2beat.com) is the most-cited independent source for L2 architecture and risk. [ethereum.org's Layer 2 page](https://ethereum.org/en/layer-2/) has the EF's overview of the ecosystem. For each chain\'s own technical docs, follow the links on its growthepie [chain page](https://www.growthepie.com/chains).",
 

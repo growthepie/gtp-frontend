@@ -26,7 +26,7 @@ async function fetchData() {
     const jsonResponse = await response.json();
 
     if (!jsonResponse.records) {
-      console.error("Error fetching donations:", jsonResponse);
+      console.error("Error fetching platform updates:", jsonResponse);
       return [];
     }
 
@@ -42,12 +42,12 @@ async function fetchData() {
         date: record.fields["Date"] || "",
       }));
   } catch (error) {
-    console.error("Error fetching donations:", error);
+    console.error("Error fetching platform updates:", error);
     return [];
   }
 }
 
-export type DonationUpdateRow = {
+export type PlatformUpdateRow = {
   name: string;
   url: string;
   date: string;

@@ -44,6 +44,12 @@ const gtpMain = {
       lastmod: new Date().toISOString(),
     },
     {
+      loc: "/sales",
+      changefreq: "weekly",
+      priority: 0.9,
+      lastmod: new Date().toISOString(),
+    },
+    {
       loc: "/privacy-policy",
       changefreq: "monthly",
       priority: 0.7,

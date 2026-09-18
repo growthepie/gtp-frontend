@@ -204,7 +204,7 @@ const whatPectraUpgradeChanged: QuickBiteData = createQuickBite({
     "2. **Ethereum's published EIP repository and Pectra announcement** — for upgrade dates, EIP numbers, parameter values (blob target = 6, validator cap = 2,048 ETH).",
     'No editorial interpretation: every claim on this page is verifiable against the tracker or the EIP text.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Pectra is an Ethereum mainnet upgrade — no L2 chain operator (whether or not a growthepie supporter) influences the upgrade or how it\'s described here. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Pectra is an Ethereum mainnet upgrade — no L2 chain operator (whether or not a growthepie supporter) influences the upgrade or how it\'s described here. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** For canonical documentation see [ethereum.org's Pectra page](https://ethereum.org/en/roadmap/pectra/), the [EIP index](https://eips.ethereum.org/) for individual EIP text, and the [ethereum/EIPs GitHub repo](https://github.com/ethereum/EIPs) for the discussion threads behind each change. The growthepie Pectra tracker linked above quantifies the upgrade's *adoption* in the weeks and months after activation.",
 

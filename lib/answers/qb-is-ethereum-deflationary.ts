@@ -185,7 +185,7 @@ const isEthereumDeflationary: QuickBiteData = createQuickBite({
     '',
     'Historical facts (EIP-1559 date, Merge date, 87% issuance reduction) come from published Ethereum Foundation announcements and the EIP repository. For per-block burn detail and a cumulative-burn counter, see [ultrasound.money](https://ultrasound.money/) — that\'s the community-standard live resource.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. ETH supply data comes from canonical Ethereum mainnet sources — no supporter influences the reported numbers. Full list of supporters and current funding rounds: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. ETH supply data comes from canonical Ethereum mainnet sources — no supporter influences the reported numbers. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Independent live burn / issuance trackers include [ultrasound.money](https://ultrasound.money/) (per-block burn + cumulative since EIP-1559), [Etherscan's supply page](https://etherscan.io/stat/supply), and the [ConsenSys ETH supply dashboard](https://consensys.io/). Numbers can differ slightly between providers because of timing (different block-height snapshots) and source choice (CL vs EL data), but the direction and order of magnitude should always agree.",
 

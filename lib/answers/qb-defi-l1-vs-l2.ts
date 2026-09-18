@@ -167,7 +167,7 @@ const defiL1VsL2: QuickBiteData = createQuickBite({
     '',
     '**3. L1 vs L2 DeFi activity per window + per-L2 contributors** — the precomputed answer endpoint `/v1/answers/defi-l1-vs-l2.json`. The backend recomputes it daily from growthepie\'s blockspace finance-category rollups (Ethereum L1 vs the `all_l2s` aggregate, plus the per-L2 breakdown for 30d), so the page no longer downloads a large blockspace file at render time. For per-app DeFi rankings see [growthepie.com/applications](https://www.growthepie.com/applications). For L1 DeFi protocol-level data, [DefiLlama](https://defillama.com/protocols) breaks Ethereum L1 TVL down by protocol.',
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Numbers on this page are computed mechanically from public API data. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. Numbers on this page are computed mechanically from public API data. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** [DefiLlama](https://defillama.com/) tracks DeFi TVL split between L1 and L2s (independent verification of the stablecoin-supply ratio). [L2BEAT's activity view](https://l2beat.com) tracks per-L2 activity. growthepie's [applications page](https://www.growthepie.com/applications) is the live per-app DeFi ranking.",
     '',

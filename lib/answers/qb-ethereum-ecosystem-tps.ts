@@ -214,7 +214,7 @@ const ethereumEcosystemTps: QuickBiteData = createQuickBite({
     '',
     "All values shown were generated on {{l2_ecotps_data_date}} UTC. Data is licensed CC BY-NC 4.0. Source code and methodology are open on [the growthepie GitHub organization](https://github.com/growthepie).",
     '',
-    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The figures on this page are computed mechanically from public API data — chains and Layer 1/2 classifications do not influence numbers, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/donate](https://www.growthepie.com/donate).",
+    "**Funding disclosure.** growthepie has received grants and ecosystem support from {{gtp_supporters}}. The figures on this page are computed mechanically from public API data — chains and Layer 1/2 classifications do not influence numbers, and supporters do not receive ranking adjustments. Full list of supporters: [growthepie.com/sales](https://www.growthepie.com/sales).",
     '',
     "**Cross-check this answer.** Compare against [L2BEAT](https://l2beat.com) (L2 activity and stage classification), [etherscan.io](https://etherscan.io) (Ethereum L1 transaction stats), and the chains' own block explorers. Differences across providers usually trace back to which chains are counted, whether testnets/archived chains are included, and whether vote transactions or system transactions are counted.",
     '',
