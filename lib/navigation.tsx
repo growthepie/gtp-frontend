@@ -9,8 +9,8 @@ export type NavigationItem = {
   name: string;
   label: string;
   newChild?: boolean;
-  /** Renders a divider above this item, to set it apart from the data sections. */
-  separatorBefore?: boolean;
+  /** Pushes this item to the bottom of the sidebar when there is spare height. */
+  spacerBefore?: boolean;
   page?: {
     title: string;
     description: string;
@@ -520,7 +520,7 @@ export const navigationItems: NavigationItem[] = [
     name: "Work with us",
     label: "Work with us",
     icon: "gtp-socials",
-    separatorBefore: true,
+    spacerBefore: true,
     // `href` makes the sidebar render this as a single link, so `options` never
     // show up in the menu. They exist so the sections of /sales are reachable
     // from search; `/sales` itself is listed via next-sitemap's additionalPaths,

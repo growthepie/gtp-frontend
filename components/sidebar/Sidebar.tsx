@@ -172,7 +172,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <div className={`select-none flex flex-col md:flex-1 md:min-h-0 bg-color-bg-default transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
-      <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:flex md:flex-col md:flex-1 md:min-h-0 md:max-h-screen md:pb-[100px] w-full overflow-y-auto overflow-x-clip scrollbar-none">
+      <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:flex md:flex-col md:flex-1 md:min-h-0 md:max-h-screen md:pb-[15px] w-full overflow-y-auto overflow-x-clip scrollbar-none">
         {/* grow fills leftover height so the spacer can push trailing items down;
             shrink-0 keeps the list at its natural height so nav scrolls instead. */}
         <div className="flex flex-col md:grow md:shrink-0 md:space-y-[10px]">
@@ -180,7 +180,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
             return (
               <Fragment key={index}>
-                {item.separatorBefore && <SidebarSeparator isOpen={isOpen} />}
+                {item.spacerBefore && <SidebarSpacer />}
                 <SidebarItem item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
               </Fragment>
             );
@@ -226,16 +226,8 @@ const SidebarWithProvider = (props: SidebarProps) => (
 export default SidebarWithProvider;
 
 /**
- * Divider between the data sections and the items below them (currently
- * "Work with us"). Collapses to the width of the icon column so it still
- * reads as a divider in the narrow sidebar.
+ * Absorbs whatever height is left over, pushing the items after it to the
+ * bottom of the sidebar. When the nav has to scroll there is nothing left to
+ * take, so it collapses and those items just follow the list.
  */
-const SidebarSeparator = ({ isOpen }: { isOpen: boolean }) => (
-  <div className="md:grow shrink-0 flex flex-col justify-end px-[5px] py-[5px]">
-    <div
-      className={`h-[1px] rounded-full bg-color-bg-medium transition-all duration-300 ${
-        isOpen ? 'w-full md:w-[212px]' : 'w-[38px]'
-      }`}
-    />
-  </div>
-);
+const SidebarSpacer = () => <div className="md:grow shrink-0" />;

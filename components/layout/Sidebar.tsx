@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { SidebarMenuGroup, SidebarMenuLink } from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
@@ -258,22 +258,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             <div ref={mobileRef} className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
               {/* <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"> */}
               <VerticalScrollContainer height={mobileHeight - 150} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-                {navigationItemsWithChains.map((item) => (
-                  <Fragment key={item.label + "_nav"}>
-                    {item.separatorBefore && <SidebarSeparator sidebarOpen={isSidebarOpen} />}
-                    {item.href ? (
-                      <SidebarMenuLink
-                        item={item}
-                        sidebarOpen={isSidebarOpen}
-                      />
-                    ) : (
-                      <SidebarMenuGroup
-                        item={item}
-                        sidebarOpen={isSidebarOpen}
-                      />
-                    )}
-                  </Fragment>
-                ))}
+                {navigationItemsWithChains.map((item) => 
+                  item.href ? (
+                    <SidebarMenuLink
+                      key={item.label + "_link"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  ) : (
+                    <SidebarMenuGroup
+                      key={item.label + "_item"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  )
+                )}
               </VerticalScrollContainer>
               {/* </div> */}
 
@@ -335,22 +334,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
       <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
         <div className="pl-[20px] w-[282px]">
-          {navigationItemsWithChains.map((item) => (
-            <Fragment key={item.label + "_nav"}>
-              {item.separatorBefore && <SidebarSeparator sidebarOpen={isSidebarOpen} />}
-              {item.href ? (
-                <SidebarMenuLink
-                  item={item}
-                  sidebarOpen={isSidebarOpen}
-                />
-              ) : (
-                <SidebarMenuGroup
-                  item={item}
-                  sidebarOpen={isSidebarOpen}
-                />
-              )}
-            </Fragment>
-          ))}
+          {navigationItemsWithChains.map((item) => 
+            item.href ? (
+              <SidebarMenuLink
+                key={item.label + "_link"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            ) : (
+              <SidebarMenuGroup
+                key={item.label + "_item"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            )
+          )}
         </div>
       </VerticalScrollContainer>
 
@@ -360,18 +358,3 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     </div>
   );
 }
-
-/**
- * Divider between the data sections and the items below them (currently
- * "Work with us"). Indented to line up with the menu labels, and narrow
- * enough to stay inside the collapsed sidebar.
- */
-const SidebarSeparator = ({ sidebarOpen }: { sidebarOpen: boolean }) => (
-  <div className="py-[5px] pl-[8px] pr-[20px]">
-    <div
-      className={`h-[1px] rounded-full bg-color-bg-medium transition-all duration-300 ${
-        sidebarOpen ? "w-full" : "w-[38px]"
-      }`}
-    />
-  </div>
-);
