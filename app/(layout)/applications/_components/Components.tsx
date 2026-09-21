@@ -162,7 +162,7 @@ export const PageTitleAndDescriptionAndControls = () => {
           </Link>
         </div>
       </div>
-      <Search />  
+      <Search hideChainSection />
       <Controls />
     </>
   );

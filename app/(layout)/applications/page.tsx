@@ -27,11 +27,12 @@ import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import AppCountByChain from "./_components/AppCountByChain";
 import { Switch } from "@/components/Switch";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 import ViewToggle from "@/components/ViewToggle";
-import { Carousel } from "@/components/Carousel";
+import { ExpandableCardContainer } from "@/components/layout/ExpandableCardContainer";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 
 // Preload data for the overview page
@@ -47,9 +48,6 @@ export default function Page() {
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
-
-  const [topGainersRef, { height: topGainersHeight }] = useElementSizeObserver<HTMLDivElement>();
-
 
   // useEffect(() => {
   //   const handleScroll = () => {
@@ -113,6 +111,13 @@ export default function Page() {
   const [showGrid, setShowGrid] = useLocalStorage("showGrid", true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
+  const [showAllTopGainers, setShowAllTopGainers] = useState(false);
+  const [showAllChains, setShowAllChains] = useState(false);
+  const [gainersHeaderRef, { height: gainersHeaderHeight }] = useElementSizeObserver<HTMLDivElement>({
+    initialSize: { height: 61 },
+  });
+  // Two 140px card rows, their gaps, and the ecosystem box's top/bottom padding.
+  const collapsedCardHeight = gainersHeaderHeight + 290 + 10 + 15 + 44;
 
 
   const { topGainers } = useMemo(() => {
@@ -128,7 +133,7 @@ export default function Page() {
 
     const changePctKey = medianMetricKey + "_change_pct";
 
-    // top 6 applications with highest positive change_pct only
+    // Top six applications with the highest positive change.
     const gainers = [...filteredApplications]
       .filter((application) => application[changePctKey] > 0 && application[changePctKey] !== Infinity)
       .sort((a, b) => b[changePctKey] - a[changePctKey])
@@ -146,71 +151,87 @@ export default function Page() {
   }, [selectedTimespan, selectedStringFilters, topGainers.length]);
 
 
+  const hasExpandedOverviewCard = (!hideTopGainers && showAllTopGainers) || showAllChains;
+
+  useEffect(() => {
+    if (!hasExpandedOverviewCard) return;
+
+    const closeCards = () => {
+      setShowAllTopGainers(false);
+      setShowAllChains(false);
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest("[data-application-overview-card]")) {
+        closeCards();
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeCards();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [hasExpandedOverviewCard]);
+
+
 
   return (
     <>
-      {!hideTopGainers && (
-        <div>
-          <div
-            className={``}
-
-          >
-            <Container className={`pt-[30px]`}>
-              <div className="flex flex-col gap-y-[10px] ">
-                <div className="heading-lg">Top Gainers by {metricsDef[medianMetric].name}</div>
-                <div className="flex justify-between items-center gap-x-[10px]">
-                  <div className="text-xs">
+      <div
+        aria-hidden="true"
+        className={`fixed inset-0 z-[1000] bg-color-bg-default/75 pointer-events-none transition-opacity duration-300 ${hasExpandedOverviewCard ? "opacity-100" : "opacity-0"}`}
+      />
+      <Container className="pt-[30px]">
+        <div className={`grid grid-cols-1 items-start gap-[15px] ${hideTopGainers ? "" : "lg:grid-cols-2"}`}>
+          <AppCountByChain
+            isExpanded={showAllChains}
+            onToggleExpand={() => setShowAllChains((expanded) => !expanded)}
+            collapsedHeight={collapsedCardHeight}
+            showTable={showGrid}
+          />
+          {!hideTopGainers && (
+            <section
+              data-application-overview-card
+              className={`relative min-w-0 ${showAllTopGainers ? "z-[1001]" : "z-0 has-[[data-card-animating]]:z-[1001]"}`}
+            >
+              <ExpandableCardContainer
+                isExpanded={showAllTopGainers}
+                onToggleExpand={() => setShowAllTopGainers((expanded) => !expanded)}
+                overlayOnExpand
+                collapsedHeight={collapsedCardHeight}
+                expandLabel="Top Gainers"
+                fullHeight={false}
+                minHeightClass=""
+                className="!pb-[44px]"
+                infoSlot={<TopGainersAndLosersTooltip metric={selectedMetrics[0]} />}
+              >
+                <div ref={gainersHeaderRef} className="flex shrink-0 flex-col gap-y-[10px]">
+                  <h2 className="heading-large-md">Top Gainers by {metricsDef[medianMetric].name}</h2>
+                  <p className="text-xs">
                     Projects that saw the biggest positive change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
-                  </div>
-                  <GTPTooltipNew
-                    placement="left"
-                    allowInteract={false}
-                    unstyled
-                    containerClass="z-[99]"
-                    hoverOpenDelay={100}
-                    trigger={
-                      <div className="size-[15px]">
-                        <Icon icon="feather:info" className="size-[15px]" />
-                      </div>
-                    }
-                  >
-                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
-                  </GTPTooltipNew>
+                  </p>
                 </div>
-              </div>
-            </Container>
-            <div ref={topGainersRef}>
-              <Container className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
-                {topGainers.map((application, index) => (
-                  <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-                ))}
-                {isLoading && new Array(6).fill(0).map((_, index) => (
-                  <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
-                ))}
-              </Container>
-            
-              <div className={`block md:hidden`}>
-                <div className="pt-[10px]">
-                  <Carousel
-                    heightClass="h-[150px]"
-                    focusMode={true}
-                    focusOpacity={0.5}
-                    arrows={false}
-                    gap={0} // reduce gap in focus mode
-                    pagination="dots"
-                  >
-                    {topGainers.map((application, index) => (
-                      <div key={index}>
-                        <ApplicationCard application={application} />
-                      </div>
-                    ))}
-                  </Carousel>
+                <div className="grid grid-cols-1 md:grid-cols-2 pt-[10px] gap-[10px]">
+                  {topGainers.slice(0, showAllTopGainers ? 6 : 4).map((application, index) => (
+                    <ApplicationCard
+                      key={application.owner_project}
+                      application={application}
+                      className={`min-w-0 ${!showAllTopGainers && index >= 2 ? "hidden md:flex" : ""}`}
+                    />
+                  ))}
+                  {isLoading && new Array(showAllTopGainers ? 6 : 4).fill(0).map((_, index) => (
+                    <ApplicationCard key={index} application={undefined} className="!min-w-0" />
+                  ))}
                 </div>
-              </div>
-            </div>
-          </div>
+              </ExpandableCardContainer>
+            </section>
+          )}
         </div>
-      )}
+      </Container>
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="w-full flex justify-between items-center">

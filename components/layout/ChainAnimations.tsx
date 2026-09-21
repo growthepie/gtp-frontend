@@ -2,7 +2,7 @@ import { animated, useSpring } from "@react-spring/web";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { ReactNode, useMemo, useState, useEffect, useRef } from "react";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
@@ -17,9 +17,13 @@ export default function ChainAnimations({
   selectedChains,
   setSelectedChains,
   selectedCategory,
-  parentContainerWidth,
+  parentContainerWidth = 0,
   master,
   disableAutoSelection = false,
+  formatValue,
+  fitContainer = false,
+  linkToChain = true,
+  onClick,
 }: {
   chain: string;
   value: number;
@@ -27,15 +31,20 @@ export default function ChainAnimations({
   sortedValues: Object;
   selectedValue: string;
   selectedMode: string;
-  selectedChains: Object;
-  setSelectedChains: (show: Object) => void;
-  selectedCategory: string;
-  parentContainerWidth: number;
-  master: MasterResponse;
+  selectedChains: Record<string, boolean>;
+  setSelectedChains: (updater: (previous: Record<string, boolean>) => Record<string, boolean>) => void;
+  selectedCategory?: string;
+  parentContainerWidth?: number;
+  master?: MasterResponse;
   disableAutoSelection?: boolean;
+  formatValue?: (value: number) => ReactNode;
+  fitContainer?: boolean;
+  linkToChain?: boolean;
+  onClick?: () => void;
 }) {
   const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
+  const chainInfo = AllChainsByKeys[chain];
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
   // const [width, setWidth] = useState(() => {
@@ -128,12 +137,13 @@ export default function ChainAnimations({
 
   const largestValue = useMemo(() => {
     return Math.max(
-      ...Object.values(valuesOfSelected).map(([, value]) => value),
+      0,
+      ...Object.values(fitContainer ? sortedValues : valuesOfSelected).map(([, value]) => value),
     );
-  }, [valuesOfSelected]);
+  }, [fitContainer, sortedValues, valuesOfSelected]);
 
   const relativeWidth = useMemo(() => {
-    if (sortedValues && value) {
+    if (sortedValues && value && largestValue > 0) {
       return 144 + (sortedValues[index][1] / largestValue) * 150;
     } else {
       return 144;
@@ -141,7 +151,7 @@ export default function ChainAnimations({
   }, [sortedValues, value, index, largestValue]);
 
   const percentage = useMemo(() => {
-    if (sortedValues && value) {
+    if (sortedValues && value && largestValue > 0) {
       return (value / largestValue) * 100;
     } else {
       return 0;
@@ -155,8 +165,20 @@ export default function ChainAnimations({
       <>
         <div
           key={chain}
-          className={`relative z-0 flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs font-medium transition-all duration-500 ${
-            AllChainsByKeys[chain].darkTextOnBackground === true
+          role="button"
+          tabIndex={0}
+          aria-label={`${chainInfo?.label ?? chain}: ${value.toLocaleString("en-GB")}`}
+          aria-pressed={!!selectedChains[chain]}
+          aria-disabled={!!selectedChains[chain] && availableSelectedChains <= 1}
+          onKeyDown={(event) => {
+            if (event.target !== event.currentTarget) return;
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              event.currentTarget.click();
+            }
+          }}
+          className={`relative z-0 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-color-text-primary flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs font-medium transition-all duration-500 ${
+            chainInfo?.darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"
           } ${isShaking ? "animate-shake" : ""} ${
@@ -164,11 +186,13 @@ export default function ChainAnimations({
           }`}
           style={{
             // width: `max(${percentage}%, ${relativeWidth}px)`,
-            width: `max(${percentage}%, ${relativeWidth}px)`,
-            maxWidth: "1000%",
-            backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
+            width: fitContainer
+              ? `calc(${percentage}% + ${184 * (1 - percentage / 100)}px)`
+              : `max(${percentage}%, ${relativeWidth}px)`,
+            maxWidth: fitContainer ? "100%" : "1000%",
+            backgroundColor: chainInfo?.colors[theme ?? "dark"]?.[1] ?? "#7D8887",
             maskImage:
-              percentage > 100
+              !fitContainer && percentage > 100
                 ? `linear-gradient(to right, white 0px, white ${parentContainerWidth - 40}px, transparent ${parentContainerWidth}px, transparent 100%)`
                 : `none`,
             // marginRight: percentage > 100 ? "-10px" : undefined,
@@ -180,6 +204,7 @@ export default function ChainAnimations({
           //   ...style,
           // }}
           onClick={() => {
+            onClick?.();
             if (availableSelectedChains > 1 || !selectedChains[chain]) {
               setSelectedChains((prevSelectedChains) => ({
                 ...prevSelectedChains,
@@ -197,7 +222,7 @@ export default function ChainAnimations({
             <div
               className="z-20 flex h-full w-[30px] items-center justify-center"
               style={{
-                color: AllChainsByKeys[chain].colors["dark"][0],
+                color: chainInfo?.colors["dark"][0] ?? "#7D8887",
               }}
             >
               <Icon
@@ -209,7 +234,7 @@ export default function ChainAnimations({
             <div className="flex flex-col text-color-text-primary">
               <div className="-mb-[4px] mt-[1px] text-[14px] font-bold">
                 {" "}
-                {selectedValue === "share" ? (
+                {formatValue ? formatValue(value) : selectedValue === "share" ? (
                   <div>{Math.round(value * 100)}%</div>
                 ) : (
                   <div className="flex">
@@ -242,21 +267,23 @@ export default function ChainAnimations({
                   </div>
                 )}
               </div>
-              <Link
-                href={`/chains/${AllChainsByKeys[chain].urlKey}/`}
+              {linkToChain && chainInfo ? <Link
+                href={`/chains/${chainInfo.urlKey}/`}
                 className="text-[10px] hover:underline"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
               >
-                {AllChainsByKeys[chain].label}
-              </Link>
+                {chainInfo.label}
+              </Link> : (
+                <span className="text-[10px]">{chainInfo?.label ?? chain}</span>
+              )}
             </div>
           </div>
           <div
             className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-color-bg-default"
             style={{
-              left: percentage > 100 ? parentContainerWidth - 25 : undefined,
+              left: !fitContainer && percentage > 100 ? parentContainerWidth - 25 : undefined,
             }}
           >
             <Icon
@@ -265,7 +292,7 @@ export default function ChainAnimations({
               }`}
               className="h-[15px] w-[15px] align-middle"
               style={{
-                color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
+                color: chainInfo?.colors[theme ?? "dark"]?.[0] ?? "#7D8887",
                 lineHeight: 1, // Ensure the line height doesn't cause vertical misalignment
               }}
             />

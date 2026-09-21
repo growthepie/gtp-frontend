@@ -30,7 +30,13 @@ export const useElementSizeObserver = <T extends HTMLElement = HTMLDivElement>(
     [initialSize?.height, initialSize?.width],
   );
   const [size, setSize] = useState<Size>(mergedInitialSize);
-  const element = ref.current;
+  const [element, setElement] = useState<T | null>(null);
+
+  // The ref target can mount after the render that reads it (e.g. a
+  // conditionally rendered element), so sync it after every commit.
+  useIsomorphicLayoutEffect(() => {
+    if (ref.current !== element) setElement(ref.current);
+  });
 
   useIsomorphicLayoutEffect(() => {
     if (!enabled) {

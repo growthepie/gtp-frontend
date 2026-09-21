@@ -26,6 +26,7 @@ import { LabelsURLS } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
+import { ChainSelectionDivider, ChainSelectionToggle } from "./ChainSelectionControls";
 import { useUIContext } from "@/contexts/UIContext";
 import CategoryBar from "@/components/layout/CategoryBar";
 import LoadingAnimation from "@/components/layout/LoadingAnimation";
@@ -1066,60 +1067,12 @@ export default function CategoryMetrics({
                       </GridTableHeader>
                       
                       {/* Desktop select all button */}
-                      <div 
-                        className="absolute right-[37px] top-[5px] cursor-pointer hidden lg:block"
-                        onClick={onChainSelectToggle}
-                      >
-                        <div 
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full" 
-                          style={{
-                            color: chainSelectToggleState === "all" ? undefined : "#5A6462",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`h-6 w-6 ${
-                              chainSelectToggleState === "none" ? "opacity-100" : "opacity-0"
-                            }`}
-                          >
-                            <circle
-                              xmlns="http://www.w3.org/2000/svg"
-                              cx="12"
-                              cy="12"
-                              r="8"
-                            />
-                          </svg>
-                        </div>
-                        <div 
-                          className={`rounded-full p-1 ${
-                            chainSelectToggleState === "none"
-                              ? "bg-forest-50 dark:bg-color-bg-default"
-                              : "bg-white dark:bg-color-ui-active"
-                          }`}
-                        >
-                          <Icon
-                            icon="feather:check-circle"
-                            className={`h-[15px] w-[15px] ${
-                              chainSelectToggleState === "none" ? "opacity-0" : "opacity-100"
-                            }`}
-                            style={{
-                              color:
-                                chainSelectToggleState === "all"
-                                  ? undefined
-                                  : chainSelectToggleState === "normal"
-                                    ? "#5A6462"
-                                    : "#5A6462",
-                            }}
-                          />
-                        </div>
+                      <div className="absolute right-[37px] top-[5px] hidden lg:block">
+                        <ChainSelectionToggle
+                          state={chainSelectToggleState}
+                          onClick={onChainSelectToggle}
+                          ariaLabel={chainSelectToggleState === "all" ? "Deselect all chains" : "Select all chains"}
+                        />
                       </div>
                     </div>
 
@@ -1135,60 +1088,12 @@ export default function CategoryMetrics({
                           </GridTableHeaderCell>
                           <GridTableHeaderCell>Chain</GridTableHeaderCell>
                         </GridTableHeader>
-                        <div 
-                          className="absolute right-[5px] top-[5px] cursor-pointer"
-                          onClick={onChainSelectToggle}
-                        >
-                          <div 
-                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full" 
-                            style={{
-                              color: chainSelectToggleState === "all" ? undefined : "#5A6462",
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className={`h-6 w-6 ${
-                                chainSelectToggleState === "none" ? "opacity-100" : "opacity-0"
-                              }`}
-                            >
-                              <circle
-                                xmlns="http://www.w3.org/2000/svg"
-                                cx="12"
-                                cy="12"
-                                r="8"
-                              />
-                            </svg>
-                          </div>
-                          <div 
-                            className={`rounded-full p-1 ${
-                              chainSelectToggleState === "none"
-                                ? "bg-forest-50 dark:bg-color-bg-default"
-                                : "bg-white dark:bg-color-ui-active"
-                            }`}
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`h-[15px] w-[15px] ${
-                                chainSelectToggleState === "none" ? "opacity-0" : "opacity-100"
-                              }`}
-                              style={{
-                                color:
-                                  chainSelectToggleState === "all"
-                                    ? undefined
-                                    : chainSelectToggleState === "normal"
-                                      ? "#5A6462"
-                                      : "#5A6462",
-                              }}
-                            />
-                          </div>
+                        <div className="absolute right-[5px] top-[5px]">
+                          <ChainSelectionToggle
+                            state={chainSelectToggleState}
+                            onClick={onChainSelectToggle}
+                            ariaLabel={chainSelectToggleState === "all" ? "Deselect all chains" : "Select all chains"}
+                          />
                         </div>
                       </div>
                     </div>
@@ -1234,19 +1139,9 @@ export default function CategoryMetrics({
                                 disableAutoSelection={true} // Disable auto-selection
                               />
                             ) : (
-                              <div
-                                className={`flex items-center transition-opacity duration-[1500ms] gap-x-[5px] ${
-                                  updatePlaceholderOpacity
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                }`}
-                              >
-                                <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
-                                <span className=" heading-caps-xxs text-color-text-primary">
-                                  Not showing in chart
-                                </span>
-                                <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
-                              </div>
+                              <ChainSelectionDivider
+                                className={updatePlaceholderOpacity ? "opacity-100" : "opacity-0"}
+                              />
                             )}
                           </AnimatedDiv>
                         ))}

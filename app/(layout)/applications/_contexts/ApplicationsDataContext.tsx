@@ -36,7 +36,13 @@ export type AggregatedDataRow = {
   rank_daa: number;
 }
 
-const memoizedResults = new Map();
+const memoizedResults = new Map<string, {
+  data: AppDatum[];
+  types: string[];
+  metadata: { [key: string]: any };
+  supportedChains: string[];
+  results: AggregatedDataRow[];
+}>();
 const MAX_CACHE_SIZE = 20;
 const METRIC_FILTER_ALLOWLIST = new Set([
   "gas_fees",
@@ -101,12 +107,6 @@ function matchesMetricFilter(value: number, filter: MetricFilter): boolean {
 }
 
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
-  // Create cache key for this specific function
-  const cacheKey = `ownerProjectToOriginKeysMap-${data.length}`;
-  if (memoizedResults.has(cacheKey)) {
-    return memoizedResults.get(cacheKey);
-  }
-
   const result = data.reduce((acc, entry) => {
     const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
     if (!acc[owner]) acc[owner] = [];
@@ -114,7 +114,6 @@ function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[
     return acc;
   }, {});
 
-  memoizedResults.set(cacheKey, result);
   return result;
 }
 
@@ -156,8 +155,14 @@ function aggregateProjectData(
   const cacheKey = getCacheKey(timespan, filters, focusEnabled, showUsd);
   
   // Check if we have cached results
-  if (memoizedResults.has(cacheKey)) {
-    return memoizedResults.get(cacheKey);
+  const cached = memoizedResults.get(cacheKey);
+  if (
+    cached?.data === data &&
+    cached.types === typesArr &&
+    cached.metadata === ownerProjectToProjectData &&
+    cached.supportedChains === supportedChainsKeys
+  ) {
+    return cached.results;
   }
 
   // Pre-process: get mapping of owner_project to origin_keys
@@ -305,13 +310,19 @@ function aggregateProjectData(
   assignRanks(filteredResults, 'daa');
 
   // Cache the results
-  memoizedResults.set(cacheKey, filteredResults);
+  memoizedResults.set(cacheKey, {
+    data,
+    types: typesArr,
+    metadata: ownerProjectToProjectData,
+    supportedChains: supportedChainsKeys,
+    results: filteredResults,
+  });
 
   // Limit cache size to avoid memory leaks
   if (memoizedResults.size > MAX_CACHE_SIZE) {
     // Remove the oldest entry using iterator
     const firstKey = memoizedResults.keys().next().value;
-    memoizedResults.delete(firstKey);
+    if (firstKey !== undefined) memoizedResults.delete(firstKey);
   }
   return filteredResults;
 }
@@ -337,8 +348,11 @@ const devMiddleware = (useSWRNext) => {
 export type ApplicationsDataContextType = {
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
+  allChainsDeselected: boolean;
+  deselectAllChains: () => void;
   applicationDataAggregated: AggregatedDataRow[];
   applicationDataAggregatedAndFiltered: AggregatedDataRow[];
+  applicationCountsByChain: { chain: string; count: number }[];
   isLoading: boolean;
   applicationsChains: string[];
   selectedStringFilters: string[];
@@ -389,9 +403,12 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
   const router = useRouter();
 
   const selectedChainsParam = useMemo(() =>
-    searchParams.get("origin_key")?.split(",") || [],
+    searchParams.get("origin_key")?.split(",").filter(Boolean) || [],
     [searchParams]
   );
+
+  // Missing origin_key means all chains; an explicit empty value means none.
+  const allChainsDeselected = searchParams.has("origin_key") && selectedChainsParam.length === 0;
 
   const selectedStringFiltersParam = useMemo(() =>
     searchParams.get("owner_project")?.split(",") || [],
@@ -487,7 +504,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), fetcher || multiFetcher);
 
   const applicationDataFiltered = useMemo(() => {
-    if (!applicationsTimespan) return [];
+    if (!applicationsTimespan || allChainsDeselected) return [];
     const applicationsDataTimespan = {
       "1d": applicationsTimespan[0],
       "7d": applicationsTimespan[1],
@@ -520,6 +537,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     applicationsTimespan,
     selectedTimespan,
     selectedChainsParam,
+    allChainsDeselected,
     selectedStringFiltersParam,
     selectedMainCategoryParam,
     selectedMetricFiltersParam,
@@ -558,6 +576,72 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
       showUsd,
     );
   }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled, supportedChainKeys, showUsd]);
+
+  const applicationCountsByChain = useMemo(() => {
+    if (!applicationsTimespan) return [];
+    const timespanIndex = ["1d", "7d", "30d", "90d", "365d", "max"].indexOf(selectedTimespan);
+    const dataset = applicationsTimespan[timespanIndex]?.data;
+    if (!dataset) return [];
+
+    // Use the same project filters and totals as the table, across all chains.
+    const applications = aggregateProjectData(
+      dataset.data,
+      dataset.types,
+      ownerProjectToProjectData,
+      {
+        origin_key: [],
+        owner_project: selectedStringFiltersParam,
+        main_category: selectedMainCategoryParam,
+        metric_filter: selectedMetricFiltersParam,
+      },
+      selectedTimespan,
+      focusEnabled,
+      supportedChainKeys,
+      showUsd,
+    );
+    const counts = new Map<string, number>();
+    // Keep chains visible even when no apps match the other filters.
+    applicationDataAggregated.forEach((application) => {
+      application.origin_keys.forEach((chain) => counts.set(chain, 0));
+    });
+    const matchingProjects = new Set(applications.map((application) => application.owner_project));
+    const ownerIndex = dataset.types.indexOf("owner_project");
+    const chainIndex = dataset.types.indexOf("origin_key");
+    const txCountIndex = dataset.types.indexOf("txcount");
+    const transactionsByChain = new Map<string, Map<string, number>>();
+
+    // Require three current-period transactions on each chain independently.
+    // Previous-period activity and transactions on other chains do not qualify.
+    for (const entry of dataset.data as AppDatum[]) {
+      const owner = entry[ownerIndex] as string;
+      const chain = entry[chainIndex] as string;
+      const txCount = entry[txCountIndex];
+      if (!matchingProjects.has(owner) || !counts.has(chain)) continue;
+      if (typeof txCount !== "number" || !Number.isFinite(txCount)) continue;
+
+      const projects = transactionsByChain.get(chain) ?? new Map<string, number>();
+      projects.set(owner, (projects.get(owner) ?? 0) + txCount);
+      transactionsByChain.set(chain, projects);
+    }
+    transactionsByChain.forEach((projects, chain) => {
+      projects.forEach((txCount) => {
+        if (txCount >= 3) counts.set(chain, (counts.get(chain) ?? 0) + 1);
+      });
+    });
+    return Array.from(counts, ([chain, count]) => ({ chain, count }))
+      .sort((a, b) => b.count - a.count || a.chain.localeCompare(b.chain));
+  }, [
+    applicationsTimespan,
+    selectedTimespan,
+    ownerProjectToProjectData,
+    selectedStringFiltersParam,
+    selectedMainCategoryParam,
+    selectedMetricFiltersParam,
+    focusEnabled,
+    supportedChainKeys,
+    showUsd,
+    applicationDataAggregated,
+  ]);
 
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string | null; display_name: string }>,
@@ -617,8 +701,11 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
       value={{
         selectedChains: selectedChainsParam,
         setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
+        allChainsDeselected,
+        deselectAllChains: () => handleFilters(FilterType.CHAIN, [""]),
         applicationDataAggregated: applicationDataAggregated,
         applicationDataAggregatedAndFiltered,
+        applicationCountsByChain,
         isLoading: applicationsTimespanLoading || masterLoading,
         applicationsChains: applicationsChains.filter(chain => supportedChainKeys.includes(chain)),
         selectedStringFilters: selectedStringFiltersParam,
