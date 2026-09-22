@@ -360,6 +360,10 @@ const StablecoinChain: QuickBiteData = {
       name: "Ronin",
       url: "/chains/ronin"
     },
+    {
+      name: "Robinhood Chain",
+      url: "/chains/robinhood"
+    },
   ],
   icon: "",
   showInMenu: true,

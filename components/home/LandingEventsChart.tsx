@@ -30,6 +30,9 @@ import LoadingAnimation from "../layout/LoadingAnimation";
 import { chain, size } from "lodash";
 import { useTheme } from "next-themes";
 import { CHART_REVEAL_DURATION_MS } from "@/lib/chart-animation";
+import { downloadElementAsImage } from "../GTPComponents/chartSnapshotHelpers";
+import LoadingSpinnerIcon from "../GTPComponents/LoadingSpinnerIcon";
+import { useIsSafari } from "@/hooks/useIsSafari";
 
 const EMPTY_OPTIONS: EventOption[] = [];
 
@@ -848,6 +851,9 @@ const LandingEventsCardContent = ({ eventData }: { eventData: ResolvedEventExamp
 
 const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: ResolvedEventExample; onInteract: () => void }) => {
   const { metrics } = useMaster();
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [isDownloadingChartSnapshot, setIsDownloadingChartSnapshot] = useState(false);
+  const isSafari = useIsSafari();
   const [selectedRange, setSelectedRange] = useState<[number, number] | null>(null);
   const [isWrapping, setIsWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -1096,7 +1102,7 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
   
   return (
     <div className="relative flex-1 min-w-[300px] h-[442px] overflow-hidden xs:mt-[0px] mt-[30px] " onMouseEnter={onInteract} >
-      <GTPCardLayout className="h-[442px]" mobileBreakpoint={0}
+      <GTPCardLayout cardRef={cardRef} className="h-[442px]" mobileBreakpoint={0}
        topBar={
         showOptions ? (
           <GTPButtonContainer style={{ borderRadius: isWrapping ? "15px" : "inherit" }}>
@@ -1168,8 +1174,31 @@ const LandingEventsChartContent = ({ eventData, onInteract }: { eventData: Resol
        )
        }
        bottomBar={
-        <GTPButtonContainer className="flex items-center justify-center">
-          <GTPButtonRow>
+        <GTPButtonContainer>
+          {!isSafari && (
+            <GTPButtonRow>
+              <GTPButton
+                label="Take Screenshot"
+                leftIcon="gtp-png-monochrome"
+                leftIconOverride={isDownloadingChartSnapshot ? <LoadingSpinnerIcon /> : undefined}
+                size="sm"
+                variant="no-background"
+                visualState={isDownloadingChartSnapshot || isRevealing || activeSeries.length === 0 ? "disabled" : "default"}
+                disabled={isDownloadingChartSnapshot || isRevealing || activeSeries.length === 0}
+                clickHandler={async () => {
+                  if (!cardRef.current || isDownloadingChartSnapshot) return;
+                  onInteract();
+                  setIsDownloadingChartSnapshot(true);
+                  try {
+                    await downloadElementAsImage(cardRef.current, eventData.title);
+                  } finally {
+                    setIsDownloadingChartSnapshot(false);
+                  }
+                }}
+              />
+            </GTPButtonRow>
+          )}
+          <GTPButtonRow className="ml-auto">
             <Link href={eventData.link} className="flex w-full items-center justify-end">
               <GTPButton
                 label="See More"
