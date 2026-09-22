@@ -24,10 +24,10 @@ export default function EthTheAssetPage() {
       <Container className="flex flex-col pt-[45px] md:pt-[30px] pb-[15px] gap-y-[60px]">
         <EthHero ethSnapshot={ethSnapshot} />
         <SixThingsSection ethSnapshot={ethSnapshot} />
-        <ProductiveAssetSection />
         <SupplySection ethSnapshot={ethSnapshot} />
-        <BasketSection />
+        <ProductiveAssetSection />
         <RankingSection ethSnapshot={ethSnapshot} />
+        <BasketSection />
         <DailySection />
       </Container>
     </>

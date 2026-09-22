@@ -1,12 +1,26 @@
+"use client";
+
+import useSWR from "swr";
+import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { SparklineChart } from "@/components/layout/Applications/AppMetricCard";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import { getChainMetricURL } from "@/lib/urls";
 import Card from "./_components/Card";
-import Sparkline from "./_components/Sparkline";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { AccentColor } from "./_components/colors";
+import { ACCENT_HEX, AccentColor } from "./_components/colors";
 import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+
+type FeesResponse = {
+  details?: {
+    timeseries?: {
+      daily?: { types: string[]; data: number[][] };
+    };
+  };
+};
 
 function PropCard({
   icon,
@@ -14,6 +28,7 @@ function PropCard({
   tag,
   value,
   unit,
+  info,
   children,
 }: {
   icon: GTPIconName;
@@ -21,6 +36,7 @@ function PropCard({
   tag: string;
   value: string;
   unit: string;
+  info?: string;
   children?: React.ReactNode;
 }) {
   return (
@@ -30,9 +46,21 @@ function PropCard({
         <span className="heading-small-xs flex-1">{title}</span>
         <span className="heading-small-xxxs px-[8px] py-[3px] rounded-full bg-color-bg-medium">{tag}</span>
       </div>
-      <div className="flex items-baseline gap-x-[5px]">
+      <div className="flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
         <span className="numbers-2xl">{value}</span>
         <span className="heading-small-xxxs pt-[1px]">{unit}</span>
+        {info && (
+          <Tooltip placement="bottom">
+            <TooltipTrigger asChild>
+              <button type="button" aria-label={`About ${value} ${unit}`} className="inline-flex self-center items-center justify-center">
+                <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+              {info}
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
       {children}
     </Card>
@@ -73,6 +101,15 @@ function MarketHours() {
 }
 
 export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
+  const { resolvedTheme } = useTheme();
+  const feeColor = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"].yellow;
+  const { data: feesData, isLoading: feesLoading } = useSWR<FeesResponse>(getChainMetricURL("ethereum", "fees-paid-by-users"));
+  const dailyFees = feesData?.details?.timeseries?.daily;
+  const ethColumn = dailyFees?.types.indexOf("eth") ?? -1;
+  const recentFeePoints =
+    ethColumn >= 0
+      ? dailyFees?.data.slice(-30).filter((row) => Number.isFinite(row[0]) && Number.isFinite(row[ethColumn])) ?? []
+      : [];
   const ethGrowthPct = ethSnapshot ? -ethSnapshot.annualIssuanceRatePct : -0.04;
   const scarceRows: { label: string; value: number; color: AccentColor; emphasis?: boolean }[] = [
     { label: "ETH", value: Math.abs(ethGrowthPct), color: "turquoise", emphasis: true },
@@ -157,19 +194,43 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           </div>
         </PropCard>
 
-        <PropCard icon="gtp-metrics-marketcap" title="Liquid" tag="market depth" value="$28.4B" unit="traded per day">
-          <Sparkline points={[14, 19, 17, 22, 26, 21, 28, 24, 31, 28, 34, 28.4]} color="yellow" height={54} />
-          <span className="heading-small-xxxs text-color-text-primary/70">Spot volume, 12 months</span>
+        <PropCard
+          icon="gtp-metrics-feespaidbyusers"
+          title="Network fuel"
+          tag="utility"
+          value="ETH"
+          unit="pays for gas on L1 and 16 Layer 2s"
+          info="Every Ethereum Mainnet transaction uses ETH to pay for computation and blockspace. Part of the base fee is burned."
+        >
+          <div className="mt-auto">
+            {recentFeePoints.length > 1 ? (
+              <div className="h-[72px]">
+                <SparklineChart
+                  values={recentFeePoints.map((row) => row[ethColumn])}
+                  timestamps={recentFeePoints.map((row) => new Date(row[0]).toISOString().slice(0, 10))}
+                  color={feeColor}
+                  label="Gas fees paid"
+                  prefix=""
+                  suffix=" ETH"
+                  height={72}
+                />
+              </div>
+            ) : (
+              <div className="flex h-[72px] items-center text-xs text-color-text-primary/70">
+                {feesLoading ? "Loading gas fees..." : "Gas fee data unavailable"}
+              </div>
+            )}
+          </div>
         </PropCard>
 
-        <PropCard icon="gtp-support" title="Neutral rails" tag="freedom tech" value="190+" unit="countries with users">
+        <PropCard icon="gtp-support" title="Neutral rails" tag="freedom tech" value="24/7" unit="for over 11 years">
+          <div className="text-xs md:text-sm">Censorship-resistant and always available.</div>
           <MarketHours />
         </PropCard>
       </div>
 
       <IllustrativeNote>
-        Supply and issuance are live. The yield split, collateral mix, settlement times, spot volume and country count
-        are illustrative.
+        Supply and issuance are live. The yield split, collateral mix and settlement times are illustrative.
       </IllustrativeNote>
     </div>
   );

@@ -1,21 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
+import useSWR from "swr";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
 import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
 import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+import { getChainMetricURL } from "@/lib/urls";
 import { ACCENT_HEX, AccentColor } from "./_components/colors";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 
 const WORLD_POPULATION = 8.2e9;
 
+type MarketCapResponse = {
+  details?: {
+    timeseries?: {
+      daily?: { types: string[]; data: number[][] };
+    };
+  };
+};
+
 // Fixed (not random) so server and client markup match and nothing flickers on
 // hydration. These back the tiles that have no live source yet.
 const TREND_UP = [2.9, 3.0, 2.95, 3.05, 3.0, 3.08, 3.04, 3.1, 3.07, 3.12];
 const TREND_FLAT = [29.4, 29.6, 29.5, 29.9, 30.0, 29.8, 30.1, 30.2, 30.3, 30.4];
-const TREND_COLLATERAL = [44.1, 45.2, 44.8, 46.0, 45.6, 46.9, 47.2, 47.0, 47.9, 48.2];
 const TREND_BURN = [362, 388, 371, 402, 396, 418, 405, 397, 423, 412];
 
 // Pointer-reactive diamond built from plain CSS/SVG (no 3D library). A slow
@@ -92,9 +103,33 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
 
 export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
   const { globalMetrics } = useSSEMetrics();
+  const { data: marketCapData } = useSWR<MarketCapResponse>(getChainMetricURL("ethereum", "market-cap"));
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
   const price = globalMetrics.eth_price_usd;
+  const dailyMarketCap = marketCapData?.details?.timeseries?.daily;
+  const priceHistory = useMemo(() => {
+    const usdColumn = dailyMarketCap?.types.indexOf("usd") ?? -1;
+    const ethColumn = dailyMarketCap?.types.indexOf("eth") ?? -1;
+    if (!dailyMarketCap || usdColumn < 0 || ethColumn < 0) return { values: [], timestamps: [] };
+
+    const points = dailyMarketCap.data.slice(-30).flatMap((row) => {
+      const [timestamp] = row;
+      const usd = row[usdColumn];
+      const eth = row[ethColumn];
+      return Number.isFinite(timestamp) && Number.isFinite(usd) && Number.isFinite(eth) && eth > 0
+        ? [{ timestamp, price: usd / eth }]
+        : [];
+    });
+    return {
+      values: points.map((point) => point.price),
+      timestamps: points.map((point) => new Date(point.timestamp).toISOString().slice(0, 10)),
+    };
+  }, [dailyMarketCap]);
+  const latestHistoricalPrice = priceHistory.values[priceHistory.values.length - 1];
+  const displayedPrice = price && price > 0 ? price : latestHistoricalPrice;
+  const weekAgoPrice = priceHistory.values[priceHistory.values.length - 8];
+  const priceChange = weekAgoPrice ? ((latestHistoricalPrice / weekAgoPrice) - 1) * 100 : 0;
 
   const tile = (color: AccentColor) => hex[color];
 
@@ -129,9 +164,19 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
             </span>
           </div>
           {ethSnapshot && (
-            <div className="flex items-center gap-x-[8px] h-[36px] px-[15px] rounded-full bg-color-bg-medium w-fit">
+            <div className="flex flex-wrap items-center gap-x-[8px] min-h-[36px] px-[15px] py-[6px] rounded-full bg-color-bg-medium w-fit">
               <GTPIcon icon="gtp-users-monochrome" size="sm" className="text-color-accent-yellow" />
               <span className="heading-small-xs">ETH per person on earth</span>
+              <Tooltip placement="bottom">
+                <TooltipTrigger asChild>
+                  <button type="button" aria-label="About ETH per person on earth" className="flex items-center justify-center">
+                    <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+                  If all ETH were split evenly across everyone alive, each person would have {(ethSnapshot.totalSupply / WORLD_POPULATION).toFixed(4)} ETH. Most people hold none, so owning even a small amount puts you in a meaningful percentile of holders.
+                </TooltipContent>
+              </Tooltip>
               <span className="numbers-sm">{(ethSnapshot.totalSupply / WORLD_POPULATION).toFixed(6)}</span>
             </div>
           )}
@@ -141,6 +186,28 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
 
       <div className="flex flex-col gap-y-[10px]">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[10px]">
+          {priceHistory.values.length > 1 && displayedPrice ? (
+            <GTPMetricCard
+              label="ETH price"
+              icon="gtp-tokeneth"
+              value={displayedPrice}
+              wowChange={priceChange}
+              prefix="$"
+              sparkline={priceHistory.values}
+              timestamps={priceHistory.timestamps}
+              color={tile("turquoise")}
+            />
+          ) : (
+            <div className="flex h-2xl items-center justify-between gap-x-[10px] rounded-[15px] bg-color-bg-default p-[15px]">
+              <span className="flex items-center gap-x-[10px]">
+                <GTPIcon icon="gtp-tokeneth" size="md" />
+                <span className="heading-large-xxs xs:heading-large-xs">ETH price</span>
+              </span>
+              <span className="numbers-sm xs:numbers-md text-color-accent-turquoise">
+                {displayedPrice?.toLocaleString("en-US", { style: "currency", currency: "USD" }) ?? "—"}
+              </span>
+            </div>
+          )}
           {ethSnapshot && (
             <GTPMetricCard
               label="Supply"
@@ -175,15 +242,6 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
             color={tile("turquoise")}
           />
           <GTPMetricCard
-            label="Used as collateral"
-            icon="gtp-metrics-totalvaluelocked"
-            value={48.2e9}
-            wowChange={3.1}
-            prefix="$"
-            sparkline={TREND_COLLATERAL}
-            color={tile("red")}
-          />
-          <GTPMetricCard
             label="Fees burned 24h"
             icon="gtp-metrics-feespaidbyusers"
             value={412}
@@ -192,10 +250,20 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
             sparkline={TREND_BURN}
             color={tile("red")}
           />
+          <Link
+            href="/ethereum-ecosystem/metrics"
+            className="group flex h-2xl items-center justify-between gap-x-[10px] rounded-[15px] bg-color-bg-default p-[15px] shadow-standard transition-colors hover:bg-color-ui-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-color-accent-turquoise"
+          >
+            <span className="flex items-center gap-x-[10px]">
+              <GTPIcon icon="gtp-metrics-activity" size="md" />
+              <span className="heading-large-xxs xs:heading-large-xs">Ecosystem activity</span>
+            </span>
+            <GTPIcon icon="gtp-chevronright" size="sm" className="shrink-0 transition-transform group-hover:translate-x-[3px]" />
+          </Link>
         </div>
         <IllustrativeNote>
-          Supply is live from growthepie data, with the annualised issuance rate as its change. Staking yield, staked
-          share, collateral and burn are illustrative — we don&apos;t track those yet.
+          Supply and ETH price are live from growthepie data, with the annualised issuance rate as supply&apos;s change.
+          Staking yield, staked share and burn are illustrative — we don&apos;t track those yet.
         </IllustrativeNote>
       </div>
     </div>

@@ -94,14 +94,7 @@ export default function DailySection() {
         }}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px] items-start">
-        <Card>
-          <span className="heading-small-xs">What kind of holder are you?</span>
-          <span className="text-xs md:text-sm">
-            Four questions. We show you which of the six properties matter for you.
-          </span>
-          <GTPButton label="Start the four questions" leftIcon="gtp-compass" variant="highlight" disabled size="sm" />
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[15px] items-start">
         <Card>
           <span className="heading-small-xs">Get the daily number</span>
           <span className="text-xs md:text-sm">Supply, yield and usage — one email each morning. No price predictions.</span>
@@ -118,7 +111,7 @@ export default function DailySection() {
         <Card>
           <span className="heading-small-xs">Go deeper</span>
           <span className="text-xs md:text-sm">Community work behind these numbers.</span>
-          <div className="flex flex-col gap-y-[10px] items-start">
+          <div className="flex flex-wrap gap-[10px] items-start">
             <SectionButtonLink href="https://ethval.com/#valuation" newTab label="ETHval dashboard" />
             <SectionButtonLink href="https://productivemoney.xyz" newTab label="Productive Money" />
           </div>

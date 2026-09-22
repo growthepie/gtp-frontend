@@ -7,7 +7,7 @@ import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonR
 import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
-import { BarRow, StatPair } from "./_components/StatBar";
+import { BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_HEX } from "./_components/colors";
 import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
@@ -27,16 +27,13 @@ const RANKS: Asset[] = [
 ];
 
 const FILTERS = ["everything", "equity", "commodity", "crypto"] as const;
-const WORLD_POPULATION = 8.2e9;
-
 export default function RankingSection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("everything");
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
 
-  const rows = RANKS.filter((r) => filter === "everything" || r.kind === filter).sort((a, b) => b.capB - a.capB);
+  const rows = RANKS.filter((r) => r.name === "ETH" || filter === "everything" || r.kind === filter).sort((a, b) => b.capB - a.capB);
   const max = Math.max(...rows.map((r) => r.capB));
-  const ethPerPerson = ethSnapshot ? ethSnapshot.totalSupply / WORLD_POPULATION : 0.0147;
 
   // The time axis rides on the real supply series' timestamps, so the x values
   // are honest dates and identical on server and client (no Date.now()).
@@ -107,18 +104,7 @@ export default function RankingSection({ ethSnapshot }: { ethSnapshot: EthSupply
             )}
           </div>
         </Card>
-        <Card>
-          <StatPair
-            label="If all ETH were split evenly across everyone alive"
-            value={ethPerPerson.toFixed(4)}
-            unit="ETH each"
-            valueClassName="numbers-2xl text-color-accent-turquoise"
-          />
-          <span className="text-xs md:text-sm">
-            Most people hold none, so owning even a small amount puts you in a meaningful percentile of holders.
-          </span>
-        </Card>
-        <IllustrativeNote>The ETH/BTC series is illustrative; the per-person figure uses live supply.</IllustrativeNote>
+        <IllustrativeNote>The ETH/BTC series is illustrative.</IllustrativeNote>
       </div>
     </div>
   );
