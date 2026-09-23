@@ -112,7 +112,6 @@ export default function Page() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [clearSelectedCategory, setClearSelectedCategory] = useState(false);
   const [showAllTopGainers, setShowAllTopGainers] = useState(false);
-  const [showAllChains, setShowAllChains] = useState(false);
   const [gainersHeaderRef, { height: gainersHeaderHeight }] = useElementSizeObserver<HTMLDivElement>({
     initialSize: { height: 61 },
   });
@@ -151,14 +150,13 @@ export default function Page() {
   }, [selectedTimespan, selectedStringFilters, topGainers.length]);
 
 
-  const hasExpandedOverviewCard = (!hideTopGainers && showAllTopGainers) || showAllChains;
+  const hasExpandedOverviewCard = !hideTopGainers && showAllTopGainers;
 
   useEffect(() => {
     if (!hasExpandedOverviewCard) return;
 
     const closeCards = () => {
       setShowAllTopGainers(false);
-      setShowAllChains(false);
     };
     const handlePointerDown = (event: PointerEvent) => {
       if (event.target instanceof Element && !event.target.closest("[data-application-overview-card]")) {
@@ -186,13 +184,7 @@ export default function Page() {
         className={`fixed inset-0 z-[1000] bg-color-bg-default/75 pointer-events-none transition-opacity duration-300 ${hasExpandedOverviewCard ? "opacity-100" : "opacity-0"}`}
       />
       <Container className="pt-[30px]">
-        <div className={`grid grid-cols-1 items-start gap-[15px] ${hideTopGainers ? "" : "lg:grid-cols-2"}`}>
-          <AppCountByChain
-            isExpanded={showAllChains}
-            onToggleExpand={() => setShowAllChains((expanded) => !expanded)}
-            collapsedHeight={collapsedCardHeight}
-            showTable={showGrid}
-          />
+        <div className={`grid grid-cols-1 items-start gap-[15px] ${hideTopGainers ? "" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}>
           {!hideTopGainers && (
             <section
               data-application-overview-card
@@ -230,6 +222,12 @@ export default function Page() {
               </ExpandableCardContainer>
             </section>
           )}
+          <AppCountByChain
+            isInactive={hasExpandedOverviewCard}
+            onInactiveClick={() => setShowAllTopGainers(false)}
+            height={collapsedCardHeight}
+            showTable={showGrid}
+          />
         </div>
       </Container>
       <Container className="pt-[30px] pb-[15px]">

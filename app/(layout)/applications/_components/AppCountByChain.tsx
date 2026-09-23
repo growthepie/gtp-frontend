@@ -1,6 +1,10 @@
 "use client";
 
-import { ExpandableCardContainer } from "@/components/layout/ExpandableCardContainer";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { animated, useTransition } from "@react-spring/web";
 import ChainAnimations from "@/components/layout/ChainAnimations";
 import { ChainSelectionDivider, ChainSelectionToggle } from "@/components/layout/ChainSelectionControls";
@@ -17,23 +21,23 @@ const DIVIDER_ROW_HEIGHT = 20;
 type ChainRow = { item: string; value: number; index: number; y: number; height: number };
 
 export default function AppCountByChain({
-  isExpanded,
-  onToggleExpand,
-  collapsedHeight,
+  height,
   showTable = true,
+  isInactive = false,
+  onInactiveClick,
 }: {
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-  collapsedHeight: number;
+  height: number;
   showTable?: boolean;
+  isInactive?: boolean;
+  onInactiveClick?: () => void;
 }) {
+  const [scrollAreaRef, { height: scrollHeight }] = useElementSizeObserver<HTMLDivElement>();
   const {
     applicationCountsByChain,
     isLoading,
     selectedChains,
     setSelectedChains,
     allChainsDeselected,
-    deselectAllChains,
     selectedMainCategories,
   } = useApplicationsData();
   const { selectedTimespan, timespans } = useTimespan();
@@ -80,47 +84,45 @@ export default function AppCountByChain({
     update: ({ y, height }: ChainRow) => ({ y, height, opacity: 1 }),
     config: { mass: 5, tension: 500, friction: 100 },
   });
-  const bottomFade = isExpanded
-    ? "none"
-    : "linear-gradient(to bottom, black calc(100% - 50px), transparent 100%)";
-
   return (
     <section
       data-application-overview-card
-      className={`relative min-w-0 ${isExpanded ? "z-[1001]" : "z-0 has-[[data-card-animating]]:z-[1001]"}`}
+      className="relative z-0 flex min-w-0 flex-col gap-[10px] rounded-[15px] bg-color-bg-default px-[30px] pt-[15px] pb-[44px]"
+      style={{ height }}
       aria-labelledby="app-count-heading"
+      onClickCapture={(event) => {
+        if (isInactive) {
+          event.preventDefault();
+          event.stopPropagation();
+          onInactiveClick?.();
+        }
+      }}
     >
-      <ExpandableCardContainer
-        isExpanded={isExpanded}
-        onToggleExpand={onToggleExpand}
-        overlayOnExpand
-        collapsedHeight={collapsedHeight}
-        expandLabel="Apps by Chain"
-        fullHeight={false}
-        minHeightClass=""
-        className="gap-[10px] !pb-[44px]"
-        infoSlot="Each app is counted once per chain if it has at least 3 transactions on that chain during the selected time span. Counts follow the selected time span, category, and metric filters."
-      >
-        <div className="flex shrink-0 items-center justify-between gap-[10px]">
-          <h2 id="app-count-heading" className="heading-large-md">Apps by Chain (Filter)</h2>
+      <div inert={isInactive} className="flex shrink-0 items-center justify-between gap-[10px]">
+        <h2 id="app-count-heading" className="heading-large-md">Apps by Chain (Filter)</h2>
+        {!allChainsSelected && (
           <ChainSelectionToggle
-            state={allChainsSelected ? "all" : selectedVisibleCount === 0 ? "none" : "normal"}
-            onClick={() => allChainsSelected ? deselectAllChains() : setSelectedChains([])}
-            ariaLabel={allChainsSelected ? "Deselect all chains" : "Select all chains"}
+            state={selectedVisibleCount === 0 ? "none" : "normal"}
+            onClick={() => setSelectedChains([])}
+            ariaLabel="Select all chains"
             label="Select all"
             disabled={isLoading || availableChains.length === 0}
           />
-        </div>
-        <p className="text-xs shrink-0">
-          Number of apps that have been active {selectedTimespan === "max" ? "across all time" : `within the last ${timespanLabel}`}{categoryText}. Select the bars to filter by chain
-        </p>
-        <div
-          className={`relative ${isExpanded ? "h-auto" : "min-h-0 flex-1 overflow-hidden"}`}
-          style={{ maskImage: bottomFade, WebkitMaskImage: bottomFade }}
-          role="region"
-          aria-label="Application counts for all chains"
-          aria-busy={isLoading}
-        >
+        )}
+      </div>
+      <p inert={isInactive} className="text-xs shrink-0">
+        Number of apps that have been active {selectedTimespan === "max" ? "across all time" : `within the last ${timespanLabel}`}{categoryText}. Select the bars to filter by chain
+      </p>
+      {/* Extend into the right padding to align the scroll track with the info icon. */}
+      <div
+        ref={scrollAreaRef}
+        inert={isInactive}
+        className="relative -mr-[23.5px] min-h-0 flex-1"
+        role="region"
+        aria-label="Application counts for all chains"
+        aria-busy={isLoading}
+      >
+        <VerticalScrollContainer height={scrollHeight} enableTopShadow reserveScrollbarSpace>
           {isLoading ? (
             <div className="flex flex-col gap-[5px]" role="status" aria-label="Loading application counts">
               {Array.from({ length: 7 }, (_, index) => (
@@ -144,9 +146,12 @@ export default function AppCountByChain({
                       selectedValue="absolute"
                       selectedMode="app_count"
                       selectedChains={chainSelection}
-                      setSelectedChains={updateSelection}
-                      onClick={() => {
-                        if (!isExpanded) onToggleExpand();
+                      setSelectedChains={(updater) => {
+                        if (allChainsSelected) {
+                          setSelectedChains([row.item]);
+                          return;
+                        }
+                        updateSelection(updater);
                       }}
                       disableAutoSelection
                       fitContainer
@@ -158,8 +163,23 @@ export default function AppCountByChain({
               ))}
             </div>
           )}
-        </div>
-      </ExpandableCardContainer>
+        </VerticalScrollContainer>
+      </div>
+      <div inert={isInactive} className="absolute bottom-0 right-[15px] flex h-[44px] w-[15px] items-center justify-center">
+        <GTPTooltipNew
+          placement="top-start"
+          unstyled
+          trigger={
+            <button type="button" aria-label="About application counts" className="flex size-[15px] shrink-0 items-center justify-center">
+              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+            </button>
+          }
+        >
+          <GTPTooltipGeneral width={350}>
+            Each app is counted once per chain if it has at least 3 transactions on that chain during the selected time span. Counts follow the selected time span, category, and metric filters.
+          </GTPTooltipGeneral>
+        </GTPTooltipNew>
+      </div>
     </section>
   );
 }
