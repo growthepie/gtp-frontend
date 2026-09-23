@@ -1,9 +1,10 @@
 "use client";
 import ShowLoading from "@/components/layout/ShowLoading";
+import Container from "@/components/layout/Container";
 import { ApplicationsURLs } from "@/lib/urls";
 import { DailyData } from "@/types/api/EconomicsResponse";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useSort } from "./SortContext";
 import { useMetrics } from "./MetricsContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
@@ -152,13 +153,59 @@ export const ApplicationDetailsDataProvider = ({
   children,
   owner_project,
 }: ApplicationDetailsDataProviderProps ) => {
+  const { onErrorRetry, onSuccess } = useSWRConfig();
   const { 
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
     isValidating: applicationDetailsValidating,
     error: applicationDetailsError,
-  } = useSWR<ApplicationDetailsResponse>(
+  } = useSWR<ApplicationDetailsResponse, Error & { status?: number }>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
+    {
+      onErrorRetry: (error, key, config, revalidate, options) => {
+        if (error.status === 404) return;
+
+        // Background failures retain cached data and the normal SWR retry policy.
+        if (applicationDetailsData) {
+          onErrorRetry(error, key, config, revalidate, options);
+          return;
+        }
+
+        if (options.retryCount <= 1) {
+          onErrorRetry(
+            error,
+            key,
+            {
+              ...config,
+              errorRetryCount: 1,
+              errorRetryInterval: 1500,
+            },
+            revalidate,
+            options,
+          );
+          return;
+        }
+
+        // Persist across reloads so a sustained outage cannot cause a reload loop.
+        try {
+          const reloadKey = `application-details-reload:${key}`;
+          if (sessionStorage.getItem(reloadKey)) return;
+          sessionStorage.setItem(reloadKey, "1");
+        } catch {
+          // Without storage, we cannot safely guard an automatic reload.
+          return;
+        }
+        window.location.reload();
+      },
+      onSuccess: (data, key, config) => {
+        try {
+          sessionStorage.removeItem(`application-details-reload:${key}`);
+        } catch {
+          // Data is usable even if browser storage is unavailable.
+        }
+        onSuccess(data, key, config);
+      },
+    },
   );
 
   const [selectedSeriesName, setSelectedSeriesName] = useState<string | null>(null);
@@ -347,8 +394,24 @@ export const ApplicationDetailsDataProvider = ({
     }), sort.metric, sort.sortOrder as SortOrder);
   }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder, selectedSeriesName]);
 
-  if( applicationDetailsError ) {
+  // Network and server failures do not mean the application is missing.
+  if (applicationDetailsError?.status === 404) {
     return notFound();
+  }
+
+  if (applicationDetailsError && !applicationDetailsData) {
+    return (
+      <Container className="flex flex-col items-center gap-y-[15px] py-[45px] text-center">
+        <div role="status">
+          <h2 className="heading-large-sm">Unable to load application data</h2>
+          <p className="mt-[10px] text-sm">
+            {applicationDetailsValidating
+              ? "Trying to reconnect..."
+              : "Please check your connection. If this message remains, refresh the page."}
+          </p>
+        </div>
+      </Container>
+    );
   }
 
 
