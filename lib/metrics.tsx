@@ -1,6 +1,7 @@
 import Icon from "@/components/layout/Icon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { url } from "inspector";
+import Link from "next/link";
 
 export type MetricItem = {
   label: string;
@@ -61,13 +62,13 @@ export const metricItems: MetricItem[] = [
       how_gamed: (
         <>
           Active address is one of the most contentious metrics. Its counts can be inflated through sybil behavior, where many fake wallets are created to simulate activity - often during airdrops or incentive campaigns. For this reason, it's best to always interpret active addresses alongside other onchain metrics like{" "}
-          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+          <Link href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
             Chain Revenue
-          </a>
+          </Link>
           {" "}or{" "}
-          <a href="/fundamentals/total-value-secured" className="text-forest-500 underline">
+          <Link href="/fundamentals/total-value-secured" className="text-forest-500 underline">
             Total Value Secured
-          </a> as well as looking into the most active contracts on this chain to get a full picture of real network engagement.
+          </Link> as well as looking into the most active contracts on this chain to get a full picture of real network engagement.
         </>
       ),
       interpretation: "A rising number of active addresses generally indicates growing user interest and adoption of the blockchain, while a declining count may signal waning engagement. However, it's important to consider active addresses in context with other metrics, as high activity doesn't always equate to a healthy or valuable network.",
@@ -108,13 +109,13 @@ export const metricItems: MetricItem[] = [
       how_gamed: (
         <>
           Since throughput focuses on gas used rather than transaction count, it is less susceptible to manipulation through small spam transactions. However, it is still possible that larger transactions could be used to flood the network. This metric is best analyzed together with{" "}
-          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+          <Link href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
             Chain Revenue
-          </a>
+          </Link>
           {" "}or{" "}
-          <a href="/fundamentals/transaction-costs" className="text-forest-500 underline">
+          <Link href="/fundamentals/transaction-costs" className="text-forest-500 underline">
             Transaction Costs
-          </a>. If users have to pay high fees to get their transactions in they are less likely to spam the network.
+          </Link>. If users have to pay high fees to get their transactions in they are less likely to spam the network.
         </>
       ),
       interpretation: "The throughput chart often appears as a flat line for some chains (i.e. Base) because they operate well below their maximum capacity (block gas target). If a chain is operating close to its maximum throughput, it may experience congestion and higher fees during periods of high demand.",
@@ -155,13 +156,13 @@ export const metricItems: MetricItem[] = [
       how_gamed: (
         <>
           Total Value Secured can be artificially inflated through the use of wrapped tokens or other synthetic assets that do not represent real value. Additionally, the use of bridges to transfer assets between chains can also lead to double-counting of value if not properly accounted for. For these reasons, it's important to interpret TVS alongside other metrics like{" "}
-          <a href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
+          <Link href="/fundamentals/fees-paid-by-users" className="text-forest-500 underline">
             Chain Revenue
-          </a>
+          </Link>
           {" "}or{" "}
-          <a href="/fundamentals/stablecoin-market-cap" className="text-forest-500 underline">
+          <Link href="/fundamentals/stablecoin-market-cap" className="text-forest-500 underline">
             Stablecoin Supply
-          </a> to get a full picture of a chain's health.
+          </Link> to get a full picture of a chain's health.
         </>
       ),
       interpretation: "A rising TVS generally indicates growing user interest and trust in the blockchain, while a declining TVS may signal waning confidence. However, it's important to consider TVS in context with other metrics, as high TVS doesn't always equate to a healthy or valuable network.",

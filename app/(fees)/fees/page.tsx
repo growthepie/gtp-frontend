@@ -99,7 +99,10 @@ export default function FeesPage() {
     isValidating: feeValidating,
   } = useSWR<FeesTableResponse>(FeesURLs.table);
 
-  const [selectedBarIndex, setSelectedBarIndex] = useState<number>(0);
+  const [barSelection, setBarSelection] = useState<{
+    data: FeesTableResponse;
+    index: number;
+  } | null>(null);
   const [DAIndex, setDAIndex] = useState(0);
 
   // const [enabledMetrics, setEnabledMetrics] = useState<string[]>([]);
@@ -128,16 +131,21 @@ export default function FeesPage() {
   const NUM_HOURS = useMemo(() => {
     if (!feeData) return 0;
 
-    const length =
-      Math.min(
-        feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length,
-        24,
-      ) || 0;
-
-    setSelectedBarIndex(length - 1);
-
-    return length;
+    return Math.min(
+      feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length,
+      24,
+    ) || 0;
   }, [feeData]);
+
+  // A manual selection applies only to the data it was made against.
+  // Fresh data defaults to the latest hour without updating state during render.
+  const selectedBarIndex = barSelection && barSelection.data === feeData
+    ? barSelection.index
+    : Math.max(0, NUM_HOURS - 1);
+
+  const setSelectedBarIndex = (index: number) => {
+    if (feeData) setBarSelection({ data: feeData, index });
+  };
 
   useEffect(() => {
     if (!feeData || !master) return;
@@ -258,7 +266,6 @@ export default function FeesPage() {
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
   const [showCents, setShowCents] = useLocalStorage("showCents", true);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [allChainsSelect, setAllChainsSelect] = useState(false);
   const { theme } = useTheme();
 
   const [selectedChains, setSelectedChains] = useLocalStorage<{
@@ -907,26 +914,11 @@ export default function FeesPage() {
   );
 
   const selectedChainOutcomes = useMemo(() => {
-    let allChains = true;
-    let noChains = true;
-    let retNumber = 0;
-    //ret number 0 allChains true, 1 noChains true, 2 custom.
-    Object.keys(selectedChains).map((key) => {
-      if (selectedChains[key]) {
-        noChains = false;
-        retNumber = 0;
-      } else {
-        allChains = false;
-        retNumber = 1;
-      }
-    });
-
-    if (!allChains && !noChains) {
-      retNumber = 2;
-      setAllChainsSelect(true);
-    }
-
-    return retNumber;
+    const selections = Object.values(selectedChains);
+    // 0: all selected, 1: none selected, 2: custom selection.
+    if (selections.every(Boolean)) return 0;
+    if (selections.every((selected) => !selected)) return 1;
+    return 2;
   }, [selectedChains]);
 
   const getFormattedLastValue = useCallback(
@@ -1227,16 +1219,12 @@ export default function FeesPage() {
   }, [dataAvailByChain, finalSort, selectedAvailability, selectedChains]);
 
   function toggleAllChains() {
-    Object.keys(selectedChains).map((key) => {
-      setSelectedChains((prevState) => {
-        return {
-          ...prevState,
-          [key]: allChainsSelect,
-        };
-      });
+    setSelectedChains((prevState) => {
+      const selectAll = !Object.values(prevState).every(Boolean);
+      return Object.fromEntries(
+        Object.keys(prevState).map((key) => [key, selectAll]),
+      );
     });
-
-    setAllChainsSelect(!allChainsSelect);
   }
 
   return (

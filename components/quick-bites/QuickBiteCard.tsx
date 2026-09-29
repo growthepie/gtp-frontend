@@ -130,8 +130,6 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
     <div className='absolute bottom-0 right-0 p-[15px]'>
         {topics && topics.length > 0 && (() => {
           const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
-
-          const { theme } = useTheme();
           
           return (
             <div className="flex gap-x-[5px]">
