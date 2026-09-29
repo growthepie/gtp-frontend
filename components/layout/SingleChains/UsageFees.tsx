@@ -99,7 +99,7 @@ export default function UsageFees({
 
     return chainFeeData[0] &&
       chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !== null
-      ? Intl.NumberFormat("en-GB", {
+      ? Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: showUsd ? 1 : 2,
         minimumFractionDigits: showUsd ? 1 : 2,

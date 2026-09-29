@@ -169,7 +169,7 @@ export default function FeesChart({
       // Check if the value should be displayed as dollars with only decimals
       if (showUsd) {
         // Format the value with only decimals using Intl.NumberFormat
-        return `${prefix}${Intl.NumberFormat("en-GB", {
+        return `${prefix}${Intl.NumberFormat("en-US", {
           notation: "compact",
           maximumFractionDigits: 5,
           minimumFractionDigits: 1,

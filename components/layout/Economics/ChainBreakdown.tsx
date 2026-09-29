@@ -380,11 +380,11 @@ export default function ChainBreakdown({
       <div className="flex ">
         <span>{showUsd ? "$" : "Ξ"}</span>
         <span>
-          {Intl.NumberFormat("en-GB", {
+          {Intl.NumberFormat("en-US", {
             notation: "compact",
             maximumFractionDigits: 2,
             minimumFractionDigits: 2,
-          }).format(x).replace(/K/g, "k")}
+          }).format(x)}
         </span>
       </div>
     );
@@ -1112,7 +1112,7 @@ export default function ChainBreakdown({
                             <div className="flex gap-x-[0.5px] ">
                               <span
                               >
-                                {Intl.NumberFormat("en-GB", {
+                                {Intl.NumberFormat("en-US", {
                                   notation: "compact",
                                   maximumFractionDigits: 1,
                                   minimumFractionDigits: 1,
@@ -1128,7 +1128,7 @@ export default function ChainBreakdown({
                             </div>
                             <div
                             >
-                              {Intl.NumberFormat("en-GB", {
+                              {Intl.NumberFormat("en-US", {
                                 notation: "compact",
                                 maximumFractionDigits: 1,
                                 minimumFractionDigits: 1,

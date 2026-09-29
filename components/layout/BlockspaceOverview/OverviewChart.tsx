@@ -769,7 +769,7 @@ export default function OverviewChart({
         <div class="tooltip-point-name">${name}</div>
          <div class="flex-1 text-right justify-end flex numbers-xs">
         <div>${prefix}</div>
-          <div>${Intl.NumberFormat("en-GB", {
+          <div>${Intl.NumberFormat("en-US", {
             notation: "compact",
             maximumFractionDigits: 2,
             minimumFractionDigits: 2,
@@ -1112,7 +1112,7 @@ export default function OverviewChart({
                     const suffix = isPercentage ? "%" : "";
                     return (
                       prefix +
-                      Intl.NumberFormat("en-GB", {
+                      Intl.NumberFormat("en-US", {
                         notation: "compact",
                         maximumFractionDigits: 1,
                         minimumFractionDigits: 0,

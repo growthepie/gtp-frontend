@@ -1529,8 +1529,8 @@ const MetricChart = memo(
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
       const baseDecimals = unitInfo?.decimals ?? 2;
-      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
-      const valueFormat = Intl.NumberFormat("en-GB", {
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (K/M/B) values
+      const valueFormat = Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: decimals,
         minimumFractionDigits: decimals,
@@ -1580,8 +1580,8 @@ const MetricChart = memo(
       const unitInfo = master.metrics[metricKey]?.units[unitKey];
 
       const baseDecimals = unitInfo?.decimals ?? 2;
-      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (k/M/B) values
-      const valueFormat = Intl.NumberFormat("en-GB", {
+      const decimals = Math.abs(value) >= 1000 ? 2 : baseDecimals; // Use 2 decimals for compacted (K/M/B) values
+      const valueFormat = Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: decimals,
         minimumFractionDigits: decimals,

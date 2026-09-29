@@ -796,7 +796,7 @@ function BreakdownCharts({
                   const value = this.value as number | bigint;
                   const formattedValue =
                     valuePrefix +
-                    Intl.NumberFormat("en-GB", {
+                    Intl.NumberFormat("en-US", {
                       notation: "compact",
                       maximumFractionDigits: 1,
                       minimumFractionDigits: 0,
@@ -1133,7 +1133,7 @@ function BreakdownCharts({
                   const value = this.value as number | bigint;
                   const formattedValue =
                     valuePrefix +
-                    Intl.NumberFormat("en-GB", {
+                    Intl.NumberFormat("en-US", {
                       notation: "compact",
                       maximumFractionDigits: 1,
                       minimumFractionDigits: 0,

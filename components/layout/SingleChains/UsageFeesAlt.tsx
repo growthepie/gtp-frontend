@@ -95,13 +95,13 @@ export default function UsageFees({
     // const valueKey = showUsd ? key + "_usd" : key;
     if(!chainFeeData || !chainFeeData[optIndex] || !chainFeeData[optIndex][showUsd ? 2 : 1]) return "N/A";
     if(showUsd){
-        return Intl.NumberFormat(undefined, {
+        return Intl.NumberFormat("en-US", {
           notation: "compact",
           maximumFractionDigits: 2,
           minimumFractionDigits: 0,
         }).format(chainFeeData[optIndex][2] * 100);
     } else {
-      return Intl.NumberFormat(undefined, {
+      return Intl.NumberFormat("en-US", {
           notation: "compact",
           maximumFractionDigits: 1,
           minimumFractionDigits: 0,

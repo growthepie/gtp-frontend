@@ -248,21 +248,11 @@ export default function ChainAnimations({
                         : ""}
                     </div>
                     <div>
-                      {showUsd
-                        ? Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          })
-                            .format(value)
-                            .replace(/K$/, "k")
-                        : Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          })
-                            .format(value)
-                            .replace(/K$/, "k")}
+                      {Intl.NumberFormat("en-US", {
+                        notation: "compact",
+                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 2,
+                      }).format(value)}
                     </div>
                   </div>
                 )}

@@ -931,7 +931,7 @@ export default function StableInsights({ }: {}) {
                           const value = this.value as number | bigint;
                           return (
                             valuePrefix +
-                            Intl.NumberFormat("en-GB", {
+                            Intl.NumberFormat("en-US", {
                               notation: "compact",
                               maximumFractionDigits: 1,
                               minimumFractionDigits: 0,

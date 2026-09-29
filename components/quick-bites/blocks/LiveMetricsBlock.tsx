@@ -40,7 +40,6 @@ const resolveUrl = (template: string | undefined, sharedState: Record<string, an
 };
 
 const formatNumber = (value: number, format?: LiveMetricFormat) => {
-  const locale = format?.locale || "en-GB";
   const options: Intl.NumberFormatOptions = {};
 
   if (format?.compact) {
@@ -60,7 +59,7 @@ const formatNumber = (value: number, format?: LiveMetricFormat) => {
     }
   }
 
-  return value.toLocaleString(locale, options);
+  return value.toLocaleString("en-US", options);
 };
 
 const formatMetricValue = (rawValue: any, format?: LiveMetricFormat) => {

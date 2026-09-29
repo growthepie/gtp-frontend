@@ -251,11 +251,11 @@ export default function RowParent({ chainKey, index }) {
                     ? "$"
                     : "Ξ"
                   : "") +
-                  Intl.NumberFormat(undefined, {
+                  Intl.NumberFormat("en-US", {
                     notation: "compact",
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
-                  }).format(chainTotal).replace(/K/, "k")}
+                  }).format(chainTotal)}
               </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}

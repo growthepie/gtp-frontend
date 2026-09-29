@@ -555,7 +555,7 @@ const ChainComponent = function ChainComponent({
         : "";
       let valueIndex = 1;
       let valueMultiplier = 1;
-      let valueFormat = Intl.NumberFormat("en-GB", {
+      let valueFormat = Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,

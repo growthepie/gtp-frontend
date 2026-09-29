@@ -397,7 +397,7 @@ export default memo(function LandingMetricsTable({
                       {(data.chains[item.chain.key].user_share * 100).toFixed(2)}%
                     </div>
                     <div className="w-1/2 text-right flex justify-end items-center numbers-xs">
-                      {Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(lastValsByChainKey[item.chain.key])}
+                      {Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(lastValsByChainKey[item.chain.key])}
                     </div>
                   </div>
                 </div>

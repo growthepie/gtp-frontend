@@ -1068,7 +1068,7 @@ export default function FeesPage() {
             >
               {lessThanOverride
                 ? lessThanValue
-                : Intl.NumberFormat(undefined, {
+                : Intl.NumberFormat("en-US", {
                   notation: "compact",
                   maximumFractionDigits: decimals,
                   minimumFractionDigits: decimals,
@@ -1149,7 +1149,7 @@ export default function FeesPage() {
           >
             {lessThanOverride
               ? lessThanValue
-              : Intl.NumberFormat(undefined, {
+              : Intl.NumberFormat("en-US", {
                 notation: "compact",
                 maximumFractionDigits: decimals,
                 minimumFractionDigits: decimals,

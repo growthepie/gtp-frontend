@@ -78,7 +78,7 @@ export const createTooltipFormatter = (prefix: string) => {
       .sort((a, b) => (b.y || 0) - (a.y || 0))
       .map((point) => {
         const { series, y } = point;
-        const displayValue = Intl.NumberFormat("en-GB", {
+        const displayValue = Intl.NumberFormat("en-US", {
           notation: "compact",
           maximumFractionDigits: 2,
         }).format(y || 0);

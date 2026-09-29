@@ -300,11 +300,11 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
       <div className="flex ">
         <span>{showUsd ? "$" : "Ξ"}</span>
         <span>
-          {Intl.NumberFormat("en-GB", {
+          {Intl.NumberFormat("en-US", {
             notation: "compact",
             maximumFractionDigits: 2,
             minimumFractionDigits: 2,
-          }).format(x).replace(/K/g, "k")}
+          }).format(x)}
         </span>
       </div>
     );
@@ -796,7 +796,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     )} `}
                   >
                     <span>{showUsd ? "$" : "Ξ"}</span>
-                    {breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex] < 0.001 ? Number(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex]).toExponential(2) : Intl.NumberFormat("en-GB", {
+                    {breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex] < 0.001 ? Number(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex]).toExponential(2) : Intl.NumberFormat("en-US", {
                       notation: "compact",
                       maximumFractionDigits: 2,
                       minimumFractionDigits: 2,
@@ -895,7 +895,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
             </div>
             <div className="w-full h-[34px] px-[2px]">
               <div className="flex rounded-full w-full h-[34px] border-color-bg-medium border-[1px] items-center justify-center numbers-xs ">
-                {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-GB", {
+                {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-US", {
                   notation: "compact",
                   maximumFractionDigits: 2,
                   minimumFractionDigits: 2,
