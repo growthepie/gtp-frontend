@@ -59,6 +59,8 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Custom local hostnames (see /etc/hosts) used with `yarn dev` / `yarn dev:local`
+  allowedDevOrigins: ["local.growthepie.xyz", "local.growthepie.com"],
   experimental: {
     scrollRestoration: true,
     optimizeCss: true,
