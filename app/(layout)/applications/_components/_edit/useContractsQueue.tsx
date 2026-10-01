@@ -261,6 +261,25 @@ export function useContractsQueue({
     return Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
   }, [SupportedChainKeys, masterData]);
 
+  // The OLI SDK only accepts chains from its built-in list, which lags behind new
+  // chains (e.g. Robinhood). Accept any chain offered in our dropdown (from master.json).
+  const supportedChainIds = useMemo(
+    () => new Set(chainOptions.map((option) => option.value)),
+    [chainOptions],
+  );
+
+  const dropSupportedChainErrors = useCallback(
+    (diagnostics: AttestationDiagnostics, rows: AttestationRowInput[]): AttestationDiagnostics => {
+      const errors = diagnostics.errors.filter((diagnostic) => {
+        if (diagnostic.code !== "CHAIN_INVALID") return true;
+        const row = rows[diagnostic.row ?? 0];
+        return !supportedChainIds.has(toStringValue(row?.chain_id).trim());
+      });
+      return errors.length === diagnostics.errors.length ? diagnostics : { ...diagnostics, errors };
+    },
+    [supportedChainIds],
+  );
+
   const chainByEip155 = useMemo(() => {
     if (!masterData) return {} as Record<string, { urlKey: string; color: string }>;
     const map: Record<string, { urlKey: string; color: string }> = {};
@@ -703,7 +722,7 @@ export function useContractsQueue({
           const sourceRowIndex = getSingleFlowRowIndex(normalizedRow);
           singleController.setRow(normalizedRow);
           const result = await singleController.validation.run({ projects: projectsForValidation, usageCategoryRegistry });
-          const filteredDiagnostics = result.diagnostics;
+          const filteredDiagnostics = dropSupportedChainErrors(result.diagnostics, [result.row]);
           const isValid = filteredDiagnostics.errors.length === 0;
           setLastValidatedQueueFlow("single");
           setLastValidatedQueueSignature(currentQueueSignature);
@@ -725,7 +744,7 @@ export function useContractsQueue({
           maxRows: MAX_QUEUE_ROWS,
           usageCategoryRegistry,
         });
-        const filteredDiagnostics = bulkResult.diagnostics;
+        const filteredDiagnostics = dropSupportedChainErrors(bulkResult.diagnostics, bulkResult.rows);
         const invalidRowSet = new Set(
           filteredDiagnostics.errors
             .map((diagnostic) => diagnostic.row)
@@ -768,6 +787,7 @@ export function useContractsQueue({
       currentQueueSignature,
       getSingleFlowRowIndex,
       usageCategoryRegistry,
+      dropSupportedChainErrors,
     ],
   );
 
@@ -794,14 +814,21 @@ export function useContractsQueue({
   const activeQueueDiagnostics = useMemo<AttestationDiagnostics>(() => {
     if (!hasCurrentQueueValidation) return EMPTY_QUEUE_DIAGNOSTICS;
     if (lastValidatedQueueFlow === "single") {
-      return singleController.validation.result?.diagnostics ?? EMPTY_QUEUE_DIAGNOSTICS;
+      const result = singleController.validation.result;
+      return result ? dropSupportedChainErrors(result.diagnostics, [result.row]) : EMPTY_QUEUE_DIAGNOSTICS;
     }
-    return bulkController.diagnostics.all;
+    return dropSupportedChainErrors(
+      bulkController.diagnostics.all,
+      bulkController.validation.result?.rows ?? bulkController.queue.rows,
+    );
   }, [
     hasCurrentQueueValidation,
     lastValidatedQueueFlow,
     singleController.validation.result,
     bulkController.diagnostics.all,
+    bulkController.validation.result,
+    bulkController.queue.rows,
+    dropSupportedChainErrors,
   ]);
 
   const queueHasValidationResult = queueValidated;
