@@ -61,9 +61,10 @@ interface SparklineChartProps {
   label: string;
   prefix: string;
   suffix: string;
+  height?: number;
 }
 
-const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40 }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
@@ -159,7 +160,8 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
 
   return (
     <div
-      className="h-[40px] relative w-full z-10 overflow-visible"
+      className="relative w-full z-10 overflow-visible"
+      style={{ height }}
       onMouseMove={(e) => handleInteract(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect())}
       onMouseLeave={handleEnd}
       onTouchMove={(e) => handleInteract(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget.getBoundingClientRect())}

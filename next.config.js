@@ -198,6 +198,11 @@ const nextConfig = {
     
     return [
       {
+        source: "/eth-the-asset",
+        destination: "/eth",
+        permanent: true,
+      },
+      {
         source: "/new-apps/:slug",
         destination: "/applications/:slug",
         permanent: true,

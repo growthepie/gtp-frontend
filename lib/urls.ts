@@ -111,6 +111,8 @@ export const DATimeseriesURL =
 
 export const EconomicsURL = "https://api.growthepie.com/v1/economics.json";
 
+export const EthSupplyURL = "https://api.growthepie.com/v1/eim/eth_supply.json";
+
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.com/v1/master.json";
