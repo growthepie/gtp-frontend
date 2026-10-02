@@ -14,17 +14,25 @@ interface OLICategories {
   validIds: string[];
 }
 
-async function fetchOLICategories(): Promise<OLICategories> {
+type GtpMaster = {
+  blockspace_categories?: { sub_categories?: Record<string, string> };
+  chains?: Record<string, { name?: string; url_key?: string; evm_chain_id?: number | string | null }>;
+};
+
+async function fetchGtpMaster(): Promise<GtpMaster | null> {
   try {
-    let allowedIds: string[] | undefined;
     const gtpResponse = await fetch(GTP_MASTER_URL);
-    if (gtpResponse.ok) {
-      try {
-        const gtpData = await gtpResponse.json() as { blockspace_categories?: { sub_categories?: Record<string, string> } };
-        const subs = gtpData.blockspace_categories?.sub_categories;
-        if (subs) allowedIds = Object.keys(subs);
-      } catch { /* ignore */ }
-    }
+    if (!gtpResponse.ok) return null;
+    return (await gtpResponse.json()) as GtpMaster;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchOLICategories(master: GtpMaster | null): Promise<OLICategories> {
+  try {
+    const subs = master?.blockspace_categories?.sub_categories;
+    const allowedIds = subs ? Object.keys(subs) : undefined;
     const registry = await createUsageCategoryRegistry({ allowedIds, revalidateSeconds: 3600 });
     const categories = registry.allowed;
     const context = categories
@@ -36,33 +44,39 @@ async function fetchOLICategories(): Promise<OLICategories> {
   }
 }
 
-const CHAIN_MAPPING: Record<string, string> = {
-  ethereum: "eip155:1",
+// Short names and chains not listed in master.json. Everything else is derived from master.json.
+const CHAIN_ALIASES: Record<string, string> = {
   eth: "eip155:1",
   mainnet: "eip155:1",
-  base: "eip155:8453",
   basechain: "eip155:8453",
-  arbitrum: "eip155:42161",
   arb: "eip155:42161",
-  optimism: "eip155:10",
+  op: "eip155:10",
   opt: "eip155:10",
+  zksync: "eip155:324",
   "polygon zkevm": "eip155:1101",
   zkevm: "eip155:1101",
-  zksync: "eip155:324",
-  "zksync era": "eip155:324",
   zora: "eip155:7777777",
-  scroll: "eip155:534352",
-  linea: "eip155:59144",
   swell: "eip155:1923",
   swellchain: "eip155:1923",
-  taiko: "eip155:167000",
-  mode: "eip155:34443",
-  mantle: "eip155:5000",
   redstone: "eip155:690",
-  unichain: "eip155:130",
-  arbitrum_nova: "eip155:42170",
-  celo: "eip155:42220",
 };
+
+// Maps chain key, url_key and display name (lowercased, with "_"/"-" also as spaces) to eip155:<id>.
+function buildChainMapping(master: GtpMaster | null): Record<string, string> {
+  const mapping: Record<string, string> = {};
+  for (const [chainKey, chain] of Object.entries(master?.chains ?? {})) {
+    const chainId = chain.evm_chain_id != null ? String(chain.evm_chain_id).trim() : "";
+    if (!/^\d+$/.test(chainId)) continue;
+    const names = [chainKey, chain.url_key, chain.name]
+      .filter((name): name is string => !!name)
+      .flatMap((name) => {
+        const lower = name.toLowerCase();
+        return [lower, lower.replace(/[_-]/g, " ")];
+      });
+    for (const name of names) mapping[name] ??= `eip155:${chainId}`;
+  }
+  return { ...mapping, ...CHAIN_ALIASES };
+}
 
 const getApiKey = (): string =>
   process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_API_KEY || "";
@@ -119,11 +133,12 @@ async function callGeminiStructured(
   throw new Error(lastError);
 }
 
-function resolveChain(raw: string, defaultChainId: string): string {
+function resolveChain(raw: string, defaultChainId: string, chainMapping: Record<string, string>): string {
   if (!raw) return defaultChainId;
   if (raw.startsWith("eip155:")) return raw;
   if (/^\d+$/.test(raw)) return `eip155:${raw}`;
-  return CHAIN_MAPPING[raw.toLowerCase()] ?? defaultChainId;
+  const name = raw.trim().toLowerCase();
+  return chainMapping[name] ?? chainMapping[name.replace(/[_-]/g, " ")] ?? defaultChainId;
 }
 
 type ContractResult = { address: string; name: string; chain: string; category_id: string };
@@ -150,6 +165,7 @@ async function extractAndClassify(
   project: string,
   apiKey: string,
   categories: OLICategories,
+  chainMapping: Record<string, string>,
 ): Promise<ContractResult[]> {
   const { context, validIds } = categories;
   const fallbackId = validIds.includes("other") ? "other" : (validIds[0] ?? "other");
@@ -194,7 +210,7 @@ ${text}`;
       .map((item) => ({
         address: item.address!.trim().toLowerCase(),
         name: item.name?.trim() || `Contract-${item.address!.substring(0, 8)}`,
-        chain: resolveChain(item.chain ?? "", defaultChainId),
+        chain: resolveChain(item.chain ?? "", defaultChainId, chainMapping),
         category_id:
           item.category_id && (validIds.length === 0 || validIds.includes(item.category_id))
             ? item.category_id
@@ -223,8 +239,10 @@ export async function POST(request: Request) {
     const autoDetectChain: boolean = body.auto_detect_chain ?? true;
 
     // Fetch categories first — needed in prompt, then single Gemini call does extract + classify
-    const oliCategories = await fetchOLICategories();
-    const results = await extractAndClassify(text, defaultChainId, autoDetectChain, project, apiKey, oliCategories);
+    const master = await fetchGtpMaster();
+    const oliCategories = await fetchOLICategories(master);
+    const chainMapping = buildChainMapping(master);
+    const results = await extractAndClassify(text, defaultChainId, autoDetectChain, project, apiKey, oliCategories, chainMapping);
 
     if (!results.length) {
       return NextResponse.json({ rows: [] });
