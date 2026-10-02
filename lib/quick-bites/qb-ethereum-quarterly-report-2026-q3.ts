@@ -70,6 +70,12 @@ const ethereumQuarterlyReport2026Q3: QuickBiteData = createQuickBite({
   og_image: "/quick-bites/ethereum-scaling.webp",
   date: "2026-10-01",
   related: [],
+  author: [
+    {
+      name: "Matthias Seidl",
+      xUsername: "web3_data",
+    },
+  ],
   topics: [
     { name: "Ethereum", url: "/chains/ethereum" },
     { name: "Robinhood Chain", url: "/chains/robinhood" },

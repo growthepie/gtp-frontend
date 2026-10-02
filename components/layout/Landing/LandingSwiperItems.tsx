@@ -80,7 +80,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds: string[] = [];
+const quickBiteIds: string[] = ["ethereum-quarterly-report-2026-q3"];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -168,14 +168,14 @@ export default function LandingSwiperItems() {
       desktopRightPadding
       bottomOffset={-28}
     >
-      <div className="group w-full">
-        <LandingEcosystemTPSCard />
-      </div>
       {quickBiteItems.map(({slug, quickBite}) => (
         <div key={slug} className="group w-full">
           <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
         </div>
       ))}
+      <div className="group w-full">
+        <LandingEcosystemTPSCard />
+      </div>
       <div className="h-full pb-[30px]">
 
       <TimespanProvider timespans={{
