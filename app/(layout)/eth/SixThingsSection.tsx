@@ -119,7 +119,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <SectionTitle icon="gtp-backgroundinformation" title="Six things ETH is at once" titleSize="md" as="h2" />
+      <SectionTitle icon="gtp-backgroundinformation" title="ETH is 6 things at once" titleSize="md" as="h2" />
       <SectionDescription>Most assets are one of these. ETH is all six.</SectionDescription>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[15px]">
@@ -161,7 +161,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           <div className="text-xs">Annual change in total stock. ETH is live; gold and dollar are illustrative.</div>
         </PropCard>
 
-        <PropCard icon="gtp-metrics-totalvaluelocked" title="Collateral" tag="borrowable" value="$48.2B" unit="ETH posted onchain">
+        <PropCard icon="gtp-metrics-totalvaluelocked" title="Trusted" tag="collateral" value="$48.2B" unit="ETH posted onchain">
           <StackBar
             parts={[
               { label: "Lending markets", value: 52, color: "turquoise" },
@@ -178,7 +178,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           />
         </PropCard>
 
-        <PropCard icon="gtp-wallet" title="Self-custodial" tag="bearer asset" value="12s" unit="to settle, any day">
+        <PropCard icon="gtp-wallet" title="Reliable" tag="bearer asset" value="12s" unit="to settle, any day">
           <div className="grid grid-cols-2 gap-[8px]">
             {[
               ["ETH transfer", "12 sec", true],
@@ -195,9 +195,9 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
         </PropCard>
 
         <PropCard
-          icon="gtp-metrics-feespaidbyusers"
-          title="Network fuel"
-          tag="utility"
+          icon="gtp-metrics-throughput"
+          title="Useful"
+          tag="digital oil"
           value="ETH"
           unit="pays for gas on L1 and 16 Layer 2s"
           info="Every Ethereum Mainnet transaction uses ETH to pay for computation and blockspace. Part of the base fee is burned."
@@ -223,7 +223,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           </div>
         </PropCard>
 
-        <PropCard icon="gtp-support" title="Neutral rails" tag="freedom tech" value="24/7" unit="for over 11 years">
+        <PropCard icon="gtp-clock" title="Available" tag="freedom tech" value="24/7" unit="for over 11 years">
           <div className="text-xs md:text-sm">Censorship-resistant and always available.</div>
           <MarketHours />
         </PropCard>
