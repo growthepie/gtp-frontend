@@ -24,6 +24,7 @@ import txCostsVsActivity from './qb-txcosts-vs-activity';
 import CompilerTvs from './qb-compiler-tvs';
 import CompilerFlow from './qb-compiler-flow';
 import ethereumQuarterlyReport2026Q3 from './qb-ethereum-quarterly-report-2026-q3';
+import robinhoodQuarterlyReport2026Q3 from './qb-robinhood-quarterly-report-2026-q3';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
@@ -50,6 +51,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "compiler-tvs": CompilerTvs,
   "compiler-flow": CompilerFlow,
   "ethereum-quarterly-report-2026-q3": ethereumQuarterlyReport2026Q3,
+  "robinhood-quarterly-report-2026-q3": robinhoodQuarterlyReport2026Q3,
 };
 
 export default QUICK_BITES_DATA;
