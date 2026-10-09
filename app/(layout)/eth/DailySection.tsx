@@ -96,8 +96,8 @@ export default function DailySection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-[15px] items-start">
         <Card>
-          <span className="heading-small-xs">Get the daily number</span>
-          <span className="text-xs md:text-sm">Supply, yield and usage — one email each morning. No price predictions.</span>
+          <span className="heading-small-xs">Get the weekly numbers</span>
+          <span className="text-xs md:text-sm">Supply, yield and usage — one email each week. No price predictions.</span>
           <div className="flex gap-x-[8px]">
             <input
               placeholder="you@email.com"

@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BasketGlyph, useGlyphId } from "./BasketIcons";
 
 // An isotype (pictogram) count: the quantity drawn as repeated item
 // illustrations rather than stated as a number. One <symbol> is defined and
 // re-used, so N glyphs cost N <use> nodes rather than N copies of the artwork.
+// Glyphs are drawn in groups of five, tally-style, and each row holds as many
+// whole groups as the container is wide enough for.
 
 const NICE_UNITS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000];
 
@@ -29,9 +31,10 @@ export default function Pictogram({
   glyph,
   count,
   unitLabel,
-  columns = 8,
+  groupSize = 5,
   glyphSize = 34,
   gap = 6,
+  groupGap = 18,
   targetGlyphs = 18,
   maxGlyphs = 24,
 }: {
@@ -40,13 +43,26 @@ export default function Pictogram({
   count: number;
   /** What one unit is called, e.g. "dozen" — used in the "each = N" caption. */
   unitLabel: string;
-  columns?: number;
+  groupSize?: number;
   glyphSize?: number;
   gap?: number;
+  /** Space between groups — wider than `gap` so the groups read at a glance. */
+  groupGap?: number;
   targetGlyphs?: number;
   maxGlyphs?: number;
 }) {
   const uid = useGlyphId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setContainerWidth(entry.contentRect.width));
+    observer.observe(el);
+    setContainerWidth(el.clientWidth);
+    return () => observer.disconnect();
+  }, []);
 
   const { perGlyph, full, partial, total } = useMemo(() => {
     const unit = pickUnit(count, targetGlyphs);
@@ -62,19 +78,30 @@ export default function Pictogram({
   }, [count, targetGlyphs, maxGlyphs]);
 
   const cell = glyphSize + gap;
+  const groupWidth = groupSize * cell - gap;
+  // Before the first measurement, assume one group per row.
+  const groupsPerRow = Math.max(1, Math.floor((containerWidth + groupGap) / (groupWidth + groupGap)));
+  const columns = groupsPerRow * groupSize;
+  const usedColumns = Math.max(1, Math.min(total, columns));
+  const usedGroups = Math.ceil(usedColumns / groupSize);
   const rows = Math.max(1, Math.ceil(total / columns));
-  const width = columns * cell - gap;
+  const width = usedColumns * cell - gap + (usedGroups - 1) * (groupGap - gap);
   const height = rows * cell - gap;
 
-  const position = (index: number) => ({
-    x: (index % columns) * cell,
-    y: Math.floor(index / columns) * cell,
-  });
+  const position = (index: number) => {
+    const column = index % columns;
+    return {
+      x: column * cell + Math.floor(column / groupSize) * (groupGap - gap),
+      y: Math.floor(index / columns) * cell,
+    };
+  };
 
   const partialPos = position(full);
 
+  // The root fills the rest of the card so the caption sits at the bottom when
+  // the card is stretched to match its neighbour.
   return (
-    <div className="flex flex-col gap-y-[5px]">
+    <div ref={containerRef} className="flex-1 flex flex-col gap-y-[10px]">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         width="100%"
@@ -117,7 +144,7 @@ export default function Pictogram({
           </>
         )}
       </svg>
-      <div className="heading-small-xxxs text-color-text-primary/70">
+      <div className="mt-auto heading-small-xxxs text-color-text-primary/70">
         each = {perGlyph.toLocaleString()} {unitLabel}
         {count / perGlyph > maxGlyphs && " · showing the first " + maxGlyphs}
       </div>

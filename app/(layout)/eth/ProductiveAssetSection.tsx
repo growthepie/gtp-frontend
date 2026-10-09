@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useMediaQuery } from "@react-hook/media-query";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card, { Callout } from "./_components/Card";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
@@ -20,6 +23,7 @@ const MODES: Record<
   {
     icon: GTPIconName;
     headline: string;
+    info: string;
     rate: number;
     rateLabel: string;
     parts: { label: string; value: number; color: AccentColor }[];
@@ -30,6 +34,7 @@ const MODES: Record<
   Stake: {
     icon: "gtp-lock",
     headline: "Lock ETH to validate. Get paid in ETH.",
+    info: "Validators lock ETH as a security deposit and take turns proposing and checking blocks. In return they earn newly issued ETH, plus priority tips from users and MEV from block ordering, all paid in ETH.",
     rate: 3.12,
     rateLabel: "APR, paid in ETH",
     parts: [
@@ -48,6 +53,7 @@ const MODES: Record<
   Lend: {
     icon: "gtp-metrics-fdv",
     headline: "Deposit ETH into an open lending market.",
+    info: "Lending markets pool deposited ETH and lend it to borrowers, who post other collateral. Depositors earn the interest borrowers pay, and the rate rises as more of the pool is borrowed.",
     rate: 1.94,
     rateLabel: "supply APR, variable",
     parts: [{ label: "Borrower interest", value: 1.94, color: "turquoise" }],
@@ -62,6 +68,7 @@ const MODES: Record<
   Borrow: {
     icon: "gtp-metrics-onchainprofit",
     headline: "Keep the ETH. Borrow against it.",
+    info: "Post ETH as collateral and borrow stablecoins against it, without selling. You keep exposure to ETH, but pay interest on the loan and must keep the loan below the liquidation threshold.",
     rate: 4.6,
     rateLabel: "stablecoin borrow APR",
     parts: [
@@ -92,6 +99,8 @@ const YIELD_COMPARISON: { label: string; value: number; emphasis?: boolean }[] =
 export default function ProductiveAssetSection() {
   const [mode, setMode] = useState<Mode>("Stake");
   const [amount, setAmount] = useState(10);
+  const [modesWrapping, setModesWrapping] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 967px)");
   const m = MODES[mode];
   const yearly =
     mode === "Borrow" ? amount * 0.825 * ETH_PRICE_ANCHOR * 0.046 : amount * ETH_PRICE_ANCHOR * (m.rate / 100);
@@ -103,22 +112,45 @@ export default function ProductiveAssetSection() {
         Gold sits in a vault. ETH can do three jobs — and it can do them at the same time.
       </SectionDescription>
 
-      <GTPButtonRow>
-        {(Object.keys(MODES) as Mode[]).map((k) => (
-          <GTPButton
-            key={k}
-            label={k}
-            leftIcon={MODES[k].icon}
-            isSelected={mode === k}
-            clickHandler={() => setMode(k)}
-            size="sm"
-          />
-        ))}
-      </GTPButtonRow>
+      {/* Same control bar as the fundamentals charts. On mobile the buttons share the
+          full width with tighter padding (as fundamentals does) so all three fit on a
+          320px phone. */}
+      <GTPButtonContainer
+        isWrapping={modesWrapping}
+        setIsWrapping={setModesWrapping}
+        style={modesWrapping ? { borderRadius: "15px" } : undefined}
+      >
+        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+          {(Object.keys(MODES) as Mode[]).map((k) => (
+            <GTPButton
+              key={k}
+              label={k}
+              leftIcon={MODES[k].icon}
+              innerStyle={isMobile ? { width: "100%", minWidth: 0, padding: "5px 8px" } : { width: "100%" }}
+              className="w-full min-w-0 justify-center"
+              isSelected={mode === k}
+              clickHandler={() => setMode(k)}
+              size="sm"
+            />
+          ))}
+        </GTPButtonRow>
+      </GTPButtonContainer>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px] items-start">
         <Card>
-          <span className="heading-small-xs">{m.headline}</span>
+          <div className="flex items-start gap-x-[8px]">
+            <span className="heading-small-xs flex-1 min-w-0">{m.headline}</span>
+            <Tooltip placement="bottom-end">
+              <TooltipTrigger asChild>
+                <button type="button" aria-label={`About ${mode}`} className="shrink-0 inline-flex items-center justify-center">
+                  <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+                {m.info}
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="flex items-baseline gap-x-[5px]">
             <span className={`numbers-3xl ${mode === "Borrow" ? "text-color-accent-red" : "text-color-accent-turquoise"}`}>
               {m.rate.toFixed(2)}%

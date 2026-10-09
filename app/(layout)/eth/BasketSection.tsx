@@ -5,8 +5,7 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import Card from "./_components/Card";
 import Pictogram from "./_components/Pictogram";
 import Dumbbell from "./_components/Dumbbell";
-import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, HOME, GOLD_BAR } from "./_components/BasketIcons";
-import IllustrativeTag from "./_components/IllustrativeTag";
+import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, GOLD_BAR } from "./_components/BasketIcons";
 
 // Illustrative retail prices — no live source for consumer-goods pricing exists
 // in this repo, and the ETH price anchor is fixed for the same reason.
@@ -22,11 +21,10 @@ type BasketItem = {
 };
 
 const BASKET: BasketItem[] = [
-  { label: "Eggs", unit: "dozen", glyph: EGG, priceNow: 4.1, priceAgo: 3.98 },
   { label: "Bread", unit: "loaves", glyph: BREAD, priceNow: 3.2, priceAgo: 3.11 },
+  { label: "Eggs", unit: "dozen", glyph: EGG, priceNow: 4.1, priceAgo: 3.98 },
   { label: "Coffee", unit: "cups", glyph: COFFEE, priceNow: 4.8, priceAgo: 4.6 },
   { label: "Fuel", unit: "tanks", glyph: FUEL, priceNow: 62, priceAgo: 64 },
-  { label: "Rent", unit: "months", glyph: HOME, priceNow: 1510, priceAgo: 1455 },
   { label: "Gold", unit: "grams", glyph: GOLD_BAR, priceNow: 84, priceAgo: 71 },
 ];
 
@@ -59,7 +57,7 @@ export default function BasketSection() {
       </SectionDescription>
 
       {/* Small multiples: every item, drawn — and the selector for the detail below */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[10px]">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-[10px]">
         {BASKET.map((b) => {
           const stats = unitsFor(b);
           const active = b.label === selectedKey;
@@ -84,7 +82,7 @@ export default function BasketSection() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px] items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px]">
         {/* The answer, drawn */}
         <Card>
           <div className="flex items-center gap-x-[15px]">
@@ -98,7 +96,6 @@ export default function BasketSection() {
             </div>
           </div>
           <Pictogram glyph={item.glyph} count={now} unitLabel={item.unit} />
-          <IllustrativeTag />
         </Card>
 
         {/* What moved it, drawn */}

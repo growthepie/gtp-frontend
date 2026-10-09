@@ -18,16 +18,11 @@ export interface EthSupplySnapshot {
   recentTimestamps: number[];
   /** Total supply for those same daily points. */
   recentSupply: number[];
-  /** Timestamps of the last SUPPLY_HISTORY_YEARS of daily points, for the hero's supply tile. */
-  historyTimestamps: number[];
+  /** Timestamps of every daily point, for the hero's supply tile (sliced to the selected timespan there). */
+  allTimestamps: number[];
   /** Total supply for those same daily points. */
-  historySupply: number[];
-  /** Actual % change in total supply over that period (net of burn), e.g. 2.4 for +2.4%. */
-  historyChangePct: number;
+  allSupply: number[];
 }
-
-/** How far back the hero's supply sparkline goes. */
-export const SUPPLY_HISTORY_YEARS = 4;
 
 // Mirrors the exact formulas already used in lib/utils/dynamicContent.ts for the
 // {{eth_total_supply}} / {{eth_net_issuance_30d}} / {{eth_annual_issuance_rate}}
@@ -46,9 +41,6 @@ export function computeEthSupplySnapshot(json: any): EthSupplySnapshot | null {
   const annualIssuanceRatePct = annualIssuanceRateFraction * 100;
   const weeklyIssuanceEth = (totalSupply * annualIssuanceRateFraction) / 52;
   const recent: [number, number][] = supplyData.slice(-90);
-  // Today plus 365 days back per year.
-  const history: [number, number][] = supplyData.slice(-(SUPPLY_HISTORY_YEARS * 365 + 1));
-  const historyChangePct = (totalSupply / history[0][1] - 1) * 100;
 
   return {
     totalSupply,
@@ -58,8 +50,7 @@ export function computeEthSupplySnapshot(json: any): EthSupplySnapshot | null {
     weeklyIssuanceEth,
     recentTimestamps: recent.map((point) => point[0]),
     recentSupply: recent.map((point) => point[1]),
-    historyTimestamps: history.map((point) => point[0]),
-    historySupply: history.map((point) => point[1]),
-    historyChangePct,
+    allTimestamps: supplyData.map((point: [number, number]) => point[0]),
+    allSupply: supplyData.map((point: [number, number]) => point[1]),
   };
 }

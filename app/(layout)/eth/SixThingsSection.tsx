@@ -36,31 +36,30 @@ function PropCard({
   tag: string;
   value: string;
   unit: string;
-  info?: string;
+  info: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
     <Card>
+      {/* Title truncates before the tag or info button get squeezed on narrow cards. */}
       <div className="flex items-center gap-x-[8px]">
-        <GTPIcon icon={icon} size="md" />
-        <span className="heading-small-xs flex-1">{title}</span>
-        <span className="heading-small-xxxs px-[8px] py-[3px] rounded-full bg-color-bg-medium">{tag}</span>
+        <GTPIcon icon={icon} size="md" className="shrink-0" />
+        <span className="heading-small-xs flex-1 min-w-0 truncate">{title}</span>
+        <span className="heading-small-xxxs shrink-0 whitespace-nowrap px-[8px] py-[3px] rounded-full bg-color-bg-medium">{tag}</span>
+        <Tooltip placement="bottom-end">
+          <TooltipTrigger asChild>
+            <button type="button" aria-label={`About ${title}`} className="shrink-0 inline-flex items-center justify-center">
+              <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+            {info}
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
         <span className="numbers-2xl">{value}</span>
         <span className="heading-small-xxxs pt-[1px]">{unit}</span>
-        {info && (
-          <Tooltip placement="bottom">
-            <TooltipTrigger asChild>
-              <button type="button" aria-label={`About ${value} ${unit}`} className="inline-flex self-center items-center justify-center">
-                <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
-              {info}
-            </TooltipContent>
-          </Tooltip>
-        )}
       </div>
       {children}
     </Card>
@@ -123,7 +122,14 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
       <SectionDescription>Most assets are one of these. ETH is all six.</SectionDescription>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[15px]">
-        <PropCard icon="gtp-metrics-fdv" title="Productive" tag="yield" value="3.12%" unit="APR, paid in ETH">
+        <PropCard
+          icon="gtp-metrics-fdv"
+          title="Productive"
+          tag="yield"
+          value="3.12%"
+          unit="APR, paid in ETH"
+          info="Stakers lock ETH to secure Ethereum and are paid in ETH: new issuance plus priority tips and MEV. The split shown is illustrative."
+        >
           <StackBar
             parts={[
               { label: "Issuance", value: 2.44, color: "turquoise" },
@@ -144,6 +150,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           tag="store of value"
           value={ethSnapshot ? `${(ethSnapshot.totalSupply / 1e6).toFixed(1)}M` : "120.7M"}
           unit={`ETH · ${ethGrowthPct >= 0 ? "+" : "−"}${Math.abs(ethGrowthPct).toFixed(2)}% a year`}
+          info="Total supply is live. New issuance is partly offset by the base-fee burn, so supply grows slowly or even shrinks. Gold and dollar growth rates are illustrative."
         >
           <div className="flex flex-col gap-y-[6px]">
             {scarceRows.map((r) => (
@@ -161,7 +168,14 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           <div className="text-xs">Annual change in total stock. ETH is live; gold and dollar are illustrative.</div>
         </PropCard>
 
-        <PropCard icon="gtp-metrics-totalvaluelocked" title="Trusted" tag="collateral" value="$48.2B" unit="ETH posted onchain">
+        <PropCard
+          icon="gtp-metrics-totalvaluelocked"
+          title="Trusted"
+          tag="collateral"
+          value="$48.2B"
+          unit="ETH posted onchain"
+          info="ETH is the main collateral onchain: it backs loans in lending markets, liquid staking tokens and DEX liquidity. The value and mix shown are illustrative."
+        >
           <StackBar
             parts={[
               { label: "Lending markets", value: 52, color: "turquoise" },
@@ -178,7 +192,14 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           />
         </PropCard>
 
-        <PropCard icon="gtp-wallet" title="Reliable" tag="bearer asset" value="12s" unit="to settle, any day">
+        <PropCard
+          icon="gtp-wallet"
+          title="Reliable"
+          tag="bearer asset"
+          value="12s"
+          unit="to settle, any day"
+          info="Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every 12 seconds; times for the other rails are typical, not exact."
+        >
           <div className="grid grid-cols-2 gap-[8px]">
             {[
               ["ETH transfer", "12 sec", true],
@@ -223,7 +244,14 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           </div>
         </PropCard>
 
-        <PropCard icon="gtp-clock" title="Available" tag="freedom tech" value="24/7" unit="for over 11 years">
+        <PropCard
+          icon="gtp-clock"
+          title="Available"
+          tag="freedom tech"
+          value="24/7"
+          unit="for over 11 years"
+          info="Ethereum has produced blocks continuously since July 2015, with no market hours, weekends or holidays, and no one can block a valid transaction from being included."
+        >
           <div className="text-xs md:text-sm">Censorship-resistant and always available.</div>
           <MarketHours />
         </PropCard>

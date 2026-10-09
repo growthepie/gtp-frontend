@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
+import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
@@ -17,6 +19,38 @@ const FALLBACK_ISSUE_WK = 18050;
 // higher demand for blockspace burns more ETH per week.
 const burnAt = (d: number) => Math.round(1500 + Math.pow(d / 100, 1.7) * 29000);
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
+
+// Placeholder — swap for the real last 7 days of daily issuance and burn
+// (same shape) once that data is wired up. Totals below are summed from it.
+const LAST_WEEK_DAILY: { date: string; issued: number; burned: number }[] = [
+  { date: "2026-09-28", issued: 2581, burned: 214 },
+  { date: "2026-09-29", issued: 2579, burned: 263 },
+  { date: "2026-09-30", issued: 2584, burned: 341 },
+  { date: "2026-10-01", issued: 2578, burned: 297 },
+  { date: "2026-10-02", issued: 2582, burned: 228 },
+  { date: "2026-10-03", issued: 2576, burned: 156 },
+  { date: "2026-10-04", issued: 2580, burned: 171 },
+];
+const LAST_WEEK = {
+  issued: LAST_WEEK_DAILY.reduce((sum, day) => sum + day.issued, 0),
+  burned: LAST_WEEK_DAILY.reduce((sum, day) => sum + day.burned, 0),
+};
+const fmtDay = (date: string) =>
+  new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const LAST_WEEK_RANGE = `${fmtDay(LAST_WEEK_DAILY[0].date)} – ${fmtDay(LAST_WEEK_DAILY[LAST_WEEK_DAILY.length - 1].date)}`;
+// Inverse of burnAt, so the slider sits where last week's burn falls on the curve.
+const demandFor = (burn: number) =>
+  Math.min(100, Math.max(0, Math.round(100 * Math.pow(Math.max(0, burn - 1500) / 29000, 1 / 1.7))));
+
+const LAST_WEEK_DEMAND = demandFor(LAST_WEEK.burned);
+// The native range thumb is 16px wide and its centre travels from 8px to
+// (width − 8px), so a value's position on the track is offset by half a thumb.
+const SLIDER_THUMB_PX = 16;
+
+const LAST_WEEK_PRESET = {
+  name: "Last week",
+  note: `${LAST_WEEK_RANGE}: ${LAST_WEEK.issued.toLocaleString()} ETH issued, ${LAST_WEEK.burned.toLocaleString()} ETH burned.`,
+};
 
 const PRESETS = [
   { name: "Quiet week", d: 22, note: "Layer 2s made transactions cheap. Little ETH burns." },
@@ -34,10 +68,20 @@ const PRESETS = [
    enough, so the level can keep moving forever without implying that ETH has a
    maximum supply.                                                             */
 
-const WEEKS_PER_SECOND = 4; // "1 second ≈ 1 month"
-const BAND_ETH = 400_000; // half-window, ≈0.33% of supply
+type Pace = {
+  weeksPerSecond: number;
+  bandEth: number; // half-window
+  tickEth: number; // scale spacing
+  label: string;
+  loopWeeks?: number; // replay from the start after this long
+};
+
+// Scenarios run as a time-lapse so the level moves visibly.
+const SCENARIO_PACE: Pace = { weeksPerSecond: 4, bandEth: 400_000, tickEth: 200_000, label: "1s ≈ 1 month" };
+// Last week plays at 1 day per second and replays, with a tighter window so a
+// single week's change is still visible without the window stepping.
+const LAST_WEEK_PACE: Pace = { weeksPerSecond: 1 / 7, bandEth: 25_000, tickEth: 10_000, label: "1s ≈ 1 day", loopWeeks: 1 };
 const RECENTRE_AT = 0.7; // fraction of the band before the window steps
-const TICK_ETH = 200_000; // scale spacing
 
 // Tub geometry (SVG user units)
 const TUB_LEFT = 34;
@@ -55,6 +99,10 @@ const VALUE_STYLE = { font: "500 18px var(--font-fira-sans)", letterSpacing: ".0
 const TICK_STYLE = { font: "500 10px var(--font-fira-sans)", letterSpacing: ".04em" } as const;
 
 function describeWeeks(weeks: number) {
+  if (weeks < 1) {
+    const days = Math.max(1, Math.round(weeks * 7));
+    return `${days} day${days === 1 ? "" : "s"}`;
+  }
   if (weeks < 8) return `${Math.max(1, Math.round(weeks))} weeks`;
   if (weeks < 104) return `${Math.round(weeks / 4.345)} months`;
   return `${(weeks / 52).toFixed(1)} years`;
@@ -66,13 +114,16 @@ function Bathtub({
   inflow,
   outflow,
   totalSupply,
+  pace = SCENARIO_PACE,
   height = 280,
 }: {
   inflow: number;
   outflow: number;
   totalSupply: number;
+  pace?: Pace;
   height?: number;
 }) {
+  const { weeksPerSecond, bandEth, tickEth, loopWeeks } = pace;
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const net = inflow - outflow;
 
@@ -92,13 +143,19 @@ function Bathtub({
       const s = sim.current;
 
       // Integrate: the level is the accumulated net flow.
-      s.weeks += WEEKS_PER_SECOND * dt;
-      s.offset += net * WEEKS_PER_SECOND * dt;
+      s.weeks += weeksPerSecond * dt;
+      s.offset += net * weeksPerSecond * dt;
+      if (loopWeeks && s.weeks >= loopWeeks) {
+        s.weeks = 0;
+        s.offset = 0;
+        s.centre = 0;
+        s.centreTarget = 0;
+      }
 
       // Step the window once the waterline has drifted far enough.
       const rel = s.offset - s.centre;
-      if (rel > BAND_ETH * RECENTRE_AT) s.centreTarget = s.centre + BAND_ETH * RECENTRE_AT;
-      else if (rel < -BAND_ETH * RECENTRE_AT) s.centreTarget = s.centre - BAND_ETH * RECENTRE_AT;
+      if (rel > bandEth * RECENTRE_AT) s.centreTarget = s.centre + bandEth * RECENTRE_AT;
+      else if (rel < -bandEth * RECENTRE_AT) s.centreTarget = s.centre - bandEth * RECENTRE_AT;
       s.centre += (s.centreTarget - s.centre) * Math.min(1, 5 * dt);
 
       // Repaint at ~24fps rather than every frame.
@@ -113,17 +170,17 @@ function Bathtub({
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduceMotion, net]);
+  }, [reduceMotion, net, weeksPerSecond, bandEth, loopWeeks]);
 
-  const yFor = (offsetEth: number) => WATER_MID_Y - ((offsetEth - view.centre) / BAND_ETH) * HALF_PX;
+  const yFor = (offsetEth: number) => WATER_MID_Y - ((offsetEth - view.centre) / bandEth) * HALF_PX;
   const waterY = yFor(view.offset);
   const simulatedSupply = totalSupply + view.offset;
   const drainW = 6 + (outflow / 31000) * 26;
 
   // Scale ticks at round supply values inside the window.
-  const firstTick = Math.ceil((view.centre - BAND_ETH) / TICK_ETH) * TICK_ETH;
+  const firstTick = Math.ceil((view.centre - bandEth) / tickEth) * tickEth;
   const ticks: number[] = [];
-  for (let o = firstTick; o <= view.centre + BAND_ETH; o += TICK_ETH) ticks.push(o);
+  for (let o = firstTick; o <= view.centre + bandEth; o += tickEth) ticks.push(o);
 
   const drops = Array.from({ length: 6 }, (_, i) => (tick * 2.6 + i * 26) % 100 / 100);
   const embers = Array.from({ length: 6 }, (_, i) => (tick * 2.2 + i * 30) % 180);
@@ -220,7 +277,7 @@ function Bathtub({
 
       {/* The exaggeration, stated rather than implied */}
       <text x={TUB_LEFT} y={TUB_BASE + 32} fill="rgb(var(--text-primary))" opacity=".7" style={TICK_STYLE}>
-        {reduceMotion ? "motion paused" : "time-lapse · 1s ≈ 1 month"}
+        {reduceMotion ? "motion paused" : `time-lapse · ${pace.label}`}
       </text>
       {!reduceMotion && (
         <text x={TUB_LEFT} y={TUB_BASE + 50} fill="rgb(var(--text-primary))" opacity=".7" style={TICK_STYLE}>
@@ -234,42 +291,109 @@ function Bathtub({
 
 export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
   const [demand, setDemand] = useState(58);
+  // "Last week" uses that week's actual flows instead of the demand curve;
+  // moving the slider or picking another preset leaves it.
+  const [showLastWeek, setShowLastWeek] = useState(false);
+  const [controlsWrapping, setControlsWrapping] = useState(false);
   const totalSupply = ethSnapshot?.totalSupply ?? FALLBACK_SUPPLY;
-  const inflow = ethSnapshot?.weeklyIssuanceEth ?? FALLBACK_ISSUE_WK;
-  const outflow = burnAt(demand);
+  const inflow = showLastWeek ? LAST_WEEK.issued : ethSnapshot?.weeklyIssuanceEth ?? FALLBACK_ISSUE_WK;
+  const outflow = showLastWeek ? LAST_WEEK.burned : burnAt(demand);
   const netEth = inflow - outflow;
   const netPct = ((netEth * 52) / totalSupply) * 100;
-  const preset = PRESETS.reduce((a, b) => (Math.abs(b.d - demand) < Math.abs(a.d - demand) ? b : a));
+  const preset = showLastWeek
+    ? LAST_WEEK_PRESET
+    : PRESETS.reduce((a, b) => (Math.abs(b.d - demand) < Math.abs(a.d - demand) ? b : a));
 
   return (
     <div className="flex flex-col gap-y-[15px]">
       <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
       <SectionDescription>Inflation and burn are abstract. A tap and a drain are not.</SectionDescription>
 
-      <div className="flex gap-[15px] flex-wrap items-center">
-        <GTPButtonRow>
+      {/* Same control bar as the fundamentals charts: presets left, slider right. The
+          slider area matches the button row's 32px height so the bar's wrap check
+          (which compares the items' tops) doesn't mistake it for a second line. */}
+      <GTPButtonContainer
+        className="gap-x-[15px]"
+        isWrapping={controlsWrapping}
+        setIsWrapping={setControlsWrapping}
+        style={controlsWrapping ? { borderRadius: "15px" } : undefined}
+      >
+        <GTPButtonRow wrap>
+          <GTPButton
+            label={LAST_WEEK_PRESET.name}
+            isSelected={showLastWeek}
+            clickHandler={() => {
+              setShowLastWeek(true);
+              setDemand(LAST_WEEK_DEMAND);
+            }}
+            size="sm"
+          />
           {PRESETS.map((p) => (
-            <GTPButton key={p.name} label={p.name} isSelected={preset.name === p.name} clickHandler={() => setDemand(p.d)} size="sm" />
+            <GTPButton
+              key={p.name}
+              label={p.name}
+              isSelected={preset.name === p.name}
+              clickHandler={() => {
+                setShowLastWeek(false);
+                setDemand(p.d);
+              }}
+              size="sm"
+            />
           ))}
         </GTPButtonRow>
-        <div className="flex items-center gap-x-[10px] flex-1 min-w-[220px]">
+        <div className="flex items-center gap-x-[10px] flex-1 min-w-[220px] h-[32px] px-[13px]">
           <span className="heading-small-xs whitespace-nowrap">Network demand</span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={demand}
-            onChange={(e) => setDemand(+e.target.value)}
-            aria-label="Network demand"
-            className="flex-1 h-[20px] cursor-pointer"
-            style={{ accentColor: "rgb(var(--accent-turquoise))" }}
-          />
+          <div className="relative flex-1 flex items-center">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={demand}
+              onChange={(e) => {
+                setShowLastWeek(false);
+                setDemand(+e.target.value);
+              }}
+              aria-label="Network demand"
+              className="w-full h-[20px] cursor-pointer"
+              style={{ accentColor: "rgb(var(--accent-turquoise))" }}
+            />
+            {/* Where last week's actual burn sits on the demand scale. Clicking it
+                selects "Last week". */}
+            <Tooltip placement="top">
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={`Last week: network demand ${LAST_WEEK_DEMAND} of 100`}
+                  onClick={() => {
+                    setShowLastWeek(true);
+                    setDemand(LAST_WEEK_DEMAND);
+                  }}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[8px] h-[22px] flex justify-center cursor-pointer"
+                  style={{
+                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${LAST_WEEK_DEMAND / 100})`,
+                  }}
+                >
+                  <span className="w-[2px] h-full rounded-full bg-color-accent-yellow" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
+                Last week · {LAST_WEEK.burned.toLocaleString()} ETH burned
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-      </div>
+      </GTPButtonContainer>
 
       <Card padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
         <div className="p-[15px]">
-          <Bathtub inflow={inflow} outflow={outflow} totalSupply={totalSupply} />
+          {/* Keyed so switching pace restarts the level from today's supply. */}
+          <Bathtub
+            key={showLastWeek ? "last-week" : "scenario"}
+            inflow={inflow}
+            outflow={outflow}
+            totalSupply={totalSupply}
+            pace={showLastWeek ? LAST_WEEK_PACE : SCENARIO_PACE}
+          />
         </div>
         <div className="p-[20px] flex flex-col gap-y-[15px] justify-center border-t md:border-t-0 md:border-l border-color-bg-medium">
           <StatPair
@@ -295,7 +419,8 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
       </Card>
 
       <IllustrativeNote>
-        Issuance is live from growthepie data; the demand-to-burn curve is illustrative. The tub runs as a time-lapse so
+        Issuance is live from growthepie data; the demand-to-burn curve is illustrative, and &quot;Last week&quot; uses
+        placeholder figures for now. The tub runs as a time-lapse so
         the level moves visibly — the real rate is the annual figure above.
       </IllustrativeNote>
     </div>
