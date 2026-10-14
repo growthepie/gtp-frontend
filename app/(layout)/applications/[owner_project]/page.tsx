@@ -693,6 +693,10 @@ FeaturedSection.displayName = "FeaturedSection";
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
+// Apps whose activity isn't tied to contracts (e.g. native ETH transfers), so the
+// "Most Active Contracts" section would be empty or misleading.
+const APPS_WITHOUT_CONTRACTS = new Set(["eth"]);
+
 const OverviewContent = memo(({
   data,
   owner_project,
@@ -713,6 +717,7 @@ const OverviewContent = memo(({
   const { getAppColors } = useAppColors();
   const appColor = getAppColors(owner_project, resolvedTheme);
   const [showUsd] = useLocalStorage("showUsd", true);
+  const showMostActiveContracts = !APPS_WITHOUT_CONTRACTS.has(owner_project);
   // Callback ref pattern: ResizeObserver is set up the moment React attaches the
   // element, so leftColHeight is correct even on the first mount (avoids the
   // useElementSizeObserver issue where ref.current is null on the first render).
@@ -779,7 +784,7 @@ const OverviewContent = memo(({
           </div>
         </div>
         <div className="text-sm ">
-          Key performance indicators over the last 60 days with week-over-week growth, as well as the most active contracts. Click on any metric for a deep dive into its trends.
+          Key performance indicators over the last 60 days with week-over-week growth{showMostActiveContracts ? ", as well as the most active contracts" : ""}. Click on any metric for a deep dive into its trends.
         </div>
       </div>
       {/* Two-column grid: side cards left, main cards right */}
@@ -850,8 +855,20 @@ const OverviewContent = memo(({
         {/* Right column: main content */}
         <div className="flex flex-col gap-y-[10px] h-full">
           {/* <ChainActivityCard chains={FAKE_APP.chains} /> */}
-          <MostActiveContracts data={data} containerHeight={leftColHeight} owner_project={owner_project} />
-
+          {showMostActiveContracts ? (
+            <MostActiveContracts data={data} containerHeight={leftColHeight} owner_project={owner_project} />
+          ) : (
+            <div
+              className="flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] gap-y-[10px] items-center justify-center text-center"
+              style={leftColHeight > 0 ? { height: `${leftColHeight}px` } : undefined}
+            >
+              <GTPIcon icon="gtp-labeled" size="lg" className="opacity-30" />
+              <div className="heading-large-md opacity-50">No Contracts Tracked</div>
+              <div className="text-sm text-color-text-secondary max-w-[400px]">
+                This page tracks ETH native transfers. No contract calls are necessary for this on blockchains that use ETH as their native gas token.
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <SimilarAppsSection owner_project={owner_project} projectMetadata={projectMetadata} />
