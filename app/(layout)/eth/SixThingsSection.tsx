@@ -7,20 +7,22 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { SparklineChart } from "@/components/layout/Applications/AppMetricCard";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
-import { getChainMetricURL } from "@/lib/urls";
+import { EthAssetURLs } from "@/lib/urls";
 import Card from "./_components/Card";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_HEX, AccentColor } from "./_components/colors";
-import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+import { EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
 
-type FeesResponse = {
-  details?: {
-    timeseries?: {
-      daily?: { types: string[]; data: number[][] };
-    };
-  };
-};
+// Fractions → "2.56%".
+const pct = (fraction: number, digits = 2) => `${(fraction * 100).toFixed(digits)}%`;
+const signedPct = (fraction: number) => `${fraction >= 0 ? "+" : "−"}${Math.abs(fraction * 100).toFixed(2)}%`;
+
+const formatUsd = (usd: number) =>
+  usd >= 1e9 ? `$${(usd / 1e9).toFixed(1)}B` : usd >= 1e6 ? `$${(usd / 1e6).toFixed(1)}M` : `$${Math.round(usd).toLocaleString("en-US")}`;
+
+// The gas sparkline shows the last 90 of the 365 daily points.
+const GAS_SPARKLINE_DAYS = 90;
 
 function PropCard({
   icon,
@@ -99,22 +101,35 @@ function MarketHours() {
   );
 }
 
-export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
+export default function SixThingsSection() {
   const { resolvedTheme } = useTheme();
   const feeColor = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"].yellow;
-  const { data: feesData, isLoading: feesLoading } = useSWR<FeesResponse>(getChainMetricURL("ethereum", "fees-paid-by-users"));
-  const dailyFees = feesData?.details?.timeseries?.daily;
-  const ethColumn = dailyFees?.types.indexOf("eth") ?? -1;
-  const recentFeePoints =
-    ethColumn >= 0
-      ? dailyFees?.data.slice(-30).filter((row) => Number.isFinite(row[0]) && Number.isFinite(row[ethColumn])) ?? []
-      : [];
-  const ethGrowthPct = ethSnapshot ? -ethSnapshot.annualIssuanceRatePct : -0.04;
-  const scarceRows: { label: string; value: number; color: AccentColor; emphasis?: boolean }[] = [
-    { label: "ETH", value: Math.abs(ethGrowthPct), color: "turquoise", emphasis: true },
-    { label: "Gold", value: 1.7, color: "neutral" },
-    { label: "US dollar", value: 5.9, color: "neutral" },
-  ];
+  const { data, isLoading } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
+  const props = data?.data;
+
+  const yieldBreakdown = props?.yield_breakdown;
+  const scarcity = props?.scarcity?.assets;
+  const scarceRows: { label: string; value: number; color: AccentColor; emphasis?: boolean; method: string }[] = scarcity
+    ? [
+        { label: "ETH", value: scarcity.eth.value, color: "turquoise", emphasis: true, method: scarcity.eth.method },
+        { label: scarcity.gold.name, value: scarcity.gold.value, color: "neutral", method: scarcity.gold.method },
+        { label: scarcity.usd.name, value: scarcity.usd.value, color: "neutral", method: scarcity.usd.method },
+      ]
+    : [];
+  const scarceMax = Math.max(...scarceRows.map((r) => Math.abs(r.value)), 0);
+
+  const collateral = props?.collateral;
+  const collateralParts: { label: string; short: string; share: number; color: AccentColor }[] = collateral
+    ? [
+        { label: "Lending markets", short: "Lending", share: collateral.breakdown.lending.share, color: "turquoise" as AccentColor },
+        { label: "Liquid staking", short: "Liquid staking", share: collateral.breakdown.liquid_staking.share, color: "yellow" as AccentColor },
+        { label: "DEX liquidity", short: "DEX", share: collateral.breakdown.dex.share, color: "red" as AccentColor },
+      ].sort((a, b) => b.share - a.share)
+    : [];
+
+  const gasPaid = props?.gas_paid;
+  const recentGas = gasPaid?.data?.slice(-GAS_SPARKLINE_DAYS).filter((row) => Number.isFinite(row[0]) && Number.isFinite(row[1])) ?? [];
+  const l2Count = gasPaid?.chains?.count_l2;
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -126,70 +141,75 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           icon="gtp-metrics-fdv"
           title="Productive"
           tag="yield"
-          value="3.12%"
+          value={yieldBreakdown ? pct(yieldBreakdown.total) : "—"}
           unit="APR, paid in ETH"
-          info="Stakers lock ETH to secure Ethereum and are paid in ETH: new issuance plus priority tips and MEV. The split shown is illustrative."
+          info="Stakers lock ETH to secure Ethereum and are paid in ETH: new issuance plus priority tips and MEV. Source: ethsupply.fyi."
         >
-          <StackBar
-            parts={[
-              { label: "Issuance", value: 2.44, color: "turquoise" },
-              { label: "Tips + MEV", value: 0.68, color: "yellow" },
-            ]}
-          />
-          <Legend
-            items={[
-              { label: "Issuance", color: "turquoise", value: "2.44%" },
-              { label: "Tips + MEV", color: "yellow", value: "0.68%" },
-            ]}
-          />
+          {yieldBreakdown && (
+            <>
+              <StackBar
+                parts={[
+                  { label: "Issuance", value: yieldBreakdown.breakdown.issuance, color: "turquoise" },
+                  { label: "Tips + MEV", value: yieldBreakdown.breakdown.tips + yieldBreakdown.breakdown.mev, color: "yellow" },
+                ]}
+              />
+              <Legend
+                items={[
+                  { label: "Issuance", color: "turquoise", value: pct(yieldBreakdown.breakdown.issuance) },
+                  { label: "Tips + MEV", color: "yellow", value: pct(yieldBreakdown.breakdown.tips + yieldBreakdown.breakdown.mev) },
+                ]}
+              />
+            </>
+          )}
         </PropCard>
 
         <PropCard
           icon="gtp-shield"
           title="Scarce"
           tag="store of value"
-          value={ethSnapshot ? `${(ethSnapshot.totalSupply / 1e6).toFixed(1)}M` : "120.7M"}
-          unit={`ETH · ${ethGrowthPct >= 0 ? "+" : "−"}${Math.abs(ethGrowthPct).toFixed(2)}% a year`}
-          info="Total supply is live. New issuance is partly offset by the base-fee burn, so supply grows slowly or even shrinks. Gold and dollar growth rates are illustrative."
+          value={scarcity ? signedPct(scarcity.eth.value) : "—"}
+          unit="ETH supply a year"
+          info={
+            <span className="flex flex-col gap-y-[6px]">
+              <span>New issuance is partly offset by the base-fee burn, so supply grows slowly or even shrinks.</span>
+              {scarceRows.map((r) => (
+                <span key={r.label}>
+                  <span className="font-semibold">{r.label}:</span> {r.method}.
+                </span>
+              ))}
+            </span>
+          }
         >
           <div className="flex flex-col gap-y-[6px]">
             {scarceRows.map((r) => (
               <BarRow
                 key={r.label}
                 label={r.label}
-                value={r.value}
-                display={`${r.value.toFixed(2)}%`}
-                max={5.9}
+                value={Math.abs(r.value)}
+                display={signedPct(r.value)}
+                max={scarceMax}
                 color={r.color}
                 emphasis={r.emphasis}
               />
             ))}
           </div>
-          <div className="text-xs">Annual change in total stock. ETH is live; gold and dollar are illustrative.</div>
+          <div className="text-xs">Annual change in total stock.</div>
         </PropCard>
 
         <PropCard
           icon="gtp-metrics-totalvaluelocked"
           title="Trusted"
           tag="collateral"
-          value="$48.2B"
-          unit="ETH posted onchain"
-          info="ETH is the main collateral onchain: it backs loans in lending markets, liquid staking tokens and DEX liquidity. The value and mix shown are illustrative."
+          value={collateral ? formatUsd(collateral.total_usd) : "—"}
+          unit={collateral ? `${(collateral.total_eth / 1e6).toFixed(1)}M ETH posted onchain` : "ETH posted onchain"}
+          info="ETH is the main collateral onchain: it backs loans in lending markets, liquid staking tokens and DEX liquidity. Source: DefiLlama, updated daily."
         >
-          <StackBar
-            parts={[
-              { label: "Lending markets", value: 52, color: "turquoise" },
-              { label: "Liquid staking", value: 31, color: "yellow" },
-              { label: "DEX liquidity", value: 17, color: "red" },
-            ]}
-          />
-          <Legend
-            items={[
-              { label: "Lending", color: "turquoise", value: "52%" },
-              { label: "Liquid staking", color: "yellow", value: "31%" },
-              { label: "DEX", color: "red", value: "17%" },
-            ]}
-          />
+          {collateralParts.length > 0 && (
+            <>
+              <StackBar parts={collateralParts.map((p) => ({ label: p.label, value: p.share, color: p.color }))} />
+              <Legend items={collateralParts.map((p) => ({ label: p.short, color: p.color, value: pct(p.share, 0) }))} />
+            </>
+          )}
         </PropCard>
 
         <PropCard
@@ -220,17 +240,17 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
           title="Useful"
           tag="digital oil"
           value="ETH"
-          unit="pays for gas on L1 and 16 Layer 2s"
-          info="Every Ethereum Mainnet transaction uses ETH to pay for computation and blockspace. Part of the base fee is burned."
+          unit={l2Count ? `pays for gas on L1 and ${l2Count} Layer 2s` : "pays for gas on L1 and Layer 2s"}
+          info="Transactions on Ethereum Mainnet and its Layer 2s use ETH to pay for computation and blockspace. The chart shows ETH paid as gas per day across them over the last 90 days. Source: growthepie."
         >
           <div className="mt-auto">
-            {recentFeePoints.length > 1 ? (
+            {recentGas.length > 1 ? (
               <div className="h-[72px]">
                 <SparklineChart
-                  values={recentFeePoints.map((row) => row[ethColumn])}
-                  timestamps={recentFeePoints.map((row) => new Date(row[0]).toISOString().slice(0, 10))}
+                  values={recentGas.map((row) => row[1])}
+                  timestamps={recentGas.map((row) => new Date(row[0]).toISOString().slice(0, 10))}
                   color={feeColor}
-                  label="Gas fees paid"
+                  label="Gas paid"
                   prefix=""
                   suffix=" ETH"
                   height={72}
@@ -238,7 +258,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
               </div>
             ) : (
               <div className="flex h-[72px] items-center text-xs text-color-text-primary/70">
-                {feesLoading ? "Loading gas fees..." : "Gas fee data unavailable"}
+                {isLoading ? "Loading gas fees..." : "Gas fee data unavailable"}
               </div>
             )}
           </div>
@@ -257,9 +277,7 @@ export default function SixThingsSection({ ethSnapshot }: { ethSnapshot: EthSupp
         </PropCard>
       </div>
 
-      <IllustrativeNote>
-        Supply and issuance are live. The yield split, collateral mix and settlement times are illustrative.
-      </IllustrativeNote>
+      <IllustrativeNote>Settlement times for card payments, wires and stock trades are typical, not exact.</IllustrativeNote>
     </div>
   );
 }

@@ -22,11 +22,11 @@ export default function EthTheAssetPage() {
     <>
       <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
       <Container className="flex flex-col pt-[45px] md:pt-[30px] pb-[15px] gap-y-[60px]">
-        <EthHero ethSnapshot={ethSnapshot} />
-        <SixThingsSection ethSnapshot={ethSnapshot} />
+        <EthHero />
+        <SixThingsSection />
         <SupplySection ethSnapshot={ethSnapshot} />
         <ProductiveAssetSection />
-        <RankingSection ethSnapshot={ethSnapshot} />
+        <RankingSection />
         <BasketSection />
         <DailySection />
       </Container>

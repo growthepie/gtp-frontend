@@ -113,6 +113,14 @@ export const EconomicsURL = "https://api.growthepie.com/v1/economics.json";
 
 export const EthSupplyURL = "https://api.growthepie.com/v1/eim/eth_supply.json";
 
+// "ETH the asset" page data, regenerated hourly at :35 UTC.
+export const EthAssetURLs = {
+  kpis: "https://api.growthepie.com/v1/eth_asset/kpis.json",
+  stats: "https://api.growthepie.com/v1/eth_asset/stats.json",
+  properties: "https://api.growthepie.com/v1/eth_asset/properties.json",
+  marketCaps: "https://api.growthepie.com/v1/eth_asset/market_caps.json",
+};
+
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.com/v1/master.json";

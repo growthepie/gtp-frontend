@@ -27,6 +27,18 @@ const formatLargeNumber = (value: number, decimals = 2): string => {
   return value.toFixed(decimals);
 };
 
+// Up to 2 decimals, but a small non-zero change (e.g. +0.0024%) gets enough
+// decimals to show its first two significant digits instead of rounding to 0.0%.
+const formatChangePct = (value: number): string => {
+  const abs = Math.abs(value);
+  const smallDecimals = abs > 0 && abs < 0.05 ? Math.min(20, 1 - Math.floor(Math.log10(abs))) : 0;
+  return Intl.NumberFormat("en-US", {
+    maximumFractionDigits: Math.max(2, smallDecimals),
+    minimumFractionDigits: Math.max(1, smallDecimals),
+    signDisplay: "exceptZero",
+  }).format(value);
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface GTPMetricCardProps {
@@ -37,14 +49,16 @@ export interface GTPMetricCardProps {
   value: number;
   /** Value one week ago — used to compute WoW %. Ignored when wowChange is provided. */
   prevValue?: number;
-  /** Pre-computed WoW % change (e.g. 5.2 for +5.2%). Takes precedence over prevValue. */
-  wowChange?: number;
+  /** Pre-computed WoW % change (e.g. 5.2 for +5.2%). Takes precedence over prevValue. Null hides the change. */
+  wowChange?: number | null;
   prefix?: string;
   suffix?: string;
   /** Raw array of values, newest last */
   sparkline: number[];
   /** Timestamps aligned with sparkline values. Generated if not provided. */
   timestamps?: string[];
+  /** dayjs format for the sparkline tooltip's date. Defaults to "DD MMM YYYY". */
+  tooltipDateFormat?: string;
   /** Brand / accent color for the chart line and value */
   color: string;
   onClick?: () => void;
@@ -83,9 +97,11 @@ interface SparklineChartProps {
    * half a category of padding at each end, so series with fewer points look shorter.
    */
   edgeToEdge?: boolean;
+  /** dayjs format for the tooltip's date. */
+  tooltipDateFormat?: string;
 }
 
-export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY" }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
@@ -242,7 +258,7 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
           }}
         >
           <div className="heading-small-xs text-color-text-primary mb-2 pl-[21px]">
-            {dayjs.utc(customTooltip.date).format("DD MMM YYYY")}
+            {dayjs.utc(customTooltip.date).format(tooltipDateFormat)}
           </div>
           <div className="flex justify-between items-center gap-x-[10px] h-[12px]">
             <div className="flex items-center gap-1">
@@ -281,6 +297,7 @@ export default function GTPMetricCard({
   suffix = "",
   sparkline,
   timestamps: timestampsProp,
+  tooltipDateFormat,
   color,
   onClick,
   leftIcon,
@@ -293,7 +310,7 @@ export default function GTPMetricCard({
     wowChangeProp !== undefined
       ? wowChangeProp
       : 0;
-  const isPositive = computedWowChange >= 0;
+  const isPositive = (computedWowChange ?? 0) >= 0;
 
   const timestamps =
     timestampsProp ??
@@ -335,6 +352,7 @@ export default function GTPMetricCard({
               suffix={suffix}
               decimals={decimals}
               edgeToEdge
+              tooltipDateFormat={tooltipDateFormat}
             />
           </div>
         </div>
@@ -348,6 +366,7 @@ export default function GTPMetricCard({
             prefix={prefix}
             suffix={suffix}
             decimals={decimals}
+            tooltipDateFormat={tooltipDateFormat}
           />
         </div>
       )}
@@ -371,16 +390,14 @@ export default function GTPMetricCard({
             <>{prefix}{formatLargeNumber(value, decimals)}{suffix}</>
           )}
         </div>
-        <div
-          className="numbers-xxs"
-          style={{ color: isPositive ? "rgb(var(--positive))" : "rgb(var(--negative))" }}
-        >
-          {Intl.NumberFormat("en-US", {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 1,
-            signDisplay: "exceptZero",
-          }).format(computedWowChange)}%
-        </div>
+        {computedWowChange !== null && (
+          <div
+            className="numbers-xxs"
+            style={{ color: isPositive ? "rgb(var(--positive))" : "rgb(var(--negative))" }}
+          >
+            {formatChangePct(computedWowChange)}%
+          </div>
+        )}
       </div>
 
       {/* Hover chevron */}

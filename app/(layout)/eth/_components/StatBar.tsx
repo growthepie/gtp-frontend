@@ -13,6 +13,7 @@ export function BarRow({
   max,
   color,
   emphasis = false,
+  hint,
 }: {
   label: string;
   value: number;
@@ -21,14 +22,18 @@ export function BarRow({
   color: AccentColor;
   /** The row the story is about — everything else stays recessive. */
   emphasis?: boolean;
+  /** Shown on hover, e.g. how the value is estimated. */
+  hint?: string;
 }) {
+  // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
+  const overflows = value > max;
   return (
-    <div className="grid grid-cols-[minmax(96px,140px)_1fr_64px] gap-x-[10px] items-center">
+    <div className="grid grid-cols-[minmax(96px,140px)_1fr_64px] gap-x-[10px] items-center" title={hint}>
       <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""}`}>{label}</div>
       <div className={`h-[10px] rounded-[4px] ${TRACK_BG} overflow-hidden`}>
         <div
-          className={`h-full rounded-r-[4px] ${ACCENT_BG[color]} transition-[width] duration-300`}
-          style={{ width: `${Math.max(2, (value / max) * 100)}%` }}
+          className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-r-[4px]"} ${ACCENT_BG[color]} transition-[width] duration-300`}
+          style={{ width: `${overflows ? 100 : Math.max(2, (value / max) * 100)}%` }}
         />
       </div>
       <div className={`numbers-xs md:numbers-sm text-right ${emphasis ? "" : "text-color-text-primary/70"}`}>{display}</div>

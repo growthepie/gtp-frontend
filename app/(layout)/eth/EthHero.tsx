@@ -12,167 +12,38 @@ import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonR
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { useMediaQuery } from "@react-hook/media-query";
 import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
-import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
-import { getChainMetricURL } from "@/lib/urls";
+import {
+  EthAssetKpisResponse,
+  EthAssetStatsResponse,
+  KPI_TIMEFRAMES,
+  KpiKey,
+  KpiTimeframe,
+  liveStatValue,
+} from "@/lib/eth-the-asset/data";
+import { EthAssetURLs } from "@/lib/urls";
 import { ACCENT_HEX, AccentColor } from "./_components/colors";
-import { IllustrativeNote } from "./_components/IllustrativeTag";
-
-// World population is projected forward from a base figure at a yearly growth rate.
-// PLACEHOLDER: this endpoint doesn't exist yet. It should return
-// { annual_growth_pct: number, base_population?: number, base_date?: string (ISO) };
-// any field it leaves out (or the whole response, if the request fails) falls
-// back to the WEF-cited UN projection below.
-const WORLD_POPULATION_URL = "https://api.growthepie.com/v1/placeholder/world_population.json";
-
-// WEF, citing UN World Population Prospects 2022: 8.0B on 15 Nov 2022, 9.7B by 2050.
-// (9.7 / 8.0) ^ (1 / 27.6 years) − 1 ≈ 0.70% a year.
-const FALLBACK_BASE_POPULATION = 8.0e9;
-const FALLBACK_BASE_DATE = "2022-11-15";
-const FALLBACK_ANNUAL_GROWTH_PCT = 0.7;
-
-type WorldPopulationResponse = {
-  annual_growth_pct?: number;
-  base_population?: number;
-  base_date?: string;
-};
-
-const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
-
-function projectWorldPopulation(data: WorldPopulationResponse | undefined, now: number) {
-  const isValid = (n?: number): n is number => typeof n === "number" && Number.isFinite(n);
-  const growthPct = isValid(data?.annual_growth_pct) ? data.annual_growth_pct : FALLBACK_ANNUAL_GROWTH_PCT;
-  const basePopulation = isValid(data?.base_population) && data.base_population > 0 ? data.base_population : FALLBACK_BASE_POPULATION;
-  const parsedBaseDate = data?.base_date ? Date.parse(data.base_date) : NaN;
-  const baseDate = Number.isFinite(parsedBaseDate) ? parsedBaseDate : Date.parse(FALLBACK_BASE_DATE);
-  const yearsSinceBase = Math.max(0, (now - baseDate) / MS_PER_YEAR);
-  return basePopulation * Math.pow(1 + growthPct / 100, yearsSinceBase);
-}
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-// Supply is only published daily, so carry it forward from the latest point at
-// the net pace of the last 30 days (issuance minus burn), not the gross rate.
-function projectEthSupply(snapshot: EthSupplySnapshot, now: number) {
-  const latestTimestamp = snapshot.recentTimestamps[snapshot.recentTimestamps.length - 1];
-  if (!Number.isFinite(latestTimestamp)) return snapshot.totalSupply;
-  const daysSinceLatest = Math.max(0, (now - latestTimestamp) / MS_PER_DAY);
-  return snapshot.totalSupply + (snapshot.netIssuance30d / 30) * daysSinceLatest;
-}
-
-// Both sides move by tiny amounts per second, so the figure needs ~12 decimals
-// before the change is visible.
-const ETH_PER_PERSON_DECIMALS = 12;
-
-// Lifetime active addresses on Ethereum Mainnet — the same figure the chain page's
-// "Lifetime" achievements show ("X addresses were active on this chain").
-const ETHEREUM_OVERVIEW_URL = "https://api.growthepie.com/v1/chains/ethereum/overview.json";
-
-type EthereumOverviewResponse = {
-  last_updated_utc?: string;
-  data?: {
-    achievements?: {
-      lifetime?: { daa?: { value?: { total_value?: number } } };
-    };
-  };
-};
-
-// The API only publishes the total as of its last daily run, so tick it forward
-// at the recent pace. Measured from two snapshots of the overview file, 14 days
-// apart: 317,777,172 (21 Sep 2026) → 320,030,822 (5 Oct 2026) ≈ 161k new/day.
-const NEW_WALLETS_PER_DAY = 161_000;
-
-// The backend counts addresses on days before the run date (date < current_date),
-// so the total is as of 00:00 UTC on the day the file was generated.
-function projectLifetimeWallets(overview: EthereumOverviewResponse | undefined, now: number) {
-  const total = overview?.data?.achievements?.lifetime?.daa?.value?.total_value;
-  if (!total || total <= 0) return null;
-  const updated = overview?.last_updated_utc ? Date.parse(overview.last_updated_utc.replace(" ", "T") + "Z") : NaN;
-  if (!Number.isFinite(updated)) return total;
-  const asOf = new Date(updated).setUTCHours(0, 0, 0, 0);
-  const daysSince = Math.max(0, (now - asOf) / MS_PER_DAY);
-  return Math.round(total + NEW_WALLETS_PER_DAY * daysSince);
-}
 
 // Imperva (Thales) Bad Bot Report 2026: automated share of web traffic in 2025.
 // Static — the report is annual; update when the next edition comes out.
 const BOT_TRAFFIC_SHARE_PCT = 53;
 
-type MarketCapResponse = {
-  details?: {
-    timeseries?: {
-      daily?: { types: string[]; data: number[][] };
-    };
-  };
+// Both sides move by tiny amounts per second, so the figure needs ~13 decimals
+// before the change is visible.
+const ETH_PER_PERSON_DECIMALS = 13;
+
+// One timespan drives every hero card. These are exactly the timeframes in
+// eth_asset/kpis.json; each card's change is over the selected one.
+const TIMESPANS: Record<KpiTimeframe, { label: string; shortLabel: string; dateFormat: string }> = {
+  "24h": { label: "24 hours", shortLabel: "24h", dateFormat: "DD MMM HH:mm" },
+  "7d": { label: "7 days", shortLabel: "7d", dateFormat: "DD MMM HH:mm" },
+  "60d": { label: "60 days", shortLabel: "60d", dateFormat: "DD MMM YYYY" },
+  "1y": { label: "1 year", shortLabel: "1y", dateFormat: "DD MMM YYYY" },
+  "5y": { label: "5 years", shortLabel: "5y", dateFormat: "MMM YYYY" },
 };
 
-// One timespan drives every hero card. Same daily options and labels as the
-// fundamentals charts (MetricDataContext), minus "since launch".
-const TIMESPANS = {
-  "90d": { label: "90 days", shortLabel: "90d", days: 90 },
-  "180d": { label: "180 days", shortLabel: "180d", days: 180 },
-  "365d": { label: "1 year", shortLabel: "1y", days: 365 },
-  max: { label: "Max", shortLabel: "Max", days: null },
-} as const;
-type TimespanKey = keyof typeof TIMESPANS;
-const TIMESPAN_KEYS = Object.keys(TIMESPANS) as TimespanKey[];
-
-// Longer spans are thinned to at most this many evenly spaced points (always
-// keeping the latest), so every line has a similar density and none looks
-// stretched or scribbled.
-const MAX_SPARKLINE_POINTS = 120;
-
-function inTimespan<T>(points: T[], timespan: TimespanKey): T[] {
-  const { days } = TIMESPANS[timespan];
-  const sliced = days ? points.slice(-(days + 1)) : points;
-  if (sliced.length <= MAX_SPARKLINE_POINTS) return sliced;
-  const step = (sliced.length - 1) / (MAX_SPARKLINE_POINTS - 1);
-  return Array.from({ length: MAX_SPARKLINE_POINTS }, (_, i) => sliced[Math.round(i * step)]);
-}
-
-const changePct = (values: number[]) =>
-  values.length > 1 && values[0] ? (values[values.length - 1] / values[0] - 1) * 100 : 0;
-
-// Illustrative series for the tiles with no live source yet. A seeded random walk
-// (fixed seed, so server and client markup match on hydration) that drifts from
-// `start` to `end` with day-to-day noise of about `noise`, ending exactly on `end`.
-function illustrativeTrend(start: number, end: number, noise: number, seed: number, length: number) {
-  // mulberry32: tiny deterministic PRNG
-  let t = seed >>> 0;
-  const rand = () => {
-    t = (t + 0x6d2b79f5) >>> 0;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-  let offset = 0;
-  return Array.from({ length }, (_, i) => {
-    const progress = i / (length - 1);
-    // Mean-reverting walk, pulled back to the drift line so it lands on `end`.
-    offset = offset * 0.8 + (rand() - 0.5) * 2 * noise;
-    const drift = start + (end - start) * progress;
-    return i === length - 1 ? end : drift + offset * (1 - Math.pow(progress, 8));
-  });
-}
-
-// Where each illustrative series starts for each timespan; all end on today's value.
-const ILLUSTRATIVE: Record<
-  "stakingYield" | "supplyStaked" | "burn",
-  { end: number; noise: number; seed: number; start: Record<TimespanKey, number> }
-> = {
-  stakingYield: { end: 3.12, noise: 0.03, seed: 11, start: { "90d": 2.95, "180d": 3.05, "365d": 3.3, max: 5.6 } },
-  supplyStaked: { end: 30.4, noise: 0.08, seed: 23, start: { "90d": 29.4, "180d": 28.6, "365d": 27.5, max: 2 } },
-  burn: { end: 412, noise: 40, seed: 37, start: { "90d": 380, "180d": 340, "365d": 300, max: 1800 } },
-};
-
-// Fees have been burned since the London upgrade; "Max" totals from then.
-const LONDON_UPGRADE_UTC = Date.UTC(2021, 7, 5);
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function illustrativeFor(key: keyof typeof ILLUSTRATIVE, timespan: TimespanKey) {
-  const { end, noise, seed, start } = ILLUSTRATIVE[key];
-  const length = Math.min(TIMESPANS[timespan].days ?? MAX_SPARKLINE_POINTS, MAX_SPARKLINE_POINTS);
-  return illustrativeTrend(start[timespan], end, noise, seed, length);
-}
+// change_pct is a fraction; the card wants a percentage. Null hides the badge.
+const toPct = (fraction: number | null | undefined) =>
+  fraction === null || fraction === undefined ? null : fraction * 100;
 
 // Pointer-reactive diamond built from plain CSS/SVG (no 3D library). A slow
 // autorotate loop plus a pointer-driven tilt combine into one transform.
@@ -246,83 +117,58 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
   );
 }
 
-export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
+export default function EthHero() {
   const { globalMetrics } = useSSEMetrics();
-  const { data: marketCapData } = useSWR<MarketCapResponse>(getChainMetricURL("ethereum", "market-cap"));
+  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
+  const { data: statsData } = useSWR<EthAssetStatsResponse>(EthAssetURLs.stats);
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
-  const { data: populationData } = useSWR<WorldPopulationResponse>(WORLD_POPULATION_URL, {
-    shouldRetryOnError: false,
-    revalidateOnFocus: false,
-    // The endpoint is a placeholder that doesn't exist yet, so a failure is expected
-    // and the fallback projection is used. Don't let the global handler log it.
-    onError: () => {},
-  });
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const worldPopulation = projectWorldPopulation(populationData, now);
-  const ethPerPerson = ethSnapshot ? projectEthSupply(ethSnapshot, now) / worldPopulation : null;
-  const { data: ethereumOverview } = useSWR<EthereumOverviewResponse>(ETHEREUM_OVERVIEW_URL);
+  const walletsStat = statsData?.data?.total_wallets;
+  const perPersonStat = statsData?.data?.eth_per_person;
+  const lifetimeWallets = walletsStat ? Math.round(liveStatValue(walletsStat, now)) : null;
+  const ethPerPerson = perPersonStat ? liveStatValue(perPersonStat, now) : null;
+  const worldPopulation = perPersonStat
+    ? perPersonStat.details.world_population +
+      ((now - perPersonStat.timestamp) / 1000) * perPersonStat.details.world_population_per_second
+    : null;
 
-  const lifetimeWallets = projectLifetimeWallets(ethereumOverview, now);
   const isMobile = useMediaQuery("(max-width: 967px)");
-  const [timespan, setTimespan] = useState<TimespanKey>("365d");
+  const [timespan, setTimespan] = useState<KpiTimeframe>("1y");
   const [timespanBarWrapping, setTimespanBarWrapping] = useState(false);
-  const price = globalMetrics.eth_price_usd;
-  const dailyMarketCap = marketCapData?.details?.timeseries?.daily;
-  const allPricePoints = useMemo(() => {
-    const usdColumn = dailyMarketCap?.types.indexOf("usd") ?? -1;
-    const ethColumn = dailyMarketCap?.types.indexOf("eth") ?? -1;
-    if (!dailyMarketCap || usdColumn < 0 || ethColumn < 0) return [];
 
-    return dailyMarketCap.data.flatMap((row) => {
-      const [timestamp] = row;
-      const usd = row[usdColumn];
-      const eth = row[ethColumn];
-      return Number.isFinite(timestamp) && Number.isFinite(usd) && Number.isFinite(eth) && eth > 0
-        ? [{ timestamp, value: usd / eth }]
-        : [];
-    });
-  }, [dailyMarketCap]);
-  const priceHistory = useMemo(() => {
-    const points = inTimespan(allPricePoints, timespan);
-    return {
-      values: points.map((point) => point.value),
-      timestamps: points.map((point) => new Date(point.timestamp).toISOString().slice(0, 10)),
+  // Every card reads the same timeframe from kpis.json.
+  const kpis = useMemo(() => {
+    const series = (key: KpiKey) => {
+      const tf = kpisData?.data?.kpis?.[key]?.timeframes?.[timespan];
+      const points = tf?.data?.filter(([t, v]) => Number.isFinite(t) && Number.isFinite(v)) ?? [];
+      return {
+        current: tf?.current,
+        change: toPct(tf?.change_pct),
+        values: points.map(([, v]) => v),
+        timestamps: points.map(([t]) => new Date(t).toISOString()),
+      };
     };
-  }, [allPricePoints, timespan]);
-  const supplyHistory = useMemo(() => {
-    if (!ethSnapshot) return { values: [], timestamps: [] };
-    const points = inTimespan(
-      ethSnapshot.allTimestamps.map((timestamp, i) => ({ timestamp, value: ethSnapshot.allSupply[i] })),
-      timespan,
-    );
     return {
-      values: points.map((point) => point.value),
-      timestamps: points.map((point) => new Date(point.timestamp).toISOString().slice(0, 10)),
+      price: series("eth_price"),
+      supply: series("eth_supply"),
+      stakingYield: series("staking_yield"),
+      stakedShare: series("staked_share"),
+      burned: series("eth_burned"),
     };
-  }, [ethSnapshot, timespan]);
-  // Total burned over the span: the average daily burn (the sparkline is daily, and
-  // may be thinned) times the days in the span.
-  const burnDays = TIMESPANS[timespan].days ?? Math.floor((now - LONDON_UPGRADE_UTC) / DAY_MS);
-  const illustrative = useMemo(
-    () => ({
-      stakingYield: illustrativeFor("stakingYield", timespan),
-      supplyStaked: illustrativeFor("supplyStaked", timespan),
-      burn: illustrativeFor("burn", timespan),
-    }),
-    [timespan],
-  );
-  const burnedInSpan =
-    (illustrative.burn.reduce((sum, value) => sum + value, 0) / illustrative.burn.length) * burnDays;
-  const lastPricePoint = allPricePoints[allPricePoints.length - 1];
-  const latestHistoricalPrice = lastPricePoint?.value;
-  const latestHistoricalDate = lastPricePoint ? new Date(lastPricePoint.timestamp).toISOString().slice(0, 10) : undefined;
-  const isLivePrice = !!price && price > 0;
-  const displayedPrice = isLivePrice ? price : latestHistoricalPrice;
+  }, [kpisData, timespan]);
+
+  // The live SSE price when it's streaming, otherwise kpis.json's latest hourly price.
+  const livePrice = globalMetrics.eth_price_usd;
+  const isLivePrice = !!livePrice && livePrice > 0;
+  const displayedPrice = isLivePrice ? livePrice : kpis.price.current;
+  const kpisUpdated = kpisData?.last_updated_utc;
+  const dateFormat = TIMESPANS[timespan].dateFormat;
+  const hasSeries = (s: { values: number[]; current?: number }) => s.values.length > 1 && s.current !== undefined;
 
   const tile = (color: AccentColor) => hex[color];
 
@@ -352,7 +198,7 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
               <span className="numbers-5xl text-color-text-primary/40">—</span>
             )}
             {/* The SSE stream doesn't currently send eth_price_usd, so the headline usually
-                falls back to the latest daily close — only claim "live" when it really is. */}
+                falls back to kpis.json's hourly price — only claim "live" when it really is. */}
             {isLivePrice ? (
               <span className="heading-small-xs flex items-center gap-x-[5px]">
                 <span className="relative flex h-[6px] w-[6px]">
@@ -364,7 +210,7 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
             ) : (
               displayedPrice && (
                 <span className="heading-small-xs text-color-text-primary/70">
-                  1 ETH · daily close {latestHistoricalDate}
+                  1 ETH{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
                 </span>
               )
             )}
@@ -397,7 +243,8 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
                 </TooltipTrigger>
                 <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
                   <span>
-                    Every address that has ever been active on Ethereum Mainnet. Wallets aren&apos;t people — one person can
+                    Every address that has ever been active on Ethereum Mainnet, ticking forward at today&apos;s pace
+                    of new addresses. Wallets aren&apos;t people — one person can
                     have many, and exchanges hold ETH for millions of users in a few. Addresses that have only used Layer 2s
                     aren&apos;t counted.
                   </span>
@@ -410,7 +257,7 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
               </Tooltip>
             </div>
           )}
-          {ethSnapshot && (
+          {ethPerPerson !== null && (
             <div className="flex flex-wrap items-center gap-x-[4px] @[500px]:gap-x-[6px] @[600px]:gap-x-[8px] min-h-[26px] @[500px]:min-h-[30px] @[600px]:min-h-[36px] px-[8px] @[500px]:px-[10px] @[600px]:px-[15px] py-[4px] @[500px]:py-[5px] @[600px]:py-[6px] rounded-full bg-color-bg-medium w-fit origin-left @[419px]:origin-right relative z-0 hover:z-10 transition-transform duration-200 hover:scale-[1.4] @[500px]:hover:scale-[1.19] @[600px]:hover:scale-100 @[419px]:[:has(>*:hover)>&:not(:hover)]:scale-[0.58] @[500px]:[:has(>*:hover)>&:not(:hover)]:scale-[0.8] @[600px]:[:has(>*:hover)>&:not(:hover)]:scale-100">
               <GTPIcon icon="gtp-users-monochrome" size="sm" className="text-color-accent-yellow" />
               <span className="flex items-center gap-x-[3px] @[500px]:gap-x-[4px] @[600px]:gap-x-[5px]">
@@ -426,13 +273,13 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
                 <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
                   <span>
                     If all ETH were split evenly across the world&apos;s{" "}
-                    <span className="numbers-xs tabular-nums">{Math.round(worldPopulation).toLocaleString("en-US")}</span>{" "}
+                    <span className="numbers-xs tabular-nums">{Math.round(worldPopulation ?? 0).toLocaleString("en-US")}</span>{" "}
                     people, each would have {ethPerPerson?.toFixed(4)} ETH. Most people hold none, so owning even a small
                     amount puts you in a meaningful percentile of holders.
                   </span>
                   <span>
-                    World population is a projection, not a live count: 8.0 billion people on 15 Nov 2022, growing about
-                    0.7% a year, in line with the UN projections cited by the World Economic Forum (9.7 billion by 2050).
+                    Both sides tick forward every second at their current pace: supply from ultrasound.money, and world
+                    population projected from World Bank data, not counted live.
                   </span>
                 </TooltipContent>
               </Tooltip>
@@ -458,7 +305,7 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
           style={timespanBarWrapping ? { borderRadius: "15px" } : undefined}
         >
           <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
-            {TIMESPAN_KEYS.map((key) => (
+            {KPI_TIMEFRAMES.map((key) => (
               <GTPButton
                 key={key}
                 label={isMobile ? TIMESPANS[key].shortLabel : TIMESPANS[key].label}
@@ -473,17 +320,18 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
           </GTPButtonRow>
         </GTPButtonContainer>
         <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-3 gap-[10px]">
-          {priceHistory.values.length > 1 && displayedPrice ? (
+          {hasSeries(kpis.price) && displayedPrice ? (
             <GTPMetricCard
               fillSparkline
               nonInteractive
               label="ETH price"
               icon="gtp-tokeneth"
               value={displayedPrice}
-              wowChange={changePct(priceHistory.values)}
+              wowChange={kpis.price.change}
               prefix="$"
-              sparkline={priceHistory.values}
-              timestamps={priceHistory.timestamps}
+              sparkline={kpis.price.values}
+              timestamps={kpis.price.timestamps}
+              tooltipDateFormat={dateFormat}
               color={tile("turquoise")}
             />
           ) : (
@@ -497,7 +345,7 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
               </span>
             </div>
           )}
-          {ethSnapshot && supplyHistory.values.length > 1 && (
+          {hasSeries(kpis.supply) && (
             <GTPMetricCard
               fillSparkline
               nonInteractive
@@ -505,52 +353,65 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
               decimals={1}
               stackSuffixWhenNarrow
               icon="gtp-realtime"
-              value={ethSnapshot.totalSupply}
+              value={kpis.supply.current!}
               // Change over the selected span (net of burn).
-              wowChange={changePct(supplyHistory.values)}
+              wowChange={kpis.supply.change}
               suffix=" ETH"
-              sparkline={supplyHistory.values}
-              timestamps={supplyHistory.timestamps}
+              sparkline={kpis.supply.values}
+              timestamps={kpis.supply.timestamps}
+              tooltipDateFormat={dateFormat}
               color={tile("yellow")}
             />
           )}
-          <GTPMetricCard
-            fillSparkline
-            nonInteractive
-            label="Staking yield"
-            icon="gtp-metrics-fdv"
-            value={ILLUSTRATIVE.stakingYield.end}
-            wowChange={changePct(illustrative.stakingYield)}
-            suffix="% APR"
-            sparkline={illustrative.stakingYield}
-            color={tile("turquoise")}
-          />
-          <GTPMetricCard
-            fillSparkline
-            nonInteractive
-            label="Supply staked"
-            decimals={1}
-            icon="gtp-lock"
-            value={ILLUSTRATIVE.supplyStaked.end}
-            wowChange={changePct(illustrative.supplyStaked)}
-            suffix="%"
-            sparkline={illustrative.supplyStaked}
-            color={tile("turquoise")}
-          />
-          <GTPMetricCard
-            fillSparkline
-            nonInteractive
-            label="ETH burned"
-            decimals={1}
-            stackSuffixWhenNarrow
-            icon="gtp-metrics-feespaidbyusers"
-            value={burnedInSpan}
-            // Change in the daily burn rate across the span.
-            wowChange={changePct(illustrative.burn)}
-            suffix=" ETH"
-            sparkline={illustrative.burn}
-            color={tile("red")}
-          />
+          {hasSeries(kpis.stakingYield) && (
+            <GTPMetricCard
+              fillSparkline
+              nonInteractive
+              label="Staking yield"
+              icon="gtp-metrics-fdv"
+              value={kpis.stakingYield.current! * 100}
+              wowChange={kpis.stakingYield.change}
+              suffix="% APR"
+              sparkline={kpis.stakingYield.values.map((v) => v * 100)}
+              timestamps={kpis.stakingYield.timestamps}
+              tooltipDateFormat={dateFormat}
+              color={tile("turquoise")}
+            />
+          )}
+          {hasSeries(kpis.stakedShare) && (
+            <GTPMetricCard
+              fillSparkline
+              nonInteractive
+              label="Supply staked"
+              decimals={1}
+              icon="gtp-lock"
+              value={kpis.stakedShare.current! * 100}
+              wowChange={kpis.stakedShare.change}
+              suffix="%"
+              sparkline={kpis.stakedShare.values.map((v) => v * 100)}
+              timestamps={kpis.stakedShare.timestamps}
+              tooltipDateFormat={dateFormat}
+              color={tile("turquoise")}
+            />
+          )}
+          {hasSeries(kpis.burned) && (
+            <GTPMetricCard
+              fillSparkline
+              nonInteractive
+              label="ETH burned"
+              decimals={1}
+              stackSuffixWhenNarrow
+              icon="gtp-metrics-feespaidbyusers"
+              // Total burned within the span; the change is vs the previous equal span.
+              value={kpis.burned.current!}
+              wowChange={kpis.burned.change}
+              suffix=" ETH"
+              sparkline={kpis.burned.values}
+              timestamps={kpis.burned.timestamps}
+              tooltipDateFormat={dateFormat}
+              color={tile("red")}
+            />
+          )}
           <Link
             href="/ethereum-ecosystem/metrics"
             className="group flex h-2xl items-center justify-between gap-x-[10px] rounded-[15px] bg-color-bg-default p-[15px] shadow-standard transition-colors hover:bg-color-ui-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-color-accent-turquoise"
@@ -562,10 +423,10 @@ export default function EthHero({ ethSnapshot }: { ethSnapshot: EthSupplySnapsho
             <GTPIcon icon="gtp-chevronright" size="sm" className="shrink-0 transition-transform group-hover:translate-x-[3px]" />
           </Link>
         </div>
-        <IllustrativeNote>
-          Supply and ETH price are live from growthepie data; each card&apos;s change is over the selected timespan.
-          Staking yield, staked share and burn are illustrative — we don&apos;t track those yet.
-        </IllustrativeNote>
+        <div className="text-xs text-color-text-primary/70">
+          Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.
+          Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.
+        </div>
       </div>
     </div>
   );

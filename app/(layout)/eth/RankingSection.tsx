@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -9,56 +10,66 @@ import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
 import { BarRow } from "./_components/StatBar";
-import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_HEX } from "./_components/colors";
-import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+import { EthAssetMarketCapsResponse, MarketCapCategory } from "@/lib/eth-the-asset/data";
+import { EthAssetURLs } from "@/lib/urls";
 
-// Illustrative — no live source for cross-asset market caps exists in this repo.
-type Asset = { name: string; capB: number; kind: "equity" | "commodity" | "crypto" };
-const RANKS: Asset[] = [
-  { name: "Gold", capB: 22400, kind: "commodity" },
-  { name: "Nvidia", capB: 4180, kind: "equity" },
-  { name: "Apple", capB: 3410, kind: "equity" },
-  { name: "Silver", capB: 1890, kind: "commodity" },
-  { name: "Bitcoin", capB: 1720, kind: "crypto" },
-  { name: "Berkshire Hathaway", capB: 1040, kind: "equity" },
-  { name: "Visa", capB: 640, kind: "equity" },
-  { name: "ETH", capB: 504, kind: "crypto" },
-  { name: "Coca-Cola", capB: 290, kind: "equity" },
-];
+type Asset = { key: string; name: string; cap: number; kind: MarketCapCategory; method?: string };
 
 const FILTERS = ["everything", "equity", "commodity", "crypto"] as const;
 
-// ETH's market cap as a % of Bitcoin's, ending on the same caps as the ranking
-// so the two charts agree.
-const capOf = (name: string) => RANKS.find((r) => r.name === name)!.capB;
-const LATEST_CAP_RATIO_PCT = (capOf("ETH") / capOf("Bitcoin")) * 100;
-export default function RankingSection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
+// Oil (proved reserves × Brent) is hundreds of times ETH, so the bar scale stops at
+// the next-largest asset and oil's bar runs off the end, labelled with its value.
+const OFF_SCALE_KEYS = ["oil"];
+
+const formatCap = (usd: number) => (usd >= 1e12 ? `$${(usd / 1e12).toFixed(2)}T` : `$${Math.round(usd / 1e9)}B`);
+
+export default function RankingSection() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("everything");
   const [filtersWrapping, setFiltersWrapping] = useState(false);
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
+  const { data } = useSWR<EthAssetMarketCapsResponse>(EthAssetURLs.marketCaps);
+  const caps = data?.data;
 
-  const rows = RANKS.filter((r) => r.name === "ETH" || filter === "everything" || r.kind === filter).sort((a, b) => b.capB - a.capB);
-  const max = Math.max(...rows.map((r) => r.capB));
+  const allAssets = useMemo<Asset[]>(() => {
+    if (!caps?.categories) return [];
+    return (Object.keys(caps.categories) as MarketCapCategory[])
+      .flatMap((kind) =>
+        caps.categories[kind].map((item) => ({
+          key: item.key,
+          name: item.key === "eth" ? "ETH" : item.name,
+          cap: item.market_cap_usd,
+          kind,
+          method: item.method,
+        })),
+      )
+      .filter((a) => Number.isFinite(a.cap))
+      .sort((a, b) => b.cap - a.cap);
+  }, [caps]);
 
-  // The time axis rides on the real supply series' timestamps, so the x values
-  // are honest dates and identical on server and client (no Date.now()).
+  const rows = allAssets.filter((r) => r.key === "eth" || filter === "everything" || r.kind === filter);
+  const scaleOf = (assets: Asset[]) => Math.max(0, ...assets.filter((r) => !OFF_SCALE_KEYS.includes(r.key)).map((r) => r.cap));
+  const max = scaleOf(rows);
+  const fullMax = scaleOf(allAssets);
+
+  const sourceNames = useMemo(
+    () => [...new Set(allAssets.length ? Object.values(caps!.categories).flat().flatMap((a) => a.sources.map((s) => s.name)) : [])],
+    [allAssets, caps],
+  );
+
+  const ratio = caps?.eth_btc_ratio;
   const ratioSeries = useMemo<GTPChartSeries[] | null>(() => {
-    const timestamps = ethSnapshot?.recentTimestamps;
-    if (!timestamps?.length) return null;
-    // Illustrative shape, scaled so the last point lands on today's cap ratio.
-    const shape = timestamps.map((_, i) => 0.031 + Math.sin(i / 9) * 0.004 + Math.sin(i / 24) * 0.006 + i * 0.00008);
-    const scale = LATEST_CAP_RATIO_PCT / shape[shape.length - 1];
-    const data: [number, number][] = timestamps.map((ts, i) => [ts, shape[i] * scale]);
+    const points = ratio?.data?.filter(([t, v]) => Number.isFinite(t) && Number.isFinite(v));
+    if (!points?.length) return null;
+    const data: [number, number][] = points.map(([t, v]) => [t, v * 100]);
     return [{ name: "ETH / BTC market cap", data, seriesType: "area", color: hex.yellow }];
-  }, [ethSnapshot?.recentTimestamps, hex.yellow]);
-
-  const latestRatio = useMemo(() => {
-    if (!ratioSeries) return null;
-    const points = ratioSeries[0].data;
-    return points[points.length - 1][1];
-  }, [ratioSeries]);
+  }, [ratio?.data, hex.yellow]);
+  const latestRatio = ratio && Number.isFinite(ratio.current) ? ratio.current * 100 : null;
+  const ratioSince = ratioSeries
+    ? new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+    : null;
+  const showsOffScale = rows.some((r) => OFF_SCALE_KEYS.includes(r.key));
 
   // Side by side, both columns stretch to the taller one and their cards fill
   // the slack, so the two footnotes line up.
@@ -83,26 +94,30 @@ export default function RankingSection({ ethSnapshot }: { ethSnapshot: EthSupply
               keeps the "everything" height whichever filter is picked. */}
           <div className="grid">
             <div className="[grid-area:1/1] invisible flex flex-col gap-y-[8px]" aria-hidden>
-              {RANKS.map((r) => (
-                <BarRow key={r.name} label={r.name} value={r.capB} display={`$${(r.capB / 1000).toFixed(2)}T`} max={max} color="neutral" />
+              {allAssets.map((r) => (
+                <BarRow key={r.key} label={r.name} value={r.cap} display={formatCap(r.cap)} max={fullMax} color="neutral" />
               ))}
             </div>
             <div className="[grid-area:1/1] flex flex-col gap-y-[8px]">
               {rows.map((r) => (
                 <BarRow
-                  key={r.name}
+                  key={r.key}
                   label={r.name}
-                  value={r.capB}
-                  display={`$${(r.capB / 1000).toFixed(2)}T`}
+                  value={r.cap}
+                  display={formatCap(r.cap)}
                   max={max}
-                  color={r.name === "ETH" ? "turquoise" : "neutral"}
-                  emphasis={r.name === "ETH"}
+                  color={r.key === "eth" ? "turquoise" : "neutral"}
+                  emphasis={r.key === "eth"}
+                  hint={r.method}
                 />
               ))}
             </div>
           </div>
         </Card>
-        <IllustrativeNote>Market caps are illustrative.</IllustrativeNote>
+        <div className="text-xs text-color-text-primary/70">
+          {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a row for the method).
+          {sourceNames.length > 0 && <> Sources: {sourceNames.join(", ")}.</>}
+        </div>
       </div>
 
       <div className="flex flex-col gap-y-[15px]">
@@ -132,7 +147,9 @@ export default function RankingSection({ ethSnapshot }: { ethSnapshot: EthSupply
             )}
           </div>
         </Card>
-        <IllustrativeNote>The ETH/BTC market cap series is illustrative.</IllustrativeNote>
+        <div className="text-xs text-color-text-primary/70">
+          {ratioSince && `Daily, since ${ratioSince}.`}{ratio?.sources?.length ? ` Sources: ${ratio.sources.map((s) => s.name).join(", ")}.` : ""}
+        </div>
       </div>
     </div>
   );

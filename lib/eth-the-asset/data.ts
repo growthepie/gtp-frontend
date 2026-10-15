@@ -1,3 +1,117 @@
+// ─── eth_asset/*.json ─────────────────────────────────────────────────────────
+// Response types for the four EthAssetURLs. Timestamps are unix ms (UTC);
+// `percent` values and `change_pct` are fractions (0.0256 = 2.56%).
+
+export type EthAssetSource = { name: string; url: string };
+
+export const KPI_TIMEFRAMES = ["24h", "7d", "60d", "1y", "5y"] as const;
+export type KpiTimeframe = (typeof KPI_TIMEFRAMES)[number];
+export type KpiKey = "eth_price" | "eth_supply" | "staking_yield" | "staked_share" | "eth_burned";
+
+export type KpiSeries = {
+  granularity: string;
+  /** [bucket start unix ms, value] */
+  data: [number, number][];
+  /** Latest value; for eth_burned, the total within the window. */
+  current: number;
+  /** Change vs the start of the window (eth_burned: vs the previous window). Null when unavailable. */
+  change_pct: number | null;
+};
+
+export type EthAssetKpisResponse = {
+  last_updated_utc: string;
+  data: {
+    kpis: Record<
+      KpiKey,
+      { name: string; unit: string; sources: EthAssetSource[]; timeframes: Record<KpiTimeframe, KpiSeries> }
+    >;
+  };
+};
+
+export type LiveStat = {
+  name: string;
+  unit: string;
+  value: number;
+  /** The moment `value` refers to. */
+  timestamp: number;
+  per_second_increase: number;
+  sources: EthAssetSource[];
+};
+
+export type EthAssetStatsResponse = {
+  last_updated_utc: string;
+  data: {
+    total_wallets: LiveStat;
+    eth_per_person: LiveStat & {
+      details: {
+        eth_supply: number;
+        eth_supply_per_second: number;
+        world_population: number;
+        world_population_per_second: number;
+      };
+    };
+  };
+};
+
+/** A live counter's value at `now`, extrapolated from its last snapshot. */
+export function liveStatValue(stat: LiveStat, now: number) {
+  return stat.value + ((now - stat.timestamp) / 1000) * stat.per_second_increase;
+}
+
+type ScarcityAsset = { name: string; value: number; as_of: string; method: string; sources: EthAssetSource[] };
+type CollateralPart = { eth: number; usd: number; share: number };
+
+export type EthAssetPropertiesResponse = {
+  last_updated_utc: string;
+  data: {
+    yield_breakdown: {
+      total: number;
+      breakdown: { issuance: number; tips: number; mev: number };
+      sources: EthAssetSource[];
+    };
+    scarcity: { assets: { eth: ScarcityAsset; gold: ScarcityAsset; usd: ScarcityAsset } };
+    collateral: {
+      as_of: string;
+      total_eth: number;
+      total_usd: number;
+      breakdown: { lending: CollateralPart; liquid_staking: CollateralPart; dex: CollateralPart };
+      sources: EthAssetSource[];
+    };
+    gas_paid: {
+      /** [unix ms, eth, usd] per day */
+      data: [number, number, number][];
+      chains: { count_l1: number; count_l2: number; origin_keys: string[] };
+      sources: EthAssetSource[];
+    };
+  };
+};
+
+export type MarketCapCategory = "crypto" | "commodity" | "equity";
+
+export type MarketCapItem = {
+  key: string;
+  name: string;
+  category: MarketCapCategory;
+  market_cap_usd: number;
+  logo: string;
+  sources: EthAssetSource[];
+  ticker?: string;
+  country?: string;
+  /** How a commodity's cap is estimated. */
+  method?: string;
+};
+
+export type EthAssetMarketCapsResponse = {
+  last_updated_utc: string;
+  data: {
+    eth: { market_cap_usd: number; logo: string; sources: EthAssetSource[] };
+    /** ETH market cap as a fraction of BTC's. */
+    eth_btc_ratio: { current: number; data: [number, number][]; sources: EthAssetSource[] };
+    categories: Record<MarketCapCategory, MarketCapItem[]>;
+  };
+};
+
+// ─── eim/eth_supply.json ──────────────────────────────────────────────────────
 // Real-data helper for the "ETH the Asset" page. Reads the same endpoint already
 // used by lib/quick-bites/qb-ETH-supply.ts and lib/utils/dynamicContent.ts
 // (eim/eth_supply.json), so the numbers on this page always agree with the
