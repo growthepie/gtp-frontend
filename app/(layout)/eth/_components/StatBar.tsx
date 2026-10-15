@@ -1,4 +1,4 @@
-import { AccentColor, ACCENT_BG, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
+import { AccentColor, ACCENT_BG, ACCENT_TEXT, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
 
 // Mark specs used across this page's bars:
 //   · bar thickness capped (never fills its slot — the leftover band is air)
@@ -15,6 +15,8 @@ export function BarRow({
   emphasis = false,
   hint,
   fake = false,
+  accentLabel = false,
+  className = "",
 }: {
   label: string;
   value: number;
@@ -27,19 +29,28 @@ export function BarRow({
   hint?: string;
   /** Fake (not-from-JSON) value: brown bar and number while SHOW_FAKE_DATA is on. */
   fake?: boolean;
+  /** Colour the label and value like the bar. */
+  accentLabel?: boolean;
+  className?: string;
 }) {
   // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
   const overflows = value > max;
   return (
-    <div className="grid grid-cols-[minmax(96px,140px)_1fr_64px] gap-x-[10px] items-center" title={hint}>
-      <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""}`}>{label}</div>
+    <div className={`grid grid-cols-[minmax(96px,140px)_1fr_64px] gap-x-[10px] items-center ${className}`} title={hint}>
+      <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""} ${accentLabel ? ACCENT_TEXT[color] : ""}`}>
+        {label}
+      </div>
       <div className={`h-[10px] rounded-[4px] ${TRACK_BG} overflow-hidden`}>
         <div
           className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-r-[4px]"} ${ACCENT_BG[fake ? fakeColor(color) : color]} transition-[width] duration-300`}
           style={{ width: `${overflows ? 100 : Math.max(2, (value / max) * 100)}%` }}
         />
       </div>
-      <div className={`numbers-xs md:numbers-sm text-right ${emphasis ? "" : "text-color-text-primary/70"} ${fake ? FAKE_TEXT : ""}`}>{display}</div>
+      <div
+        className={`numbers-xs md:numbers-sm text-right ${emphasis ? "" : "text-color-text-primary/70"} ${accentLabel ? ACCENT_TEXT[color] : ""} ${fake ? FAKE_TEXT : ""}`}
+      >
+        {display}
+      </div>
     </div>
   );
 }
