@@ -1,4 +1,4 @@
-import { AccentColor, ACCENT_BG, TRACK_BG } from "./colors";
+import { AccentColor, ACCENT_BG, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
 
 // Mark specs used across this page's bars:
 //   · bar thickness capped (never fills its slot — the leftover band is air)
@@ -14,6 +14,7 @@ export function BarRow({
   color,
   emphasis = false,
   hint,
+  fake = false,
 }: {
   label: string;
   value: number;
@@ -24,6 +25,8 @@ export function BarRow({
   emphasis?: boolean;
   /** Shown on hover, e.g. how the value is estimated. */
   hint?: string;
+  /** Fake (not-from-JSON) value: brown bar and number while SHOW_FAKE_DATA is on. */
+  fake?: boolean;
 }) {
   // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
   const overflows = value > max;
@@ -32,11 +35,11 @@ export function BarRow({
       <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""}`}>{label}</div>
       <div className={`h-[10px] rounded-[4px] ${TRACK_BG} overflow-hidden`}>
         <div
-          className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-r-[4px]"} ${ACCENT_BG[color]} transition-[width] duration-300`}
+          className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-r-[4px]"} ${ACCENT_BG[fake ? fakeColor(color) : color]} transition-[width] duration-300`}
           style={{ width: `${overflows ? 100 : Math.max(2, (value / max) * 100)}%` }}
         />
       </div>
-      <div className={`numbers-xs md:numbers-sm text-right ${emphasis ? "" : "text-color-text-primary/70"}`}>{display}</div>
+      <div className={`numbers-xs md:numbers-sm text-right ${emphasis ? "" : "text-color-text-primary/70"} ${fake ? FAKE_TEXT : ""}`}>{display}</div>
     </div>
   );
 }
@@ -73,7 +76,8 @@ export function Legend({
   items,
   compact = false,
 }: {
-  items: { label: string; color: AccentColor; value?: string }[];
+  /** `fake`: the value isn't from the JSONs, so it's brown while SHOW_FAKE_DATA is on. */
+  items: { label: string; color: AccentColor; value?: string; fake?: boolean }[];
   compact?: boolean;
 }) {
   return (
@@ -82,7 +86,7 @@ export function Legend({
         <div key={i.label} className="flex items-center gap-x-[5px]">
           <span className={`w-[8px] h-[8px] rounded-full flex-shrink-0 ${ACCENT_BG[i.color]}`} />
           <span className="heading-small-xxxs text-color-text-primary/70">{i.label}</span>
-          {i.value && <span className="numbers-xs">{i.value}</span>}
+          {i.value && <span className={`numbers-xs ${i.fake ? FAKE_TEXT : ""}`}>{i.value}</span>}
         </div>
       ))}
     </div>

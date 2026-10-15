@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
@@ -12,9 +13,12 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import Card, { Callout } from "./_components/Card";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { AccentColor } from "./_components/colors";
+import { AccentColor, FAKE_TEXT, fakeColor, ifFake } from "./_components/colors";
+import { EthAssetKpisResponse, EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
+import { EthAssetURLs } from "@/lib/urls";
 
-const ETH_PRICE_ANCHOR = 4182;
+const usd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+const compactUsd = (n: number) => (n >= 1e9 ? `$${(n / 1e9).toFixed(1)}B` : usd(n));
 
 type Mode = "Stake" | "Lend" | "Borrow";
 
@@ -101,9 +105,65 @@ export default function ProductiveAssetSection() {
   const [amount, setAmount] = useState(10);
   const [modesWrapping, setModesWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 967px)");
-  const m = MODES[mode];
-  const yearly =
-    mode === "Borrow" ? amount * 0.825 * ETH_PRICE_ANCHOR * 0.046 : amount * ETH_PRICE_ANCHOR * (m.rate / 100);
+  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
+  const { data: propsData } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
+  const price = kpisData?.data?.kpis?.eth_price?.timeframes?.["24h"]?.current;
+  const supply = kpisData?.data?.kpis?.eth_supply?.timeframes?.["24h"]?.current;
+  const stakedShare = kpisData?.data?.kpis?.staked_share?.timeframes?.["24h"]?.current;
+  const yieldBreakdown = propsData?.data?.yield_breakdown;
+  const collateralUsd = propsData?.data?.collateral?.total_usd;
+
+  // Stake's rate, split and staked figures, and Borrow's collateral total, come from
+  // kpis.json / properties.json; the rest of MODES stays illustrative.
+  const modes = useMemo(() => {
+    const stakeFacts = MODES.Stake.facts.map(([k, v]): [string, string] => {
+      if (k === "Total staked" && supply && stakedShare) return [k, `${((supply * stakedShare) / 1e6).toFixed(1)}M ETH`];
+      if (k === "Share of supply" && stakedShare) return [k, `${(stakedShare * 100).toFixed(1)}%`];
+      return [k, v];
+    });
+    const borrowFacts = MODES.Borrow.facts.map(([k, v]): [string, string] =>
+      k === "ETH as collateral" && collateralUsd ? [k, compactUsd(collateralUsd)] : [k, v],
+    );
+    // Facts whose value came from the JSONs; every other fact is illustrative.
+    const liveFacts = new Set<string>([
+      ...(supply && stakedShare ? ["Total staked"] : []),
+      ...(stakedShare ? ["Share of supply"] : []),
+      ...(collateralUsd ? ["ETH as collateral"] : []),
+    ]);
+    return {
+      liveFacts,
+      ...MODES,
+      Stake: {
+        ...MODES.Stake,
+        facts: stakeFacts,
+        ...(yieldBreakdown && {
+          rate: yieldBreakdown.total * 100,
+          parts: [
+            { label: "Issuance", value: yieldBreakdown.breakdown.issuance * 100, color: "turquoise" as AccentColor },
+            { label: "Priority tips", value: yieldBreakdown.breakdown.tips * 100, color: "yellow" as AccentColor },
+            { label: "MEV", value: yieldBreakdown.breakdown.mev * 100, color: "red" as AccentColor },
+          ],
+        }),
+      },
+      Borrow: { ...MODES.Borrow, facts: borrowFacts },
+    };
+  }, [supply, stakedShare, yieldBreakdown, collateralUsd]);
+
+  const m = modes[mode];
+  // Only Stake's rate is live (once properties.json has loaded); Lend and Borrow are illustrative.
+  const rateIsFake = !(mode === "Stake" && yieldBreakdown);
+  // Stake earnings use the live rate and price; Lend uses a fake rate; Borrow a fake LTV and rate.
+  const calcIsFake = rateIsFake || !price;
+  const yearly = price
+    ? mode === "Borrow"
+      ? amount * 0.825 * price * 0.046
+      : amount * price * (m.rate / 100)
+    : null;
+  // ETH's row is live; gold and Bitcoin pay 0% by definition; the rest are illustrative.
+  const yieldComparison = YIELD_COMPARISON.map((row) =>
+    row.emphasis ? { ...row, value: modes.Stake.rate, fake: !yieldBreakdown } : { ...row, fake: row.value !== 0 },
+  );
+  const yieldMax = Math.max(...yieldComparison.map((row) => row.value));
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -137,7 +197,7 @@ export default function ProductiveAssetSection() {
       </GTPButtonContainer>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px] items-start">
-        <Card>
+        <Card fake={rateIsFake}>
           <div className="flex items-start gap-x-[8px]">
             <span className="heading-small-xs flex-1 min-w-0">{m.headline}</span>
             <Tooltip placement="bottom-end">
@@ -152,25 +212,27 @@ export default function ProductiveAssetSection() {
             </Tooltip>
           </div>
           <div className="flex items-baseline gap-x-[5px]">
-            <span className={`numbers-3xl ${mode === "Borrow" ? "text-color-accent-red" : "text-color-accent-turquoise"}`}>
+            <span className={`numbers-3xl ${mode === "Borrow" ? "text-color-accent-red" : "text-color-accent-turquoise"} ${ifFake(rateIsFake, FAKE_TEXT)}`}>
               {m.rate.toFixed(2)}%
             </span>
             <span className="heading-small-xxxs pt-[1px]">{m.rateLabel}</span>
           </div>
-          <StackBar parts={m.parts.filter((p) => p.value > 0)} />
+          <StackBar
+            parts={m.parts.filter((p) => p.value > 0).map((p) => (rateIsFake ? { ...p, color: fakeColor(p.color) } : p))}
+          />
           <Legend
             items={m.parts
               .filter((p) => p.value > 0)
-              .map((p) => ({ label: p.label, color: p.color, value: p.value.toFixed(2) + "%" }))}
+              .map((p) => ({ label: p.label, color: rateIsFake ? fakeColor(p.color) : p.color, value: p.value.toFixed(2) + "%", fake: rateIsFake }))}
           />
         </Card>
 
-        <Card>
+        <Card fake={calcIsFake}>
           <span className="heading-small-xs">{mode === "Borrow" ? "What you could borrow" : "What it earns you"}</span>
           <div className="flex items-baseline gap-x-[8px]">
             <span className="numbers-xl">{amount} ETH</span>
             <span className="numbers-xs text-color-text-primary/70">
-              ≈ ${(amount * ETH_PRICE_ANCHOR).toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              ≈ {price ? usd(amount * price) : "—"}
             </span>
           </div>
           <input
@@ -189,23 +251,26 @@ export default function ProductiveAssetSection() {
             label={mode === "Borrow" ? "Borrowing power at 82.5% LTV" : "Per year, at today's rate"}
             value={
               mode === "Borrow"
-                ? "$" + (amount * ETH_PRICE_ANCHOR * 0.825).toLocaleString("en-US", { maximumFractionDigits: 0 })
+                ? price
+                  ? usd(amount * price * 0.825)
+                  : "—"
                 : (amount * (m.rate / 100)).toFixed(3)
             }
             unit={mode === "Borrow" ? "" : "ETH"}
-            valueClassName={`numbers-2xl ${mode === "Borrow" ? "text-color-accent-yellow" : "text-color-accent-turquoise"}`}
+            valueClassName={`numbers-2xl ${mode === "Borrow" ? "text-color-accent-yellow" : "text-color-accent-turquoise"} ${ifFake(calcIsFake, FAKE_TEXT)}`}
           />
-          <span className="text-xs">
-            {mode === "Borrow" ? "Interest ≈ " : "≈ "}${yearly.toLocaleString("en-US", { maximumFractionDigits: 0 })} / yr
+          <span className={`text-xs ${ifFake(calcIsFake, FAKE_TEXT)}`}>
+            {mode === "Borrow" ? "Interest ≈ " : "≈ "}
+            {yearly !== null ? usd(yearly) : "—"} / yr
           </span>
         </Card>
 
-        <Card>
+        <Card fake={m.facts.some(([k]) => !modes.liveFacts.has(k))}>
           <span className="heading-small-xs">By the numbers</span>
           <div className="grid grid-cols-2 gap-[10px]">
             {m.facts.map(([k, v]) => (
               <div key={k} className="px-[10px] py-[8px] rounded-[8px] bg-color-bg-medium">
-                <StatPair label={k} value={v} valueClassName="numbers-sm" />
+                <StatPair label={k} value={v} valueClassName={`numbers-sm ${ifFake(!modes.liveFacts.has(k), FAKE_TEXT)}`} />
               </div>
             ))}
           </div>
@@ -218,18 +283,19 @@ export default function ProductiveAssetSection() {
         </Card>
       </div>
 
-      <Card>
+      <Card fake={yieldComparison.some((row) => row.fake)}>
         <span className="heading-small-xs">Yield on the asset itself — what each one pays just for holding it</span>
         <div className="flex flex-col gap-y-[8px]">
-          {YIELD_COMPARISON.map((row) => (
+          {yieldComparison.map((row) => (
             <BarRow
               key={row.label}
               label={row.label}
               value={row.value}
               display={row.value.toFixed(2) + "%"}
-              max={4.21}
+              max={yieldMax}
               color={row.emphasis ? "turquoise" : "neutral"}
               emphasis={row.emphasis}
+              fake={row.fake}
             />
           ))}
         </div>
@@ -238,7 +304,10 @@ export default function ProductiveAssetSection() {
         </span>
       </Card>
 
-      <IllustrativeNote>Rates and market figures in this section are illustrative.</IllustrativeNote>
+      <IllustrativeNote>
+        The staking rate and split, ETH staked, ETH as collateral and the ETH price are live. Lend and borrow rates,
+        validator and queue figures, and the other assets&apos; yields are illustrative.
+      </IllustrativeNote>
     </div>
   );
 }

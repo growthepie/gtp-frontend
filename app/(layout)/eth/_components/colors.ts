@@ -8,7 +8,9 @@
 // encoding at three hues (turquoise / yellow / red) and uses `neutral` for
 // context marks — the "emphasis" form: subject in accent, everything else gray.
 
-export type AccentColor = "turquoise" | "yellow" | "red" | "petrol" | "neutral";
+// `fake` is the brown used to mark data that isn't from the eth_asset JSONs yet —
+// see the fake-data markers at the bottom of this file.
+export type AccentColor = "turquoise" | "yellow" | "red" | "petrol" | "neutral" | "fake";
 
 export const ACCENT_BG: Record<AccentColor, string> = {
   turquoise: "bg-color-accent-turquoise",
@@ -16,6 +18,7 @@ export const ACCENT_BG: Record<AccentColor, string> = {
   red: "bg-color-accent-red",
   petrol: "bg-color-accent-petrol",
   neutral: "bg-color-ui-hover",
+  fake: "bg-[#8a5a2b] dark:bg-[#b07a45]",
 };
 
 export const ACCENT_TEXT: Record<AccentColor, string> = {
@@ -24,6 +27,7 @@ export const ACCENT_TEXT: Record<AccentColor, string> = {
   red: "text-color-accent-red",
   petrol: "text-color-accent-petrol",
   neutral: "text-color-text-primary",
+  fake: "text-[#8a5a2b] dark:text-[#b07a45]",
 };
 
 // Raw paint values for inline SVG fills/strokes, which can't take a class.
@@ -33,6 +37,7 @@ export const ACCENT_RGB: Record<AccentColor, string> = {
   red: "rgb(var(--accent-red))",
   petrol: "rgb(var(--accent-petrol))",
   neutral: "rgb(var(--ui-hover))",
+  fake: "#b07a45",
 };
 
 // The surface a mark sits on — used for the 2px gaps that separate stacked
@@ -51,6 +56,7 @@ export const ACCENT_HEX: Record<"light" | "dark", Record<AccentColor, string>> =
     red: "#e83c52",
     petrol: "#0e6f7a",
     neutral: "#cdd8d3",
+    fake: "#8a5a2b",
   },
   dark: {
     turquoise: "#1df7ef",
@@ -58,5 +64,34 @@ export const ACCENT_HEX: Record<"light" | "dark", Record<AccentColor, string>> =
     red: "#fe5468",
     petrol: "#10808c",
     neutral: "#5a6462",
+    fake: "#b07a45",
   },
 };
+
+// ─── Fake-data markers (temporary) ────────────────────────────────────────────
+// While the page is being wired to the eth_asset JSONs, anything still showing
+// made-up data is marked: its tile gets a dark purple background, and the fake
+// numbers and chart marks turn brown. Fixed facts that aren't from the JSONs
+// (12s blocks, settlement times, 24/7, market hours) are marked the same way.
+//
+// To switch back, set SHOW_FAKE_DATA to false: every marker then falls back to
+// the real colour, which is also written at each use, e.g. fakeColor("yellow").
+//   · tile background → bg-color-bg-default (Card's normal background)
+//   · fake text       → its normal text colour (no extra class)
+//   · fake chart mark → the AccentColor passed to fakeColor()
+export const SHOW_FAKE_DATA = true;
+
+/** Tile background for tiles with fake data. Real: bg-color-bg-default. */
+export const FAKE_TILE_BG = SHOW_FAKE_DATA ? "!bg-[#e6daf5] dark:!bg-[#2a1745]" : "";
+/** Selected/hovered state of a fake tile. Real: bg-color-ui-hover. */
+export const FAKE_TILE_BG_ACTIVE = SHOW_FAKE_DATA ? "!bg-[#d5c2ee] dark:!bg-[#3d2263]" : "";
+/** Hover state of a clickable fake tile. Real: hover:bg-color-ui-hover. */
+export const FAKE_TILE_BG_HOVER = SHOW_FAKE_DATA ? "hover:!bg-[#d5c2ee] dark:hover:!bg-[#3d2263]" : "";
+/** Text colour for fake numbers. Real: the element's normal text colour. */
+export const FAKE_TEXT = SHOW_FAKE_DATA ? "!text-[#8a5a2b] dark:!text-[#b07a45]" : "";
+/** Tints full-colour artwork (icons, pictograms) brown. Real: no filter. */
+export const FAKE_ART = SHOW_FAKE_DATA ? "sepia" : "";
+/** A chart mark's colour: brown while it shows fake data, otherwise `real`. */
+export const fakeColor = (real: AccentColor): AccentColor => (SHOW_FAKE_DATA ? "fake" : real);
+/** Pick one of the above only when `isFake` (for tiles that are fake in some modes). */
+export const ifFake = (isFake: boolean, marker: string) => (isFake ? marker : "");

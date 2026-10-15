@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
 import Pictogram from "./_components/Pictogram";
 import Dumbbell from "./_components/Dumbbell";
 import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, GOLD_BAR } from "./_components/BasketIcons";
 
+import { EthAssetKpisResponse } from "@/lib/eth-the-asset/data";
+import { FAKE_ART, FAKE_TEXT, FAKE_TILE_BG, FAKE_TILE_BG_ACTIVE, FAKE_TILE_BG_HOVER } from "./_components/colors";
+import { EthAssetURLs } from "@/lib/urls";
+
 // Illustrative retail prices — no live source for consumer-goods pricing exists
-// in this repo, and the ETH price anchor is fixed for the same reason.
-const PRICE_NOW = 4182;
-const PRICE_YR_AGO = 3030;
+// in this repo. The ETH prices now and a year ago come from kpis.json.
+type EthPrices = { now: number; yearAgo: number };
 
 type BasketItem = {
   label: string;
@@ -30,10 +34,10 @@ const BASKET: BasketItem[] = [
 
 const fmt = (n: number) => (n >= 100 ? Math.round(n).toLocaleString() : n >= 10 ? n.toFixed(1) : n.toFixed(2));
 
-function unitsFor(item: BasketItem) {
-  const now = PRICE_NOW / item.priceNow;
-  const ago = PRICE_YR_AGO / item.priceAgo;
-  const ethOnly = PRICE_NOW / item.priceAgo; // ETH moved, shop price held
+function unitsFor(item: BasketItem, prices: EthPrices) {
+  const now = prices.now / item.priceNow;
+  const ago = prices.yearAgo / item.priceAgo;
+  const ethOnly = prices.now / item.priceAgo; // ETH moved, shop price held
   return {
     now,
     ago,
@@ -45,8 +49,25 @@ function unitsFor(item: BasketItem) {
 
 export default function BasketSection() {
   const [selectedKey, setSelectedKey] = useState(BASKET[0].label);
+  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
+  // Today: the latest price. A year ago: the first (weekly) point of the 1y series.
+  const yearSeries = kpisData?.data?.kpis?.eth_price?.timeframes?.["1y"];
+  const prices: EthPrices | null =
+    yearSeries?.current && yearSeries.data?.[0]?.[1] ? { now: yearSeries.current, yearAgo: yearSeries.data[0][1] } : null;
   const item = BASKET.find((b) => b.label === selectedKey)!;
-  const { now, ago, ethDelta, shopDelta, changePct } = unitsFor(item);
+
+  if (!prices) {
+    return (
+      <div className="flex flex-col gap-y-[15px]">
+        <SectionTitle icon="gtp-package" title="What one ETH actually buys" titleSize="md" as="h2" />
+        <Card className="min-h-[200px] items-center justify-center text-xs text-color-text-primary/70">
+          Loading ETH price…
+        </Card>
+      </div>
+    );
+  }
+
+  const { now, ago, ethDelta, shopDelta, changePct } = unitsFor(item, prices);
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -59,21 +80,22 @@ export default function BasketSection() {
       {/* Small multiples: every item, drawn — and the selector for the detail below */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-[10px]">
         {BASKET.map((b) => {
-          const stats = unitsFor(b);
+          const stats = unitsFor(b, prices);
           const active = b.label === selectedKey;
           return (
             <button
               key={b.label}
               type="button"
               onClick={() => setSelectedKey(b.label)}
+              // Every figure here depends on the illustrative shop prices.
               className={`flex flex-col items-center gap-y-[5px] p-[10px] rounded-[15px] transition-colors duration-200 ${
-                active ? "bg-color-ui-hover" : "bg-color-bg-default hover:bg-color-ui-hover"
+                active ? `bg-color-ui-hover ${FAKE_TILE_BG_ACTIVE}` : `bg-color-bg-default hover:bg-color-ui-hover ${FAKE_TILE_BG} ${FAKE_TILE_BG_HOVER}`
               }`}
             >
               <BasketIcon glyph={b.glyph} size={40} />
-              <span className="numbers-sm">{fmt(stats.now)}</span>
+              <span className={`numbers-sm ${FAKE_TEXT}`}>{fmt(stats.now)}</span>
               <span className="heading-small-xxxs text-color-text-primary/70">{b.label}</span>
-              <span className={`numbers-xs ${stats.changePct < 0 ? "text-color-negative" : "text-color-positive"}`}>
+              <span className={`numbers-xs ${stats.changePct < 0 ? "text-color-negative" : "text-color-positive"} ${FAKE_TEXT}`}>
                 {stats.changePct < 0 ? "−" : "+"}
                 {Math.abs(stats.changePct).toFixed(0)}%
               </span>
@@ -84,22 +106,24 @@ export default function BasketSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-[15px]">
         {/* The answer, drawn */}
-        <Card>
+        <Card fake>
           <div className="flex items-center gap-x-[15px]">
             <BasketIcon glyph={item.glyph} size={64} className="flex-shrink-0" />
             <div className="flex flex-col gap-y-[2px]">
               <span className="heading-small-xxxs text-color-text-primary/70">1 ETH buys today</span>
               <div className="flex items-baseline gap-x-[8px]">
-                <span className="numbers-3xl">{fmt(now)}</span>
+                <span className={`numbers-3xl ${FAKE_TEXT}`}>{fmt(now)}</span>
                 <span className="heading-small-xs">{item.unit}</span>
               </div>
             </div>
           </div>
-          <Pictogram glyph={item.glyph} count={now} unitLabel={item.unit} />
+          <div className={FAKE_ART}>
+            <Pictogram glyph={item.glyph} count={now} unitLabel={item.unit} />
+          </div>
         </Card>
 
         {/* What moved it, drawn */}
-        <Card>
+        <Card fake>
           <span className="heading-small-xs">What changed it in a year</span>
           <Dumbbell
             before={{ label: "a year ago", value: ago }}
@@ -110,6 +134,7 @@ export default function BasketSection() {
             ]}
             format={fmt}
             unit={item.unit}
+            fake
           />
           <div className="text-xs md:text-sm">
             Supply is not on this list: net issuance changes your share of the network, not what ETH buys.

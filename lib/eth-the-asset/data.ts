@@ -111,6 +111,39 @@ export type EthAssetMarketCapsResponse = {
   };
 };
 
+export type DailyFlow = { date: string; issued: number; burned: number };
+
+/**
+ * Daily issuance and burn for the complete UTC days in kpis.json's 7d window
+ * (3-hour buckets). Burn is the sum of a day's 8 buckets; issuance is the day's
+ * supply change plus that burn, with supply read at the first bucket of each day
+ * and of the next. Buckets aren't aligned to midnight, so each "day" runs from its
+ * first bucket's start to the next day's (e.g. 01:00–01:00 UTC).
+ */
+export function computeRecentDailyFlows(kpis: EthAssetKpisResponse | undefined): DailyFlow[] {
+  const supply = kpis?.data?.kpis?.eth_supply?.timeframes?.["7d"]?.data;
+  const burned = kpis?.data?.kpis?.eth_burned?.timeframes?.["7d"]?.data;
+  if (!supply?.length || !burned?.length) return [];
+
+  const dayOf = (t: number) => new Date(t).toISOString().slice(0, 10);
+  // Points are oldest first, so the first one seen for a day is its first bucket.
+  const supplyAtDayStart = new Map<string, number>();
+  for (const [t, v] of supply) if (!supplyAtDayStart.has(dayOf(t))) supplyAtDayStart.set(dayOf(t), v);
+  const burnByDay = new Map<string, { total: number; buckets: number }>();
+  for (const [t, v] of burned) {
+    const day = burnByDay.get(dayOf(t)) ?? { total: 0, buckets: 0 };
+    burnByDay.set(dayOf(t), { total: day.total + v, buckets: day.buckets + 1 });
+  }
+
+  return [...burnByDay.entries()].flatMap(([date, burn]) => {
+    const next = dayOf(Date.parse(`${date}T00:00:00Z`) + 86_400_000);
+    const start = supplyAtDayStart.get(date);
+    const end = supplyAtDayStart.get(next);
+    if (burn.buckets !== 8 || start === undefined || end === undefined) return [];
+    return [{ date, issued: end - start + burn.total, burned: burn.total }];
+  });
+}
+
 // ─── eim/eth_supply.json ──────────────────────────────────────────────────────
 // Real-data helper for the "ETH the Asset" page. Reads the same endpoint already
 // used by lib/quick-bites/qb-ETH-supply.ts and lib/utils/dynamicContent.ts

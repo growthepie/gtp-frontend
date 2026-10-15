@@ -1,15 +1,20 @@
+import { FAKE_TILE_BG } from "./colors";
+
 export default function Card({
   children,
   className = "",
   padded = true,
+  fake = false,
 }: {
   children: React.ReactNode;
   className?: string;
   padded?: boolean;
+  /** Shows fake (not-from-JSON) data: dark purple background while SHOW_FAKE_DATA is on. */
+  fake?: boolean;
 }) {
   return (
     <div
-      className={`rounded-[15px] bg-color-bg-default shadow-standard flex flex-col gap-y-[10px] ${padded ? "p-[15px]" : ""} ${className}`}
+      className={`rounded-[15px] bg-color-bg-default shadow-standard flex flex-col gap-y-[10px] ${padded ? "p-[15px]" : ""} ${fake ? FAKE_TILE_BG : ""} ${className}`}
     >
       {children}
     </div>

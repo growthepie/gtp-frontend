@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import { useMediaQuery } from "usehooks-ts";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -10,7 +11,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+import { ACCENT_RGB, FAKE_TEXT, SHOW_FAKE_DATA, fakeColor, ifFake } from "./_components/colors";
+import { computeRecentDailyFlows, EthAssetKpisResponse, EthSupplySnapshot } from "@/lib/eth-the-asset/data";
+import { EthAssetURLs } from "@/lib/urls";
 
 const FALLBACK_SUPPLY = 120.7e6;
 const FALLBACK_ISSUE_WK = 18050;
@@ -20,37 +23,16 @@ const FALLBACK_ISSUE_WK = 18050;
 const burnAt = (d: number) => Math.round(1500 + Math.pow(d / 100, 1.7) * 29000);
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
 
-// Placeholder — swap for the real last 7 days of daily issuance and burn
-// (same shape) once that data is wired up. Totals below are summed from it.
-const LAST_WEEK_DAILY: { date: string; issued: number; burned: number }[] = [
-  { date: "2026-09-28", issued: 2581, burned: 214 },
-  { date: "2026-09-29", issued: 2579, burned: 263 },
-  { date: "2026-09-30", issued: 2584, burned: 341 },
-  { date: "2026-10-01", issued: 2578, burned: 297 },
-  { date: "2026-10-02", issued: 2582, burned: 228 },
-  { date: "2026-10-03", issued: 2576, burned: 156 },
-  { date: "2026-10-04", issued: 2580, burned: 171 },
-];
-const LAST_WEEK = {
-  issued: LAST_WEEK_DAILY.reduce((sum, day) => sum + day.issued, 0),
-  burned: LAST_WEEK_DAILY.reduce((sum, day) => sum + day.burned, 0),
-};
 const fmtDay = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
-const LAST_WEEK_RANGE = `${fmtDay(LAST_WEEK_DAILY[0].date)} – ${fmtDay(LAST_WEEK_DAILY[LAST_WEEK_DAILY.length - 1].date)}`;
+const fmtEth = (n: number) => Math.round(n).toLocaleString("en-US");
 // Inverse of burnAt, so the slider sits where last week's burn falls on the curve.
 const demandFor = (burn: number) =>
   Math.min(100, Math.max(0, Math.round(100 * Math.pow(Math.max(0, burn - 1500) / 29000, 1 / 1.7))));
 
-const LAST_WEEK_DEMAND = demandFor(LAST_WEEK.burned);
 // The native range thumb is 16px wide and its centre travels from 8px to
 // (width − 8px), so a value's position on the track is offset by half a thumb.
 const SLIDER_THUMB_PX = 16;
-
-const LAST_WEEK_PRESET = {
-  name: "Last week",
-  note: `${LAST_WEEK_RANGE}: ${LAST_WEEK.issued.toLocaleString()} ETH issued, ${LAST_WEEK.burned.toLocaleString()} ETH burned.`,
-};
 
 const PRESETS = [
   { name: "Quiet week", d: 22, note: "Layer 2s made transactions cheap. Little ETH burns." },
@@ -116,13 +98,18 @@ function Bathtub({
   totalSupply,
   pace = SCENARIO_PACE,
   height = 280,
+  burnFake = false,
 }: {
   inflow: number;
   outflow: number;
   totalSupply: number;
   pace?: Pace;
   height?: number;
+  /** The burn comes from the illustrative demand curve: drain and burn figure turn brown. */
+  burnFake?: boolean;
 }) {
+  // Real burn colour: rgb(var(--accent-red)). Brown while it's fake data.
+  const burnRgb = burnFake && SHOW_FAKE_DATA ? ACCENT_RGB.fake : "rgb(var(--accent-red))";
   const { weeksPerSecond, bandEth, tickEth, loopWeeks } = pace;
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const net = inflow - outflow;
@@ -256,7 +243,7 @@ function Bathtub({
       </g>
 
       {/* Drain */}
-      <rect x={210 - drainW / 2} y={TUB_BASE - 12} width={drainW} height="16" rx="3" fill="rgb(var(--accent-red))" opacity=".35" />
+      <rect x={210 - drainW / 2} y={TUB_BASE - 12} width={drainW} height="16" rx="3" fill={burnRgb} opacity=".35" />
       {!reduceMotion &&
         embers.map((y, i) => (
           <circle
@@ -264,15 +251,15 @@ function Bathtub({
             cx={210 + Math.sin((y + i * 17) / 14) * (drainW / 2.4)}
             cy={TUB_BASE + 4 + y * 0.16}
             r={Math.max(0, 2.6 - y / 120)}
-            fill="rgb(var(--accent-red))"
+            fill={burnRgb}
             opacity={Math.max(0, 0.8 - y / 230)}
           />
         ))}
       <text x="250" y={TUB_BASE + 32} fill="rgb(var(--text-primary))" style={LABEL_STYLE}>
         Burned by fees
       </text>
-      <text x="250" y={TUB_BASE + 52} fill="rgb(var(--accent-red))" style={VALUE_STYLE}>
-        −{outflow.toLocaleString()} ETH/wk
+      <text x="250" y={TUB_BASE + 52} fill={burnRgb} style={VALUE_STYLE}>
+        −{Math.round(outflow).toLocaleString()} ETH/wk
       </text>
 
       {/* The exaggeration, stated rather than implied */}
@@ -295,13 +282,44 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
   // moving the slider or picking another preset leaves it.
   const [showLastWeek, setShowLastWeek] = useState(false);
   const [controlsWrapping, setControlsWrapping] = useState(false);
-  const totalSupply = ethSnapshot?.totalSupply ?? FALLBACK_SUPPLY;
-  const inflow = showLastWeek ? LAST_WEEK.issued : ethSnapshot?.weeklyIssuanceEth ?? FALLBACK_ISSUE_WK;
-  const outflow = showLastWeek ? LAST_WEEK.burned : burnAt(demand);
+  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
+
+  // "Last week": the complete UTC days in kpis.json's 7d window (usually 6). The
+  // tub runs on their average daily flows × 7; the note shows the actual totals.
+  const lastWeek = useMemo(() => {
+    const days = computeRecentDailyFlows(kpisData);
+    if (!days.length) return null;
+    const issued = days.reduce((sum, d) => sum + d.issued, 0);
+    const burned = days.reduce((sum, d) => sum + d.burned, 0);
+    const range = `${fmtDay(days[0].date)} – ${fmtDay(days[days.length - 1].date)}`;
+    const weeklyBurned = (burned / days.length) * 7;
+    return {
+      weeklyIssued: (issued / days.length) * 7,
+      weeklyBurned,
+      burned,
+      range,
+      demand: demandFor(weeklyBurned),
+      preset: {
+        name: "Last week",
+        note: `${range} (${days.length} days): ${fmtEth(issued)} ETH issued, ${fmtEth(burned)} ETH burned.`,
+      },
+    };
+  }, [kpisData]);
+  const isLastWeek = showLastWeek && !!lastWeek;
+
+  // Every mode uses the same supply and issuance as the rest of the page (kpis.json);
+  // eth_supply.json is only a fallback if that hasn't loaded.
+  const totalSupply =
+    kpisData?.data?.kpis?.eth_supply?.timeframes?.["24h"]?.current ?? ethSnapshot?.totalSupply ?? FALLBACK_SUPPLY;
+  const inflow = lastWeek?.weeklyIssued ?? ethSnapshot?.weeklyIssuanceEth ?? FALLBACK_ISSUE_WK;
+  const outflow = isLastWeek ? lastWeek.weeklyBurned : burnAt(demand);
   const netEth = inflow - outflow;
+  // The scenarios' burn (and so everything derived from it) comes from the illustrative
+  // demand curve; "Last week" is all real data.
+  const burnIsFake = !isLastWeek;
   const netPct = ((netEth * 52) / totalSupply) * 100;
-  const preset = showLastWeek
-    ? LAST_WEEK_PRESET
+  const preset = isLastWeek
+    ? lastWeek.preset
     : PRESETS.reduce((a, b) => (Math.abs(b.d - demand) < Math.abs(a.d - demand) ? b : a));
 
   return (
@@ -319,15 +337,17 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
         style={controlsWrapping ? { borderRadius: "15px" } : undefined}
       >
         <GTPButtonRow wrap>
-          <GTPButton
-            label={LAST_WEEK_PRESET.name}
-            isSelected={showLastWeek}
-            clickHandler={() => {
-              setShowLastWeek(true);
-              setDemand(LAST_WEEK_DEMAND);
-            }}
-            size="sm"
-          />
+          {lastWeek && (
+            <GTPButton
+              label={lastWeek.preset.name}
+              isSelected={isLastWeek}
+              clickHandler={() => {
+                setShowLastWeek(true);
+                setDemand(lastWeek.demand);
+              }}
+              size="sm"
+            />
+          )}
           {PRESETS.map((p) => (
             <GTPButton
               key={p.name}
@@ -359,58 +379,61 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
             />
             {/* Where last week's actual burn sits on the demand scale. Clicking it
                 selects "Last week". */}
+            {lastWeek && (
             <Tooltip placement="top">
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  aria-label={`Last week: network demand ${LAST_WEEK_DEMAND} of 100`}
+                  aria-label={`Last week: network demand ${lastWeek.demand} of 100`}
                   onClick={() => {
                     setShowLastWeek(true);
-                    setDemand(LAST_WEEK_DEMAND);
+                    setDemand(lastWeek.demand);
                   }}
                   className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[8px] h-[22px] flex justify-center cursor-pointer"
                   style={{
-                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${LAST_WEEK_DEMAND / 100})`,
+                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${lastWeek.demand / 100})`,
                   }}
                 >
                   <span className="w-[2px] h-full rounded-full bg-color-accent-yellow" />
                 </button>
               </TooltipTrigger>
               <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
-                Last week · {LAST_WEEK.burned.toLocaleString()} ETH burned
+                {lastWeek.range} · {fmtEth(lastWeek.burned)} ETH burned
               </TooltipContent>
             </Tooltip>
+            )}
           </div>
         </div>
       </GTPButtonContainer>
 
-      <Card padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
+      <Card fake={burnIsFake} padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
         <div className="p-[15px]">
           {/* Keyed so switching pace restarts the level from today's supply. */}
           <Bathtub
-            key={showLastWeek ? "last-week" : "scenario"}
+            key={isLastWeek ? "last-week" : "scenario"}
             inflow={inflow}
             outflow={outflow}
             totalSupply={totalSupply}
-            pace={showLastWeek ? LAST_WEEK_PACE : SCENARIO_PACE}
+            pace={isLastWeek ? LAST_WEEK_PACE : SCENARIO_PACE}
+            burnFake={burnIsFake}
           />
         </div>
         <div className="p-[20px] flex flex-col gap-y-[15px] justify-center border-t md:border-t-0 md:border-l border-color-bg-medium">
           <StatPair
             label="Net change in the water level, per year"
             value={fmtPct(netPct)}
-            valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""}`}
+            valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""} ${ifFake(burnIsFake, FAKE_TEXT)}`}
           />
           <StackBar
             parts={[
-              { label: "Burned", value: outflow, color: "red" },
-              { label: "Stays in the tub", value: Math.max(0, netEth), color: "turquoise" },
+              { label: "Burned", value: outflow, color: burnIsFake ? fakeColor("red") : "red" },
+              { label: "Stays in the tub", value: Math.max(0, netEth), color: burnIsFake ? fakeColor("turquoise") : "turquoise" },
             ]}
           />
           <Legend
             items={[
-              { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
-              { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
+              { label: "Burned", color: burnIsFake ? fakeColor("red") : "red", value: Math.round((outflow / inflow) * 100) + "% of issuance", fake: burnIsFake },
+              { label: "Net new", color: burnIsFake ? fakeColor("turquoise") : "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH`, fake: burnIsFake },
             ]}
           />
           <div className="h-px bg-color-bg-medium" />
@@ -419,8 +442,8 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
       </Card>
 
       <IllustrativeNote>
-        Issuance is live from growthepie data; the demand-to-burn curve is illustrative, and &quot;Last week&quot; uses
-        placeholder figures for now. The tub runs as a time-lapse so
+        Issuance is the average of the last complete days, in every mode; &quot;Last week&quot; also uses their actual
+        burn. The demand-to-burn curve is illustrative. The tub runs as a time-lapse so
         the level moves visibly — the real rate is the annual figure above.
       </IllustrativeNote>
     </div>

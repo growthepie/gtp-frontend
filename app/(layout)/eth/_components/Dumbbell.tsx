@@ -1,6 +1,6 @@
 "use client";
 
-import { AccentColor, ACCENT_BG } from "./colors";
+import { AccentColor, ACCENT_BG, FAKE_TEXT, fakeColor } from "./colors";
 
 // Before → after, with the change broken into its contributing forces.
 // Each force is a bar spanning the distance it moved the value, so the picture
@@ -14,13 +14,17 @@ export default function Dumbbell({
   steps,
   format,
   unit,
+  fake = false,
 }: {
   before: { label: string; value: number };
   after: { label: string; value: number };
   steps: DumbbellStep[];
   format: (value: number) => string;
   unit: string;
+  /** Built from fake (not-from-JSON) data: brown marks and numbers while SHOW_FAKE_DATA is on. */
+  fake?: boolean;
 }) {
+  const fakeText = fake ? FAKE_TEXT : "";
   // Running positions: start, then one point after each force is applied.
   const points = steps.reduce<number[]>((acc, step) => [...acc, acc[acc.length - 1] + step.delta], [before.value]);
   const all = [...points, after.value];
@@ -45,13 +49,13 @@ export default function Dumbbell({
             <div key={step.label} className="flex flex-col gap-y-[2px]">
               <div className="flex items-baseline justify-between gap-x-[10px]">
                 <span className="text-xs md:text-sm">{step.label}</span>
-                <span className="numbers-xs md:numbers-sm whitespace-nowrap">
+                <span className={`numbers-xs md:numbers-sm whitespace-nowrap ${fakeText}`}>
                   {signed(step.delta)} {unit}
                 </span>
               </div>
               <div className="relative h-[10px] rounded-[4px] bg-color-bg-medium">
                 <div
-                  className={`absolute top-0 h-full rounded-[4px] ${ACCENT_BG[step.color]}`}
+                  className={`absolute top-0 h-full rounded-[4px] ${ACCENT_BG[fake ? fakeColor(step.color) : step.color]}`}
                   style={{ left: `${left}%`, width: `${Math.max(1.5, width)}%` }}
                 />
               </div>
@@ -74,10 +78,10 @@ export default function Dumbbell({
           >
             <span
               className={`w-[11px] h-[11px] rounded-full ring-2 ring-color-bg-default ${
-                i === 0 ? "bg-color-ui-hover" : ACCENT_BG.turquoise
+                i === 0 ? "bg-color-ui-hover" : ACCENT_BG[fake ? fakeColor("turquoise") : "turquoise"]
               }`}
             />
-            <span className="numbers-sm whitespace-nowrap">{format(value)}</span>
+            <span className={`numbers-sm whitespace-nowrap ${fakeText}`}>{format(value)}</span>
             <span className="heading-small-xxxs text-color-text-primary/70 whitespace-nowrap">{point.label}</span>
           </div>
         ))}

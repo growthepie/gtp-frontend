@@ -11,7 +11,7 @@ import { EthAssetURLs } from "@/lib/urls";
 import Card from "./_components/Card";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { ACCENT_HEX, AccentColor } from "./_components/colors";
+import { ACCENT_HEX, AccentColor, FAKE_TEXT, fakeColor, ACCENT_BG } from "./_components/colors";
 import { EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
 
 // Fractions → "2.56%".
@@ -32,6 +32,7 @@ function PropCard({
   unit,
   info,
   children,
+  fake = false,
 }: {
   icon: GTPIconName;
   title: string;
@@ -40,9 +41,11 @@ function PropCard({
   unit: string;
   info: React.ReactNode;
   children?: React.ReactNode;
+  /** Fixed facts rather than JSON data: purple tile, brown headline while SHOW_FAKE_DATA is on. */
+  fake?: boolean;
 }) {
   return (
-    <Card>
+    <Card fake={fake}>
       {/* Title truncates before the tag or info button get squeezed on narrow cards. */}
       <div className="flex items-center gap-x-[8px]">
         <GTPIcon icon={icon} size="md" className="shrink-0" />
@@ -60,8 +63,8 @@ function PropCard({
         </Tooltip>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
-        <span className="numbers-2xl">{value}</span>
-        <span className="heading-small-xxxs pt-[1px]">{unit}</span>
+        <span className={`numbers-2xl ${fake ? FAKE_TEXT : ""}`}>{value}</span>
+        <span className={`heading-small-xxxs pt-[1px] ${fake ? FAKE_TEXT : ""}`}>{unit}</span>
       </div>
       {children}
     </Card>
@@ -80,7 +83,7 @@ function MarketHours() {
         <div key={r.label} className="flex flex-col gap-y-[4px]">
           <div className="flex items-baseline justify-between">
             <span className="text-xs md:text-sm">{r.label}</span>
-            <span className="numbers-xs">
+            <span className={`numbers-xs ${FAKE_TEXT}`}>
               {r.hours}h · {r.note}
             </span>
           </div>
@@ -89,7 +92,8 @@ function MarketHours() {
               <div
                 key={h}
                 className={`flex-1 rounded-[2px] ${
-                  h < r.hours ? (r.color === "turquoise" ? "bg-color-accent-turquoise" : "bg-color-ui-hover") : "bg-color-bg-medium"
+                  // Fixed facts: brown while SHOW_FAKE_DATA is on. Real: bg-color-accent-turquoise / bg-color-ui-hover.
+                  h < r.hours ? ACCENT_BG[fakeColor(r.color === "turquoise" ? "turquoise" : "neutral")] : "bg-color-bg-medium"
                 }`}
                 style={h === Math.floor(r.hours) && r.hours % 1 > 0 ? { opacity: r.hours % 1 } : undefined}
               />
@@ -216,6 +220,7 @@ export default function SixThingsSection() {
           icon="gtp-wallet"
           title="Reliable"
           tag="bearer asset"
+          fake
           value="12s"
           unit="to settle, any day"
           info="Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every 12 seconds; times for the other rails are typical, not exact."
@@ -229,7 +234,7 @@ export default function SixThingsSection() {
             ].map(([label, value, highlight]) => (
               <div key={label as string} className="flex flex-col gap-y-[2px] px-[10px] py-[8px] rounded-[8px] bg-color-bg-medium">
                 <span className="heading-small-xxxs text-color-text-primary/70">{label as string}</span>
-                <span className={`numbers-sm ${highlight ? "text-color-accent-turquoise" : ""}`}>{value as string}</span>
+                <span className={`numbers-sm ${highlight ? "text-color-accent-turquoise" : ""} ${FAKE_TEXT}`}>{value as string}</span>
               </div>
             ))}
           </div>
@@ -268,6 +273,7 @@ export default function SixThingsSection() {
           icon="gtp-clock"
           title="Available"
           tag="freedom tech"
+          fake
           value="24/7"
           unit="for over 11 years"
           info="Ethereum has produced blocks continuously since July 2015, with no market hours, weekends or holidays, and no one can block a valid transaction from being included."
