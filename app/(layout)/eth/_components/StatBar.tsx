@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { AccentColor, ACCENT_BG, ACCENT_TEXT, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
 
 // Mark specs used across this page's bars:
@@ -16,6 +17,8 @@ export function BarRow({
   hint,
   fake = false,
   accentLabel = false,
+  icon,
+  iconInvertDark = false,
   className = "",
 }: {
   label: string;
@@ -31,14 +34,32 @@ export function BarRow({
   fake?: boolean;
   /** Colour the label and value like the bar. */
   accentLabel?: boolean;
+  /** Logo URL, shown before the label. */
+  icon?: string;
+  /** Logo is plain black, so flip it to white in dark mode. */
+  iconInvertDark?: boolean;
   className?: string;
 }) {
   // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
   const overflows = value > max;
   return (
-    <div className={`grid grid-cols-[minmax(96px,140px)_1fr_64px] gap-x-[10px] items-center ${className}`} title={hint}>
-      <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""} ${accentLabel ? ACCENT_TEXT[color] : ""}`}>
-        {label}
+    <div
+      className={`grid ${icon ? "grid-cols-[minmax(118px,162px)_1fr_64px]" : "grid-cols-[minmax(96px,140px)_1fr_64px]"} gap-x-[10px] items-center ${className}`}
+      title={hint}
+    >
+      <div className="flex items-center gap-x-[6px] min-w-0">
+        {icon && (
+          <Image
+            src={icon}
+            alt=""
+            width={16}
+            height={16}
+            className={`size-[16px] flex-shrink-0 object-contain ${iconInvertDark ? "dark:invert" : ""}`}
+          />
+        )}
+        <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""} ${accentLabel ? ACCENT_TEXT[color] : ""}`}>
+          {label}
+        </div>
       </div>
       <div className={`h-[10px] rounded-[4px] ${TRACK_BG} overflow-hidden`}>
         <div

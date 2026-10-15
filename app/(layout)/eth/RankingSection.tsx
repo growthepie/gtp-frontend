@@ -15,9 +15,15 @@ import { ACCENT_HEX } from "./_components/colors";
 import { EthAssetMarketCapsResponse, MarketCapCategory } from "@/lib/eth-the-asset/data";
 import { EthAssetURLs } from "@/lib/urls";
 
-type Asset = { key: string; name: string; cap: number; kind: MarketCapCategory; method?: string };
+type Asset = { key: string; name: string; cap: number; kind: MarketCapCategory; method?: string; logo?: string };
 
 const FILTERS = ["everything", "equity", "commodity", "crypto"] as const;
+const FILTER_LABELS: Record<(typeof FILTERS)[number], string> = {
+  everything: "Everything",
+  equity: "Equities",
+  commodity: "Commodities",
+  crypto: "Crypto",
+};
 
 // Oil (proved reserves × Brent) is hundreds of times ETH, so the bar scale stops at
 // the next-largest asset and oil's bar runs off the end, labelled with its value.
@@ -32,6 +38,9 @@ const RATIO_SPANS = [
   { key: "max", label: "Max", days: null },
 ] as const;
 type RatioSpan = (typeof RATIO_SPANS)[number]["key"];
+
+// Logos that are plain black, flipped to white in dark mode so they show on the dark card.
+const BLACK_LOGO_KEYS = ["aapl", "amzn", "spcx", "oil"];
 
 const formatCap = (usd: number) => (usd >= 1e12 ? `$${(usd / 1e12).toFixed(2)}T` : `$${Math.round(usd / 1e9)}B`);
 
@@ -65,6 +74,7 @@ export default function RankingSection() {
           cap: item.market_cap_usd,
           kind,
           method: item.method,
+          logo: item.logo,
         })),
       )
       .filter((a) => Number.isFinite(a.cap))
@@ -114,7 +124,7 @@ export default function RankingSection() {
         <GTPButtonContainer style={filtersWrapping ? { borderRadius: "15px" } : undefined}>
           <GTPButtonRow wrap onWrapChange={setFiltersWrapping}>
             {FILTERS.map((f) => (
-              <GTPButton key={f} label={f} isSelected={filter === f} clickHandler={() => setFilter(f)} size="sm" />
+              <GTPButton key={f} label={FILTER_LABELS[f]} isSelected={filter === f} clickHandler={() => setFilter(f)} size="sm" />
             ))}
           </GTPButtonRow>
         </GTPButtonContainer>
@@ -122,7 +132,9 @@ export default function RankingSection() {
             shows 12 full rows above the pinned ETH row, with no part-row peeking out. */}
         <Card className="h-[342px]">
           <ScrollArea className="flex-1">
-            <div className="flex flex-col gap-y-[8px]">
+            {/* Rows touch (4px padding each instead of an 8px gap), so moving down the
+                list never leaves a row and the hover-coloured logos don't flicker. */}
+            <div className="flex flex-col">
               {rows.map((r) => (
                 <Fragment key={r.key}>
                 <BarRow
@@ -134,17 +146,19 @@ export default function RankingSection() {
                   emphasis={r.key === "eth"}
                   accentLabel={r.key === "eth"}
                   hint={r.method}
+                  icon={r.logo}
+                  iconInvertDark={BLACK_LOGO_KEYS.includes(r.key)}
                   // ETH stays in view: while its row is below the fold it sticks to the
                   // bottom of the list, then scrolls up with the rest once reached. While
                   // pinned, the rows just above it fade out behind it.
                   className={
                     r.key === "eth"
-                      ? `sticky bottom-0 z-[1] bg-color-bg-default py-[4px] -my-[4px] before:absolute before:inset-x-0 before:bottom-full before:h-[32px] before:bg-gradient-to-t before:from-color-bg-default before:to-color-bg-default/0 before:pointer-events-none before:transition-opacity before:duration-200 ${ethPinned ? "before:opacity-100" : "before:opacity-0"}`
-                      : ""
+                      ? `py-[4px] sticky bottom-0 z-[1] bg-color-bg-default before:absolute before:inset-x-0 before:bottom-full before:h-[32px] before:bg-gradient-to-t before:from-color-bg-default before:to-color-bg-default/0 before:pointer-events-none before:transition-opacity before:duration-200 ${ethPinned ? "before:opacity-100" : "before:opacity-0"}`
+                      : "py-[4px]"
                   }
                 />
-                {/* -mt cancels the list gap so the marker sits right under ETH's row. */}
-                {r.key === "eth" && <div ref={setEthEnd} aria-hidden className="h-[1px] -mt-[9px]" />}
+                {/* -mt pulls the marker up inside the bottom of ETH's row. */}
+                {r.key === "eth" && <div ref={setEthEnd} aria-hidden className="h-[1px] -mt-[1px]" />}
                 </Fragment>
               ))}
             </div>
