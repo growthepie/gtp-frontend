@@ -14,7 +14,7 @@ import Card, { Callout } from "./_components/Card";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { AccentColor, FAKE_TEXT, fakeColor, ifFake } from "./_components/colors";
-import { EthAssetKpisResponse, EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
+import { EthAssetKpisResponse, EthAssetProductiveAssetResponse, EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
 import { EthAssetURLs } from "@/lib/urls";
 
 const usd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -89,16 +89,9 @@ const MODES: Record<
   },
 };
 
-// ETH is the subject; every other row is context, so it stays grey (the
-// "emphasis" form rather than a rainbow of categorical hues).
-const YIELD_COMPARISON: { label: string; value: number; emphasis?: boolean }[] = [
-  { label: "ETH staked", value: 3.12, emphasis: true },
-  { label: "US 10-year treasury", value: 4.21 },
-  { label: "S&P 500 dividend", value: 1.27 },
-  { label: "Gold", value: 0 },
-  { label: "Bitcoin", value: 0 },
-  { label: "Cash savings", value: 0.42 },
-];
+// In the yield comparison, ETH is the subject; every other row is context, so it
+// stays grey (the "emphasis" form rather than a rainbow of categorical hues).
+const YIELD_ETH_KEY = "eth_staked";
 
 export default function ProductiveAssetSection() {
   const [mode, setMode] = useState<Mode>("Stake");
@@ -107,6 +100,7 @@ export default function ProductiveAssetSection() {
   const isMobile = useMediaQuery("(max-width: 967px)");
   const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
   const { data: propsData } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
+  const { data: productiveData } = useSWR<EthAssetProductiveAssetResponse>(EthAssetURLs.productiveAsset);
   const price = kpisData?.data?.kpis?.eth_price?.timeframes?.["24h"]?.current;
   const supply = kpisData?.data?.kpis?.eth_supply?.timeframes?.["24h"]?.current;
   const stakedShare = kpisData?.data?.kpis?.staked_share?.timeframes?.["24h"]?.current;
@@ -159,11 +153,14 @@ export default function ProductiveAssetSection() {
       ? amount * 0.825 * price * 0.046
       : amount * price * (m.rate / 100)
     : null;
-  // ETH's row is live; gold and Bitcoin pay 0% by definition; the rest are illustrative.
-  const yieldComparison = YIELD_COMPARISON.map((row) =>
-    row.emphasis ? { ...row, value: modes.Stake.rate, fake: !yieldBreakdown } : { ...row, fake: row.value !== 0 },
-  );
-  const yieldMax = Math.max(...yieldComparison.map((row) => row.value));
+  // Every row, in the JSON's order, from productive_asset.json (values are fractions).
+  const yieldComparison = (productiveData?.data?.yield_comparison?.assets ?? [])
+    .filter((a) => Number.isFinite(a.value))
+    .map((a) => ({ key: a.key, label: a.name, value: a.value * 100, method: a.method, emphasis: a.key === YIELD_ETH_KEY }));
+  const yieldMax = Math.max(0, ...yieldComparison.map((row) => row.value));
+  const yieldSources = [
+    ...new Set((productiveData?.data?.yield_comparison?.assets ?? []).flatMap((a) => a.sources.map((s) => s.name))),
+  ];
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -283,30 +280,34 @@ export default function ProductiveAssetSection() {
         </Card>
       </div>
 
-      <Card fake={yieldComparison.some((row) => row.fake)}>
+      <Card>
         <span className="heading-small-xs">Yield on the asset itself — what each one pays just for holding it</span>
         <div className="flex flex-col gap-y-[8px]">
           {yieldComparison.map((row) => (
             <BarRow
-              key={row.label}
+              key={row.key}
               label={row.label}
               value={row.value}
               display={row.value.toFixed(2) + "%"}
               max={yieldMax}
               color={row.emphasis ? "turquoise" : "neutral"}
               emphasis={row.emphasis}
-              fake={row.fake}
+              accentLabel={row.emphasis}
+              hint={row.method}
             />
           ))}
         </div>
         <span className="text-xs md:text-sm">
           Nominal rates. Staking pays in ETH, so the dollar value moves with the price — a treasury does not.
         </span>
+        <span className="text-xs text-color-text-primary/70">
+          Hover a row for how it&apos;s measured.{yieldSources.length > 0 && <> Sources: {yieldSources.join(", ")}.</>}
+        </span>
       </Card>
 
       <IllustrativeNote>
-        The staking rate and split, ETH staked, ETH as collateral and the ETH price are live. Lend and borrow rates,
-        validator and queue figures, and the other assets&apos; yields are illustrative.
+        The staking rate and split, ETH staked, ETH as collateral, the ETH price and the yield comparison are live.
+        Lend and borrow rates and the validator and queue figures are illustrative.
       </IllustrativeNote>
     </div>
   );

@@ -79,9 +79,19 @@ export interface GTPMetricCardProps {
    * value shift (the 20px that makes room for the chevron) or value colour change.
    */
   nonInteractive?: boolean;
+  /** Custom value format and an extra row for the sparkline tooltip. */
+  tooltip?: SparklineTooltipOptions;
 }
 
 // ─── Sparkline chart ──────────────────────────────────────────────────────────
+
+/** Overrides for the sparkline tooltip, for series whose rounded value barely moves. */
+export interface SparklineTooltipOptions {
+  /** Replaces the default `prefix + compact value + suffix`. */
+  formatValue?: (value: number) => string;
+  /** An extra row under the value, e.g. the change since the first point. Without a label, the value sits alone on the right. */
+  detail?: (index: number) => { label?: string; value: string };
+}
 
 interface SparklineChartProps {
   values: number[];
@@ -99,9 +109,10 @@ interface SparklineChartProps {
   edgeToEdge?: boolean;
   /** dayjs format for the tooltip's date. */
   tooltipDateFormat?: string;
+  tooltip?: SparklineTooltipOptions;
 }
 
-export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY" }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
@@ -113,7 +124,8 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
     y: number;
     value: number;
     date: string;
-  }>({ visible: false, x: 0, y: 0, value: 0, date: "" });
+    index: number;
+  }>({ visible: false, x: 0, y: 0, value: 0, date: "", index: 0 });
 
   const updateCirclePosition = useCallback(
     (index: number) => {
@@ -197,7 +209,7 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
     if (dp && dp[0] >= 0 && dp[0] < values.length) {
       const idx = Math.round(dp[0]);
       updateCirclePosition(idx);
-      setCustomTooltip({ visible: true, x, y, value: values[idx], date: timestamps[idx] });
+      setCustomTooltip({ visible: true, x, y, value: values[idx], date: timestamps[idx], index: idx });
       setIsHovering(true);
     } else {
       setCustomTooltip((p) => ({ ...p, visible: false }));
@@ -266,9 +278,18 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
               <span className="text-xs whitespace-nowrap text-color-text-primary">{label}</span>
             </div>
             <span className={`numbers-xs text-color-text-primary font-medium ${edgeToEdge ? "whitespace-nowrap" : ""}`}>
-              {prefix}{formatLargeNumber(customTooltip.value, decimals)}{suffix}
+              {tooltip?.formatValue ? tooltip.formatValue(customTooltip.value) : <>{prefix}{formatLargeNumber(customTooltip.value, decimals)}{suffix}</>}
             </span>
           </div>
+          {tooltip?.detail && (() => {
+            const detail = tooltip.detail(customTooltip.index);
+            return (
+              <div className="flex justify-end items-center gap-x-[10px] h-[12px] mt-[6px]">
+                {detail.label && <span className="flex-1 text-xs whitespace-nowrap text-color-text-primary/70 pl-[20px]">{detail.label}</span>}
+                <span className="numbers-xs text-color-text-primary/70 whitespace-nowrap">{detail.value}</span>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -305,6 +326,7 @@ export default function GTPMetricCard({
   stackSuffixWhenNarrow = false,
   fillSparkline = false,
   nonInteractive = false,
+  tooltip,
 }: GTPMetricCardProps) {
   const computedWowChange =
     wowChangeProp !== undefined
@@ -353,6 +375,7 @@ export default function GTPMetricCard({
               decimals={decimals}
               edgeToEdge
               tooltipDateFormat={tooltipDateFormat}
+              tooltip={tooltip}
             />
           </div>
         </div>
@@ -367,6 +390,7 @@ export default function GTPMetricCard({
             suffix={suffix}
             decimals={decimals}
             tooltipDateFormat={tooltipDateFormat}
+            tooltip={tooltip}
           />
         </div>
       )}

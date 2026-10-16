@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { AccentColor, ACCENT_BG, ACCENT_TEXT, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
 
 // Mark specs used across this page's bars:
@@ -28,7 +29,7 @@ export function BarRow({
   color: AccentColor;
   /** The row the story is about — everything else stays recessive. */
   emphasis?: boolean;
-  /** Shown on hover, e.g. how the value is estimated. */
+  /** Shown in the site's tooltip on hover, e.g. how the value is estimated. */
   hint?: string;
   /** Fake (not-from-JSON) value: brown bar and number while SHOW_FAKE_DATA is on. */
   fake?: boolean;
@@ -42,10 +43,9 @@ export function BarRow({
 }) {
   // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
   const overflows = value > max;
-  return (
+  const row = (
     <div
       className={`grid ${icon ? "grid-cols-[minmax(118px,162px)_1fr_64px]" : "grid-cols-[minmax(96px,140px)_1fr_64px]"} gap-x-[10px] items-center ${className}`}
-      title={hint}
     >
       <div className="flex items-center gap-x-[6px] min-w-0">
         {icon && (
@@ -73,6 +73,16 @@ export function BarRow({
         {display}
       </div>
     </div>
+  );
+  if (!hint) return row;
+  // Same tooltip style as the info buttons on the "6 things" cards.
+  return (
+    <Tooltip placement="top">
+      <TooltipTrigger asChild>{row}</TooltipTrigger>
+      <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+        {hint}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

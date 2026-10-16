@@ -119,6 +119,8 @@ export const EthAssetURLs = {
   stats: "https://api.growthepie.com/v1/eth_asset/stats.json",
   properties: "https://api.growthepie.com/v1/eth_asset/properties.json",
   marketCaps: "https://api.growthepie.com/v1/eth_asset/market_caps.json",
+  productiveAsset: "https://api.growthepie.com/v1/eth_asset/productive_asset.json",
+  purchasingPower: "https://api.growthepie.com/v1/eth_asset/purchasing_power.json",
 };
 
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";

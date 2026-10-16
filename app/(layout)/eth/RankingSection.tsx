@@ -165,7 +165,7 @@ export default function RankingSection() {
           </ScrollArea>
         </Card>
         <div className="text-xs text-color-text-primary/70">
-          {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a row for the method).
+          {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a commodity for its method).
           {sourceNames.length > 0 && <> Sources: {sourceNames.join(", ")}.</>}
         </div>
       </div>

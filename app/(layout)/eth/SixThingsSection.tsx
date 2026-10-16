@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -8,10 +9,12 @@ import { SparklineChart } from "@/components/layout/Applications/AppMetricCard";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { EthAssetURLs } from "@/lib/urls";
+import { useSSEChains } from "@/components/layout/SingleChains/useSSEChains";
+import { formatUptime } from "@/components/layout/EthAgg/helpers";
 import Card from "./_components/Card";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { ACCENT_HEX, AccentColor, FAKE_TEXT, fakeColor, ACCENT_BG } from "./_components/colors";
+import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG } from "./_components/colors";
 import { EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
 
 // Fractions → "2.56%".
@@ -20,6 +23,13 @@ const signedPct = (fraction: number) => `${fraction >= 0 ? "+" : "−"}${Math.ab
 
 const formatUsd = (usd: number) =>
   usd >= 1e9 ? `$${(usd / 1e9).toFixed(1)}B` : usd >= 1e6 ? `$${(usd / 1e6).toFixed(1)}M` : `$${Math.round(usd).toLocaleString("en-US")}`;
+
+// Live block time in seconds → "12" (one decimal only when it isn't whole).
+const formatSeconds = (s: number) => `${Number(s.toFixed(1))}`;
+
+// Ethereum's genesis block (30 July 2015), the start of the uptime on the
+// ecosystem page's "Ethereum Uptime" card (EthAgg/MetricsTop.tsx).
+const GENESIS_MS = 1438269973000;
 
 // The gas sparkline shows the last 90 of the 365 daily points.
 const GAS_SPARKLINE_DAYS = 90;
@@ -30,6 +40,7 @@ function PropCard({
   tag,
   value,
   unit,
+  unitShort,
   info,
   children,
   fake = false,
@@ -39,11 +50,30 @@ function PropCard({
   tag: string;
   value: string;
   unit: string;
+  /** Shown instead of `unit` when `unit` doesn't fit on the same line as `value`. */
+  unitShort?: string;
   info: React.ReactNode;
   children?: React.ReactNode;
   /** Fixed facts rather than JSON data: purple tile, brown headline while SHOW_FAKE_DATA is on. */
   fake?: boolean;
 }) {
+  // With a short unit, check whether value + full unit fit on one line. A hidden copy
+  // of the full unit is measured, since the visible one may be the short form.
+  const row = useRef<HTMLDivElement>(null);
+  const valueEl = useRef<HTMLSpanElement>(null);
+  const fullUnit = useRef<HTMLSpanElement>(null);
+  const [unitFits, setUnitFits] = useState(true);
+  useEffect(() => {
+    if (!unitShort || !row.current) return;
+    // Fires once on observe, which sets the first measurement.
+    const observer = new ResizeObserver(() => {
+      if (!row.current || !valueEl.current || !fullUnit.current) return;
+      setUnitFits(valueEl.current.offsetWidth + 5 + fullUnit.current.offsetWidth <= row.current.clientWidth);
+    });
+    observer.observe(row.current);
+    return () => observer.disconnect();
+  }, [unitShort]);
+
   return (
     <Card fake={fake}>
       {/* Title truncates before the tag or info button get squeezed on narrow cards. */}
@@ -62,9 +92,15 @@ function PropCard({
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
-        <span className={`numbers-2xl ${fake ? FAKE_TEXT : ""}`}>{value}</span>
-        <span className={`heading-small-xxxs pt-[1px] ${fake ? FAKE_TEXT : ""}`}>{unit}</span>
+      {/* gap-x matches the 5px in the fit check above. */}
+      <div ref={row} className="relative flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
+        <span ref={valueEl} className={`numbers-2xl ${fake ? FAKE_TEXT : ""}`}>{value}</span>
+        <span className={`heading-small-xxxs pt-[1px] ${fake ? FAKE_TEXT : ""}`}>{unitShort && !unitFits ? unitShort : unit}</span>
+        {unitShort && (
+          <span ref={fullUnit} aria-hidden className="heading-small-xxxs absolute invisible whitespace-nowrap pointer-events-none">
+            {unit}
+          </span>
+        )}
       </div>
       {children}
     </Card>
@@ -83,7 +119,7 @@ function MarketHours() {
         <div key={r.label} className="flex flex-col gap-y-[4px]">
           <div className="flex items-baseline justify-between">
             <span className="text-xs md:text-sm">{r.label}</span>
-            <span className={`numbers-xs ${FAKE_TEXT}`}>
+            <span className="numbers-xs">
               {r.hours}h · {r.note}
             </span>
           </div>
@@ -92,8 +128,7 @@ function MarketHours() {
               <div
                 key={h}
                 className={`flex-1 rounded-[2px] ${
-                  // Fixed facts: brown while SHOW_FAKE_DATA is on. Real: bg-color-accent-turquoise / bg-color-ui-hover.
-                  h < r.hours ? ACCENT_BG[fakeColor(r.color === "turquoise" ? "turquoise" : "neutral")] : "bg-color-bg-medium"
+                  h < r.hours ? ACCENT_BG[r.color] : "bg-color-bg-medium"
                 }`}
                 style={h === Math.floor(r.hours) && r.hours % 1 > 0 ? { opacity: r.hours % 1 } : undefined}
               />
@@ -110,6 +145,9 @@ export default function SixThingsSection() {
   const feeColor = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"].yellow;
   const { data, isLoading } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
   const props = data?.data;
+  // Ethereum's block time, live from the growthepie SSE stream (same feed as the chain pages).
+  const { chainData: ethLive } = useSSEChains("ethereum");
+  const blockTime = ethLive?.block_time && Number.isFinite(ethLive.block_time) ? formatSeconds(ethLive.block_time) : null;
 
   const yieldBreakdown = props?.yield_breakdown;
   const scarcity = props?.scarcity?.assets;
@@ -134,6 +172,14 @@ export default function SixThingsSection() {
   const gasPaid = props?.gas_paid;
   const recentGas = gasPaid?.data?.slice(-GAS_SPARKLINE_DAYS).filter((row) => Number.isFinite(row[0]) && Number.isFinite(row[1])) ?? [];
   const l2Count = gasPaid?.chains?.count_l2;
+
+  // Same calculation as the ecosystem page's uptime, to the day ("11 years, 2 months, 16 days").
+  // Read once on mount: it only changes daily, so no ticking timer like the ecosystem card's.
+  // The heading starts with the whole years ("11 years, …"), used for the short form.
+  const [uptime] = useState(() => {
+    const full = formatUptime(Date.now() - GENESIS_MS).heading;
+    return { full, years: parseInt(full, 10) };
+  });
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -220,21 +266,32 @@ export default function SixThingsSection() {
           icon="gtp-wallet"
           title="Reliable"
           tag="bearer asset"
-          fake
-          value="12s"
+          value={blockTime ? `${blockTime}s` : "—"}
           unit="to settle, any day"
-          info="Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every 12 seconds; times for the other rails are typical, not exact."
+          info={`Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every ${blockTime ?? "12"} seconds (live block time from growthepie); times for the other rails are typical, not exact.`}
         >
+          {/* ETH's time is the live block time; the other rails are fixed, typical times.
+              Each tile is a size container: "1 business day" (~104px) drops to its short
+              form, "T+1", when the tile is too narrow for it. */}
           <div className="grid grid-cols-2 gap-[8px]">
             {[
-              ["ETH transfer", "12 sec", true],
-              ["Card payment", "1–3 days", false],
-              ["Bank wire", "1–5 days", false],
-              ["Stock trade", "T+1", false],
-            ].map(([label, value, highlight]) => (
-              <div key={label as string} className="flex flex-col gap-y-[2px] px-[10px] py-[8px] rounded-[8px] bg-color-bg-medium">
-                <span className="heading-small-xxxs text-color-text-primary/70">{label as string}</span>
-                <span className={`numbers-sm ${highlight ? "text-color-accent-turquoise" : ""} ${FAKE_TEXT}`}>{value as string}</span>
+              { label: "ETH transfer", value: blockTime ? `${blockTime} sec` : "—", highlight: true },
+              { label: "Card payment", value: "1–3 days" },
+              { label: "Bank wire", value: "1–5 days" },
+              { label: "Stock trade", value: "1 business day", short: "T+1" },
+            ].map(({ label, value, highlight, short }) => (
+              <div key={label} className="@container flex flex-col gap-y-[2px] px-[10px] py-[8px] rounded-[8px] bg-color-bg-medium">
+                <span className="heading-small-xxxs text-color-text-primary/70">{label}</span>
+                <span className={`numbers-sm whitespace-nowrap ${highlight ? "text-color-accent-turquoise" : ""}`}>
+                  {short ? (
+                    <>
+                      <span className="hidden @[108px]:inline">{value}</span>
+                      <span className="@[108px]:hidden">{short}</span>
+                    </>
+                  ) : (
+                    value
+                  )}
+                </span>
               </div>
             ))}
           </div>
@@ -273,9 +330,9 @@ export default function SixThingsSection() {
           icon="gtp-clock"
           title="Available"
           tag="freedom tech"
-          fake
           value="24/7"
-          unit="for over 11 years"
+          unit={`for ${uptime.full}`}
+          unitShort={`for over ${uptime.years} years`}
           info="Ethereum has produced blocks continuously since July 2015, with no market hours, weekends or holidays, and no one can block a valid transaction from being included."
         >
           <div className="text-xs md:text-sm">Censorship-resistant and always available.</div>

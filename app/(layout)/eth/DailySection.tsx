@@ -123,7 +123,9 @@ export default function DailySection() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-[15px] items-start">
-        <Card>
+        {/* Placeholder: there's no newsletter behind this yet (input and button are disabled),
+            so it's marked like the fake data. */}
+        <Card fake>
           <span className="heading-small-xs">Get the weekly numbers</span>
           <span className="text-xs md:text-sm">Supply, yield and usage — one email each week. No price predictions.</span>
           <div className="flex gap-x-[8px]">

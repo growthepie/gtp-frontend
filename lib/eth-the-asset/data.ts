@@ -1,5 +1,5 @@
 // ─── eth_asset/*.json ─────────────────────────────────────────────────────────
-// Response types for the four EthAssetURLs. Timestamps are unix ms (UTC);
+// Response types for the EthAssetURLs. Timestamps are unix ms (UTC);
 // `percent` values and `change_pct` are fractions (0.0256 = 2.56%).
 
 export type EthAssetSource = { name: string; url: string };
@@ -108,6 +108,62 @@ export type EthAssetMarketCapsResponse = {
     /** ETH market cap as a fraction of BTC's. */
     eth_btc_ratio: { current: number; data: [number, number][]; sources: EthAssetSource[] };
     categories: Record<MarketCapCategory, MarketCapItem[]>;
+  };
+};
+
+export type YieldComparisonAsset = {
+  key: string;
+  name: string;
+  /** Yearly yield as a fraction. */
+  value: number;
+  /** Date of the figure ("2026-10-16", or "2026-09" for monthly data); null for assets that pay nothing. */
+  as_of: string | null;
+  method: string;
+  sources: EthAssetSource[];
+};
+
+export type EthAssetProductiveAssetResponse = {
+  last_updated_utc: string;
+  data: {
+    yield_comparison: { name: string; unit: string; assets: YieldComparisonAsset[] };
+  };
+};
+
+export type PurchasingPowerItem = {
+  key: string;
+  name: string;
+  /** The unit counted, e.g. "500 g loaf". */
+  unit: string;
+  /** The unit the source prices in, before conversion to `unit`. */
+  source_unit: string;
+  units_per_eth: number;
+  units_per_eth_year_ago: number;
+  /** units_per_eth vs a year ago, as a fraction. */
+  change_pct: number;
+  /** The change in units split by cause: the ETH price moving, and the shop price moving. They sum to the total change. */
+  change_units: { eth_price: number; shop_price: number };
+  /** Price of one `unit` in the region's currency. */
+  price: number;
+  price_year_ago: number;
+  price_as_of: string;
+  sources: EthAssetSource[];
+};
+
+export type PurchasingPowerRegion = {
+  name: string;
+  /** ISO 4217 code, e.g. "USD". */
+  currency: string;
+  eth_price: number;
+  eth_price_year_ago: number;
+  items: PurchasingPowerItem[];
+};
+
+export type EthAssetPurchasingPowerResponse = {
+  last_updated_utc: string;
+  data: {
+    year_ago_date: string;
+    regions: Record<string, PurchasingPowerRegion>;
+    eth_price_sources: EthAssetSource[];
   };
 };
 

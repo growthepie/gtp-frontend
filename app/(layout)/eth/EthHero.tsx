@@ -172,6 +172,19 @@ export default function EthHero() {
 
   const tile = (color: AccentColor) => hex[color];
 
+  const supplyTooltip = useMemo(() => {
+    const first = kpis.supply.values[0];
+    const eth = (v: number) => `${Math.round(v).toLocaleString("en-US")} ETH`;
+    return {
+      formatValue: eth,
+      detail: (i: number) => {
+        const delta = kpis.supply.values[i] - first;
+        // Change since the span's first point.
+        return { value: `${delta >= 0 ? "+" : "−"}${eth(Math.abs(delta))}` };
+      },
+    };
+  }, [kpis.supply.values]);
+
   return (
     <div className="@container flex flex-col gap-y-[30px]">
       {/* Hero columns switch at the same widths as the metric-card grid below (both are
@@ -360,6 +373,9 @@ export default function EthHero() {
               sparkline={kpis.supply.values}
               timestamps={kpis.supply.timestamps}
               tooltipDateFormat={dateFormat}
+              // Supply moves only a few thousand ETH a day, so "122.1M" would read the
+              // same at every point: show it to the ETH, plus the change since the span began.
+              tooltip={supplyTooltip}
               color={tile("yellow")}
             />
           )}
