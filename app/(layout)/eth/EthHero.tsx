@@ -246,13 +246,13 @@ export default function EthHero() {
           setIsWrapping={setTimespanBarWrapping}
           style={timespanBarWrapping ? { borderRadius: "15px" } : undefined}
         >
-          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+          <GTPButtonRow autoFill>
             {KPI_TIMEFRAMES.map((key) => (
               <GTPButton
                 key={key}
                 label={isMobile ? TIMESPANS[key].shortLabel : TIMESPANS[key].label}
-                innerStyle={isMobile ? { width: "100%", minWidth: 0, padding: "5px 8px" } : { width: "100%" }}
-                className="w-full min-w-0 justify-center"
+                innerStyle={isMobile ? { minWidth: 0, padding: "5px 8px" } : undefined}
+                className="min-w-0"
                 variant="primary"
                 size="sm"
                 clickHandler={() => setTimespan(key)}

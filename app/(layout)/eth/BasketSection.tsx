@@ -79,7 +79,7 @@ export default function BasketSection() {
       </SectionDescription>
 
       <GTPButtonContainer style={regionsWrapping ? { borderRadius: "15px" } : undefined}>
-        <GTPButtonRow wrap onWrapChange={setRegionsWrapping}>
+        <GTPButtonRow wrap autoFill onWrapChange={setRegionsWrapping}>
           {REGIONS.map((r) => (
             <GTPButton key={r.key} label={r.label} isSelected={regionKey === r.key} clickHandler={() => setRegionKey(r.key)} size="sm" />
           ))}

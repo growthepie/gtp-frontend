@@ -78,7 +78,6 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
             enable tilt
           </button>
         )}
-        <span>{tilt === "on" ? "drag to spin · tilt to look around" : "drag to spin"}</span>
       </div>
     </div>
   );

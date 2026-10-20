@@ -22,6 +22,7 @@ interface GTPTabButtonSetProps {
   className?: string;
   style?: React.CSSProperties;
   children?: ReactNode;
+  "data-fill"?: string;
 }
 
 const GTPTabButtonSet = forwardRef<HTMLDivElement, GTPTabButtonSetProps>(function GTPTabButtonSet({
@@ -33,6 +34,7 @@ const GTPTabButtonSet = forwardRef<HTMLDivElement, GTPTabButtonSetProps>(functio
   className,
   style,
   children,
+  "data-fill": dataFill,
 }: GTPTabButtonSetProps, ref) {
   const containerFillClassName = fill === "full" ? "w-full" : fill === "mobile" ? "w-full md:w-auto" : "";
   const buttonFillClassName = fill === "full" ? "flex-1" : fill === "mobile" ? "flex-1 md:flex-none" : "";
@@ -40,6 +42,7 @@ const GTPTabButtonSet = forwardRef<HTMLDivElement, GTPTabButtonSetProps>(functio
   return (
     <div
       ref={ref}
+      data-fill={dataFill}
       className={`inline-flex items-center gap-[2px] rounded-full ring-[0.5px] ring-inset ring-color-bg-default py-[2px] px-[2px] ${containerFillClassName} ${
         className ?? ""
       }`}

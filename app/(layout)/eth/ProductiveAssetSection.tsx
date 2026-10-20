@@ -169,22 +169,22 @@ export default function ProductiveAssetSection() {
         Gold sits in a vault. ETH can do three jobs — and it can do them at the same time.
       </SectionDescription>
 
-      {/* Same control bar as the fundamentals charts. On mobile the buttons share the
-          full width with tighter padding (as fundamentals does) so all three fit on a
-          320px phone. */}
+      {/* Same control bar as the fundamentals charts. The buttons fill the bar once it's
+          more than half full; on mobile they also get tighter padding (as fundamentals
+          does) so all three fit on a 320px phone. */}
       <GTPButtonContainer
         isWrapping={modesWrapping}
         setIsWrapping={setModesWrapping}
         style={modesWrapping ? { borderRadius: "15px" } : undefined}
       >
-        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+        <GTPButtonRow autoFill>
           {(Object.keys(MODES) as Mode[]).map((k) => (
             <GTPButton
               key={k}
               label={k}
               leftIcon={MODES[k].icon}
-              innerStyle={isMobile ? { width: "100%", minWidth: 0, padding: "5px 8px" } : { width: "100%" }}
-              className="w-full min-w-0 justify-center"
+              innerStyle={isMobile ? { minWidth: 0, padding: "5px 8px" } : undefined}
+              className="min-w-0"
               isSelected={mode === k}
               clickHandler={() => setMode(k)}
               size="sm"

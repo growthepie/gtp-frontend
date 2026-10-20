@@ -122,7 +122,7 @@ export default function RankingSection() {
             The four labels don't fit a phone on one line, so the row itself wraps and
             reports it (the bar's own check only sees one item, the row). */}
         <GTPButtonContainer style={filtersWrapping ? { borderRadius: "15px" } : undefined}>
-          <GTPButtonRow wrap onWrapChange={setFiltersWrapping}>
+          <GTPButtonRow wrap autoFill onWrapChange={setFiltersWrapping}>
             {FILTERS.map((f) => (
               <GTPButton key={f} label={FILTER_LABELS[f]} isSelected={filter === f} clickHandler={() => setFilter(f)} size="sm" />
             ))}
@@ -174,7 +174,7 @@ export default function RankingSection() {
         <SectionTitle icon="gtp-compare" title="ETH / BTC market cap" titleSize="md" as="h2" />
         <SectionDescription>Without commentary.</SectionDescription>
         <GTPButtonContainer style={ratioSpansWrapping ? { borderRadius: "15px" } : undefined}>
-          <GTPButtonRow wrap onWrapChange={setRatioSpansWrapping}>
+          <GTPButtonRow wrap autoFill onWrapChange={setRatioSpansWrapping}>
             {RATIO_SPANS.map((s) => (
               <GTPButton
                 key={s.key}

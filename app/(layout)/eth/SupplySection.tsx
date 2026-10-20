@@ -336,7 +336,7 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
         setIsWrapping={setControlsWrapping}
         style={controlsWrapping ? { borderRadius: "15px" } : undefined}
       >
-        <GTPButtonRow wrap>
+        <GTPButtonRow wrap autoFill>
           {lastWeek && (
             <GTPButton
               label={lastWeek.preset.name}
