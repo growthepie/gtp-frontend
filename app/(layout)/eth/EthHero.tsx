@@ -118,14 +118,22 @@ export default function EthHero() {
     <div className="@container flex flex-col gap-y-[30px]">
       {/* Hero columns switch at the same widths as the metric-card grid below (both are
           measured on this same-width container): 1 column → stacked, 2 card columns →
-          1fr 1fr, 3 card columns → 2fr 1fr. Keep these in step with that grid. */}
-      <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-[2fr_1fr] gap-[10px] items-center">
-        <div className="flex flex-col gap-y-[15px]">
+          1fr 1fr, 3 card columns → 2fr 1fr. Keep these in step with that grid.
+          Stacked, the diamond sits between the intro and the price. Side by side, it spans
+          both rows of the right column while the intro (bottom of row 1) and the price
+          (top of row 2) stay together, centred against it. */}
+      <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-[2fr_1fr] gap-x-[10px] gap-y-[15px] items-center">
+        <div className="flex flex-col gap-y-[15px] @[850px]:self-end">
           <div className="heading-small-xs text-color-accent-turquoise">ETH the asset</div>
           <h1 className="heading-large-xl md:heading-large-2xl">The asset that pays you for holding it.</h1>
           <div className="text-md lg:text-lg">
             ETH secures Ethereum, earns a yield, and backs loans.
           </div>
+        </div>
+        <div className="@[850px]:col-start-2 @[850px]:row-[1/span_2]">
+          <EtherDiamond height={380} />
+        </div>
+        <div className="flex flex-col gap-y-[15px] @[850px]:self-start">
           <div className="flex items-baseline gap-x-[12px] flex-wrap">
             {displayedPrice ? (
               <span className="numbers-5xl">
@@ -230,7 +238,6 @@ export default function EthHero() {
           </div>
           </div>
         </div>
-        <EtherDiamond height={380} />
       </div>
 
       {/* Columns follow the grid's own width (not the viewport), so the sidebar being
