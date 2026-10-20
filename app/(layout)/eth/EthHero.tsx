@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
 import useSWR from "swr";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -22,6 +22,7 @@ import {
 } from "@/lib/eth-the-asset/data";
 import { EthAssetURLs } from "@/lib/urls";
 import { ACCENT_HEX, AccentColor } from "./_components/colors";
+import EtherDiamond from "./_components/EtherDiamond";
 
 // Imperva (Thales) Bad Bot Report 2026: automated share of web traffic in 2025.
 // Static — the report is annual; update when the next edition comes out.
@@ -44,78 +45,6 @@ const TIMESPANS: Record<KpiTimeframe, { label: string; shortLabel: string; dateF
 // change_pct is a fraction; the card wants a percentage. Null hides the badge.
 const toPct = (fraction: number | null | undefined) =>
   fraction === null || fraction === undefined ? null : fraction * 100;
-
-// Pointer-reactive diamond built from plain CSS/SVG (no 3D library). A slow
-// autorotate loop plus a pointer-driven tilt combine into one transform.
-function EtherDiamond({ height = 380 }: { height?: number }) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [autoAngle, setAutoAngle] = useState(0);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    let raf: number;
-    const tick = () => {
-      setAutoAngle((a) => (a + 0.15) % 360);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const rect = wrapperRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const px = (e.clientX - rect.left) / rect.width - 0.5;
-    const py = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: py * -30, y: px * 40 });
-  };
-
-  return (
-    <div
-      ref={wrapperRef}
-      onPointerMove={onMove}
-      onPointerLeave={() => setTilt({ x: 0, y: 0 })}
-      className="relative w-full flex items-center justify-center cursor-grab select-none"
-      style={{ height, perspective: 900 }}
-    >
-      <div
-        className="absolute inset-0 m-auto rounded-full blur-3xl opacity-30"
-        style={{
-          width: height * 0.8,
-          height: height * 0.8,
-          background: "radial-gradient(circle, rgb(var(--accent-turquoise)) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="relative transition-transform duration-200 ease-out"
-        style={{
-          width: height * 0.55,
-          height: height * 0.85,
-          transformStyle: "preserve-3d",
-          transform: `rotateX(${tilt.x}deg) rotateY(${autoAngle + tilt.y}deg)`,
-        }}
-      >
-        <svg viewBox="0 0 100 154" width="100%" height="100%" style={{ overflow: "visible" }} aria-hidden="true">
-          <defs>
-            <linearGradient id="eth-face-1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="rgb(var(--accent-turquoise))" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="rgb(var(--bg-default))" stopOpacity="0.9" />
-            </linearGradient>
-            <linearGradient id="eth-face-2" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgb(var(--accent-yellow))" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="rgb(var(--bg-default))" stopOpacity="0.9" />
-            </linearGradient>
-          </defs>
-          <polygon points="50,0 95,77 50,60" fill="url(#eth-face-1)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" />
-          <polygon points="50,0 5,77 50,60" fill="url(#eth-face-2)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" opacity="0.85" />
-          <polygon points="50,60 95,77 50,154" fill="url(#eth-face-2)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" opacity="0.85" />
-          <polygon points="50,60 5,77 50,154" fill="url(#eth-face-1)" stroke="rgb(var(--accent-turquoise))" strokeWidth="0.6" />
-        </svg>
-      </div>
-      <div className="absolute bottom-0 right-[15px] text-xs text-color-text-primary/70">drag to spin</div>
-    </div>
-  );
-}
 
 export default function EthHero() {
   const { globalMetrics } = useSSEMetrics();
